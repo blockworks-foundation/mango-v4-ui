@@ -9,7 +9,7 @@ const SecondaryTabBar = ({
   setActiveTab: (tab: string) => void
   tabs: string[]
 }) => {
-  const { t } = useTranslation(['common', 'activity'])
+  const { t } = useTranslation(['common', 'activity', 'trade'])
   return (
     <div className="flex h-14 items-center justify-between bg-th-bkg-2">
       <div className="hide-scroll flex space-x-2 pl-4 md:pl-6">

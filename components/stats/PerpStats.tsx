@@ -6,7 +6,7 @@ import PerpMarketsDetailsTable from './PerpMarketDetailsTable'
 import PerpMarketsOverviewTable from './PerpMarketsOverviewTable'
 import PerpMarketsPositions from './PerpMarketsPositions'
 
-export const TABS = ['overview', 'details', 'trade:positions']
+const TABS = ['overview', 'details', 'trade:positions']
 
 const PerpStats = () => {
   const [activeTab, setActiveTab] = useState(TABS[0])
