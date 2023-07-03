@@ -117,7 +117,7 @@ const RpcSettings = () => {
       <h2 className="mb-4 text-base">{t('rpc')}</h2>
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
         <p className="mb-2 md:mb-0">{t('rpc-provider')}</p>
-        <div className="w-full min-w-[160px] md:w-auto">
+        <div className="w-full min-w-[400px] md:w-auto">
           <ButtonGroup
             activeValue={rpcEndpoint.label}
             onChange={(v) => handleSetEndpointProvider(v)}
@@ -138,7 +138,6 @@ const RpcSettings = () => {
                   }
                 />
                 <Button
-                  className="h-12"
                   disabled={!customUrl}
                   onClick={handleSaveCustomEndpoint}
                 >
