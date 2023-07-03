@@ -60,7 +60,7 @@ const defaultFormValues: ListMarketForm = {
 const ListMarket = ({ goBack }: { goBack: () => void }) => {
   const wallet = useWallet()
   const { handleConnect } = useEnhancedWallet()
-  const { t } = useTranslation(['governance'])
+  const { t } = useTranslation(['governance', 'trade'])
   const { group } = useMangoGroup()
   const connection = mangoStore((s) => s.connection)
   const client = mangoStore((s) => s.client)
@@ -68,6 +68,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
 
   const vsrClient = GovernanceStore((s) => s.vsrClient)
   const proposals = GovernanceStore((s) => s.proposals)
+  const proposalsLoading = GovernanceStore((s) => s.loadingProposals)
 
   const [advForm, setAdvForm] = useState<ListMarketForm>({
     ...defaultFormValues,
@@ -332,10 +333,15 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
             <Button
               className="mt-6"
               onClick={goToPropsPage}
-              disabled={loadingMarketProps || !quoteToken || !baseToken}
+              disabled={
+                loadingMarketProps ||
+                !quoteToken ||
+                !baseToken ||
+                proposalsLoading
+              }
               size="large"
             >
-              {loadingMarketProps ? (
+              {loadingMarketProps || proposalsLoading ? (
                 <Loading className="w-4"></Loading>
               ) : (
                 t('next')
@@ -375,27 +381,65 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
               ) : null}
             </>
           ) : (
-            <div className="rounded-md bg-th-bkg-2 p-4">
-              <h3 className="mb-2">{t('market-details')}</h3>
-              <div className="flex items-center justify-between">
-                <p>{t('market-name')}</p>
-                <p className="text-th-fgd-2">{`${baseToken}/${quoteToken}`}</p>
-              </div>
-              {tradingParams.minOrderSize ? (
-                <div className="mt-2 flex items-center justify-between">
-                  <p>{t('min-order')}</p>
-                  <p className="text-th-fgd-2">{tradingParams.minOrderSize}</p>
-                </div>
-              ) : null}
-              {tradingParams.minOrderSize ? (
-                <div className="mt-2 flex items-center justify-between">
-                  <p>{t('price-tick')}</p>
-                  <p className="text-th-fgd-2">
-                    {tradingParams.priceIncrement}
+            <>
+              <div className="mb-4 rounded-md bg-th-bkg-2 p-4">
+                <h3 className="mb-1">{t('market-name')}</h3>
+                <div className="mb-2 flex items-center">
+                  <ExclamationTriangleIcon className="mr-1.5 h-5 w-5 text-th-warning" />
+                  <p className="text-base text-th-fgd-2">
+                    {t('market-name-desc')}
                   </p>
                 </div>
-              ) : null}
-            </div>
+                <ul className="ml-4 mb-4 list-outside list-decimal space-y-1">
+                  <li>{t('market-name-convention-1')}</li>
+                  <li>{t('market-name-convention-2')}</li>
+                  <li>{t('market-name-convention-3')}</li>
+                  <li>{t('market-name-convention-4')}</li>
+                  <li>{t('market-name-convention-5')}</li>
+                  <li>
+                    {t('market-name-convention-6')}
+                    <a
+                      href="https://discord.gg/2uwjsBc5yw"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Discord
+                    </a>
+                  </li>
+                </ul>
+                <Label className="mb-2" text={t('market-name')} />
+                <Input
+                  className="max-w-[320px]"
+                  hasError={formErrors.marketName !== undefined}
+                  type="text"
+                  value={advForm.marketName.toString()}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    handleSetAdvForm('marketName', e.target.value)
+                  }
+                />
+              </div>
+              <div className="rounded-md bg-th-bkg-2 p-4">
+                <h3 className="mb-2">
+                  {t('trade:market-details', { market: '' })}
+                </h3>
+                {tradingParams.minOrderSize ? (
+                  <div className="mt-2 flex items-center justify-between">
+                    <p>{t('min-order')}</p>
+                    <p className="text-th-fgd-2">
+                      {tradingParams.minOrderSize}
+                    </p>
+                  </div>
+                ) : null}
+                {tradingParams.minOrderSize ? (
+                  <div className="mt-2 flex items-center justify-between">
+                    <p>{t('price-tick')}</p>
+                    <p className="text-th-fgd-2">
+                      {tradingParams.priceIncrement}
+                    </p>
+                  </div>
+                ) : null}
+              </div>
+            </>
           )}
           {marketPk ? (
             <Disclosure>
@@ -424,15 +468,6 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
                   <Disclosure.Panel>
                     <div className="space-y-4 rounded-md rounded-t-none bg-th-bkg-2 p-4">
                       <div>
-                        <Label text={t('market-name')} />
-                        <Input
-                          hasError={formErrors.marketName !== undefined}
-                          type="text"
-                          value={advForm.marketName.toString()}
-                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                            handleSetAdvForm('marketName', e.target.value)
-                          }
-                        />
                         {formErrors.marketName && (
                           <div className="mt-1.5 flex items-center space-x-1">
                             <ExclamationCircleIcon className="h-4 w-4 text-th-down" />

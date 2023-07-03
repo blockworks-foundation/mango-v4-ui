@@ -24,6 +24,7 @@ import {
   BookSideType,
   MangoClient,
   PerpMarket,
+  Serum3Market,
 } from '@blockworks-foundation/mango-v4'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
@@ -425,7 +426,11 @@ const Orderbook = () => {
         const selectedMarket = mangoStore.getState().selectedMarket
         if (!useOrderbookFeed || !selectedMarket || !selectedMarket.current)
           return
-        if (update.market != selectedMarket.current.publicKey.toBase58()) return
+        const selectedMarketKey =
+          selectedMarket.current instanceof Serum3Market
+            ? selectedMarket.current['serumMarketExternal']
+            : selectedMarket.current.publicKey
+        if (update.market != selectedMarketKey.toBase58()) return
 
         // ensure updates are applied in the correct order by checking slot and writeVersion
         const lastSeenSlot =
@@ -849,7 +854,8 @@ const OrderbookRow = ({
     const set = mangoStore.getState().set
     set((state) => {
       state.tradeForm.price = formattedPrice.toFixed()
-      if (state.tradeForm.baseSize && state.tradeForm.tradeType === 'Limit') {
+      state.tradeForm.tradeType = 'Limit'
+      if (state.tradeForm.baseSize) {
         const quoteSize = floorToDecimal(
           formattedPrice.mul(new Decimal(state.tradeForm.baseSize)),
           getDecimalCount(tickSize)

@@ -45,7 +45,11 @@ const fetchHourlyFunding = async (mangoAccountPk: string) => {
       const stats: HourlyFundingStatsData[] = entries.map(([key, value]) => {
         const marketEntries = Object.entries(value)
         const marketFunding = marketEntries.map(([key, value]) => {
-          return { ...value, time: key }
+          return {
+            long_funding: value.long_funding * -1,
+            short_funding: value.short_funding * -1,
+            time: key,
+          }
         })
         return { marketFunding, market: key }
       })

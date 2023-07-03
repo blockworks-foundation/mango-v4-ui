@@ -1,4 +1,4 @@
-import { U64_MAX_BN } from '@blockworks-foundation/mango-v4'
+import { Bank, U64_MAX_BN } from '@blockworks-foundation/mango-v4'
 import {
   PerpMarket,
   PerpOrder,
@@ -250,7 +250,6 @@ const OpenOrders = () => {
         <thead>
           <TrHead>
             <Th className="w-[16.67%] text-left">{t('market')}</Th>
-            <Th className="w-[16.67%] text-right">{t('trade:side')}</Th>
             <Th className="w-[16.67%] text-right">{t('trade:size')}</Th>
             <Th className="w-[16.67%] text-right">{t('price')}</Th>
             <Th className="w-[16.67%] text-right">{t('value')}</Th>
@@ -269,6 +268,7 @@ const OpenOrders = () => {
                 let tickSize: number
                 let minOrderSize: number
                 let expiryTimestamp: number | undefined
+                let value: number
                 if (o instanceof PerpOrder) {
                   market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
                   tickSize = market.tickSize
@@ -277,6 +277,7 @@ const OpenOrders = () => {
                     o.expiryTimestamp === U64_MAX_BN
                       ? 0
                       : o.expiryTimestamp.toNumber()
+                  value = o.size * o.price
                 } else {
                   market = group.getSerum3MarketByExternalMarket(
                     new PublicKey(marketPk)
@@ -284,25 +285,26 @@ const OpenOrders = () => {
                   const serumMarket = group.getSerum3ExternalMarket(
                     market.serumMarketExternal
                   )
+                  const quoteBank = group.getFirstBankByTokenIndex(
+                    market.quoteTokenIndex
+                  )
                   tickSize = serumMarket.tickSize
                   minOrderSize = serumMarket.minOrderSize
+                  value = o.size * o.price * quoteBank.uiPrice
                 }
+                const side =
+                  o instanceof PerpOrder
+                    ? 'bid' in o.side
+                      ? 'long'
+                      : 'short'
+                    : o.side
                 return (
                   <TrBody
                     key={`${o.side}${o.size}${o.price}${o.orderId.toString()}`}
                     className="my-1 p-2"
                   >
                     <Td className="w-[16.67%]">
-                      <TableMarketName market={market} />
-                    </Td>
-                    <Td className="w-[16.67%] text-right">
-                      {o instanceof PerpOrder ? (
-                        <PerpSideBadge
-                          basePosition={'bid' in o.side ? 1 : -1}
-                        />
-                      ) : (
-                        <SideBadge side={o.side} />
-                      )}
+                      <TableMarketName market={market} side={side} />
                     </Td>
                     {modifyOrderId !== o.orderId.toString() ? (
                       <>
@@ -345,7 +347,7 @@ const OpenOrders = () => {
                       </>
                     )}
                     <Td className="w-[16.67%] text-right font-mono">
-                      <FormatNumericValue value={o.size * o.price} isUsd />
+                      <FormatNumericValue value={value} isUsd />
                       {expiryTimestamp ? (
                         <div className="h-min text-xxs leading-tight text-th-fgd-4">{`Expires ${new Date(
                           expiryTimestamp * 1000
@@ -419,6 +421,7 @@ const OpenOrders = () => {
             let market: PerpMarket | Serum3Market
             let tickSize: number
             let minOrderSize: number
+            let quoteBank: Bank | undefined
             if (o instanceof PerpOrder) {
               market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
               tickSize = market.tickSize
@@ -430,6 +433,8 @@ const OpenOrders = () => {
               const serumMarket = group.getSerum3ExternalMarket(
                 market.serumMarketExternal
               )
+
+              quoteBank = group.getFirstBankByTokenIndex(market.quoteTokenIndex)
               tickSize = serumMarket.tickSize
               minOrderSize = serumMarket.minOrderSize
             }
@@ -479,7 +484,13 @@ const OpenOrders = () => {
                             <FormatNumericValue
                               value={o.price}
                               decimals={getDecimalCount(tickSize)}
-                            />
+                              isUsd={quoteBank?.name === 'USDC'}
+                            />{' '}
+                            {quoteBank && quoteBank.name !== 'USDC' ? (
+                              <span className="font-body text-th-fgd-3">
+                                {quoteBank.name}
+                              </span>
+                            ) : null}
                           </span>
                         </p>
                       </div>

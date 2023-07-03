@@ -3,7 +3,13 @@ import GovernanceStore from '@store/governanceStore'
 import mangoStore from '@store/mangoStore'
 import { ReactNode, useEffect } from 'react'
 
-const GovernancePageWrapper = ({ children }: { children: ReactNode }) => {
+const GovernancePageWrapper = ({
+  children,
+  noStyles,
+}: {
+  children: ReactNode
+  noStyles?: boolean
+}) => {
   const { publicKey } = useWallet()
 
   const initConnection = GovernanceStore((s) => s.initConnection)
@@ -44,8 +50,12 @@ const GovernancePageWrapper = ({ children }: { children: ReactNode }) => {
   ])
 
   return (
-    <div className="grid grid-cols-12">
-      <div className="col-span-12 lg:col-span-8 lg:col-start-3">{children}</div>
+    <div className={!noStyles ? 'grid grid-cols-12' : ''}>
+      <div
+        className={!noStyles ? 'col-span-12 lg:col-span-8 lg:col-start-3' : ''}
+      >
+        {children}
+      </div>
     </div>
   )
 }

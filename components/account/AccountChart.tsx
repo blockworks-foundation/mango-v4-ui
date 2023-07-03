@@ -40,7 +40,8 @@ const AccountChart = ({
     if (chartToShow === 'cumulative-interest-value') {
       return data.map((d) => ({
         interest_value:
-          d.borrow_interest_cumulative_usd + d.deposit_interest_cumulative_usd,
+          d.borrow_interest_cumulative_usd * -1 +
+          d.deposit_interest_cumulative_usd,
         time: d.time,
       }))
     }

@@ -48,6 +48,7 @@ import SwapSettings from './SwapSettings'
 import InlineNotification from '@components/shared/InlineNotification'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import Tooltip from '@components/shared/Tooltip'
+import { formatCurrencyValue } from 'utils/numbers'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -57,7 +58,7 @@ export const withValueLimit = (values: NumberFormatValues): boolean => {
 }
 
 const NUMBER_FORMAT_CLASSNAMES =
-  'w-full rounded-lg rounded-l-none border border-th-input-border bg-th-input-bkg p-3 text-right font-mono text-xl text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover md:hover:focus-visible:border-th-fgd-4'
+  'w-full rounded-r-lg border h-[56px] border-th-input-border bg-th-input-bkg px-3 pb-4 border-box text-right font-mono text-xl text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover md:hover:focus-visible:border-th-fgd-4'
 
 const set = mangoStore.getState().set
 
@@ -72,7 +73,7 @@ const SwapForm = () => {
   const { group } = useMangoGroup()
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const { ipAllowed, ipCountry } = useIpAddress()
-  const { isUnownedAccount } = useUnownedAccount()
+  const { isUnownedAccount, isDelegatedAccount } = useUnownedAccount()
 
   const {
     margin: useMargin,
@@ -86,7 +87,6 @@ const SwapForm = () => {
   const [debouncedAmountIn] = useDebounce(amountInFormValue, 300)
   const [debouncedAmountOut] = useDebounce(amountOutFormValue, 300)
   const { mangoAccount } = useMangoAccount()
-  const { isDelegatedAccount } = useUnownedAccount()
   const { connected, publicKey } = useWallet()
 
   const amountInAsDecimal: Decimal | null = useMemo(() => {
@@ -108,6 +108,7 @@ const SwapForm = () => {
     slippage,
     swapMode,
     wallet: publicKey?.toBase58(),
+    mode: isDelegatedAccount ? 'JUPITER' : 'ALL',
   })
 
   const setAmountInFormValue = useCallback(
@@ -350,7 +351,7 @@ const SwapForm = () => {
                 type="input"
               />
             </div>
-            <div className="col-span-1 flex h-[54px]">
+            <div className="relative col-span-1">
               <NumberFormat
                 inputMode="decimal"
                 thousandSeparator=","
@@ -365,6 +366,13 @@ const SwapForm = () => {
                 onValueChange={handleAmountInChange}
                 isAllowed={withValueLimit}
               />
+              <span className="absolute right-3 bottom-1.5 text-xxs text-th-fgd-4">
+                {inputBank
+                  ? formatCurrencyValue(
+                      inputBank.uiPrice * Number(amountInFormValue)
+                    )
+                  : '–'}
+              </span>
             </div>
           </div>
           <div className="-mb-2 flex justify-center">
@@ -394,25 +402,34 @@ const SwapForm = () => {
                 type="output"
               />
             </div>
-            <div className="col-span-1 flex h-[54px]">
+            <div className="relative col-span-1">
               {loadingSwapDetails ? (
-                <div className="flex w-full items-center justify-center rounded-l-none rounded-r-lg border border-th-input-border bg-th-bkg-2">
+                <div className="flex h-[56px] w-full items-center justify-center rounded-l-none rounded-r-lg border border-th-input-border bg-th-bkg-2">
                   <Loading />
                 </div>
               ) : (
-                <NumberFormat
-                  inputMode="decimal"
-                  thousandSeparator=","
-                  allowNegative={false}
-                  isNumericString={true}
-                  decimalScale={outputBank?.mintDecimals || 6}
-                  name="amountOut"
-                  id="amountOut"
-                  className={NUMBER_FORMAT_CLASSNAMES}
-                  placeholder="0.00"
-                  value={amountOutFormValue}
-                  onValueChange={handleAmountOutChange}
-                />
+                <>
+                  <NumberFormat
+                    inputMode="decimal"
+                    thousandSeparator=","
+                    allowNegative={false}
+                    isNumericString={true}
+                    decimalScale={outputBank?.mintDecimals || 6}
+                    name="amountOut"
+                    id="amountOut"
+                    className={NUMBER_FORMAT_CLASSNAMES}
+                    placeholder="0.00"
+                    value={amountOutFormValue}
+                    onValueChange={handleAmountOutChange}
+                  />
+                  <span className="absolute right-3 bottom-1.5 text-xxs text-th-fgd-4">
+                    {outputBank
+                      ? formatCurrencyValue(
+                          outputBank.uiPrice * Number(amountOutFormValue)
+                        )
+                      : '–'}
+                  </span>
+                </>
               )}
             </div>
           </div>
@@ -441,7 +458,6 @@ const SwapForm = () => {
               amountOut={
                 selectedRoute ? amountOutAsDecimal.toNumber() : undefined
               }
-              isDelegatedAccount={isDelegatedAccount}
             />
           ) : (
             <Button
@@ -524,7 +540,6 @@ const SwapFormSubmitButton = ({
   selectedRoute,
   setShowConfirm,
   useMargin,
-  isDelegatedAccount,
 }: {
   amountIn: Decimal
   amountOut: number | undefined
@@ -533,7 +548,6 @@ const SwapFormSubmitButton = ({
   selectedRoute: RouteInfo | undefined | null
   setShowConfirm: (x: boolean) => void
   useMargin: boolean
-  isDelegatedAccount: boolean
 }) => {
   const { t } = useTranslation('common')
   const { connected } = useWallet()
@@ -549,8 +563,7 @@ const SwapFormSubmitButton = ({
     (!amountIn.toNumber() ||
       showInsufficientBalance ||
       !amountOut ||
-      !selectedRoute ||
-      isDelegatedAccount)
+      !selectedRoute)
 
   const onClick = connected ? () => setShowConfirm(true) : handleConnect
 
@@ -562,9 +575,7 @@ const SwapFormSubmitButton = ({
         disabled={disabled}
         size="large"
       >
-        {isDelegatedAccount ? (
-          <div>Swap Unavailable for Delegates</div>
-        ) : connected ? (
+        {connected ? (
           showInsufficientBalance ? (
             <div className="flex items-center">
               <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />

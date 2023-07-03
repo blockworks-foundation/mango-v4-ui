@@ -116,10 +116,7 @@ const TokenDetailsTable = () => {
                     className="default-transition md:hover:cursor-pointer md:hover:bg-th-bkg-2"
                     key={bank.name}
                     onClick={() =>
-                      goToTokenPage(
-                        bank.name.split(' ')[0].toUpperCase(),
-                        router
-                      )
+                      goToTokenPage(bank.name.split(' ')[0], router)
                     }
                   >
                     <Td>
@@ -141,9 +138,13 @@ const TokenDetailsTable = () => {
                     </Td>
                     <Td>
                       <div className="flex justify-end space-x-1.5 text-right">
-                        <p>{bank.initAssetWeight.toFixed(2)}</p>
+                        <p>
+                          {bank.scaledInitAssetWeight(bank.price).toFixed(2)}
+                        </p>
                         <span className="text-th-fgd-4">|</span>
-                        <p>{bank.initLiabWeight.toFixed(2)}</p>
+                        <p>
+                          {bank.scaledInitLiabWeight(bank.price).toFixed(2)}
+                        </p>
                       </div>
                     </Td>
                     <Td>
@@ -254,11 +255,15 @@ const TokenDetailsTable = () => {
                             </Tooltip>
                             <div className="flex space-x-1.5 text-right font-mono">
                               <p className="text-th-fgd-1">
-                                {bank.initAssetWeight.toFixed(2)}
+                                {bank
+                                  .scaledInitAssetWeight(bank.price)
+                                  .toFixed(2)}
                               </p>
                               <span className="text-th-fgd-4">|</span>
                               <p className="text-th-fgd-1">
-                                {bank.initLiabWeight.toFixed(2)}
+                                {bank
+                                  .scaledInitLiabWeight(bank.price)
+                                  .toFixed(2)}
                               </p>
                             </div>
                           </div>
@@ -349,10 +354,7 @@ const TokenDetailsTable = () => {
                             <LinkButton
                               className="flex items-center"
                               onClick={() =>
-                                goToTokenPage(
-                                  bank.name.split(' ')[0].toUpperCase(),
-                                  router
-                                )
+                                goToTokenPage(bank.name.split(' ')[0], router)
                               }
                             >
                               {t('token:token-stats', { token: bank.name })}
