@@ -126,7 +126,7 @@ const LargestPerpPositions = () => {
                 <Td>
                   <TableMarketName
                     market={market}
-                    side={isLong ? 'buy' : 'sell'}
+                    side={isLong ? 'long' : 'short'}
                   />
                 </Td>
                 <Td className="text-right font-mono">
@@ -314,7 +314,7 @@ const ClosestToLiquidation = () => {
                 <Td>
                   <TableMarketName
                     market={market}
-                    side={isLong ? 'buy' : 'sell'}
+                    side={isLong ? 'long' : 'short'}
                   />
                 </Td>
                 <Td className="text-right font-mono">
