@@ -71,6 +71,7 @@ export function useListings(filter = ALL_FILTER, page = 1) {
 
       listingsWithMeta.push({ ...listingWithMeta })
     }
+
     return { results: listingsWithMeta, totalPages: totalPages }
   }
 
