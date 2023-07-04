@@ -140,12 +140,21 @@ export interface HourlyFundingChartData extends Record<string, any> {
   time: string
 }
 
-export type PerpVolumeData = [string, { [key: string]: { volume_usd: number } }]
+export type AccountVolumeTotalData = [string, { volume_usd: number }]
 
-export type SpotVolumeData = [
-  string,
-  { [key: string]: { volume_quote: number } }
-]
+export type HourlyAccountVolumeData = {
+  [market: string]: {
+    [timestamp: string]: {
+      volume_usd: number
+    }
+  }
+}
+
+export type FormattedHourlyAccountVolumeData = {
+  time: string
+  total_volume_usd: number
+  markets: Record<string, number>
+}
 
 export interface TotalInterestDataItem {
   borrow_interest: number

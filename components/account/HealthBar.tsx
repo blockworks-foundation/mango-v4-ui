@@ -2,7 +2,10 @@ import { useMemo } from 'react'
 
 const HealthBar = ({ health }: { health: number }) => {
   const [barWidths, fillColor] = useMemo(() => {
-    if (!health) return [[2, 0, 0, 0], 'var(--down)']
+    if (!health) return [[0, 0, 0, 0], 'var(--down)']
+    if (health < 5) {
+      return [[16, 0, 0, 0], 'var(--down)']
+    }
     if (health <= 25) {
       const fillWidth = (health / 25) * 100
       return [[fillWidth, 0, 0, 0], 'var(--down)']

@@ -42,9 +42,10 @@ import FormatNumericValue from '@components/shared/FormatNumericValue'
 import HealthBar from './HealthBar'
 import AssetsLiabilities from './AssetsLiabilities'
 import {
+  AccountVolumeTotalData,
+  FormattedHourlyAccountVolumeData,
+  HourlyAccountVolumeData,
   PerformanceDataItem,
-  PerpVolumeData,
-  SpotVolumeData,
   TotalAccountFundingItem,
 } from 'types'
 import { useQuery } from '@tanstack/react-query'
@@ -79,25 +80,87 @@ const fetchFundingTotals = async (mangoAccountPk: string) => {
   }
 }
 
-const fetchPerpVolume = async (mangoAccountPk: string) => {
+const fetchVolumeTotals = async (mangoAccountPk: string) => {
   try {
-    const data = await fetch(
-      `${MANGO_DATA_API_URL}/stats/daily-perp-volume?mango-account=${mangoAccountPk}&start-date=2022-06-30`
-    )
-    const res = await data.json()
-    return res
+    const [perpTotal, spotTotal] = await Promise.all([
+      fetch(
+        `${MANGO_DATA_API_URL}/stats/perp-volume-total?mango-account=${mangoAccountPk}`
+      ),
+      fetch(
+        `${MANGO_DATA_API_URL}/stats/spot-volume-total?mango-account=${mangoAccountPk}`
+      ),
+    ])
+
+    const [perpTotalData, spotTotalData] = await Promise.all([
+      perpTotal.json(),
+      spotTotal.json(),
+    ])
+
+    const combinedData = [perpTotalData, spotTotalData]
+    if (combinedData.length) {
+      return combinedData.reduce((a, c) => {
+        const entries: AccountVolumeTotalData[] = Object.entries(c)
+        const marketVol = entries.reduce((a, c) => {
+          return a + c[1].volume_usd
+        }, 0)
+        return a + marketVol
+      }, 0)
+    }
+    return 0
   } catch (e) {
-    console.log('Failed to fetch perp volume', e)
+    console.log('Failed to fetch spot volume', e)
+    return 0
   }
 }
 
-const fetchSpotVolume = async (mangoAccountPk: string) => {
+const formatHourlyVolumeData = (data: HourlyAccountVolumeData[]) => {
+  if (!data || !data.length) return []
+  const formattedData: FormattedHourlyAccountVolumeData[] = []
+
+  // Loop through each object in the original data array
+  for (const obj of data) {
+    // Loop through the keys (markets) in each object
+    for (const market in obj) {
+      // Loop through the timestamps in each market
+      for (const timestamp in obj[market]) {
+        // Find the corresponding entry in the formatted data array based on the timestamp
+        let entry = formattedData.find((item) => item.time === timestamp)
+
+        // If the entry doesn't exist, create a new entry
+        if (!entry) {
+          entry = { time: timestamp, total_volume_usd: 0, markets: {} }
+          formattedData.push(entry)
+        }
+
+        // Increment the total_volume_usd by the volume_usd value
+        entry.total_volume_usd += obj[market][timestamp].volume_usd
+
+        // Add or update the market entry in the markets object
+        entry.markets[market] = obj[market][timestamp].volume_usd
+      }
+    }
+  }
+
+  return formattedData
+}
+
+const fetchHourlyVolume = async (mangoAccountPk: string) => {
   try {
-    const data = await fetch(
-      `${MANGO_DATA_API_URL}/stats/daily-spot-volume?mango-account=${mangoAccountPk}&start-date=2022-06-30`
-    )
-    const res = await data.json()
-    return res
+    const [perpHourly, spotHourly] = await Promise.all([
+      fetch(
+        `${MANGO_DATA_API_URL}/stats/perp-volume-hourly?mango-account=${mangoAccountPk}`
+      ),
+      fetch(
+        `${MANGO_DATA_API_URL}/stats/spot-volume-hourly?mango-account=${mangoAccountPk}`
+      ),
+    ])
+
+    const [perpHourlyData, spotHourlyData] = await Promise.all([
+      perpHourly.json(),
+      spotHourly.json(),
+    ])
+    const hourlyVolume = [perpHourlyData, spotHourlyData]
+    return formatHourlyVolumeData(hourlyVolume)
   } catch (e) {
     console.log('Failed to fetch spot volume', e)
   }
@@ -164,15 +227,13 @@ const AccountPage = () => {
     }
   )
 
-  console.log(fundingData)
-
   const {
-    data: perpVolumeData,
-    isLoading: loadingPerpVolumeData,
-    isFetching: fetchingPerpVolumeData,
+    data: volumeTotalData,
+    isLoading: loadingVolumeTotalData,
+    isFetching: fetchingVolumeTotalData,
   } = useQuery(
-    ['perp-volume', mangoAccountAddress],
-    () => fetchPerpVolume(mangoAccountAddress),
+    ['total-volume', mangoAccountAddress],
+    () => fetchVolumeTotals(mangoAccountAddress),
     {
       cacheTime: 1000 * 60 * 10,
       staleTime: 1000 * 60,
@@ -182,27 +243,13 @@ const AccountPage = () => {
     }
   )
 
-  const perpVolumeTotal = useMemo(() => {
-    if (!perpVolumeData) return 0
-    const entries: PerpVolumeData[] = Object.entries(perpVolumeData)
-    console.log(entries)
-    return entries
-      .map(([, value]) => {
-        const volume = Object.values(value).reduce((a, c) => {
-          return a + c.volume_usd
-        }, 0)
-        return volume
-      })
-      .reduce((a, c) => a + c)
-  }, [perpVolumeData])
-
   const {
-    data: spotVolumeData,
-    isLoading: loadingSpotVolumeData,
-    isFetching: fetchingSpotVolumeData,
+    data: hourlyVolumeData,
+    isLoading: loadingHourlyVolumeData,
+    isFetching: fetchingHourlyVolumeData,
   } = useQuery(
-    ['spot-volume', mangoAccountAddress],
-    () => fetchSpotVolume(mangoAccountAddress),
+    ['hourly-volume', mangoAccountAddress],
+    () => fetchHourlyVolume(mangoAccountAddress),
     {
       cacheTime: 1000 * 60 * 10,
       staleTime: 1000 * 60,
@@ -212,25 +259,23 @@ const AccountPage = () => {
     }
   )
 
-  const spotVolumeTotal = useMemo(() => {
-    const group = mangoStore.getState().group
-    if (!spotVolumeData || !group) return 0
-    const entries: SpotVolumeData[] = Object.entries(spotVolumeData)
-    return entries
-      .map(([key, value]) => {
-        const quoteSymbol = key.split('/')[1]
-        const quoteBank = group.banksMapByName.get(quoteSymbol)?.[0]
-        let quotePrice = 1
-        if (quoteBank && quoteBank.name !== 'USDC') {
-          quotePrice = quoteBank.uiPrice
-        }
-        const volume = Object.values(value).reduce((a, c) => {
-          return a + c.volume_quote * quotePrice
-        }, 0)
-        return volume
-      })
-      .reduce((a, c) => a + c)
-  }, [spotVolumeData])
+  const dailyVolume = useMemo(() => {
+    if (!hourlyVolumeData || !hourlyVolumeData.length) return 0
+    // Calculate the current time in milliseconds
+    const currentTime = new Date().getTime()
+
+    // Calculate the start time for the last 24 hours in milliseconds
+    const last24HoursStartTime = currentTime - 24 * 60 * 60 * 1000
+
+    // Filter the formatted data based on the timestamp
+    const last24HoursData = hourlyVolumeData.filter((entry) => {
+      const timestampMs = new Date(entry.time).getTime()
+      return timestampMs >= last24HoursStartTime && timestampMs <= currentTime
+    })
+
+    const volume = last24HoursData.reduce((a, c) => a + c.total_volume_usd, 0)
+    return volume
+  }, [hourlyVolumeData])
 
   const oneDayPerformanceData: PerformanceDataItem[] | [] = useMemo(() => {
     if (!performanceData || !performanceData.length) return []
@@ -385,11 +430,9 @@ const AccountPage = () => {
     ]
   }, [accountPnl, accountValue, performanceData])
 
-  const loadingVolume =
-    fetchingPerpVolumeData ||
-    fetchingSpotVolumeData ||
-    loadingPerpVolumeData ||
-    loadingSpotVolumeData
+  const loadingTotalVolume = fetchingVolumeTotalData || loadingVolumeTotalData
+  const loadingHourlyVolume =
+    fetchingHourlyVolumeData || loadingHourlyVolumeData
 
   return !chartToShow ? (
     <>
@@ -694,21 +737,34 @@ const AccountPage = () => {
         </div>
         <div className="col-span-6 border-t border-th-bkg-3 py-3 pl-6 pr-4 md:col-span-3 md:border-l lg:col-span-2 lg:border-l-0 xl:col-span-1 xl:border-l xl:border-t-0">
           <div id="account-step-six">
-            <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
-              {t('trade:trade-volume')}
+            <p className="text-sm text-th-fgd-3 xl:text-base">
+              {t('account:lifetime-volume')}
             </p>
-            {loadingVolume && mangoAccountAddress ? (
-              <SheenLoader className="mt-2">
+            {loadingTotalVolume && mangoAccountAddress ? (
+              <SheenLoader className="mt-1">
                 <div className="h-7 w-16 bg-th-bkg-2" />
               </SheenLoader>
             ) : (
               <p className="mt-1 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
-                <FormatNumericValue
-                  value={spotVolumeTotal + perpVolumeTotal}
-                  isUsd
-                />
+                <FormatNumericValue value={volumeTotalData || 0} isUsd />
               </p>
             )}
+            <span className="flex items-center text-xs font-normal text-th-fgd-4">
+              <span>{t('account:daily-volume')}</span>:
+              {loadingHourlyVolume && mangoAccountAddress ? (
+                <SheenLoader className="ml-1">
+                  <div className="h-3.5 w-10 bg-th-bkg-2" />
+                </SheenLoader>
+              ) : (
+                <span className="ml-1 font-mono text-th-fgd-2">
+                  <FormatNumericValue
+                    value={dailyVolume}
+                    decimals={2}
+                    isUsd={true}
+                  />
+                </span>
+              )}
+            </span>
           </div>
         </div>
         <div className="col-span-6 border-t border-th-bkg-3 py-3 pl-6 pr-4 text-left md:col-span-3 lg:col-span-2 lg:border-l xl:col-span-1 xl:border-t-0">
