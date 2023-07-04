@@ -19,29 +19,28 @@ const MarketLogos = ({
   const logos = useMemo(() => {
     if (!group || !mangoTokens.length || !market)
       return { baseLogoURI: '', quoteLogoURI: '' }
-
-    let jupiterBaseToken, jupiterQuoteToken
+    const marketName = market.name.split('-')[0].toLowerCase()
+    let baseLogoURI, quoteLogoURI
     if (market instanceof Serum3Market) {
       const baseBank = group.getFirstBankByTokenIndex(market.baseTokenIndex)
       const quoteBank = group.getFirstBankByTokenIndex(market.quoteTokenIndex)
 
-      jupiterBaseToken = mangoTokens.find(
+      const jupiterBaseToken = mangoTokens.find(
         (t) => t.address === baseBank.mint.toString()
       )
-      jupiterQuoteToken = mangoTokens.find(
+      const jupiterQuoteToken = mangoTokens.find(
         (t) => t.address === quoteBank.mint.toString()
       )
+
+      baseLogoURI = jupiterBaseToken?.logoURI
+      quoteLogoURI = jupiterQuoteToken?.logoURI
     } else {
-      jupiterBaseToken =
-        mangoTokens.find(
-          (t) => t.symbol.toUpperCase() === market.name.split('-')[0]
-        ) ||
-        mangoTokens.find((t) =>
-          t.symbol.toUpperCase()?.includes(market.name.split('-')[0])
-        )
+      const jupiterBaseToken =
+        mangoTokens.find((t) => t.symbol.toLowerCase() === marketName) ||
+        mangoTokens.find((t) => t.symbol.toLowerCase()?.includes(marketName))
+
+      baseLogoURI = `/icons/${marketName}.svg` || jupiterBaseToken?.logoURI
     }
-    const baseLogoURI = jupiterBaseToken ? jupiterBaseToken.logoURI : ''
-    const quoteLogoURI = jupiterQuoteToken ? jupiterQuoteToken.logoURI : ''
     return {
       baseLogoURI,
       quoteLogoURI,
@@ -76,7 +75,7 @@ const MarketLogos = ({
       <div className="absolute left-0 top-0 z-10">
         <LogoWithFallback
           alt=""
-          className="flex-shrink-0 drop-shadow-md"
+          className="flex-shrink-0"
           width={pxSize}
           height={pxSize}
           src={logos.baseLogoURI || `/icons/${logos?.name?.toLowerCase()}.svg`}

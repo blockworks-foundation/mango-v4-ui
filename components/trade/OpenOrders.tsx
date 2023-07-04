@@ -250,7 +250,6 @@ const OpenOrders = () => {
         <thead>
           <TrHead>
             <Th className="w-[16.67%] text-left">{t('market')}</Th>
-            <Th className="w-[16.67%] text-right">{t('trade:side')}</Th>
             <Th className="w-[16.67%] text-right">{t('trade:size')}</Th>
             <Th className="w-[16.67%] text-right">{t('price')}</Th>
             <Th className="w-[16.67%] text-right">{t('value')}</Th>
@@ -293,22 +292,19 @@ const OpenOrders = () => {
                   minOrderSize = serumMarket.minOrderSize
                   value = o.size * o.price * quoteBank.uiPrice
                 }
+                const side =
+                  o instanceof PerpOrder
+                    ? 'bid' in o.side
+                      ? 'long'
+                      : 'short'
+                    : o.side
                 return (
                   <TrBody
                     key={`${o.side}${o.size}${o.price}${o.orderId.toString()}`}
                     className="my-1 p-2"
                   >
                     <Td className="w-[16.67%]">
-                      <TableMarketName market={market} />
-                    </Td>
-                    <Td className="w-[16.67%] text-right">
-                      {o instanceof PerpOrder ? (
-                        <PerpSideBadge
-                          basePosition={'bid' in o.side ? 1 : -1}
-                        />
-                      ) : (
-                        <SideBadge side={o.side} />
-                      )}
+                      <TableMarketName market={market} side={side} />
                     </Td>
                     {modifyOrderId !== o.orderId.toString() ? (
                       <>
@@ -449,12 +445,10 @@ const OpenOrders = () => {
               >
                 <div>
                   {modifyOrderId !== o.orderId.toString() ? (
-                    <div className="flex items-start">
-                      <div className="mt-0.5">
-                        <MarketLogos market={market} size="large" />
-                      </div>
+                    <div className="flex items-center">
+                      <MarketLogos market={market} size="large" />
                       <div>
-                        <div className="mb-1 flex space-x-1 leading-none text-th-fgd-2">
+                        <div className="flex space-x-1 text-th-fgd-2">
                           {selectedMarket?.name === market.name ? (
                             <span className="whitespace-nowrap">
                               {market.name}
@@ -476,15 +470,15 @@ const OpenOrders = () => {
                             <SideBadge side={o.side} />
                           )}
                         </div>
-                        <p className="leading-none text-th-fgd-4">
-                          <span className="font-mono text-th-fgd-3">
+                        <p className="text-th-fgd-4">
+                          <span className="font-mono text-th-fgd-2">
                             <FormatNumericValue
                               value={o.size}
                               decimals={getDecimalCount(minOrderSize)}
                             />
                           </span>
                           {' at '}
-                          <span className="font-mono text-th-fgd-3">
+                          <span className="font-mono text-th-fgd-2">
                             <FormatNumericValue
                               value={o.price}
                               decimals={getDecimalCount(tickSize)}

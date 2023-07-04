@@ -7,6 +7,7 @@ import { useScreenshot } from 'hooks/useScreenshot'
 import { useTranslation } from 'next-i18next'
 import { createRef, useEffect, useMemo, useState } from 'react'
 import { ModalProps } from 'types/modal'
+import { ttCommons, ttCommonsExpanded, ttCommonsMono } from 'utils/fonts'
 import { formatNumericValue, getDecimalCount } from 'utils/numbers'
 
 interface SharePositionModalProps {
@@ -86,7 +87,9 @@ const SharePositionModal = ({
         aria-hidden="true"
       />
       <div className="fixed inset-0 flex flex-col items-center justify-center text-center">
-        <Dialog.Panel className="relative flex flex-col items-center">
+        <Dialog.Panel
+          className={`relative flex flex-col items-center ${ttCommons.variable} ${ttCommonsExpanded.variable} ${ttCommonsMono.variable}`}
+        >
           <div
             className="relative h-[338px] w-[600px] overflow-hidden border border-slate-700 bg-gradient-to-b from-slate-900 to-black pt-6"
             ref={ref}
@@ -121,7 +124,7 @@ const SharePositionModal = ({
                 </div>
                 <div className="flex justify-between">
                   <p className="mb-2 text-base text-gray-500">
-                    {t('entry-price')}
+                    {t('avg-entry-price')}
                   </p>
                   <p className="ml-2 font-mono text-base text-white">
                     {formatNumericValue(

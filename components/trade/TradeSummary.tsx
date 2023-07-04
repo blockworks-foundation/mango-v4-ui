@@ -14,8 +14,13 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import { useMemo } from 'react'
 import Slippage from './Slippage'
-import { floorToDecimal, formatNumericValue } from 'utils/numbers'
+import {
+  floorToDecimal,
+  formatNumericValue,
+  // getDecimalCount,
+} from 'utils/numbers'
 import { formatTokenSymbol } from 'utils/tokens'
+// import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
 
 const TradeSummary = ({
   mangoAccount,
@@ -28,6 +33,28 @@ const TradeSummary = ({
   const { group } = useMangoGroup()
   const tradeForm = mangoStore((s) => s.tradeForm)
   const { selectedMarket, quoteBank } = useSelectedMarket()
+  // const openPerpPositions = useOpenPerpPositions()
+
+  // this isn't correct yet
+
+  // const avgEntryPrice = useMemo(() => {
+  //   if (
+  //     !openPerpPositions.length ||
+  //     !selectedMarket ||
+  //     selectedMarket instanceof Serum3Market
+  //   )
+  //     return
+  //   const openPosition = openPerpPositions.find(
+  //     (pos) => pos.marketIndex === selectedMarket.perpMarketIndex
+  //   )
+  //   if (openPosition && tradeForm.price) {
+  //     const currentAvgPrice =
+  //       openPosition.getAverageEntryPriceUi(selectedMarket)
+  //     const newAvgPrice = (currentAvgPrice + Number(tradeForm.price)) / 2
+  //     return newAvgPrice
+  //   }
+  //   return
+  // }, [openPerpPositions, selectedMarket, tradeForm])
 
   const maintProjectedHealth = useMemo(() => {
     if (!mangoAccount || !group) return 100
@@ -126,7 +153,7 @@ const TradeSummary = ({
     <div className="space-y-2 px-3 md:px-4">
       <div className="flex justify-between text-xs">
         <p>{t('trade:order-value')}</p>
-        <p className="text-th-fgd-2">
+        <p className="font-mono text-th-fgd-2">
           {orderValue ? <FormatNumericValue value={orderValue} isUsd /> : '–'}
         </p>
       </div>
@@ -213,6 +240,19 @@ const TradeSummary = ({
         </p>
       </div> */}
       <Slippage />
+      {/* {avgEntryPrice && selectedMarket instanceof PerpMarket ? (
+        <div className="flex justify-between text-xs">
+          <p>{t('trade:avg-entry-price')}</p>
+          <p className="text-th-fgd-2">
+            {tradeForm.tradeType === 'Market' ? '~' : ''}
+            <FormatNumericValue
+              value={avgEntryPrice}
+              decimals={getDecimalCount(selectedMarket.tickSize)}
+              isUsd
+            />
+          </p>
+        </div>
+      ) : null} */}
     </div>
   )
 }
