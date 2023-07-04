@@ -49,7 +49,8 @@ import {
   TotalAccountFundingItem,
 } from 'types'
 import { useQuery } from '@tanstack/react-query'
-import FundingDetails from './FundingDetails'
+import FundingChart from './FundingChart'
+import VolumeChart from './VolumeChart'
 
 const TABS = ['account-value', 'account:assets-liabilities']
 
@@ -172,6 +173,7 @@ export type ChartToShow =
   | 'cumulative-interest-value'
   | 'pnl'
   | 'hourly-funding'
+  | 'hourly-volume'
 
 const AccountPage = () => {
   const { t } = useTranslation(['common', 'account'])
@@ -396,7 +398,11 @@ const AccountPage = () => {
   }, [mangoAccount, group])
 
   const handleChartToShow = (
-    chartName: 'pnl' | 'cumulative-interest-value' | 'hourly-funding'
+    chartName:
+      | 'pnl'
+      | 'cumulative-interest-value'
+      | 'hourly-funding'
+      | 'hourly-volume'
   ) => {
     if (
       (chartName === 'cumulative-interest-value' && interestTotalValue > 1) ||
@@ -408,6 +414,9 @@ const AccountPage = () => {
       setChartToShow(chartName)
     }
     if (chartName === 'hourly-funding') {
+      setChartToShow(chartName)
+    }
+    if (chartName === 'hourly-volume') {
       setChartToShow(chartName)
     }
   }
@@ -737,9 +746,28 @@ const AccountPage = () => {
         </div>
         <div className="col-span-6 border-t border-th-bkg-3 py-3 pl-6 pr-4 md:col-span-3 md:border-l lg:col-span-2 lg:border-l-0 xl:col-span-1 xl:border-l xl:border-t-0">
           <div id="account-step-six">
-            <p className="text-sm text-th-fgd-3 xl:text-base">
-              {t('account:lifetime-volume')}
-            </p>
+            <div className="flex w-full items-center justify-between">
+              <p className="text-sm text-th-fgd-3 xl:text-base">
+                {t('account:lifetime-volume')}
+              </p>
+              {mangoAccountAddress &&
+              hourlyVolumeData &&
+              hourlyVolumeData.length ? (
+                <Tooltip
+                  className="hidden md:block"
+                  content="Funding Chart"
+                  delay={100}
+                >
+                  <IconButton
+                    className="text-th-fgd-3"
+                    hideBg
+                    onClick={() => handleChartToShow('hourly-volume')}
+                  >
+                    <ChartBarIcon className="h-5 w-5" />
+                  </IconButton>
+                </Tooltip>
+              ) : null}
+            </div>
             {loadingTotalVolume && mangoAccountAddress ? (
               <SheenLoader className="mt-1">
                 <div className="h-7 w-16 bg-th-bkg-2" />
@@ -885,7 +913,13 @@ const AccountPage = () => {
           yKey="pnl"
         />
       ) : chartToShow === 'hourly-funding' ? (
-        <FundingDetails hideChart={handleHideChart} />
+        <FundingChart hideChart={handleHideChart} />
+      ) : chartToShow === 'hourly-volume' ? (
+        <VolumeChart
+          chartData={hourlyVolumeData}
+          hideChart={handleHideChart}
+          loading={loadingHourlyVolume}
+        />
       ) : (
         <AccountChart
           chartToShow="cumulative-interest-value"
