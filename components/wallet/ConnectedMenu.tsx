@@ -15,6 +15,26 @@ import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from '../../utils/theme'
 import EditProfileModal from '@components/modals/EditProfileModal'
 import MangoAccountsListModal from '@components/modals/MangoAccountsListModal'
+import { getFavoriteDomain, reverseLookup } from '@bonfida/spl-name-service'
+import { PublicKey } from '@solana/web3.js'
+
+export const getSolDomain = async (publicKey: PublicKey) => {
+  const connection = mangoStore.getState().connection
+  try {
+    const favoriteSolDomain = await getFavoriteDomain(connection, publicKey)
+    if (favoriteSolDomain?.reverse) {
+      return favoriteSolDomain.reverse
+    } else {
+      const solDomain = await reverseLookup(connection, publicKey)
+      if (solDomain) {
+        return solDomain
+      }
+    }
+    return
+  } catch (e) {
+    console.log('failed to fetch sol domain', e)
+  }
+}
 
 const ConnectedMenu = () => {
   const { t } = useTranslation('common')
@@ -23,6 +43,7 @@ const ConnectedMenu = () => {
 
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)
   const [showMangoAccountsModal, setShowMangoAccountsModal] = useState(false)
+  const [solDomain, setSolDomain] = useState('')
 
   const set = mangoStore((s) => s.set)
   const actions = mangoStore.getState().actions
@@ -30,6 +51,17 @@ const ConnectedMenu = () => {
   const loadProfileDetails = mangoStore((s) => s.profile.loadDetails)
 
   const isMobile = width ? width < breakpoints.md : false
+
+  useEffect(() => {
+    if (!publicKey) return
+    const fetchSolDomain = async (pk: PublicKey) => {
+      const solDomain = await getSolDomain(pk)
+      if (solDomain) {
+        setSolDomain(solDomain)
+      }
+    }
+    fetchSolDomain(publicKey)
+  }, [publicKey])
 
   const onConnectFetchAccountData = async (wallet: Wallet) => {
     if (!wallet.adapter.publicKey) return
@@ -95,7 +127,11 @@ const ConnectedMenu = () => {
                     {wallet?.adapter.name}
                   </p>
                   <p className="truncate pr-2 text-sm font-bold text-th-fgd-1">
-                    {publicKey ? abbreviateAddress(publicKey) : ''}
+                    {solDomain
+                      ? `${solDomain}.sol`
+                      : publicKey
+                      ? abbreviateAddress(publicKey)
+                      : ''}
                   </p>
                   {/* <p className="truncate pr-2 text-sm font-bold capitalize text-th-fgd-1">
                       {profileDetails?.profile_name

@@ -11,7 +11,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 import WalletIcon from './icons/WalletIcon'
 import Button from './shared/Button'
-import ConnectedMenu from './wallet/ConnectedMenu'
+import ConnectedMenu, { getSolDomain } from './wallet/ConnectedMenu'
 import { ConnectWalletButton } from './wallet/ConnectWalletButton'
 import { IS_ONBOARDED_KEY } from '../utils/constants'
 import useLocalStorageState from '../hooks/useLocalStorageState'
@@ -30,6 +30,7 @@ import useUnownedAccount from 'hooks/useUnownedAccount'
 import NotificationsButton from './notifications/NotificationsButton'
 import Tooltip from './shared/Tooltip'
 import { copyToClipboard } from 'utils'
+import { PublicKey } from '@solana/web3.js'
 
 const TopBar = () => {
   const { t } = useTranslation('common')
@@ -42,6 +43,7 @@ const TopBar = () => {
   const [showDepositWithdrawModal, setShowDepositWithdrawModal] =
     useState(false)
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
+  const [solDomain, setSolDomain] = useState('')
   const isOnline = useOnlineStatus()
   const router = useRouter()
   const { query } = router
@@ -75,6 +77,17 @@ const TopBar = () => {
   useEffect(() => {
     setTimeout(() => setCopied(''), 2000)
   }, [copied])
+
+  useEffect(() => {
+    if (connected || !mangoAccount || !isUnownedAccount) return
+    const fetchSolDomain = async (pk: PublicKey) => {
+      const solDomain = await getSolDomain(pk)
+      if (solDomain) {
+        setSolDomain(solDomain)
+      }
+    }
+    fetchSolDomain(mangoAccount.owner)
+  }, [connected, isUnownedAccount])
 
   return (
     <div
@@ -139,7 +152,9 @@ const TopBar = () => {
                         }
                       >
                         <p className="mr-1.5 font-mono text-th-fgd-1">
-                          {abbreviateAddress(mangoAccount.owner)}
+                          {solDomain
+                            ? `${solDomain}.sol`
+                            : abbreviateAddress(mangoAccount.owner)}
                         </p>
                         {copied === mangoAccount.owner.toString() ? (
                           <CheckCircleIcon className="h-4 w-4 flex-shrink-0 text-th-success" />

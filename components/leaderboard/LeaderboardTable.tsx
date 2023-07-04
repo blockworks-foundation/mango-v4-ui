@@ -6,6 +6,9 @@ import { useViewport } from 'hooks/useViewport'
 import { formatCurrencyValue } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 import { LeaderboardRes } from './LeaderboardPage'
+import { useEffect, useState } from 'react'
+import { PublicKey } from '@solana/web3.js'
+import { getSolDomain } from '@components/wallet/ConnectedMenu'
 
 const LeaderboardTable = ({
   data,
@@ -56,6 +59,18 @@ const LeaderboardRow = ({
     item
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.md : false
+  const [solDomain, setSolDomain] = useState('')
+
+  useEffect(() => {
+    if (!wallet_pk) return
+    const fetchSolDomain = async (pk: PublicKey) => {
+      const solDomain = await getSolDomain(pk)
+      if (solDomain) {
+        setSolDomain(solDomain)
+      }
+    }
+    fetchSolDomain(new PublicKey(wallet_pk))
+  }, [])
 
   return !loading ? (
     <a
@@ -85,9 +100,14 @@ const LeaderboardRow = ({
           placeholderSize={isMobile ? '20' : '24'}
         />
         <div className="text-left">
-          <p className="capitalize text-th-fgd-2 md:text-base">
-            {profile_name ||
-              wallet_pk.slice(0, 4) + '...' + wallet_pk.slice(-4)}
+          <p className="text-th-fgd-2 md:text-base">
+            {profile_name ? (
+              <span className="capitalize">{profile_name}</span>
+            ) : solDomain ? (
+              `${solDomain}.sol`
+            ) : (
+              wallet_pk.slice(0, 4) + '...' + wallet_pk.slice(-4)
+            )}
           </p>
           <p className="text-xs text-th-fgd-4">
             Acc: {mango_account.slice(0, 4) + '...' + mango_account.slice(-4)}
