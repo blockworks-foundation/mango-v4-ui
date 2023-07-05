@@ -68,7 +68,9 @@ const AssetsBorrowsTable = () => {
               }
               const borrows = bank.uiBorrows()
 
-              const available = group ? getAvailableToBorrow(b, group) : 0
+              const available = group
+                ? getAvailableToBorrow(b, group).toNumber()
+                : 0
 
               return (
                 <TrBody key={bank.name}>
@@ -136,7 +138,9 @@ const AssetsBorrowsTable = () => {
               )?.logoURI
             }
 
-            const available = group ? getAvailableToBorrow(b, group) : 0
+            const available = group
+              ? getAvailableToBorrow(b, group).toNumber()
+              : 0
 
             return (
               <Disclosure key={bank.name}>

@@ -21,10 +21,10 @@
   dependencies:
     ws "^8.13.0"
 
-"@blockworks-foundation/mango-v4@^0.17.0":
-  version "0.17.0"
-  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.17.0.tgz#fca437cdd24a97605c15a9949e607c35e7409793"
-  integrity sha512-jiMl1JvWsMKEKX0wK4h1XIRvczvJoFQJDfA5AXE6u6Q+dtcyGL26RaSbSi11qw2nyrKCeGj9t+VqFY9MO+rdYg==
+"@blockworks-foundation/mango-v4@0.17.1":
+  version "0.17.1"
+  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.17.1.tgz#889a57a20e70c4daa22314eddb7e8f25185e3544"
+  integrity sha512-oHievogTUndHxjmM6zd7pXgoSw8IM4hk6XvuPEhu/IhF17jD0wYj23eZmM4VEselZ46hLdIwJITP4tui2+/xlg==
   dependencies:
     "@coral-xyz/anchor" "^0.27.0"
     "@project-serum/serum" "0.13.65"
