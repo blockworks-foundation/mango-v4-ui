@@ -153,7 +153,7 @@ const TradeSummary = ({
     <div className="space-y-2 px-3 md:px-4">
       <div className="flex justify-between text-xs">
         <p>{t('trade:order-value')}</p>
-        <p className="text-th-fgd-2">
+        <p className="font-mono text-th-fgd-2">
           {orderValue ? <FormatNumericValue value={orderValue} isUsd /> : '–'}
         </p>
       </div>

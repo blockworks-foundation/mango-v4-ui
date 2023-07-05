@@ -279,7 +279,7 @@ const mangoStore = create<MangoStore>()(
     if (typeof window !== 'undefined' && CLUSTER === 'mainnet-beta') {
       const urlFromLocalStorage = localStorage.getItem(RPC_PROVIDER_KEY)
       rpcUrl = urlFromLocalStorage
-        ? JSON.parse(urlFromLocalStorage).value
+        ? JSON.parse(urlFromLocalStorage)
         : ENDPOINT.url
     }
 

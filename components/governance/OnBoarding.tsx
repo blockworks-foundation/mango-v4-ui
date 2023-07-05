@@ -49,7 +49,9 @@ const OnBoarding = ({ minVotes }: { minVotes?: BN }) => {
             </a>
           </>
         }
-        desc={t('on-boarding-deposit-info')}
+        desc={`${t('on-boarding-deposit-info')} ${t(
+          'on-boarding-description-1'
+        )}`}
       />
     </div>
   ) : null
