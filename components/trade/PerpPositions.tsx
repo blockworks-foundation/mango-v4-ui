@@ -15,11 +15,7 @@ import useUnownedAccount from 'hooks/useUnownedAccount'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useState } from 'react'
-import {
-  floorToDecimal,
-  formatCurrencyValue,
-  getDecimalCount,
-} from 'utils/numbers'
+import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 import { calculateLimitPriceForMarketOrder } from 'utils/tradeForm'
 import MarketCloseModal from './MarketCloseModal'
@@ -28,6 +24,7 @@ import TableMarketName from './TableMarketName'
 import Tooltip from '@components/shared/Tooltip'
 import { Disclosure, Transition } from '@headlessui/react'
 import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
+import PnlTooltipContent from '@components/shared/PnlTooltipContent'
 import PerpSideBadge from './PerpSideBadge'
 
 const PerpPositions = () => {
@@ -390,53 +387,51 @@ const PerpPositions = () => {
                               <p className="text-xs text-th-fgd-3">
                                 {t('trade:size')}
                               </p>
-                              <p>
-                                {isSelectedMarket ? (
-                                  <div className=" space-y-0.5">
-                                    <LinkButton
-                                      className="font-normal underline underline-offset-2 md:underline-offset-4 md:hover:no-underline"
-                                      onClick={() =>
-                                        handlePositionClick(
-                                          floorBasePosition,
-                                          market
-                                        )
-                                      }
-                                    >
-                                      <FormatNumericValue
-                                        value={Math.abs(basePosition)}
-                                        decimals={getDecimalCount(
-                                          market.minOrderSize
-                                        )}
-                                      />
-                                    </LinkButton>
-                                    <FormatNumericValue
-                                      classNames="text-xs text-th-fgd-3"
-                                      value={
-                                        Math.abs(floorBasePosition) *
-                                        market._uiPrice
-                                      }
-                                      isUsd
-                                    />
-                                  </div>
-                                ) : (
-                                  <div className="flex flex-col font-mono text-th-fgd-2">
+                              {isSelectedMarket ? (
+                                <div className="space-y-0.5">
+                                  <LinkButton
+                                    className="font-normal underline underline-offset-2 md:underline-offset-4 md:hover:no-underline"
+                                    onClick={() =>
+                                      handlePositionClick(
+                                        floorBasePosition,
+                                        market
+                                      )
+                                    }
+                                  >
                                     <FormatNumericValue
                                       value={Math.abs(basePosition)}
                                       decimals={getDecimalCount(
                                         market.minOrderSize
                                       )}
                                     />
-                                    <FormatNumericValue
-                                      classNames="text-xs text-th-fgd-3"
-                                      value={
-                                        Math.abs(floorBasePosition) *
-                                        market._uiPrice
-                                      }
-                                      isUsd
-                                    />
-                                  </div>
-                                )}
-                              </p>
+                                  </LinkButton>
+                                  <FormatNumericValue
+                                    classNames="text-xs text-th-fgd-3"
+                                    value={
+                                      Math.abs(floorBasePosition) *
+                                      market._uiPrice
+                                    }
+                                    isUsd
+                                  />
+                                </div>
+                              ) : (
+                                <div className="flex flex-col font-mono text-th-fgd-2">
+                                  <FormatNumericValue
+                                    value={Math.abs(basePosition)}
+                                    decimals={getDecimalCount(
+                                      market.minOrderSize
+                                    )}
+                                  />
+                                  <FormatNumericValue
+                                    classNames="text-xs text-th-fgd-3"
+                                    value={
+                                      Math.abs(floorBasePosition) *
+                                      market._uiPrice
+                                    }
+                                    isUsd
+                                  />
+                                </div>
+                              )}
                             </div>
                             <div className="col-span-1">
                               <p className="text-xs text-th-fgd-3">
@@ -593,56 +588,3 @@ const PerpPositions = () => {
 }
 
 export default PerpPositions
-
-const PnlTooltipContent = ({
-  unrealizedPnl,
-  realizedPnl,
-  totalPnl,
-  unsettledPnl,
-}: {
-  unrealizedPnl: number
-  realizedPnl: number
-  totalPnl: number
-  unsettledPnl: number
-}) => {
-  const { t } = useTranslation(['common', 'trade'])
-  return (
-    <>
-      <div className="flex justify-between border-b border-th-bkg-3 pb-2">
-        <p className="mr-3">
-          {t('trade:unsettled')} {t('pnl')}
-        </p>
-        <span className="font-mono text-th-fgd-2">
-          {formatCurrencyValue(unsettledPnl, 2)}
-        </span>
-      </div>
-      <div className="mb-3 space-y-1 pt-2">
-        <div className="flex justify-between">
-          <p className="mr-3">{t('trade:unrealized-pnl')}</p>
-          <span className="font-mono text-th-fgd-2">
-            {formatCurrencyValue(unrealizedPnl, 2)}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <p className="mr-3">{t('trade:realized-pnl')}</p>
-          <span className="font-mono text-th-fgd-2">
-            {formatCurrencyValue(realizedPnl, 2)}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <p className="mr-3">{t('trade:total-pnl')}</p>
-          <span className="font-mono text-th-fgd-2">
-            {formatCurrencyValue(totalPnl, 2)}
-          </span>
-        </div>
-      </div>
-      <a
-        href="https://docs.mango.markets/mango-markets/settle-pnl"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        {t('learn-more')}
-      </a>
-    </>
-  )
-}

@@ -1,11 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
+  MangoAccount,
   ParsedFillEvent,
   PerpMarket,
+  PerpPosition,
   Serum3Market,
 } from '@blockworks-foundation/mango-v4'
 import { Modify } from '@blockworks-foundation/mango-v4'
 import { Event } from '@project-serum/serum/lib/queue'
+import { PublicKey } from '@solana/web3.js'
 import { formatTradeHistory } from 'hooks/useTradeHistory'
 
 export type EmptyObject = { [K in keyof never]?: never }
@@ -300,6 +303,12 @@ export interface PerpStatsItem {
   price: number
   stable_price: number
   total_fees: number
+}
+
+export type PositionStat = {
+  account?: MangoAccount
+  mangoAccount: PublicKey
+  perpPosition: PerpPosition
 }
 
 export type GroupedDataItem = PerpStatsItem & Record<string, any>

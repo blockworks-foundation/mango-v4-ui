@@ -18,6 +18,8 @@ import {
   PerpPosition,
   BookSide,
   ParsedFillEvent,
+  getLargestPerpPositions,
+  getClosestToLiquidationPerpPositions,
 } from '@blockworks-foundation/mango-v4'
 
 import EmptyWallet from '../utils/wallet'
@@ -58,6 +60,7 @@ import {
   TourSettings,
   ProfileDetails,
   MangoTokenStatsItem,
+  PositionStat,
 } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
@@ -169,6 +172,12 @@ export type MangoStore = {
   perpStats: {
     loading: boolean
     data: PerpStatsItem[] | null
+    positions: {
+      initialLoad: boolean
+      loading: boolean
+      largest: PositionStat[]
+      closestToLiq: PositionStat[]
+    }
   }
   profile: {
     details: ProfileDetails | null
@@ -246,6 +255,7 @@ export type MangoStore = {
     fetchNfts: (connection: Connection, walletPk: PublicKey) => void
     fetchOpenOrders: (refetchMangoAccount?: boolean) => Promise<void>
     fetchPerpStats: () => void
+    fetchPositionsStats: () => void
     fetchProfileDetails: (walletPk: string) => void
     fetchSwapHistory: (
       mangoAccountPk: string,
@@ -315,6 +325,12 @@ const mangoStore = create<MangoStore>()(
       perpStats: {
         loading: false,
         data: [],
+        positions: {
+          initialLoad: true,
+          loading: true,
+          largest: [],
+          closestToLiq: [],
+        },
       },
       profile: {
         loadDetails: false,
@@ -798,6 +814,64 @@ const mangoStore = create<MangoStore>()(
             notify({
               title: 'Failed to fetch token stats data',
               type: 'error',
+            })
+          }
+        },
+        fetchPositionsStats: async () => {
+          const set = get().set
+          const group = get().group
+          const client = get().client
+          if (!group) return
+          try {
+            const allMangoAccounts = await client.getAllMangoAccounts(
+              group,
+              true
+            )
+            if (allMangoAccounts && allMangoAccounts.length) {
+              const [largestPositions, closestToLiq]: [
+                PositionStat[],
+                PositionStat[]
+              ] = await Promise.all([
+                getLargestPerpPositions(client, group, allMangoAccounts),
+                getClosestToLiquidationPerpPositions(
+                  client,
+                  group,
+                  allMangoAccounts
+                ),
+              ])
+              set((state) => {
+                if (largestPositions && largestPositions.length) {
+                  const positionsToShow = largestPositions.slice(0, 5)
+                  for (const position of positionsToShow) {
+                    const ma = allMangoAccounts.find(
+                      (acc) => acc.publicKey === position.mangoAccount
+                    )
+                    position.account = ma
+                  }
+                  state.perpStats.positions.largest = positionsToShow
+                }
+                if (closestToLiq && closestToLiq.length) {
+                  const positionsToShow = closestToLiq.slice(0, 5)
+                  for (const position of positionsToShow) {
+                    const ma = allMangoAccounts.find(
+                      (acc) => acc.publicKey === position.mangoAccount
+                    )
+                    position.account = ma
+                  }
+                  state.perpStats.positions.closestToLiq = positionsToShow
+                }
+              })
+            }
+          } catch (e) {
+            console.log('failed to fetch perp positions stats', e)
+          } finally {
+            const notLoaded =
+              mangoStore.getState().perpStats.positions.initialLoad
+            set((state) => {
+              state.perpStats.positions.loading = false
+              if (notLoaded) {
+                state.perpStats.positions.initialLoad = false
+              }
             })
           }
         },

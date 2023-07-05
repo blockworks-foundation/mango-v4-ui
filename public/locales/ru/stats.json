@@ -1,7 +1,9 @@
 {
     "base-liquidation-fee": "Base Liquidation Fee",
+    "closest-to-liquidation": "Positions Closest to Liquidation",
     "daily": "Daily",
     "hourly": "Hourly",
+    "largest-perp-positions": "Largest Positions",
     "perp-details": "{{market}} Stats",
     "pnl-liquidation-fee": "Positive PnL Liquidation Fee",
     "settle-pnl-factor": "Settle PnL Factor",
