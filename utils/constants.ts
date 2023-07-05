@@ -102,3 +102,23 @@ export const NOTIFICATION_API_WEBSOCKET =
 
 export const SWITCHBOARD_PROGRAM_ID =
   'SW1TCH7qEPTdLsDHRgPuMQjbQxKdH2aBStViMFnt64f'
+
+export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
+  bonk: true,
+  btc: true,
+  dai: true,
+  dual: true,
+  eth: true,
+  'eth (portal)': true,
+  jitosol: true,
+  ldo: true,
+  mngo: true,
+  msol: true,
+  ray: true,
+  rndr: true,
+  sol: true,
+  stsol: true,
+  usdc: true,
+  usdt: true,
+  'wbtc (portal)': true,
+}

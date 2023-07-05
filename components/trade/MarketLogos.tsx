@@ -5,6 +5,7 @@ import Image from 'next/legacy/image'
 import { useMemo } from 'react'
 import useMangoGroup from 'hooks/useMangoGroup'
 import LogoWithFallback from '@components/shared/LogoWithFallback'
+import { CUSTOM_TOKEN_ICONS } from 'utils/constants'
 
 const MarketLogos = ({
   market,
@@ -19,29 +20,40 @@ const MarketLogos = ({
   const logos = useMemo(() => {
     if (!group || !mangoTokens.length || !market)
       return { baseLogoURI: '', quoteLogoURI: '' }
-
-    let jupiterBaseToken, jupiterQuoteToken
+    let baseLogoURI, quoteLogoURI
     if (market instanceof Serum3Market) {
       const baseBank = group.getFirstBankByTokenIndex(market.baseTokenIndex)
       const quoteBank = group.getFirstBankByTokenIndex(market.quoteTokenIndex)
+      const baseSymbol = baseBank.name.toLowerCase()
+      const quoteSymbol = quoteBank.name.toLowerCase()
 
-      jupiterBaseToken = mangoTokens.find(
+      const hasCustomBaseIcon = CUSTOM_TOKEN_ICONS[baseSymbol]
+      const hasCustomQuoteIcon = CUSTOM_TOKEN_ICONS[quoteSymbol]
+
+      const jupiterBaseToken = mangoTokens.find(
         (t) => t.address === baseBank.mint.toString()
       )
-      jupiterQuoteToken = mangoTokens.find(
+      const jupiterQuoteToken = mangoTokens.find(
         (t) => t.address === quoteBank.mint.toString()
       )
+
+      baseLogoURI = hasCustomBaseIcon
+        ? `/icons/${baseSymbol}.svg`
+        : jupiterBaseToken?.logoURI
+      quoteLogoURI = hasCustomQuoteIcon
+        ? `/icons/${quoteSymbol}.svg`
+        : jupiterQuoteToken?.logoURI
     } else {
-      jupiterBaseToken =
-        mangoTokens.find(
-          (t) => t.symbol.toUpperCase() === market.name.split('-')[0]
-        ) ||
-        mangoTokens.find((t) =>
-          t.symbol.toUpperCase()?.includes(market.name.split('-')[0])
-        )
+      const marketName = market.name.split('-')[0].toLowerCase()
+      const hasCustomIcon = CUSTOM_TOKEN_ICONS[marketName]
+      const jupiterBaseToken =
+        mangoTokens.find((t) => t.symbol.toLowerCase() === marketName) ||
+        mangoTokens.find((t) => t.symbol.toLowerCase()?.includes(marketName))
+
+      baseLogoURI = hasCustomIcon
+        ? `/icons/${marketName}.svg`
+        : jupiterBaseToken?.logoURI
     }
-    const baseLogoURI = jupiterBaseToken ? jupiterBaseToken.logoURI : ''
-    const quoteLogoURI = jupiterQuoteToken ? jupiterQuoteToken.logoURI : ''
     return {
       baseLogoURI,
       quoteLogoURI,
@@ -57,7 +69,7 @@ const MarketLogos = ({
         size === 'small'
           ? 'mr-1.5 h-4'
           : size === 'large'
-          ? 'mr-2 h-6'
+          ? 'mr-2.5 h-6'
           : 'mr-2 h-5'
       } ${
         market instanceof Serum3Market
@@ -76,7 +88,7 @@ const MarketLogos = ({
       <div className="absolute left-0 top-0 z-10">
         <LogoWithFallback
           alt=""
-          className="flex-shrink-0 drop-shadow-md"
+          className="flex-shrink-0"
           width={pxSize}
           height={pxSize}
           src={logos.baseLogoURI || `/icons/${logos?.name?.toLowerCase()}.svg`}

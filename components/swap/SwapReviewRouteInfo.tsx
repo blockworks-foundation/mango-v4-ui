@@ -28,7 +28,6 @@ import {
   ChevronDownIcon,
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
-import Image from 'next/legacy/image'
 import { formatNumericValue } from '../../utils/numbers'
 import { notify } from '../../utils/notifications'
 import useJupiterMints from '../../hooks/useJupiterMints'
@@ -46,6 +45,7 @@ import { createAssociatedTokenAccountIdempotentInstruction } from '@blockworks-f
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { isMangoError } from 'types'
 import { useWallet } from '@solana/wallet-adapter-react'
+import TokenLogo from '@components/shared/TokenLogo'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
@@ -198,15 +198,12 @@ const SwapReviewRouteInfo = ({
   const { jupiterTokens } = useJupiterMints()
   const { inputTokenInfo, outputTokenInfo } = useJupiterSwapData()
   const inputBank = mangoStore((s) => s.swap.inputBank)
+  const outputBank = mangoStore((s) => s.swap.outputBank)
   const [soundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,
     INITIAL_SOUND_SETTINGS
   )
   const focusRef = useRef<HTMLButtonElement>(null)
-
-  const inputTokenIconUri = useMemo(() => {
-    return inputTokenInfo ? inputTokenInfo.logoURI : ''
-  }, [inputTokenInfo])
 
   const amountOut = useMemo(() => {
     if (!selectedRoute || !outputTokenInfo) return
@@ -385,15 +382,9 @@ const SwapReviewRouteInfo = ({
         <div className="flex justify-center bg-gradient-to-t from-th-bkg-1 to-th-bkg-2 p-6 pb-0">
           <div className="mb-3 flex w-full flex-col items-center border-b border-th-bkg-3 pb-4">
             <div className="relative mb-2 w-[72px]">
-              <Image alt="" width="40" height="40" src={inputTokenIconUri} />
+              <TokenLogo bank={inputBank} size={40} />
               <div className="absolute right-0 top-0">
-                <Image
-                  className="drop-shadow-md"
-                  alt=""
-                  width="40"
-                  height="40"
-                  src={outputTokenInfo?.logoURI}
-                />
+                <TokenLogo bank={outputBank} size={40} />
               </div>
             </div>
             <p className="mb-0.5 flex items-center text-center text-lg">

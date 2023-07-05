@@ -12,11 +12,7 @@ import {
 } from '@public/charting_library'
 import mangoStore from '@store/mangoStore'
 import { useViewport } from 'hooks/useViewport'
-import {
-  DEFAULT_MARKET_NAME,
-  SHOW_ORDER_LINES_KEY,
-  TV_USER_ID_KEY,
-} from 'utils/constants'
+import { SHOW_ORDER_LINES_KEY, TV_USER_ID_KEY } from 'utils/constants'
 import { breakpoints } from 'utils/theme'
 import { COLORS } from 'styles/colors'
 import { useTranslation } from 'next-i18next'
@@ -94,7 +90,7 @@ const TradingViewChart = () => {
 
   const defaultProps = useMemo(
     () => ({
-      symbol: DEFAULT_MARKET_NAME,
+      symbol: selectedMarketName,
       interval: '60' as ResolutionString,
       theme: 'Dark',
       container: 'tv_chart_container',
@@ -110,7 +106,7 @@ const TradingViewChart = () => {
         'volume.precision': 4,
       },
     }),
-    [theme]
+    [theme, selectedMarketName]
   )
 
   const tvWidgetRef = useRef<IChartingLibraryWidget>()

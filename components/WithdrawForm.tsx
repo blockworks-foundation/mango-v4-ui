@@ -27,7 +27,6 @@ import { getMaxWithdrawForBank } from './swap/useTokenMax'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
 import useMangoAccount from 'hooks/useMangoAccount'
-import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import { useWallet } from '@solana/wallet-adapter-react'
@@ -38,6 +37,7 @@ import useBanksWithBalances from 'hooks/useBanksWithBalances'
 import { isMangoError } from 'types'
 import TokenListButton from './shared/TokenListButton'
 import { ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES, BackButton } from './BorrowForm'
+import TokenLogo from './shared/TokenLogo'
 
 interface WithdrawFormProps {
   onSuccess: () => void
@@ -54,7 +54,6 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
   )
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
-  const { mangoTokens } = useJupiterMints()
   const { mangoAccount } = useMangoAccount()
   const { connected } = useWallet()
   const { handleConnect } = useEnhancedWallet()
@@ -64,16 +63,6 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
     const group = mangoStore.getState().group
     return group?.banksMapByName.get(selectedToken)?.[0]
   }, [selectedToken])
-
-  const logoUri = useMemo(() => {
-    let logoURI
-    if (mangoTokens?.length) {
-      logoURI = mangoTokens.find(
-        (t) => t.address === bank?.mint.toString()
-      )?.logoURI
-    }
-    return logoURI
-  }, [bank?.mint, mangoTokens])
 
   const [adjustedTokenMax, tokenMax] = useMemo(() => {
     if (!bank || !mangoAccount || !group)
@@ -222,7 +211,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
               <div className="col-span-1">
                 <TokenListButton
                   token={selectedToken}
-                  logoUri={logoUri}
+                  logo={<TokenLogo bank={bank} />}
                   setShowList={setShowTokenList}
                 />
               </div>

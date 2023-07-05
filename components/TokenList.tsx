@@ -3,7 +3,6 @@ import { Disclosure, Transition } from '@headlessui/react'
 import {
   ChevronDownIcon,
   EllipsisHorizontalIcon,
-  QuestionMarkCircleIcon,
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
@@ -33,6 +32,7 @@ import useBanksWithBalances, {
 } from 'hooks/useBanksWithBalances'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import useLocalStorageState from 'hooks/useLocalStorageState'
+import TokenLogo from './shared/TokenLogo'
 
 const TokenList = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
@@ -42,7 +42,6 @@ const TokenList = () => {
   )
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
-  const { mangoTokens } = useJupiterMints()
   const totalInterestData = mangoStore(
     (s) => s.mangoAccount.interestTotals.data
   )
@@ -109,13 +108,6 @@ const TokenList = () => {
             {filteredBanks.map((b) => {
               const bank = b.bank
 
-              let logoURI
-              if (mangoTokens?.length) {
-                logoURI = mangoTokens.find(
-                  (t) => t.address === bank.mint.toString()
-                )?.logoURI
-              }
-
               const tokenBalance = b.balance
 
               const hasInterestEarned = totalInterestData.find(
@@ -142,11 +134,7 @@ const TokenList = () => {
                   <Td>
                     <div className="flex items-center">
                       <div className="mr-2.5 flex flex-shrink-0 items-center">
-                        {logoURI ? (
-                          <Image alt="" width="24" height="24" src={logoURI} />
-                        ) : (
-                          <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
-                        )}
+                        <TokenLogo bank={bank} />
                       </div>
                       <p className="font-body">{bank.name}</p>
                     </div>
@@ -226,7 +214,6 @@ export default TokenList
 
 const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
   const { t } = useTranslation(['common', 'token'])
-  const { mangoTokens } = useJupiterMints()
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const { mangoAccount } = useMangoAccount()
   const totalInterestData = mangoStore(
@@ -235,13 +222,6 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
   const tokenBank = bank.bank
   const mint = tokenBank.mint
   const symbol = tokenBank.name
-
-  let logoURI: string | undefined
-  if (mangoTokens?.length) {
-    logoURI = mangoTokens.find(
-      (t) => t.address === tokenBank.mint.toString()
-    )!.logoURI
-  }
 
   const hasInterestEarned = totalInterestData.find((d) => d.symbol === symbol)
 
@@ -271,11 +251,7 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
             <div className="flex items-center justify-between">
               <div className="flex items-start">
                 <div className="mr-2.5 mt-0.5 flex flex-shrink-0 items-center">
-                  {logoURI ? (
-                    <Image alt="" width="24" height="24" src={logoURI} />
-                  ) : (
-                    <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
-                  )}
+                  <TokenLogo bank={tokenBank} />
                 </div>
                 <div>
                   <p className="mb-0.5 leading-none text-th-fgd-1">{symbol}</p>
