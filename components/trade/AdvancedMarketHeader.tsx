@@ -217,7 +217,7 @@ const AdvancedMarketHeader = ({
                     <span className="font-mono">
                       {numberCompacter.format(spotMarketVolume.target_volume)}{' '}
                       <span className="font-body text-th-fgd-3">
-                        {selectedMarketName.split('/')[1]}
+                        {selectedMarketName?.split('/')[1]}
                       </span>
                     </span>
                   ) : (

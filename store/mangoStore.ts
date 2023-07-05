@@ -175,7 +175,7 @@ export type MangoStore = {
     loadDetails: boolean
   }
   selectedMarket: {
-    name: string
+    name: string | undefined
     current: Serum3Market | PerpMarket | undefined
     fills: (ParsedFillEvent | SerumEvent)[]
     bidsAccount: BookSide | Orderbook | undefined
@@ -321,7 +321,7 @@ const mangoStore = create<MangoStore>()(
         details: { profile_name: '', trader_category: '', wallet_pk: '' },
       },
       selectedMarket: {
-        name: DEFAULT_MARKET_NAME,
+        name: '',
         current: undefined,
         fills: [],
         bidsAccount: undefined,
@@ -521,7 +521,11 @@ const mangoStore = create<MangoStore>()(
             const set = get().set
             const client = get().client
             const group = await client.getGroup(GROUP)
-            const selectedMarketName = get().selectedMarket.name
+            let selectedMarketName = get().selectedMarket.name
+
+            if (!selectedMarketName) {
+              selectedMarketName = DEFAULT_MARKET_NAME
+            }
 
             const inputBank =
               group?.banksMapByName.get(INPUT_TOKEN_DEFAULT)?.[0]
