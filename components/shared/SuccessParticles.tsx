@@ -5,7 +5,7 @@ import useJupiterMints from 'hooks/useJupiterMints'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { useEffect, useMemo } from 'react'
 import Particles from 'react-tsparticles'
-import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
+import { ANIMATION_SETTINGS_KEY, CUSTOM_TOKEN_ICONS } from 'utils/constants'
 
 const SuccessParticles = () => {
   const { mangoTokens } = useJupiterMints()
@@ -21,24 +21,44 @@ const SuccessParticles = () => {
   const tokenLogo = useMemo(() => {
     if (!mangoTokens.length) return ''
     if (showForSwap) {
-      const tokenMint = mangoStore.getState().swap.outputBank?.mint.toString()
-      return mangoTokens.find((t) => t.address === tokenMint)?.logoURI
+      const tokenBank = mangoStore.getState().swap.outputBank
+      const tokenMint = tokenBank?.mint.toString()
+      const tokenSymbol = tokenBank?.name.toLowerCase()
+      const hasCustomIcon = tokenSymbol
+        ? CUSTOM_TOKEN_ICONS[tokenSymbol]
+        : false
+      if (hasCustomIcon) {
+        return `/icons/${tokenSymbol}.svg`
+      } else {
+        return mangoTokens.find((t) => t.address === tokenMint)?.logoURI
+      }
     }
     if (showForTrade && tradeType === 'Market') {
       const market = mangoStore.getState().selectedMarket.current
       const side = mangoStore.getState().tradeForm.side
       if (market instanceof Serum3Market) {
         const symbol =
-          side === 'buy' ? market.name.split('/')[0] : market.name.split('/')[1]
-        return mangoTokens.find((t) => t.symbol.toUpperCase() === symbol)
-          ?.logoURI
+          side === 'buy'
+            ? market.name.split('/')[0].toLowerCase()
+            : market.name.split('/')[1].toLowerCase()
+        const hasCustomIcon = CUSTOM_TOKEN_ICONS[symbol]
+        if (hasCustomIcon) {
+          return `/icons/${symbol}.svg`
+        } else {
+          return mangoTokens.find((t) => t.symbol.toLowerCase() === symbol)
+            ?.logoURI
+        }
       }
       if (market instanceof PerpMarket) {
-        const symbol = side === 'buy' ? market.name.split('-')[0] : 'USDC'
-        return (
-          mangoTokens.find((t) => t.symbol.toUpperCase() === symbol)?.logoURI ||
-          `/icons/${symbol.toLowerCase()}.svg`
-        )
+        const symbol =
+          side === 'buy' ? market.name.split('-')[0].toLowerCase() : 'usdc'
+        const hasCustomIcon = CUSTOM_TOKEN_ICONS[symbol]
+        if (hasCustomIcon) {
+          return `/icons/${symbol}.svg`
+        } else {
+          return mangoTokens.find((t) => t.symbol.toUpperCase() === symbol)
+            ?.logoURI
+        }
       }
     }
   }, [mangoTokens, showForSwap, showForTrade])

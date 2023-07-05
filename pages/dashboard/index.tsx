@@ -6,12 +6,7 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import type { NextPage } from 'next'
 import { ReactNode, useCallback, useEffect, useState } from 'react'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
-import useJupiterMints from 'hooks/useJupiterMints'
-import Image from 'next/image'
-import {
-  ChevronDownIcon,
-  QuestionMarkCircleIcon,
-} from '@heroicons/react/20/solid'
+import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import { Disclosure } from '@headlessui/react'
 import MarketLogos from '@components/trade/MarketLogos'
 import Button from '@components/shared/Button'
@@ -35,6 +30,7 @@ import GovernanceStore from '@store/governanceStore'
 import { createProposal } from 'utils/governance/instructions/createProposal'
 import { notify } from 'utils/notifications'
 import GovernancePageWrapper from '@components/governance/GovernancePageWrapper'
+import TokenLogo from '@components/shared/TokenLogo'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -55,7 +51,6 @@ export async function getStaticProps({ locale }: { locale: string }) {
 
 const Dashboard: NextPage = () => {
   const { group } = useMangoGroup()
-  const { mangoTokens } = useJupiterMints()
   const client = mangoStore((s) => s.client)
   const wallet = useWallet()
   const connection = mangoStore((s) => s.connection)
@@ -298,10 +293,6 @@ const Dashboard: NextPage = () => {
                         const mintInfo = group.mintInfosMapByMint.get(
                           bank.mint.toString()
                         )
-                        const logoUri = mangoTokens.length
-                          ? mangoTokens.find((t) => t.address === mintAddress)
-                              ?.logoURI
-                          : ''
 
                         const formattedBankValues = getFormattedBankValues(
                           group,
@@ -355,16 +346,7 @@ const Dashboard: NextPage = () => {
                                   }`}
                                 >
                                   <div className="flex items-center">
-                                    {logoUri ? (
-                                      <Image
-                                        alt=""
-                                        width="20"
-                                        height="20"
-                                        src={logoUri}
-                                      />
-                                    ) : (
-                                      <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
-                                    )}
+                                    <TokenLogo bank={bank} />
                                     <p className="ml-2 text-th-fgd-2">
                                       {formattedBankValues.name} Bank
                                     </p>
