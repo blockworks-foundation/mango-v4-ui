@@ -1,8 +1,10 @@
 {
     "assets": "Assets",
     "assets-liabilities": "Assets & Liabilities",
+    "daily-volume": "24h Volume",
     "export": "Export {{dataType}}",
     "liabilities": "Liabilities",
+    "lifetime-volume": "Lifetime Trade Volume",
     "no-pnl-history": "No PnL History",
     "pnl-chart": "PnL Chart",
     "pnl-history": "PnL History",
