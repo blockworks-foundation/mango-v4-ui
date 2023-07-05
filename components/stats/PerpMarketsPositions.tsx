@@ -1,16 +1,8 @@
 import mangoStore from '@store/mangoStore'
-import { PerpPosition, MangoAccount } from '@blockworks-foundation/mango-v4'
-import { PublicKey } from '@solana/web3.js'
 import { useTranslation } from 'next-i18next'
 import { NoSymbolIcon } from '@heroicons/react/20/solid'
 import SheenLoader from '@components/shared/SheenLoader'
 import PerpPositionsStatsTable from './PerpPositionsStatsTable'
-
-export type PositionStat = {
-  account?: MangoAccount
-  mangoAccount: PublicKey
-  perpPosition: PerpPosition
-}
 
 const PerpMarketsPositions = () => {
   const { t } = useTranslation('stats')
@@ -46,7 +38,7 @@ const LargestPerpPositions = () => {
 
 const ClosestToLiquidation = () => {
   const { t } = useTranslation(['common', 'stats', 'trade'])
-  const positions = mangoStore((s) => s.perpStats.positions.largest)
+  const positions = mangoStore((s) => s.perpStats.positions.closestToLiq)
   const loading = mangoStore((s) => s.perpStats.positions.loading)
 
   return positions.length ? (

@@ -60,6 +60,7 @@ import {
   TourSettings,
   ProfileDetails,
   MangoTokenStatsItem,
+  PositionStat,
 } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
@@ -69,7 +70,6 @@ import {
   IExecutionLineAdapter,
   IOrderLineAdapter,
 } from '@public/charting_library/charting_library'
-import { PositionStat } from '@components/stats/PerpMarketsPositions'
 
 const GROUP = new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX')
 
@@ -819,21 +819,45 @@ const mangoStore = create<MangoStore>()(
           const client = get().client
           if (!group) return
           try {
-            const [largestPositions, closestToLiq] = await Promise.all([
-              getLargestPerpPositions(client, group),
-              getClosestToLiquidationPerpPositions(client, group),
-            ])
-            set((state) => {
-              if (largestPositions && largestPositions.length) {
-                state.perpStats.positions.largest = largestPositions.slice(0, 5)
-              }
-              if (closestToLiq && closestToLiq.length) {
-                state.perpStats.positions.closestToLiq = closestToLiq.slice(
-                  0,
-                  5
-                )
-              }
-            })
+            const allMangoAccounts = await client.getAllMangoAccounts(
+              group,
+              true
+            )
+            if (allMangoAccounts && allMangoAccounts.length) {
+              const [largestPositions, closestToLiq]: [
+                PositionStat[],
+                PositionStat[]
+              ] = await Promise.all([
+                getLargestPerpPositions(client, group, allMangoAccounts),
+                getClosestToLiquidationPerpPositions(
+                  client,
+                  group,
+                  allMangoAccounts
+                ),
+              ])
+              set((state) => {
+                if (largestPositions && largestPositions.length) {
+                  const positionsToShow = largestPositions.slice(0, 5)
+                  for (const position of positionsToShow) {
+                    const ma = allMangoAccounts.find(
+                      (acc) => acc.publicKey === position.mangoAccount
+                    )
+                    position.account = ma
+                  }
+                  state.perpStats.positions.largest = positionsToShow
+                }
+                if (closestToLiq && closestToLiq.length) {
+                  const positionsToShow = closestToLiq.slice(0, 5)
+                  for (const position of positionsToShow) {
+                    const ma = allMangoAccounts.find(
+                      (acc) => acc.publicKey === position.mangoAccount
+                    )
+                    position.account = ma
+                  }
+                  state.perpStats.positions.closestToLiq = positionsToShow
+                }
+              })
+            }
           } catch (e) {
             console.log('failed to fetch perp positions stats', e)
           } finally {

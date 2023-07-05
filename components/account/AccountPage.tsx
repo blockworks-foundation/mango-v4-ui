@@ -501,7 +501,7 @@ const AccountPage = () => {
                     value={
                       group && mangoAccount
                         ? toUiDecimalsForQuote(
-                            mangoAccount.getAssetsValue(group, HealthType.init)
+                            mangoAccount.getAssetsValue(group)
                           )
                         : 0
                     }

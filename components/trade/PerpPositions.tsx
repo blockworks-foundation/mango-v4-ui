@@ -412,53 +412,51 @@ const PerpPositions = () => {
                               <p className="text-xs text-th-fgd-3">
                                 {t('trade:size')}
                               </p>
-                              <p>
-                                {isSelectedMarket ? (
-                                  <div className=" space-y-0.5">
-                                    <LinkButton
-                                      className="font-normal underline underline-offset-2 md:underline-offset-4 md:hover:no-underline"
-                                      onClick={() =>
-                                        handlePositionClick(
-                                          floorBasePosition,
-                                          market
-                                        )
-                                      }
-                                    >
-                                      <FormatNumericValue
-                                        value={Math.abs(basePosition)}
-                                        decimals={getDecimalCount(
-                                          market.minOrderSize
-                                        )}
-                                      />
-                                    </LinkButton>
-                                    <FormatNumericValue
-                                      classNames="text-xs text-th-fgd-3"
-                                      value={
-                                        Math.abs(floorBasePosition) *
-                                        market._uiPrice
-                                      }
-                                      isUsd
-                                    />
-                                  </div>
-                                ) : (
-                                  <div className="flex flex-col font-mono text-th-fgd-2">
+                              {isSelectedMarket ? (
+                                <div className="space-y-0.5">
+                                  <LinkButton
+                                    className="font-normal underline underline-offset-2 md:underline-offset-4 md:hover:no-underline"
+                                    onClick={() =>
+                                      handlePositionClick(
+                                        floorBasePosition,
+                                        market
+                                      )
+                                    }
+                                  >
                                     <FormatNumericValue
                                       value={Math.abs(basePosition)}
                                       decimals={getDecimalCount(
                                         market.minOrderSize
                                       )}
                                     />
-                                    <FormatNumericValue
-                                      classNames="text-xs text-th-fgd-3"
-                                      value={
-                                        Math.abs(floorBasePosition) *
-                                        market._uiPrice
-                                      }
-                                      isUsd
-                                    />
-                                  </div>
-                                )}
-                              </p>
+                                  </LinkButton>
+                                  <FormatNumericValue
+                                    classNames="text-xs text-th-fgd-3"
+                                    value={
+                                      Math.abs(floorBasePosition) *
+                                      market._uiPrice
+                                    }
+                                    isUsd
+                                  />
+                                </div>
+                              ) : (
+                                <div className="flex flex-col font-mono text-th-fgd-2">
+                                  <FormatNumericValue
+                                    value={Math.abs(basePosition)}
+                                    decimals={getDecimalCount(
+                                      market.minOrderSize
+                                    )}
+                                  />
+                                  <FormatNumericValue
+                                    classNames="text-xs text-th-fgd-3"
+                                    value={
+                                      Math.abs(floorBasePosition) *
+                                      market._uiPrice
+                                    }
+                                    isUsd
+                                  />
+                                </div>
+                              )}
                             </div>
                             <div className="col-span-1">
                               <p className="text-xs text-th-fgd-3">

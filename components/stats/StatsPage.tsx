@@ -35,10 +35,10 @@ const StatsPage = () => {
   }, [group, perpStats])
 
   useEffect(() => {
-    if (perpPositionsStatsNotLoaded) {
+    if (group && perpPositionsStatsNotLoaded) {
       actions.fetchPositionsStats()
     }
-  }, [perpPositionsStatsNotLoaded])
+  }, [group, perpPositionsStatsNotLoaded])
 
   const tabsWithCount: [string, number][] = useMemo(() => {
     return TABS.map((t) => [t, 0])
