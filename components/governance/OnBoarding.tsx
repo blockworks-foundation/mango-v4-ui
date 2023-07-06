@@ -1,5 +1,5 @@
 import InlineNotification from '@components/shared/InlineNotification'
-import { BN } from '@project-serum/anchor'
+import { BN } from '@coral-xyz/anchor'
 import { useWallet } from '@solana/wallet-adapter-react'
 import GovernanceStore from '@store/governanceStore'
 import { useTranslation } from 'next-i18next'
@@ -49,7 +49,9 @@ const OnBoarding = ({ minVotes }: { minVotes?: BN }) => {
             </a>
           </>
         }
-        desc={t('on-boarding-deposit-info')}
+        desc={`${t('on-boarding-deposit-info')} ${t(
+          'on-boarding-description-1'
+        )}`}
       />
     </div>
   ) : null

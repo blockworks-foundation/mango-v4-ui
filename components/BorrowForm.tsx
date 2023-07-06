@@ -32,7 +32,6 @@ import MaxAmountButton from '@components/shared/MaxAmountButton'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
 import Tooltip from '@components/shared/Tooltip'
 import useMangoAccount from 'hooks/useMangoAccount'
-import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import { useWallet } from '@solana/wallet-adapter-react'
@@ -43,6 +42,7 @@ import BankAmountWithValue from './shared/BankAmountWithValue'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
 import { isMangoError } from 'types'
 import TokenListButton from './shared/TokenListButton'
+import TokenLogo from './shared/TokenLogo'
 
 interface BorrowFormProps {
   onSuccess: () => void
@@ -62,7 +62,6 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
   )
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
-  const { mangoTokens } = useJupiterMints()
   const { mangoAccount } = useMangoAccount()
   const { connected, publicKey } = useWallet()
   const { handleConnect } = useEnhancedWallet()
@@ -72,16 +71,6 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
     const group = mangoStore.getState().group
     return group?.banksMapByName.get(selectedToken)?.[0]
   }, [selectedToken])
-
-  const logoUri = useMemo(() => {
-    let logoURI
-    if (mangoTokens?.length) {
-      logoURI = mangoTokens.find(
-        (t) => t.address === bank?.mint.toString()
-      )?.logoURI
-    }
-    return logoURI
-  }, [mangoTokens, bank])
 
   const tokenMax = useMemo(() => {
     const group = mangoStore.getState().group
@@ -234,7 +223,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
               <div className="col-span-1">
                 <TokenListButton
                   token={selectedToken}
-                  logoUri={logoUri}
+                  logo={<TokenLogo bank={bank} />}
                   setShowList={setShowTokenList}
                 />
               </div>

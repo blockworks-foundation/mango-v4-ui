@@ -1,8 +1,6 @@
 import { Bank } from '@blockworks-foundation/mango-v4'
-import Image from 'next/legacy/image'
-import { useMemo } from 'react'
-import useJupiterMints from 'hooks/useJupiterMints'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
+import TokenLogo from '@components/shared/TokenLogo'
 
 const ActionTokenItem = ({
   bank,
@@ -19,16 +17,7 @@ const ActionTokenItem = ({
   showBorrowRates?: boolean
   showDepositRates?: boolean
 }) => {
-  const { mint, name } = bank
-  const { mangoTokens } = useJupiterMints()
-
-  const logoUri = useMemo(() => {
-    let logoURI
-    if (mangoTokens?.length) {
-      logoURI = mangoTokens.find((t) => t.address === mint.toString())?.logoURI
-    }
-    return logoURI
-  }, [mint, mangoTokens])
+  const { name } = bank
 
   return (
     <button
@@ -42,12 +31,7 @@ const ActionTokenItem = ({
         } items-center`}
       >
         <div className="mr-2.5 flex flex-shrink-0 items-center">
-          <Image
-            alt=""
-            width="24"
-            height="24"
-            src={logoUri || `/icons/${name.toLowerCase()}.svg`}
-          />
+          <TokenLogo bank={bank} />
         </div>
         <p className="text-left text-th-fgd-1">{name}</p>
       </div>

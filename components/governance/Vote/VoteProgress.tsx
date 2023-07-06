@@ -1,6 +1,6 @@
 import Tooltip from '@components/shared/Tooltip'
 import { CheckCircleIcon } from '@heroicons/react/20/solid'
-import { BN } from '@project-serum/anchor'
+import { BN } from '@coral-xyz/anchor'
 import { Governance, ProgramAccount, Proposal } from '@solana/spl-governance'
 import { RawMint } from '@solana/spl-token'
 import GovernanceStore from '@store/governanceStore'

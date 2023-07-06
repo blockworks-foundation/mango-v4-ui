@@ -6,6 +6,8 @@ import { RouteInfo } from 'types/jupiter'
 import { MANGO_ROUTER_API_URL } from 'utils/constants'
 import useJupiterSwapData from './useJupiterSwapData'
 
+type SwapModes = 'ALL' | 'JUPITER' | 'MANGO'
+
 type useQuoteRoutesPropTypes = {
   inputMint: string
   outputMint: string
@@ -13,6 +15,7 @@ type useQuoteRoutesPropTypes = {
   slippage: number
   swapMode: string
   wallet: string | undefined | null
+  mode?: SwapModes
 }
 
 const fetchJupiterRoutes = async (
@@ -112,7 +115,7 @@ export const handleGetRoutes = async (
   swapMode = 'ExactIn',
   feeBps = 0,
   wallet: string | undefined | null,
-  mode: 'ALL' | 'JUPITER' | 'MANGO' = 'ALL'
+  mode: SwapModes = 'ALL'
 ) => {
   try {
     wallet ||= PublicKey.default.toBase58()
@@ -179,6 +182,7 @@ const useQuoteRoutes = ({
   slippage,
   swapMode,
   wallet,
+  mode = 'ALL',
 }: useQuoteRoutesPropTypes) => {
   const { inputTokenInfo, outputTokenInfo } = useJupiterSwapData()
 
@@ -205,7 +209,8 @@ const useQuoteRoutes = ({
         slippage,
         swapMode,
         0,
-        wallet
+        wallet,
+        mode
       ),
     {
       cacheTime: 1000 * 60,

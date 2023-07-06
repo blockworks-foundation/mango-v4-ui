@@ -43,7 +43,7 @@ export const FAVORITE_MARKETS_KEY = 'favoriteMarkets-0.2'
 
 export const THEME_KEY = 'theme-0.1'
 
-export const RPC_PROVIDER_KEY = 'rpcProviderKey-0.4'
+export const RPC_PROVIDER_KEY = 'rpcProviderKey-0.5'
 
 export const PRIORITY_FEE_KEY = 'priorityFeeKey-0.1'
 
@@ -102,3 +102,23 @@ export const NOTIFICATION_API_WEBSOCKET =
 
 export const SWITCHBOARD_PROGRAM_ID =
   'SW1TCH7qEPTdLsDHRgPuMQjbQxKdH2aBStViMFnt64f'
+
+export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
+  bonk: true,
+  btc: true,
+  dai: true,
+  dual: true,
+  eth: true,
+  'eth (portal)': true,
+  jitosol: true,
+  ldo: true,
+  mngo: true,
+  msol: true,
+  ray: true,
+  rndr: true,
+  sol: true,
+  stsol: true,
+  usdc: true,
+  usdt: true,
+  'wbtc (portal)': true,
+}

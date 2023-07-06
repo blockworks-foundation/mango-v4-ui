@@ -3,7 +3,7 @@ import VoteResultsBar from './VoteResultBar'
 import { fmtTokenAmount } from 'utils/governance/tools'
 import { RawMint } from '@solana/spl-token'
 import { useTranslation } from 'next-i18next'
-import { BN } from '@project-serum/anchor'
+import { BN } from '@coral-xyz/anchor'
 
 type VoteResultsProps = {
   proposal: Proposal

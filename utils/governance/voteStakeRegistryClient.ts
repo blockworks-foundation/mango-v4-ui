@@ -1,5 +1,5 @@
 import { Program, Provider, web3 } from '@coral-xyz/anchor'
-import { Idl } from '@project-serum/anchor'
+import { Idl } from '@coral-xyz/anchor'
 import { PublicKey } from '@solana/web3.js'
 
 export const DEFAULT_VSR_ID = new web3.PublicKey(
