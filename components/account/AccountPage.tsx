@@ -404,13 +404,10 @@ const AccountPage = () => {
       | 'hourly-funding'
       | 'hourly-volume'
   ) => {
-    if (
-      (chartName === 'cumulative-interest-value' && interestTotalValue > 1) ||
-      interestTotalValue < -1
-    ) {
+    if (chartName === 'cumulative-interest-value' || interestTotalValue < -1) {
       setChartToShow(chartName)
     }
-    if (chartName === 'pnl' && performanceData.length > 4) {
+    if (chartName === 'pnl') {
       setChartToShow(chartName)
     }
     if (chartName === 'hourly-funding') {
@@ -700,21 +697,19 @@ const AccountPage = () => {
               </Tooltip>
               {mangoAccountAddress ? (
                 <div className="flex items-center space-x-3">
-                  {performanceData.length > 4 ? (
-                    <Tooltip
-                      className="hidden md:block"
-                      content={t('account:pnl-chart')}
-                      delay={100}
+                  <Tooltip
+                    className="hidden md:block"
+                    content={t('account:pnl-chart')}
+                    delay={100}
+                  >
+                    <IconButton
+                      className="text-th-fgd-3"
+                      hideBg
+                      onClick={() => handleChartToShow('pnl')}
                     >
-                      <IconButton
-                        className="text-th-fgd-3"
-                        hideBg
-                        onClick={() => handleChartToShow('pnl')}
-                      >
-                        <ChartBarIcon className="h-5 w-5" />
-                      </IconButton>
-                    </Tooltip>
-                  ) : null}
+                      <ChartBarIcon className="h-5 w-5" />
+                    </IconButton>
+                  </Tooltip>
                   <Tooltip
                     className="hidden md:block"
                     content={t('account:pnl-history')}
@@ -750,12 +745,10 @@ const AccountPage = () => {
               <p className="text-sm text-th-fgd-3 xl:text-base">
                 {t('account:lifetime-volume')}
               </p>
-              {mangoAccountAddress &&
-              hourlyVolumeData &&
-              hourlyVolumeData.length ? (
+              {mangoAccountAddress ? (
                 <Tooltip
                   className="hidden md:block"
-                  content="Funding Chart"
+                  content={t('account:volume-chart')}
                   delay={100}
                 >
                   <IconButton
@@ -808,10 +801,10 @@ const AccountPage = () => {
                   {t('total-interest-earned')}
                 </p>
               </Tooltip>
-              {mangoAccountAddress && Math.abs(interestTotalValue) >= 2 ? (
+              {mangoAccountAddress ? (
                 <Tooltip
                   className="hidden md:block"
-                  content="Cumulative Interest Chart"
+                  content={t('account:cumulative-interest-chart')}
                   delay={100}
                 >
                   <IconButton
@@ -851,10 +844,10 @@ const AccountPage = () => {
                 {t('account:total-funding-earned')}
               </p>
             </Tooltip>
-            {mangoAccountAddress && Math.abs(fundingTotalValue) >= 2 ? (
+            {mangoAccountAddress ? (
               <Tooltip
                 className="hidden md:block"
-                content="Funding Chart"
+                content={t('account:funding-chart')}
                 delay={100}
               >
                 <IconButton

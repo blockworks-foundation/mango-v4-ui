@@ -5,7 +5,7 @@ import { HourlyFundingChartData, PerformanceDataItem } from 'types'
 import { ContentType } from 'recharts/types/component/Tooltip'
 import DetailedAreaOrBarChart from '@components/shared/DetailedAreaOrBarChart'
 import { ChartToShow } from './AccountPage'
-import { ArrowLeftIcon } from '@heroicons/react/20/solid'
+import { ArrowLeftIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 
 const CHART_TABS: ChartToShow[] = [
   'account-value',
@@ -74,20 +74,27 @@ const AccountChart = ({
         </div>
       </div>
       <div className="px-6 pt-4">
-        <DetailedAreaOrBarChart
-          customTooltip={customTooltip}
-          data={chartData}
-          daysToShow={daysToShow}
-          heightClass="h-[calc(100vh-240px)]"
-          loaderHeightClass="h-[calc(100vh-116px)]"
-          loading={loading}
-          prefix="$"
-          setDaysToShow={setDaysToShow}
-          tickFormat={(x) => `$${formatYAxis(x)}`}
-          xKey="time"
-          yDecimals={yDecimals}
-          yKey={yKey}
-        />
+        {chartData.length ? (
+          <DetailedAreaOrBarChart
+            customTooltip={customTooltip}
+            data={chartData}
+            daysToShow={daysToShow}
+            heightClass="h-[calc(100vh-240px)]"
+            loaderHeightClass="h-[calc(100vh-166px)]"
+            loading={loading}
+            prefix="$"
+            setDaysToShow={setDaysToShow}
+            tickFormat={(x) => `$${formatYAxis(x)}`}
+            xKey="time"
+            yDecimals={yDecimals}
+            yKey={yKey}
+          />
+        ) : (
+          <div className="flex flex-col items-center rounded-lg border border-th-bkg-3 p-8">
+            <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
+            <p>{t('account:no-data')}</p>
+          </div>
+        )}
       </div>
     </>
   )

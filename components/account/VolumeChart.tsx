@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import dayjs from 'dayjs'
 import { useMemo, useState } from 'react'
-import { FormattedHourlyAccountVolumeData, HourlyFundingChartData } from 'types'
+import { FormattedHourlyAccountVolumeData } from 'types'
 import { formatCurrencyValue } from 'utils/numbers'
 import { TooltipProps } from 'recharts/types/component/Tooltip'
 import {
@@ -21,7 +20,7 @@ import { formatYAxis } from 'utils/formatting'
 import ChartRangeButtons from '@components/shared/ChartRangeButtons'
 import { useTranslation } from 'next-i18next'
 import { IconButton } from '@components/shared/Button'
-import { ArrowLeftIcon } from '@heroicons/react/20/solid'
+import { ArrowLeftIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 import { FadeInFadeOut } from '@components/shared/Transitions'
 import ContentBox from '@components/shared/ContentBox'
 import SheenLoader from '@components/shared/SheenLoader'
@@ -35,7 +34,7 @@ const VolumeChart = ({
   hideChart: () => void
   loading: boolean
 }) => {
-  const { t } = useTranslation(['common', 'stats'])
+  const { t } = useTranslation(['account', 'common', 'stats'])
   const [daysToShow, setDaysToShow] = useState('30')
   const { theme } = useTheme()
 
@@ -122,10 +121,10 @@ const VolumeChart = ({
     return chunkedData
   }
 
-  const filteredData: HourlyFundingChartData[] = useMemo(() => {
+  const filteredData: FormattedHourlyAccountVolumeData[] = useMemo(() => {
     if (!chartData || !chartData.length) return []
     const start = Number(daysToShow) * 86400000
-    const filtered = chartData.filter((d: any) => {
+    const filtered = chartData.filter((d: FormattedHourlyAccountVolumeData) => {
       const date = new Date()
       if (daysToShow === '30') {
         date.setHours(0, 0, 0, 0)
@@ -146,103 +145,104 @@ const VolumeChart = ({
   return (
     <FadeInFadeOut show={true}>
       <ContentBox className="px-6 pt-4" hideBorder hidePadding>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4 md:space-x-6">
+            <IconButton onClick={hideChart} size="medium">
+              <ArrowLeftIcon className="h-5 w-5" />
+            </IconButton>
+            <h2 className="text-lg">{t('stats:volume')}</h2>
+          </div>
+          <ChartRangeButtons
+            activeValue={daysToShow}
+            names={['24H', '7D', '30D']}
+            values={['1', '7', '30']}
+            onChange={(v) => setDaysToShow(v)}
+          />
+        </div>
         {loading ? (
           <SheenLoader className="flex flex-1">
             <div
-              className={`h-[calc(100vh-116px)] w-full rounded-lg bg-th-bkg-2`}
+              className={`h-[calc(100vh-166px)] w-full rounded-lg bg-th-bkg-2`}
             />
           </SheenLoader>
-        ) : filteredData.length ? (
-          <div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4 md:space-x-6">
-                <IconButton onClick={hideChart} size="medium">
-                  <ArrowLeftIcon className="h-5 w-5" />
-                </IconButton>
-                <h2 className="text-lg">{t('stats:volume')}</h2>
-              </div>
-              <ChartRangeButtons
-                activeValue={daysToShow}
-                names={['24H', '7D', '30D']}
-                values={['1', '7', '30']}
-                onChange={(v) => setDaysToShow(v)}
-              />
-            </div>
-            <div className="-mx-6 mt-6 h-[calc(100vh-170px)]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={filteredData}>
-                  <Tooltip
-                    cursor={{
-                      fill: 'var(--bkg-2)',
-                      opacity: 0.5,
-                    }}
-                    content={<CustomTooltip />}
-                  />
-                  <defs>
-                    <linearGradient
-                      id="greenGradientBar"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop
-                        offset="0%"
-                        stopColor={COLORS.UP[theme]}
-                        stopOpacity={1}
+        ) : filteredData.find((d) => d.total_volume_usd > 0) ? (
+          <div className="-mx-6 mt-6 h-[calc(100vh-170px)]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={filteredData}>
+                <Tooltip
+                  cursor={{
+                    fill: 'var(--bkg-2)',
+                    opacity: 0.5,
+                  }}
+                  content={<CustomTooltip />}
+                />
+                <defs>
+                  <linearGradient
+                    id="greenGradientBar"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop
+                      offset="0%"
+                      stopColor={COLORS.UP[theme]}
+                      stopOpacity={1}
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor={COLORS.UP[theme]}
+                      stopOpacity={0.7}
+                    />
+                  </linearGradient>
+                </defs>
+                <Bar dataKey="total_volume_usd">
+                  {filteredData.map((entry, index) => {
+                    return (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill="url(#greenGradientBar)"
                       />
-                      <stop
-                        offset="100%"
-                        stopColor={COLORS.UP[theme]}
-                        stopOpacity={0.7}
-                      />
-                    </linearGradient>
-                  </defs>
-                  <Bar dataKey="total_volume_usd">
-                    {filteredData.map((entry, index) => {
-                      return (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill="url(#greenGradientBar)"
-                        />
-                      )
-                    })}
-                  </Bar>
-                  <XAxis
-                    dataKey="time"
-                    axisLine={false}
-                    dy={10}
-                    minTickGap={20}
-                    padding={{ left: 20, right: 20 }}
-                    tick={{
-                      fill: 'var(--fgd-4)',
-                      fontSize: 10,
-                    }}
-                    tickLine={false}
-                    tickFormatter={(v) =>
-                      formatDateAxis(v, parseInt(daysToShow))
-                    }
-                  />
-                  <YAxis
-                    dataKey="total_volume_usd"
-                    interval="preserveStartEnd"
-                    axisLine={false}
-                    dx={-10}
-                    padding={{ top: 20, bottom: 20 }}
-                    tick={{
-                      fill: 'var(--fgd-4)',
-                      fontSize: 10,
-                    }}
-                    tickLine={false}
-                    tickFormatter={(v) => formatYAxis(v)}
-                    type="number"
-                  />
-                  <ReferenceLine y={0} stroke={COLORS.BKG4[theme]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+                    )
+                  })}
+                </Bar>
+                <XAxis
+                  dataKey="time"
+                  axisLine={false}
+                  dy={10}
+                  minTickGap={20}
+                  padding={{ left: 20, right: 20 }}
+                  tick={{
+                    fill: 'var(--fgd-4)',
+                    fontSize: 10,
+                  }}
+                  tickLine={false}
+                  tickFormatter={(v) => formatDateAxis(v, parseInt(daysToShow))}
+                />
+                <YAxis
+                  dataKey="total_volume_usd"
+                  interval="preserveStartEnd"
+                  axisLine={false}
+                  dx={-10}
+                  padding={{ top: 20, bottom: 20 }}
+                  tick={{
+                    fill: 'var(--fgd-4)',
+                    fontSize: 10,
+                  }}
+                  tickLine={false}
+                  tickFormatter={(v) => formatYAxis(v)}
+                  type="number"
+                />
+                <ReferenceLine y={0} stroke={COLORS.BKG4[theme]} />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
-        ) : null}
+        ) : (
+          <div className="mt-6 flex flex-col items-center rounded-lg border border-th-bkg-3 p-8">
+            <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
+            <p>{t('account:no-data')}</p>
+          </div>
+        )}
       </ContentBox>
     </FadeInFadeOut>
   )
