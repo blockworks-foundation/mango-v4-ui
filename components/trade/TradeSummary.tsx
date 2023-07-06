@@ -33,14 +33,16 @@ const TradeSummary = ({
   const { t } = useTranslation(['common', 'trade'])
   const { group } = useMangoGroup()
   const tradeForm = mangoStore((s) => s.tradeForm)
+  const orderbook = mangoStore((s) => s.selectedMarket.orderbook)
   const { selectedMarket, quoteBank } = useSelectedMarket()
   const openPerpPositions = useOpenPerpPositions()
 
   // calc new avg price if an open position exists
   const avgEntryPrice = useMemo(() => {
     if (
-      !openPerpPositions.length ||
+      !openPerpPositions?.length ||
       !selectedMarket ||
+      !orderbook ||
       selectedMarket instanceof Serum3Market
     )
       return
@@ -51,11 +53,10 @@ const TradeSummary = ({
 
     const { baseSize, price, reduceOnly, side, tradeType } = tradeForm
 
-    if (!openPosition || !price) return
+    if (!openPosition || !price || !tradeForm.baseSize) return
 
     let orderPrice = parseFloat(price)
     if (tradeType === 'Market') {
-      const orderbook = mangoStore((s) => s.selectedMarket.orderbook)
       orderPrice = calculateEstPriceForBaseSize(
         orderbook,
         parseFloat(tradeForm.baseSize),
@@ -90,7 +91,7 @@ const TradeSummary = ({
     const newTotalCost = currentAvgPrice * currentSize + orderPrice * tradeSize
     const newAvgEntryPrice = newTotalCost / newTotalSize
     return newAvgEntryPrice
-  }, [openPerpPositions, selectedMarket, tradeForm])
+  }, [openPerpPositions, selectedMarket, tradeForm, orderbook])
 
   const maintProjectedHealth = useMemo(() => {
     if (!mangoAccount || !group) return 100

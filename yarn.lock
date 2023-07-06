@@ -21,17 +21,10 @@
   dependencies:
     ws "^8.13.0"
 
-<<<<<<< Updated upstream
-"@blockworks-foundation/mango-v4@^0.17.1":
-  version "0.17.1"
-  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.17.1.tgz#889a57a20e70c4daa22314eddb7e8f25185e3544"
-  integrity sha512-oHievogTUndHxjmM6zd7pXgoSw8IM4hk6XvuPEhu/IhF17jD0wYj23eZmM4VEselZ46hLdIwJITP4tui2+/xlg==
-=======
 "@blockworks-foundation/mango-v4@^0.17.2":
   version "0.17.2"
   resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.17.2.tgz#2219c6f77e5d4eb6d1f4f9433aec4d7070fc1adf"
   integrity sha512-zGSX40BK3yW+9sGQO6k/+4Vq/v5d+Wmhqt/BfBENvSrZhFbrk6w6ib4aEsiIx/NcTLZorVPrdB75nP0JZ1IYjA==
->>>>>>> Stashed changes
   dependencies:
     "@coral-xyz/anchor" "^0.27.0"
     "@project-serum/serum" "0.13.65"
