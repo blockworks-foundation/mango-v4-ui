@@ -91,7 +91,7 @@ const UnsettledTrades = ({
 
       console.log('mangoAccountPnl', mangoAccountPnl)
 
-      const allMangoAccounts = await client.getAllMangoAccounts(group)
+      const allMangoAccounts = await client.getAllMangoAccounts(group, true)
 
       const settleCandidates = await market.getSettlePnlCandidates(
         client,
