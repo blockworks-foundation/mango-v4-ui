@@ -101,7 +101,7 @@ const TradeAdvancedPage = () => {
           x: balancesXPos[tradeLayout].xxxl,
           y: 2,
           w: 16,
-          h: getHeight(innerHeight, 0, 640 + marketHeaderHeight),
+          h: getHeight(innerHeight, 0, 640),
         },
         {
           i: 'orderbook',
@@ -126,7 +126,7 @@ const TradeAdvancedPage = () => {
           x: balancesXPos[tradeLayout].xxl,
           y: 2,
           w: 15,
-          h: getHeight(innerHeight, 0, 488 + marketHeaderHeight),
+          h: getHeight(innerHeight, 0, 488),
         },
         {
           i: 'orderbook',
@@ -151,7 +151,7 @@ const TradeAdvancedPage = () => {
           x: balancesXPos[tradeLayout].xl,
           y: 2,
           w: 15,
-          h: getHeight(innerHeight, 0, 488 + marketHeaderHeight),
+          h: getHeight(innerHeight, 0, 488),
         },
         {
           i: 'orderbook',
@@ -176,7 +176,7 @@ const TradeAdvancedPage = () => {
           x: balancesXPos[tradeLayout].lg,
           y: 2,
           w: 13,
-          h: getHeight(innerHeight, 0, 456 + marketHeaderHeight),
+          h: getHeight(innerHeight, 0, 456),
         },
         {
           i: 'orderbook',

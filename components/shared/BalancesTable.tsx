@@ -191,6 +191,8 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
   const { selectedMarket } = useSelectedMarket()
   const { asPath } = useRouter()
   const { isUnownedAccount } = useUnownedAccount()
+  const { width } = useViewport()
+  const isMobile = width ? width < breakpoints.md : false
 
   const tokenBank = bank.bank
 
@@ -284,11 +286,11 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
     }
   }, [tokenBank, selectedMarket])
 
-  if (!balance) return <p className="flex justify-end">0</p>
+  if (!balance) return <p className="md:flex md:justify-end">0</p>
 
   return (
-    <p className="flex justify-end text-th-fgd-2">
-      {!isUnownedAccount ? (
+    <p className="text-th-fgd-2 md:flex md:justify-end">
+      {!isUnownedAccount && !isMobile ? (
         asPath.includes('/trade') && isBaseOrQuote ? (
           <LinkButton
             className="font-normal underline underline-offset-2 md:underline-offset-4 md:hover:no-underline"
