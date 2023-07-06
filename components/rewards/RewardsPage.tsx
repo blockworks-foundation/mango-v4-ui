@@ -7,6 +7,7 @@ import Button, { LinkButton } from '@components/shared/Button'
 import Modal from '@components/shared/Modal'
 import { Disclosure } from '@headlessui/react'
 import {
+  CheckIcon,
   ChevronDownIcon,
   ChevronRightIcon,
   ClockIcon,
@@ -25,6 +26,8 @@ import SheenLoader from '@components/shared/SheenLoader'
 import { abbreviateAddress } from 'utils/formatting'
 import { PublicKey } from '@solana/web3.js'
 import { useTranslation } from 'next-i18next'
+import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
+import { XMarkIcon } from '@heroicons/react/24/outline'
 
 export type RewardsLeaderboardItem = {
   points: number
@@ -147,7 +150,7 @@ const Season = ({
   const { t } = useTranslation(['common', 'rewards'])
   const { wallet } = useWallet()
   const [topAccountsTier, setTopAccountsTier] = useState('seed')
-
+  const { data: isWhiteListed } = useIsWhiteListed()
   const {
     data: walletRewardsData,
     isFetching: fetchingWalletRewardsData,
@@ -197,7 +200,15 @@ const Season = ({
         <ClockIcon className="mr-2 h-5 w-5 text-th-active" />
         <p className="text-base text-th-fgd-2">
           Season 1 starts in:{' '}
-          <span className="font-bold text-th-fgd-1">4 days</span>
+          <span className="mr-4 font-bold text-th-fgd-1">4 days</span>
+          <div className="flex">
+            User whitelisted -{' '}
+            {isWhiteListed ? (
+              <CheckIcon className="w-5"></CheckIcon>
+            ) : (
+              <XMarkIcon className="w-5"></XMarkIcon>
+            )}
+          </div>
         </p>
       </div>
       <div className="mx-auto grid max-w-[1140px] grid-cols-12 gap-4 p-8 lg:gap-6 lg:p-10">
