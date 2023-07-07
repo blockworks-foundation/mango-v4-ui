@@ -110,6 +110,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   dual: true,
   eth: true,
   'eth (portal)': true,
+  hnt: true,
   jitosol: true,
   ldo: true,
   mngo: true,
