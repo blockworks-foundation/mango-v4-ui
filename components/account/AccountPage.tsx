@@ -370,24 +370,22 @@ const AccountPage = () => {
     }
   }, [mangoAccount, group, accountValue])
 
-  const [accountValueChange, oneDayPnlChange] = useMemo(() => {
-    if (
-      accountValue &&
-      oneDayPerformanceData.length &&
-      performanceData &&
-      performanceData.length
-    ) {
+  const [accountValueChange, rollingDailyPnlChange, pnlChangeToday] =
+    useMemo(() => {
+      if (!accountValue || !accountPnl || !oneDayPerformanceData.length)
+        return [0, 0, 0]
       const accountValueChange =
         accountValue - oneDayPerformanceData[0].account_equity
-      const startDayPnl = oneDayPerformanceData[0].pnl
-      const endDayPnl =
-        oneDayPerformanceData[oneDayPerformanceData.length - 1].pnl
-      const oneDayPnlChange = endDayPnl - startDayPnl
+      const startHour = oneDayPerformanceData.find((item) => {
+        const itemHour = new Date(item.time).getHours()
+        return itemHour === 0
+      })
+      const startDayPnl = startHour?.pnl
+      const rollingDailyPnlChange = accountPnl - oneDayPerformanceData[0].pnl
+      const pnlChangeToday = startDayPnl ? accountPnl - startDayPnl : 0
 
-      return [accountValueChange, oneDayPnlChange]
-    }
-    return [0, 0]
-  }, [accountValue, oneDayPerformanceData, performanceData])
+      return [accountValueChange, rollingDailyPnlChange, pnlChangeToday]
+    }, [accountPnl, accountValue, oneDayPerformanceData])
 
   const interestTotalValue = useMemo(() => {
     if (totalInterestData.length) {
@@ -761,7 +759,7 @@ const AccountPage = () => {
               />
             </p>
             <div className="flex space-x-1.5">
-              <Change change={oneDayPnlChange} prefix="$" size="small" />
+              <Change change={rollingDailyPnlChange} prefix="$" size="small" />
               <p className="text-xs text-th-fgd-4">{t('rolling-change')}</p>
             </div>
           </div>
@@ -910,7 +908,7 @@ const AccountPage = () => {
         <PnlHistoryModal
           loading={performanceLoading}
           performanceData={performanceData}
-          pnlChangeToday={oneDayPnlChange}
+          pnlChangeToday={pnlChangeToday}
           isOpen={showPnlHistory}
           onClose={handleCloseDailyPnlModal}
         />
