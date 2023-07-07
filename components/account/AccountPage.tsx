@@ -29,7 +29,6 @@ import {
   MANGO_DATA_API_URL,
   // IS_ONBOARDED_KEY
 } from 'utils/constants'
-import { useWallet } from '@solana/wallet-adapter-react'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 // import AccountOnboardingTour from '@components/tours/AccountOnboardingTour'
 import dayjs from 'dayjs'
@@ -42,7 +41,9 @@ import FormatNumericValue from '@components/shared/FormatNumericValue'
 import HealthBar from './HealthBar'
 import AssetsLiabilities from './AssetsLiabilities'
 import {
+  AccountPerformanceData,
   AccountVolumeTotalData,
+  EmptyObject,
   FormattedHourlyAccountVolumeData,
   HourlyAccountVolumeData,
   PerformanceDataItem,
@@ -53,6 +54,34 @@ import FundingChart from './FundingChart'
 import VolumeChart from './VolumeChart'
 
 const TABS = ['account-value', 'account:assets-liabilities']
+
+const fetchAccountPerformance = async (
+  mangoAccountPk: string,
+  range: number
+) => {
+  try {
+    const response = await fetch(
+      `${MANGO_DATA_API_URL}/stats/performance_account?mango-account=${mangoAccountPk}&start-date=${dayjs()
+        .subtract(range, 'day')
+        .format('YYYY-MM-DD')}`
+    )
+    const parsedResponse: null | EmptyObject | AccountPerformanceData[] =
+      await response.json()
+    if (parsedResponse && Object.keys(parsedResponse)?.length) {
+      const entries = Object.entries(parsedResponse).sort((a, b) =>
+        b[0].localeCompare(a[0])
+      )
+      const stats = entries.map(([key, value]) => {
+        return { ...value, time: key } as PerformanceDataItem
+      })
+
+      return stats.reverse()
+    } else return []
+  } catch (e) {
+    console.error('Failed to load account performance data', e)
+    return []
+  }
+}
 
 const fetchFundingTotals = async (mangoAccountPk: string) => {
   try {
@@ -177,14 +206,8 @@ export type ChartToShow =
 
 const AccountPage = () => {
   const { t } = useTranslation(['common', 'account'])
-  const { connected } = useWallet()
   const { group } = useMangoGroup()
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
-  const actions = mangoStore.getState().actions
-  const performanceLoading = mangoStore(
-    (s) => s.mangoAccount.performance.loading
-  )
-  const performanceData = mangoStore((s) => s.mangoAccount.performance.data)
 
   const totalInterestData = mangoStore(
     (s) => s.mangoAccount.interestTotals.data
@@ -207,11 +230,27 @@ const AccountPage = () => {
   )
 
   useEffect(() => {
-    if (mangoAccountAddress || (!mangoAccountAddress && connected)) {
-      actions.fetchAccountPerformance(mangoAccountAddress, 31)
+    if (mangoAccountAddress) {
+      const actions = mangoStore.getState().actions
       actions.fetchAccountInterestTotals(mangoAccountAddress)
     }
-  }, [actions, mangoAccountAddress, connected])
+  }, [mangoAccountAddress])
+
+  const {
+    data: performanceData,
+    isLoading: loadingPerformanceData,
+    isFetching: fetchingPerformanceData,
+  } = useQuery(
+    ['performance', mangoAccountAddress],
+    () => fetchAccountPerformance(mangoAccountAddress, 31),
+    {
+      cacheTime: 1000 * 60 * 10,
+      staleTime: 1000 * 60,
+      retry: 3,
+      refetchOnWindowFocus: false,
+      enabled: !!mangoAccountAddress,
+    }
+  )
 
   const {
     data: fundingData,
@@ -307,10 +346,6 @@ const AccountPage = () => {
   }
 
   const handleCloseDailyPnlModal = () => {
-    const set = mangoStore.getState().set
-    set((s) => {
-      s.mangoAccount.performance.data = oneDayPerformanceData
-    })
     setShowPnlHistory(false)
   }
 
@@ -339,6 +374,7 @@ const AccountPage = () => {
     if (
       accountValue &&
       oneDayPerformanceData.length &&
+      performanceData &&
       performanceData.length
     ) {
       const accountValueChange =
@@ -404,22 +440,11 @@ const AccountPage = () => {
       | 'hourly-funding'
       | 'hourly-volume'
   ) => {
-    if (chartName === 'cumulative-interest-value' || interestTotalValue < -1) {
-      setChartToShow(chartName)
-    }
-    if (chartName === 'pnl') {
-      setChartToShow(chartName)
-    }
-    if (chartName === 'hourly-funding') {
-      setChartToShow(chartName)
-    }
-    if (chartName === 'hourly-volume') {
-      setChartToShow(chartName)
-    }
+    setChartToShow(chartName)
   }
 
   const latestAccountData = useMemo(() => {
-    if (!accountValue || !performanceData.length) return []
+    if (!accountValue || !performanceData || !performanceData.length) return []
     const latestDataItem = performanceData[performanceData.length - 1]
     return [
       {
@@ -439,6 +464,8 @@ const AccountPage = () => {
   const loadingTotalVolume = fetchingVolumeTotalData || loadingVolumeTotalData
   const loadingHourlyVolume =
     fetchingHourlyVolumeData || loadingHourlyVolumeData
+
+  const performanceLoading = loadingPerformanceData || fetchingPerformanceData
 
   return !chartToShow ? (
     <>
@@ -881,6 +908,8 @@ const AccountPage = () => {
       ) : null} */}
       {showPnlHistory ? (
         <PnlHistoryModal
+          loading={performanceLoading}
+          performanceData={performanceData}
           pnlChangeToday={oneDayPnlChange}
           isOpen={showPnlHistory}
           onClose={handleCloseDailyPnlModal}
@@ -893,7 +922,7 @@ const AccountPage = () => {
         <AccountChart
           chartToShow="account-value"
           setChartToShow={setChartToShow}
-          data={performanceData.concat(latestAccountData)}
+          data={performanceData?.concat(latestAccountData)}
           hideChart={handleHideChart}
           yKey="account_equity"
         />
@@ -901,7 +930,7 @@ const AccountPage = () => {
         <AccountChart
           chartToShow="pnl"
           setChartToShow={setChartToShow}
-          data={performanceData.concat(latestAccountData)}
+          data={performanceData?.concat(latestAccountData)}
           hideChart={handleHideChart}
           yKey="pnl"
         />

@@ -26,7 +26,7 @@ const AccountChart = ({
   chartToShow: ChartToShow
   setChartToShow: (chart: ChartToShow) => void
   customTooltip?: ContentType<number, string>
-  data: PerformanceDataItem[] | HourlyFundingChartData[]
+  data: PerformanceDataItem[] | HourlyFundingChartData[] | undefined
   hideChart: () => void
   loading?: boolean
   yDecimals?: number
@@ -36,7 +36,7 @@ const AccountChart = ({
   const [daysToShow, setDaysToShow] = useState<string>('1')
 
   const chartData = useMemo(() => {
-    if (!data.length) return []
+    if (!data || !data.length) return []
     if (chartToShow === 'cumulative-interest-value') {
       return data.map((d) => ({
         interest_value:
