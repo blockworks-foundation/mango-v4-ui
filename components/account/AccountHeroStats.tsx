@@ -17,21 +17,18 @@ import { IconButton } from '@components/shared/Button'
 import { CalendarIcon, ChartBarIcon } from '@heroicons/react/20/solid'
 import Change from '@components/shared/Change'
 import SheenLoader from '@components/shared/SheenLoader'
-import { FormattedHourlyAccountVolumeData, PerformanceDataItem } from 'types'
+import { PerformanceDataItem } from 'types'
+import useAccountHourlyVolumeStats from 'hooks/useAccountHourlyVolumeStats'
 
 const AccountHeroStats = ({
   accountPnl,
   accountValue,
-  hourlyVolumeData,
-  loadingHourlyVolume,
   rollingDailyData,
   setShowPnlHistory,
   setChartToShow,
 }: {
   accountPnl: number
   accountValue: number
-  hourlyVolumeData: FormattedHourlyAccountVolumeData[] | undefined
-  loadingHourlyVolume: boolean
   rollingDailyData: PerformanceDataItem[]
   setShowPnlHistory: (show: boolean) => void
   setChartToShow: (view: ChartToShow) => void
@@ -39,6 +36,8 @@ const AccountHeroStats = ({
   const { t } = useTranslation(['common', 'account'])
   const { group } = useMangoGroup()
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
+  const { hourlyVolumeData, loadingHourlyVolume } =
+    useAccountHourlyVolumeStats()
 
   const totalInterestData = mangoStore(
     (s) => s.mangoAccount.interestTotals.data

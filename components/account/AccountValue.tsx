@@ -20,17 +20,16 @@ import { useTranslation } from 'next-i18next'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import { ChartToShow } from './AccountPage'
+import useAccountPerformanceData from 'hooks/useAccountPerformanceData'
 
 const AccountValue = ({
   accountValue,
   latestAccountData,
-  loading,
   rollingDailyData,
   setChartToShow,
 }: {
   accountValue: number
   latestAccountData: PerformanceDataItem[]
-  loading: boolean
   rollingDailyData: PerformanceDataItem[]
   setChartToShow: (chart: ChartToShow) => void
 }) => {
@@ -44,6 +43,7 @@ const AccountValue = ({
     INITIAL_ANIMATION_SETTINGS
   )
   const { width } = useViewport()
+  const { performanceLoading: loading } = useAccountPerformanceData()
   const isMobile = width ? width < breakpoints.md : false
 
   const accountValueChange = useMemo(() => {
