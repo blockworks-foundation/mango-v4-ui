@@ -278,6 +278,13 @@ const MangoAccountDashboard: NextPage = () => {
                       value={`$${perp.getBreakEvenPriceUi(market).toFixed(6)}`}
                     />
                     <KeyValuePair
+                      label="Max Settle"
+                      value={`$${mangoAccount.perpMaxSettle(
+                        group,
+                        perp.marketIndex
+                      )}`}
+                    />
+                    <KeyValuePair
                       label="Quote Running"
                       value={`$${toUiDecimalsForQuote(
                         perp.quoteRunningNative
