@@ -13,13 +13,12 @@ import { breakpoints } from 'utils/theme'
 import useMangoGroup from 'hooks/useMangoGroup'
 import PnlHistoryModal from '@components/modals/PnlHistoryModal'
 import AssetsLiabilities from './AssetsLiabilities'
-import { PerformanceDataItem } from 'types'
-import { useQuery } from '@tanstack/react-query'
 import FundingChart from './FundingChart'
 import VolumeChart from './VolumeChart'
-import { fetchAccountPerformance, fetchHourlyVolume } from 'utils/account'
 import AccountHeroStats from './AccountHeroStats'
 import AccountValue from './AccountValue'
+import useAccountPerformanceData from 'hooks/useAccountPerformanceData'
+import useAccountHourlyVolumeStats from 'hooks/useAccountHourlyVolumeStats'
 
 const TABS = ['account-value', 'account:assets-liabilities']
 
@@ -34,7 +33,7 @@ export type ChartToShow =
 const AccountPage = () => {
   const { t } = useTranslation(['common', 'account'])
   const { group } = useMangoGroup()
-  const { mangoAccount, mangoAccountAddress } = useMangoAccount()
+  const { mangoAccount } = useMangoAccount()
   const [chartToShow, setChartToShow] = useState<ChartToShow>('')
   const [showPnlHistory, setShowPnlHistory] = useState<boolean>(false)
   const { width } = useViewport()
@@ -45,47 +44,9 @@ const AccountPage = () => {
     'accountHeroKey-0.1',
     'account-value'
   )
-
-  const {
-    data: performanceData,
-    isLoading: loadingPerformanceData,
-    isFetching: fetchingPerformanceData,
-  } = useQuery(
-    ['performance', mangoAccountAddress],
-    () => fetchAccountPerformance(mangoAccountAddress, 31),
-    {
-      cacheTime: 1000 * 60 * 10,
-      staleTime: 1000 * 60,
-      retry: 3,
-      refetchOnWindowFocus: false,
-      enabled: !!mangoAccountAddress,
-    }
-  )
-
-  const {
-    data: hourlyVolumeData,
-    isLoading: loadingHourlyVolumeData,
-    isFetching: fetchingHourlyVolumeData,
-  } = useQuery(
-    ['hourly-volume', mangoAccountAddress],
-    () => fetchHourlyVolume(mangoAccountAddress),
-    {
-      cacheTime: 1000 * 60 * 10,
-      staleTime: 1000 * 60,
-      retry: 3,
-      refetchOnWindowFocus: false,
-      enabled: !!mangoAccountAddress,
-    }
-  )
-
-  const rollingDailyData: PerformanceDataItem[] | [] = useMemo(() => {
-    if (!performanceData || !performanceData.length) return []
-    const nowDate = new Date()
-    return performanceData.filter((d) => {
-      const dataTime = new Date(d.time).getTime()
-      return dataTime >= nowDate.getTime() - 86400000
-    })
-  }, [performanceData])
+  const { performanceData, rollingDailyData } = useAccountPerformanceData()
+  const { hourlyVolumeData, loadingHourlyVolume } =
+    useAccountHourlyVolumeStats()
 
   const handleHideChart = () => {
     setChartToShow('')
@@ -133,11 +94,6 @@ const AccountPage = () => {
     ]
   }, [accountPnl, accountValue, performanceData])
 
-  const loadingHourlyVolume =
-    fetchingHourlyVolumeData || loadingHourlyVolumeData
-
-  const performanceLoading = loadingPerformanceData || fetchingPerformanceData
-
   return !chartToShow ? (
     <>
       <div className="flex flex-col border-b-0 border-th-bkg-3 px-6 py-4 lg:flex-row lg:items-center lg:justify-between lg:border-b">
@@ -162,7 +118,6 @@ const AccountPage = () => {
               <AccountValue
                 accountValue={accountValue}
                 latestAccountData={latestAccountData}
-                loading={performanceLoading}
                 rollingDailyData={rollingDailyData}
                 setChartToShow={setChartToShow}
               />
@@ -179,8 +134,6 @@ const AccountPage = () => {
       <AccountHeroStats
         accountPnl={accountPnl}
         accountValue={accountValue}
-        hourlyVolumeData={hourlyVolumeData}
-        loadingHourlyVolume={loadingHourlyVolume}
         rollingDailyData={rollingDailyData}
         setChartToShow={setChartToShow}
         setShowPnlHistory={setShowPnlHistory}
@@ -191,8 +144,6 @@ const AccountPage = () => {
       ) : null} */}
       {showPnlHistory ? (
         <PnlHistoryModal
-          loading={performanceLoading}
-          performanceData={performanceData}
           pnlChangeToday={pnlChangeToday}
           isOpen={showPnlHistory}
           onClose={handleCloseDailyPnlModal}

@@ -7,6 +7,7 @@ import Change from '@components/shared/Change'
 import SheenLoader from '@components/shared/SheenLoader'
 import { NoSymbolIcon } from '@heroicons/react/20/solid'
 import { PerformanceDataItem } from 'types'
+import useAccountPerformanceData from 'hooks/useAccountPerformanceData'
 
 interface PnlChange {
   time: string
@@ -14,21 +15,19 @@ interface PnlChange {
 }
 
 interface PnlHistoryModalProps {
-  loading: boolean
-  performanceData: PerformanceDataItem[] | undefined
   pnlChangeToday: number
 }
 
 type ModalCombinedProps = PnlHistoryModalProps & ModalProps
 
 const PnlHistoryModal = ({
-  loading,
   isOpen,
   onClose,
-  performanceData,
   pnlChangeToday,
 }: ModalCombinedProps) => {
   const { t } = useTranslation('account')
+  const { performanceData, performanceLoading: loading } =
+    useAccountPerformanceData()
 
   const dailyValues: PnlChange[] = useMemo(() => {
     if (!performanceData || !performanceData.length) return []
