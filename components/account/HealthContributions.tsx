@@ -166,11 +166,13 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
                     balance = mangoAccount.getTokenBalanceUi(bank)
                   }
 
-                  const initContribution =
-                    initHealthTokens.find((cont) => cont.asset === asset)
-                      ?.contribution || 0
-
                   const assetOrLiabMultiplier = isAsset ? 1 : -1
+
+                  const initContribution =
+                    (initHealthTokens.find((cont) => cont.asset === asset)
+                      ?.contribution || 0) * assetOrLiabMultiplier
+
+                  const maintContribution = contribution * assetOrLiabMultiplier
 
                   return (
                     <TrBody key={asset}>
@@ -204,7 +206,7 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
                         <div className="text-right">
                           <p>
                             <FormatNumericValue
-                              value={initContribution * assetOrLiabMultiplier}
+                              value={initContribution}
                               decimals={2}
                               isUsd
                             />
@@ -223,15 +225,15 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
                         <div className="text-right">
                           <p>
                             <FormatNumericValue
-                              value={contribution * assetOrLiabMultiplier}
+                              value={maintContribution}
                               decimals={2}
                               isUsd
                             />
                           </p>
                           <p className="text-th-fgd-3">
-                            {contribution > 0
+                            {maintContribution > 0
                               ? maintAssetWeight.toFixed(2)
-                              : contribution < 0
+                              : maintContribution < 0
                               ? maintLiabWeight.toFixed(2)
                               : 0}
                             x
@@ -298,11 +300,13 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
                     maintLiabWeight = bank.maintLiabWeight.toNumber()
                   }
 
-                  const initContribution =
-                    initHealthMarkets.find((cont) => cont.asset === asset)
-                      ?.contribution || 0
-
                   const assetOrLiabMultiplier = isAsset ? 1 : -1
+
+                  const initContribution =
+                    (initHealthMarkets.find((cont) => cont.asset === asset)
+                      ?.contribution || 0) * assetOrLiabMultiplier
+
+                  const maintContribution = contribution * assetOrLiabMultiplier
 
                   return (
                     <TrBody key={asset}>
@@ -316,7 +320,7 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
                         <div className="text-right">
                           <p>
                             <FormatNumericValue
-                              value={initContribution * assetOrLiabMultiplier}
+                              value={initContribution}
                               decimals={2}
                               isUsd
                             />
@@ -335,15 +339,15 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
                         <div className="text-right">
                           <p>
                             <FormatNumericValue
-                              value={contribution * assetOrLiabMultiplier}
+                              value={maintContribution}
                               decimals={2}
                               isUsd
                             />
                           </p>
                           <p className="text-th-fgd-3">
-                            {contribution > 0
+                            {maintContribution > 0
                               ? maintAssetWeight.toFixed(2)
-                              : contribution < 0
+                              : maintContribution < 0
                               ? maintLiabWeight.toFixed(2)
                               : 0}
                             x
