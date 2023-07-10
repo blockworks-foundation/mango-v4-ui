@@ -83,6 +83,8 @@ const defaultTokenListFormValues: TokenListForm = {
   proposalDescription: '',
 }
 
+const TWENTY_K_USDC_BASE = '20000000000'
+
 const ListToken = ({ goBack }: { goBack: () => void }) => {
   const wallet = useWallet()
   const { jupiterTokens } = useJupiterMints()
@@ -213,9 +215,8 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   )
 
   const handleGetRoutesWithFixedArgs = useCallback(
-    (amount: number, tokenMint: PublicKey) => {
+    (amount: number, tokenMint: PublicKey, mode: 'ExactIn' | 'ExactOut') => {
       const SLIPPAGE_BPS = 50
-      const MODE = 'ExactIn'
       const FEE = 0
       const walletForCheck = wallet.publicKey
         ? wallet.publicKey?.toBase58()
@@ -226,7 +227,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         tokenMint.toBase58(),
         toNative(amount, 6).toNumber(),
         SLIPPAGE_BPS,
-        MODE,
+        mode,
         FEE,
         walletForCheck,
         'JUPITER'
@@ -240,27 +241,54 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       try {
         const TIERS: LISTING_PRESETS_KEYS[] = ['PREMIUM', 'MID', 'MEME', 'SHIT']
         const swaps = await Promise.all([
-          handleGetRoutesWithFixedArgs(100000, tokenMint),
-          handleGetRoutesWithFixedArgs(20000, tokenMint),
-          handleGetRoutesWithFixedArgs(5000, tokenMint),
-          handleGetRoutesWithFixedArgs(1000, tokenMint),
+          handleGetRoutesWithFixedArgs(100000, tokenMint, 'ExactIn'),
+          handleGetRoutesWithFixedArgs(20000, tokenMint, 'ExactIn'),
+          handleGetRoutesWithFixedArgs(5000, tokenMint, 'ExactIn'),
+          handleGetRoutesWithFixedArgs(1000, tokenMint, 'ExactIn'),
+          handleGetRoutesWithFixedArgs(100000, tokenMint, 'ExactOut'),
+          handleGetRoutesWithFixedArgs(20000, tokenMint, 'ExactOut'),
+          handleGetRoutesWithFixedArgs(5000, tokenMint, 'ExactOut'),
+          handleGetRoutesWithFixedArgs(1000, tokenMint, 'ExactOut'),
         ])
-        const midTierCheck = swaps[1]
-        const indexForTierFromSwaps = swaps.findIndex(
-          (x) =>
-            x.bestRoute?.priceImpactPct && x.bestRoute?.priceImpactPct * 100 < 1
+        const bestRoutesSwaps = swaps
+          .filter((x) => x.bestRoute)
+          .map((x) => x.bestRoute!)
+        const averageSwaps = bestRoutesSwaps.reduce(
+          (acc: { amount: string; priceImpactPct: number }[], val) => {
+            if (val.swapMode === 'ExactIn') {
+              const exactOutRoute = bestRoutesSwaps.find(
+                (x) => x.amount === val.amount && x.swapMode === 'ExactOut'
+              )
+              acc.push({
+                amount: val.amount.toString(),
+                priceImpactPct: exactOutRoute?.priceImpactPct
+                  ? (val.priceImpactPct + exactOutRoute.priceImpactPct) / 2
+                  : val.priceImpactPct,
+              })
+            }
+            return acc
+          },
+          []
+        )
+
+        const midTierCheck = averageSwaps.find(
+          (x) => x.amount === TWENTY_K_USDC_BASE
+        )
+        const indexForTierFromSwaps = averageSwaps.findIndex(
+          (x) => x?.priceImpactPct && x?.priceImpactPct * 100 < 1
         )
         const tier =
           indexForTierFromSwaps > -1
             ? TIERS[indexForTierFromSwaps]
             : 'UNTRUSTED'
         setCoinTier(tier)
-        setPriceImpact(
-          midTierCheck.bestRoute
-            ? midTierCheck.bestRoute.priceImpactPct * 100
-            : 100
+        setPriceImpact(midTierCheck ? midTierCheck.priceImpactPct * 100 : 100)
+
+        handleGetPoolParams(
+          swaps.find(
+            (x) => x.bestRoute!.amount.toString() === TWENTY_K_USDC_BASE
+          )!.routes
         )
-        handleGetPoolParams(midTierCheck.routes)
         return tier
       } catch (e) {
         notify({
