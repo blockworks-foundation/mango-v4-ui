@@ -455,11 +455,9 @@ const OpenOrders = () => {
                             </span>
                           ) : (
                             <Link href={`/trade?name=${market.name}`}>
-                              <div className="flex items-center underline underline-offset-2 md:hover:text-th-fgd-3 md:hover:no-underline">
-                                <span className="whitespace-nowrap">
-                                  {market.name}
-                                </span>
-                              </div>
+                              <span className="whitespace-nowrap">
+                                {market.name}
+                              </span>
                             </Link>
                           )}
                           {o instanceof PerpOrder ? (
@@ -482,7 +480,10 @@ const OpenOrders = () => {
                             <FormatNumericValue
                               value={o.price}
                               decimals={getDecimalCount(tickSize)}
-                              isUsd={quoteBank?.name === 'USDC'}
+                              isUsd={
+                                quoteBank?.name === 'USDC' ||
+                                o instanceof PerpOrder
+                              }
                             />{' '}
                             {quoteBank && quoteBank.name !== 'USDC' ? (
                               <span className="font-body text-th-fgd-3">
@@ -491,6 +492,9 @@ const OpenOrders = () => {
                             ) : null}
                           </span>
                         </p>
+                        <span className="font-mono text-xs text-th-fgd-3">
+                          <FormatNumericValue value={o.price * o.size} isUsd />
+                        </span>
                       </div>
                     </div>
                   ) : (

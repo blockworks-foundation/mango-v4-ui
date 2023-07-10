@@ -1,126 +1,188 @@
 import { useTranslation } from 'next-i18next'
 import { useTheme } from 'next-themes'
-import { Cell, Pie, PieChart, Tooltip } from 'recharts'
+import {
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Sector,
+  SectorProps,
+} from 'recharts'
 import { COLORS } from 'styles/colors'
-import { formatCurrencyValue } from 'utils/numbers'
-import { formatTokenSymbol } from 'utils/tokens'
 import { HealthContribution } from './HealthContributions'
-
-interface CustomTooltipProps {
-  active?: boolean
-  contributions: HealthContribution[]
-  payload?: { payload: HealthContribution }[]
-  label?: string | number
-}
+import { useMemo, useState } from 'react'
+import { formatCurrencyValue } from 'utils/numbers'
+import mangoStore from '@store/mangoStore'
+import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
+import TokenLogo from '@components/shared/TokenLogo'
+import MarketLogos from '@components/trade/MarketLogos'
 
 const HealthContributionsChart = ({ data }: { data: HealthContribution[] }) => {
-  const { t } = useTranslation('account')
+  const { t } = useTranslation(['common', 'account'])
   const { theme } = useTheme()
+  const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined)
 
-  const pieSizes = { size: 160, outerRadius: 80, innerRadius: 64 }
-  const { size, outerRadius, innerRadius } = pieSizes
-
-  const CustomTooltip = ({
-    active,
-    contributions,
-    payload,
-  }: CustomTooltipProps) => {
-    if (active && payload) {
-      const isActivePayload = payload[0].payload.asset
-      const total = contributions.reduce((a, c) => {
-        const assetOrLiability = c.isAsset ? 1 : -1
-        return a + c.contribution * assetOrLiability
-      }, 0)
-
-      return (
-        <div className="rounded-md bg-th-bkg-2 p-4 focus:outline-none">
-          <div className="space-y-1">
-            {contributions
-              .sort((a, b) => b.contribution - a.contribution)
-              .map((asset) => {
-                const assetOrLiability = asset.isAsset ? 1 : -1
-                return (
-                  <div
-                    className="flex items-center justify-between"
-                    key={asset.asset + asset.contribution}
-                  >
-                    <p
-                      className={`whitespace-nowrap ${
-                        isActivePayload === asset.asset ? 'text-th-active' : ''
-                      }`}
-                    >
-                      {formatTokenSymbol(asset.asset)}
-                    </p>
-                    <p
-                      className={`pl-4 font-mono ${
-                        asset.isAsset ? 'text-th-up' : 'text-th-down'
-                      }`}
-                    >
-                      {formatCurrencyValue(
-                        asset.contribution * assetOrLiability
-                      )}
-                    </p>
-                  </div>
-                )
-              })}
-          </div>
-          <div className="mt-3 flex justify-between border-t border-th-bkg-4 pt-3">
-            <p>{t('total')}</p>
-            <p className="pl-4 font-mono text-th-fgd-2">
-              {formatCurrencyValue(total)}
-            </p>
-          </div>
-        </div>
-      )
-    }
-
-    return null
+  const handleLegendClick = (entry: HealthContribution, index: number) => {
+    setActiveIndex(index)
   }
 
-  return (
-    <div className="flex flex-col items-center pt-4 md:flex-row md:space-x-4">
-      {data.length ? (
-        <PieChart width={size} height={size}>
-          <Tooltip
-            cursor={{
-              fill: 'var(--bkg-2)',
-              opacity: 0.5,
-            }}
-            content={<CustomTooltip contributions={data} />}
-            position={{ x: 88, y: 0 }}
-          />
-          <Pie
-            cursor="pointer"
-            data={data}
-            dataKey="contribution"
-            cx="50%"
-            cy="50%"
-            outerRadius={outerRadius}
-            innerRadius={innerRadius}
-            minAngle={2}
-            startAngle={90}
-            endAngle={450}
-          >
-            {data.map((entry, index) => {
-              const fillColor = entry.isAsset
-                ? COLORS.UP[theme]
-                : COLORS.DOWN[theme]
-              return (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={fillColor}
-                  stroke={COLORS.BKG1[theme]}
-                  strokeWidth={1}
-                />
-              )
-            })}
-          </Pie>
-        </PieChart>
+  const handleMouseEnter = (data: HealthContribution, index: number) => {
+    setActiveIndex(index)
+  }
+
+  const handleMouseLeave = () => {
+    setActiveIndex(undefined)
+  }
+
+  const pieSizes = { size: 240, outerRadius: 120, innerRadius: 96 }
+  const { size, outerRadius, innerRadius } = pieSizes
+
+  const filteredData = useMemo(() => {
+    if (!data.length) return []
+    return data
+      .filter((cont) => cont.contribution > 0.01)
+      .sort((a, b) => {
+        const aMultiplier = a.isAsset ? 1 : -1
+        const bMultiplier = b.isAsset ? 1 : -1
+        return b.contribution * bMultiplier - a.contribution * aMultiplier
+      })
+  }, [data])
+
+  const [chartHeroAsset, chartHeroValue] = useMemo(() => {
+    if (!filteredData.length) return [undefined, undefined]
+    if (activeIndex === undefined) {
+      const value = filteredData.reduce((a, c) => {
+        const assetOrLiabMultiplier = c.isAsset ? 1 : -1
+        return a + c.contribution * assetOrLiabMultiplier
+      }, 0)
+      return [t('total'), value]
+    } else {
+      const asset = filteredData[activeIndex]
+      const assetOrLiabMultiplier = asset.isAsset ? 1 : -1
+      const value = asset.contribution * assetOrLiabMultiplier
+      return [asset.asset, value]
+    }
+  }, [activeIndex, filteredData])
+
+  const renderActiveShape = ({
+    cx,
+    cy,
+    innerRadius,
+    outerRadius,
+    startAngle,
+    endAngle,
+    fill,
+  }: SectorProps) => {
+    return (
+      <g>
+        <Sector
+          cx={cx}
+          cy={cy}
+          innerRadius={innerRadius}
+          outerRadius={outerRadius! + 4}
+          startAngle={startAngle}
+          endAngle={endAngle}
+          fill={fill}
+        />
+      </g>
+    )
+  }
+
+  const renderLegendLogo = (asset: string) => {
+    const group = mangoStore.getState().group
+    if (!group)
+      return <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
+    const isSpotMarket = asset.includes('/')
+    if (isSpotMarket) {
+      const market = group.getSerum3MarketByName(asset)
+      return market ? (
+        <MarketLogos market={market} size="small" />
       ) : (
-        <div className="h-20 w-20 rounded-full ring-[8px] ring-inset ring-th-bkg-3" />
-      )}
+        <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
+      )
+    } else {
+      const bank = group.banksMapByName.get(asset)?.[0]
+      return bank ? (
+        <div className="mr-1.5">
+          <TokenLogo bank={bank} size={16} />
+        </div>
+      ) : (
+        <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
+      )
+    }
+  }
+
+  return filteredData.length ? (
+    <div className="flex h-full w-full flex-col items-center">
+      <div className="relative h-[248px] w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart width={size} height={size}>
+            <Pie
+              cursor="pointer"
+              data={filteredData}
+              dataKey="contribution"
+              cx="50%"
+              cy="50%"
+              outerRadius={outerRadius}
+              innerRadius={innerRadius}
+              minAngle={2}
+              startAngle={90}
+              endAngle={450}
+              activeIndex={activeIndex}
+              activeShape={renderActiveShape}
+              onClick={handleLegendClick}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
+              {filteredData.map((entry, index) => {
+                const fillColor = entry.isAsset
+                  ? COLORS.UP[theme]
+                  : COLORS.DOWN[theme]
+                return (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={fillColor}
+                    opacity={1 / ((index + 1) / 2.5)}
+                    stroke="none"
+                  />
+                )
+              })}
+            </Pie>
+          </PieChart>
+        </ResponsiveContainer>
+        {chartHeroValue ? (
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+            <p>{chartHeroAsset}</p>
+            <span className="text-xl font-bold">
+              {formatCurrencyValue(chartHeroValue)}
+            </span>
+          </div>
+        ) : null}
+      </div>
+      <div className="mt-6 flex max-w-[420px] flex-wrap justify-center space-x-4">
+        {filteredData.map((d, i) => (
+          <div
+            key={d.asset + i}
+            className={`default-transition flex h-7 cursor-pointer items-center ${
+              activeIndex !== undefined && activeIndex !== i ? 'opacity-60' : ''
+            }`}
+            onClick={() => handleLegendClick(d, i)}
+            onMouseEnter={() => handleMouseEnter(d, i)}
+            onMouseLeave={handleMouseLeave}
+          >
+            {renderLegendLogo(d.asset)}
+            <p
+              className={`default-transition ${
+                activeIndex === i ? 'text-th-fgd-1' : ''
+              }`}
+            >
+              {d.asset}
+            </p>
+          </div>
+        ))}
+      </div>
     </div>
-  )
+  ) : null
 }
 
 export default HealthContributionsChart

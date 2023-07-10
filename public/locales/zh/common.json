@@ -59,7 +59,7 @@
   "date-to": "至",
   "delegate": "委托",
   "delegate-account": "委托帐户",
-  "delegate-account-info": "帐户委托给 {{address}}",
+  "delegate-account-info": "帐户委托给: {{delegate}}",
   "delegate-desc": "以Mango帐户委托给别的钱包地址",
   "delegate-placeholder": "输入受委钱包地执",
   "delete": "删除",
@@ -100,6 +100,7 @@
   "mango": "Mango",
   "mango-stats": "Mango统计",
   "market": "市场",
+  "markets": "Markets",
   "max": "最多",
   "max-borrow": "最多借贷",
   "more": "更多",
@@ -179,6 +180,7 @@
   "withdraw-amount": "取款额",
   "list-market-token": "List Market/Token",
   "vote": "投票",
-  "yes": "是"
+  "yes": "是",
+  "you": "You"
  }
  

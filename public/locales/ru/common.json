@@ -59,7 +59,7 @@
   "date-to": "Date To",
   "delegate": "Delegate",
   "delegate-account": "Delegate Account",
-  "delegate-account-info": "Account delegated to {{address}}",
+  "delegate-account-info": "Account delegated to: {{delegate}}",
   "delegate-desc": "Delegate your Mango account to another wallet address",
   "delegate-placeholder": "Enter a wallet address to delegate to",
   "delete": "Delete",
@@ -100,6 +100,7 @@
   "mango": "Mango",
   "mango-stats": "Mango Stats",
   "market": "Market",
+  "markets": "Markets",
   "max": "Max",
   "max-borrow": "Max Borrow",
   "more": "More",
@@ -179,6 +180,7 @@
   "withdraw-amount": "Withdraw Amount",
   "list-market-token": "List Market/Token",
   "vote": "Vote",
-  "yes": "Yes"
+  "yes": "Yes",
+  "you": "You"
  }
  

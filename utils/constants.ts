@@ -59,6 +59,8 @@ export const STATS_TAB_KEY = 'activeStatsTab-0.1'
 
 export const USE_ORDERBOOK_FEED_KEY = 'useOrderbookFeed-0.1'
 
+export const HOT_KEYS_KEY = 'hotKeys-0.1'
+
 // Unused
 export const PROFILE_CATEGORIES = [
   'borrower',
@@ -109,17 +111,20 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   dai: true,
   dual: true,
   eth: true,
+  ethpo: true,
   'eth (portal)': true,
   hnt: true,
   jitosol: true,
   ldo: true,
   mngo: true,
   msol: true,
+  orca: true,
   ray: true,
   rndr: true,
   sol: true,
   stsol: true,
   usdc: true,
   usdt: true,
+  wbtcpo: true,
   'wbtc (portal)': true,
 }

@@ -42,7 +42,7 @@ const NotificationSettings = () => {
         <h2 className="text-base">{t('settings:notifications')}</h2>
       </div>
       {isAuth ? (
-        <div className="flex items-center justify-between border-t border-th-bkg-3 p-4">
+        <div className="flex items-center justify-between border-y border-th-bkg-3 p-4">
           <p>{t('settings:limit-order-filled')}</p>
           <Switch
             checked={!!data?.fillsNotifications}
@@ -55,7 +55,7 @@ const NotificationSettings = () => {
           />
         </div>
       ) : (
-        <div className="mb-8 rounded-lg border border-th-bkg-3 p-6">
+        <div className="rounded-lg border border-th-bkg-3 p-6">
           {connected ? (
             <div className="flex flex-col items-center">
               <BellIcon className="mb-2 h-6 w-6 text-th-fgd-4" />

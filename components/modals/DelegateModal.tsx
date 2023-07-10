@@ -51,7 +51,7 @@ const DelegateModal = ({ isOpen, onClose }: ModalProps) => {
         title:
           address !== DEFAULT_DELEGATE
             ? t('delegate-account-info', {
-                address: abbreviateAddress(new PublicKey(address)),
+                delegate: abbreviateAddress(new PublicKey(address)),
               })
             : 'Account delegation removed',
         type: 'success',

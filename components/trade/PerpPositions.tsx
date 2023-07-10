@@ -321,6 +321,7 @@ const PerpPositions = () => {
                 mangoAccount
               )
               const unsettledPnl = position.getUnsettledPnlUi(market)
+              const notional = Math.abs(floorBasePosition) * market._uiPrice
               return (
                 <Disclosure key={position.marketIndex}>
                   {({ open }) => (
@@ -348,33 +349,33 @@ const PerpPositions = () => {
                                   decimals={getDecimalCount(
                                     market.minOrderSize
                                   )}
-                                />{' '}
-                                <span className="font-body text-th-fgd-3">
-                                  {market.name.split('-')[0]}
-                                </span>
+                                />
                               </span>
                               <span className="text-th-fgd-4">|</span>
-                              <span
-                                className={`font-mono ${
-                                  unrealizedPnl > 0
-                                    ? 'text-th-up'
-                                    : 'text-th-down'
-                                }`}
-                              >
-                                <FormatNumericValue
-                                  value={unrealizedPnl}
-                                  isUsd
-                                  decimals={2}
-                                />
+                              <span className="font-mono">
+                                <FormatNumericValue value={notional} isUsd />
                               </span>
                             </div>
                           </div>
                         </div>
-                        <ChevronDownIcon
-                          className={`${
-                            open ? 'rotate-180' : 'rotate-360'
-                          } ml-3 h-6 w-6 flex-shrink-0 text-th-fgd-3`}
-                        />
+                        <div className="flex items-center space-x-2">
+                          <span
+                            className={`font-mono ${
+                              unrealizedPnl > 0 ? 'text-th-up' : 'text-th-down'
+                            }`}
+                          >
+                            <FormatNumericValue
+                              value={unrealizedPnl}
+                              isUsd
+                              decimals={2}
+                            />
+                          </span>
+                          <ChevronDownIcon
+                            className={`${
+                              open ? 'rotate-180' : 'rotate-360'
+                            } ml-3 h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                          />
+                        </div>
                       </Disclosure.Button>
                       <Transition
                         enter="transition ease-in duration-200"
@@ -407,10 +408,7 @@ const PerpPositions = () => {
                                   </LinkButton>
                                   <FormatNumericValue
                                     classNames="text-xs text-th-fgd-3"
-                                    value={
-                                      Math.abs(floorBasePosition) *
-                                      market._uiPrice
-                                    }
+                                    value={notional}
                                     isUsd
                                   />
                                 </div>
@@ -488,33 +486,31 @@ const PerpPositions = () => {
                               <p className="text-xs text-th-fgd-3">
                                 {t('trade:unrealized-pnl')}
                               </p>
-                              <p className="font-mono text-th-fgd-2">
-                                <Tooltip
-                                  content={
-                                    <PnlTooltipContent
-                                      unrealizedPnl={unrealizedPnl}
-                                      realizedPnl={realizedPnl}
-                                      totalPnl={totalPnl}
-                                      unsettledPnl={unsettledPnl}
-                                    />
-                                  }
-                                  delay={100}
+                              <Tooltip
+                                content={
+                                  <PnlTooltipContent
+                                    unrealizedPnl={unrealizedPnl}
+                                    realizedPnl={realizedPnl}
+                                    totalPnl={totalPnl}
+                                    unsettledPnl={unsettledPnl}
+                                  />
+                                }
+                                delay={100}
+                              >
+                                <span
+                                  className={`tooltip-underline mb-1 font-mono ${
+                                    unrealizedPnl >= 0
+                                      ? 'text-th-up'
+                                      : 'text-th-down'
+                                  }`}
                                 >
-                                  <span
-                                    className={`tooltip-underline mb-1 ${
-                                      unrealizedPnl >= 0
-                                        ? 'text-th-up'
-                                        : 'text-th-down'
-                                    }`}
-                                  >
-                                    <FormatNumericValue
-                                      value={unrealizedPnl}
-                                      isUsd
-                                      decimals={2}
-                                    />
-                                  </span>
-                                </Tooltip>
-                              </p>
+                                  <FormatNumericValue
+                                    value={unrealizedPnl}
+                                    isUsd
+                                    decimals={2}
+                                  />
+                                </span>
+                              </Tooltip>
                             </div>
                             <div className="col-span-1">
                               <p className="text-xs text-th-fgd-3">ROE</p>

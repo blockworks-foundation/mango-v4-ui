@@ -468,7 +468,7 @@ const Dashboard: NextPage = () => {
                                   />
                                   <KeyValuePair
                                     label="Maint Asset/Liab Weight"
-                                    value={`${formattedBankValues.maintAssetWeight}/
+                                    value={`${formattedBankValues.maintAssetWeight} /
                               ${formattedBankValues.maintLiabWeight}`}
                                     proposedValue={
                                       (suggestedFields.maintAssetWeight ||
@@ -476,7 +476,7 @@ const Dashboard: NextPage = () => {
                                       `${
                                         suggestedFields.maintAssetWeight ||
                                         formattedBankValues.maintAssetWeight
-                                      }/
+                                      } /
                               ${
                                 suggestedFields.maintLiabWeight ||
                                 formattedBankValues.maintLiabWeight
@@ -485,7 +485,7 @@ const Dashboard: NextPage = () => {
                                   />
                                   <KeyValuePair
                                     label="Init Asset/Liab Weight"
-                                    value={`${formattedBankValues.initAssetWeight}/
+                                    value={`${formattedBankValues.initAssetWeight} /
                               ${formattedBankValues.initLiabWeight}`}
                                     proposedValue={
                                       (suggestedFields.initAssetWeight ||
@@ -493,12 +493,16 @@ const Dashboard: NextPage = () => {
                                       `${
                                         suggestedFields.initAssetWeight ||
                                         formattedBankValues.initAssetWeight
-                                      }/
+                                      } /
                               ${
                                 suggestedFields.initLiabWeight ||
                                 formattedBankValues.initLiabWeight
                               }`
                                     }
+                                  />
+                                  <KeyValuePair
+                                    label="Scaled Init Asset/Liab Weight"
+                                    value={`${formattedBankValues.scaledInitAssetWeight} / ${formattedBankValues.scaledInitLiabWeight}`}
                                   />
                                   <KeyValuePair
                                     label="Deposit weight scale start quote"

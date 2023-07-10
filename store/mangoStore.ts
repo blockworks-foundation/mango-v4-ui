@@ -150,10 +150,6 @@ export type MangoStore = {
     perpPositions: PerpPosition[]
     spotBalances: SpotBalances
     interestTotals: { data: TotalInterestDataItem[]; loading: boolean }
-    performance: {
-      data: PerformanceDataItem[]
-      loading: boolean
-    }
     swapHistory: {
       data: SwapHistoryItem[]
       initialLoad: boolean
@@ -245,10 +241,6 @@ export type MangoStore = {
       params?: string,
       limit?: number
     ) => Promise<void>
-    fetchAccountPerformance: (
-      mangoAccountPk: string,
-      range: number
-    ) => Promise<void>
     fetchGroup: () => Promise<void>
     reloadMangoAccount: () => Promise<void>
     fetchMangoAccounts: (ownerPk: PublicKey) => Promise<void>
@@ -313,7 +305,6 @@ const mangoStore = create<MangoStore>()(
         perpPositions: [],
         spotBalances: {},
         interestTotals: { data: [], loading: false },
-        performance: { data: [], loading: true },
         swapHistory: { data: [], loading: true, initialLoad: true },
         tradeHistory: { data: [], loading: true },
       },
@@ -435,43 +426,6 @@ const mangoStore = create<MangoStore>()(
             console.error({
               title: 'Failed to load account interest totals',
               type: 'error',
-            })
-          }
-        },
-        fetchAccountPerformance: async (
-          mangoAccountPk: string,
-          range: number
-        ) => {
-          const set = get().set
-          try {
-            const response = await fetch(
-              `${MANGO_DATA_API_URL}/stats/performance_account?mango-account=${mangoAccountPk}&start-date=${dayjs()
-                .subtract(range, 'day')
-                .format('YYYY-MM-DD')}`
-            )
-            const parsedResponse:
-              | null
-              | EmptyObject
-              | AccountPerformanceData[] = await response.json()
-
-            if (parsedResponse && Object.keys(parsedResponse)?.length) {
-              const entries = Object.entries(parsedResponse).sort((a, b) =>
-                b[0].localeCompare(a[0])
-              )
-
-              const stats = entries.map(([key, value]) => {
-                return { ...value, time: key } as PerformanceDataItem
-              })
-
-              set((state) => {
-                state.mangoAccount.performance.data = stats.reverse()
-              })
-            }
-          } catch (e) {
-            console.error('Failed to load account performance data', e)
-          } finally {
-            set((state) => {
-              state.mangoAccount.performance.loading = false
             })
           }
         },
