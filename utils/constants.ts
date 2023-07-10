@@ -111,6 +111,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   dai: true,
   dual: true,
   eth: true,
+  ethpo: true,
   'eth (portal)': true,
   hnt: true,
   jitosol: true,
@@ -124,5 +125,6 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   stsol: true,
   usdc: true,
   usdt: true,
+  wbtcpo: true,
   'wbtc (portal)': true,
 }
