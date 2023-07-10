@@ -98,7 +98,7 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
       <div className="mx-auto grid max-w-[1140px] grid-cols-2 gap-8 p-6">
         <div className="col-span-1 flex h-full flex-col items-center">
           <Tooltip content={t('account:tooltip-init-health')}>
-            <h3 className="tooltip-underline mb-3 text-base">
+            <h3 className="tooltip-underline mb-6 text-base">
               {t('account:init-health')}
             </h3>
           </Tooltip>
@@ -106,7 +106,7 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
         </div>
         <div className="col-span-1 flex flex-col items-center">
           <Tooltip content={t('account:tooltip-maint-health')}>
-            <h3 className="tooltip-underline mb-3 text-base">
+            <h3 className="tooltip-underline mb-6 text-base">
               {t('account:maint-health')}
             </h3>
           </Tooltip>

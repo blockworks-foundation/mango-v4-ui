@@ -4,7 +4,7 @@ import {
   Cell,
   Pie,
   PieChart,
-  ResponsiveContainer,
+  // ResponsiveContainer,
   Sector,
   SectorProps,
 } from 'recharts'
@@ -78,8 +78,8 @@ const HealthContributionsChart = ({ data }: { data: HealthContribution[] }) => {
         <Sector
           cx={cx}
           cy={cy}
-          innerRadius={innerRadius}
-          outerRadius={outerRadius! + 4}
+          innerRadius={innerRadius! - 4}
+          outerRadius={outerRadius}
           startAngle={startAngle}
           endAngle={endAngle}
           fill={fill}
@@ -114,42 +114,43 @@ const HealthContributionsChart = ({ data }: { data: HealthContribution[] }) => {
 
   return filteredData.length ? (
     <div className="flex h-full w-full flex-col items-center">
-      <div className="relative h-[248px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart width={size} height={size}>
-            <Pie
-              cursor="pointer"
-              data={filteredData}
-              dataKey="contribution"
-              cx="50%"
-              cy="50%"
-              outerRadius={outerRadius}
-              innerRadius={innerRadius}
-              minAngle={2}
-              startAngle={90}
-              endAngle={450}
-              activeIndex={activeIndex}
-              activeShape={renderActiveShape}
-              onClick={handleLegendClick}
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
-            >
-              {filteredData.map((entry, index) => {
-                const fillColor = entry.isAsset
-                  ? COLORS.UP[theme]
-                  : COLORS.DOWN[theme]
-                return (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={fillColor}
-                    opacity={1 / ((index + 1) / 2.5)}
-                    stroke="none"
-                  />
-                )
-              })}
-            </Pie>
-          </PieChart>
-        </ResponsiveContainer>
+      <div className="relative">
+        {/* <ResponsiveContainer width="100%" height="100%"> */}
+        <PieChart width={size} height={size}>
+          <Pie
+            cursor="pointer"
+            data={filteredData}
+            dataKey="contribution"
+            cx="50%"
+            cy="50%"
+            outerRadius={outerRadius}
+            innerRadius={innerRadius}
+            minAngle={2}
+            startAngle={90}
+            endAngle={450}
+            paddingAngle={1}
+            activeIndex={activeIndex}
+            activeShape={renderActiveShape}
+            onClick={handleLegendClick}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            {filteredData.map((entry, index) => {
+              const fillColor = entry.isAsset
+                ? COLORS.UP[theme]
+                : COLORS.DOWN[theme]
+              return (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={fillColor}
+                  opacity={1 / ((index + 1) / 2.5)}
+                  stroke="none"
+                />
+              )
+            })}
+          </Pie>
+        </PieChart>
+        {/* </ResponsiveContainer> */}
         {chartHeroValue ? (
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
             <p>{chartHeroAsset}</p>
