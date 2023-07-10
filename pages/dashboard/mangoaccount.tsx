@@ -281,7 +281,7 @@ const MangoAccountDashboard: NextPage = () => {
                       label="Max Settle"
                       value={`$${mangoAccount.perpMaxSettle(
                         group,
-                        perp.marketIndex
+                        market.settleTokenIndex
                       )}`}
                     />
                     <KeyValuePair
