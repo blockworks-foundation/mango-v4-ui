@@ -1,4 +1,4 @@
-import { Bank, MangoAccount } from '@blockworks-foundation/mango-v4'
+import { Bank, HealthType, MangoAccount } from '@blockworks-foundation/mango-v4'
 import { Disclosure, Transition } from '@headlessui/react'
 import {
   ChevronDownIcon,
@@ -33,6 +33,7 @@ import useBanksWithBalances, {
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import TokenLogo from './shared/TokenLogo'
+import useMangoGroup from 'hooks/useMangoGroup'
 
 const TokenList = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
@@ -41,6 +42,7 @@ const TokenList = () => {
     true
   )
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
+  const { group } = useMangoGroup()
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const totalInterestData = mangoStore(
     (s) => s.mangoAccount.interestTotals.data
@@ -80,6 +82,24 @@ const TokenList = () => {
                 <div className="flex justify-end">
                   <Tooltip content="A negative balance represents a borrow">
                     <span className="tooltip-underline">{t('balance')}</span>
+                  </Tooltip>
+                </div>
+              </Th>
+              <Th>
+                <div className="flex justify-end">
+                  <Tooltip content={t('account:tooltip-init-health')}>
+                    <span className="tooltip-underline">
+                      {t('account:init-health')}
+                    </span>
+                  </Tooltip>
+                </div>
+              </Th>
+              <Th>
+                <div className="flex justify-end">
+                  <Tooltip content={t('account:tooltip-maint-health')}>
+                    <span className="tooltip-underline">
+                      {t('account:maint-health')}
+                    </span>
                   </Tooltip>
                 </div>
               </Th>
@@ -129,6 +149,41 @@ const TokenList = () => {
               const unsettled =
                 spotBalances[bank.mint.toString()]?.unsettled || 0
 
+              let initHealth = 0
+              let maintHealth = 0
+              if (mangoAccount && group) {
+                const initHealthContributions =
+                  mangoAccount.getHealthContributionPerAssetUi(
+                    group,
+                    HealthType.init
+                  )
+                const maintHealthContributions =
+                  mangoAccount.getHealthContributionPerAssetUi(
+                    group,
+                    HealthType.maint
+                  )
+
+                initHealth =
+                  initHealthContributions.find(
+                    (cont) => cont.asset === bank.name
+                  )?.contribution || 0
+                maintHealth =
+                  maintHealthContributions.find(
+                    (cont) => cont.asset === bank.name
+                  )?.contribution || 0
+              }
+
+              const initAssetWeight = bank
+                .scaledInitAssetWeight(bank.price)
+                .toFixed(2)
+              const initLiabWeight = bank
+                .scaledInitLiabWeight(bank.price)
+                .toFixed(2)
+              const maintAssetWeight = bank.maintAssetWeight
+                .toNumber()
+                .toFixed(2)
+              const maintLiabWeight = bank.maintLiabWeight.toNumber().toFixed(2)
+
               return (
                 <TrBody key={bank.name}>
                   <Td>
@@ -145,6 +200,44 @@ const TokenList = () => {
                       bank={bank}
                       stacked
                     />
+                  </Td>
+                  <Td>
+                    <div className="text-right">
+                      <p>
+                        <FormatNumericValue
+                          value={initHealth}
+                          decimals={2}
+                          isUsd
+                        />
+                      </p>
+                      <p className="text-th-fgd-3">
+                        {initHealth > 0
+                          ? initAssetWeight
+                          : initHealth < 0
+                          ? initLiabWeight
+                          : 0}
+                        x
+                      </p>
+                    </div>
+                  </Td>
+                  <Td>
+                    <div className="text-right">
+                      <p>
+                        <FormatNumericValue
+                          value={maintHealth}
+                          decimals={2}
+                          isUsd
+                        />
+                      </p>
+                      <p className="text-th-fgd-3">
+                        {maintHealth > 0
+                          ? maintAssetWeight
+                          : maintHealth < 0
+                          ? maintLiabWeight
+                          : 0}
+                        x
+                      </p>
+                    </div>
                   </Td>
                   <Td className="text-right">
                     <BankAmountWithValue
