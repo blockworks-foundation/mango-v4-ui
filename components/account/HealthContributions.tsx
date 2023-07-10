@@ -10,7 +10,6 @@ import Tooltip from '@components/shared/Tooltip'
 import TokenLogo from '@components/shared/TokenLogo'
 import { useTranslation } from 'next-i18next'
 import MarketLogos from '@components/trade/MarketLogos'
-import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 
 export interface HealthContribution {
@@ -20,7 +19,7 @@ export interface HealthContribution {
 }
 
 const HealthContributions = ({ hideView }: { hideView: () => void }) => {
-  const { t } = useTranslation(['common', 'account'])
+  const { t } = useTranslation(['common', 'account', 'trade'])
   const { group } = useMangoGroup()
   const { mangoAccount } = useMangoAccount()
 
@@ -119,11 +118,7 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
             <thead>
               <TrHead>
                 <Th className="text-left">{t('token')}</Th>
-                <Th>
-                  <div className="flex justify-end">
-                    <span>{t('balance')}</span>
-                  </div>
-                </Th>
+                <Th className="text-right">{t('trade:notional')}</Th>
                 <Th>
                   <div className="flex justify-end">
                     <Tooltip content={t('account:tooltip-init-health')}>
@@ -148,7 +143,7 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
               {maintHealthTokens
                 .sort((a, b) => b.contribution - a.contribution)
                 .map((cont) => {
-                  const { asset, contribution } = cont
+                  const { asset, contribution, isAsset } = cont
                   const bank = group.banksMapByName.get(asset)?.[0]
 
                   let initAssetWeight = 0
@@ -175,6 +170,8 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
                     initHealthTokens.find((cont) => cont.asset === asset)
                       ?.contribution || 0
 
+                  const assetOrLiabMultiplier = isAsset ? 1 : -1
+
                   return (
                     <TrBody key={asset}>
                       <Td>
@@ -187,11 +184,18 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
                       </Td>
                       <Td className="text-right">
                         {bank ? (
-                          <BankAmountWithValue
-                            amount={balance}
-                            bank={bank}
-                            stacked
-                          />
+                          <p>
+                            <FormatNumericValue
+                              value={balance * bank.uiPrice}
+                              isUsd
+                            />{' '}
+                            <span className={`block text-th-fgd-4`}>
+                              <FormatNumericValue
+                                value={balance}
+                                decimals={bank.mintDecimals}
+                              />
+                            </span>
+                          </p>
                         ) : (
                           '–'
                         )}
@@ -200,7 +204,7 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
                         <div className="text-right">
                           <p>
                             <FormatNumericValue
-                              value={initContribution}
+                              value={initContribution * assetOrLiabMultiplier}
                               decimals={2}
                               isUsd
                             />
@@ -219,7 +223,7 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
                         <div className="text-right">
                           <p>
                             <FormatNumericValue
-                              value={contribution}
+                              value={contribution * assetOrLiabMultiplier}
                               decimals={2}
                               isUsd
                             />
@@ -272,7 +276,7 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
               {maintHealthMarkets
                 .sort((a, b) => b.contribution - a.contribution)
                 .map((cont) => {
-                  const { asset, contribution } = cont
+                  const { asset, contribution, isAsset } = cont
                   const market = group.getSerum3MarketByName(asset)
                   const bank = group.banksMapByTokenIndex.get(
                     market.baseTokenIndex
@@ -298,6 +302,8 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
                     initHealthMarkets.find((cont) => cont.asset === asset)
                       ?.contribution || 0
 
+                  const assetOrLiabMultiplier = isAsset ? 1 : -1
+
                   return (
                     <TrBody key={asset}>
                       <Td>
@@ -310,7 +316,7 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
                         <div className="text-right">
                           <p>
                             <FormatNumericValue
-                              value={initContribution}
+                              value={initContribution * assetOrLiabMultiplier}
                               decimals={2}
                               isUsd
                             />
@@ -329,7 +335,7 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
                         <div className="text-right">
                           <p>
                             <FormatNumericValue
-                              value={contribution}
+                              value={contribution * assetOrLiabMultiplier}
                               decimals={2}
                               isUsd
                             />
