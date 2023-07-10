@@ -7,7 +7,6 @@ import Button, { LinkButton } from '@components/shared/Button'
 import Modal from '@components/shared/Modal'
 import { Disclosure } from '@headlessui/react'
 import {
-  CheckIcon,
   ChevronDownIcon,
   ChevronRightIcon,
   ClockIcon,
@@ -27,7 +26,7 @@ import { abbreviateAddress } from 'utils/formatting'
 import { PublicKey } from '@solana/web3.js'
 import { useTranslation } from 'next-i18next'
 import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
-import { XMarkIcon } from '@heroicons/react/24/outline'
+import InlineNotification from '@components/shared/InlineNotification'
 
 export type RewardsLeaderboardItem = {
   points: number
@@ -117,7 +116,10 @@ const RewardsPage = () => {
       {!showClaim ? (
         <Claim />
       ) : (
-        <Season showLeaderboard={setShowLeaderboards} />
+        <Season
+          showLeaderboard={setShowLeaderboards}
+          showWhitelistModal={() => setIsWhitelisted(false)}
+        />
       )}
       {showHowItWorks ? (
         <HowItWorksModal
@@ -144,8 +146,10 @@ export default RewardsPage
 
 const Season = ({
   showLeaderboard,
+  showWhitelistModal,
 }: {
   showLeaderboard: (x: string) => void
+  showWhitelistModal: () => void
 }) => {
   const { t } = useTranslation(['common', 'rewards'])
   const { wallet } = useWallet()
@@ -201,77 +205,99 @@ const Season = ({
         <p className="text-base text-th-fgd-2">
           Season 1 starts in:{' '}
           <span className="mr-4 font-bold text-th-fgd-1">4 days</span>
-          <div className="flex">
-            User whitelisted -{' '}
-            {isWhiteListed ? (
-              <CheckIcon className="w-5"></CheckIcon>
-            ) : (
-              <XMarkIcon className="w-5"></XMarkIcon>
-            )}
-          </div>
         </p>
       </div>
       <div className="mx-auto grid max-w-[1140px] grid-cols-12 gap-4 p-8 lg:gap-6 lg:p-10">
-        <div className="col-span-12 lg:col-span-8">
-          <h2 className="mb-4">Rewards Tiers</h2>
-          <div className="mb-6 space-y-2">
-            <RewardsTierCard
-              icon={<AcornIcon className="h-8 w-8 text-th-fgd-2" />}
-              name="seed"
-              desc="All new participants start here"
-              showLeaderboard={showLeaderboard}
-              status={walletRewardsData?.tier === 'seed' ? 'Qualified' : ''}
-            />
-            <RewardsTierCard
-              icon={<MangoIcon className="h-8 w-8 text-th-fgd-2" />}
-              name="mango"
-              desc="Average swap/trade value less than $1,000"
-              showLeaderboard={showLeaderboard}
-              status={walletRewardsData?.tier === 'mango' ? 'Qualified' : ''}
-            />
-            <RewardsTierCard
-              icon={<WhaleIcon className="h-8 w-8 text-th-fgd-2" />}
-              name="whale"
-              desc="Average swap/trade value greater than $1,000"
-              showLeaderboard={showLeaderboard}
-              status={walletRewardsData?.tier === 'whale' ? 'Qualified' : ''}
-            />
-            <RewardsTierCard
-              icon={<RobotIcon className="h-8 w-8 text-th-fgd-2" />}
-              name="bot"
-              desc="All bots"
-              showLeaderboard={showLeaderboard}
-              status={walletRewardsData?.tier === 'bot' ? 'Qualified' : ''}
+        {!isWhiteListed ? (
+          <div className="col-span-12">
+            <InlineNotification
+              desc={
+                <>
+                  <span>
+                    You need to whitelist your wallet to claim any rewards you
+                    win
+                  </span>
+                  <LinkButton className="mt-2" onClick={showWhitelistModal}>
+                    Get Whitelisted
+                  </LinkButton>
+                </>
+              }
+              title="Wallet not whitelisted"
+              type="warning"
             />
           </div>
-          <h2 className="mb-4">FAQs</h2>
-          <div className="border-b border-th-bkg-3">
-            <Disclosure>
-              {({ open }) => (
-                <>
-                  <Disclosure.Button
-                    className={`w-full border-t border-th-bkg-3 p-4 text-left focus:outline-none md:hover:bg-th-bkg-2`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <p className="text-th-fgd-2">FAQ 1</p>
-                      <ChevronDownIcon
-                        className={`${
-                          open ? 'rotate-180' : 'rotate-360'
-                        } h-5 w-5 flex-shrink-0`}
-                      />
-                    </div>
-                  </Disclosure.Button>
-                  <Disclosure.Panel className="p-4">
-                    <p>FAQ 1 content</p>
-                  </Disclosure.Panel>
-                </>
-              )}
-            </Disclosure>
+        ) : null}
+        <div className="col-span-12 lg:col-span-8">
+          <div className="rounded-lg border border-th-bkg-3 p-4">
+            <h2 className="mb-4">Rewards Tiers</h2>
+            <div className="mb-6 space-y-2">
+              <RewardsTierCard
+                icon={<AcornIcon className="h-8 w-8 text-th-fgd-2" />}
+                name="seed"
+                desc="All new participants start here"
+                showLeaderboard={showLeaderboard}
+                status={walletRewardsData?.tier === 'seed' ? 'Qualified' : ''}
+              />
+              <RewardsTierCard
+                icon={<MangoIcon className="h-8 w-8 text-th-fgd-2" />}
+                name="mango"
+                desc="Average swap/trade value less than $1,000"
+                showLeaderboard={showLeaderboard}
+                status={walletRewardsData?.tier === 'mango' ? 'Qualified' : ''}
+              />
+              <RewardsTierCard
+                icon={<WhaleIcon className="h-8 w-8 text-th-fgd-2" />}
+                name="whale"
+                desc="Average swap/trade value greater than $1,000"
+                showLeaderboard={showLeaderboard}
+                status={walletRewardsData?.tier === 'whale' ? 'Qualified' : ''}
+              />
+              <RewardsTierCard
+                icon={<RobotIcon className="h-8 w-8 text-th-fgd-2" />}
+                name="bot"
+                desc="All bots"
+                showLeaderboard={showLeaderboard}
+                status={walletRewardsData?.tier === 'bot' ? 'Qualified' : ''}
+              />
+            </div>
+            <h2 className="mb-4">FAQs</h2>
+            <div className="border-b border-th-bkg-3">
+              <Disclosure>
+                {({ open }) => (
+                  <>
+                    <Disclosure.Button
+                      className={`w-full border-t border-th-bkg-3 p-4 text-left focus:outline-none md:hover:bg-th-bkg-2`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <p className="text-th-fgd-2">FAQ 1</p>
+                        <ChevronDownIcon
+                          className={`${
+                            open ? 'rotate-180' : 'rotate-360'
+                          } h-5 w-5 flex-shrink-0`}
+                        />
+                      </div>
+                    </Disclosure.Button>
+                    <Disclosure.Panel className="p-4">
+                      <p>FAQ 1 content</p>
+                    </Disclosure.Panel>
+                  </>
+                )}
+              </Disclosure>
+            </div>
           </div>
         </div>
         <div className="col-span-12 lg:col-span-4">
           <div className="mb-2 rounded-lg border border-th-bkg-3 p-4">
-            <h2 className="mb-4">Your Points</h2>
+            <div className="mb-4 flex items-center justify-between">
+              <h2>Your Points</h2>
+              {isWhiteListed ? (
+                <Badge
+                  label="Whitelisted"
+                  borderColor="var(--success)"
+                  shadowColor="var(--success)"
+                />
+              ) : null}
+            </div>
             <div className="mb-4 flex h-14 w-full items-center rounded-md bg-th-bkg-2 px-3">
               <span className="w-full font-display text-3xl text-th-fgd-1">
                 {!isLoadingWalletData ? (
@@ -508,12 +534,12 @@ const RewardsTierCard = ({
   const { t } = useTranslation('rewards')
   return (
     <button
-      className="w-full rounded-lg border border-th-bkg-3 p-4 text-left focus:outline-none md:hover:border-th-fgd-4"
+      className="w-full rounded-lg bg-th-bkg-2 p-4 text-left focus:outline-none md:hover:bg-th-bkg-3"
       onClick={() => showLeaderboard(name)}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center">
-          <div className="mr-4 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-th-bkg-2 to-th-bkg-4">
+          <div className="mr-4 flex h-14 w-14 items-center justify-center rounded-full bg-th-bkg-1">
             {icon}
           </div>
           <div>
