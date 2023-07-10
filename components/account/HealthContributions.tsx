@@ -79,7 +79,9 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
       },
       { market: [], token: [] }
     )
-    return [splitData.market, splitData.token]
+    const markets = splitData.market.filter((d) => d.contribution > 0)
+    const tokens = splitData.token
+    return [markets, tokens]
   }, [maintHealthContributions])
 
   return group && mangoAccount ? (
