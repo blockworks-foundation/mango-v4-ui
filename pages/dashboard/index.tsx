@@ -168,7 +168,7 @@ const Dashboard: NextPage = () => {
           getNullOrVal(fieldsToChange.depositWeightScale),
           false,
           false,
-          null,
+          bank.reduceOnly ? 0 : null,
           null,
           null
         )
