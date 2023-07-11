@@ -29,6 +29,7 @@
     "@next/font": "13.4.4",
     "@project-serum/anchor": "0.25.0",
     "@pythnetwork/client": "2.15.0",
+    "@sentry/nextjs": "7.57.0",
     "@solana/spl-governance": "0.3.27",
     "@solana/spl-token": "0.3.7",
     "@solana/wallet-adapter-base": "0.9.20",
