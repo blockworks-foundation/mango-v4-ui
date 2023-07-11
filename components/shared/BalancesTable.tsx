@@ -66,6 +66,7 @@ const BalancesTable = () => {
         <tbody>
           {filteredBanks.map((b) => {
             const bank = b.bank
+            const symbol = bank.name === 'MSOL' ? 'mSOL' : bank.name
 
             const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0
             const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
@@ -77,7 +78,7 @@ const BalancesTable = () => {
                     <div className="mr-2.5 flex flex-shrink-0 items-center">
                       <TokenLogo bank={bank} />
                     </div>
-                    <span>{bank.name}</span>
+                    <span>{symbol}</span>
                   </div>
                 </Td>
                 <Td className="text-right">
@@ -104,6 +105,7 @@ const BalancesTable = () => {
       <div className="border-b border-th-bkg-3">
         {filteredBanks.map((b, i) => {
           const bank = b.bank
+          const symbol = bank.name === 'MSOL' ? 'mSOL' : bank.name
 
           const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0
           const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
@@ -119,29 +121,29 @@ const BalancesTable = () => {
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-start">
-                        <div className="mr-2.5 mt-0.5 flex flex-shrink-0 items-center">
+                        <div className="mr-2.5">
                           <TokenLogo bank={bank} />
                         </div>
-                        <div>
-                          <p className="mb-0.5 leading-none text-th-fgd-1">
-                            {bank.name}
-                          </p>
+                        <p className="text-th-fgd-2">{symbol}</p>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="text-right">
                           <Balance bank={b} />
-                          <p className="mt-0.5 text-sm leading-none text-th-fgd-4">
+                          <span className="font-mono text-xs text-th-fgd-3">
                             <FormatNumericValue
                               value={
                                 mangoAccount ? b.balance * bank.uiPrice : 0
                               }
                               isUsd
                             />
-                          </p>
+                          </span>
                         </div>
+                        <ChevronDownIcon
+                          className={`${
+                            open ? 'rotate-180' : 'rotate-360'
+                          } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                        />
                       </div>
-                      <ChevronDownIcon
-                        className={`${
-                          open ? 'rotate-180' : 'rotate-360'
-                        } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
-                      />
                     </div>
                   </Disclosure.Button>
                   <Transition
@@ -289,7 +291,7 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
   if (!balance) return <p className="md:flex md:justify-end">0</p>
 
   return (
-    <p className="text-th-fgd-2 md:flex md:justify-end">
+    <p className="font-mono text-th-fgd-2 md:flex md:justify-end">
       {!isUnownedAccount && !isMobile ? (
         asPath.includes('/trade') && isBaseOrQuote ? (
           <LinkButton

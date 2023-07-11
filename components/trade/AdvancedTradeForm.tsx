@@ -59,7 +59,7 @@ import InlineNotification from '@components/shared/InlineNotification'
 
 const set = mangoStore.getState().set
 
-const successSound = new Howl({
+export const successSound = new Howl({
   src: ['/sounds/swap-success.mp3'],
   volume: 0.5,
 })
