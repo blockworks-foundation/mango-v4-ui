@@ -15,7 +15,7 @@ const CHART_TABS: ViewToShow[] = [
 
 const AccountChart = ({
   chartName,
-  setViewToShow,
+  handleViewChange,
   customTooltip,
   data,
   hideChart,
@@ -24,7 +24,7 @@ const AccountChart = ({
   yKey,
 }: {
   chartName: ViewToShow
-  setViewToShow: (chart: ViewToShow) => void
+  handleViewChange: (view: ViewToShow) => void
   customTooltip?: ContentType<number, string>
   data: PerformanceDataItem[] | HourlyFundingChartData[] | undefined
   hideChart: () => void
@@ -65,7 +65,7 @@ const AccountChart = ({
                   ? 'bg-th-bkg-3 text-th-active md:hover:text-th-active'
                   : 'text-th-fgd-3 md:hover:text-th-fgd-2'
               }`}
-              onClick={() => setViewToShow(tab)}
+              onClick={() => handleViewChange(tab)}
               key={tab}
             >
               {t(tab)}

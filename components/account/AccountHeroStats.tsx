@@ -25,13 +25,13 @@ const AccountHeroStats = ({
   accountValue,
   rollingDailyData,
   setShowPnlHistory,
-  setViewToShow,
+  handleViewChange,
 }: {
   accountPnl: number
   accountValue: number
   rollingDailyData: PerformanceDataItem[]
   setShowPnlHistory: (show: boolean) => void
-  setViewToShow: (view: ViewToShow) => void
+  handleViewChange: (view: ViewToShow) => void
 }) => {
   const { t } = useTranslation(['common', 'account'])
   const { group } = useMangoGroup()
@@ -162,10 +162,6 @@ const AccountHeroStats = ({
     return volume
   }, [hourlyVolumeData])
 
-  const handleViewToShow = (viewName: ViewToShow) => {
-    setViewToShow(viewName)
-  }
-
   const loadingTotalVolume = fetchingVolumeTotalData || loadingVolumeTotalData
 
   return (
@@ -222,19 +218,21 @@ const AccountHeroStats = ({
                   {t('health')}
                 </p>
               </Tooltip>
-              <Tooltip
-                className="hidden md:block"
-                content={t('account:health-contributions')}
-                delay={100}
-              >
-                <IconButton
-                  className="text-th-fgd-3"
-                  hideBg
-                  onClick={() => handleViewToShow('health-contributions')}
+              {mangoAccountAddress ? (
+                <Tooltip
+                  className="hidden md:block"
+                  content={t('account:health-contributions')}
+                  delay={100}
                 >
-                  <ChartBarIcon className="h-5 w-5" />
-                </IconButton>
-              </Tooltip>
+                  <IconButton
+                    className="text-th-fgd-3"
+                    hideBg
+                    onClick={() => handleViewChange('health-contributions')}
+                  >
+                    <ChartBarIcon className="h-5 w-5" />
+                  </IconButton>
+                </Tooltip>
+              ) : null}
             </div>
             <div className="mt-1 mb-0.5 flex items-center space-x-3">
               <p className="text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
@@ -332,7 +330,7 @@ const AccountHeroStats = ({
                     <IconButton
                       className="text-th-fgd-3"
                       hideBg
-                      onClick={() => handleViewToShow('pnl')}
+                      onClick={() => handleViewChange('pnl')}
                     >
                       <ChartBarIcon className="h-5 w-5" />
                     </IconButton>
@@ -381,7 +379,7 @@ const AccountHeroStats = ({
                   <IconButton
                     className="text-th-fgd-3"
                     hideBg
-                    onClick={() => handleViewToShow('hourly-volume')}
+                    onClick={() => handleViewChange('hourly-volume')}
                   >
                     <ChartBarIcon className="h-5 w-5" />
                   </IconButton>
@@ -438,7 +436,7 @@ const AccountHeroStats = ({
                     className="text-th-fgd-3"
                     hideBg
                     onClick={() =>
-                      handleViewToShow('cumulative-interest-value')
+                      handleViewChange('cumulative-interest-value')
                     }
                   >
                     <ChartBarIcon className="h-5 w-5" />
@@ -480,7 +478,7 @@ const AccountHeroStats = ({
                 <IconButton
                   className="text-th-fgd-3"
                   hideBg
-                  onClick={() => handleViewToShow('hourly-funding')}
+                  onClick={() => handleViewChange('hourly-funding')}
                 >
                   <ChartBarIcon className="h-5 w-5" />
                 </IconButton>

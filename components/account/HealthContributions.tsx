@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react'
 import { HealthType } from '@blockworks-foundation/mango-v4'
 import {
   ArrowLeftIcon,
+  NoSymbolIcon,
   QuestionMarkCircleIcon,
 } from '@heroicons/react/20/solid'
 import Tooltip from '@components/shared/Tooltip'
@@ -24,7 +25,7 @@ export interface HealthContribution {
 const HealthContributions = ({ hideView }: { hideView: () => void }) => {
   const { t } = useTranslation(['common', 'account', 'trade'])
   const { group } = useMangoGroup()
-  const { mangoAccount } = useMangoAccount()
+  const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const [initActiveIndex, setInitActiveIndex] = useState<number | undefined>(
     undefined
   )
@@ -164,7 +165,7 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
       })
   }, [maintHealthContributions])
 
-  return group && mangoAccount ? (
+  return group ? (
     <>
       <div className="hide-scroll flex h-14 items-center space-x-4 overflow-x-auto border-b border-th-bkg-3">
         <button
@@ -175,74 +176,83 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
         </button>
         <h2 className="text-lg">{t('account:health-contributions')}</h2>
       </div>
-      <div className="mx-auto grid max-w-[1140px] grid-cols-2 gap-6 p-6 sm:gap-8">
-        <div className="col-span-1 flex h-full flex-col items-center">
-          <Tooltip content={t('account:tooltip-init-health')}>
-            <h3 className="tooltip-underline text-xs sm:text-base">
-              {t('account:init-health-contributions')}
-            </h3>
-          </Tooltip>
-          <HealthContributionsChart
-            data={initChartData}
-            activeIndex={initActiveIndex}
-            setActiveIndex={setInitActiveIndex}
-          />
+      {mangoAccountAddress ? (
+        <>
+          <div className="mx-auto grid max-w-[1140px] grid-cols-2 gap-6 p-6 sm:gap-8">
+            <div className="col-span-1 flex h-full flex-col items-center">
+              <Tooltip content={t('account:tooltip-init-health')}>
+                <h3 className="tooltip-underline text-xs sm:text-base">
+                  {t('account:init-health-contributions')}
+                </h3>
+              </Tooltip>
+              <HealthContributionsChart
+                data={initChartData}
+                activeIndex={initActiveIndex}
+                setActiveIndex={setInitActiveIndex}
+              />
+            </div>
+            <div className="col-span-1 flex flex-col items-center">
+              <Tooltip content={t('account:tooltip-maint-health')}>
+                <h3 className="tooltip-underline text-xs sm:text-base">
+                  {t('account:maint-health-contributions')}
+                </h3>
+              </Tooltip>
+              <HealthContributionsChart
+                data={maintChartData}
+                activeIndex={maintActiveIndex}
+                setActiveIndex={setMaintActiveIndex}
+              />
+            </div>
+            <div className="col-span-2 mx-auto flex max-w-[600px] flex-wrap justify-center space-x-4">
+              {[...maintChartData]
+                .sort((a, b) => b.contribution - a.contribution)
+                .map((d, i) => {
+                  return (
+                    <div
+                      key={d.asset + i}
+                      className={`default-transition flex h-7 cursor-pointer items-center md:hover:text-th-active`}
+                      onClick={() => handleLegendClick(d)}
+                      onMouseEnter={() => handleLegendMouseEnter(d)}
+                      onMouseLeave={handleLegendMouseLeave}
+                    >
+                      {renderLegendLogo(d.asset)}
+                      <span className={`default-transition`}>{d.asset}</span>
+                    </div>
+                  )
+                })}
+            </div>
+          </div>
+          {maintHealthTokens.length ? (
+            <div className="border-t border-th-bkg-3 pt-6">
+              <h2 className="mb-1 px-6 text-lg">{t('tokens')}</h2>
+              <TokensHealthTable
+                initTokens={initHealthTokens}
+                maintTokens={maintHealthTokens}
+                handleLegendClick={handleLegendClick}
+                handleLegendMouseEnter={handleLegendMouseEnter}
+                handleLegendMouseLeave={handleLegendMouseLeave}
+              />
+            </div>
+          ) : null}
+          {maintHealthMarkets.length ? (
+            <div className="pt-6">
+              <h2 className="mb-1 px-6 text-lg">{t('markets')}</h2>
+              <MarketsHealthTable
+                initMarkets={initHealthMarkets}
+                maintMarkets={maintHealthMarkets}
+                handleLegendClick={handleLegendClick}
+                handleLegendMouseEnter={handleLegendMouseEnter}
+                handleLegendMouseLeave={handleLegendMouseLeave}
+              />
+            </div>
+          ) : null}
+        </>
+      ) : (
+        <div className="mx-6 mt-6 flex flex-col items-center rounded-lg border border-th-bkg-3 p-8">
+          <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
+          <p>{t('account:no-data')}</p>
         </div>
-        <div className="col-span-1 flex flex-col items-center">
-          <Tooltip content={t('account:tooltip-maint-health')}>
-            <h3 className="tooltip-underline text-xs sm:text-base">
-              {t('account:maint-health-contributions')}
-            </h3>
-          </Tooltip>
-          <HealthContributionsChart
-            data={maintChartData}
-            activeIndex={maintActiveIndex}
-            setActiveIndex={setMaintActiveIndex}
-          />
-        </div>
-        <div className="col-span-2 mx-auto flex max-w-[600px] flex-wrap justify-center space-x-4">
-          {[...maintChartData]
-            .sort((a, b) => b.contribution - a.contribution)
-            .map((d, i) => {
-              return (
-                <div
-                  key={d.asset + i}
-                  className={`default-transition flex h-7 cursor-pointer items-center md:hover:text-th-active`}
-                  onClick={() => handleLegendClick(d)}
-                  onMouseEnter={() => handleLegendMouseEnter(d)}
-                  onMouseLeave={handleLegendMouseLeave}
-                >
-                  {renderLegendLogo(d.asset)}
-                  <span className={`default-transition`}>{d.asset}</span>
-                </div>
-              )
-            })}
-        </div>
-      </div>
-      {maintHealthTokens.length ? (
-        <div className="border-t border-th-bkg-3 pt-6">
-          <h2 className="mb-1 px-6 text-lg">{t('tokens')}</h2>
-          <TokensHealthTable
-            initTokens={initHealthTokens}
-            maintTokens={maintHealthTokens}
-            handleLegendClick={handleLegendClick}
-            handleLegendMouseEnter={handleLegendMouseEnter}
-            handleLegendMouseLeave={handleLegendMouseLeave}
-          />
-        </div>
-      ) : null}
-      {maintHealthMarkets.length ? (
-        <div className="pt-6">
-          <h2 className="mb-1 px-6 text-lg">{t('markets')}</h2>
-          <MarketsHealthTable
-            initMarkets={initHealthMarkets}
-            maintMarkets={maintHealthMarkets}
-            handleLegendClick={handleLegendClick}
-            handleLegendMouseEnter={handleLegendMouseEnter}
-            handleLegendMouseLeave={handleLegendMouseLeave}
-          />
-        </div>
-      ) : null}
+      )}
     </>
   ) : null
 }

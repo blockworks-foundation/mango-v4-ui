@@ -1,6 +1,6 @@
 import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import AccountActions from './AccountActions'
 import AccountTabs from './AccountTabs'
 import AccountChart from './AccountChart'
@@ -17,9 +17,9 @@ import VolumeChart from './VolumeChart'
 import AccountHeroStats from './AccountHeroStats'
 import AccountValue from './AccountValue'
 import useAccountPerformanceData from 'hooks/useAccountPerformanceData'
-import useAccountHourlyVolumeStats from 'hooks/useAccountHourlyVolumeStats'
 import HealthContributions from './HealthContributions'
 import { PerformanceDataItem } from 'types'
+import { useRouter } from 'next/router'
 
 const TABS = ['account-value', 'account:assets-liabilities']
 
@@ -36,7 +36,6 @@ const AccountPage = () => {
   const { t } = useTranslation(['common', 'account'])
   const { group } = useMangoGroup()
   const { mangoAccount } = useMangoAccount()
-  const [viewToShow, setViewToShow] = useState<ViewToShow>('')
   const [showPnlHistory, setShowPnlHistory] = useState<boolean>(false)
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.md : false
@@ -45,6 +44,16 @@ const AccountPage = () => {
     'account-value'
   )
   const { performanceData, rollingDailyData } = useAccountPerformanceData()
+  const router = useRouter()
+  const { view } = router.query
+
+  const handleViewChange = useCallback(
+    (view: ViewToShow) => {
+      const query = { ...router.query, ['view']: view }
+      router.push({ pathname: router.pathname, query })
+    },
+    [router]
+  )
 
   const handleCloseDailyPnlModal = () => {
     setShowPnlHistory(false)
@@ -88,7 +97,7 @@ const AccountPage = () => {
     ]
   }, [accountPnl, accountValue, performanceData])
 
-  return !viewToShow ? (
+  return !view ? (
     <>
       <div className="flex flex-col border-b-0 border-th-bkg-3 px-6 py-4 lg:flex-row lg:items-center lg:justify-between lg:border-b">
         <div>
@@ -113,7 +122,7 @@ const AccountPage = () => {
                 accountValue={accountValue}
                 latestAccountData={latestAccountData}
                 rollingDailyData={rollingDailyData}
-                setViewToShow={setViewToShow}
+                handleViewChange={handleViewChange}
               />
             ) : null}
             {activeTab === 'account:assets-liabilities' ? (
@@ -129,8 +138,8 @@ const AccountPage = () => {
         accountPnl={accountPnl}
         accountValue={accountValue}
         rollingDailyData={rollingDailyData}
-        setViewToShow={setViewToShow}
         setShowPnlHistory={setShowPnlHistory}
+        handleViewChange={handleViewChange}
       />
       <AccountTabs />
       {showPnlHistory ? (
@@ -143,9 +152,9 @@ const AccountPage = () => {
     </>
   ) : (
     <AccountView
-      view={viewToShow}
-      setViewToShow={setViewToShow}
+      view={view as ViewToShow}
       latestAccountData={latestAccountData}
+      handleViewChange={handleViewChange}
     />
   )
 }
@@ -154,27 +163,31 @@ export default AccountPage
 
 const AccountView = ({
   view,
-  setViewToShow,
+  handleViewChange,
   latestAccountData,
 }: {
   view: ViewToShow
-  setViewToShow: (v: ViewToShow) => void
   latestAccountData: PerformanceDataItem[]
+  handleViewChange: (view: ViewToShow) => void
 }) => {
-  const { hourlyVolumeData, loadingHourlyVolume } =
-    useAccountHourlyVolumeStats()
+  const router = useRouter()
+  const { address } = router.query
   const { performanceData } = useAccountPerformanceData()
 
-  const handleHideChart = () => {
-    setViewToShow('')
-  }
+  const handleHideChart = useCallback(() => {
+    if (address) {
+      router.push(`/?address=${address}`)
+    } else {
+      router.push('/')
+    }
+  }, [router])
 
   switch (view) {
     case 'account-value':
       return (
         <AccountChart
           chartName="account-value"
-          setViewToShow={setViewToShow}
+          handleViewChange={handleViewChange}
           data={performanceData?.concat(latestAccountData)}
           hideChart={handleHideChart}
           yKey="account_equity"
@@ -184,7 +197,7 @@ const AccountView = ({
       return (
         <AccountChart
           chartName="pnl"
-          setViewToShow={setViewToShow}
+          handleViewChange={handleViewChange}
           data={performanceData?.concat(latestAccountData)}
           hideChart={handleHideChart}
           yKey="pnl"
@@ -194,7 +207,7 @@ const AccountView = ({
       return (
         <AccountChart
           chartName="cumulative-interest-value"
-          setViewToShow={setViewToShow}
+          handleViewChange={handleViewChange}
           data={performanceData?.concat(latestAccountData)}
           hideChart={handleHideChart}
           yKey="interest_value"
@@ -203,13 +216,7 @@ const AccountView = ({
     case 'hourly-funding':
       return <FundingChart hideChart={handleHideChart} />
     case 'hourly-volume':
-      return (
-        <VolumeChart
-          chartData={hourlyVolumeData}
-          hideChart={handleHideChart}
-          loading={loadingHourlyVolume}
-        />
-      )
+      return <VolumeChart hideChart={handleHideChart} />
     case 'health-contributions':
       return <HealthContributions hideView={handleHideChart} />
     default:

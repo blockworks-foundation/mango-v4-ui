@@ -26,12 +26,12 @@ const AccountValue = ({
   accountValue,
   latestAccountData,
   rollingDailyData,
-  setViewToShow,
+  handleViewChange,
 }: {
   accountValue: number
   latestAccountData: PerformanceDataItem[]
   rollingDailyData: PerformanceDataItem[]
-  setViewToShow: (chart: ViewToShow) => void
+  handleViewChange: (view: ViewToShow) => void
 }) => {
   const { t } = useTranslation('common')
   const { theme } = useTheme()
@@ -62,7 +62,7 @@ const AccountValue = ({
   }
 
   const handleShowAccountValueChart = () => {
-    setViewToShow('account-value')
+    handleViewChange('account-value')
     setShowExpandChart(false)
   }
 
