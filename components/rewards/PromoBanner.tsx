@@ -1,11 +1,13 @@
 import { IconButton } from '@components/shared/Button'
 import { XMarkIcon } from '@heroicons/react/20/solid'
+import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
 import Link from 'next/link'
 import { useState } from 'react'
 
 const PromoBanner = () => {
   const [showBanner, setShowBanner] = useState(true)
-  return showBanner ? (
+  const { data: isWhiteListed } = useIsWhiteListed()
+  return isWhiteListed && showBanner ? (
     <div className="relative">
       <div className="flex flex-wrap items-center justify-center bg-th-bkg-2 py-3 px-10">
         <p className="mr-2  text-center text-th-fgd-1 text-th-fgd-1 lg:text-base">
