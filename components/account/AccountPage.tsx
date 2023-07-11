@@ -6,7 +6,6 @@ import AccountTabs from './AccountTabs'
 import AccountChart from './AccountChart'
 import useMangoAccount from '../../hooks/useMangoAccount'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-// import AccountOnboardingTour from '@components/tours/AccountOnboardingTour'
 import dayjs from 'dayjs'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
@@ -20,10 +19,11 @@ import AccountValue from './AccountValue'
 import useAccountPerformanceData from 'hooks/useAccountPerformanceData'
 import useAccountHourlyVolumeStats from 'hooks/useAccountHourlyVolumeStats'
 import HealthContributions from './HealthContributions'
+import { PerformanceDataItem } from 'types'
 
 const TABS = ['account-value', 'account:assets-liabilities']
 
-export type ChartToShow =
+export type ViewToShow =
   | ''
   | 'account-value'
   | 'cumulative-interest-value'
@@ -36,23 +36,15 @@ const AccountPage = () => {
   const { t } = useTranslation(['common', 'account'])
   const { group } = useMangoGroup()
   const { mangoAccount } = useMangoAccount()
-  const [chartToShow, setChartToShow] = useState<ChartToShow>('')
+  const [viewToShow, setViewToShow] = useState<ViewToShow>('')
   const [showPnlHistory, setShowPnlHistory] = useState<boolean>(false)
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.md : false
-  // const tourSettings = mangoStore((s) => s.settings.tours)
-  // const [isOnBoarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const [activeTab, setActiveTab] = useLocalStorageState(
     'accountHeroKey-0.1',
     'account-value'
   )
   const { performanceData, rollingDailyData } = useAccountPerformanceData()
-  const { hourlyVolumeData, loadingHourlyVolume } =
-    useAccountHourlyVolumeStats()
-
-  const handleHideChart = () => {
-    setChartToShow('')
-  }
 
   const handleCloseDailyPnlModal = () => {
     setShowPnlHistory(false)
@@ -96,7 +88,7 @@ const AccountPage = () => {
     ]
   }, [accountPnl, accountValue, performanceData])
 
-  return !chartToShow ? (
+  return !viewToShow ? (
     <>
       <div className="flex flex-col border-b-0 border-th-bkg-3 px-6 py-4 lg:flex-row lg:items-center lg:justify-between lg:border-b">
         <div>
@@ -121,7 +113,7 @@ const AccountPage = () => {
                 accountValue={accountValue}
                 latestAccountData={latestAccountData}
                 rollingDailyData={rollingDailyData}
-                setChartToShow={setChartToShow}
+                setViewToShow={setViewToShow}
               />
             ) : null}
             {activeTab === 'account:assets-liabilities' ? (
@@ -137,13 +129,10 @@ const AccountPage = () => {
         accountPnl={accountPnl}
         accountValue={accountValue}
         rollingDailyData={rollingDailyData}
-        setChartToShow={setChartToShow}
+        setViewToShow={setViewToShow}
         setShowPnlHistory={setShowPnlHistory}
       />
       <AccountTabs />
-      {/* {!tourSettings?.account_tour_seen && isOnBoarded && connected ? (
-        <AccountOnboardingTour />
-      ) : null} */}
       {showPnlHistory ? (
         <PnlHistoryModal
           pnlChangeToday={pnlChangeToday}
@@ -153,44 +142,77 @@ const AccountPage = () => {
       ) : null}
     </>
   ) : (
-    <>
-      {chartToShow === 'account-value' ? (
+    <AccountView
+      view={viewToShow}
+      setViewToShow={setViewToShow}
+      latestAccountData={latestAccountData}
+    />
+  )
+}
+
+export default AccountPage
+
+const AccountView = ({
+  view,
+  setViewToShow,
+  latestAccountData,
+}: {
+  view: ViewToShow
+  setViewToShow: (v: ViewToShow) => void
+  latestAccountData: PerformanceDataItem[]
+}) => {
+  const { hourlyVolumeData, loadingHourlyVolume } =
+    useAccountHourlyVolumeStats()
+  const { performanceData } = useAccountPerformanceData()
+
+  const handleHideChart = () => {
+    setViewToShow('')
+  }
+
+  switch (view) {
+    case 'account-value':
+      return (
         <AccountChart
-          chartToShow="account-value"
-          setChartToShow={setChartToShow}
+          chartName="account-value"
+          setViewToShow={setViewToShow}
           data={performanceData?.concat(latestAccountData)}
           hideChart={handleHideChart}
           yKey="account_equity"
         />
-      ) : chartToShow === 'pnl' ? (
+      )
+    case 'pnl':
+      return (
         <AccountChart
-          chartToShow="pnl"
-          setChartToShow={setChartToShow}
+          chartName="pnl"
+          setViewToShow={setViewToShow}
           data={performanceData?.concat(latestAccountData)}
           hideChart={handleHideChart}
           yKey="pnl"
         />
-      ) : chartToShow === 'hourly-funding' ? (
-        <FundingChart hideChart={handleHideChart} />
-      ) : chartToShow === 'hourly-volume' ? (
+      )
+    case 'cumulative-interest-value':
+      return (
+        <AccountChart
+          chartName="cumulative-interest-value"
+          setViewToShow={setViewToShow}
+          data={performanceData?.concat(latestAccountData)}
+          hideChart={handleHideChart}
+          yKey="interest_value"
+        />
+      )
+    case 'hourly-funding':
+      return <FundingChart hideChart={handleHideChart} />
+    case 'hourly-volume':
+      return (
         <VolumeChart
           chartData={hourlyVolumeData}
           hideChart={handleHideChart}
           loading={loadingHourlyVolume}
         />
-      ) : chartToShow === 'health-contributions' ? (
-        <HealthContributions hideView={handleHideChart} />
-      ) : (
-        <AccountChart
-          chartToShow="cumulative-interest-value"
-          setChartToShow={setChartToShow}
-          data={performanceData}
-          hideChart={handleHideChart}
-          yKey="interest_value"
-        />
-      )}
-    </>
-  )
+      )
+    case 'health-contributions':
+      return <HealthContributions hideView={handleHideChart} />
+    default:
+      return null
+  }
 }
-
-export default AccountPage

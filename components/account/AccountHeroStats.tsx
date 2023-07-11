@@ -3,7 +3,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
 import { useEffect, useMemo } from 'react'
-import { ChartToShow } from './AccountPage'
+import { ViewToShow } from './AccountPage'
 import { useQuery } from '@tanstack/react-query'
 import { fetchFundingTotals, fetchVolumeTotals } from 'utils/account'
 import Tooltip from '@components/shared/Tooltip'
@@ -25,13 +25,13 @@ const AccountHeroStats = ({
   accountValue,
   rollingDailyData,
   setShowPnlHistory,
-  setChartToShow,
+  setViewToShow,
 }: {
   accountPnl: number
   accountValue: number
   rollingDailyData: PerformanceDataItem[]
   setShowPnlHistory: (show: boolean) => void
-  setChartToShow: (view: ChartToShow) => void
+  setViewToShow: (view: ViewToShow) => void
 }) => {
   const { t } = useTranslation(['common', 'account'])
   const { group } = useMangoGroup()
@@ -162,8 +162,8 @@ const AccountHeroStats = ({
     return volume
   }, [hourlyVolumeData])
 
-  const handleChartToShow = (viewName: ChartToShow) => {
-    setChartToShow(viewName)
+  const handleViewToShow = (viewName: ViewToShow) => {
+    setViewToShow(viewName)
   }
 
   const loadingTotalVolume = fetchingVolumeTotalData || loadingVolumeTotalData
@@ -224,13 +224,13 @@ const AccountHeroStats = ({
               </Tooltip>
               <Tooltip
                 className="hidden md:block"
-                content={t('account:health-breakdown')}
+                content={t('account:health-contributions')}
                 delay={100}
               >
                 <IconButton
                   className="text-th-fgd-3"
                   hideBg
-                  onClick={() => handleChartToShow('health-contributions')}
+                  onClick={() => handleViewToShow('health-contributions')}
                 >
                   <ChartBarIcon className="h-5 w-5" />
                 </IconButton>
@@ -332,7 +332,7 @@ const AccountHeroStats = ({
                     <IconButton
                       className="text-th-fgd-3"
                       hideBg
-                      onClick={() => handleChartToShow('pnl')}
+                      onClick={() => handleViewToShow('pnl')}
                     >
                       <ChartBarIcon className="h-5 w-5" />
                     </IconButton>
@@ -381,7 +381,7 @@ const AccountHeroStats = ({
                   <IconButton
                     className="text-th-fgd-3"
                     hideBg
-                    onClick={() => handleChartToShow('hourly-volume')}
+                    onClick={() => handleViewToShow('hourly-volume')}
                   >
                     <ChartBarIcon className="h-5 w-5" />
                   </IconButton>
@@ -438,7 +438,7 @@ const AccountHeroStats = ({
                     className="text-th-fgd-3"
                     hideBg
                     onClick={() =>
-                      handleChartToShow('cumulative-interest-value')
+                      handleViewToShow('cumulative-interest-value')
                     }
                   >
                     <ChartBarIcon className="h-5 w-5" />
@@ -480,7 +480,7 @@ const AccountHeroStats = ({
                 <IconButton
                   className="text-th-fgd-3"
                   hideBg
-                  onClick={() => handleChartToShow('hourly-funding')}
+                  onClick={() => handleViewToShow('hourly-funding')}
                 >
                   <ChartBarIcon className="h-5 w-5" />
                 </IconButton>
