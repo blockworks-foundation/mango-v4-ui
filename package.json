@@ -21,8 +21,8 @@
     "node": ">=18.x"
   },
   "dependencies": {
-    "@blockworks-foundation/mango-feeds": "0.1.6",
-    "@blockworks-foundation/mango-v4": "^0.17.4",
+    "@blockworks-foundation/mango-feeds": "0.1.7",
+    "@blockworks-foundation/mango-v4": "^0.17.5",
     "@headlessui/react": "1.6.6",
     "@heroicons/react": "2.0.10",
     "@metaplex-foundation/js": "0.18.3",
