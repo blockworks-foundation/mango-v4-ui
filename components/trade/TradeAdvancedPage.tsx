@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import dynamic from 'next/dynamic'
 import ReactGridLayout, { Responsive, WidthProvider } from 'react-grid-layout'
 import mangoStore from '@store/mangoStore'
@@ -15,7 +15,7 @@ import OrderbookAndTrades from './OrderbookAndTrades'
 // import TradeOnboardingTour from '@components/tours/TradeOnboardingTour'
 import FavoriteMarketsBar from './FavoriteMarketsBar'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { TRADE_LAYOUT_KEY } from 'utils/constants'
+import { DEPTH_CHART_KEY, TRADE_LAYOUT_KEY } from 'utils/constants'
 
 export type TradeLayout =
   | 'chartLeft'
@@ -29,7 +29,7 @@ const TradingChartContainer = dynamic(() => import('./TradingChartContainer'), {
 
 const ResponsiveGridLayout = WidthProvider(Responsive)
 
-const sidebarWidth = 63
+const sidebarWidth = 64
 const totalCols = 24
 const gridBreakpoints = {
   md: breakpoints.md - sidebarWidth,
@@ -51,6 +51,7 @@ const TradeAdvancedPage = () => {
   const { height, width } = useViewport()
   const { uiLocked } = mangoStore((s) => s.settings)
   const showMobileView = width <= breakpoints.md
+  const [grouping, setGrouping] = useState(0.01)
   // const tourSettings = mangoStore((s) => s.settings.tours)
   // const { connected } = useWallet()
   // const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
@@ -58,6 +59,7 @@ const TradeAdvancedPage = () => {
     TRADE_LAYOUT_KEY,
     'chartLeft'
   )
+  const [showDepthChart] = useLocalStorageState<boolean>(DEPTH_CHART_KEY, false)
 
   const defaultLayouts: ReactGridLayout.Layouts = useMemo(() => {
     const topnavbarHeight = 67
@@ -79,14 +81,14 @@ const TradeAdvancedPage = () => {
     }
 
     const bookXPos = {
-      chartLeft: { xxxl: 16, xxl: 15, xl: 15, lg: 13 },
+      chartLeft: { xxxl: 16, xxl: 15, xl: showDepthChart ? 12 : 15, lg: 14 },
       chartMiddleOBRight: { xxxl: 20, xxl: 20, xl: 20, lg: 19 },
       chartMiddleOBLeft: { xxxl: 0, xxl: 0, xl: 0, lg: 0 },
       chartRight: { xxxl: 4, xxl: 5, xl: 5, lg: 6 },
     }
 
     const formXPos = {
-      chartLeft: { xxxl: 20, xxl: 19, xl: 19, lg: 18 },
+      chartLeft: { xxxl: 20, xxl: 19, xl: 19, lg: 19 },
       chartMiddleOBRight: { xxxl: 0, xxl: 0, xl: 0, lg: 0 },
       chartMiddleOBLeft: { xxxl: 20, xxl: 19, xl: 19, lg: 18 },
       chartRight: { xxxl: 0, xxl: 0, xl: 0, lg: 0 },
@@ -100,96 +102,109 @@ const TradeAdvancedPage = () => {
           i: 'balances',
           x: balancesXPos[tradeLayout].xxxl,
           y: 2,
-          w: 16,
+          w: 20,
           h: getHeight(innerHeight, 0, 640 + marketHeaderHeight),
         },
         {
           i: 'orderbook',
           x: bookXPos[tradeLayout].xxxl,
-          y: 0,
+          y: 1,
           w: 4,
-          h: getHeight(innerHeight, 0, 0),
+          h: 640,
         },
         {
           i: 'trade-form',
           x: formXPos[tradeLayout].xxxl,
-          y: 0,
+          y: 1,
           w: 4,
           h: getHeight(innerHeight, 0, 0),
         },
       ],
       xxl: [
         { i: 'market-header', x: 0, y: 0, w: 24, h: marketHeaderHeight },
-        { i: 'tv-chart', x: chartXPos[tradeLayout].xxl, y: 1, w: 15, h: 488 },
+        { i: 'tv-chart', x: chartXPos[tradeLayout].xxl, y: 1, w: 15, h: 540 },
         {
           i: 'balances',
           x: balancesXPos[tradeLayout].xxl,
           y: 2,
-          w: 15,
-          h: getHeight(innerHeight, 0, 488 + marketHeaderHeight),
+          w: 19,
+          h: getHeight(innerHeight, 0, 540 + marketHeaderHeight),
         },
         {
           i: 'orderbook',
           x: bookXPos[tradeLayout].xxl,
-          y: 0,
+          y: 1,
           w: 4,
-          h: getHeight(innerHeight, 0, 0),
+          h: 540,
         },
         {
           i: 'trade-form',
           x: formXPos[tradeLayout].xxl,
-          y: 0,
+          y: 1,
           w: 5,
           h: getHeight(innerHeight, 0, 0),
         },
       ],
       xl: [
         { i: 'market-header', x: 0, y: 0, w: 24, h: marketHeaderHeight },
-        { i: 'tv-chart', x: chartXPos[tradeLayout].xl, y: 1, w: 15, h: 488 },
+        {
+          i: 'tv-chart',
+          x: chartXPos[tradeLayout].xl,
+          y: 1,
+          w: showDepthChart ? 12 : 15,
+          h: 552,
+        },
         {
           i: 'balances',
           x: balancesXPos[tradeLayout].xl,
           y: 2,
-          w: 15,
-          h: getHeight(innerHeight, 0, 488 + marketHeaderHeight),
+          w: 19,
+          h: getHeight(innerHeight, 0, 552 + marketHeaderHeight),
         },
+        // {
+        //   i: 'depth-chart',
+        //   x: 12,
+        //   y: 1,
+        //   w: 3,
+        //   h: 552,
+        // },
         {
           i: 'orderbook',
           x: bookXPos[tradeLayout].xl,
-          y: 0,
-          w: 4,
-          h: getHeight(innerHeight, 0, 0),
+          y: 1,
+          w: showDepthChart ? 7 : 4,
+          h: 552,
         },
         {
           i: 'trade-form',
           x: formXPos[tradeLayout].xl,
-          y: 0,
+          y: 1,
           w: 5,
           h: getHeight(innerHeight, 0, 0),
         },
       ],
       lg: [
         { i: 'market-header', x: 0, y: 0, w: 24, h: marketHeaderHeight },
-        { i: 'tv-chart', x: chartXPos[tradeLayout].lg, y: 1, w: 13, h: 456 },
+        { i: 'tv-chart', x: chartXPos[tradeLayout].lg, y: 1, w: 14, h: 520 },
         {
           i: 'balances',
           x: balancesXPos[tradeLayout].lg,
           y: 2,
-          w: 13,
-          h: getHeight(innerHeight, 0, 456 + marketHeaderHeight),
+          w: 19,
+          h: getHeight(innerHeight, 0, 520 + marketHeaderHeight),
         },
         {
           i: 'orderbook',
           x: bookXPos[tradeLayout].lg,
-          y: 0,
+          y: 1,
           w: 5,
-          h: getHeight(innerHeight, 0, 0),
+          h: 520,
         },
         {
           i: 'trade-form',
           x: formXPos[tradeLayout].lg,
-          y: 0,
-          w: 6,
+          y: 1,
+          w: 5,
           h: getHeight(innerHeight, 0, 0),
         },
       ],
@@ -201,7 +216,7 @@ const TradeAdvancedPage = () => {
         { i: 'trade-form', x: 18, y: 1, w: 7, h: 492 + marketHeaderHeight },
       ],
     }
-  }, [height])
+  }, [height, showDepthChart, tradeLayout])
 
   return showMobileView ? (
     <MobileTradeAdvancedPage />
@@ -233,7 +248,7 @@ const TradeAdvancedPage = () => {
         </div>
         <div
           key="tv-chart"
-          className="h-full border border-x-0 border-th-bkg-3"
+          className="box-border h-full border border-x-0 border-th-bkg-3"
         >
           <div className={`relative h-full overflow-auto`}>
             <TradingChartContainer />
@@ -243,20 +258,30 @@ const TradeAdvancedPage = () => {
           <TradeInfoTabs />
         </div>
         <div
-          className={`border-y border-l border-th-bkg-3 lg:border-b-0 ${
+          className={`box-border border-y border-l border-th-bkg-3 lg:border-b-0 ${
             tradeLayout === 'chartMiddleOBRight' ? 'lg:border-r' : ''
-          } ${tradeLayout !== 'chartMiddleOBLeft' ? 'lg:border-l-0' : ''}`}
+          } ${tradeLayout !== 'chartMiddleOBLeft' ? '' : ''}`}
           key="trade-form"
         >
           <AdvancedTradeForm />
         </div>
+        {/* {showDepthChart ? (
+          <div
+            key="depth-chart"
+            className={`box-border overflow-hidden border-y border-l border-th-bkg-3 ${
+              tradeLayout === 'chartMiddleOBRight' ? 'lg:border-r-0' : ''
+            } ${tradeLayout === 'chartMiddleOBLeft' ? 'lg:border-l-0' : ''}`}
+          >
+            <DepthChart grouping={grouping} />
+          </div>
+        ) : null} */}
         <div
           key="orderbook"
-          className={`overflow-hidden border-l border-th-bkg-3 lg:border-t lg:border-r ${
+          className={`box-border overflow-hidden border-y border-l border-th-bkg-3 ${
             tradeLayout === 'chartMiddleOBRight' ? 'lg:border-r-0' : ''
           } ${tradeLayout === 'chartMiddleOBLeft' ? 'lg:border-l-0' : ''}`}
         >
-          <OrderbookAndTrades />
+          <OrderbookAndTrades grouping={grouping} setGrouping={setGrouping} />
         </div>
       </ResponsiveGridLayout>
       {/* {!tourSettings?.trade_tour_seen && isOnboarded && connected ? (

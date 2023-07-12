@@ -120,12 +120,7 @@ const hasOpenOrderForPriceGroup = (
   })
 }
 
-const useOrderbookSubscription = (
-  depth: number,
-  grouping: number,
-  isScrolled: boolean,
-  centerVertically: () => void
-) => {
+const useOrderbookSubscription = (depth: number, grouping: number) => {
   const { serumOrPerpMarket } = useSelectedMarket()
   const [orderbookData, setOrderbookData] = useState<OrderbookData | null>(null)
   const currentOrderbookData = useRef<OrderbookL2>()
@@ -228,16 +223,13 @@ const useOrderbookSubscription = (
                 spread,
                 spreadPercentage,
               })
-              if (!isScrolled) {
-                centerVertically()
-              }
             } else {
               setOrderbookData(null)
             }
           }
         }
       ),
-    [grouping, serumOrPerpMarket, isScrolled, centerVertically]
+    [grouping, serumOrPerpMarket]
   )
   return orderbookData
 }

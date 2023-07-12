@@ -8,10 +8,13 @@ import {
   formatNumericValue,
   getDecimalCount,
 } from 'utils/numbers'
-import { ANIMATION_SETTINGS_KEY, USE_ORDERBOOK_FEED_KEY } from 'utils/constants'
+import {
+  ANIMATION_SETTINGS_KEY,
+  DEPTH_CHART_KEY,
+  USE_ORDERBOOK_FEED_KEY,
+} from 'utils/constants'
 import { useTranslation } from 'next-i18next'
 import Decimal from 'decimal.js'
-import OrderbookIcon from '@components/icons/OrderbookIcon'
 import Tooltip from '@components/shared/Tooltip'
 import GroupSize from './GroupSize'
 import { breakpoints } from '../../utils/theme'
@@ -25,10 +28,9 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
-import { ArrowPathIcon } from '@heroicons/react/20/solid'
-import { sleep } from 'utils'
 import { OrderbookFeed } from '@blockworks-foundation/mango-feeds'
 import useOrderbookSubscription from 'hooks/useOrderbookSubscription'
+import Switch from '@components/forms/Switch'
 
 const sizeCompacter = Intl.NumberFormat('en', {
   maximumFractionDigits: 6,
@@ -99,51 +101,27 @@ const Orderbook = ({
   setGrouping: (g: number) => void
 }) => {
   const { t } = useTranslation(['common', 'trade'])
-  const {
-    serumOrPerpMarket: market,
-    baseSymbol,
-    quoteSymbol,
-  } = useSelectedMarket()
+  const { serumOrPerpMarket: market } = useSelectedMarket()
   const connection = mangoStore((s) => s.connection)
 
-  const [isScrolled, setIsScrolled] = useState(false)
   const [tickSize, setTickSize] = useState(0)
-  const [showBids, setShowBids] = useState(true)
-  const [showAsks, setShowAsks] = useState(true)
   const [useOrderbookFeed, setUseOrderbookFeed] = useState(
     localStorage.getItem(USE_ORDERBOOK_FEED_KEY) !== null
       ? localStorage.getItem(USE_ORDERBOOK_FEED_KEY) === 'true'
       : true
   )
-
-  const orderbookElRef = useRef<HTMLDivElement>(null)
+  const [showDepthChart, setShowDepthChart] = useLocalStorageState<boolean>(
+    DEPTH_CHART_KEY,
+    false
+  )
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.md : false
 
   const depth = useMemo(() => {
-    return isMobile ? 9 : 40
+    return isMobile ? 9 : 10
   }, [isMobile])
 
-  const verticallyCenterOrderbook = useCallback(() => {
-    const element = orderbookElRef.current
-    if (element) {
-      if (element.scrollHeight > window.innerHeight) {
-        element.scrollTop =
-          (element.scrollHeight - element.scrollHeight) / 2 +
-          (element.scrollHeight - window.innerHeight) / 2 +
-          94
-      } else {
-        element.scrollTop = (element.scrollHeight - element.offsetHeight) / 2
-      }
-    }
-  }, [])
-
-  const orderbookData = useOrderbookSubscription(
-    depth,
-    grouping,
-    isScrolled,
-    verticallyCenterOrderbook
-  )
+  const orderbookData = useOrderbookSubscription(depth, grouping)
 
   const depthArray: number[] = useMemo(() => {
     return Array(depth).fill(0)
@@ -398,79 +376,19 @@ const Orderbook = ({
     })
   }, [bidAccountAddress])
 
-  useEffect(() => {
-    window.addEventListener('resize', verticallyCenterOrderbook)
-  }, [verticallyCenterOrderbook])
-
-  const resetOrderbook = useCallback(async () => {
-    setShowBids(true)
-    setShowAsks(true)
-    await sleep(300)
-    verticallyCenterOrderbook()
-  }, [verticallyCenterOrderbook])
-
   const onGroupSizeChange = useCallback((groupSize: number) => {
     setGrouping(groupSize)
   }, [])
 
-  const handleScroll = useCallback(() => {
-    setIsScrolled(true)
-  }, [])
-
-  const toggleSides = (side: string) => {
-    if (side === 'bids') {
-      setShowBids(true)
-      setShowAsks(false)
-    } else {
-      setShowBids(false)
-      setShowAsks(true)
-    }
-  }
-
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b border-th-bkg-3 px-4 py-2">
-        <div
-          id="trade-step-three"
-          className="hidden items-center space-x-1.5 md:flex"
+    <div>
+      <div className="flex h-10 items-center justify-between border-b border-th-bkg-3 px-4">
+        <Switch
+          checked={showDepthChart}
+          onChange={() => setShowDepthChart(!showDepthChart)}
         >
-          <Tooltip
-            className={`${!showAsks ? 'hidden' : ''}`}
-            content={t('trade:show-bids')}
-            placement="bottom"
-          >
-            <button
-              className={`rounded ${
-                showAsks ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
-              } flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none focus-visible:bg-th-bkg-4 disabled:cursor-not-allowed`}
-              onClick={() => toggleSides('bids')}
-            >
-              <OrderbookIcon className="h-4 w-4" side="buy" />
-            </button>
-          </Tooltip>
-          <Tooltip
-            className={`${!showBids ? 'hidden' : ''}`}
-            content={t('trade:show-asks')}
-            placement="bottom"
-          >
-            <button
-              className={`rounded ${
-                showBids ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
-              } flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none focus-visible:bg-th-bkg-4 disabled:cursor-not-allowed`}
-              onClick={() => toggleSides('asks')}
-            >
-              <OrderbookIcon className="h-4 w-4" side="sell" />
-            </button>
-          </Tooltip>
-          <Tooltip content={'Reset and center orderbook'} placement="bottom">
-            <button
-              className="flex h-6 w-6 items-center justify-center rounded bg-th-bkg-3 hover:border-th-fgd-4 focus:outline-none focus-visible:bg-th-bkg-4 disabled:cursor-not-allowed"
-              onClick={resetOrderbook}
-            >
-              <ArrowPathIcon className="h-4 w-4" />
-            </button>
-          </Tooltip>
-        </div>
+          {t('trade:depth')}
+        </Switch>
         {market ? (
           <>
             <p className="text-xs md:hidden">{t('trade:grouping')}:</p>
@@ -491,95 +409,80 @@ const Orderbook = ({
           </>
         ) : null}
       </div>
-      <div className="grid grid-cols-2 px-4 pt-2 pb-1 text-xxs text-th-fgd-4">
-        <div className="col-span-1 text-right">
-          {t('trade:size')} ({baseSymbol})
-        </div>
-        <div className="col-span-1 text-right">
-          {t('price')} ({quoteSymbol})
-        </div>
+      <div className="grid grid-cols-2 px-2 py-0.5 text-xxs text-th-fgd-4">
+        <div className="col-span-1">{t('price')}</div>
+        <div className="col-span-1 text-right">{t('trade:size')}</div>
       </div>
-      <div
-        className="hide-scroll relative h-full overflow-y-scroll"
-        ref={orderbookElRef}
-        onScroll={handleScroll}
-      >
-        {showAsks
-          ? depthArray.map((_x, idx) => {
-              let index = idx
-              const reverse = showAsks && !showBids
-              if (orderbookData?.asks && !reverse) {
-                const lengthDiff = depthArray.length - orderbookData.asks.length
-                if (lengthDiff > 0) {
-                  index = index < lengthDiff ? -1 : Math.abs(lengthDiff - index)
-                }
-              }
-              return (
-                <div className="h-[24px]" key={idx}>
-                  {!!orderbookData?.asks[index] && market ? (
-                    <MemoizedOrderbookRow
-                      minOrderSize={market.minOrderSize}
-                      tickSize={market.tickSize}
-                      hasOpenOrder={orderbookData?.asks[index].isUsersOrder}
-                      key={orderbookData?.asks[index].price}
-                      price={orderbookData?.asks[index].price}
-                      size={orderbookData?.asks[index].size}
-                      side="sell"
-                      sizePercent={orderbookData?.asks[index].sizePercent}
-                      cumulativeSizePercent={
-                        orderbookData?.asks[index].cumulativeSizePercent
-                      }
-                      grouping={grouping}
-                    />
-                  ) : null}
-                </div>
-              )
-            })
-          : null}
-        {showBids && showAsks ? (
-          <div
-            className="my-2 grid grid-cols-2 border-y border-th-bkg-3 py-2 px-4 text-xs text-th-fgd-4"
-            id="trade-step-nine"
-          >
-            <div className="col-span-1 flex justify-between">
-              <div className="text-xxs">{t('trade:spread')}</div>
-              <div className="font-mono">
-                {orderbookData?.spreadPercentage.toFixed(2)}%
-              </div>
+      <div className="relative h-full">
+        {depthArray.map((_x, idx) => {
+          let index = idx
+          if (orderbookData?.asks) {
+            const lengthDiff = depthArray.length - orderbookData.asks.length
+            if (lengthDiff > 0) {
+              index = index < lengthDiff ? -1 : Math.abs(lengthDiff - index)
+            }
+          }
+          return (
+            <div className="h-[20px]" key={idx}>
+              {!!orderbookData?.asks[index] && market ? (
+                <MemoizedOrderbookRow
+                  minOrderSize={market.minOrderSize}
+                  tickSize={market.tickSize}
+                  hasOpenOrder={orderbookData?.asks[index].isUsersOrder}
+                  key={orderbookData?.asks[index].price}
+                  price={orderbookData?.asks[index].price}
+                  size={orderbookData?.asks[index].size}
+                  side="sell"
+                  sizePercent={orderbookData?.asks[index].sizePercent}
+                  cumulativeSizePercent={
+                    orderbookData?.asks[index].cumulativeSizePercent
+                  }
+                  grouping={grouping}
+                />
+              ) : null}
             </div>
-            <div className="col-span-1 text-right font-mono">
-              {orderbookData?.spread
-                ? orderbookData.spread < SHOW_EXPONENTIAL_THRESHOLD
-                  ? orderbookData.spread.toExponential()
-                  : formatNumericValue(
-                      orderbookData.spread,
-                      market ? getDecimalCount(market.tickSize) : undefined
-                    )
-                : null}
+          )
+        })}
+        <div
+          className="my-1 grid grid-cols-2 border-y border-th-bkg-3 py-1 px-4 text-xs text-th-fgd-4"
+          id="trade-step-nine"
+        >
+          <div className="col-span-1 flex justify-between">
+            <div className="text-xxs">{t('trade:spread')}</div>
+            <div className="font-mono">
+              {orderbookData?.spreadPercentage.toFixed(2)}%
             </div>
           </div>
-        ) : null}
-        {showBids
-          ? depthArray.map((_x, index) => (
-              <div className="h-[24px]" key={index}>
-                {!!orderbookData?.bids[index] && market ? (
-                  <MemoizedOrderbookRow
-                    minOrderSize={market.minOrderSize}
-                    tickSize={market.tickSize}
-                    hasOpenOrder={orderbookData?.bids[index].isUsersOrder}
-                    price={orderbookData?.bids[index].price}
-                    size={orderbookData?.bids[index].size}
-                    side="buy"
-                    sizePercent={orderbookData?.bids[index].sizePercent}
-                    cumulativeSizePercent={
-                      orderbookData?.bids[index].cumulativeSizePercent
-                    }
-                    grouping={grouping}
-                  />
-                ) : null}
-              </div>
-            ))
-          : null}
+          <div className="col-span-1 text-right font-mono">
+            {orderbookData?.spread
+              ? orderbookData.spread < SHOW_EXPONENTIAL_THRESHOLD
+                ? orderbookData.spread.toExponential()
+                : formatNumericValue(
+                    orderbookData.spread,
+                    market ? getDecimalCount(market.tickSize) : undefined
+                  )
+              : null}
+          </div>
+        </div>
+        {depthArray.map((_x, index) => (
+          <div className="h-[20px]" key={index}>
+            {!!orderbookData?.bids[index] && market ? (
+              <MemoizedOrderbookRow
+                minOrderSize={market.minOrderSize}
+                tickSize={market.tickSize}
+                hasOpenOrder={orderbookData?.bids[index].isUsersOrder}
+                price={orderbookData?.bids[index].price}
+                size={orderbookData?.bids[index].size}
+                side="buy"
+                sizePercent={orderbookData?.bids[index].sizePercent}
+                cumulativeSizePercent={
+                  orderbookData?.bids[index].cumulativeSizePercent
+                }
+                grouping={grouping}
+              />
+            ) : null}
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -682,13 +585,23 @@ const OrderbookRow = ({
 
   return (
     <div
-      className={`relative flex h-[24px] cursor-pointer justify-between border-b border-b-th-bkg-1 text-sm`}
+      className={`relative flex h-[20px] cursor-pointer justify-between border-b border-b-th-bkg-1 text-sm`}
       ref={element}
     >
       <>
         <div className="flex h-full w-full items-center justify-between text-th-fgd-3 hover:bg-th-bkg-2">
           <div
-            className="flex h-full w-full items-center justify-start pl-2 hover:underline"
+            className={`z-10 flex h-full w-full items-center pl-2 hover:underline`}
+            onClick={handlePriceClick}
+          >
+            <span className="w-full font-mono text-xs">
+              {price < SHOW_EXPONENTIAL_THRESHOLD
+                ? formattedPrice.toExponential()
+                : formattedPrice.toFixed(groupingDecimalCount)}
+            </span>
+          </div>
+          <div
+            className="flex h-full w-full items-center justify-start pr-2 hover:underline"
             onClick={handleSizeClick}
           >
             <div
@@ -700,16 +613,6 @@ const OrderbookRow = ({
               {size >= 1000000
                 ? sizeCompacter.format(size)
                 : formattedSize.toFixed(minOrderSizeDecimals)}
-            </div>
-          </div>
-          <div
-            className={`z-10 flex h-full w-full items-center pr-4 hover:underline`}
-            onClick={handlePriceClick}
-          >
-            <div className="w-full text-right font-mono text-xs">
-              {price < SHOW_EXPONENTIAL_THRESHOLD
-                ? formattedPrice.toExponential()
-                : formattedPrice.toFixed(groupingDecimalCount)}
             </div>
           </div>
         </div>

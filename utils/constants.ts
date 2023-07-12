@@ -55,6 +55,8 @@ export const ACCEPT_TERMS_KEY = 'termsOfUseAccepted-0.1'
 
 export const TRADE_LAYOUT_KEY = 'tradeLayoutKey-0.1'
 
+export const DEPTH_CHART_KEY = 'showDepthChart-0.1'
+
 export const STATS_TAB_KEY = 'activeStatsTab-0.1'
 
 export const USE_ORDERBOOK_FEED_KEY = 'useOrderbookFeed-0.1'
@@ -110,6 +112,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   dual: true,
   eth: true,
   'eth (portal)': true,
+  hnt: true,
   jitosol: true,
   ldo: true,
   mngo: true,
