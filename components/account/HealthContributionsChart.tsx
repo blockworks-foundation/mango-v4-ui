@@ -9,11 +9,11 @@ import {
   SectorProps,
 } from 'recharts'
 import { COLORS } from 'styles/colors'
-import { HealthContribution } from './HealthContributions'
 import { useMemo } from 'react'
 import { formatCurrencyValue } from 'utils/numbers'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
+import { HealthContribution } from 'types'
 
 const HealthContributionsChart = ({
   data,

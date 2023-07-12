@@ -5,12 +5,12 @@ import Tooltip from '@components/shared/Tooltip'
 import { Disclosure, Transition } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
-import { HealthContribution } from './HealthContributions'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import { MouseEventHandler } from 'react'
+import { HealthContribution } from 'types'
 
 const TokensHealthTable = ({
   initTokens,

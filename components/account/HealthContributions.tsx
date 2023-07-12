@@ -15,12 +15,7 @@ import MarketLogos from '@components/trade/MarketLogos'
 import mangoStore from '@store/mangoStore'
 import TokensHealthTable from './TokensHealthTable'
 import MarketsHealthTable from './MarketsHealthTable'
-
-export interface HealthContribution {
-  asset: string
-  contribution: number
-  isAsset: boolean
-}
+import { HealthContribution } from 'types'
 
 const HealthContributions = ({ hideView }: { hideView: () => void }) => {
   const { t } = useTranslation(['common', 'account', 'trade'])

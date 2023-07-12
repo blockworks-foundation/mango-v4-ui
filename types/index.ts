@@ -413,3 +413,9 @@ export type TickerData = {
   target_volume: string
   ticker_id: string
 }
+
+export interface HealthContribution {
+  asset: string
+  contribution: number
+  isAsset: boolean
+}
