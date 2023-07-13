@@ -389,7 +389,7 @@ const Orderbook = ({
             checked={showDepthChart}
             onChange={() => setShowDepthChart(!showDepthChart)}
           >
-            {t('trade:depth')}
+            <span className="text-xxs">{t('trade:depth')}</span>
           </Switch>
         ) : null}
         {market ? (
