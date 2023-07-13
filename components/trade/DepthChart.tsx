@@ -199,10 +199,52 @@ const DepthChart = ({ grouping }: { grouping: number }) => {
               />
             </ReferenceLine>
             {/* <Tooltip /> */}
-            <ReferenceLine y={mouseData?.price} stroke="var(--bkg-4)" />
+            <ReferenceLine
+              y={mouseData?.price}
+              stroke="var(--fgd-4)"
+              strokeDasharray="3, 3"
+            />
             <ReferenceLine
               y={opposingMouseReference?.price}
-              stroke="var(--bkg-4)"
+              stroke="var(--fgd-4)"
+              strokeDasharray="3, 3"
+            />
+            <ReferenceLine
+              stroke="var(--fgd-4)"
+              strokeDasharray="3, 3"
+              segment={
+                opposingMouseReference &&
+                opposingMouseReference?.price >= markPrice
+                  ? [
+                      {
+                        x: opposingMouseReference?.cumulativeSize,
+                        y: markPrice,
+                      },
+                      { x: opposingMouseReference?.cumulativeSize, y: yMax },
+                    ]
+                  : [
+                      { x: opposingMouseReference?.cumulativeSize, y: yMin },
+                      {
+                        x: opposingMouseReference?.cumulativeSize,
+                        y: markPrice,
+                      },
+                    ]
+              }
+            />
+            <ReferenceLine
+              stroke="var(--fgd-4)"
+              strokeDasharray="3, 3"
+              segment={
+                mouseData && mouseData?.price >= markPrice
+                  ? [
+                      { x: mouseData?.cumulativeSize, y: markPrice },
+                      { x: mouseData?.cumulativeSize, y: yMax },
+                    ]
+                  : [
+                      { x: mouseData?.cumulativeSize, y: yMin },
+                      { x: mouseData?.cumulativeSize, y: markPrice },
+                    ]
+              }
             />
             <Area
               type="step"
