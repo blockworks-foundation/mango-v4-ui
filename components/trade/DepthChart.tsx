@@ -4,6 +4,7 @@ import useOrderbookSubscription, {
   cumOrderbookSide,
 } from 'hooks/useOrderbookSubscription'
 import useSelectedMarket from 'hooks/useSelectedMarket'
+import { useViewport } from 'hooks/useViewport'
 import { useTheme } from 'next-themes'
 import { useCallback, useMemo, useState } from 'react'
 import {
@@ -18,6 +19,7 @@ import {
 import { CategoricalChartFunc } from 'recharts/types/chart/generateCategoricalChart'
 import { COLORS } from 'styles/colors'
 import { floorToDecimal, getDecimalCount } from 'utils/numbers'
+import { gridBreakpoints } from './TradeAdvancedPage'
 
 type LabelPosition =
   | 'left'
@@ -41,6 +43,8 @@ const DepthChart = ({ grouping }: { grouping: number }) => {
   const [mouseData, setMouseData] = useState<cumOrderbookSide | null>(null)
   const markPrice = useMarkPrice()
   const orderbook = useOrderbookSubscription(100, grouping)
+  const { width } = useViewport()
+  const increaseHeight = width ? width > gridBreakpoints.xxxl : false
 
   const mergeCumulativeData = (
     bids: cumOrderbookSide[],
@@ -51,7 +55,6 @@ const DepthChart = ({ grouping }: { grouping: number }) => {
     return [...bidsWithSide, ...asksWithSide].sort((a, b) => a.price - b.price)
   }
 
-  // filter elements with the same size
   const chartData = useMemo(() => {
     if (!orderbook) return []
     return mergeCumulativeData(orderbook.bids, orderbook.asks)
@@ -222,7 +225,7 @@ const DepthChart = ({ grouping }: { grouping: number }) => {
           />
         </div>
       </div>
-      <div className="h-[482px]">
+      <div className={increaseHeight ? 'h-[570px]' : 'h-[482px]'}>
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={chartData}

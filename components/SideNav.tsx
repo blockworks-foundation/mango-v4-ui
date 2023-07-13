@@ -43,7 +43,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
     <div
       className={`transition-all duration-${sideBarAnimationDuration} ${
         collapsed ? 'w-[64px]' : 'w-44 lg:w-48 xl:w-52'
-      } border-r border-th-bkg-3 bg-th-bkg-1`}
+      } box-border border-r border-th-bkg-3 bg-th-bkg-1`}
     >
       <div className="flex min-h-screen flex-col justify-between">
         <div className="my-2">

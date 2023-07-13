@@ -17,7 +17,6 @@ import { useTranslation } from 'next-i18next'
 import Decimal from 'decimal.js'
 import Tooltip from '@components/shared/Tooltip'
 import GroupSize from './GroupSize'
-import { breakpoints } from '../../utils/theme'
 import { useViewport } from 'hooks/useViewport'
 import {
   BookSide,
@@ -31,6 +30,8 @@ import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettin
 import { OrderbookFeed } from '@blockworks-foundation/mango-feeds'
 import useOrderbookSubscription from 'hooks/useOrderbookSubscription'
 import Switch from '@components/forms/Switch'
+import { gridBreakpoints } from './TradeAdvancedPage'
+import { breakpoints } from 'utils/theme'
 
 const sizeCompacter = Intl.NumberFormat('en', {
   maximumFractionDigits: 6,
@@ -115,11 +116,11 @@ const Orderbook = ({
     false
   )
   const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.md : false
+  const isMobile = width ? width < breakpoints.lg : false
 
   const depth = useMemo(() => {
-    return isMobile ? 9 : 10
-  }, [isMobile])
+    return width > gridBreakpoints.xxxl ? 12 : 10
+  }, [width])
 
   const orderbookData = useOrderbookSubscription(depth, grouping)
 
@@ -383,15 +384,17 @@ const Orderbook = ({
   return (
     <div>
       <div className="flex h-10 items-center justify-between border-b border-th-bkg-3 px-4">
-        <Switch
-          checked={showDepthChart}
-          onChange={() => setShowDepthChart(!showDepthChart)}
-        >
-          {t('trade:depth')}
-        </Switch>
+        {!isMobile ? (
+          <Switch
+            checked={showDepthChart}
+            onChange={() => setShowDepthChart(!showDepthChart)}
+          >
+            {t('trade:depth')}
+          </Switch>
+        ) : null}
         {market ? (
           <>
-            <p className="text-xs md:hidden">{t('trade:grouping')}:</p>
+            <p className="text-xs lg:hidden">{t('trade:grouping')}:</p>
             <div id="trade-step-four">
               <Tooltip
                 className="hidden md:block"
