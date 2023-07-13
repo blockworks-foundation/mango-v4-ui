@@ -17,7 +17,22 @@ import {
 } from 'recharts'
 import { CategoricalChartFunc } from 'recharts/types/chart/generateCategoricalChart'
 import { COLORS } from 'styles/colors'
-import { getDecimalCount } from 'utils/numbers'
+import { floorToDecimal, getDecimalCount } from 'utils/numbers'
+
+type LabelPosition =
+  | 'left'
+  | 'right'
+  | 'center'
+  | 'bottom'
+  | 'insideLeft'
+  | 'insideRight'
+  | 'insideTop'
+  | 'insideBottom'
+  | 'insideTopLeft'
+  | 'insideTopRight'
+  | 'insideBottomLeft'
+  | 'insideBottomRight'
+  | 'top'
 
 const DepthChart = ({ grouping }: { grouping: number }) => {
   const { theme } = useTheme()
@@ -36,6 +51,7 @@ const DepthChart = ({ grouping }: { grouping: number }) => {
     return [...bidsWithSide, ...asksWithSide].sort((a, b) => a.price - b.price)
   }
 
+  // filter elements with the same size
   const chartData = useMemo(() => {
     if (!orderbook) return []
     return mergeCumulativeData(orderbook.bids, orderbook.asks)
@@ -87,7 +103,8 @@ const DepthChart = ({ grouping }: { grouping: number }) => {
   }, [chartData, markPrice, priceRangePercent])
 
   const yTickFormatter = useCallback(
-    (tick: number) => {
+    (tick: number | undefined) => {
+      if (!tick) return
       if (!serumOrPerpMarket) return tick.toFixed(1)
       const tickDecimals = getDecimalCount(serumOrPerpMarket.tickSize)
       if (tickDecimals >= 7) {
@@ -95,6 +112,55 @@ const DepthChart = ({ grouping }: { grouping: number }) => {
       } else return tick.toFixed(tickDecimals)
     },
     [serumOrPerpMarket]
+  )
+
+  const getChartReferenceColor = (price: number | undefined) => {
+    if (!price || !markPrice) return 'var(--fgd-2)'
+    return price > markPrice ? 'var(--down)' : 'var(--up)'
+  }
+
+  const getPercentFromMarkPrice = (price: number | undefined) => {
+    if (!price || !markPrice) return
+    const percentDif = ((price - markPrice) / markPrice) * 100
+    return `${percentDif.toFixed(2)}%`
+  }
+
+  const getSizeFromMouseData = useCallback(
+    (size: number | undefined) => {
+      if (!size || !serumOrPerpMarket) return
+      return floorToDecimal(
+        size,
+        getDecimalCount(serumOrPerpMarket.tickSize)
+      ).toString()
+    },
+    [serumOrPerpMarket]
+  )
+
+  const getSizeLabelPosition = useCallback(
+    (size: number | undefined, price: number | undefined) => {
+      if (!xMax || !size || !price || !markPrice) return `insideRight`
+      const yPosition = price > markPrice ? 'Top' : 'Bottom'
+      const midPoint = xMax / 2
+      const xPosition = size > midPoint ? 'Left' : 'Right'
+      return `inside${yPosition}${xPosition}` as LabelPosition
+    },
+    [xMax, markPrice]
+  )
+
+  const getPercentLabelPosition = useCallback(
+    (price: number | undefined) => {
+      if (!markPrice || !price || !yMax || !yMin) return 'bottom'
+      const upperMidPoint = (markPrice + yMax) / 2
+      const lowerMidPoint = (markPrice + yMin) / 2
+      return price > markPrice
+        ? price > upperMidPoint
+          ? 'bottom'
+          : 'top'
+        : price > lowerMidPoint
+        ? 'bottom'
+        : 'top'
+    },
+    [markPrice, yMax, yMin]
   )
 
   const handleMouseMove: CategoricalChartFunc = (coords) => {
@@ -156,13 +222,13 @@ const DepthChart = ({ grouping }: { grouping: number }) => {
           />
         </div>
       </div>
-      <div className="h-[480px]">
+      <div className="h-[482px]">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={chartData}
             layout="vertical"
             margin={{
-              top: 4,
+              top: 8,
               left: -12,
             }}
             onMouseMove={handleMouseMove}
@@ -182,12 +248,24 @@ const DepthChart = ({ grouping }: { grouping: number }) => {
               domain={[() => yMin, () => yMax]}
               axisLine={false}
               tick={{
-                fill: 'var(--fgd-2)',
+                fill: 'var(--fgd-4)',
                 fontSize: 8,
               }}
-              tickCount={4}
+              tickCount={3}
               tickLine={false}
-              tickFormatter={(tick) => yTickFormatter(tick)}
+              tickFormatter={(tick) => yTickFormatter(tick) || tick}
+            />
+            <Area
+              type="step"
+              dataKey="bids"
+              stroke={COLORS.UP[theme]}
+              fill="url(#bidsGradient)"
+            />
+            <Area
+              type="step"
+              dataKey="asks"
+              stroke={COLORS.DOWN[theme]}
+              fill="url(#asksGradient)"
             />
             <ReferenceLine y={markPrice} stroke="var(--bkg-4)">
               <Label
@@ -198,19 +276,76 @@ const DepthChart = ({ grouping }: { grouping: number }) => {
                 offset={7}
               />
             </ReferenceLine>
-            {/* <Tooltip /> */}
             <ReferenceLine
               y={mouseData?.price}
-              stroke="var(--fgd-4)"
+              stroke={getChartReferenceColor(mouseData?.price)}
               strokeDasharray="3, 3"
-            />
+            >
+              <Label
+                value={yTickFormatter(mouseData?.price)}
+                fontSize={8}
+                fill={getChartReferenceColor(mouseData?.price)}
+                position="left"
+                offset={7}
+              />
+              <Label
+                value={getPercentFromMarkPrice(mouseData?.price)}
+                fontSize={8}
+                fill={getChartReferenceColor(opposingMouseReference?.price)}
+                position={getPercentLabelPosition(mouseData?.price)}
+                offset={7}
+              />
+            </ReferenceLine>
             <ReferenceLine
               y={opposingMouseReference?.price}
-              stroke="var(--fgd-4)"
+              stroke={getChartReferenceColor(opposingMouseReference?.price)}
               strokeDasharray="3, 3"
-            />
+            >
+              <Label
+                value={yTickFormatter(opposingMouseReference?.price)}
+                fontSize={8}
+                fill={getChartReferenceColor(opposingMouseReference?.price)}
+                position="left"
+                offset={7}
+              />
+              <Label
+                value={getPercentFromMarkPrice(opposingMouseReference?.price)}
+                fontSize={8}
+                fill={getChartReferenceColor(mouseData?.price)}
+                position={getPercentLabelPosition(
+                  opposingMouseReference?.price
+                )}
+                offset={7}
+              />
+            </ReferenceLine>
             <ReferenceLine
-              stroke="var(--fgd-4)"
+              stroke={getChartReferenceColor(mouseData?.price)}
+              strokeDasharray="3, 3"
+              segment={
+                mouseData && mouseData?.price >= markPrice
+                  ? [
+                      { x: mouseData?.cumulativeSize, y: markPrice },
+                      { x: mouseData?.cumulativeSize, y: yMax },
+                    ]
+                  : [
+                      { x: mouseData?.cumulativeSize, y: yMin },
+                      { x: mouseData?.cumulativeSize, y: markPrice },
+                    ]
+              }
+            >
+              <Label
+                value={getSizeFromMouseData(mouseData?.cumulativeSize)}
+                fontSize={8}
+                fill="var(--fgd-2)"
+                position={getSizeLabelPosition(
+                  mouseData?.cumulativeSize,
+                  mouseData?.price
+                )}
+                offset={7}
+              />
+            </ReferenceLine>
+            <ReferenceLine
+              stroke={getChartReferenceColor(opposingMouseReference?.price)}
               strokeDasharray="3, 3"
               segment={
                 opposingMouseReference &&
@@ -230,34 +365,20 @@ const DepthChart = ({ grouping }: { grouping: number }) => {
                       },
                     ]
               }
-            />
-            <ReferenceLine
-              stroke="var(--fgd-4)"
-              strokeDasharray="3, 3"
-              segment={
-                mouseData && mouseData?.price >= markPrice
-                  ? [
-                      { x: mouseData?.cumulativeSize, y: markPrice },
-                      { x: mouseData?.cumulativeSize, y: yMax },
-                    ]
-                  : [
-                      { x: mouseData?.cumulativeSize, y: yMin },
-                      { x: mouseData?.cumulativeSize, y: markPrice },
-                    ]
-              }
-            />
-            <Area
-              type="step"
-              dataKey="bids"
-              stroke={COLORS.UP[theme]}
-              fill="url(#bidsGradient)"
-            />
-            <Area
-              type="step"
-              dataKey="asks"
-              stroke={COLORS.DOWN[theme]}
-              fill="url(#asksGradient)"
-            />
+            >
+              <Label
+                value={getSizeFromMouseData(
+                  opposingMouseReference?.cumulativeSize
+                )}
+                fontSize={8}
+                fill="var(--fgd-2)"
+                position={getSizeLabelPosition(
+                  opposingMouseReference?.cumulativeSize,
+                  opposingMouseReference?.price
+                )}
+                offset={7}
+              />
+            </ReferenceLine>
             <defs>
               <linearGradient id="bidsGradient" x1="1" y1="0" x2="0" y2="0">
                 <stop
