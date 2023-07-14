@@ -49,6 +49,7 @@ import InlineNotification from '@components/shared/InlineNotification'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import Tooltip from '@components/shared/Tooltip'
 import { formatCurrencyValue } from 'utils/numbers'
+import Switch from '@components/forms/Switch'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -274,6 +275,12 @@ const SwapForm = () => {
       typeof selectedRoute === 'undefined'
     )
   }, [amountInAsDecimal, amountOutAsDecimal, connected, selectedRoute])
+
+  const handleSetMargin = () => {
+    set((s) => {
+      s.swap.margin = !s.swap.margin
+    })
+  }
 
   return (
     <ContentBox
@@ -507,12 +514,11 @@ const SwapForm = () => {
                   {t('swap:margin')}
                 </p>
               </Tooltip>
-              <LinkButton
-                className="text-right text-sm font-normal text-th-fgd-2 underline underline-offset-2 md:hover:no-underline"
-                onClick={() => setShowSettings(true)}
-              >
-                {useMargin ? t('swap:enabled') : t('swap:disabled')}
-              </LinkButton>
+              <Switch
+                className="text-th-fgd-3"
+                checked={useMargin}
+                onChange={handleSetMargin}
+              />
             </div>
             <div className="flex items-center justify-between">
               <p className="text-sm text-th-fgd-3">{t('swap:max-slippage')}</p>

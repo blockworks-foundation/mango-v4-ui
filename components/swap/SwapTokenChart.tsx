@@ -166,8 +166,12 @@ const SwapTokenChart = () => {
   const loadSwapHistory = mangoStore((s) => s.mangoAccount.swapHistory.loading)
   const [showSwaps, setShowSwaps] = useState(true)
 
-  const coingeckoDataQuery = useQuery(
-    ['chart-data', baseTokenId, quoteTokenId, daysToShow],
+  const {
+    data: coingeckoDataQuery,
+    isLoading,
+    isFetching,
+  } = useQuery(
+    ['swap-chart-data', baseTokenId, quoteTokenId, daysToShow],
     () => fetchChartData(baseTokenId, quoteTokenId, daysToShow),
     {
       cacheTime: 1000 * 60 * 15,
@@ -178,11 +182,11 @@ const SwapTokenChart = () => {
   )
 
   const coingeckoData = useMemo(() => {
-    if (!coingeckoDataQuery?.data?.length) return []
+    if (!coingeckoDataQuery || !coingeckoDataQuery.length) return []
     if (!flipPrices) {
-      return coingeckoDataQuery.data
+      return coingeckoDataQuery
     } else {
-      return coingeckoDataQuery.data.map((d: ChartDataItem) => {
+      return coingeckoDataQuery.map((d: ChartDataItem) => {
         const price =
           d.inputTokenPrice / d.outputTokenPrice === d.price
             ? d.outputTokenPrice / d.inputTokenPrice
@@ -240,7 +244,8 @@ const SwapTokenChart = () => {
   }, [coingeckoData, chartSwapTimes])
 
   const chartData = useMemo(() => {
-    if (!coingeckoData.length) return []
+    if (!coingeckoData || !coingeckoData.length || coingeckoData.length < 2)
+      return []
     const minTime = coingeckoData[0].time
     const maxTime = coingeckoData[coingeckoData.length - 1].time
     if (swapHistoryPoints.length && showSwaps) {
@@ -274,22 +279,21 @@ const SwapTokenChart = () => {
   }, [inputCoingeckoId, outputCoingeckoId])
 
   const calculateChartChange = () => {
-    if (chartData?.length) {
-      if (mouseData) {
-        const index = chartData.findIndex((d) => d.time === mouseData.time)
-        return (
-          ((chartData[index]['price'] - chartData[0]['price']) /
-            chartData[0]['price']) *
-          100
-        )
-      } else
-        return (
-          ((chartData[chartData.length - 1]['price'] - chartData[0]['price']) /
-            chartData[0]['price']) *
-          100
-        )
+    if (!chartData?.length) return 0
+    if (mouseData) {
+      const index = chartData.findIndex((d) => d.time === mouseData.time)
+      return (
+        ((chartData[index]['price'] - chartData[0]['price']) /
+          chartData[0]['price']) *
+        100
+      )
+    } else {
+      return (
+        ((chartData[chartData.length - 1]['price'] - chartData[0]['price']) /
+          chartData[0]['price']) *
+        100
+      )
     }
-    return 0
   }
 
   const swapMarketName = useMemo(() => {
@@ -307,7 +311,7 @@ const SwapTokenChart = () => {
 
   return (
     <ContentBox hideBorder hidePadding className="h-full px-6 py-3">
-      {coingeckoDataQuery?.isLoading || coingeckoDataQuery.isFetching ? (
+      {isLoading || isFetching ? (
         <>
           <SheenLoader className="w-[148px] rounded-md">
             <div className="h-[18px] bg-th-bkg-2" />

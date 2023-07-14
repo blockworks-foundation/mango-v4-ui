@@ -4,7 +4,8 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import SecondaryTabBar from '@components/shared/SecondaryTabBar'
 import TokenOverviewTable from './TokenOverviewTable'
 import TokenDetailsTable from './TokenDetailsTable'
-import { TABS } from './PerpStats'
+
+const TABS = ['overview', 'details']
 
 const TokenStats = () => {
   const [activeTab, setActiveTab] = useState(TABS[0])

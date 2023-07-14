@@ -445,23 +445,19 @@ const OpenOrders = () => {
               >
                 <div>
                   {modifyOrderId !== o.orderId.toString() ? (
-                    <div className="flex items-start">
-                      <div className="mt-0.5">
-                        <MarketLogos market={market} size="large" />
-                      </div>
+                    <div className="flex items-center">
+                      <MarketLogos market={market} size="large" />
                       <div>
-                        <div className="mb-1 flex space-x-1 leading-none text-th-fgd-2">
+                        <div className="flex space-x-1 text-th-fgd-2">
                           {selectedMarket?.name === market.name ? (
                             <span className="whitespace-nowrap">
                               {market.name}
                             </span>
                           ) : (
                             <Link href={`/trade?name=${market.name}`}>
-                              <div className="flex items-center underline underline-offset-2 md:hover:text-th-fgd-3 md:hover:no-underline">
-                                <span className="whitespace-nowrap">
-                                  {market.name}
-                                </span>
-                              </div>
+                              <span className="whitespace-nowrap">
+                                {market.name}
+                              </span>
                             </Link>
                           )}
                           {o instanceof PerpOrder ? (
@@ -472,19 +468,22 @@ const OpenOrders = () => {
                             <SideBadge side={o.side} />
                           )}
                         </div>
-                        <p className="leading-none text-th-fgd-4">
-                          <span className="font-mono text-th-fgd-3">
+                        <p className="text-th-fgd-4">
+                          <span className="font-mono text-th-fgd-2">
                             <FormatNumericValue
                               value={o.size}
                               decimals={getDecimalCount(minOrderSize)}
                             />
                           </span>
                           {' at '}
-                          <span className="font-mono text-th-fgd-3">
+                          <span className="font-mono text-th-fgd-2">
                             <FormatNumericValue
                               value={o.price}
                               decimals={getDecimalCount(tickSize)}
-                              isUsd={quoteBank?.name === 'USDC'}
+                              isUsd={
+                                quoteBank?.name === 'USDC' ||
+                                o instanceof PerpOrder
+                              }
                             />{' '}
                             {quoteBank && quoteBank.name !== 'USDC' ? (
                               <span className="font-body text-th-fgd-3">
@@ -493,6 +492,9 @@ const OpenOrders = () => {
                             ) : null}
                           </span>
                         </p>
+                        <span className="font-mono text-xs text-th-fgd-3">
+                          <FormatNumericValue value={o.price * o.size} isUsd />
+                        </span>
                       </div>
                     </div>
                   ) : (

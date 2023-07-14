@@ -1,14 +1,13 @@
 import { ModalProps } from '../../types/modal'
 import Modal from '../shared/Modal'
-import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
-import { useEffect, useMemo } from 'react'
-import useMangoAccount from 'hooks/useMangoAccount'
+import { useMemo } from 'react'
 import dayjs from 'dayjs'
 import Change from '@components/shared/Change'
 import SheenLoader from '@components/shared/SheenLoader'
 import { NoSymbolIcon } from '@heroicons/react/20/solid'
 import { PerformanceDataItem } from 'types'
+import useAccountPerformanceData from 'hooks/useAccountPerformanceData'
 
 interface PnlChange {
   time: string
@@ -27,19 +26,11 @@ const PnlHistoryModal = ({
   pnlChangeToday,
 }: ModalCombinedProps) => {
   const { t } = useTranslation('account')
-  const { mangoAccountAddress } = useMangoAccount()
-  const actions = mangoStore.getState().actions
-  const loading = mangoStore((s) => s.mangoAccount.performance.loading)
-  const performanceData = mangoStore((s) => s.mangoAccount.performance.data)
-
-  useEffect(() => {
-    if (mangoAccountAddress) {
-      actions.fetchAccountPerformance(mangoAccountAddress, 31)
-    }
-  }, [actions, mangoAccountAddress])
+  const { performanceData, performanceLoading: loading } =
+    useAccountPerformanceData()
 
   const dailyValues: PnlChange[] = useMemo(() => {
-    if (!performanceData.length) return []
+    if (!performanceData || !performanceData.length) return []
 
     const dailyPnl = performanceData.filter((d: PerformanceDataItem) => {
       const startTime = new Date().getTime() - 30 * 86400000

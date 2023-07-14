@@ -2,6 +2,8 @@
     "base-liquidation-fee": "基本清算費用",
     "daily": "日",
     "hourly": "小時",
+    "closest-to-liquidation": "Positions Closest to Liquidation",
+    "largest-perp-positions": "Largest Positions",
     "perp-details": "{{market}}統計",
     "pnl-liquidation-fee": "正數盈虧清算費用",
     "settle-pnl-factor": "結清盈虧因素",

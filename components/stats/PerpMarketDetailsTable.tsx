@@ -91,7 +91,7 @@ const PerpMarketDetailsTable = () => {
                 >
                   <Td>
                     <div className="flex items-center">
-                      <MarketLogos market={market} />
+                      <MarketLogos market={market} size="large" />
                       <p className="mr-2 whitespace-nowrap font-body">{name}</p>
                       {isComingSoon ? <SoonBadge /> : null}
                     </div>

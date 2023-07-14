@@ -495,6 +495,8 @@ export const getFormattedBankValues = (group: Group, bank: Bank) => {
     maintLiabWeight: bank.maintLiabWeight.toFixed(2),
     initAssetWeight: bank.initAssetWeight.toFixed(2),
     initLiabWeight: bank.initLiabWeight.toFixed(2),
+    scaledInitAssetWeight: bank.scaledInitAssetWeight(bank.price).toFixed(2),
+    scaledInitLiabWeight: bank.scaledInitLiabWeight(bank.price).toFixed(2),
     depositWeightScale: toUiDecimalsForQuote(bank.depositWeightScaleStartQuote),
     borrowWeightScale: toUiDecimalsForQuote(bank.borrowWeightScaleStartQuote),
     rate0: (100 * bank.rate0.toNumber()).toFixed(2),

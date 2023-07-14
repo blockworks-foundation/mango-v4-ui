@@ -100,7 +100,7 @@ const SpotMarketsTable = () => {
                   <TrBody key={mkt.publicKey.toString()}>
                     <Td>
                       <div className="flex items-center">
-                        <MarketLogos market={mkt} />
+                        <MarketLogos market={mkt} size="large" />
                         <p className="font-body">{mkt.name}</p>
                       </div>
                     </Td>

@@ -1,8 +1,13 @@
 {
     "assets": "Assets",
     "assets-liabilities": "Assets & Liabilities",
+    "cumulative-interest-chart": "Cumulative Interst Chart",
+    "daily-volume": "24h Volume",
     "export": "Export {{dataType}}",
+    "funding-chart": "Funding Chart",
     "liabilities": "Liabilities",
+    "lifetime-volume": "Lifetime Trade Volume",
+    "no-data": "No data to display",
     "no-pnl-history": "No PnL History",
     "pnl-chart": "PnL Chart",
     "pnl-history": "PnL History",
@@ -13,5 +18,6 @@
     "tooltip-total-funding": "The sum of perp position funding earned and paid",
     "tooltip-total-interest": "The value of interest earned (deposits) minus interest paid (borrows)",
     "total-funding-earned": "Total Funding Earned",
+    "volume-chart": "Volume Chart",
     "week-starting": "Week starting {{week}}"
 }
