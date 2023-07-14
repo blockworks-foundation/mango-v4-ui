@@ -417,5 +417,17 @@ export type TickerData = {
 export interface HealthContribution {
   asset: string
   contribution: number
+  contributionDetails?: ContributionDetails
+  hasPerp?: boolean
   isAsset: boolean
+}
+
+export interface PerpMarketContribution {
+  market: string
+  contributionUi: number
+}
+
+export interface ContributionDetails {
+  perpMarketContributions: PerpMarketContribution[]
+  spotUi: number
 }

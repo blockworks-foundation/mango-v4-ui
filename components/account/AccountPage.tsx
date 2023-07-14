@@ -20,6 +20,7 @@ import useAccountPerformanceData from 'hooks/useAccountPerformanceData'
 import HealthContributions from './HealthContributions'
 import { PerformanceDataItem } from 'types'
 import { useRouter } from 'next/router'
+import { useWallet } from '@solana/wallet-adapter-react'
 
 const TABS = ['account-value', 'account:assets-liabilities']
 
@@ -171,16 +172,17 @@ const AccountView = ({
   handleViewChange: (view: ViewToShow) => void
 }) => {
   const router = useRouter()
+  const { connected } = useWallet()
   const { address } = router.query
   const { performanceData } = useAccountPerformanceData()
 
   const handleHideChart = useCallback(() => {
-    if (address) {
-      router.push(`/?address=${address}`)
+    if (address && !connected) {
+      router.push(`/?address=${address}`, undefined, { shallow: true })
     } else {
-      router.push('/')
+      router.push('/', undefined, { shallow: true })
     }
-  }, [router])
+  }, [address, router, connected])
 
   switch (view) {
     case 'account-value':

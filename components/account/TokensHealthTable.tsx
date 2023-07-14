@@ -10,7 +10,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import { MouseEventHandler } from 'react'
-import { HealthContribution } from 'types'
+import { ContributionDetails, HealthContribution } from 'types'
 
 const TokensHealthTable = ({
   initTokens,
@@ -30,6 +30,7 @@ const TokensHealthTable = ({
   const { mangoAccount } = useMangoAccount()
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.sm : false
+
   return group && mangoAccount ? (
     !isMobile ? (
       <Table>
@@ -61,7 +62,13 @@ const TokensHealthTable = ({
           {maintTokens
             .sort((a, b) => b.contribution - a.contribution)
             .map((cont) => {
-              const { asset, contribution, isAsset } = cont
+              const {
+                asset,
+                contribution,
+                contributionDetails,
+                isAsset,
+                hasPerp,
+              } = cont
               const bank = group.banksMapByName.get(asset)?.[0]
 
               let initAssetWeight = 0
@@ -85,10 +92,9 @@ const TokensHealthTable = ({
               }
 
               const assetOrLiabMultiplier = isAsset ? 1 : -1
-
+              const initToken = initTokens.find((cont) => cont.asset === asset)
               const initContribution =
-                (initTokens.find((cont) => cont.asset === asset)
-                  ?.contribution || 0) * assetOrLiabMultiplier
+                (initToken?.contribution || 0) * assetOrLiabMultiplier
 
               const maintContribution = contribution * assetOrLiabMultiplier
 
@@ -128,14 +134,23 @@ const TokensHealthTable = ({
                     )}
                   </Td>
                   <Td>
-                    <div className="text-right">
-                      <p>
-                        <FormatNumericValue
-                          value={initContribution}
-                          decimals={2}
-                          isUsd
-                        />
-                      </p>
+                    <div className="flex flex-col items-end text-right">
+                      <Tooltip
+                        className={!hasPerp ? 'hidden' : ''}
+                        content={
+                          <UsdcTooltipContent
+                            contributions={initToken?.contributionDetails}
+                          />
+                        }
+                      >
+                        <p className={hasPerp ? 'tooltip-underline' : ''}>
+                          <FormatNumericValue
+                            value={initContribution}
+                            decimals={2}
+                            isUsd
+                          />
+                        </p>
+                      </Tooltip>
                       <p className="text-th-fgd-3">
                         {initContribution > 0
                           ? initAssetWeight.toFixed(2)
@@ -147,14 +162,23 @@ const TokensHealthTable = ({
                     </div>
                   </Td>
                   <Td>
-                    <div className="text-right">
-                      <p>
-                        <FormatNumericValue
-                          value={maintContribution}
-                          decimals={2}
-                          isUsd
-                        />
-                      </p>
+                    <div className="flex flex-col items-end text-right">
+                      <Tooltip
+                        className={!hasPerp ? 'hidden' : ''}
+                        content={
+                          <UsdcTooltipContent
+                            contributions={contributionDetails}
+                          />
+                        }
+                      >
+                        <p className={hasPerp ? 'tooltip-underline' : ''}>
+                          <FormatNumericValue
+                            value={maintContribution}
+                            decimals={2}
+                            isUsd
+                          />
+                        </p>
+                      </Tooltip>
                       <p className="text-th-fgd-3">
                         {maintContribution > 0
                           ? maintAssetWeight.toFixed(2)
@@ -175,7 +199,13 @@ const TokensHealthTable = ({
         {maintTokens
           .sort((a, b) => b.contribution - a.contribution)
           .map((cont) => {
-            const { asset, contribution, isAsset } = cont
+            const {
+              asset,
+              contribution,
+              contributionDetails,
+              isAsset,
+              hasPerp,
+            } = cont
             const bank = group.banksMapByName.get(asset)?.[0]
 
             let initAssetWeight = 0
@@ -198,9 +228,9 @@ const TokensHealthTable = ({
 
             const assetOrLiabMultiplier = isAsset ? 1 : -1
 
+            const initToken = initTokens.find((cont) => cont.asset === asset)
             const initContribution =
-              (initTokens.find((cont) => cont.asset === asset)?.contribution ||
-                0) * assetOrLiabMultiplier
+              (initToken?.contribution || 0) * assetOrLiabMultiplier
 
             const maintContribution = contribution * assetOrLiabMultiplier
 
@@ -260,21 +290,28 @@ const TokensHealthTable = ({
                           </div>
                           <div className="col-span-1">
                             <p className="text-xs text-th-fgd-3">
-                              <Tooltip
-                                content={t('account:tooltip-init-health')}
+                              {t('account:init-health-contribution')}
+                            </p>
+                            <Tooltip
+                              className={!hasPerp ? 'hidden' : ''}
+                              content={
+                                <UsdcTooltipContent
+                                  contributions={initToken?.contributionDetails}
+                                />
+                              }
+                            >
+                              <p
+                                className={`font-mono text-th-fgd-2 ${
+                                  hasPerp ? 'tooltip-underline' : ''
+                                }`}
                               >
-                                <span className="tooltip-underline">
-                                  {t('account:init-health-contribution')}
-                                </span>
-                              </Tooltip>
-                            </p>
-                            <p className="font-mono text-th-fgd-2">
-                              <FormatNumericValue
-                                value={initContribution}
-                                decimals={2}
-                                isUsd
-                              />
-                            </p>
+                                <FormatNumericValue
+                                  value={initContribution}
+                                  decimals={2}
+                                  isUsd
+                                />
+                              </p>
+                            </Tooltip>
                             <p className="font-mono text-th-fgd-3">
                               {initContribution > 0
                                 ? initAssetWeight.toFixed(2)
@@ -286,21 +323,28 @@ const TokensHealthTable = ({
                           </div>
                           <div className="col-span-1">
                             <p className="text-xs text-th-fgd-3">
-                              <Tooltip
-                                content={t('account:tooltip-maint-health')}
+                              {t('account:maint-health-contribution')}
+                            </p>
+                            <Tooltip
+                              className={!hasPerp ? 'hidden' : ''}
+                              content={
+                                <UsdcTooltipContent
+                                  contributions={contributionDetails}
+                                />
+                              }
+                            >
+                              <p
+                                className={`font-mono text-th-fgd-2 ${
+                                  hasPerp ? 'tooltip-underline' : ''
+                                }`}
                               >
-                                <span className="tooltip-underline">
-                                  {t('account:maint-health-contribution')}
-                                </span>
-                              </Tooltip>
-                            </p>
-                            <p className="font-mono text-th-fgd-2">
-                              <FormatNumericValue
-                                value={maintContribution}
-                                decimals={2}
-                                isUsd
-                              />
-                            </p>
+                                <FormatNumericValue
+                                  value={maintContribution}
+                                  decimals={2}
+                                  isUsd
+                                />
+                              </p>
+                            </Tooltip>
                             <p className="font-mono text-th-fgd-3">
                               {maintContribution > 0
                                 ? maintAssetWeight.toFixed(2)
@@ -324,3 +368,39 @@ const TokensHealthTable = ({
 }
 
 export default TokensHealthTable
+
+const UsdcTooltipContent = ({
+  contributions,
+}: {
+  contributions: ContributionDetails | undefined
+}) => {
+  const { t } = useTranslation('common')
+  if (!contributions) return null
+  const { perpMarketContributions, spotUi } = contributions
+  return (
+    <>
+      <div className="space-y-1">
+        <div className="flex justify-between">
+          <p className="mr-3">{t('spot')}</p>
+          <span className="font-mono text-th-fgd-2">
+            <FormatNumericValue value={spotUi} decimals={2} isUsd />
+          </span>
+        </div>
+        {perpMarketContributions
+          .filter((cont) => Math.abs(cont.contributionUi) > 0.01)
+          .map((perp) => (
+            <div className="flex justify-between" key={perp.market}>
+              <p className="mr-3">{perp.market}</p>
+              <span className="font-mono text-th-fgd-2">
+                <FormatNumericValue
+                  value={perp.contributionUi}
+                  decimals={2}
+                  isUsd
+                />
+              </span>
+            </div>
+          ))}
+      </div>
+    </>
+  )
+}

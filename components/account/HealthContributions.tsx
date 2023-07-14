@@ -15,7 +15,7 @@ import MarketLogos from '@components/trade/MarketLogos'
 import mangoStore from '@store/mangoStore'
 import TokensHealthTable from './TokensHealthTable'
 import MarketsHealthTable from './MarketsHealthTable'
-import { HealthContribution } from 'types'
+import { HealthContribution, PerpMarketContribution } from 'types'
 
 const HealthContributions = ({ hideView }: { hideView: () => void }) => {
   const { t } = useTranslation(['common', 'account', 'trade'])
@@ -30,21 +30,83 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
 
   const [initHealthContributions, maintHealthContributions] = useMemo(() => {
     if (!group || !mangoAccount) return [[], []]
-    const init = mangoAccount
-      .getHealthContributionPerAssetUi(group, HealthType.init)
-      .map((item) => ({
-        ...item,
-        contribution: Math.abs(item.contribution),
-        isAsset: item.contribution > 0 ? true : false,
-      }))
-    const maint = mangoAccount
-      .getHealthContributionPerAssetUi(group, HealthType.maint)
-      .map((item) => ({
-        ...item,
-        contribution: Math.abs(item.contribution),
-        isAsset: item.contribution > 0 ? true : false,
-      }))
-    return [init, maint]
+    const initAssets = mangoAccount.getHealthContributionPerAssetUi(
+      group,
+      HealthType.init
+    )
+    const initContributions = []
+    for (const item of initAssets) {
+      const contribution = item.contribution
+      if (item.asset === 'USDC') {
+        const hasPerp =
+          !!item.contributionDetails?.perpMarketContributions.find(
+            (perp: PerpMarketContribution) => Math.abs(perp.contributionUi) > 0
+          )
+        initContributions.push({
+          hasPerp: hasPerp,
+          isAsset: contribution > 0 ? true : false,
+          ...item,
+        })
+        if (item.contributionDetails) {
+          for (const perpMarket of item.contributionDetails
+            .perpMarketContributions) {
+            const contribution = Math.abs(perpMarket.contributionUi)
+            if (contribution > 0) {
+              initContributions.push({
+                asset: perpMarket.market,
+                contribution: contribution,
+                isAsset: perpMarket.contributionUi > 0 ? true : false,
+              })
+            }
+          }
+        }
+      } else {
+        initContributions.push({
+          isAsset: contribution > 0 ? true : false,
+          ...item,
+        })
+      }
+    }
+
+    const maintAssets = mangoAccount.getHealthContributionPerAssetUi(
+      group,
+      HealthType.maint
+    )
+    const maintContributions = []
+    for (const item of maintAssets) {
+      const contribution = item.contribution
+      if (item.asset === 'USDC') {
+        const hasPerp =
+          !!item.contributionDetails?.perpMarketContributions.find(
+            (perp: PerpMarketContribution) => Math.abs(perp.contributionUi) > 0
+          )
+        maintContributions.push({
+          hasPerp: hasPerp,
+          isAsset: contribution > 0 ? true : false,
+          ...item,
+        })
+        if (item.contributionDetails) {
+          for (const perpMarket of item.contributionDetails
+            .perpMarketContributions) {
+            const contribution = Math.abs(perpMarket.contributionUi)
+            if (contribution > 0) {
+              maintContributions.push({
+                asset: perpMarket.market,
+                contribution: contribution,
+                isAsset: perpMarket.contributionUi > 0 ? true : false,
+              })
+            }
+          }
+        }
+      } else {
+        maintContributions.push({
+          isAsset: contribution > 0 ? true : false,
+          ...item,
+        })
+      }
+    }
+
+    return [initContributions, maintContributions]
   }, [group, mangoAccount])
 
   const [initHealthMarkets, initHealthTokens] = useMemo(() => {
@@ -56,7 +118,8 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
       ) => {
         if (obj.asset.includes('/')) {
           acc.market.push(obj)
-        } else {
+        }
+        if (!obj.asset.includes('PERP')) {
           acc.token.push(obj)
         }
         return acc
@@ -75,7 +138,8 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
       ) => {
         if (obj.asset.includes('/')) {
           acc.market.push(obj)
-        } else {
+        }
+        if (!obj.asset.includes('PERP')) {
           acc.token.push(obj)
         }
         return acc
@@ -111,8 +175,15 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
     if (!group)
       return <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
     const isSpotMarket = asset.includes('/')
-    if (isSpotMarket) {
-      const market = group.getSerum3MarketByName(asset)
+    const isPerpMarket = asset.includes('PERP')
+    const isMarket = isSpotMarket || isPerpMarket
+    if (isMarket) {
+      let market
+      if (isSpotMarket) {
+        market = group.getSerum3MarketByName(asset)
+      } else {
+        market = group.getPerpMarketByName(asset)
+      }
       return market ? (
         <MarketLogos market={market} size="small" />
       ) : (
