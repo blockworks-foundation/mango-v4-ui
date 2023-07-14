@@ -3,6 +3,7 @@ import { fetchAccountPerformance } from 'utils/account'
 import useMangoAccount from './useMangoAccount'
 import { useMemo } from 'react'
 import { PerformanceDataItem } from 'types'
+import { DAILY_MILLISECONDS } from 'utils/constants'
 
 export default function useAccountPerformanceData() {
   const { mangoAccountAddress } = useMangoAccount()
@@ -28,7 +29,7 @@ export default function useAccountPerformanceData() {
     const nowDate = new Date()
     return performanceData.filter((d) => {
       const dataTime = new Date(d.time).getTime()
-      return dataTime >= nowDate.getTime() - 86400000
+      return dataTime >= nowDate.getTime() - DAILY_MILLISECONDS
     })
   }, [performanceData])
 

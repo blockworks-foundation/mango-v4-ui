@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Governance, Proposal } from '@solana/spl-governance'
 import dayjs from 'dayjs'
 import { useTranslation } from 'next-i18next'
+import { DAILY_SECONDS } from 'utils/constants'
 
 interface CountdownState {
   days: number
@@ -53,8 +54,8 @@ export function VoteCountdown({
         return ZeroCountdown
       }
 
-      const days = Math.floor(timeToVoteEnd / 86400)
-      timeToVoteEnd -= days * 86400
+      const days = Math.floor(timeToVoteEnd / DAILY_SECONDS)
+      timeToVoteEnd -= days * DAILY_SECONDS
 
       const hours = Math.floor(timeToVoteEnd / 3600) % 24
       timeToVoteEnd -= hours * 3600

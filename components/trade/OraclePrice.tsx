@@ -17,11 +17,7 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import useOracleProvider from 'hooks/useOracleProvider'
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid'
 
-const OraclePrice = ({
-  setChangePrice,
-}: {
-  setChangePrice: (price: number) => void
-}) => {
+const OraclePrice = () => {
   const {
     serumOrPerpMarket,
     price: stalePrice,
@@ -96,7 +92,6 @@ const OraclePrice = ({
 
         if (selectedMarket instanceof PerpMarket) {
           setPrice(uiPrice)
-          setChangePrice(uiPrice)
         } else {
           let price
           if (quoteBank && serumOrPerpMarket) {
@@ -108,7 +103,6 @@ const OraclePrice = ({
             price = 0
           }
           setPrice(price)
-          setChangePrice(price)
         }
       },
       'processed'
@@ -118,14 +112,7 @@ const OraclePrice = ({
         connection.removeAccountChangeListener(subId)
       }
     }
-  }, [
-    connection,
-    selectedMarket,
-    serumOrPerpMarket,
-    setChangePrice,
-    quoteBank,
-    stalePrice,
-  ])
+  }, [connection, selectedMarket, serumOrPerpMarket, quoteBank, stalePrice])
 
   const oracleDecimals = getDecimalCount(serumOrPerpMarket?.tickSize || 0.01)
 
