@@ -43,9 +43,9 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
             (perp: PerpMarketContribution) => Math.abs(perp.contributionUi) > 0
           )
         initContributions.push({
+          ...item,
           hasPerp: hasPerp,
           isAsset: contribution > 0 ? true : false,
-          ...item,
         })
         if (item.contributionDetails) {
           for (const perpMarket of item.contributionDetails
@@ -62,8 +62,9 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
         }
       } else {
         initContributions.push({
-          isAsset: contribution > 0 ? true : false,
           ...item,
+          isAsset: contribution > 0 ? true : false,
+          contribution: Math.abs(contribution),
         })
       }
     }
@@ -100,8 +101,9 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
         }
       } else {
         maintContributions.push({
-          isAsset: contribution > 0 ? true : false,
           ...item,
+          isAsset: contribution > 0 ? true : false,
+          contribution: Math.abs(contribution),
         })
       }
     }
@@ -116,10 +118,12 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
         acc: { market: HealthContribution[]; token: HealthContribution[] },
         obj: HealthContribution
       ) => {
-        if (obj.asset.includes('/')) {
+        const isPerp = obj.asset.includes('PERP')
+        const isSpotMarket = obj.asset.includes('/')
+        if (isSpotMarket) {
           acc.market.push(obj)
         }
-        if (!obj.asset.includes('PERP')) {
+        if (!isPerp && !isSpotMarket) {
           acc.token.push(obj)
         }
         return acc
@@ -136,10 +140,12 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
         acc: { market: HealthContribution[]; token: HealthContribution[] },
         obj: HealthContribution
       ) => {
-        if (obj.asset.includes('/')) {
+        const isPerp = obj.asset.includes('PERP')
+        const isSpotMarket = obj.asset.includes('/')
+        if (isSpotMarket) {
           acc.market.push(obj)
         }
-        if (!obj.asset.includes('PERP')) {
+        if (!isPerp && !isSpotMarket) {
           acc.token.push(obj)
         }
         return acc
