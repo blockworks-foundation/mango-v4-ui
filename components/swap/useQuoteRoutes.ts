@@ -160,8 +160,10 @@ export const handleGetRoutes = async (
         routes: RouteInfo[]
         bestRoute: RouteInfo
       }[]
-    ).sort(
-      (a, b) => Number(b.bestRoute.outAmount) - Number(a.bestRoute.outAmount)
+    ).sort((a, b) =>
+      swapMode === 'ExactIn'
+        ? Number(b.bestRoute.outAmount) - Number(a.bestRoute.outAmount)
+        : Number(a.bestRoute.inAmount) - Number(b.bestRoute.inAmount)
     )
     return {
       routes: sortedByBiggestOutAmount[0].routes,

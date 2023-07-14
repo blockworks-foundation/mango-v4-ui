@@ -70,15 +70,38 @@ const Dashboard: NextPage = () => {
       symbol: string
       //there is more fileds they are just not used on ui
     }
+    type PriceImpactRespWithoutSide = Omit<PriceImpactResp, 'side'>
     const resp = await fetch(
       'https://api.mngo.cloud/data/v4/risk/listed-tokens-one-week-price-impacts'
     )
-    const jsonReps = await resp.json()
-
-    const filteredResp = (jsonReps as PriceImpactResp[])
-      .filter((x) => x.avg_price_impact_percent < 1 && x.side === 'ask')
+    const jsonReps = (await resp.json()) as PriceImpactResp[]
+    const filteredResp = jsonReps
+      .reduce((acc: PriceImpactRespWithoutSide[], val: PriceImpactResp) => {
+        if (val.side === 'ask') {
+          const bidSide = jsonReps.find(
+            (x) =>
+              x.symbol === val.symbol &&
+              x.target_amount === val.target_amount &&
+              x.side === 'bid'
+          )
+          acc.push({
+            target_amount: val.target_amount,
+            avg_price_impact_percent: bidSide
+              ? (bidSide.avg_price_impact_percent +
+                  val.avg_price_impact_percent) /
+                2
+              : val.avg_price_impact_percent,
+            symbol: val.symbol,
+          })
+        }
+        return acc
+      }, [])
+      .filter((x) => x.avg_price_impact_percent < 1)
       .reduce(
-        (acc: { [key: string]: PriceImpactResp }, val: PriceImpactResp) => {
+        (
+          acc: { [key: string]: PriceImpactRespWithoutSide },
+          val: PriceImpactRespWithoutSide
+        ) => {
           if (
             !acc[val.symbol] ||
             val.target_amount > acc[val.symbol].target_amount
@@ -89,7 +112,6 @@ const Dashboard: NextPage = () => {
         },
         {}
       )
-
     const suggestedTiers = Object.keys(filteredResp).reduce(
       (acc: { [key: string]: string | undefined }, key: string) => {
         acc[key] = Object.values(LISTING_PRESETS).find(
@@ -99,6 +121,7 @@ const Dashboard: NextPage = () => {
       },
       {}
     )
+
     setSuggestedTiers(suggestedTiers)
   }, [])
 
@@ -168,7 +191,7 @@ const Dashboard: NextPage = () => {
           getNullOrVal(fieldsToChange.depositWeightScale),
           false,
           false,
-          null,
+          bank.reduceOnly ? 0 : null,
           null,
           null
         )

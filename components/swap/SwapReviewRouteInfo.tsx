@@ -16,6 +16,7 @@ import {
   AddressLookupTableAccount,
 } from '@solana/web3.js'
 import Decimal from 'decimal.js'
+import * as sentry from '@sentry/nextjs'
 
 import mangoStore from '@store/mangoStore'
 import Button, { IconButton } from '../shared/Button'
@@ -313,6 +314,7 @@ const SwapReviewRouteInfo = ({
         await actions.reloadMangoAccount()
       } catch (e) {
         console.error('onSwap error: ', e)
+        sentry.captureException(e)
         if (isMangoError(e)) {
           notify({
             title: 'Transaction failed',
