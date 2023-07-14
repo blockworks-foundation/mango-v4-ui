@@ -13,7 +13,7 @@ import {
 } from '@heroicons/react/20/solid'
 // import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
-import { ReactNode, useEffect, useState } from 'react'
+import { ReactNode, RefObject, useEffect, useRef, useState } from 'react'
 import Particles from 'react-tsparticles'
 import { ModalProps } from 'types/modal'
 import Leaderboards from './Leaderboards'
@@ -27,6 +27,33 @@ import { PublicKey } from '@solana/web3.js'
 import { useTranslation } from 'next-i18next'
 import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
 import InlineNotification from '@components/shared/InlineNotification'
+
+const FAQS = [
+  {
+    q: 'What is Mango Mints?',
+    a: 'Mango Mints is a weekly rewards program with amazing prizes. Anyone can participate simply by performing actions on Mango.',
+  },
+  {
+    q: 'How do I participate?',
+    a: "Simply by using Mango. Points are allocated for transactions across the platform (swaps, trades, orders and more). You'll receive a notificaton when you earn points (make sure notifications are enabled for your wallet).",
+  },
+  {
+    q: 'How do Seasons work?',
+    a: 'Each weekly cycle is called a Season and each Season has two periods. The first period is about earning points and runs from midnight Sunday UTC to midnight Friday UTC. The second period is allocated to claim prizes and runs from midnight Friday UTC to midnight Sunday UTC.',
+  },
+  {
+    q: 'What are the rewards tiers?',
+    a: "There are 4 rewards tiers. Everyone starts in the Seed tier. After your first Season is completed you'll be promoted to either the Mango or Whale tier (depending on the average notional value of your swaps/trades). Bots are automatically assigned to the Bots tier and will remain there.",
+  },
+  {
+    q: 'How do the prizes work?',
+    a: "At the end of each Season loot boxes are distributed based on the amount of points earned relative to the other participants in your tier. Each box contains a prize. So you're guaranteed to get something.",
+  },
+  {
+    q: 'What happens during the Season claim period?',
+    a: "During the claim period you can come back to this page and often as you like and open your loot boxes. However, if you don't claim your prizes during this time window they will be lost.",
+  },
+]
 
 export type RewardsLeaderboardItem = {
   points: number
@@ -63,9 +90,25 @@ export const fetchLeaderboard = async (tier: string | undefined) => {
 const RewardsPage = () => {
   //   const { t } = useTranslation(['common', 'rewards'])
   const [showClaim] = useState(true)
-  const [showHowItWorks, setShowHowItWorks] = useState(false)
-  const [isWhitelisted, setIsWhitelisted] = useState(false)
+  const { data: isWhiteListed, isLoading, isFetching } = useIsWhiteListed()
   const [showLeaderboards, setShowLeaderboards] = useState('')
+  const [showWhitelistModal, setShowWhitelistModal] = useState(false)
+  const faqRef = useRef<HTMLDivElement>(null)
+
+  const scrollToFaqs = () => {
+    if (faqRef.current) {
+      faqRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start', // or 'end' or 'center'
+      })
+    }
+  }
+
+  useEffect(() => {
+    if (!isWhiteListed && !isLoading && !isFetching) {
+      setShowWhitelistModal(true)
+    }
+  }, [isWhiteListed, isLoading, isFetching])
 
   return !showLeaderboards ? (
     <>
@@ -80,13 +123,6 @@ const RewardsPage = () => {
               height={260}
               alt="Top Prize"
             />
-            {/* <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
-              <Badge
-                label="Season 1 – Top Prize!"
-                borderColor="var(--bkg-3)"
-                fillColor="var(--bkg-3)"
-              />
-            </div> */}
           </div>
           <div className="flex flex-col items-center lg:items-start">
             <Badge
@@ -94,9 +130,6 @@ const RewardsPage = () => {
               borderColor="var(--active)"
               shadowColor="var(--active)"
             />
-            {/* <p className="mt-2 bg-gradient-to-b from-th-active to-th-down bg-clip-text font-display text-2xl text-transparent">
-              Mango Mints
-            </p> */}
             <h1 className="my-2 text-center text-4xl lg:text-left">
               Win amazing prizes every week.
             </h1>
@@ -104,12 +137,9 @@ const RewardsPage = () => {
               Earn points by performing actions on Mango. More points equals
               more chances to win.
             </p>
-            <LinkButton
-              className="text-lg"
-              onClick={() => setShowHowItWorks(true)}
-            >
+            <Button size="large" onClick={scrollToFaqs}>
               How it Works
-            </LinkButton>
+            </Button>
           </div>
         </div>
       </div>
@@ -117,20 +147,15 @@ const RewardsPage = () => {
         <Claim />
       ) : (
         <Season
+          faqRef={faqRef}
           showLeaderboard={setShowLeaderboards}
-          showWhitelistModal={() => setIsWhitelisted(false)}
+          setShowWhitelistModal={() => setShowWhitelistModal(true)}
         />
       )}
-      {showHowItWorks ? (
-        <HowItWorksModal
-          isOpen={showHowItWorks}
-          onClose={() => setShowHowItWorks(false)}
-        />
-      ) : null}
-      {!isWhitelisted ? (
+      {showWhitelistModal ? (
         <WhitelistWalletModal
-          isOpen={!isWhitelisted}
-          onClose={() => setIsWhitelisted(true)}
+          isOpen={showWhitelistModal}
+          onClose={() => setShowWhitelistModal(false)}
         />
       ) : null}
     </>
@@ -145,11 +170,13 @@ const RewardsPage = () => {
 export default RewardsPage
 
 const Season = ({
+  faqRef,
   showLeaderboard,
-  showWhitelistModal,
+  setShowWhitelistModal,
 }: {
+  faqRef: RefObject<HTMLDivElement>
   showLeaderboard: (x: string) => void
-  showWhitelistModal: () => void
+  setShowWhitelistModal: () => void
 }) => {
   const { t } = useTranslation(['common', 'rewards'])
   const { wallet } = useWallet()
@@ -217,7 +244,7 @@ const Season = ({
                     You need to whitelist your wallet to claim any rewards you
                     win
                   </span>
-                  <LinkButton className="mt-2" onClick={showWhitelistModal}>
+                  <LinkButton className="mt-2" onClick={setShowWhitelistModal}>
                     Get Whitelisted
                   </LinkButton>
                 </>
@@ -228,7 +255,7 @@ const Season = ({
           </div>
         ) : null}
         <div className="col-span-12 lg:col-span-8">
-          <div className="rounded-lg border border-th-bkg-3 p-4">
+          <div className="mb-2 rounded-lg border border-th-bkg-3 p-4">
             <h2 className="mb-4">Rewards Tiers</h2>
             <div className="mb-6 space-y-2">
               <RewardsTierCard
@@ -260,30 +287,9 @@ const Season = ({
                 status={walletRewardsData?.tier === 'bot' ? 'Qualified' : ''}
               />
             </div>
-            <h2 className="mb-4">FAQs</h2>
-            <div className="border-b border-th-bkg-3">
-              <Disclosure>
-                {({ open }) => (
-                  <>
-                    <Disclosure.Button
-                      className={`w-full border-t border-th-bkg-3 p-4 text-left focus:outline-none md:hover:bg-th-bkg-2`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <p className="text-th-fgd-2">FAQ 1</p>
-                        <ChevronDownIcon
-                          className={`${
-                            open ? 'rotate-180' : 'rotate-360'
-                          } h-5 w-5 flex-shrink-0`}
-                        />
-                      </div>
-                    </Disclosure.Button>
-                    <Disclosure.Panel className="p-4">
-                      <p>FAQ 1 content</p>
-                    </Disclosure.Panel>
-                  </>
-                )}
-              </Disclosure>
-            </div>
+          </div>
+          <div ref={faqRef}>
+            <Faqs />
           </div>
         </div>
         <div className="col-span-12 lg:col-span-4">
@@ -715,72 +721,47 @@ const ClaimLossModal = ({ isOpen, onClose }: ModalProps) => {
   )
 }
 
-const HowItWorksModal = ({ isOpen, onClose }: ModalProps) => {
+const Faqs = () => {
   return (
-    <>
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-        panelClassNames="max-h-[540px] thin-scroll overflow-auto"
-      >
-        <h2 className="mb-2 text-center" tabIndex={0}>
-          How it works
-        </h2>
-        <p className="mb-4 text-base">
-          Mango Mints is a weekly rewards program with amazing prizes. Anyone
-          can participate simply by performing actions on Mango.
-        </p>
-        <ol className="ml-6 mb-6 list-outside list-decimal space-y-2">
-          <li>
-            Each weekly cycle is called a Season and each Season has two
-            periods.
-          </li>
-          <li>
-            This first period is about earning points and runs from midnight
-            Sunday UTC to midnight Friday UTC. The second period is allocated to
-            claim prizes and runs from midnight Friday UTC to midnight Sunday
-            UTC.
-          </li>
-          <li>
-            Points are earned by performing actions on Mango. Actions may
-            include trading, swapping, placing orders and other transactions on
-            Mango. You&apos;ll know when you earn points but the formula is not
-            public.
-          </li>
-          <li>
-            There are 4 rewards tiers. Everyone starts in the Seed tier. After
-            your first Season is completed you&apos;ll be promoted to either the
-            Mango or Whale tier (depending on the average notional value of your
-            swaps/trades). If you miss a Season you&apos;ll be relegated to the
-            Seed tier. Bots are automatically assigned to the Bots tier.
-          </li>
-          <li>
-            At the end of each Season Loot Boxes are distributed based on the
-            amount of points earned relative to the other participants in your
-            tier. Boxes are not guaranteed to contain a prize but the more you
-            get, the more chances you have to win a prize.
-          </li>
-          <li>
-            During the claim period you can come back to this page and open your
-            loot boxes. Unclaimed prizes will be rolled over to the next Season.
-          </li>
-          <li>
-            Feel free to reach out to us on{' '}
-            <a
-              href="https://discord.gg/2uwjsBc5yw"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Discord
-            </a>{' '}
-            with questions.
-          </li>
-        </ol>
-        <Button className="w-full" onClick={onClose} size="large">
-          Close
-        </Button>
-      </Modal>
-    </>
+    <div className="rounded-lg border border-th-bkg-3 p-4">
+      <h2 className="mb-2">How it Works</h2>
+      <p className="mb-4">
+        Feel free to reach out to us on{' '}
+        <a
+          href="https://discord.gg/2uwjsBc5yw"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Discord
+        </a>{' '}
+        with additional questions.
+      </p>
+      <div className="border-b border-th-bkg-3">
+        {FAQS.map((faq, i) => (
+          <Disclosure key={i}>
+            {({ open }) => (
+              <>
+                <Disclosure.Button
+                  className={`w-full border-t border-th-bkg-3 p-4 text-left focus:outline-none md:hover:bg-th-bkg-2`}
+                >
+                  <div className="flex items-center justify-between">
+                    <p className="text-th-fgd-2">{faq.q}</p>
+                    <ChevronDownIcon
+                      className={`${
+                        open ? 'rotate-180' : 'rotate-360'
+                      } h-5 w-5 flex-shrink-0`}
+                    />
+                  </div>
+                </Disclosure.Button>
+                <Disclosure.Panel className="p-4">
+                  <p>{faq.a}</p>
+                </Disclosure.Panel>
+              </>
+            )}
+          </Disclosure>
+        ))}
+      </div>
+    </div>
   )
 }
 
