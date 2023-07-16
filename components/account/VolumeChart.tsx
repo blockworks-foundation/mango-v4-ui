@@ -24,6 +24,7 @@ import { ArrowLeftIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 import { FadeInFadeOut } from '@components/shared/Transitions'
 import ContentBox from '@components/shared/ContentBox'
 import SheenLoader from '@components/shared/SheenLoader'
+import { DAILY_MILLISECONDS } from 'utils/constants'
 
 const VolumeChart = ({
   chartData,
@@ -123,7 +124,7 @@ const VolumeChart = ({
 
   const filteredData: FormattedHourlyAccountVolumeData[] = useMemo(() => {
     if (!chartData || !chartData.length) return []
-    const start = Number(daysToShow) * 86400000
+    const start = Number(daysToShow) * DAILY_MILLISECONDS
     const filtered = chartData.filter((d: FormattedHourlyAccountVolumeData) => {
       const date = new Date()
       if (daysToShow === '30') {

@@ -84,7 +84,7 @@
   "health-impact": "健康影响",
   "health-tooltip": "此在您进行交易之前预测您账户的健康状况。第一个值是您当前的帐户健康状况，第二个值是您的预测帐户健康状况。",
   "history": "纪录",
-  "insufficient-sol": "Solana需要0.04454 SOL租金才能创建Mango账户。您关闭帐户时租金将被退还。",
+  "insufficient-sol": "Solana需要0.0695 SOL租金才能创建Mango账户。您关闭帐户时租金将被退还。",
   "interest-earned": "获取利息",
   "interest-earned-paid": "获取利息",
   "leaderboard": "排行榜",

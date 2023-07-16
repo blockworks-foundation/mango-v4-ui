@@ -25,7 +25,7 @@ import { FadeInFadeOut } from './Transitions'
 import ChartRangeButtons from './ChartRangeButtons'
 import Change from './Change'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
+import { ANIMATION_SETTINGS_KEY, DAILY_MILLISECONDS } from 'utils/constants'
 import { formatNumericValue } from 'utils/numbers'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import { AxisDomain } from 'recharts/types/util/types'
@@ -120,7 +120,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
 
   const filteredData = useMemo(() => {
     if (!data.length) return []
-    const start = Number(daysToShow) * 86400000
+    const start = Number(daysToShow) * DAILY_MILLISECONDS
     const filtered = data.filter((d: any) => {
       const dataTime = new Date(d[xKey]).getTime()
       const now = new Date().getTime()

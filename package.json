@@ -21,14 +21,14 @@
     "node": ">=18.x"
   },
   "dependencies": {
-    "@blockworks-foundation/mango-feeds": "0.1.6",
-    "@blockworks-foundation/mango-v4": "^0.17.4",
+    "@blockworks-foundation/mango-feeds": "0.1.7",
+    "@blockworks-foundation/mango-v4": "^0.17.19",
     "@headlessui/react": "1.6.6",
     "@heroicons/react": "2.0.10",
     "@metaplex-foundation/js": "0.18.3",
-    "@next/font": "13.4.4",
     "@project-serum/anchor": "0.25.0",
     "@pythnetwork/client": "2.15.0",
+    "@sentry/nextjs": "7.58.0",
     "@solana/spl-governance": "0.3.27",
     "@solana/spl-token": "0.3.7",
     "@solana/wallet-adapter-base": "0.9.20",
@@ -128,7 +128,8 @@
       "eslint-config-next>eslint-plugin-jsx-a11y>aria-query>@babel/runtime-corejs3>core-js-pure": false,
       "next-i18next>core-js": false,
       "react-tsparticles": true,
-      "tsparticles>tsparticles-engine": true
+      "tsparticles>tsparticles-engine": true,
+      "@sentry/nextjs>@sentry/webpack-plugin>@sentry/cli": true
     }
   }
 }
