@@ -88,10 +88,7 @@ const UserSetupModal = ({
         group,
         0,
         accountName || 'Account 1',
-        undefined, // tokenCount
-        undefined, // serum3Count
-        8, // perpCount
-        10 // perpOoCount
+        16 // tokenCount
       )
       actions.fetchMangoAccounts(publicKey)
       if (tx) {
