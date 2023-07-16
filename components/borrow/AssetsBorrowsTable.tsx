@@ -1,17 +1,11 @@
-import {
-  ArrowUpLeftIcon,
-  ChevronDownIcon,
-  QuestionMarkCircleIcon,
-} from '@heroicons/react/20/solid'
+import { ArrowUpLeftIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
-import Image from 'next/legacy/image'
 import { useCallback, useState } from 'react'
 import { useViewport } from '../../hooks/useViewport'
 import { formatNumericValue } from '../../utils/numbers'
 import { breakpoints } from '../../utils/theme'
 import Button, { IconButton } from '../shared/Button'
 import Tooltip from '@components/shared/Tooltip'
-import useJupiterMints from 'hooks/useJupiterMints'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
 import BorrowRepayModal from '@components/modals/BorrowRepayModal'
@@ -19,13 +13,13 @@ import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
 import { getAvailableToBorrow } from './YourBorrowsTable'
 import { Disclosure, Transition } from '@headlessui/react'
+import TokenLogo from '@components/shared/TokenLogo'
 
 const AssetsBorrowsTable = () => {
   const { t } = useTranslation(['common', 'token'])
   const [showBorrowModal, setShowBorrowModal] = useState(false)
   const [selectedToken, setSelectedToken] = useState('')
   const { group } = useMangoGroup()
-  const { mangoTokens } = useJupiterMints()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const banks = useBanksWithBalances()
@@ -60,26 +54,18 @@ const AssetsBorrowsTable = () => {
             {banks.map((b) => {
               const bank = b.bank
 
-              let logoURI
-              if (mangoTokens?.length) {
-                logoURI = mangoTokens.find(
-                  (t) => t.address === bank.mint.toString()
-                )?.logoURI
-              }
               const borrows = bank.uiBorrows()
 
-              const available = group ? getAvailableToBorrow(b, group) : 0
+              const available = group
+                ? getAvailableToBorrow(b, group).toNumber()
+                : 0
 
               return (
                 <TrBody key={bank.name}>
                   <Td>
                     <div className="flex items-center">
                       <div className="mr-2.5 flex flex-shrink-0 items-center">
-                        {logoURI ? (
-                          <Image alt="" width="24" height="24" src={logoURI} />
-                        ) : (
-                          <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
-                        )}
+                        <TokenLogo bank={bank} />
                       </div>
                       <p className="font-body">{bank.name}</p>
                     </div>
@@ -129,14 +115,10 @@ const AssetsBorrowsTable = () => {
         <div className="border-b border-th-bkg-3">
           {banks.map((b) => {
             const bank = b.bank
-            let logoURI: string | undefined
-            if (mangoTokens?.length) {
-              logoURI = mangoTokens.find(
-                (t) => t.address === bank.mint.toString()
-              )?.logoURI
-            }
 
-            const available = group ? getAvailableToBorrow(b, group) : 0
+            const available = group
+              ? getAvailableToBorrow(b, group).toNumber()
+              : 0
 
             return (
               <Disclosure key={bank.name}>
@@ -148,16 +130,7 @@ const AssetsBorrowsTable = () => {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
                           <div className="mr-2.5 flex flex-shrink-0 items-center">
-                            {logoURI ? (
-                              <Image
-                                alt=""
-                                width="24"
-                                height="24"
-                                src={logoURI}
-                              />
-                            ) : (
-                              <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
-                            )}
+                            <TokenLogo bank={bank} />
                           </div>
                           <p className="text-th-fgd-1">{bank.name}</p>
                         </div>

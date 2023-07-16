@@ -1,12 +1,18 @@
 {
     "base-liquidation-fee": "Base Liquidation Fee",
+    "closest-to-liquidation": "Positions Closest to Liquidation",
+    "daily": "Daily",
+    "hourly": "Hourly",
+    "largest-perp-positions": "Largest Positions",
     "perp-details": "{{market}} Stats",
     "pnl-liquidation-fee": "Positive PnL Liquidation Fee",
     "settle-pnl-factor": "Settle PnL Factor",
+    "six-hourly": "6-Hourly",
     "tooltip-base-liquidation-fee": "The liqee pays this liquidation fee when a liquidator has to take over a perp base position.",
     "tooltip-funding-limits": "The minimum and maximum funding rates (in percent per day).",
     "tooltip-init-asset-liability-weight": "The contribution a perp position has to your initial account health. Asset weight is applied to long positions and liability weight is applied to shorts. Initial health controls your ability to withdraw and open new positions and is shown as an account's free collateral.",
     "tooltip-maint-asset-liability-weight": "The contribution a perp position has to your maintenance account health. Asset weight is applied to long positions and liability weight is applied to shorts. Maintenance health is what's displayed on your account page. If this value reaches zero your account will be liquidated.",
     "tooltip-pnl-liquidation-fee": "The liqee pays this liquidation fee when a liquidator has to take over positive unsettled perp pnl.",
-    "tooltip-settle-pnl-factor": "As an exploit mitigation, settlement of unrealized pnl is limited to this multiple of perp notional value in each time period."
+    "tooltip-settle-pnl-factor": "As an exploit mitigation, settlement of unrealized pnl is limited to this multiple of perp notional value in each time period.",
+    "volume": "Volume"
 }

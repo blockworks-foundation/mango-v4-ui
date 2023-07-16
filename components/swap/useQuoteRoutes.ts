@@ -6,6 +6,8 @@ import { RouteInfo } from 'types/jupiter'
 import { MANGO_ROUTER_API_URL } from 'utils/constants'
 import useJupiterSwapData from './useJupiterSwapData'
 
+type SwapModes = 'ALL' | 'JUPITER' | 'MANGO'
+
 type useQuoteRoutesPropTypes = {
   inputMint: string
   outputMint: string
@@ -13,6 +15,7 @@ type useQuoteRoutesPropTypes = {
   slippage: number
   swapMode: string
   wallet: string | undefined | null
+  mode?: SwapModes
 }
 
 const fetchJupiterRoutes = async (
@@ -111,30 +114,43 @@ export const handleGetRoutes = async (
   slippage = 50,
   swapMode = 'ExactIn',
   feeBps = 0,
-  wallet: string | undefined | null
+  wallet: string | undefined | null,
+  mode: SwapModes = 'ALL'
 ) => {
   try {
     wallet ||= PublicKey.default.toBase58()
+    const mangoRoute = fetchMangoRoutes(
+      inputMint,
+      outputMint,
+      amount,
+      slippage,
+      swapMode,
+      feeBps,
+      wallet
+    )
+    const jupiterRoute = fetchJupiterRoutes(
+      inputMint,
+      outputMint,
+      amount,
+      slippage,
+      swapMode,
+      feeBps
+    )
 
-    const results = await Promise.allSettled([
-      fetchMangoRoutes(
-        inputMint,
-        outputMint,
-        amount,
-        slippage,
-        swapMode,
-        feeBps,
-        wallet
-      ),
-      fetchJupiterRoutes(
-        inputMint,
-        outputMint,
-        amount,
-        slippage,
-        swapMode,
-        feeBps
-      ),
-    ])
+    const routes = []
+    if (mode == 'ALL') {
+      routes.push(mangoRoute)
+      routes.push(jupiterRoute)
+    }
+
+    if (mode === 'MANGO') {
+      routes.push(mangoRoute)
+    }
+    if (mode === 'JUPITER') {
+      routes.push(jupiterRoute)
+    }
+
+    const results = await Promise.allSettled(routes)
     const responses = results
       .filter((x) => x.status === 'fulfilled' && x.value.bestRoute !== null)
       .map((x) => (x as any).value)
@@ -144,8 +160,10 @@ export const handleGetRoutes = async (
         routes: RouteInfo[]
         bestRoute: RouteInfo
       }[]
-    ).sort(
-      (a, b) => Number(b.bestRoute.outAmount) - Number(a.bestRoute.outAmount)
+    ).sort((a, b) =>
+      swapMode === 'ExactIn'
+        ? Number(b.bestRoute.outAmount) - Number(a.bestRoute.outAmount)
+        : Number(a.bestRoute.inAmount) - Number(b.bestRoute.inAmount)
     )
     return {
       routes: sortedByBiggestOutAmount[0].routes,
@@ -166,6 +184,7 @@ const useQuoteRoutes = ({
   slippage,
   swapMode,
   wallet,
+  mode = 'ALL',
 }: useQuoteRoutesPropTypes) => {
   const { inputTokenInfo, outputTokenInfo } = useJupiterSwapData()
 
@@ -192,7 +211,8 @@ const useQuoteRoutes = ({
         slippage,
         swapMode,
         0,
-        wallet
+        wallet,
+        mode
       ),
     {
       cacheTime: 1000 * 60,

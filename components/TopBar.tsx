@@ -82,7 +82,7 @@ const TopBar = () => {
         query.token || query.market ? '' : 'pl-4 md:pl-6'
       }`}
     >
-      <div className="flex w-full items-center justify-between space-x-4">
+      <div className="flex w-full items-center justify-between md:space-x-4">
         <span className="mb-0 flex items-center">
           {query.token || query.market ? (
             <button
@@ -98,7 +98,7 @@ const TopBar = () => {
             </div>
           ) : null}
           <img
-            className="mr-4 h-8 w-auto md:hidden"
+            className="mr-4 h-8 w-8 flex-shrink-0 md:hidden"
             src="/logos/logo-mark.svg"
             alt="next"
           />
@@ -167,19 +167,24 @@ const TopBar = () => {
           ) : null}
         </span>
         {!isOnline ? (
-          <div className="absolute left-1/2 z-10 flex -translate-x-1/2 items-center rounded-full bg-th-down py-2 px-4">
-            <ExclamationTriangleIcon className="h-5 w-5 text-th-fgd-1" />
+          <div className="absolute top-3 left-1/2 z-10 flex h-10 w-max -translate-x-1/2 items-center rounded-full bg-th-down py-2 px-4 md:top-8">
+            <ExclamationTriangleIcon className="h-5 w-5 flex-shrink-0 text-th-fgd-1" />
             <p className="ml-2 text-th-fgd-1">
               Your connection appears to be offline
             </p>
           </div>
         ) : null}
         <div className="flex items-center">
-          {isUnownedAccount || (!connected && isMobile) ? null : (
+          {isUnownedAccount || (!connected && isMobile) ? null : isMobile ? (
+            <button
+              onClick={() => handleDepositWithdrawModal('deposit')}
+              className="h-16 border-l border-th-bkg-3 px-4 font-display text-th-fgd-1"
+            >{`${t('deposit')} / ${t('withdraw')}`}</button>
+          ) : (
             <Button
               onClick={() => handleDepositWithdrawModal('deposit')}
               secondary
-              className="mx-4"
+              className="mr-4"
             >{`${t('deposit')} / ${t('withdraw')}`}</Button>
           )}
           {connected ? (

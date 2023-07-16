@@ -2,34 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-  font-family: 'TT Mono';
-  src: url('/fonts/TT_Commons_Pro_Mono_Medium.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'TT Commons Expanded';
-  src: url('/fonts/TT_Commons_Pro_Expanded_DemiBold.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'TT Commons';
-  font-weight: normal;
-  src: url('/fonts/TT_Commons_Pro_Normal.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'TT Commons';
-  font-weight: medium;
-  src: url('/fonts/TT_Commons_Pro_Medium.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'TT Commons';
-  font-weight: bold;
-  src: url('/fonts/TT_Commons_Pro_DemiBold.woff2') format('woff2');
-}
-
 /* Reset */
 
 html,
@@ -400,6 +372,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+main {
+  @apply font-body;
+}
+
 button {
   @apply default-transition tracking-wider focus:outline-none;
   -webkit-font-feature-settings: 'zero' 1;
@@ -634,7 +610,7 @@ input[type='range']::-webkit-slider-runnable-track {
 }
 
 .tooltip-underline {
-  @apply default-transition w-max border-b border-dashed border-th-fgd-4 leading-tight hover:cursor-help hover:border-transparent;
+  @apply default-transition w-max border-b border-dashed border-current hover:cursor-help hover:border-transparent;
 }
 
 .radial-gradient-bg {

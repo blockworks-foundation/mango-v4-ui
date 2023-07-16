@@ -6,7 +6,7 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import Tooltip from '@components/shared/Tooltip'
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid'
-import { BN } from '@project-serum/anchor'
+import { BN } from '@coral-xyz/anchor'
 import mangoStore from '@store/mangoStore'
 import { getOracleProvider } from 'hooks/useOracleProvider'
 import { useTranslation } from 'next-i18next'
@@ -41,11 +41,11 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
           </Tooltip>
           <div className="flex space-x-2">
             <p className="font-mono text-th-fgd-2">
-              {bank.initAssetWeight.toFixed(2)}
+              {bank.scaledInitAssetWeight(bank.price).toFixed(2)}
             </p>
             <span className="text-th-fgd-4">|</span>
             <p className="font-mono text-th-fgd-2">
-              {bank.initLiabWeight.toFixed(2)}
+              {bank.scaledInitLiabWeight(bank.price).toFixed(2)}
             </p>
           </div>
         </div>
@@ -171,15 +171,19 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
         </div>
         <div className="flex justify-between border-t border-th-bkg-3 py-4">
           <p>{t('token:oracle')}</p>
-          <a
-            className="flex items-center"
-            href={oracleLinkPath}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <span className="mr-1.5">{oracleProvider}</span>
-            <ArrowTopRightOnSquareIcon className="h-4 w-4" />
-          </a>
+          {oracleLinkPath ? (
+            <a
+              className="flex items-center"
+              href={oracleLinkPath}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <span className="mr-1.5">{oracleProvider}</span>
+              <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+            </a>
+          ) : (
+            <p className="text-th-fgd-2">{oracleProvider}</p>
+          )}
         </div>
         <div className="flex justify-between border-t border-th-bkg-3 py-4">
           <Tooltip content={t('token:tooltip-oracle-confidence')}>

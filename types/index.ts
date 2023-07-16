@@ -1,11 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
+  MangoAccount,
   ParsedFillEvent,
   PerpMarket,
+  PerpPosition,
   Serum3Market,
 } from '@blockworks-foundation/mango-v4'
 import { Modify } from '@blockworks-foundation/mango-v4'
 import { Event } from '@project-serum/serum/lib/queue'
+import { PublicKey } from '@solana/web3.js'
 import { formatTradeHistory } from 'hooks/useTradeHistory'
 
 export type EmptyObject = { [K in keyof never]?: never }
@@ -138,6 +141,22 @@ export type HourlyFundingStatsData = {
 
 export interface HourlyFundingChartData extends Record<string, any> {
   time: string
+}
+
+export type AccountVolumeTotalData = [string, { volume_usd: number }]
+
+export type HourlyAccountVolumeData = {
+  [market: string]: {
+    [timestamp: string]: {
+      volume_usd: number
+    }
+  }
+}
+
+export type FormattedHourlyAccountVolumeData = {
+  time: string
+  total_volume_usd: number
+  markets: Record<string, number>
 }
 
 export interface TotalInterestDataItem {
@@ -286,6 +305,8 @@ export interface NFT {
 }
 
 export interface PerpStatsItem {
+  cumulative_base_volume: number
+  cumulative_quote_volume: number
   date_hour: string
   fees_accrued: number
   fees_settled: number
@@ -299,6 +320,14 @@ export interface PerpStatsItem {
   stable_price: number
   total_fees: number
 }
+
+export type PositionStat = {
+  account?: MangoAccount
+  mangoAccount: PublicKey
+  perpPosition: PerpPosition
+}
+
+export type GroupedDataItem = PerpStatsItem & Record<string, any>
 
 export type ActivityFeed = {
   activity_type: string
@@ -372,4 +401,15 @@ export function isMangoError(error: unknown): error is MangoError {
     'txid' in error &&
     typeof (error as Record<string, unknown>).message === 'string'
   )
+}
+
+export type TickerData = {
+  base_currency: string
+  base_volume: string
+  high: string
+  last_price: string
+  low: string
+  target_currency: string
+  target_volume: string
+  ticker_id: string
 }

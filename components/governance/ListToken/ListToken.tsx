@@ -1,49 +1,55 @@
 import Input from '@components/forms/Input'
 import Label from '@components/forms/Label'
-import Button from '@components/shared/Button'
-import { ChangeEvent, useEffect, useState } from 'react'
+import Button, { IconButton } from '@components/shared/Button'
+import { ChangeEvent, useCallback, useMemo, useState } from 'react'
 import mangoStore, { CLUSTER } from '@store/mangoStore'
 import { Token } from 'types/jupiter'
 import { handleGetRoutes } from '@components/swap/useQuoteRoutes'
-import {
-  JUPITER_API_DEVNET,
-  JUPITER_API_MAINNET,
-  USDC_MINT,
-} from 'utils/constants'
-import { Keypair, PublicKey, SYSVAR_RENT_PUBKEY } from '@solana/web3.js'
+import { JUPITER_PRICE_API_MAINNET, USDC_MINT } from 'utils/constants'
+import { AccountMeta, PublicKey, SYSVAR_RENT_PUBKEY } from '@solana/web3.js'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { OPENBOOK_PROGRAM_ID } from '@blockworks-foundation/mango-v4'
-import { PythHttpClient } from '@pythnetwork/client'
 import {
-  MAINNET_PYTH_PROGRAM,
+  OPENBOOK_PROGRAM_ID,
+  RouteInfo,
+  toNative,
+} from '@blockworks-foundation/mango-v4'
+import {
   MANGO_DAO_WALLET,
   MANGO_DAO_WALLET_GOVERNANCE,
   MANGO_MINT_DECIMALS,
 } from 'utils/governance/constants'
 import {
+  ArrowLeftIcon,
   ChevronDownIcon,
   ExclamationCircleIcon,
-  InformationCircleIcon,
 } from '@heroicons/react/20/solid'
-import BN from 'bn.js'
 import { createProposal } from 'utils/governance/instructions/createProposal'
 import GovernanceStore from '@store/governanceStore'
-import { Market } from '@project-serum/serum'
 import { notify } from 'utils/notifications'
-import { fmtTokenAmount, tryGetPubKey } from 'utils/governance/tools'
 import { useTranslation } from 'next-i18next'
-import OnBoarding from '../OnBoarding'
 import { emptyPk } from 'utils/governance/accounts/vsrAccounts'
-import { AnchorProvider, Program } from '@project-serum/anchor'
-import EmptyWallet from 'utils/wallet'
 import Loading from '@components/shared/Loading'
-import ListTokenSuccess from './ListTokenSuccess'
+import ListingSuccess from '../ListingSuccess'
 import InlineNotification from '@components/shared/InlineNotification'
 import { Disclosure } from '@headlessui/react'
 import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
 import { abbreviateAddress } from 'utils/formatting'
 import { formatNumericValue } from 'utils/numbers'
 import useMangoGroup from 'hooks/useMangoGroup'
+import {
+  LISTING_PRESETS,
+  LISTING_PRESETS_KEYS,
+  coinTiersToNames,
+  getBestMarket,
+  getOracle,
+} from 'utils/governance/listingTools'
+import { fmtTokenAmount, tryGetPubKey } from 'utils/governance/tools'
+import OnBoarding from '../OnBoarding'
+import CreateOpenbookMarketModal from '@components/modals/CreateOpenbookMarketModal'
+import { calculateTradingParameters } from 'utils/governance/listingTools'
+import useJupiterMints from 'hooks/useJupiterMints'
+import CreateSwitchboardOracleModal from '@components/modals/CreateSwitchboardOracleModal'
+import { BN } from '@coral-xyz/anchor'
 
 type FormErrors = Partial<Record<keyof TokenListForm, string>>
 
@@ -77,8 +83,11 @@ const defaultTokenListFormValues: TokenListForm = {
   proposalDescription: '',
 }
 
-const ListToken = () => {
+const TWENTY_K_USDC_BASE = '20000000000'
+
+const ListToken = ({ goBack }: { goBack: () => void }) => {
   const wallet = useWallet()
+  const { jupiterTokens } = useJupiterMints()
   const connection = mangoStore((s) => s.connection)
   const client = mangoStore((s) => s.client)
   const { group } = useMangoGroup()
@@ -97,29 +106,210 @@ const ListToken = () => {
     ...defaultTokenListFormValues,
   })
   const [loadingListingParams, setLoadingListingParams] = useState(false)
-  const [tokenList, setTokenList] = useState<Token[]>([])
   const [formErrors, setFormErrors] = useState<FormErrors>({})
   const [priceImpact, setPriceImpact] = useState<number>(0)
   const [currentTokenInfo, setCurrentTokenInfo] = useState<
     Token | null | undefined
   >(null)
+  const [baseTokenPrice, setBaseTokenPrice] = useState<number>(0)
   const [proposalPk, setProposalPk] = useState<string | null>(null)
   const [mint, setMint] = useState('')
   const [creatingProposal, setCreatingProposal] = useState(false)
-  const minVoterWeight = governances
-    ? governances[MANGO_DAO_WALLET_GOVERNANCE.toBase58()].account.config
-        .minCommunityTokensToCreateProposal
-    : new BN(0)
+  const [createOpenbookMarketModal, setCreateOpenbookMarket] = useState(false)
+  const [orcaPoolAddress, setOrcaPoolAddress] = useState('')
+  const [raydiumPoolAddress, setRaydiumPoolAddress] = useState('')
+  const [oracleModalOpen, setOracleModalOpen] = useState(false)
+  const [coinTier, setCoinTier] = useState<LISTING_PRESETS_KEYS | ''>('')
+  const isMidOrPremium = coinTier === 'PREMIUM' || coinTier === 'MID'
+
+  const quoteBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
+  const minVoterWeight = useMemo(
+    () =>
+      governances
+        ? governances[MANGO_DAO_WALLET_GOVERNANCE.toBase58()].account.config
+            .minCommunityTokensToCreateProposal
+        : new BN(0),
+    [governances]
+  ) as BN
   const mintVoterWeightNumber = governances
     ? fmtTokenAmount(minVoterWeight, MANGO_MINT_DECIMALS)
     : 0
+  const tradingParams = useMemo(() => {
+    if (quoteBank && currentTokenInfo) {
+      return calculateTradingParameters(
+        baseTokenPrice,
+        quoteBank.uiPrice,
+        currentTokenInfo.decimals,
+        quoteBank.mintDecimals
+      )
+    }
+    return {
+      baseLots: 0,
+      quoteLots: 0,
+      minOrderValue: 0,
+      baseLotExponent: 0,
+      quoteLotExponent: 0,
+      minOrderSize: 0,
+      priceIncrement: 0,
+      priceIncrementRelative: 0,
+    }
+  }, [quoteBank, currentTokenInfo, baseTokenPrice])
+  const tierPreset = useMemo(() => {
+    return coinTier ? LISTING_PRESETS[coinTier] : {}
+  }, [coinTier])
 
   const handleSetAdvForm = (propertyName: string, value: string | number) => {
     setFormErrors({})
     setAdvForm({ ...advForm, [propertyName]: value })
   }
 
-  const handleTokenFind = async () => {
+  const getListingParams = useCallback(
+    async (tokenInfo: Token, isMidOrPremium: boolean) => {
+      setLoadingListingParams(true)
+      const [oraclePk, marketPk] = await Promise.all([
+        getOracle({
+          baseSymbol: tokenInfo.symbol,
+          quoteSymbol: 'usd',
+          connection,
+          pythOnly: isMidOrPremium,
+        }),
+        getBestMarket({
+          baseMint: mint,
+          quoteMint: USDC_MINT,
+          cluster: CLUSTER,
+          connection,
+        }),
+      ])
+      const index = proposals ? Object.values(proposals).length : 0
+
+      const bankNum = 0
+
+      const [baseBank] = PublicKey.findProgramAddressSync(
+        [
+          Buffer.from('Bank'),
+          group!.publicKey.toBuffer(),
+          new BN(index).toArrayLike(Buffer, 'le', 2),
+          new BN(bankNum).toArrayLike(Buffer, 'le', 4),
+        ],
+        client.programId
+      )
+      setAdvForm({
+        ...advForm,
+        oraclePk: oraclePk || '',
+        mintPk: mint,
+        name: tokenInfo.symbol,
+        tokenIndex: index,
+        openBookProgram: OPENBOOK_PROGRAM_ID[CLUSTER].toBase58(),
+        marketName: `${tokenInfo.symbol}/USDC`,
+        baseBankPk: baseBank.toBase58(),
+        quoteBankPk: group!
+          .getFirstBankByMint(new PublicKey(USDC_MINT))
+          .publicKey.toBase58(),
+        marketIndex: index,
+        openBookMarketExternalPk: marketPk?.toBase58() || '',
+        proposalTitle: `List ${tokenInfo.symbol} on Mango-v4`,
+      })
+      setLoadingListingParams(false)
+    },
+    [advForm, client.programId, connection, group, mint, proposals]
+  )
+
+  const handleGetRoutesWithFixedArgs = useCallback(
+    (amount: number, tokenMint: PublicKey, mode: 'ExactIn' | 'ExactOut') => {
+      const SLIPPAGE_BPS = 50
+      const FEE = 0
+      const walletForCheck = wallet.publicKey
+        ? wallet.publicKey?.toBase58()
+        : emptyPk
+
+      return handleGetRoutes(
+        USDC_MINT,
+        tokenMint.toBase58(),
+        toNative(amount, 6).toNumber(),
+        SLIPPAGE_BPS,
+        mode,
+        FEE,
+        walletForCheck,
+        'JUPITER'
+      )
+    },
+    [wallet.publicKey]
+  )
+
+  const handleLiqudityCheck = useCallback(
+    async (tokenMint: PublicKey) => {
+      try {
+        const TIERS: LISTING_PRESETS_KEYS[] = ['PREMIUM', 'MID', 'MEME', 'SHIT']
+        const swaps = await Promise.all([
+          handleGetRoutesWithFixedArgs(100000, tokenMint, 'ExactIn'),
+          handleGetRoutesWithFixedArgs(20000, tokenMint, 'ExactIn'),
+          handleGetRoutesWithFixedArgs(5000, tokenMint, 'ExactIn'),
+          handleGetRoutesWithFixedArgs(1000, tokenMint, 'ExactIn'),
+          handleGetRoutesWithFixedArgs(100000, tokenMint, 'ExactOut'),
+          handleGetRoutesWithFixedArgs(20000, tokenMint, 'ExactOut'),
+          handleGetRoutesWithFixedArgs(5000, tokenMint, 'ExactOut'),
+          handleGetRoutesWithFixedArgs(1000, tokenMint, 'ExactOut'),
+        ])
+        const bestRoutesSwaps = swaps
+          .filter((x) => x.bestRoute)
+          .map((x) => x.bestRoute!)
+        const averageSwaps = bestRoutesSwaps.reduce(
+          (acc: { amount: string; priceImpactPct: number }[], val) => {
+            if (val.swapMode === 'ExactIn') {
+              const exactOutRoute = bestRoutesSwaps.find(
+                (x) => x.amount === val.amount && x.swapMode === 'ExactOut'
+              )
+              acc.push({
+                amount: val.amount.toString(),
+                priceImpactPct: exactOutRoute?.priceImpactPct
+                  ? (val.priceImpactPct + exactOutRoute.priceImpactPct) / 2
+                  : val.priceImpactPct,
+              })
+            }
+            return acc
+          },
+          []
+        )
+
+        const midTierCheck = averageSwaps.find(
+          (x) => x.amount === TWENTY_K_USDC_BASE
+        )
+        const indexForTierFromSwaps = averageSwaps.findIndex(
+          (x) => x?.priceImpactPct && x?.priceImpactPct * 100 < 1
+        )
+        const tier =
+          indexForTierFromSwaps > -1
+            ? TIERS[indexForTierFromSwaps]
+            : 'UNTRUSTED'
+        setCoinTier(tier)
+        setPriceImpact(midTierCheck ? midTierCheck.priceImpactPct * 100 : 100)
+
+        handleGetPoolParams(
+          swaps.find(
+            (x) => x.bestRoute!.amount.toString() === TWENTY_K_USDC_BASE
+          )!.routes
+        )
+        return tier
+      } catch (e) {
+        notify({
+          title: t('liquidity-check-error'),
+          description: `${e}`,
+          type: 'error',
+        })
+      }
+    },
+    [t, wallet.publicKey]
+  )
+
+  const handleGetPoolParams = (routes: never[] | RouteInfo[]) => {
+    const marketInfos = routes.flatMap((x) => x.marketInfos)
+    const orcaPool = marketInfos.find((x) => x.label === 'Orca')
+    const raydiumPool = marketInfos.find((x) => x.label === 'Raydium')
+    setOrcaPoolAddress(orcaPool?.id || '')
+    setRaydiumPoolAddress(raydiumPool?.id || '')
+  }
+
+  const handleTokenFind = useCallback(async () => {
     cancel()
     if (!tryGetPubKey(mint)) {
       notify({
@@ -128,237 +318,71 @@ const ListToken = () => {
       })
       return
     }
-    let currentTokenList: Token[] = tokenList
-    if (!tokenList.length) {
-      currentTokenList = await getTokenList()
-      setTokenList(currentTokenList)
-    }
-    const tokenInfo = currentTokenList.find((x) => x.address === mint)
+    const tokenInfo = jupiterTokens.find((x) => x.address === mint)
+    const priceInfo = await (
+      await fetch(`${JUPITER_PRICE_API_MAINNET}/price?ids=${mint}`)
+    ).json()
+    setBaseTokenPrice(priceInfo.data[mint]?.price || 0)
     setCurrentTokenInfo(tokenInfo)
     if (tokenInfo) {
-      handleLiqudityCheck(new PublicKey(mint))
-      getListingParams(tokenInfo)
+      const tier = await handleLiqudityCheck(new PublicKey(mint))
+      const isMidOrPremium = tier === 'PREMIUM' || tier === 'MID'
+      getListingParams(tokenInfo, isMidOrPremium)
     }
-  }
-
-  const getTokenList = async () => {
-    try {
-      const url =
-        CLUSTER === 'devnet' ? JUPITER_API_DEVNET : JUPITER_API_MAINNET
-      const response = await fetch(url)
-      const data: Token[] = await response.json()
-      return data
-    } catch (e) {
-      notify({
-        title: t('cant-find-token-for-mint'),
-        description: `${e}`,
-        type: 'error',
-      })
-      return []
-    }
-  }
-
-  const getListingParams = async (tokenInfo: Token) => {
-    setLoadingListingParams(true)
-    const [oraclePk, marketPk] = await Promise.all([
-      getOracle(tokenInfo.symbol),
-      getBestMarket(mint),
-    ])
-    const index = proposals ? Object.values(proposals).length : 0
-
-    const bankNum = 0
-
-    const [baseBank] = PublicKey.findProgramAddressSync(
-      [
-        Buffer.from('Bank'),
-        group!.publicKey.toBuffer(),
-        new BN(index).toArrayLike(Buffer, 'le', 2),
-        new BN(bankNum).toArrayLike(Buffer, 'le', 4),
-      ],
-      client.programId
-    )
-    setAdvForm({
-      ...advForm,
-      oraclePk: oraclePk || '',
-      mintPk: mint,
-      name: tokenInfo.symbol,
-      tokenIndex: index,
-      openBookProgram: OPENBOOK_PROGRAM_ID[CLUSTER].toBase58(),
-      marketName: `${tokenInfo.symbol}/USDC`,
-      baseBankPk: baseBank.toBase58(),
-      quoteBankPk: group!
-        .getFirstBankByMint(new PublicKey(USDC_MINT))
-        .publicKey.toBase58(),
-      marketIndex: index,
-      openBookMarketExternalPk: marketPk?.toBase58() || '',
-      proposalTitle: `List ${tokenInfo.symbol} on Mango-v4`,
-    })
-    setLoadingListingParams(false)
-  }
-
-  const handleLiqudityCheck = async (tokenMint: PublicKey) => {
-    try {
-      //we check price impact on token for 10k USDC
-      const USDC_AMOUNT = 10000000000
-      const SLIPPAGE_BPS = 50
-      const MODE = 'ExactIn'
-      const FEE = 0
-      const { bestRoute } = await handleGetRoutes(
-        USDC_MINT,
-        tokenMint.toBase58(),
-        USDC_AMOUNT,
-        SLIPPAGE_BPS,
-        MODE,
-        FEE,
-        wallet.publicKey ? wallet.publicKey?.toBase58() : emptyPk
-      )
-      setPriceImpact(bestRoute ? bestRoute.priceImpactPct * 100 : 100)
-    } catch (e) {
-      notify({
-        title: t('liquidity-check-error'),
-        description: `${e}`,
-        type: 'error',
-      })
-    }
-  }
-
-  const getOracle = async (tokenSymbol: string) => {
-    try {
-      let oraclePk = ''
-      const pythOracle = await getPythOracle(tokenSymbol)
-      if (pythOracle) {
-        oraclePk = pythOracle
-      } else {
-        const switchBoardOracle = await getSwitchBoardOracle(tokenSymbol)
-        oraclePk = switchBoardOracle
-      }
-
-      return oraclePk
-    } catch (e) {
-      notify({
-        title: t('oracle-not-found'),
-        description: `${e}`,
-        type: 'error',
-      })
-    }
-  }
-
-  const getPythOracle = async (tokenSymbol: string) => {
-    try {
-      const pythClient = new PythHttpClient(connection, MAINNET_PYTH_PROGRAM)
-      const pythAccounts = await pythClient.getData()
-      const product = pythAccounts.products.find(
-        (x) => x.base === tokenSymbol.toUpperCase()
-      )
-      return product?.price_account || ''
-    } catch (e) {
-      notify({
-        title: t('pyth-oracle-error'),
-        description: `${e}`,
-        type: 'error',
-      })
-      return ''
-    }
-  }
-
-  const getSwitchBoardOracle = async (tokenSymbol: string) => {
-    try {
-      const VS_TOKEN_SYMBOL = 'usd'
-      const SWITCHBOARD_PROGRAM_ID =
-        'SW1TCH7qEPTdLsDHRgPuMQjbQxKdH2aBStViMFnt64f'
-
-      const options = AnchorProvider.defaultOptions()
-      const provider = new AnchorProvider(
-        connection,
-        new EmptyWallet(Keypair.generate()),
-        options
-      )
-      const idl = await Program.fetchIdl(
-        new PublicKey(SWITCHBOARD_PROGRAM_ID),
-        provider
-      )
-      const switchboardProgram = new Program(
-        idl!,
-        new PublicKey(SWITCHBOARD_PROGRAM_ID),
-        provider
-      )
-
-      const allFeeds =
-        await switchboardProgram.account.aggregatorAccountData.all()
-
-      const feedNames = allFeeds.map((x) =>
-        String.fromCharCode(
-          ...[...(x.account.name as number[])].filter((x) => x)
-        )
-      )
-      const possibleFeedIndexes = feedNames.reduce(function (r, v, i) {
-        return r.concat(
-          v.toLowerCase().includes(tokenSymbol.toLowerCase()) &&
-            v.toLowerCase().includes(VS_TOKEN_SYMBOL)
-            ? i
-            : []
-        )
-      }, [] as number[])
-
-      const possibleFeeds = allFeeds.filter(
-        (x, i) => possibleFeedIndexes.includes(i) && x.account.isLocked
-      )
-      return possibleFeeds.length ? possibleFeeds[0].publicKey.toBase58() : ''
-    } catch (e) {
-      notify({
-        title: t('switch-oracle-error'),
-        description: `${e}`,
-        type: 'error',
-      })
-      return ''
-    }
-  }
-
-  const getBestMarket = async (tokenMint: string) => {
-    try {
-      const dexProgramPk = OPENBOOK_PROGRAM_ID[CLUSTER]
-
-      const markets = await Market.findAccountsByMints(
-        connection,
-        new PublicKey(tokenMint),
-        new PublicKey(USDC_MINT),
-        dexProgramPk
-      )
-      if (!markets.length) {
-        return undefined
-      }
-      if (markets.length === 1) {
-        return markets[0].publicKey
-      }
-      const marketsDataJsons = await Promise.all([
-        ...markets.map((x) =>
-          fetch(`/openSerumApi/market/${x.publicKey.toBase58()}`)
-        ),
-      ])
-      const marketsData = await Promise.all([
-        ...marketsDataJsons.map((x) => x.json()),
-      ])
-
-      const bestMarket = marketsData.sort((a, b) => b.volume24h - a.volume24h)
-
-      return new PublicKey(bestMarket[0].id)
-    } catch (e) {
-      notify({
-        title: t('openbook-market-not-found'),
-        description: `${e}`,
-        type: 'error',
-      })
-    }
-  }
+  }, [getListingParams, handleLiqudityCheck, jupiterTokens, mint, t])
 
   const cancel = () => {
     setCurrentTokenInfo(null)
     setPriceImpact(0)
     setAdvForm({ ...defaultTokenListFormValues })
     setProposalPk(null)
+    setOrcaPoolAddress('')
+    setRaydiumPoolAddress('')
+    setCoinTier('')
+    setBaseTokenPrice(0)
   }
 
-  const propose = async () => {
+  const isFormValid = useCallback(
+    (advForm: TokenListForm) => {
+      const invalidFields: FormErrors = {}
+      setFormErrors({})
+      const pubkeyFields: (keyof TokenListForm)[] = [
+        'openBookProgram',
+        'quoteBankPk',
+        'baseBankPk',
+        'openBookMarketExternalPk',
+        'oraclePk',
+      ]
+      const numberFields: (keyof TokenListForm)[] = ['tokenIndex']
+      const textFields: (keyof TokenListForm)[] = [
+        'marketName',
+        'proposalTitle',
+      ]
+
+      for (const key of pubkeyFields) {
+        if (!tryGetPubKey(advForm[key] as string)) {
+          invalidFields[key] = t('invalid-pk')
+        }
+      }
+      for (const key of numberFields) {
+        if (isNaN(advForm[key] as number) || advForm[key] === '') {
+          invalidFields[key] = t('invalid-num')
+        }
+      }
+      for (const key of textFields) {
+        if (!advForm[key]) {
+          invalidFields[key] = t('field-req')
+        }
+      }
+      if (Object.keys(invalidFields).length) {
+        setFormErrors(invalidFields)
+      }
+      return invalidFields
+    },
+    [t]
+  )
+
+  const propose = useCallback(async () => {
     const invalidFields = isFormValid(advForm)
     if (Object.keys(invalidFields).length) {
       return
@@ -376,20 +400,111 @@ const ListToken = () => {
       return
     }
 
-    const proposalTx = []
-    const registerTokenIx = await client!.program.methods
-      .tokenRegisterTrustless(Number(advForm.tokenIndex), advForm.name)
-      .accounts({
-        admin: MANGO_DAO_WALLET,
-        group: group!.publicKey,
-        mint: new PublicKey(advForm.mintPk),
-        oracle: new PublicKey(advForm.oraclePk),
-        payer: MANGO_DAO_WALLET,
-        rent: SYSVAR_RENT_PUBKEY,
-      })
-      .instruction()
+    const [mintInfoPk] = PublicKey.findProgramAddressSync(
+      [
+        Buffer.from('MintInfo'),
+        group!.publicKey.toBuffer(),
+        new PublicKey(advForm.mintPk).toBuffer(),
+      ],
+      client.programId
+    )
 
-    proposalTx.push(registerTokenIx)
+    const proposalTx = []
+
+    if (Object.keys(tierPreset).length) {
+      const registerTokenIx = await client!.program.methods
+        .tokenRegister(
+          Number(advForm.tokenIndex),
+          advForm.name,
+          {
+            confFilter: Number(tierPreset.oracleConfFilter),
+            maxStalenessSlots: tierPreset.maxStalenessSlots,
+          },
+          {
+            adjustmentFactor: Number(tierPreset.adjustmentFactor),
+            util0: Number(tierPreset.util0),
+            rate0: Number(tierPreset.rate0),
+            util1: Number(tierPreset.util1),
+            rate1: Number(tierPreset.rate1),
+            maxRate: Number(tierPreset.maxRate),
+          },
+          Number(tierPreset.loanFeeRate),
+          Number(tierPreset.loanOriginationFeeRate),
+          Number(tierPreset.maintAssetWeight),
+          Number(tierPreset.initAssetWeight),
+          Number(tierPreset.maintLiabWeight),
+          Number(tierPreset.initLiabWeight),
+          Number(tierPreset.liquidationFee),
+          Number(tierPreset.minVaultToDepositsRatio),
+          new BN(tierPreset.netBorrowLimitWindowSizeTs),
+          new BN(tierPreset.netBorrowLimitPerWindowQuote)
+        )
+        .accounts({
+          admin: MANGO_DAO_WALLET,
+          group: group!.publicKey,
+          mint: new PublicKey(advForm.mintPk),
+          oracle: new PublicKey(advForm.oraclePk),
+          payer: MANGO_DAO_WALLET,
+          rent: SYSVAR_RENT_PUBKEY,
+        })
+        .instruction()
+      proposalTx.push(registerTokenIx)
+
+      const editIx = await client!.program.methods
+        .tokenEdit(
+          null,
+          null,
+          tierPreset.insuranceFound ? null : false,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          tierPreset.borrowWeightScale,
+          tierPreset.depositWeightScale,
+          false,
+          false,
+          null,
+          null,
+          null
+        )
+        .accounts({
+          oracle: new PublicKey(advForm.oraclePk),
+          admin: MANGO_DAO_WALLET,
+          group: group!.publicKey,
+          mintInfo: mintInfoPk,
+        })
+        .remainingAccounts([
+          {
+            pubkey: new PublicKey(advForm.baseBankPk),
+            isWritable: true,
+            isSigner: false,
+          } as AccountMeta,
+        ])
+        .instruction()
+      proposalTx.push(editIx)
+    } else {
+      await client!.program.methods
+        .tokenRegisterTrustless(Number(advForm.tokenIndex), advForm.name)
+        .accounts({
+          mint: new PublicKey(advForm.mintPk),
+          payer: MANGO_DAO_WALLET,
+          rent: SYSVAR_RENT_PUBKEY,
+          oracle: new PublicKey(advForm.oraclePk),
+          admin: MANGO_DAO_WALLET,
+          group: group!.publicKey,
+        })
+        .instruction()
+    }
 
     const registerMarketix = await client!.program.methods
       .serum3RegisterMarket(Number(advForm.marketIndex), advForm.marketName)
@@ -429,90 +544,48 @@ const ListToken = () => {
     }
 
     setCreatingProposal(false)
+  }, [
+    advForm,
+    client,
+    connection,
+    connectionContext,
+    getCurrentVotingPower,
+    group,
+    isFormValid,
+    minVoterWeight,
+    mintVoterWeightNumber,
+    t,
+    tierPreset,
+    voter.tokenOwnerRecord,
+    voter.voteWeight,
+    vsrClient,
+    wallet,
+  ])
+
+  const closeCreateOpenBookMarketModal = () => {
+    setCreateOpenbookMarket(false)
+    if (currentTokenInfo) {
+      getListingParams(currentTokenInfo, isMidOrPremium)
+    }
   }
-
-  const isFormValid = (advForm: TokenListForm) => {
-    const invalidFields: FormErrors = {}
-    setFormErrors({})
-    const pubkeyFields: (keyof TokenListForm)[] = [
-      'openBookProgram',
-      'quoteBankPk',
-      'baseBankPk',
-      'openBookMarketExternalPk',
-      'oraclePk',
-    ]
-    const numberFields: (keyof TokenListForm)[] = ['tokenIndex']
-    const textFields: (keyof TokenListForm)[] = ['marketName', 'proposalTitle']
-
-    for (const key of pubkeyFields) {
-      if (!tryGetPubKey(advForm[key] as string)) {
-        invalidFields[key] = t('invalid-pk')
-      }
+  const closeCreateOracleModal = () => {
+    setOracleModalOpen(false)
+    if (currentTokenInfo) {
+      getListingParams(currentTokenInfo, isMidOrPremium)
     }
-    for (const key of numberFields) {
-      if (isNaN(advForm[key] as number) || advForm[key] === '') {
-        invalidFields[key] = t('invalid-num')
-      }
-    }
-    for (const key of textFields) {
-      if (!advForm[key]) {
-        invalidFields[key] = t('field-req')
-      }
-    }
-    if (Object.keys(invalidFields).length) {
-      setFormErrors(invalidFields)
-    }
-    return invalidFields
   }
-
-  useEffect(() => {
-    setTokenList([])
-  }, [CLUSTER])
 
   return (
     <div>
-      <h1 className="mb-4 flex items-center">{t('new-listing')}</h1>
+      <div className="mb-6 flex items-center">
+        <IconButton className="mr-4" onClick={goBack} size="medium">
+          <ArrowLeftIcon className="h-5 w-5" />
+        </IconButton>
+        <h1 className="flex items-center">{t('list-token')}</h1>
+      </div>
+      <OnBoarding />
       {!currentTokenInfo ? (
         <>
-          <div className="mb-6">
-            <h2 className="mb-2 text-lg">{t('before-you-list')}</h2>
-            <ul>
-              <li className="mb-2 flex items-center text-base">
-                <InformationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0 text-th-fgd-4" />
-                <span>
-                  {t('before-listing-1')}{' '}
-                  <a
-                    href="https://dao.mango.markets"
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
-                    {t('mango-governance')}
-                  </a>
-                </span>
-              </li>
-              <li className="mb-2 flex items-center text-base">
-                <InformationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0 text-th-fgd-4" />
-                <span>
-                  {t('before-listing-2')}{' '}
-                  <a
-                    href="https://raydium.io/create-market"
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
-                    {t('openbook-market')}
-                  </a>
-                </span>
-              </li>
-              <li className="mb-2 flex items-center text-base">
-                <InformationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0 text-th-fgd-4" />
-                {t('before-listing-3')}
-              </li>
-              <li className="mb-2 flex items-center text-base">
-                <InformationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0 text-th-fgd-4" />
-                {t('before-listing-4')}
-              </li>
-            </ul>
-          </div>
           <div>
             <Label text={t('token-mint')} />
             <div className="max-w-[460px]">
@@ -544,10 +617,10 @@ const ListToken = () => {
       ) : (
         <>
           {proposalPk ? (
-            <ListTokenSuccess
+            <ListingSuccess
               proposalPk={proposalPk}
               token={currentTokenInfo?.name}
-            ></ListTokenSuccess>
+            />
           ) : (
             <>
               <div className="rounded-md bg-th-bkg-2 p-4">
@@ -565,6 +638,12 @@ const ListToken = () => {
                 <div className="mb-2 flex items-center justify-between">
                   <p>{t('symbol')}</p>
                   <p className="text-th-fgd-2">{currentTokenInfo?.symbol}</p>
+                </div>
+                <div className="mb-2 flex items-center justify-between">
+                  <p>{t('tier')}</p>
+                  <p className="text-th-fgd-2">
+                    {coinTier && coinTiersToNames[coinTier]}
+                  </p>
                 </div>
                 <div className="flex items-center justify-between">
                   <p>{t('mint')}</p>
@@ -807,40 +886,90 @@ const ListToken = () => {
                   )}
                 </Disclosure>
               </div>
-              {!advForm.oraclePk && !loadingListingParams ? (
-                <div className="my-4">
-                  <InlineNotification
-                    desc={t('cant-list-oracle-not-found')}
-                    type="error"
-                  />
-                </div>
-              ) : null}
-              {!advForm.openBookMarketExternalPk && !loadingListingParams ? (
-                <div className="mb-4">
-                  <InlineNotification
-                    desc={
-                      <div>
-                        <a
-                          href="https://raydium.io/create-market"
-                          rel="noopener noreferrer"
-                          target="_blank"
-                          className="underline"
-                        >
-                          {t('cant-list-no-openbook-market')}
-                        </a>
-                      </div>
-                    }
-                    type="error"
-                  />
-                </div>
-              ) : null}
-              <OnBoarding />
+              <ol className="list-decimal pl-4">
+                {!advForm.openBookMarketExternalPk &&
+                coinTier &&
+                !loadingListingParams ? (
+                  <li className="pl-2">
+                    <div className="mb-4">
+                      <InlineNotification
+                        desc={
+                          <div>
+                            <a
+                              onClick={() => setCreateOpenbookMarket(true)}
+                              className="cursor-pointer underline"
+                            >
+                              {t('cant-list-no-openbook-market')}
+                            </a>
+                          </div>
+                        }
+                        type="error"
+                      />
+                    </div>
+                    {createOpenbookMarketModal ? (
+                      <CreateOpenbookMarketModal
+                        quoteMint={quoteBank?.mint.toBase58() || ''}
+                        baseMint={currentTokenInfo?.address || ''}
+                        baseDecimals={currentTokenInfo.decimals}
+                        quoteDecimals={quoteBank?.mintDecimals || 0}
+                        isOpen={createOpenbookMarketModal}
+                        onClose={closeCreateOpenBookMarketModal}
+                        tradingParams={tradingParams}
+                      />
+                    ) : null}
+                  </li>
+                ) : null}
+                {!advForm.oraclePk && coinTier && !loadingListingParams ? (
+                  <li
+                    className={`my-4 pl-2 ${
+                      !advForm.openBookMarketExternalPk
+                        ? 'disabled pointer-events-none opacity-60'
+                        : ''
+                    }`}
+                  >
+                    <InlineNotification
+                      desc={
+                        <div>
+                          {!isMidOrPremium ? (
+                            <a
+                              onClick={() => setOracleModalOpen(true)}
+                              className="cursor-pointer underline"
+                            >
+                              {t('cant-list-oracle-not-found-switch')}
+                            </a>
+                          ) : (
+                            t('cant-list-oracle-not-found-pyth')
+                          )}
+                        </div>
+                      }
+                      type="error"
+                    />
+                    <CreateSwitchboardOracleModal
+                      orcaPoolAddress={orcaPoolAddress}
+                      raydiumPoolAddress={raydiumPoolAddress}
+                      baseTokenName={currentTokenInfo.symbol}
+                      baseTokenPk={currentTokenInfo.address}
+                      openbookMarketPk={advForm.openBookMarketExternalPk}
+                      isOpen={oracleModalOpen}
+                      onClose={closeCreateOracleModal}
+                    ></CreateSwitchboardOracleModal>
+                  </li>
+                ) : null}
+              </ol>
               <div className="mt-6 flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
+                <Button secondary onClick={cancel} size="large">
+                  {t('cancel')}
+                </Button>
                 {wallet.connected ? (
                   <Button
                     className="flex w-full items-center justify-center sm:w-44"
                     onClick={propose}
-                    disabled={loadingRealm || loadingVoter}
+                    disabled={
+                      loadingRealm ||
+                      loadingVoter ||
+                      (!advForm.openBookMarketExternalPk &&
+                        !loadingListingParams)
+                    }
                     size="large"
                   >
                     {loadingListingParams ||
@@ -857,9 +986,6 @@ const ListToken = () => {
                     {t('connect-wallet')}
                   </Button>
                 )}
-                <Button secondary onClick={cancel} size="large">
-                  {t('cancel')}
-                </Button>
               </div>
             </>
           )}

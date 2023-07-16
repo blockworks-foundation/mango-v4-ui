@@ -1,5 +1,5 @@
 import { Fragment, useState } from 'react'
-import Button from '../shared/Button'
+import Button, { IconButton } from '../shared/Button'
 import {
   ArrowDownRightIcon,
   ArrowUpLeftIcon,
@@ -24,6 +24,8 @@ import CreateAccountModal from '@components/modals/CreateAccountModal'
 import { Popover, Transition } from '@headlessui/react'
 import ActionsLinkButton from './ActionsLinkButton'
 import useUnownedAccount from 'hooks/useUnownedAccount'
+import { useViewport } from 'hooks/useViewport'
+import { breakpoints } from 'utils/theme'
 
 export const handleCopyAddress = (
   mangoAccount: MangoAccount,
@@ -46,7 +48,9 @@ const AccountActions = () => {
   const [showDelegateModal, setShowDelegateModal] = useState(false)
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
   const { connected } = useWallet()
-  const { isUnownedAccount } = useUnownedAccount()
+  const { isDelegatedAccount, isUnownedAccount } = useUnownedAccount()
+  const { width } = useViewport()
+  const isMobile = width ? width < breakpoints.sm : false
 
   const handleBorrowModal = () => {
     if (mangoAccountAddress || !connected) {
@@ -61,36 +65,42 @@ const AccountActions = () => {
       {isUnownedAccount ? null : (
         <div className="flex items-center space-x-2">
           <Button
-            className="flex w-1/3 items-center justify-center md:w-auto"
+            className="flex w-full items-center justify-center sm:w-1/3 md:w-auto"
             disabled={!mangoAccountAddress}
             onClick={() => setShowRepayModal(true)}
             secondary
           >
-            <ArrowDownRightIcon className="mr-2 h-5 w-5" />
+            <ArrowDownRightIcon className="mr-2 h-5 w-5 flex-shrink-0" />
             {t('repay')}
           </Button>
           <Button
-            className="flex w-1/3 items-center justify-center md:w-auto"
+            className="flex w-full items-center justify-center sm:w-1/3 md:w-auto"
             onClick={handleBorrowModal}
             secondary
           >
-            <ArrowUpLeftIcon className="mr-2 h-5 w-5" />
+            <ArrowUpLeftIcon className="mr-2 h-5 w-5 flex-shrink-0" />
             {t('borrow')}
           </Button>
-          <Popover className="relative w-1/3 md:w-auto">
+          <Popover className="relative sm:w-1/3 md:w-auto">
             {({ open }) => (
               <>
                 <Popover.Button
                   className={`w-full focus:outline-none`}
                   as="div"
                 >
-                  <Button
-                    className="flex w-full items-center justify-center"
-                    secondary
-                  >
-                    <WrenchIcon className="mr-2 h-4 w-4" />
-                    {t('actions')}
-                  </Button>
+                  {!isMobile ? (
+                    <Button
+                      className="flex w-full items-center justify-center"
+                      secondary
+                    >
+                      <WrenchIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+                      {t('actions')}
+                    </Button>
+                  ) : (
+                    <IconButton size="medium">
+                      <WrenchIcon className="h-5 w-5" />
+                    </IconButton>
+                  )}
                 </Popover.Button>
                 <Transition
                   appear={true}
@@ -119,6 +129,7 @@ const AccountActions = () => {
                       <span className="ml-2">{t('copy-address')}</span>
                     </ActionsLinkButton>
                     <ActionsLinkButton
+                      disabled={isDelegatedAccount}
                       mangoAccount={mangoAccount!}
                       onClick={() => setShowEditAccountModal(true)}
                     >
@@ -126,6 +137,7 @@ const AccountActions = () => {
                       <span className="ml-2">{t('edit-account')}</span>
                     </ActionsLinkButton>
                     <ActionsLinkButton
+                      disabled={isDelegatedAccount}
                       mangoAccount={mangoAccount!}
                       onClick={() => setShowDelegateModal(true)}
                     >
@@ -133,6 +145,7 @@ const AccountActions = () => {
                       <span className="ml-2">{t('delegate-account')}</span>
                     </ActionsLinkButton>
                     <ActionsLinkButton
+                      disabled={isDelegatedAccount}
                       mangoAccount={mangoAccount!}
                       onClick={() => setShowCloseAccountModal(true)}
                     >

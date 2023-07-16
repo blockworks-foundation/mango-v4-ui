@@ -50,9 +50,12 @@ export default function useBanksWithBalances(
         const maxBorrow = mangoAccount
           ? getMaxWithdrawForBank(group, bank, mangoAccount, true).toNumber()
           : 0
-        const maxWithdraw = mangoAccount
+        let maxWithdraw = mangoAccount
           ? getMaxWithdrawForBank(group, bank, mangoAccount).toNumber()
           : 0
+        if (maxWithdraw < balance) {
+          maxWithdraw = maxWithdraw * 0.998
+        }
         const borrowedAmount = mangoAccount
           ? floorToDecimal(
               mangoAccount.getTokenBorrowsUi(bank),

@@ -12,11 +12,7 @@ import {
 } from '@public/charting_library'
 import mangoStore from '@store/mangoStore'
 import { useViewport } from 'hooks/useViewport'
-import {
-  DEFAULT_MARKET_NAME,
-  SHOW_ORDER_LINES_KEY,
-  TV_USER_ID_KEY,
-} from 'utils/constants'
+import { SHOW_ORDER_LINES_KEY, TV_USER_ID_KEY } from 'utils/constants'
 import { breakpoints } from 'utils/theme'
 import { COLORS } from 'styles/colors'
 import { useTranslation } from 'next-i18next'
@@ -31,7 +27,7 @@ import { Order } from '@project-serum/serum/lib/market'
 import { PublicKey } from '@solana/web3.js'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { formatNumericValue, getDecimalCount } from 'utils/numbers'
-import { BN } from '@project-serum/anchor'
+import { BN } from '@coral-xyz/anchor'
 import Datafeed from 'apis/datafeed'
 // import PerpDatafeed from 'apis/mngo/datafeed'
 import { CombinedTradeHistory, isMangoError } from 'types'
@@ -92,9 +88,10 @@ const TradingViewChart = () => {
   const selectedMarketName = mangoStore((s) => s.selectedMarket.current?.name)
   const isMobile = width ? width < breakpoints.sm : false
 
-  const defaultProps = useMemo(
-    () => ({
-      symbol: DEFAULT_MARKET_NAME,
+  const defaultProps = useMemo(() => {
+    const initialMktName = mangoStore.getState().selectedMarket.current?.name
+    return {
+      symbol: initialMktName,
       interval: '60' as ResolutionString,
       theme: 'Dark',
       container: 'tv_chart_container',
@@ -109,9 +106,8 @@ const TradingViewChart = () => {
         'volume.volume.color.1': COLORS.UP[theme],
         'volume.precision': 4,
       },
-    }),
-    [theme]
-  )
+    }
+  }, [theme])
 
   const tvWidgetRef = useRef<IChartingLibraryWidget>()
   const orderLinesButtonRef = useRef<HTMLElement>()

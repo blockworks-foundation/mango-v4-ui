@@ -29,6 +29,7 @@ import HealthHeart from './account/HealthHeart'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useTheme } from 'next-themes'
 import LeaderboardIcon from './icons/LeaderboardIcon'
+import { sideBarAnimationDuration } from './Layout'
 
 const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation(['common', 'search'])
@@ -40,7 +41,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
 
   return (
     <div
-      className={`transition-all duration-300 ${
+      className={`transition-all duration-${sideBarAnimationDuration} ${
         collapsed ? 'w-[64px]' : 'w-44 lg:w-48 xl:w-52'
       } border-r border-th-bkg-3 bg-th-bkg-1`}
     >
@@ -48,7 +49,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
         <div className="my-2">
           <Link href={'/'} shallow={true} passHref legacyBehavior>
             <div
-              className={`h-14 items-center transition-all duration-300 ease-in-out ${
+              className={`h-14 items-center transition-all duration-${sideBarAnimationDuration} ease-in-out ${
                 collapsed ? '' : 'justify-start'
               } pb-1 pt-2 pl-4`}
             >
@@ -61,10 +62,10 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 <Transition
                   show={!collapsed}
                   as={Fragment}
-                  enter="transition ease-in duration-200"
+                  enter="transition-all ease-in duration-200"
                   enterFrom="opacity-50"
                   enterTo="opacity-100"
-                  leave="transition ease-out duration-200"
+                  leave="transition-all ease-out duration-200"
                   leaveFrom="opacity-100"
                   leaveTo="opacity-0"
                 >
@@ -142,11 +143,11 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 showTooltip={false}
               />
               <MenuItem
-                active={pathname === '/governance/listToken'}
+                active={pathname === '/governance/list'}
                 collapsed={false}
                 icon={<PlusCircleIcon className="h-5 w-5" />}
-                title={t('common:list-token')}
-                pagePath="/governance/listToken"
+                title={t('common:list-market-token')}
+                pagePath="/governance/list"
                 hideIconBg
                 showTooltip={false}
               />
@@ -296,10 +297,10 @@ const MenuItem = ({
             <Transition
               show={!collapsed}
               as={Fragment}
-              enter="transition ease-in duration-300"
+              enter={`transition-all ease-in duration-${sideBarAnimationDuration}`}
               enterFrom="opacity-50"
               enterTo="opacity-100"
-              leave="transition ease-out duration-300"
+              leave={`transition-all ease-out duration-${sideBarAnimationDuration}`}
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
             >
@@ -404,10 +405,10 @@ export const ExpandableMenuItem = ({
                 appear={true}
                 show={!collapsed}
                 as={Fragment}
-                enter="transition ease-in duration-300"
+                enter={`transition-all ease-in duration-${sideBarAnimationDuration}`}
                 enterFrom="opacity-50"
                 enterTo="opacity-100"
-                leave="transition ease-out duration-300"
+                leave={`transition-all ease-out duration-${sideBarAnimationDuration}`}
                 leaveFrom="opacity-100"
                 leaveTo="opacity-0"
               >
@@ -422,10 +423,10 @@ export const ExpandableMenuItem = ({
           </Disclosure.Button>
           <Transition
             as={Fragment}
-            enter="transition-all ease-in duration-300"
+            enter={`transition-all ease-in duration-${sideBarAnimationDuration}`}
             enterFrom="opacity-100 max-h-0"
             enterTo="opacity-100 max-h-80"
-            leave="transition-all ease-out duration-300"
+            leave={`transition-all ease-out duration-${sideBarAnimationDuration}`}
             leaveFrom="opacity-100 max-h-80"
             leaveTo="opacity-0 max-h-0"
           >

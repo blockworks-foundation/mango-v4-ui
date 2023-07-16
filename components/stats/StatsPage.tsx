@@ -18,6 +18,9 @@ const StatsPage = () => {
   const [activeTab, setActiveTab] = useState('tokens')
   const actions = mangoStore.getState().actions
   const perpStats = mangoStore((s) => s.perpStats.data)
+  const perpPositionsStatsNotLoaded = mangoStore(
+    (s) => s.perpStats.positions.initialLoad
+  )
   const { group } = useMangoGroup()
   const { width } = useViewport()
   const fullWidthTabs = width ? width < breakpoints.lg : false
@@ -31,6 +34,12 @@ const StatsPage = () => {
     }
   }, [group, perpStats])
 
+  useEffect(() => {
+    if (group && perpPositionsStatsNotLoaded) {
+      actions.fetchPositionsStats()
+    }
+  }, [group, perpPositionsStatsNotLoaded])
+
   const tabsWithCount: [string, number][] = useMemo(() => {
     return TABS.map((t) => [t, 0])
   }, [])
@@ -42,7 +51,7 @@ const StatsPage = () => {
         <TokenPage />
       ) : (
         <>
-          <div className="border-b border-th-bkg-3">
+          <div className="hide-scroll overflow-x-auto border-b border-th-bkg-3">
             <TabButtons
               activeValue={activeTab}
               fillWidth={fullWidthTabs}

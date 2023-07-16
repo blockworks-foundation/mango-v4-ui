@@ -17,7 +17,7 @@ import {
   HandThumbDownIcon,
   HandThumbUpIcon,
 } from '@heroicons/react/20/solid'
-import { BN } from '@project-serum/anchor'
+import { BN } from '@coral-xyz/anchor'
 import { useEffect, useState } from 'react'
 import { MANGO_GOVERNANCE_PROGRAM } from 'utils/governance/constants'
 import mangoStore from '@store/mangoStore'

@@ -1,11 +1,6 @@
 import { Disclosure, Transition } from '@headlessui/react'
-import {
-  ChevronDownIcon,
-  ChevronRightIcon,
-  QuestionMarkCircleIcon,
-} from '@heroicons/react/20/solid'
+import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
-import Image from 'next/legacy/image'
 import { useViewport } from '../../hooks/useViewport'
 import { breakpoints } from '../../utils/theme'
 import { LinkButton } from '../shared/Button'
@@ -13,13 +8,13 @@ import ContentBox from '../shared/ContentBox'
 import Tooltip from '@components/shared/Tooltip'
 import { Bank, toUiDecimals } from '@blockworks-foundation/mango-v4'
 import { NextRouter, useRouter } from 'next/router'
-import useJupiterMints from 'hooks/useJupiterMints'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
 import Decimal from 'decimal.js'
+import TokenLogo from '@components/shared/TokenLogo'
 
 export const goToTokenPage = (token: string, router: NextRouter) => {
   const query = { ...router.query, ['token']: token }
@@ -29,7 +24,6 @@ export const goToTokenPage = (token: string, router: NextRouter) => {
 const TokenOverviewTable = () => {
   const { t } = useTranslation(['common', 'token'])
   const { group } = useMangoGroup()
-  const { mangoTokens } = useJupiterMints()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const router = useRouter()
@@ -83,13 +77,6 @@ const TokenOverviewTable = () => {
             <tbody>
               {banks.map((b) => {
                 const bank: Bank = b.bank
-
-                let logoURI
-                if (mangoTokens?.length) {
-                  logoURI = mangoTokens.find(
-                    (t) => t.address === bank.mint.toString()
-                  )?.logoURI
-                }
                 const deposits = bank.uiDeposits()
                 const borrows = bank.uiBorrows()
                 const availableVaultBalance =
@@ -109,25 +96,13 @@ const TokenOverviewTable = () => {
                     className="default-transition md:hover:cursor-pointer md:hover:bg-th-bkg-2"
                     key={bank.name}
                     onClick={() =>
-                      goToTokenPage(
-                        bank.name.split(' ')[0].toUpperCase(),
-                        router
-                      )
+                      goToTokenPage(bank.name.split(' ')[0], router)
                     }
                   >
                     <Td>
                       <div className="flex items-center">
                         <div className="mr-2.5 flex flex-shrink-0 items-center">
-                          {logoURI ? (
-                            <Image
-                              alt=""
-                              width="24"
-                              height="24"
-                              src={logoURI}
-                            />
-                          ) : (
-                            <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
-                          )}
+                          <TokenLogo bank={bank} />
                         </div>
                         <p className="font-body">{bank.name}</p>
                       </div>
@@ -219,12 +194,6 @@ const TokenOverviewTable = () => {
         <div className="border-b border-th-bkg-3">
           {banks.map((b, i) => {
             const bank = b.bank
-            let logoURI: string | undefined
-            if (mangoTokens?.length) {
-              logoURI = mangoTokens.find(
-                (t) => t.address === bank.mint.toString()
-              )?.logoURI
-            }
             const deposits = bank.uiDeposits()
             const borrows = bank.uiBorrows()
             const availableVaultBalance =
@@ -250,16 +219,7 @@ const TokenOverviewTable = () => {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
                           <div className="mr-2.5 flex flex-shrink-0 items-center">
-                            {logoURI ? (
-                              <Image
-                                alt=""
-                                width="24"
-                                height="24"
-                                src={logoURI}
-                              />
-                            ) : (
-                              <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
-                            )}
+                            <TokenLogo bank={bank} />
                           </div>
                           <p className="text-th-fgd-1">{bank.name}</p>
                         </div>
@@ -359,10 +319,7 @@ const TokenOverviewTable = () => {
                             <LinkButton
                               className="flex items-center"
                               onClick={() =>
-                                goToTokenPage(
-                                  bank.name.split(' ')[0].toUpperCase(),
-                                  router
-                                )
+                                goToTokenPage(bank.name.split(' ')[0], router)
                               }
                             >
                               {t('token:token-stats', { token: bank.name })}

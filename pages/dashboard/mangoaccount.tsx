@@ -65,7 +65,7 @@ const MangoAccountDashboard: NextPage = () => {
           <h1>Dashboard</h1>
           <DashboardNavbar />
           <div className="">
-            <div className="flex space-x-2">
+            <div className="mt-4 flex space-x-2">
               <Input
                 type="text"
                 name="search"
@@ -129,12 +129,12 @@ const MangoAccountDashboard: NextPage = () => {
                   mangoAccount.getHealth(group, HealthType.maint)
                 ).toFixed(4)}`}
               />
-              <KeyValuePair
+              {/* <KeyValuePair
                 label="Perp Settle Health"
                 value={`$${toUiDecimalsForQuote(
                   mangoAccount.getPerpSettleHealth(group)
                 ).toFixed(4)}`}
-              />
+              /> */}
               <KeyValuePair
                 label="Net Deposits"
                 value={`$${toUiDecimalsForQuote(

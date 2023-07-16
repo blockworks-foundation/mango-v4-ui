@@ -1,6 +1,8 @@
 {
     "confirm-swap": "確定換幣",
     "connect-swap": "連接來查換幣紀錄",
+    "disabled": "關閉",
+    "enabled": "開啟",
     "est-liq-price": "預計清算價格",
     "fees-paid-to": "繳給{{route}}的費用",
     "health-impact": "健康影響",
@@ -9,6 +11,7 @@
     "input-reduce-only-warning": "{{symbol}}處於僅減少模式。您可以將餘額換成另一個幣種",
     "insufficient-balance": "{{symbol}}餘額不夠",
     "insufficient-collateral": "質押品不夠",
+    "margin": "保證金",
     "margin-swap": "槓桿換幣",
     "max-slippage": "最多下滑",
     "maximum-cost": "最大成本",
@@ -24,7 +27,7 @@
     "receive": "你將獲取",
     "received": "獲取",
     "review-swap": "檢視換幣",
-    "route-info": "Route Info",
+    "route-info": "路線細節",
     "show-fees": "顯示費用",
     "show-swap-history": "顯示換幣紀錄–價格來自CoinGecko而也許跟換幣價格不同",
     "slippage": "下滑",
@@ -35,6 +38,7 @@
     "swap-route": "換幣路線",
     "tooltip-borrow-balance": "您將使用您的 {{balance}} {{token}} 餘額並借入 {{borrowAmount}} {{token}} 來執行此交換。當前的 {{token}} 可變借貸利率為 {{rate}}%",
     "tooltip-borrow-no-balance": "您將借入 {{borrowAmount}} {{token}} 來執行此交換。當前的 {{token}} 可變借貸利率為 {{rate}}%",
+    "tooltip-margin": "啟用保證金時將能槓桿換幣。如果換幣數量超過您的餘額將會自動借款。",
     "tooltip-max-slippage": "如果價格下滑超過您的最大滑點，換幣交易將不會被執行",
     "use-margin": "允許槓桿"
 }

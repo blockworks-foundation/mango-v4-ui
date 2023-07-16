@@ -2,8 +2,8 @@ import type { NextPage } from 'next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import dynamic from 'next/dynamic'
 
-const ListTokenPage = dynamic(
-  () => import('@components/governance/ListToken/ListTokenPage')
+const ListMarketOrTokenPage = dynamic(
+  () => import('@components/governance/ListMarketOrTokenPage')
 )
 
 export async function getStaticProps({ locale }: { locale: string }) {
@@ -16,13 +16,14 @@ export async function getStaticProps({ locale }: { locale: string }) {
         'onboarding',
         'profile',
         'search',
+        'trade',
       ])),
     },
   }
 }
 
 const Governance: NextPage = () => {
-  return <ListTokenPage />
+  return <ListMarketOrTokenPage />
 }
 
 export default Governance

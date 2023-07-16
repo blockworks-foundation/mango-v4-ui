@@ -6,7 +6,6 @@ import { useTranslation } from 'next-i18next'
 
 interface GroupedDataItem extends PerpStatsItem {
   intervalStartMillis: number
-  numHours: number
 }
 
 const AverageFundingChart = ({
@@ -16,7 +15,7 @@ const AverageFundingChart = ({
   loading: boolean
   marketStats: PerpStatsItem[]
 }) => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'stats', 'trade'])
   const [daysToShow, setDaysToShow] = useState('30')
 
   const groupByHourlyInterval = (
@@ -37,30 +36,32 @@ const AverageFundingChart = ({
       ) {
         currentGroup = {
           ...obj,
-          numHours: 1,
           intervalStartMillis: intervalStartMillis,
         }
         currentGroup.funding_rate_hourly = obj.funding_rate_hourly * 100
         groupedData.push(currentGroup)
       } else {
         currentGroup.funding_rate_hourly += obj.funding_rate_hourly * 100
-        currentGroup.numHours++
       }
-    }
-    for (let i = 0; i < groupedData.length; i++) {
-      const group = groupedData[i]
-      const avgFunding = group.funding_rate_hourly / group.numHours
-      group.funding_rate_hourly = avgFunding
     }
     return groupedData
   }
 
+  const [interval, intervalString] = useMemo(() => {
+    if (daysToShow === '30') {
+      return [24, 'stats:daily']
+    } else if (daysToShow === '7') {
+      return [6, 'stats:six-hourly']
+    } else {
+      return [1, 'stats:hourly']
+    }
+  }, [daysToShow])
+
   const chartData = useMemo(() => {
     if (!marketStats) return []
-    const interval = daysToShow === '30' ? 24 : daysToShow === '7' ? 6 : 1
     const groupedData = groupByHourlyInterval(marketStats, interval)
     return groupedData
-  }, [daysToShow, marketStats])
+  }, [daysToShow, interval, marketStats])
 
   return (
     <DetailedAreaOrBarChart
@@ -72,7 +73,7 @@ const AverageFundingChart = ({
       loaderHeightClass="h-[350px]"
       suffix="%"
       tickFormat={(x) => formatNumericValue(x, 4)}
-      title={t('trade:average-funding')}
+      title={t('trade:average-funding', { interval: t(intervalString) })}
       xKey="date_hour"
       yKey="funding_rate_hourly"
       yDecimals={5}

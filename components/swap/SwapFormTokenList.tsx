@@ -12,6 +12,7 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import { PublicKey } from '@solana/web3.js'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { formatTokenSymbol } from 'utils/tokens'
+import TokenLogo from '@components/shared/TokenLogo'
 
 // const generateSearchTerm = (item: Token, searchValue: string) => {
 //   const normalizedSearchValue = searchValue.toLowerCase()
@@ -51,7 +52,7 @@ const TokenItem = ({
   type: 'input' | 'output' | undefined
 }) => {
   const { t } = useTranslation('trade')
-  const { address, symbol, logoURI, name } = token
+  const { address, symbol, name } = token
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
@@ -74,10 +75,7 @@ const TokenItem = ({
         onClick={() => onSubmit(address)}
       >
         <div className="flex items-center">
-          <picture>
-            <source srcSet={logoURI} type="image/webp" />
-            <img src={logoURI} width="24" height="24" alt={symbol} />
-          </picture>
+          <TokenLogo bank={bank} />
           <div className="ml-2.5">
             <p className="text-left text-th-fgd-2">
               {bank?.name ? formatTokenSymbol(bank.name) : symbol || 'unknown'}

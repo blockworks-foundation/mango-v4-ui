@@ -54,10 +54,7 @@ const CreateAccountForm = ({
         group,
         newAccountNum,
         name || `Account ${newAccountNum + 1}`,
-        undefined, // tokenCount
-        undefined, // serum3Count
-        8, // perpCount
-        10 // perpOoCount
+        16 // tokenCount
       )
       if (tx) {
         const pk = wallet.adapter.publicKey

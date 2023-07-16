@@ -12,7 +12,7 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import { PublicKey } from '@solana/web3.js'
 import { formatNumericValue } from 'utils/numbers'
-import { AnchorProvider, web3 } from '@project-serum/anchor'
+import { AnchorProvider, web3 } from '@coral-xyz/anchor'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -22,13 +22,18 @@ export async function getStaticProps({ locale }: { locale: string }) {
   }
 }
 
+type TableRow = {
+  val: string | number | PublicKey
+  highlight: boolean
+}
+
 type TableData = {
   title: string
-  data: Array<Record<string, string | number | PublicKey>>
+  data: Array<Record<string, TableRow>>
 }
 
 const formatValue = (val: string | number | PublicKey) => {
-  if (val instanceof PublicKey) {
+  if (val instanceof PublicKey || typeof val === 'object') {
     return val.toString()
   }
   if (typeof val === 'string') {
@@ -41,12 +46,13 @@ const formatValue = (val: string | number | PublicKey) => {
 const RiskDashboard: NextPage = () => {
   const { group } = useMangoGroup()
 
-  const { data, isLoading, isFetching } = useQuery(
+  const { data } = useQuery(
     ['risks'],
     () => {
       const provider = new AnchorProvider(
         new web3.Connection(
-          'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
+          process.env.NEXT_PUBLIC_ENDPOINT ||
+            'https://mango.rpcpool.com/946ef7337da3f5b8d3e4a34e7f88',
           'processed'
         ),
         emptyWallet,
@@ -64,24 +70,26 @@ const RiskDashboard: NextPage = () => {
     {
       cacheTime: 1000 * 60 * 5,
       staleTime: 1000 * 60 * 5,
-      retry: 1,
+      retry: 0,
       refetchOnWindowFocus: false,
       enabled: !!group,
     }
   )
 
-  console.log('resp', isLoading, isFetching, data)
+  console.log('resp', data)
 
   return (
     <div className="grid grid-cols-12">
-      <div className="col-span-12 xl:col-span-8 xl:col-start-3">
-        <div className="p-8 pb-20 text-th-fgd-1 md:pb-16 xl:p-10">
+      <div className="col-span-12 lg:col-span-8 lg:col-start-3">
+        <div className="p-8 pb-20 md:pb-16 lg:p-10">
           <h1>Dashboard</h1>
           <DashboardNavbar />
           {group && data ? (
             <div className="mt-4">
               {Object.entries(data).map(
                 ([tableType, table]: [string, TableData]) => {
+                  console.log('table', table)
+                  if (!table?.data?.length) return null
                   return (
                     <div className="mt-12" key={tableType}>
                       <div className="mb-4">
@@ -118,18 +126,19 @@ const RiskDashboard: NextPage = () => {
                         </thead>
                         <tbody>
                           {table.data.map((rowData, index: number) => {
-                            console.log('rowData', Object.values(rowData))
-
                             return (
                               <TrBody key={index}>
                                 {Object.values(rowData).map(
-                                  (
-                                    val: string | number | PublicKey,
-                                    idx: number
-                                  ) => {
+                                  (val, idx: number) => {
                                     return (
-                                      <Td xBorder className={''} key={idx}>
-                                        {formatValue(val)}
+                                      <Td
+                                        xBorder
+                                        className={`${
+                                          val?.highlight ? 'bg-th-bkg-2' : ''
+                                        }`}
+                                        key={idx}
+                                      >
+                                        {formatValue(val?.val)}
                                       </Td>
                                     )
                                   }

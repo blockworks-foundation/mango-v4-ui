@@ -53,7 +53,10 @@ export const createProposal = async (
   const useDenyOption = true
 
   const { updateVoterWeightRecordIx, voterWeightPk } =
-    await updateVoterWeightRecord(client, walletPk)
+    await updateVoterWeightRecord(
+      client,
+      tokenOwnerRecord.account.governingTokenOwner
+    )
   instructions.push(updateVoterWeightRecordIx)
 
   const proposalAddress = await withCreateProposal(
@@ -124,8 +127,9 @@ export const createProposal = async (
   )
 
   const txChunks = chunk([...instructions, ...insertInstructions], 2)
+
   const transactions: Transaction[] = []
-  const latestBlockhash = await connection.getLatestBlockhash('finalized')
+  const latestBlockhash = await connection.getLatestBlockhash('confirmed')
   for (const chunk of txChunks) {
     const tx = new Transaction()
     tx.add(...chunk)
