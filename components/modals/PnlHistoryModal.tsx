@@ -8,6 +8,7 @@ import SheenLoader from '@components/shared/SheenLoader'
 import { NoSymbolIcon } from '@heroicons/react/20/solid'
 import { PerformanceDataItem } from 'types'
 import useAccountPerformanceData from 'hooks/useAccountPerformanceData'
+import { DAILY_MILLISECONDS } from 'utils/constants'
 
 interface PnlChange {
   time: string
@@ -33,7 +34,7 @@ const PnlHistoryModal = ({
     if (!performanceData || !performanceData.length) return []
 
     const dailyPnl = performanceData.filter((d: PerformanceDataItem) => {
-      const startTime = new Date().getTime() - 30 * 86400000
+      const startTime = new Date().getTime() - 30 * DAILY_MILLISECONDS
       const dataDate = new Date(d.time)
       const dataTime = dataDate.getTime()
       return dataTime >= startTime && dataDate.getHours() === 0
