@@ -3,6 +3,7 @@ import {
   EllipsisHorizontalIcon,
   BuildingLibraryIcon,
   LightBulbIcon,
+  ArrowTopRightOnSquareIcon,
   ChevronDownIcon,
   CurrencyDollarIcon,
   ChartBarIcon,
@@ -14,7 +15,7 @@ import {
   NewspaperIcon,
   PlusCircleIcon,
   ArchiveBoxArrowDownIcon,
-  ClipboardDocumentListIcon,
+  ClipboardDocumentIcon,
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
@@ -113,6 +114,13 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               pagePath="/stats"
             />
             <MenuItem
+              active={pathname === '/leaderboard'}
+              collapsed={collapsed}
+              icon={<LeaderboardIcon className="h-5 w-5" />}
+              title={t('leaderboard')}
+              pagePath="/leaderboard"
+            />
+            <MenuItem
               active={pathname === '/settings'}
               collapsed={collapsed}
               icon={<Cog8ToothIcon className="h-5 w-5" />}
@@ -124,15 +132,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               icon={<EllipsisHorizontalIcon className="h-5 w-5" />}
               title={t('more')}
             >
-              <MenuItem
-                active={pathname === '/leaderboard'}
-                collapsed={false}
-                icon={<LeaderboardIcon className="h-5 w-5" />}
-                title={t('leaderboard')}
-                pagePath="/leaderboard"
-                hideIconBg
-                showTooltip={false}
-              />
               <MenuItem
                 active={pathname === '/search'}
                 collapsed={false}
@@ -180,6 +179,15 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               />
               <MenuItem
                 collapsed={false}
+                icon={<ClipboardDocumentIcon className="h-5 w-5" />}
+                title={t('feedback-survey')}
+                pagePath="https://forms.gle/JgV4w7SJ2kPH89mq7"
+                hideIconBg
+                isExternal
+                showTooltip={false}
+              />
+              <MenuItem
+                collapsed={false}
                 icon={<NewspaperIcon className="h-5 w-5" />}
                 title={t('terms-of-use')}
                 pagePath="https://docs.mango.markets/legal"
@@ -190,52 +198,41 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             </ExpandableMenuItem>
           </div>
         </div>
-        <div>
-          <div className="py-2">
-            <MenuItem
-              collapsed={collapsed}
-              icon={<ClipboardDocumentListIcon className="h-5 w-5" />}
-              title={t('feedback-survey')}
-              pagePath="https://forms.gle/JgV4w7SJ2kPH89mq7"
-              isExternal
-            />
-          </div>
-          <div className="border-t border-th-bkg-3">
-            <ExpandableMenuItem
-              collapsed={collapsed}
-              icon={
-                <HealthHeart
-                  health={
-                    group && mangoAccount
-                      ? mangoAccount.getHealthRatioUi(group, HealthType.maint)
-                      : 0
-                  }
-                  size={32}
-                />
-              }
-              panelTitle={mangoAccount?.name ? mangoAccount.name : t('account')}
-              title={
-                <div className="w-24 text-left">
-                  <p className="mb-0.5 whitespace-nowrap text-xs">
-                    {t('account')}
-                  </p>
-                  <p className="truncate whitespace-nowrap text-sm font-bold text-th-fgd-1">
-                    {mangoAccount
-                      ? mangoAccount.name
-                      : connected
-                      ? 'No Account'
-                      : 'Connect'}
-                  </p>
-                </div>
-              }
-              alignBottom
-              hideIconBg
-            >
-              <div className="px-4 py-2">
-                <MangoAccountSummary />
+        <div className="border-t border-th-bkg-3">
+          <ExpandableMenuItem
+            collapsed={collapsed}
+            icon={
+              <HealthHeart
+                health={
+                  group && mangoAccount
+                    ? mangoAccount.getHealthRatioUi(group, HealthType.maint)
+                    : 0
+                }
+                size={32}
+              />
+            }
+            panelTitle={mangoAccount?.name ? mangoAccount.name : t('account')}
+            title={
+              <div className="w-24 text-left">
+                <p className="mb-0.5 whitespace-nowrap text-xs">
+                  {t('account')}
+                </p>
+                <p className="truncate whitespace-nowrap text-sm font-bold text-th-fgd-1">
+                  {mangoAccount
+                    ? mangoAccount.name
+                    : connected
+                    ? 'No Account'
+                    : 'Connect'}
+                </p>
               </div>
-            </ExpandableMenuItem>
-          </div>
+            }
+            alignBottom
+            hideIconBg
+          >
+            <div className="px-4 py-2">
+              <MangoAccountSummary />
+            </div>
+          </ExpandableMenuItem>
         </div>
       </div>
     </div>
@@ -304,11 +301,12 @@ const MenuItem = ({
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
             >
-              <span className="ml-3 whitespace-nowrap xl:text-base">
-                {title}
-              </span>
+              <span className="ml-3 xl:text-base">{title}</span>
             </Transition>
           </div>
+          {isExternal ? (
+            <ArrowTopRightOnSquareIcon className="ml-2 h-3 w-3" />
+          ) : null}
         </div>
       </Link>
     </Tooltip>
