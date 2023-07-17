@@ -18,7 +18,7 @@ import {
   BanknotesIcon,
   PlusCircleIcon,
   ArchiveBoxArrowDownIcon,
-  ClipboardDocumentIcon,
+  // ClipboardDocumentIcon,
   NewspaperIcon,
 } from '@heroicons/react/20/solid'
 import SolanaTps from '@components/SolanaTps'
@@ -166,12 +166,12 @@ const MoreMenuPanel = ({
           icon={<BuildingLibraryIcon className="h-5 w-5" />}
           isExternal
         />
-        <MoreMenuItem
+        {/* <MoreMenuItem
           title={t('feedback-survey')}
           path="https://forms.gle/JgV4w7SJ2kPH89mq7"
           icon={<ClipboardDocumentIcon className="h-5 w-5" />}
           isExternal
-        />
+        /> */}
         <MoreMenuItem
           title={t('terms-of-use')}
           path="https://docs.mango.markets/legal"

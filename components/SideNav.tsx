@@ -15,7 +15,7 @@ import {
   NewspaperIcon,
   PlusCircleIcon,
   ArchiveBoxArrowDownIcon,
-  ClipboardDocumentIcon,
+  // ClipboardDocumentIcon,
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
@@ -177,7 +177,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 isExternal
                 showTooltip={false}
               />
-              <MenuItem
+              {/* <MenuItem
                 collapsed={false}
                 icon={<ClipboardDocumentIcon className="h-5 w-5" />}
                 title={t('feedback-survey')}
@@ -185,7 +185,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 hideIconBg
                 isExternal
                 showTooltip={false}
-              />
+              /> */}
               <MenuItem
                 collapsed={false}
                 icon={<NewspaperIcon className="h-5 w-5" />}
