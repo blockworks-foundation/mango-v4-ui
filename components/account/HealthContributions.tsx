@@ -211,7 +211,9 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
     if (!initHealthContributions.length) return []
     return initHealthContributions
       .filter((cont) => {
-        if (cont.asset.includes('/')) {
+        if (cont.asset.includes('PERP')) {
+          return
+        } else if (cont.asset.includes('/')) {
           return cont.contribution > 0.01
         } else return cont
       })
@@ -226,7 +228,9 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
     if (!maintHealthContributions.length) return []
     return maintHealthContributions
       .filter((cont) => {
-        if (cont.asset.includes('/')) {
+        if (cont.asset.includes('PERP')) {
+          return
+        } else if (cont.asset.includes('/')) {
           return cont.contribution > 0.01
         } else return cont
       })
