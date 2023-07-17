@@ -117,7 +117,7 @@ const prepareMangoRouterInstructions = async (
   return [instructions, []]
 }
 
-const fetchJupiterTransaction = async (
+export const fetchJupiterTransaction = async (
   connection: Connection,
   selectedRoute: RouteInfo,
   userPublicKey: PublicKey,

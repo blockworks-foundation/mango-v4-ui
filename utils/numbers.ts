@@ -150,3 +150,11 @@ export const numberCompacter = Intl.NumberFormat('en', {
   maximumFractionDigits: 2,
   notation: 'compact',
 })
+
+export function stringToNumber(s: string): number | undefined {
+  const n = parseFloat(s)
+  if (isNaN(n)) {
+    return undefined
+  }
+  return n
+}

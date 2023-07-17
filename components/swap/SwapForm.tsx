@@ -15,7 +15,6 @@ import mangoStore from '@store/mangoStore'
 import ContentBox from '../shared/ContentBox'
 import SwapReviewRouteInfo from './SwapReviewRouteInfo'
 import TokenSelect from './TokenSelect'
-import useDebounce from '../shared/useDebounce'
 import { useTranslation } from 'next-i18next'
 import SwapFormTokenList from './SwapFormTokenList'
 import { Transition } from '@headlessui/react'
@@ -85,27 +84,25 @@ const SwapForm = () => {
     amountOut: amountOutFormValue,
     swapMode,
   } = mangoStore((s) => s.swap)
-  const [debouncedAmountIn] = useDebounce(amountInFormValue, 300)
-  const [debouncedAmountOut] = useDebounce(amountOutFormValue, 300)
   const { mangoAccount } = useMangoAccount()
   const { connected, publicKey } = useWallet()
 
   const amountInAsDecimal: Decimal | null = useMemo(() => {
-    return Number(debouncedAmountIn)
-      ? new Decimal(debouncedAmountIn)
+    return Number(amountInFormValue)
+      ? new Decimal(amountInFormValue)
       : new Decimal(0)
-  }, [debouncedAmountIn])
+  }, [amountInFormValue])
 
   const amountOutAsDecimal: Decimal | null = useMemo(() => {
-    return Number(debouncedAmountOut)
-      ? new Decimal(debouncedAmountOut)
+    return Number(amountOutFormValue)
+      ? new Decimal(amountOutFormValue)
       : new Decimal(0)
-  }, [debouncedAmountOut])
+  }, [amountOutFormValue])
 
   const { bestRoute, routes } = useQuoteRoutes({
     inputMint: inputBank?.mint.toString() || USDC_MINT,
     outputMint: outputBank?.mint.toString() || MANGO_MINT,
-    amount: swapMode === 'ExactIn' ? debouncedAmountIn : debouncedAmountOut,
+    amount: swapMode === 'ExactIn' ? amountInFormValue : amountOutFormValue,
     slippage,
     swapMode,
     wallet: publicKey?.toBase58(),
@@ -125,6 +122,13 @@ const SwapForm = () => {
       })
     },
     []
+  )
+
+  const setAmountFromSlider = useCallback(
+    (amount: string) => {
+      setAmountInFormValue(amount, true)
+    },
+    [setAmountInFormValue]
   )
 
   const setAmountOutFormValue = useCallback((amountOut: string) => {
@@ -214,20 +218,23 @@ const SwapForm = () => {
     setShowTokenSelect(undefined)
   }, [])
 
-  const handleSwitchTokens = useCallback(() => {
-    if (amountInAsDecimal?.gt(0) && amountOutAsDecimal.gte(0)) {
-      setAmountInFormValue(amountOutAsDecimal.toString())
-    }
-    const inputBank = mangoStore.getState().swap.inputBank
-    const outputBank = mangoStore.getState().swap.outputBank
-    set((s) => {
-      s.swap.inputBank = outputBank
-      s.swap.outputBank = inputBank
-    })
-    setAnimateSwitchArrow(
-      (prevanimateSwitchArrow) => prevanimateSwitchArrow + 1
-    )
-  }, [setAmountInFormValue, amountOutAsDecimal, amountInAsDecimal])
+  const handleSwitchTokens = useCallback(
+    (amountIn: Decimal, amountOut: Decimal) => {
+      if (amountIn?.gt(0) && amountOut.gte(0)) {
+        setAmountInFormValue(amountOut.toString())
+      }
+      const inputBank = mangoStore.getState().swap.inputBank
+      const outputBank = mangoStore.getState().swap.outputBank
+      set((s) => {
+        s.swap.inputBank = outputBank
+        s.swap.outputBank = inputBank
+      })
+      setAnimateSwitchArrow(
+        (prevanimateSwitchArrow) => prevanimateSwitchArrow + 1
+      )
+    },
+    [setAmountInFormValue]
+  )
 
   const maintProjectedHealth = useMemo(() => {
     const group = mangoStore.getState().group
@@ -385,7 +392,9 @@ const SwapForm = () => {
           <div className="-mb-2 flex justify-center">
             <button
               className="rounded-full border border-th-bkg-4 p-1.5 text-th-fgd-3 focus-visible:border-th-fgd-4 md:hover:text-th-active"
-              onClick={handleSwitchTokens}
+              onClick={() =>
+                handleSwitchTokens(amountInAsDecimal, amountOutAsDecimal)
+              }
             >
               <ArrowDownIcon
                 className="h-5 w-5"
@@ -444,13 +453,13 @@ const SwapForm = () => {
             <SwapSlider
               useMargin={useMargin}
               amount={amountInAsDecimal.toNumber()}
-              onChange={(v) => setAmountInFormValue(v, true)}
+              onChange={setAmountFromSlider}
               step={1 / 10 ** (inputBank?.mintDecimals || 6)}
             />
           ) : (
             <PercentageSelectButtons
               amountIn={amountInAsDecimal.toString()}
-              setAmountIn={(v) => setAmountInFormValue(v, true)}
+              setAmountIn={setAmountFromSlider}
               useMargin={useMargin}
             />
           )}

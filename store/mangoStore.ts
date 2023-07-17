@@ -65,7 +65,10 @@ import {
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
 import perpPositionsUpdater from './perpPositionsUpdater'
-import { DEFAULT_PRIORITY_FEE } from '@components/settings/RpcSettings'
+import {
+  DEFAULT_PRIORITY_FEE,
+  TRITON_DEDICATED_URL,
+} from '@components/settings/RpcSettings'
 import {
   IExecutionLineAdapter,
   IOrderLineAdapter,
@@ -76,12 +79,8 @@ const GROUP = new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX')
 const ENDPOINTS = [
   {
     name: 'mainnet-beta',
-    url:
-      process.env.NEXT_PUBLIC_ENDPOINT ||
-      'https://mango.rpcpool.com/946ef7337da3f5b8d3e4a34e7f88',
-    websocket:
-      process.env.NEXT_PUBLIC_ENDPOINT ||
-      'https://mango.rpcpool.com/946ef7337da3f5b8d3e4a34e7f88',
+    url: process.env.NEXT_PUBLIC_ENDPOINT || TRITON_DEDICATED_URL,
+    websocket: process.env.NEXT_PUBLIC_ENDPOINT || TRITON_DEDICATED_URL,
     custom: false,
   },
   {

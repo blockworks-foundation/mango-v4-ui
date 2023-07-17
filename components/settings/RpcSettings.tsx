@@ -14,18 +14,18 @@ import {
 } from 'utils/constants'
 import Tooltip from '@components/shared/Tooltip'
 
+export const TRITON_DEDICATED_URL = process.env.NEXT_PUBLIC_TRITON_TOKEN
+  ? `https://mango.rpcpool.com/${process.env.NEXT_PUBLIC_TRITON_TOKEN}`
+  : 'https://mango.rpcpool.com/946ef7337da3f5b8d3e4a34e7f88'
+
 const RPC_URLS = [
   {
     label: 'Triton Shared',
-    value:
-      process.env.NEXT_PUBLIC_ENDPOINT ||
-      'https://mango.rpcpool.com/946ef7337da3f5b8d3e4a34e7f88',
+    value: process.env.NEXT_PUBLIC_ENDPOINT || TRITON_DEDICATED_URL,
   },
   {
     label: 'Triton Dedicated',
-    value: process.env.NEXT_PUBLIC_TRITON_TOKEN
-      ? `https://mango.rpcpool.com/${process.env.NEXT_PUBLIC_TRITON_TOKEN}`
-      : 'https://mango.rpcpool.com/946ef7337da3f5b8d3e4a34e7f88',
+    value: TRITON_DEDICATED_URL,
   },
   // {
   //   label: 'Genesys Go',
