@@ -48,7 +48,7 @@ export default function use24HourChange(
     data: priceData,
     isLoading: loadingPriceData,
     isFetching: fetchingPriceData,
-  } = useQuery(['token-prices', market], () => fetchPrices(market), {
+  } = useQuery(['token-prices', market?.name], () => fetchPrices(market), {
     cacheTime: 1000 * 60 * 10,
     staleTime: 1000 * 60,
     retry: 3,
