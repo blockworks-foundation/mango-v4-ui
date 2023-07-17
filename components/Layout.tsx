@@ -32,16 +32,11 @@ export const sideBarAnimationDuration = 300
 const termsLastUpdated = 1679441610978
 
 const Layout = ({ children }: { children: ReactNode }) => {
-  const { connected } = useWallet()
-  const loadingMangoAccount = mangoStore((s) => s.mangoAccount.initialLoad)
   const [isCollapsed, setIsCollapsed] = useLocalStorageState(
     SIDEBAR_COLLAPSE_KEY,
     false
   )
-  const [acceptTerms, setAcceptTerms] = useLocalStorageState(
-    ACCEPT_TERMS_KEY,
-    ''
-  )
+
   const { width } = useViewport()
   const { asPath } = useRouter()
 
@@ -73,10 +68,6 @@ const Layout = ({ children }: { children: ReactNode }) => {
     particlesInit()
   }, [])
 
-  const showTermsOfUse = useMemo(() => {
-    return (!acceptTerms || acceptTerms < termsLastUpdated) && connected
-  }, [acceptTerms, connected])
-
   return (
     <main
       className={`${ttCommons.variable} ${ttCommonsExpanded.variable} ${ttCommonsMono.variable} font-sans`}
@@ -84,11 +75,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
       <div className="fixed z-30">
         <SuccessParticles />
       </div>
-      {connected && loadingMangoAccount ? (
-        <div className="fixed z-30 flex h-screen w-full items-center justify-center bg-[rgba(0,0,0,0.7)]">
-          <BounceLoader />
-        </div>
-      ) : null}
+      <MangoAccountLoadingOverlay />
       <div className="flex-grow bg-th-bkg-1 text-th-fgd-2 transition-all">
         <div className="fixed bottom-0 left-0 z-20 w-full md:hidden">
           <BottomBar />
@@ -124,22 +111,56 @@ const Layout = ({ children }: { children: ReactNode }) => {
           {children}
         </div>
         <DeployRefreshManager />
+        <TermsOfUse />
       </div>
-      {showTermsOfUse ? (
-        <TermsOfUseModal
-          isOpen={showTermsOfUse}
-          onClose={() => setAcceptTerms(Date.now())}
-        />
-      ) : null}
     </main>
   )
 }
 
 export default Layout
 
+const MangoAccountLoadingOverlay = () => {
+  const { connected } = useWallet()
+  const loadingMangoAccount = mangoStore((s) => s.mangoAccount.initialLoad)
+
+  return (
+    <>
+      {connected && loadingMangoAccount ? (
+        <div className="fixed z-30 flex h-screen w-full items-center justify-center bg-[rgba(0,0,0,0.7)]">
+          <BounceLoader />
+        </div>
+      ) : null}
+    </>
+  )
+}
+
+const TermsOfUse = () => {
+  const { connected } = useWallet()
+  const [acceptTerms, setAcceptTerms] = useLocalStorageState(
+    ACCEPT_TERMS_KEY,
+    ''
+  )
+
+  const showTermsOfUse = useMemo(() => {
+    return (!acceptTerms || acceptTerms < termsLastUpdated) && connected
+  }, [acceptTerms, connected])
+
+  return (
+    <>
+      {showTermsOfUse ? (
+        <TermsOfUseModal
+          isOpen={showTermsOfUse}
+          onClose={() => setAcceptTerms(Date.now())}
+        />
+      ) : null}
+    </>
+  )
+}
+
 function DeployRefreshManager(): JSX.Element | null {
   const { t } = useTranslation('common')
   const [newBuildAvailable, setNewBuildAvailable] = useState(false)
+
   useInterval(async () => {
     const response = await fetch('/api/build-id')
     const { buildId } = await response.json()
@@ -148,7 +169,7 @@ function DeployRefreshManager(): JSX.Element | null {
       // There's a new version deployed that we need to load
       setNewBuildAvailable(true)
     }
-  }, 30000)
+  }, 300000)
 
   return (
     <Transition
