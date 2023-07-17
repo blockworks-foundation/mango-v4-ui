@@ -2,12 +2,16 @@ import useMetaplex from 'hooks/useMetaplex'
 import type { NextPage } from 'next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import { useState } from 'react'
-import SecondaryTabBar from '@components/shared/SecondaryTabBar'
 import ListingsView from '@components/nftMarket/ListingsView'
 import AllBidsView from '@components/nftMarket/AllBidsView'
+import Button from '@components/shared/Button'
+// import { useTranslation } from 'next-i18next'
+import TabUnderline from '@components/shared/TabUnderline'
+import SellNftModal from '@components/nftMarket/SellNftModal'
+import MyBidsModal from '@components/nftMarket/MyBidsModal'
 
 const LISTINGS = 'Listings'
-const BIDS_WITHOUT_LISTINGS = 'Bids'
+const BIDS_WITHOUT_LISTINGS = 'Offers'
 const TABS = [LISTINGS, BIDS_WITHOUT_LISTINGS]
 
 export async function getStaticProps({ locale }: { locale: string }) {
@@ -29,24 +33,51 @@ export async function getStaticProps({ locale }: { locale: string }) {
 }
 
 const Market: NextPage = () => {
+  // const { t } = useTranslation('nftMarket')
   useMetaplex()
   const [activeTab, setActiveTab] = useState('Listings')
+  const [sellNftModal, setSellNftModal] = useState(false)
+  const [myBidsModal, setMyBidsModal] = useState(false)
 
   return (
-    <div className="flex flex-col">
-      <div>
-        <SecondaryTabBar
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          tabs={TABS}
-        />
+    <>
+      <div className="mx-auto flex max-w-[1140px] flex-col px-6">
+        <div className="flex items-center justify-between pt-8 pb-6">
+          <h1>NFT Market</h1>
+          <div className="flex space-x-2">
+            <Button onClick={() => setSellNftModal(true)}>
+              Sell your NFTs
+            </Button>
+            <Button onClick={() => setMyBidsModal(true)} secondary>
+              Your Offers
+            </Button>
+          </div>
+        </div>
+        <div>
+          <TabUnderline
+            activeValue={activeTab}
+            values={TABS}
+            onChange={(v) => setActiveTab(v)}
+            fillWidth={false}
+          />
+        </div>
+        <div className="">
+          {activeTab === LISTINGS ? <ListingsView /> : <AllBidsView />}
+        </div>
       </div>
-      {activeTab === LISTINGS ? (
-        <ListingsView></ListingsView>
-      ) : (
-        <AllBidsView></AllBidsView>
+      {sellNftModal && (
+        <SellNftModal
+          isOpen={sellNftModal}
+          onClose={() => setSellNftModal(false)}
+        ></SellNftModal>
       )}
-    </div>
+      {myBidsModal && (
+        <MyBidsModal
+          isOpen={myBidsModal}
+          onClose={() => setMyBidsModal(false)}
+        ></MyBidsModal>
+      )}
+    </>
   )
 }
 

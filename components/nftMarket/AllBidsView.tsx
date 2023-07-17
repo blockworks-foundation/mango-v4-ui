@@ -1,33 +1,45 @@
-import Button from '@components/shared/Button'
-import { useTranslation } from 'next-i18next'
+// import { useTranslation } from 'next-i18next'
 import { useEffect, useState } from 'react'
-import MyBidsModal from './MyBidsModal'
 import {
   useAuctionHouse,
   useBids,
+  useListings,
   useLoadBids,
 } from 'hooks/market/useAuctionHouse'
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import { MANGO_MINT_DECIMALS } from 'utils/governance/constants'
 import { useWallet } from '@solana/wallet-adapter-react'
 import metaplexStore from '@store/metaplexStore'
-import { Bid, PublicBid, PublicKey } from '@metaplex-foundation/js'
+import { Bid, Listing, PublicBid, PublicKey } from '@metaplex-foundation/js'
 import BidNftModal from './BidNftModal'
 import mangoStore from '@store/mangoStore'
+import {
+  Table,
+  TableDateDisplay,
+  Td,
+  Th,
+  TrBody,
+  TrHead,
+} from '@components/shared/TableElements'
+import { ImgWithLoader } from '@components/ImgWithLoader'
+import NftMarketButton from './NftMarketButton'
+import { abbreviateAddress } from 'utils/formatting'
+import { NoSymbolIcon } from '@heroicons/react/20/solid'
 
 const AllBidsView = () => {
   const wallet = useWallet()
   const { data: auctionHouse } = useAuctionHouse()
   const metaplex = metaplexStore((s) => s.metaplex)
-  const { t } = useTranslation(['nftMarket'])
-  const [myBidsModal, setMyBidsModal] = useState(false)
-  const [bidModal, setBidModal] = useState(false)
+  // const { t } = useTranslation(['nftMarket'])
+  const [showBidModal, setShowBidModal] = useState(false)
+  const [bidListing, setBidListing] = useState<null | Listing>(null)
   const { data: bids, refetch } = useBids()
   const bidsToLoad = bids ? bids : []
   const { data: loadedBids } = useLoadBids(bidsToLoad)
   const connection = mangoStore((s) => s.connection)
   const fetchNfts = mangoStore((s) => s.actions.fetchNfts)
   const nfts = mangoStore((s) => s.wallet.nfts.data)
+  const { data: listings } = useListings()
 
   useEffect(() => {
     if (wallet.publicKey) {
@@ -57,70 +69,158 @@ const AllBidsView = () => {
     refetch()
   }
 
+  const buyAsset = async (listing: Listing) => {
+    await metaplex!.auctionHouse().buy({
+      auctionHouse: auctionHouse!,
+      listing,
+    })
+    refetch()
+  }
+
+  const openBidModal = (listing: Listing) => {
+    setBidListing(listing)
+    setShowBidModal(true)
+  }
+
   return (
-    <div className="flex flex-col">
-      <div className="mr-5 flex space-x-4 p-4">
-        <Button onClick={() => setBidModal(true)}>{t('bid')}</Button>
-        <Button onClick={() => setMyBidsModal(true)}>{t('my-bids')}</Button>
-        {bidModal && (
-          <BidNftModal
-            isOpen={bidModal}
-            onClose={() => setBidModal(false)}
-          ></BidNftModal>
-        )}
-        {myBidsModal && (
-          <MyBidsModal
-            isOpen={myBidsModal}
-            onClose={() => setMyBidsModal(false)}
-          ></MyBidsModal>
-        )}
-      </div>
-      <div className="flex p-4">
-        {loadedBids?.map((x, idx) => (
-          <div className="p-4" key={idx}>
-            <img src={x.asset.json?.image}></img>
-            <div>
-              {t('bid')}:
-              {toUiDecimals(
-                x.price.basisPoints.toNumber(),
-                MANGO_MINT_DECIMALS
-              )}
-              {' MNGO'}
-            </div>
-            <div className="space-x-4">
-              {wallet.publicKey &&
-                !x.buyerAddress.equals(wallet.publicKey) &&
-                nfts.find(
-                  (ownNft) => ownNft.mint === x.asset.address.toBase58()
-                ) && (
-                  <>
-                    <Button
-                      onClick={() =>
-                        sellAsset(
-                          x,
+    <>
+      <div className="flex flex-col">
+        {loadedBids?.length ? (
+          <Table>
+            <thead>
+              <TrHead>
+                <Th className="text-left">Date</Th>
+                <Th className="text-right">NFT</Th>
+                <Th className="text-right">Offer</Th>
+                <Th className="text-right">Buy Now Price</Th>
+                <Th className="text-right">Buyer</Th>
+                <Th className="text-right">Actions</Th>
+              </TrHead>
+            </thead>
+            <tbody>
+              {loadedBids
+                .sort((a, b) => b.createdAt.toNumber() - a.createdAt.toNumber())
+                .map((x, idx) => {
+                  const listing = listings?.results?.find(
+                    (nft: Listing) =>
+                      nft.asset.mint.toString() === x.asset.mint.toString()
+                  )
+                  return (
+                    <TrBody key={idx}>
+                      <Td>
+                        <TableDateDisplay
+                          date={x.createdAt.toNumber()}
+                          showSeconds
+                        />
+                      </Td>
+                      <Td>
+                        <div className="flex justify-end">
+                          <ImgWithLoader
+                            className="w-12 rounded-md"
+                            alt={x.asset.name}
+                            src={x.asset.json!.image!}
+                          />
+                        </div>
+                      </Td>
+                      <Td>
+                        <p className="text-right">
+                          {toUiDecimals(
+                            x.price.basisPoints.toNumber(),
+                            MANGO_MINT_DECIMALS
+                          )}
+                          <span className="font-body">{' MNGO'}</span>
+                        </p>
+                      </Td>
+                      <Td>
+                        <p className="text-right">
+                          <p className="text-right">
+                            {listing ? (
+                              <>
+                                {toUiDecimals(
+                                  listing.price.basisPoints.toNumber(),
+                                  MANGO_MINT_DECIMALS
+                                )}
+                                <span className="font-body">{' MNGO'}</span>
+                              </>
+                            ) : (
+                              '–'
+                            )}
+                          </p>
+                        </p>
+                      </Td>
+                      <Td>
+                        <p className="text-right">
+                          {abbreviateAddress(x.buyerAddress)}
+                        </p>
+                      </Td>
+                      <Td>
+                        <div className="flex justify-end space-x-2">
+                          {wallet.publicKey &&
+                          !x.buyerAddress.equals(wallet.publicKey) &&
                           nfts.find(
                             (ownNft) =>
                               ownNft.mint === x.asset.address.toBase58()
-                          )!.tokenAccount
-                        )
-                      }
-                    >
-                      {t('sell')}
-                    </Button>
-                  </>
-                )}
-              {wallet.publicKey && x.buyerAddress.equals(wallet.publicKey) && (
-                <>
-                  <Button onClick={() => cancelBid(x)}>
-                    {t('cancel-bid')}
-                  </Button>
-                </>
-              )}
-            </div>
+                          ) ? (
+                            <NftMarketButton
+                              onClick={() =>
+                                sellAsset(
+                                  x,
+                                  nfts.find(
+                                    (ownNft) =>
+                                      ownNft.mint === x.asset.address.toBase58()
+                                  )!.tokenAccount
+                                )
+                              }
+                              colorClass="fgd-3"
+                              text="Accept Offer"
+                            />
+                          ) : (
+                            <>
+                              {wallet.publicKey &&
+                              x.buyerAddress.equals(wallet.publicKey) ? (
+                                <NftMarketButton
+                                  colorClass="error"
+                                  text="Cancel Offer"
+                                  onClick={() => cancelBid(x)}
+                                />
+                              ) : listing ? (
+                                <NftMarketButton
+                                  colorClass="fgd-3"
+                                  text="Make Offer"
+                                  onClick={() => openBidModal(listing)}
+                                />
+                              ) : null}
+                              {listing ? (
+                                <NftMarketButton
+                                  colorClass="success"
+                                  text="Buy Now"
+                                  onClick={() => buyAsset(listing)}
+                                />
+                              ) : null}
+                            </>
+                          )}
+                        </div>
+                      </Td>
+                    </TrBody>
+                  )
+                })}
+            </tbody>
+          </Table>
+        ) : (
+          <div className="mt-4 flex flex-col items-center rounded-md border border-th-bkg-3 p-4">
+            <NoSymbolIcon className="mb-1 h-7 w-7 text-th-fgd-4" />
+            <p>No offers to show...</p>
           </div>
-        ))}
+        )}
       </div>
-    </div>
+      {showBidModal ? (
+        <BidNftModal
+          listing={bidListing ? bidListing : undefined}
+          isOpen={showBidModal}
+          onClose={() => setShowBidModal(false)}
+        />
+      ) : null}
+    </>
   )
 }
 

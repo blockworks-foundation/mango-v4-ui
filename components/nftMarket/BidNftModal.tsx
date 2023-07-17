@@ -3,13 +3,14 @@ import Modal from '../shared/Modal'
 import { useState, useCallback } from 'react'
 import Input from '@components/forms/Input'
 import Label from '@components/forms/Label'
-import Button from '@components/shared/Button'
+import Button, { LinkButton } from '@components/shared/Button'
 import { MANGO_MINT_DECIMALS } from 'utils/governance/constants'
 import { Listing, PublicKey, token } from '@metaplex-foundation/js'
 import metaplexStore from '@store/metaplexStore'
 import { useAuctionHouse, useBids } from 'hooks/market/useAuctionHouse'
 import { ImgWithLoader } from '@components/ImgWithLoader'
-import { useTranslation } from 'next-i18next'
+// import { useTranslation } from 'next-i18next'
+import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 
 type ListingModalProps = {
   listing?: Listing
@@ -19,7 +20,7 @@ const BidNftModal = ({ isOpen, onClose, listing }: ListingModalProps) => {
   const metaplex = metaplexStore((s) => s.metaplex)
   const { data: auctionHouse } = useAuctionHouse()
   const { refetch } = useBids()
-  const { t } = useTranslation(['nftMarket'])
+  // const { t } = useTranslation(['nftMarket'])
   const noneListedAssetMode = !listing
 
   const [bidPrice, setBidPrice] = useState('')
@@ -48,16 +49,31 @@ const BidNftModal = ({ isOpen, onClose, listing }: ListingModalProps) => {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
+      <h2 className="mb-4 text-center text-lg">Make an Offer</h2>
       <div className="flex flex-col items-center">
         {listing ? (
-          <ImgWithLoader
-            alt={listing.asset.name}
-            className="h-32 w-32 flex-shrink-0 rounded-full sm:h-20 sm:w-20"
-            src={listing.asset.json!.image!}
-          />
+          <div className="flex flex-col items-center">
+            <ImgWithLoader
+              alt={listing.asset.name}
+              className="mb-3 h-40 w-40 flex-shrink-0 rounded-md"
+              src={listing.asset.json!.image!}
+            />
+            <LinkButton>
+              <span className="font-body font-normal">
+                Buy Now:{' '}
+                <span className="font-display">
+                  {toUiDecimals(
+                    listing.price.basisPoints.toNumber(),
+                    MANGO_MINT_DECIMALS
+                  )}{' '}
+                  <span className="font-bold">MNGO</span>
+                </span>
+              </span>
+            </LinkButton>
+          </div>
         ) : (
           <>
-            <Label text="Nft mint"></Label>
+            <Label text="NFT Mint" />
             <Input
               className="mb-2"
               type="text"
@@ -65,21 +81,29 @@ const BidNftModal = ({ isOpen, onClose, listing }: ListingModalProps) => {
               onChange={(e) => {
                 setAssetMint(e.target.value)
               }}
-            ></Input>
+            />
           </>
         )}
-        <Label text="Bid price"></Label>
-        <Input
-          className="mb-2"
-          type="number"
-          value={bidPrice}
-          onChange={(e) => {
-            setBidPrice(e.target.value)
-          }}
-        ></Input>
-        <Button onClick={bid} disabled={!bidPrice}>
-          {t('bid')}
-        </Button>
+        <div className="mt-4 flex w-full items-end">
+          <div className="w-full">
+            <Label text="Offer Price"></Label>
+            <Input
+              value={bidPrice}
+              onChange={(e) => {
+                setBidPrice(e.target.value)
+              }}
+              suffix="MNGO"
+            />
+          </div>
+          <Button
+            className="ml-2 whitespace-nowrap"
+            onClick={bid}
+            disabled={!bidPrice}
+            size="large"
+          >
+            Make Offer
+          </Button>
+        </div>
       </div>
     </Modal>
   )

@@ -58,13 +58,13 @@ const SellNftModal = ({ isOpen, onClose }: ModalProps) => {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="flex min-h-[264px] flex-col">
+      <div className="hide-scroll h-[320px] overflow-y-auto">
         {nfts.length > 0 ? (
           <div className="flex flex-col items-center">
-            <div className="mb-4 grid max-h-[500px] w-full grid-flow-row grid-cols-4 gap-4 overflow-auto">
+            <div className="grid grid-flow-row auto-rows-max grid-cols-4 gap-1">
               {nfts.map((n) => (
                 <button
-                  className={`col-span-1 flex items-center justify-center rounded-md border bg-th-bkg-2 py-3 sm:py-4 md:hover:bg-th-bkg-3 ${
+                  className={`flex h-24 w-24 items-center justify-center rounded-md border bg-th-bkg-2 py-3 sm:py-4 md:hover:bg-th-bkg-3 ${
                     selectedNft?.address === n.address
                       ? 'border-th-active'
                       : 'border-th-bkg-3'
@@ -74,7 +74,7 @@ const SellNftModal = ({ isOpen, onClose }: ModalProps) => {
                 >
                   <ImgWithLoader
                     alt={n.name}
-                    className="h-16 w-16 flex-shrink-0 rounded-full sm:h-20 sm:w-20"
+                    className="h-16 w-16 flex-shrink-0 rounded-full"
                     src={n.image}
                   />
                 </button>
@@ -82,10 +82,10 @@ const SellNftModal = ({ isOpen, onClose }: ModalProps) => {
             </div>
           </div>
         ) : isLoadingNfts ? (
-          <div className="mb-4 grid w-full grid-flow-row grid-cols-3 gap-4">
-            {[...Array(9)].map((x, i) => (
+          <div className="grid grid-flow-row auto-rows-max grid-cols-4 gap-1">
+            {[...Array(12)].map((x, i) => (
               <div
-                className="col-span-1 h-[90px] animate-pulse rounded-md bg-th-bkg-3 sm:h-28"
+                className="h-24 w-24 animate-pulse rounded-md bg-th-bkg-3"
                 key={i}
               />
             ))}
@@ -95,23 +95,26 @@ const SellNftModal = ({ isOpen, onClose }: ModalProps) => {
             <p>{t('profile:no-nfts')}</p>
           </div>
         )}
-        <div className="flex flex-col">
-          <Label text="Min MNGO price - If someone bids this price, the item will be immediately sold at that price."></Label>
+      </div>
+      <div className="flex items-end pt-6">
+        <div className="w-full">
+          <Label text="Buy Now Price"></Label>
           <Input
-            className="mb-2"
-            type="number"
             value={minPrice}
             onChange={(e) => {
               setMinPrice(e.target.value)
             }}
+            suffix="MNGO"
           ></Input>
-          <Button
-            disabled={!selectedNft || !minPrice}
-            onClick={() => listAsset(selectedNft!.mint, Number(minPrice))}
-          >
-            {t('nftMarket:list')}
-          </Button>
         </div>
+        <Button
+          className="ml-2"
+          disabled={!selectedNft || !minPrice}
+          onClick={() => listAsset(selectedNft!.mint, Number(minPrice))}
+          size="large"
+        >
+          {t('nftMarket:list')}
+        </Button>
       </div>
     </Modal>
   )
