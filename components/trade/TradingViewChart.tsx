@@ -88,9 +88,10 @@ const TradingViewChart = () => {
   const selectedMarketName = mangoStore((s) => s.selectedMarket.current?.name)
   const isMobile = width ? width < breakpoints.sm : false
 
-  const defaultProps = useMemo(
-    () => ({
-      symbol: selectedMarketName,
+  const defaultProps = useMemo(() => {
+    const initialMktName = mangoStore.getState().selectedMarket.current?.name
+    return {
+      symbol: initialMktName,
       interval: '60' as ResolutionString,
       theme: 'Dark',
       container: 'tv_chart_container',
@@ -105,9 +106,8 @@ const TradingViewChart = () => {
         'volume.volume.color.1': COLORS.UP[theme],
         'volume.precision': 4,
       },
-    }),
-    [theme, selectedMarketName]
-  )
+    }
+  }, [theme])
 
   const tvWidgetRef = useRef<IChartingLibraryWidget>()
   const orderLinesButtonRef = useRef<HTMLElement>()

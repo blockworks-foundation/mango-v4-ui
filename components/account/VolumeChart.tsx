@@ -26,6 +26,7 @@ import ContentBox from '@components/shared/ContentBox'
 import SheenLoader from '@components/shared/SheenLoader'
 import useAccountHourlyVolumeStats from 'hooks/useAccountHourlyVolumeStats'
 import useMangoAccount from 'hooks/useMangoAccount'
+import { DAILY_MILLISECONDS } from 'utils/constants'
 
 const VolumeChart = ({ hideChart }: { hideChart: () => void }) => {
   const { t } = useTranslation(['account', 'common', 'stats'])
@@ -120,7 +121,7 @@ const VolumeChart = ({ hideChart }: { hideChart: () => void }) => {
 
   const filteredData: FormattedHourlyAccountVolumeData[] = useMemo(() => {
     if (!chartData || !chartData.length) return []
-    const start = Number(daysToShow) * 86400000
+    const start = Number(daysToShow) * DAILY_MILLISECONDS
     const filtered = chartData.filter((d: FormattedHourlyAccountVolumeData) => {
       const date = new Date()
       if (daysToShow === '30') {

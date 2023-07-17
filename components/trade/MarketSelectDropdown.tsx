@@ -1,12 +1,7 @@
-// import ChartRangeButtons from '@components/shared/ChartRangeButtons'
-import Change from '@components/shared/Change'
 import FavoriteMarketButton from '@components/shared/FavoriteMarketButton'
-import SheenLoader from '@components/shared/SheenLoader'
-import { getOneDayPerpStats } from '@components/stats/PerpMarketsOverviewTable'
 import { Popover } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
-import { useBirdeyeMarketPrices } from 'hooks/useBirdeyeMarketPrices'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
@@ -23,6 +18,7 @@ import SoonBadge from '@components/shared/SoonBadge'
 import TabButtons from '@components/shared/TabButtons'
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import Loading from '@components/shared/Loading'
+import MarketChange from '@components/shared/MarketChange'
 
 const MARKET_LINK_WRAPPER_CLASSES =
   'flex items-center justify-between px-4 md:pl-6 md:pr-4'
@@ -41,11 +37,7 @@ const MarketSelectDropdown = () => {
   )
   const serumMarkets = mangoStore((s) => s.serumMarkets)
   const allPerpMarkets = mangoStore((s) => s.perpMarkets)
-  const perpStats = mangoStore((s) => s.perpStats.data)
-  const loadingPerpStats = mangoStore((s) => s.perpStats.loading)
   const { group } = useMangoGroup()
-  const { data: birdeyePrices, isLoading: loadingPrices } =
-    useBirdeyeMarketPrices()
   const [spotBaseFilter, setSpotBaseFilter] = useState('All')
 
   const perpMarkets = useMemo(() => {
@@ -130,14 +122,7 @@ const MarketSelectDropdown = () => {
             <div className="py-3">
               {spotOrPerp === 'perp' && perpMarkets?.length
                 ? perpMarkets.map((m) => {
-                    const changeData = getOneDayPerpStats(perpStats, m.name)
                     const isComingSoon = m.oracleLastUpdatedSlot == 0
-
-                    const change = changeData.length
-                      ? ((m.uiPrice - changeData[0].price) /
-                          changeData[0].price) *
-                        100
-                      : 0
                     return (
                       <div
                         className={MARKET_LINK_WRAPPER_CLASSES}
@@ -167,17 +152,7 @@ const MarketSelectDropdown = () => {
                                     getDecimalCount(m.tickSize)
                                   )}
                                 </span>
-                                {!loadingPerpStats ? (
-                                  <Change
-                                    change={change}
-                                    suffix="%"
-                                    size="small"
-                                  />
-                                ) : (
-                                  <SheenLoader className="mt-0.5">
-                                    <div className="h-3.5 w-12 bg-th-bkg-2" />
-                                  </SheenLoader>
-                                )}
+                                <MarketChange market={m} size="small" />
                               </div>
                             </Link>
                             <FavoriteMarketButton market={m} />
@@ -216,12 +191,6 @@ const MarketSelectDropdown = () => {
                     .map((x) => x)
                     .sort((a, b) => a.name.localeCompare(b.name))
                     .map((m) => {
-                      const birdeyeData = birdeyePrices?.length
-                        ? birdeyePrices.find(
-                            (market) =>
-                              market.mint === m.serumMarketExternal.toString()
-                          )
-                        : null
                       const baseBank = group?.getFirstBankByTokenIndex(
                         m.baseTokenIndex
                       )
@@ -238,12 +207,6 @@ const MarketSelectDropdown = () => {
                           getDecimalCount(market.tickSize)
                         ).toNumber()
                       }
-                      const change =
-                        birdeyeData && price
-                          ? ((price - birdeyeData.data[0].value) /
-                              birdeyeData.data[0].value) *
-                            100
-                          : 0
                       return (
                         <div
                           className={MARKET_LINK_WRAPPER_CLASSES}
@@ -281,21 +244,7 @@ const MarketSelectDropdown = () => {
                                   ) : null}
                                 </span>
                               ) : null}
-                              {!loadingPrices ? (
-                                change ? (
-                                  <Change
-                                    change={change}
-                                    suffix="%"
-                                    size="small"
-                                  />
-                                ) : (
-                                  <span className="text-th-fgd-3">–</span>
-                                )
-                              ) : (
-                                <SheenLoader className="mt-0.5">
-                                  <div className="h-3.5 w-12 bg-th-bkg-2" />
-                                </SheenLoader>
-                              )}
+                              <MarketChange market={m} size="small" />
                             </div>
                           </Link>
                           <FavoriteMarketButton market={m} />

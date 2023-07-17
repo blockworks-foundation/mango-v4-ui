@@ -328,7 +328,7 @@ const mangoStore = create<MangoStore>()(
         details: { profile_name: '', trader_category: '', wallet_pk: '' },
       },
       selectedMarket: {
-        name: '',
+        name: 'SOL/USDC',
         current: undefined,
         fills: [],
         bidsAccount: undefined,

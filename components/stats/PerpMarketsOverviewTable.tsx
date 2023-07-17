@@ -24,6 +24,7 @@ import SimpleAreaChart from '@components/shared/SimpleAreaChart'
 import { Disclosure, Transition } from '@headlessui/react'
 import { LinkButton } from '@components/shared/Button'
 import SoonBadge from '@components/shared/SoonBadge'
+import { DAILY_SECONDS } from 'utils/constants'
 
 export const getOneDayPerpStats = (
   stats: PerpStatsItem[] | null,
@@ -33,7 +34,7 @@ export const getOneDayPerpStats = (
     ? stats
         .filter((s) => s.perp_market === marketName)
         .filter((f) => {
-          const seconds = 86400
+          const seconds = DAILY_SECONDS
           const dataTime = new Date(f.date_hour).getTime() / 1000
           const now = new Date().getTime() / 1000
           const limit = now - seconds
