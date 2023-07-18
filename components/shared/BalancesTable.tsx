@@ -6,11 +6,7 @@ import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import { useRouter } from 'next/router'
 import { useCallback, useMemo } from 'react'
-import {
-  floorToDecimal,
-  formatNumericValue,
-  getDecimalCount,
-} from 'utils/numbers'
+import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 import { calculateLimitPriceForMarketOrder } from 'utils/tradeForm'
 import { LinkButton } from './Button'
@@ -26,6 +22,9 @@ import useBanksWithBalances, {
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import { Disclosure, Transition } from '@headlessui/react'
 import TokenLogo from './TokenLogo'
+import { PublicKey } from '@solana/web3.js'
+import { USDC_MINT } from 'utils/constants'
+import { WRAPPED_SOL_MINT } from '@project-serum/serum/lib/token-instructions'
 
 const BalancesTable = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -257,12 +256,20 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
   const handleSwapFormBalanceClick = useCallback(
     (balance: number) => {
       const set = mangoStore.getState().set
+      const group = mangoStore.getState().group
+      const swap = mangoStore.getState().swap
+      const usdcBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
+      const solBank = group?.getFirstBankByMint(WRAPPED_SOL_MINT)
       if (balance >= 0) {
         set((s) => {
           s.swap.inputBank = tokenBank
           s.swap.amountIn = balance.toString()
           s.swap.amountOut = ''
           s.swap.swapMode = 'ExactIn'
+          if (tokenBank.name === swap.outputBank?.name) {
+            s.swap.outputBank =
+              swap.outputBank.name === 'USDC' ? solBank : usdcBank
+          }
         })
       } else {
         set((s) => {
@@ -270,6 +277,10 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
           s.swap.amountIn = ''
           s.swap.amountOut = Math.abs(balance).toString()
           s.swap.swapMode = 'ExactOut'
+          if (tokenBank.name === swap.inputBank?.name) {
+            s.swap.inputBank =
+              swap.inputBank.name === 'USDC' ? solBank : usdcBank
+          }
         })
       }
     },
@@ -310,7 +321,7 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
             className="font-normal underline underline-offset-2 md:underline-offset-4 md:hover:no-underline"
             onClick={() =>
               handleSwapFormBalanceClick(
-                Number(formatNumericValue(balance, tokenBank.mintDecimals))
+                Number(floorToDecimal(balance, tokenBank.mintDecimals))
               )
             }
           >

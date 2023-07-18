@@ -28,6 +28,7 @@
     "init-leverage": "初始槓桿率",
     "instantaneous-funding": "瞬時資金費率",
     "insured": "{{token}} 受保險",
+    "insufficient-perp-liquidity": "Not enough liquidity to close your position. Set a limit order instead.",
     "interval-seconds": "時間間隔 (秒)",
     "last-updated": "最近更新",
     "limit": "限價",

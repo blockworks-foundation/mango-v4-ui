@@ -8,7 +8,7 @@ import {
   HourlyFundingData,
   HourlyFundingStatsData,
 } from 'types'
-import { MANGO_DATA_API_URL } from 'utils/constants'
+import { DAILY_MILLISECONDS, MANGO_DATA_API_URL } from 'utils/constants'
 import { formatCurrencyValue } from 'utils/numbers'
 import { TooltipProps } from 'recharts/types/component/Tooltip'
 import {
@@ -191,7 +191,7 @@ const FundingChart = ({ hideChart }: { hideChart: () => void }) => {
 
   const filteredData: HourlyFundingChartData[] = useMemo(() => {
     if (!chartData.length) return []
-    const start = Number(daysToShow) * 86400000
+    const start = Number(daysToShow) * DAILY_MILLISECONDS
     const filtered = chartData.filter((d: HourlyFundingChartData) => {
       const date = new Date()
       if (daysToShow === '30') {
