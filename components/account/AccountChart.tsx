@@ -4,18 +4,18 @@ import { formatYAxis } from 'utils/formatting'
 import { HourlyFundingChartData, PerformanceDataItem } from 'types'
 import { ContentType } from 'recharts/types/component/Tooltip'
 import DetailedAreaOrBarChart from '@components/shared/DetailedAreaOrBarChart'
-import { ChartToShow } from './AccountPage'
+import { ViewToShow } from './AccountPage'
 import { ArrowLeftIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 
-const CHART_TABS: ChartToShow[] = [
+const CHART_TABS: ViewToShow[] = [
   'account-value',
   'pnl',
   'cumulative-interest-value',
 ]
 
 const AccountChart = ({
-  chartToShow,
-  setChartToShow,
+  chartName,
+  handleViewChange,
   customTooltip,
   data,
   hideChart,
@@ -23,8 +23,8 @@ const AccountChart = ({
   yDecimals,
   yKey,
 }: {
-  chartToShow: ChartToShow
-  setChartToShow: (chart: ChartToShow) => void
+  chartName: ViewToShow
+  handleViewChange: (view: ViewToShow) => void
   customTooltip?: ContentType<number, string>
   data: PerformanceDataItem[] | HourlyFundingChartData[] | undefined
   hideChart: () => void
@@ -37,7 +37,7 @@ const AccountChart = ({
 
   const chartData = useMemo(() => {
     if (!data || !data.length) return []
-    if (chartToShow === 'cumulative-interest-value') {
+    if (chartName === 'cumulative-interest-value') {
       return data.map((d) => ({
         interest_value:
           d.borrow_interest_cumulative_usd * -1 +
@@ -46,7 +46,7 @@ const AccountChart = ({
       }))
     }
     return data
-  }, [data, chartToShow])
+  }, [data, chartName])
 
   return (
     <>
@@ -61,11 +61,11 @@ const AccountChart = ({
           {CHART_TABS.map((tab) => (
             <button
               className={`whitespace-nowrap rounded-md py-1.5 px-2.5 text-sm font-medium focus-visible:bg-th-bkg-3 focus-visible:text-th-fgd-1 ${
-                chartToShow === tab
+                chartName === tab
                   ? 'bg-th-bkg-3 text-th-active md:hover:text-th-active'
                   : 'text-th-fgd-3 md:hover:text-th-fgd-2'
               }`}
-              onClick={() => setChartToShow(tab)}
+              onClick={() => handleViewChange(tab)}
               key={tab}
             >
               {t(tab)}
