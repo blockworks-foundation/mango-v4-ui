@@ -44,6 +44,7 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
           )
         initContributions.push({
           ...item,
+          contribution: Math.abs(contribution),
           hasPerp: hasPerp,
           isAsset: contribution > 0 ? true : false,
         })
@@ -82,9 +83,10 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
             (perp: PerpMarketContribution) => Math.abs(perp.contributionUi) > 0
           )
         maintContributions.push({
+          ...item,
           hasPerp: hasPerp,
           isAsset: contribution > 0 ? true : false,
-          ...item,
+          contribution: Math.abs(contribution),
         })
         if (item.contributionDetails) {
           for (const perpMarket of item.contributionDetails
