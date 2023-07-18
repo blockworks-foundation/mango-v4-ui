@@ -21,10 +21,10 @@
   dependencies:
     ws "^8.13.0"
 
-"@blockworks-foundation/mango-v4@^0.17.24":
-  version "0.17.24"
-  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.17.24.tgz#fd00ed93aa5540b35478f4e5422dc386107606dc"
-  integrity sha512-bR2C7n45HNJXsvQmuQDwCuPCk5gaAropNnI1KGdsUzrWfJmKjWcTPIeOLvAGO0r4WdYJS7GF6DMC6KIf6VFrag==
+"@blockworks-foundation/mango-v4@^0.17.25":
+  version "0.17.25"
+  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.17.25.tgz#00c082d5ec0a12aaf1a70d88930bc468e97467a1"
+  integrity sha512-CJOoLuEVY2szMmZq+V/TZx3fSmkmy16OP3FPkA85nPfSXrgWsVhb2WaugN4VyT/1le3g1ppzNvosCfYV+n/XRQ==
   dependencies:
     "@coral-xyz/anchor" "^0.27.0"
     "@project-serum/serum" "0.13.65"
@@ -7577,10 +7577,10 @@ recharts-scale@^0.4.4:
   dependencies:
     decimal.js-light "^2.4.1"
 
-recharts@2.7.2:
-  version "2.7.2"
-  resolved "https://registry.yarnpkg.com/recharts/-/recharts-2.7.2.tgz#6d813681910ad33a4bbf3bdd06c6f64f20b39319"
-  integrity sha512-HMKRBkGoOXHW+7JcRa6+MukPSifNtJlqbc+JreGVNA407VLE/vOP+8n3YYjprDVVIF9E2ZgwWnL3D7K/LUFzBg==
+recharts@2.5.0:
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/recharts/-/recharts-2.5.0.tgz#34452852509099502690f9d2a72bde1d4cd65648"
+  integrity sha512-0EQYz3iA18r1Uq8VqGZ4dABW52AKBnio37kJgnztIqprELJXpOEsa0SzkqU1vjAhpCXCv52Dx1hiL9119xsqsQ==
   dependencies:
     classnames "^2.2.5"
     eventemitter3 "^4.0.1"
