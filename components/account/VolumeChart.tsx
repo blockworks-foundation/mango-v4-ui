@@ -24,18 +24,15 @@ import { ArrowLeftIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 import { FadeInFadeOut } from '@components/shared/Transitions'
 import ContentBox from '@components/shared/ContentBox'
 import SheenLoader from '@components/shared/SheenLoader'
+import useAccountHourlyVolumeStats from 'hooks/useAccountHourlyVolumeStats'
+import useMangoAccount from 'hooks/useMangoAccount'
 import { DAILY_MILLISECONDS } from 'utils/constants'
 
-const VolumeChart = ({
-  chartData,
-  hideChart,
-  loading,
-}: {
-  chartData: FormattedHourlyAccountVolumeData[] | undefined
-  hideChart: () => void
-  loading: boolean
-}) => {
+const VolumeChart = ({ hideChart }: { hideChart: () => void }) => {
   const { t } = useTranslation(['account', 'common', 'stats'])
+  const { mangoAccountAddress } = useMangoAccount()
+  const { hourlyVolumeData: chartData, loadingHourlyVolume: loading } =
+    useAccountHourlyVolumeStats()
   const [daysToShow, setDaysToShow] = useState('30')
   const { theme } = useTheme()
 
@@ -160,8 +157,8 @@ const VolumeChart = ({
             onChange={(v) => setDaysToShow(v)}
           />
         </div>
-        {loading ? (
-          <SheenLoader className="flex flex-1">
+        {loading && mangoAccountAddress ? (
+          <SheenLoader className="mt-6 flex flex-1">
             <div
               className={`h-[calc(100vh-166px)] w-full rounded-lg bg-th-bkg-2`}
             />

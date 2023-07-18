@@ -26,8 +26,6 @@ export default function useAccountHourlyVolumeStats() {
 
   return {
     hourlyVolumeData,
-    loadingHourlyVolumeData,
-    fetchingHourlyVolumeData,
     loadingHourlyVolume,
   }
 }
