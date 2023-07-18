@@ -233,6 +233,7 @@ const useQuoteRoutes = ({
       cacheTime: 1000 * 60,
       staleTime: 1000 * 3,
       enabled: enabled ? enabled() : amount ? true : false,
+      refetchInterval: 20000,
       retry: 3,
     }
   )

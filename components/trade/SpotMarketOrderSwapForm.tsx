@@ -19,6 +19,7 @@ import Button from '@components/shared/Button'
 import Image from 'next/image'
 import useQuoteRoutes from '@components/swap/useQuoteRoutes'
 import {
+  HealthType,
   Serum3Market,
   fetchJupiterTransaction,
 } from '@blockworks-foundation/mango-v4'
@@ -31,6 +32,10 @@ import SwapSlider from '@components/swap/SwapSlider'
 import PercentageSelectButtons from '@components/swap/PercentageSelectButtons'
 import { SIZE_INPUT_UI_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
+import MaxSwapAmount from '@components/swap/MaxSwapAmount'
+import useUnownedAccount from 'hooks/useUnownedAccount'
+import HealthImpact from '@components/shared/HealthImpact'
+import Tooltip from '@components/shared/Tooltip'
 
 const set = mangoStore.getState().set
 const slippage = 100
@@ -44,8 +49,9 @@ function stringToNumberOrZero(s: string): number {
 }
 
 export default function SpotMarketOrderSwapForm() {
-  const { t } = useTranslation(['common', 'trade'])
+  const { t } = useTranslation()
   const { baseSize, price, quoteSize, side } = mangoStore((s) => s.tradeForm)
+  const { isUnownedAccount } = useUnownedAccount()
   const [placingOrder, setPlacingOrder] = useState(false)
   const { ipAllowed, ipCountry } = useIpAddress()
   const { connected, publicKey } = useWallet()
@@ -64,8 +70,6 @@ export default function SpotMarketOrderSwapForm() {
   const handleBaseSizeChange = useCallback(
     (e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
-      console.log('base size change')
-
       set((s) => {
         const price =
           s.tradeForm.tradeType === 'Market'
@@ -103,12 +107,8 @@ export default function SpotMarketOrderSwapForm() {
     [oraclePrice]
   )
 
-  console.log('side outer', side)
-
   const setAmountFromSlider = useCallback(
     (amount: string) => {
-      console.log('amount', amount)
-
       if (side === 'buy') {
         handleQuoteSizeChange(
           { value: amount } as NumberFormatValues,
@@ -121,7 +121,7 @@ export default function SpotMarketOrderSwapForm() {
         )
       }
     },
-    [side]
+    [side, handleBaseSizeChange, handleQuoteSizeChange]
   )
 
   const [inputBank, outputBank] = useMemo(() => {
@@ -168,7 +168,6 @@ export default function SpotMarketOrderSwapForm() {
     const connection = mangoStore.getState().connection
 
     if (!group || !mangoAccount) return
-    console.log('placing order')
 
     if (
       !mangoAccount ||
@@ -177,22 +176,10 @@ export default function SpotMarketOrderSwapForm() {
       !outputBank ||
       !publicKey ||
       !selectedRoute
-    ) {
-      console.log(
-        mangoAccount,
-        group,
-        inputBank,
-        outputBank,
-        publicKey,
-        selectedRoute
-      )
+    )
       return
-    }
 
     setPlacingOrder(true)
-    console.log('placing order 2')
-    console.log('selected route', selectedRoute)
-
     const [ixs, alts] = await fetchJupiterTransaction(
       connection,
       selectedRoute,
@@ -256,16 +243,61 @@ export default function SpotMarketOrderSwapForm() {
     connected ? handlePlaceOrder() : handleConnect()
   }
 
+  const maintProjectedHealth = useMemo(() => {
+    const group = mangoStore.getState().group
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+    if (!inputBank || !mangoAccount || !outputBank || !group) return 0
+
+    const simulatedHealthRatio =
+      mangoAccount.simHealthRatioWithTokenPositionUiChanges(
+        group,
+        [
+          {
+            mintPk: inputBank.mint,
+            uiTokenAmount:
+              (side === 'buy'
+                ? stringToNumberOrZero(quoteSize)
+                : stringToNumberOrZero(baseSize)) * -1,
+          },
+          {
+            mintPk: outputBank.mint,
+            uiTokenAmount:
+              side === 'buy'
+                ? stringToNumberOrZero(baseSize)
+                : stringToNumberOrZero(quoteSize),
+          },
+        ],
+        HealthType.maint
+      )
+    return simulatedHealthRatio > 100
+      ? 100
+      : simulatedHealthRatio < 0
+      ? 0
+      : Math.trunc(simulatedHealthRatio)
+  }, [inputBank, outputBank, baseSize, quoteSize, side])
+
   const disabled =
     (connected && (!baseSize || !price)) ||
     !serumOrPerpMarket ||
     parseFloat(baseSize) < serumOrPerpMarket.minOrderSize ||
     isLoading
 
+  const useMargin = true
+
   return (
     <>
       <form onSubmit={(e) => handleSubmit(e)}>
         <div className="mt-3 px-3 md:px-4">
+          <div className="mb-2 flex items-end justify-end">
+            {!isUnownedAccount ? (
+              <>
+                <MaxSwapAmount
+                  useMargin={useMargin}
+                  setAmountIn={setAmountFromSlider}
+                />
+              </>
+            ) : null}
+          </div>
           <div className="flex flex-col">
             <div className="relative">
               <NumberFormat
@@ -337,20 +369,20 @@ export default function SpotMarketOrderSwapForm() {
         <div className="mt-6 mb-4 flex px-3 md:px-4">
           {swapFormSizeUi === 'slider' ? (
             <SwapSlider
-              useMargin={true}
+              useMargin={useMargin}
               amount={
                 side === 'buy'
                   ? stringToNumberOrZero(quoteSize)
                   : stringToNumberOrZero(baseSize)
               }
-              onChange={(v) => setAmountFromSlider(v)}
+              onChange={setAmountFromSlider}
               step={1 / 10 ** (inputBank?.mintDecimals || 6)}
             />
           ) : (
             <PercentageSelectButtons
               amountIn={side === 'buy' ? quoteSize : baseSize}
-              setAmountIn={(v) => setAmountFromSlider(v)}
-              useMargin={true}
+              setAmountIn={setAmountFromSlider}
+              useMargin={useMargin}
             />
           )}
         </div>
@@ -402,6 +434,57 @@ export default function SpotMarketOrderSwapForm() {
               })}
             </Button>
           )}
+        </div>
+        <div className="space-y-2 px-3 md:px-4">
+          <div className="">
+            <HealthImpact maintProjectedHealth={maintProjectedHealth} small />
+          </div>
+          <div className="flex justify-between text-xs">
+            <Tooltip
+              content={
+                <>
+                  <p>
+                    The price impact is the difference observed between the
+                    total value of the entry tokens swapped and the destination
+                    tokens obtained.
+                  </p>
+                  <p className="mt-1">
+                    The bigger the trade is, the bigger the price impact can be.
+                  </p>
+                </>
+              }
+            >
+              <p className="tooltip-underline">{t('swap:price-impact')}</p>
+            </Tooltip>
+            <p className="text-right font-mono text-th-fgd-2">
+              {selectedRoute
+                ? selectedRoute?.priceImpactPct * 100 < 0.1
+                  ? '<0.1%'
+                  : `${(selectedRoute?.priceImpactPct * 100).toFixed(2)}%`
+                : '-'}
+            </p>
+          </div>
+          <div className="flex items-center justify-between text-xs">
+            <p className="pr-2 text-th-fgd-3">{t('common:route')}</p>
+            <div className="flex items-center overflow-hidden text-th-fgd-3">
+              <div className="truncate whitespace-nowrap">
+                {selectedRoute?.marketInfos.map((info, index) => {
+                  let includeSeparator = false
+                  if (
+                    selectedRoute?.marketInfos.length > 1 &&
+                    index !== selectedRoute?.marketInfos.length - 1
+                  ) {
+                    includeSeparator = true
+                  }
+                  return (
+                    <span key={index}>{`${info?.label} ${
+                      includeSeparator ? 'x ' : ''
+                    }`}</span>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
         </div>
       </form>
     </>
