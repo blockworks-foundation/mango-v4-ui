@@ -32,6 +32,7 @@ import useBanksWithBalances, {
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import TokenLogo from './shared/TokenLogo'
+import useHealthContributions from 'hooks/useHealthContributions'
 
 const TokenList = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
@@ -40,6 +41,7 @@ const TokenList = () => {
     true
   )
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
+  const { initContributions } = useHealthContributions()
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const totalInterestData = mangoStore(
     (s) => s.mangoAccount.interestTotals.data
@@ -48,14 +50,26 @@ const TokenList = () => {
   const showTableView = width ? width > breakpoints.md : false
   const banks = useBanksWithBalances('balance')
 
+  // const filteredBanks = useMemo(() => {
+  //   if (banks.length) {
+  //     return showZeroBalances || !mangoAccountAddress
+  //       ? banks
+  //       : banks.filter((b) => Math.abs(b.balance) > 0)
+  //   }
+  //   return []
+  // }, [banks, mangoAccountAddress, showZeroBalances])
+
   const filteredBanks = useMemo(() => {
-    if (banks.length) {
-      return showZeroBalances || !mangoAccountAddress
-        ? banks
-        : banks.filter((b) => Math.abs(b.balance) > 0)
-    }
-    return []
-  }, [banks, mangoAccountAddress, showZeroBalances])
+    if (!banks.length) return []
+    if (showZeroBalances || !mangoAccountAddress) return banks
+    const filtered = banks.filter((b) => {
+      const contribution =
+        initContributions.find((cont) => cont.asset === b.bank.name)
+          ?.contribution || 0
+      return Math.abs(contribution) > 0
+    })
+    return filtered
+  }, [banks, mangoAccountAddress, showZeroBalances, initContributions])
 
   return (
     <ContentBox hideBorder hidePadding>
@@ -66,141 +80,174 @@ const TokenList = () => {
             disabled={!mangoAccount}
             onChange={() => setShowZeroBalances(!showZeroBalances)}
           >
-            {t('show-zero-balances')}
+            {t('account:zero-collateral')}
           </Switch>
         </div>
       ) : null}
       {showTableView ? (
-        <Table>
-          <thead>
-            <TrHead>
-              <Th className="text-left">{t('token')}</Th>
-              <Th>
-                <div className="flex justify-end">
-                  <Tooltip content="A negative balance represents a borrow">
-                    <span className="tooltip-underline">{t('balance')}</span>
+        <div className="thin-scroll overflow-x-auto">
+          <Table>
+            <thead>
+              <TrHead>
+                <Th className="text-left">{t('token')}</Th>
+                <Th>
+                  <div className="flex justify-end">
+                    <Tooltip content="A negative balance represents a borrow">
+                      <span className="tooltip-underline">{t('balance')}</span>
+                    </Tooltip>
+                  </div>
+                </Th>
+                <Th>
+                  <div className="flex justify-end">
+                    <Tooltip content={t('account:tooltip-collateral-value')}>
+                      <span className="tooltip-underline">
+                        {t('account:collateral-value')}
+                      </span>
+                    </Tooltip>
+                  </div>
+                </Th>
+                <Th className="text-right">{t('trade:in-orders')}</Th>
+                <Th className="text-right">{t('trade:unsettled')}</Th>
+                <Th className="flex justify-end" id="account-step-nine">
+                  <Tooltip content="The sum of interest earned and interest paid for each token">
+                    <span className="tooltip-underline">
+                      {t('interest-earned-paid')}
+                    </span>
                   </Tooltip>
-                </div>
-              </Th>
-              <Th className="text-right">{t('trade:in-orders')}</Th>
-              <Th className="text-right">{t('trade:unsettled')}</Th>
-              <Th className="flex justify-end" id="account-step-nine">
-                <Tooltip content="The sum of interest earned and interest paid for each token">
-                  <span className="tooltip-underline">
-                    {t('interest-earned-paid')}
-                  </span>
-                </Tooltip>
-              </Th>
-              <Th id="account-step-ten">
-                <div className="flex justify-end">
-                  <Tooltip content="The interest rates for depositing (green/left) and borrowing (red/right)">
-                    <span className="tooltip-underline">{t('rates')}</span>
-                  </Tooltip>
-                </div>
-              </Th>
-              <Th className="text-right">
-                <span>{t('actions')}</span>
-              </Th>
-            </TrHead>
-          </thead>
-          <tbody>
-            {filteredBanks.map((b) => {
-              const bank = b.bank
+                </Th>
+                <Th id="account-step-ten">
+                  <div className="flex justify-end">
+                    <Tooltip content="The interest rates for depositing (green/left) and borrowing (red/right)">
+                      <span className="tooltip-underline">{t('rates')}</span>
+                    </Tooltip>
+                  </div>
+                </Th>
+                <Th className="text-right">
+                  <span>{t('actions')}</span>
+                </Th>
+              </TrHead>
+            </thead>
+            <tbody>
+              {filteredBanks.map((b) => {
+                const bank = b.bank
 
-              const tokenBalance = b.balance
-              const symbol = bank.name === 'MSOL' ? 'mSOL' : bank.name
+                const tokenBalance = b.balance
+                const symbol = bank.name === 'MSOL' ? 'mSOL' : bank.name
 
-              const hasInterestEarned = totalInterestData.find(
-                (d) =>
-                  d.symbol.toLowerCase() === symbol.toLowerCase() ||
-                  (symbol === 'ETH (Portal)' && d.symbol === 'ETH')
-              )
+                const hasInterestEarned = totalInterestData.find(
+                  (d) =>
+                    d.symbol.toLowerCase() === symbol.toLowerCase() ||
+                    (symbol === 'ETH (Portal)' && d.symbol === 'ETH')
+                )
 
-              const interestAmount = hasInterestEarned
-                ? hasInterestEarned.borrow_interest * -1 +
-                  hasInterestEarned.deposit_interest
-                : 0
+                const interestAmount = hasInterestEarned
+                  ? hasInterestEarned.borrow_interest * -1 +
+                    hasInterestEarned.deposit_interest
+                  : 0
 
-              const interestValue = hasInterestEarned
-                ? hasInterestEarned.borrow_interest_usd * -1 +
-                  hasInterestEarned.deposit_interest_usd
-                : 0.0
+                const interestValue = hasInterestEarned
+                  ? hasInterestEarned.borrow_interest_usd * -1 +
+                    hasInterestEarned.deposit_interest_usd
+                  : 0.0
 
-              const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0
+                const inOrders =
+                  spotBalances[bank.mint.toString()]?.inOrders || 0
 
-              const unsettled =
-                spotBalances[bank.mint.toString()]?.unsettled || 0
+                const unsettled =
+                  spotBalances[bank.mint.toString()]?.unsettled || 0
 
-              return (
-                <TrBody key={bank.name}>
-                  <Td>
-                    <div className="flex items-center">
-                      <div className="mr-2.5 flex flex-shrink-0 items-center">
-                        <TokenLogo bank={bank} />
+                const collateralValue =
+                  initContributions.find((val) => val.asset === bank.name)
+                    ?.contribution || 0
+
+                const assetWeight = bank.initAssetWeight.toNumber()
+                const liabWeight = bank.initLiabWeight.toNumber()
+
+                return (
+                  <TrBody key={bank.name}>
+                    <Td>
+                      <div className="flex items-center">
+                        <div className="mr-2.5 flex flex-shrink-0 items-center">
+                          <TokenLogo bank={bank} />
+                        </div>
+                        <p className="font-body">{symbol}</p>
                       </div>
-                      <p className="font-body">{symbol}</p>
-                    </div>
-                  </Td>
-                  <Td className="text-right">
-                    <BankAmountWithValue
-                      amount={tokenBalance}
-                      bank={bank}
-                      stacked
-                    />
-                  </Td>
-                  <Td className="text-right">
-                    <BankAmountWithValue
-                      amount={inOrders}
-                      bank={bank}
-                      stacked
-                    />
-                  </Td>
-                  <Td className="text-right">
-                    <BankAmountWithValue
-                      amount={unsettled}
-                      bank={bank}
-                      stacked
-                    />
-                  </Td>
-                  <Td>
-                    <div className="flex flex-col text-right">
+                    </Td>
+                    <Td className="text-right">
                       <BankAmountWithValue
-                        amount={interestAmount}
+                        amount={tokenBalance}
                         bank={bank}
-                        value={interestValue}
                         stacked
                       />
-                    </div>
-                  </Td>
-                  <Td>
-                    <div className="flex justify-end space-x-1.5">
-                      <p className="text-th-up">
+                    </Td>
+                    <Td className="text-right">
+                      <p>
+                        <FormatNumericValue value={collateralValue} isUsd />
+                      </p>
+                      <p className="text-sm text-th-fgd-4">
                         <FormatNumericValue
-                          value={bank.getDepositRateUi()}
+                          value={
+                            collateralValue >= 0 ? assetWeight : liabWeight
+                          }
                           decimals={2}
                         />
-                        %
+                        x
                       </p>
-                      <span className="text-th-fgd-4">|</span>
-                      <p className="text-th-down">
-                        <FormatNumericValue
-                          value={bank.getBorrowRateUi()}
-                          decimals={2}
+                    </Td>
+                    <Td className="text-right">
+                      <BankAmountWithValue
+                        amount={inOrders}
+                        bank={bank}
+                        stacked
+                      />
+                    </Td>
+                    <Td className="text-right">
+                      <BankAmountWithValue
+                        amount={unsettled}
+                        bank={bank}
+                        stacked
+                      />
+                    </Td>
+                    <Td>
+                      <div className="flex flex-col text-right">
+                        <BankAmountWithValue
+                          amount={interestAmount}
+                          bank={bank}
+                          value={interestValue}
+                          stacked
                         />
-                        %
-                      </p>
-                    </div>
-                  </Td>
-                  <Td>
-                    <div className="flex items-center justify-end">
-                      <ActionsMenu bank={bank} mangoAccount={mangoAccount} />
-                    </div>
-                  </Td>
-                </TrBody>
-              )
-            })}
-          </tbody>
-        </Table>
+                      </div>
+                    </Td>
+                    <Td>
+                      <div className="flex justify-end space-x-1.5">
+                        <p className="text-th-up">
+                          <FormatNumericValue
+                            value={bank.getDepositRateUi()}
+                            decimals={2}
+                          />
+                          %
+                        </p>
+                        <span className="text-th-fgd-4">|</span>
+                        <p className="text-th-down">
+                          <FormatNumericValue
+                            value={bank.getBorrowRateUi()}
+                            decimals={2}
+                          />
+                          %
+                        </p>
+                      </div>
+                    </Td>
+                    <Td>
+                      <div className="flex items-center justify-end">
+                        <ActionsMenu bank={bank} mangoAccount={mangoAccount} />
+                      </div>
+                    </Td>
+                  </TrBody>
+                )
+              })}
+            </tbody>
+          </Table>
+        </div>
       ) : (
         <div className="border-b border-th-bkg-3">
           {filteredBanks.map((b) => {
@@ -218,6 +265,7 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
   const { t } = useTranslation(['common', 'token'])
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const { mangoAccount } = useMangoAccount()
+  const { initContributions } = useHealthContributions()
   const totalInterestData = mangoStore(
     (s) => s.mangoAccount.interestTotals.data
   )
@@ -246,6 +294,13 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
   const inOrders = spotBalances[mint.toString()]?.inOrders || 0
 
   const unsettled = spotBalances[mint.toString()]?.unsettled || 0
+
+  const collateralValue =
+    initContributions.find((val) => val.asset === tokenBank.name)
+      ?.contribution || 0
+
+  const assetWeight = tokenBank.initAssetWeight.toNumber()
+  const liabWeight = tokenBank.initLiabWeight.toNumber()
 
   return (
     <Disclosure>
@@ -296,6 +351,24 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
           >
             <Disclosure.Panel>
               <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4 pb-4">
+                <div className="col-span-1">
+                  <Tooltip content={t('account:tooltip-collateral-value')}>
+                    <p className="tooltip-underline text-xs text-th-fgd-3">
+                      {t('account:collateral-value')}
+                    </p>
+                  </Tooltip>
+                  <p className="font-mono text-th-fgd-2">
+                    <FormatNumericValue value={collateralValue} isUsd />
+                    <span className="text-th-fgd-3">
+                      {' '}
+                      <FormatNumericValue
+                        value={collateralValue >= 0 ? assetWeight : liabWeight}
+                        decimals={2}
+                      />
+                      x
+                    </span>
+                  </p>
+                </div>
                 <div className="col-span-1">
                   <p className="text-xs text-th-fgd-3">
                     {t('trade:in-orders')}
