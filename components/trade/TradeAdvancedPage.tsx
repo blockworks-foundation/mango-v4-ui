@@ -16,6 +16,7 @@ import OrderbookAndTrades from './OrderbookAndTrades'
 import FavoriteMarketsBar from './FavoriteMarketsBar'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { DEPTH_CHART_KEY, TRADE_LAYOUT_KEY } from 'utils/constants'
+import TradeHotKeys from './TradeHotKeys'
 
 export type TradeLayout =
   | 'chartLeft'
@@ -251,7 +252,7 @@ const TradeAdvancedPage = () => {
   return showMobileView ? (
     <MobileTradeAdvancedPage />
   ) : (
-    <>
+    <TradeHotKeys>
       <FavoriteMarketsBar />
       <ResponsiveGridLayout
         onBreakpointChange={(bp) => console.log('bp: ', bp)}
@@ -313,7 +314,7 @@ const TradeAdvancedPage = () => {
       {/* {!tourSettings?.trade_tour_seen && isOnboarded && connected ? (
         <TradeOnboardingTour />
       ) : null} */}
-    </>
+    </TradeHotKeys>
   )
 }
 

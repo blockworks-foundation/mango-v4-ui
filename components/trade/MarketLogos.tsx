@@ -85,7 +85,7 @@ const MarketLogos = ({
           : 'w-[20px]'
       }`}
     >
-      <div className="absolute left-0 top-0 z-10">
+      <div className="absolute left-0 top-0 z-10 rounded-full bg-th-bkg-2">
         <LogoWithFallback
           alt=""
           className="flex-shrink-0"

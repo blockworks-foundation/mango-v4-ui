@@ -43,7 +43,7 @@ export const FAVORITE_MARKETS_KEY = 'favoriteMarkets-0.2'
 
 export const THEME_KEY = 'theme-0.1'
 
-export const RPC_PROVIDER_KEY = 'rpcProviderKey-0.5'
+export const RPC_PROVIDER_KEY = 'rpcProviderKey-0.6'
 
 export const PRIORITY_FEE_KEY = 'priorityFeeKey-0.1'
 
@@ -60,6 +60,8 @@ export const DEPTH_CHART_KEY = 'showDepthChart-0.1'
 export const STATS_TAB_KEY = 'activeStatsTab-0.1'
 
 export const USE_ORDERBOOK_FEED_KEY = 'useOrderbookFeed-0.1'
+
+export const HOT_KEYS_KEY = 'hotKeys-0.1'
 
 // Unused
 export const PROFILE_CATEGORIES = [
@@ -99,6 +101,7 @@ export const JUPITER_API_DEVNET = 'https://api.jup.ag/api/tokens/devnet'
 export const JUPITER_PRICE_API_MAINNET = 'https://price.jup.ag/v4/'
 
 export const NOTIFICATION_API = 'https://notifications-api.herokuapp.com/'
+
 export const NOTIFICATION_API_WEBSOCKET =
   'wss://notifications-api.herokuapp.com/ws'
 
@@ -111,17 +114,24 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   dai: true,
   dual: true,
   eth: true,
+  ethpo: true,
   'eth (portal)': true,
   hnt: true,
   jitosol: true,
   ldo: true,
   mngo: true,
   msol: true,
+  orca: true,
   ray: true,
   rndr: true,
   sol: true,
   stsol: true,
   usdc: true,
   usdt: true,
+  wbtcpo: true,
   'wbtc (portal)': true,
 }
+
+export const WHITE_LIST_API = 'https://api.mngo.cloud/whitelist/v1/'
+export const DAILY_SECONDS = 86400
+export const DAILY_MILLISECONDS = 86400000

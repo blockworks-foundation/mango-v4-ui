@@ -18,6 +18,8 @@ import {
   BanknotesIcon,
   PlusCircleIcon,
   ArchiveBoxArrowDownIcon,
+  // ClipboardDocumentIcon,
+  NewspaperIcon,
 } from '@heroicons/react/20/solid'
 import SolanaTps from '@components/SolanaTps'
 import LeaderboardIcon from '@components/icons/LeaderboardIcon'
@@ -108,7 +110,7 @@ const MoreMenuPanel = ({
   const { t } = useTranslation(['common', 'search'])
   return (
     <div
-      className={`fixed bottom-0 z-30 h-[calc(100%-32px)] w-full overflow-hidden rounded-t-3xl bg-th-bkg-2 px-4 transition duration-300 ease-in-out ${
+      className={`fixed bottom-0 z-30 h-full w-full overflow-hidden rounded-t-3xl bg-th-bkg-2 px-4 transition duration-300 ease-in-out ${
         showPanel ? 'translate-y-0' : 'translate-y-full'
       }`}
     >
@@ -162,6 +164,18 @@ const MoreMenuPanel = ({
           title={t('governance')}
           path="https://dao.mango.markets/"
           icon={<BuildingLibraryIcon className="h-5 w-5" />}
+          isExternal
+        />
+        {/* <MoreMenuItem
+          title={t('feedback-survey')}
+          path="https://forms.gle/JgV4w7SJ2kPH89mq7"
+          icon={<ClipboardDocumentIcon className="h-5 w-5" />}
+          isExternal
+        /> */}
+        <MoreMenuItem
+          title={t('terms-of-use')}
+          path="https://docs.mango.markets/legal"
+          icon={<NewspaperIcon className="h-5 w-5" />}
           isExternal
         />
       </div>

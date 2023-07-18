@@ -31,7 +31,11 @@ const TokenLogo = ({
   const logoSize = size ? size : 24
 
   return logoUri ? (
-    <Image alt="" width={logoSize} height={logoSize} src={logoUri} />
+    <div
+      className={`h-[${logoSize}px] w-[${logoSize}px] rounded-full bg-th-bkg-2`}
+    >
+      <Image alt="" width={logoSize} height={logoSize} src={logoUri} />
+    </div>
   ) : (
     <QuestionMarkCircleIcon
       className={`h-[${logoSize}px] w-[${logoSize}px] text-th-fgd-3`}

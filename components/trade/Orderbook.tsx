@@ -11,7 +11,7 @@ import {
 import {
   ANIMATION_SETTINGS_KEY,
   DEPTH_CHART_KEY,
-  USE_ORDERBOOK_FEED_KEY,
+  // USE_ORDERBOOK_FEED_KEY,
 } from 'utils/constants'
 import { useTranslation } from 'next-i18next'
 import Decimal from 'decimal.js'
@@ -50,11 +50,12 @@ const Orderbook = () => {
 
   const [tickSize, setTickSize] = useState(0)
   const [grouping, setGrouping] = useState(0.01)
-  const [useOrderbookFeed, setUseOrderbookFeed] = useState(
-    localStorage.getItem(USE_ORDERBOOK_FEED_KEY) !== null
-      ? localStorage.getItem(USE_ORDERBOOK_FEED_KEY) === 'true'
-      : true
-  )
+  const [useOrderbookFeed, setUseOrderbookFeed] = useState(false)
+  // const [useOrderbookFeed, setUseOrderbookFeed] = useState(
+  //   localStorage.getItem(USE_ORDERBOOK_FEED_KEY) !== null
+  //     ? localStorage.getItem(USE_ORDERBOOK_FEED_KEY) === 'true'
+  //     : true
+  // )
   const [showDepthChart, setShowDepthChart] = useLocalStorageState<boolean>(
     DEPTH_CHART_KEY,
     false
