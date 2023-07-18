@@ -49,13 +49,16 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
   const [submitting, setSubmitting] = useState(false)
   const connection = mangoStore((s) => s.connection)
   const group = mangoStore((s) => s.group)
-  const perpMarket = group?.getPerpMarketByMarketIndex(position.marketIndex)
   const [soundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,
     INITIAL_SOUND_SETTINGS
   )
   const [asks, setAsks] = useState<BidsAndAsks>(null)
   const [bids, setBids] = useState<BidsAndAsks>(null)
+
+  const perpMarket = useMemo(() => {
+    return group?.getPerpMarketByMarketIndex(position.marketIndex)
+  }, [group, position?.marketIndex])
 
   // subscribe to the bids and asks orderbook accounts
   useEffect(() => {
