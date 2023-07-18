@@ -1,7 +1,7 @@
-import { AccountInfo, PublicKey } from '@solana/web3.js'
+import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Market, Orderbook as SpotOrderBook } from '@project-serum/serum'
+import { Market } from '@project-serum/serum'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import {
   floorToDecimal,
@@ -18,20 +18,23 @@ import Decimal from 'decimal.js'
 import Tooltip from '@components/shared/Tooltip'
 import GroupSize from './GroupSize'
 import { useViewport } from 'hooks/useViewport'
-import {
-  BookSide,
-  BookSideType,
-  MangoClient,
-  PerpMarket,
-  Serum3Market,
-} from '@blockworks-foundation/mango-v4'
+import { BookSide, Serum3Market } from '@blockworks-foundation/mango-v4'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import { OrderbookFeed } from '@blockworks-foundation/mango-feeds'
-import useOrderbookSubscription from 'hooks/useOrderbookSubscription'
 import Switch from '@components/forms/Switch'
 import { gridBreakpoints } from './TradeAdvancedPage'
 import { breakpoints } from 'utils/theme'
+import {
+  decodeBook,
+  decodeBookL2,
+  getCumulativeOrderbookSide,
+  getMarket,
+  groupBy,
+  updatePerpMarketOnGroup,
+} from 'utils/orderbook'
+import { OrderbookData, OrderbookL2 } from 'types'
+import { isEqual } from 'lodash'
 
 const sizeCompacter = Intl.NumberFormat('en', {
   maximumFractionDigits: 6,
@@ -40,72 +43,13 @@ const sizeCompacter = Intl.NumberFormat('en', {
 
 const SHOW_EXPONENTIAL_THRESHOLD = 0.00001
 
-const getMarket = () => {
-  const group = mangoStore.getState().group
-  const selectedMarket = mangoStore.getState().selectedMarket.current
-  if (!group || !selectedMarket) return
-  return selectedMarket instanceof PerpMarket
-    ? selectedMarket
-    : group?.getSerum3ExternalMarket(selectedMarket.serumMarketExternal)
-}
-
-export const decodeBookL2 = (book: SpotOrderBook | BookSide): number[][] => {
-  const depth = 300
-  if (book instanceof SpotOrderBook) {
-    return book.getL2(depth).map(([price, size]) => [price, size])
-  } else if (book instanceof BookSide) {
-    return book.getL2Ui(depth)
-  }
-  return []
-}
-
-export function decodeBook(
-  client: MangoClient,
-  market: Market | PerpMarket,
-  accInfo: AccountInfo<Buffer>,
-  side: 'bids' | 'asks'
-): SpotOrderBook | BookSide {
-  if (market instanceof Market) {
-    const book = SpotOrderBook.decode(market, accInfo.data)
-    return book
-  } else {
-    const decodedAcc = client.program.coder.accounts.decode(
-      'bookSide',
-      accInfo.data
-    )
-    const book = BookSide.from(
-      client,
-      market,
-      side === 'bids' ? BookSideType.bids : BookSideType.asks,
-      decodedAcc
-    )
-    return book
-  }
-}
-
-const updatePerpMarketOnGroup = (book: BookSide, side: 'bids' | 'asks') => {
-  const group = mangoStore.getState().group
-  const perpMarket = group?.getPerpMarketByMarketIndex(
-    book.perpMarket.perpMarketIndex
-  )
-  if (perpMarket) {
-    perpMarket[`_${side}`] = book
-    // mangoStore.getState().actions.fetchOpenOrders()
-  }
-}
-
-const Orderbook = ({
-  grouping,
-  setGrouping,
-}: {
-  grouping: number
-  setGrouping: (g: number) => void
-}) => {
+const Orderbook = () => {
   const { t } = useTranslation(['common', 'trade'])
   const { serumOrPerpMarket: market } = useSelectedMarket()
   const connection = mangoStore((s) => s.connection)
 
   const [tickSize, setTickSize] = useState(0)
+  const [grouping, setGrouping] = useState(0.01)
   const [useOrderbookFeed, setUseOrderbookFeed] = useState(
     localStorage.getItem(USE_ORDERBOOK_FEED_KEY) !== null
       ? localStorage.getItem(USE_ORDERBOOK_FEED_KEY) === 'true'
@@ -117,12 +61,12 @@ const Orderbook = ({
   )
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.lg : false
+  const [orderbookData, setOrderbookData] = useState<OrderbookData | null>(null)
+  const currentOrderbookData = useRef<OrderbookL2>()
 
   const depth = useMemo(() => {
     return width > gridBreakpoints.xxxl ? 12 : 10
   }, [width])
-
-  const orderbookData = useOrderbookSubscription(depth, grouping)
 
   const depthArray: number[] = useMemo(() => {
     return Array(depth).fill(0)
@@ -150,6 +94,109 @@ const Orderbook = ({
       market instanceof Market ? market['_decoded'].asks : market.asks
     return asksPk.toString()
   }, [market])
+
+  useEffect(
+    () =>
+      mangoStore.subscribe(
+        (state) => state.selectedMarket.orderbook,
+        (newOrderbook) => {
+          if (
+            newOrderbook &&
+            market &&
+            !isEqual(currentOrderbookData.current, newOrderbook)
+          ) {
+            // check if user has open orders so we can highlight them on orderbook
+            const openOrders = mangoStore.getState().mangoAccount.openOrders
+            const marketPk = market.publicKey.toString()
+            const bids2 = mangoStore.getState().selectedMarket.bidsAccount
+            const asks2 = mangoStore.getState().selectedMarket.asksAccount
+            const mangoAccount = mangoStore.getState().mangoAccount.current
+            let usersOpenOrderPrices: number[] = []
+            if (
+              mangoAccount &&
+              bids2 &&
+              asks2 &&
+              bids2 instanceof BookSide &&
+              asks2 instanceof BookSide
+            ) {
+              usersOpenOrderPrices = [...bids2.items(), ...asks2.items()]
+                .filter((order) => order.owner.equals(mangoAccount.publicKey))
+                .map((order) => order.price)
+            } else {
+              usersOpenOrderPrices =
+                marketPk && openOrders[marketPk]?.length
+                  ? openOrders[marketPk]?.map((order) => order.price)
+                  : []
+            }
+
+            // updated orderbook data
+            const bids =
+              groupBy(newOrderbook?.bids, market, grouping, true) || []
+            const asks =
+              groupBy(newOrderbook?.asks, market, grouping, false) || []
+
+            const sum = (total: number, [, size]: number[], index: number) =>
+              index < depth ? total + size : total
+            const totalSize = bids.reduce(sum, 0) + asks.reduce(sum, 0)
+
+            const maxSize =
+              Math.max(
+                ...bids.map((b: number[]) => {
+                  return b[1]
+                })
+              ) +
+              Math.max(
+                ...asks.map((a: number[]) => {
+                  return a[1]
+                })
+              )
+            const isGrouped = grouping !== market.tickSize
+            const bidsToDisplay = getCumulativeOrderbookSide(
+              bids,
+              totalSize,
+              maxSize,
+              depth,
+              usersOpenOrderPrices,
+              grouping,
+              isGrouped
+            )
+            const asksToDisplay = getCumulativeOrderbookSide(
+              asks,
+              totalSize,
+              maxSize,
+              depth,
+              usersOpenOrderPrices,
+              grouping,
+              isGrouped
+            )
+
+            currentOrderbookData.current = newOrderbook
+            if (bidsToDisplay[0] || asksToDisplay[0]) {
+              const bid = bidsToDisplay[0]?.price
+              const ask = asksToDisplay[0]?.price
+              let spread = 0,
+                spreadPercentage = 0
+              if (bid && ask) {
+                spread = parseFloat(
+                  (ask - bid).toFixed(getDecimalCount(market.tickSize))
+                )
+                spreadPercentage = (spread / ask) * 100
+              }
+
+              setOrderbookData({
+                bids: bidsToDisplay,
+                asks: asksToDisplay.reverse(),
+                spread,
+                spreadPercentage,
+              })
+            } else {
+              setOrderbookData(null)
+            }
+          }
+        }
+      ),
+    [depth, grouping, market]
+  )
 
   // subscribe to the bids and asks orderbook accounts
   useEffect(() => {

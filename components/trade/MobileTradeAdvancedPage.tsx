@@ -11,7 +11,6 @@ import FavoriteMarketsBar from './FavoriteMarketsBar'
 
 const MobileTradeAdvancedPage = () => {
   const [activeTab, setActiveTab] = useState('trade:book')
-  const [grouping, setGrouping] = useState(0.01)
   const [showChart, setShowChart] = useState(false)
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3">
@@ -42,7 +41,7 @@ const MobileTradeAdvancedPage = () => {
           />
         </div>
         <div className={activeTab === 'trade:book' ? 'visible' : 'hidden'}>
-          <Orderbook grouping={grouping} setGrouping={setGrouping} />
+          <Orderbook />
         </div>
         <div className={activeTab === 'trade:trades' ? 'visible' : 'hidden'}>
           <RecentTrades />

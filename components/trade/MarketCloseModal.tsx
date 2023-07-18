@@ -16,7 +16,7 @@ import { SOUND_SETTINGS_KEY } from 'utils/constants'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 import { Howl } from 'howler'
 import { isMangoError } from 'types'
-import { decodeBook, decodeBookL2 } from './Orderbook'
+import { decodeBook, decodeBookL2 } from 'utils/orderbook'
 
 interface MarketCloseModalProps {
   onClose: () => void

@@ -11,13 +11,7 @@ export const TABS: [string, number][] = [
   ['trade:trades', 0],
 ]
 
-const OrderbookAndTrades = ({
-  grouping,
-  setGrouping,
-}: {
-  grouping: number
-  setGrouping: (g: number) => void
-}) => {
+const OrderbookAndTrades = () => {
   const [activeTab, setActiveTab] = useState('trade:book')
   const [showDepthChart] = useLocalStorageState<boolean>(DEPTH_CHART_KEY, false)
   return (
@@ -34,12 +28,12 @@ const OrderbookAndTrades = ({
         className={`flex ${activeTab === 'trade:book' ? 'visible' : 'hidden'}`}
       >
         {showDepthChart ? (
-          <div className="z-20 w-1/2 border-r border-th-bkg-3">
-            <DepthChart grouping={grouping} />
+          <div className="hidden w-1/2 border-r border-th-bkg-3 lg:block">
+            <DepthChart />
           </div>
         ) : null}
-        <div className={showDepthChart ? 'w-1/2' : 'w-full'}>
-          <Orderbook grouping={grouping} setGrouping={setGrouping} />
+        <div className={showDepthChart ? 'w-full lg:w-1/2' : 'w-full'}>
+          <Orderbook />
         </div>
       </div>
       <div

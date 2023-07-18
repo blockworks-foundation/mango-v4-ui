@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import ReactGridLayout, { Responsive, WidthProvider } from 'react-grid-layout'
 import mangoStore from '@store/mangoStore'
@@ -51,7 +51,6 @@ const TradeAdvancedPage = () => {
   const { height, width } = useViewport()
   const { uiLocked } = mangoStore((s) => s.settings)
   const showMobileView = width <= breakpoints.md
-  const [grouping, setGrouping] = useState(0.01)
   // const tourSettings = mangoStore((s) => s.settings.tours)
   // const { connected } = useWallet()
   // const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
@@ -308,7 +307,7 @@ const TradeAdvancedPage = () => {
               : ''
           }`}
         >
-          <OrderbookAndTrades grouping={grouping} setGrouping={setGrouping} />
+          <OrderbookAndTrades />
         </div>
       </ResponsiveGridLayout>
       {/* {!tourSettings?.trade_tour_seen && isOnboarded && connected ? (

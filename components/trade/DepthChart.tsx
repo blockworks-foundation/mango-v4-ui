@@ -1,8 +1,5 @@
 import Slider from '@components/forms/Slider'
 import useMarkPrice from 'hooks/useMarkPrice'
-import useOrderbookSubscription, {
-  cumOrderbookSide,
-} from 'hooks/useOrderbookSubscription'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useViewport } from 'hooks/useViewport'
 import { useTheme } from 'next-themes'
@@ -22,6 +19,8 @@ import { COLORS } from 'styles/colors'
 import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import { gridBreakpoints } from './TradeAdvancedPage'
 import { CartesianViewBox } from 'recharts/types/util/types'
+import { cumOrderbookSide } from 'types'
+import mangoStore from '@store/mangoStore'
 
 type LabelPosition =
   | 'left'
@@ -39,14 +38,6 @@ type LabelPosition =
   | 'top'
 
 const Y_TICK_COUNT = 10
-
-// content: (props)=> {…}
-// fill: "var(--fgd-2)"
-// fontSize: 9
-// offset: 7
-// position: "left"
-// value: "0.0"
-// viewBox: {x: 52, y: 452, width: 82, height: 0}
 
 interface CustomLabel extends LabelProps {
   viewBox?: CartesianViewBox
@@ -69,20 +60,52 @@ const MarkPriceLabel = ({ value, viewBox }: CustomLabel) => {
   } else return null
 }
 
-const DepthChart = ({ grouping }: { grouping: number }) => {
+type RawOrderbook = number[][]
+type DepthOrderbookSide = {
+  price: number
+  size: number
+  cumulativeSize: number
+}
+
+const DepthChart = () => {
   const { theme } = useTheme()
   const { serumOrPerpMarket } = useSelectedMarket()
-  const [priceRangePercent, setPriceRangePercentPercent] = useState('5')
   const [mouseData, setMouseData] = useState<cumOrderbookSide | null>(null)
   const markPrice = useMarkPrice()
-  const orderbook = useOrderbookSubscription(100, grouping)
+  const orderbook = mangoStore((s) => s.selectedMarket.orderbook)
+  const [priceRangePercent, setPriceRangePercentPercent] = useState('10')
   const { width } = useViewport()
   const increaseHeight = width ? width > gridBreakpoints.xxxl : false
 
+  const formatOrderbookData = (orderbook: RawOrderbook, markPrice: number) => {
+    const maxPrice = markPrice * 4
+    const minPrice = markPrice / 4
+    const formattedBook = []
+
+    let cumulativeSize = 0
+
+    for (let i = 0; i < orderbook.length; i++) {
+      const [price, size] = orderbook[i]
+
+      cumulativeSize += size
+
+      const object = {
+        price: price,
+        size: size,
+        cumulativeSize: cumulativeSize,
+      }
+
+      if (price >= minPrice && price <= maxPrice) {
+        formattedBook.push(object)
+      }
+    }
+    return formattedBook
+  }
+
   // format chart data for the bids and asks series
   const mergeCumulativeData = (
-    bids: cumOrderbookSide[],
-    asks: cumOrderbookSide[]
+    bids: DepthOrderbookSide[],
+    asks: DepthOrderbookSide[]
   ) => {
     const bidsWithSide = bids.map((b) => ({ ...b, bids: b.cumulativeSize }))
     const asksWithSide = asks.map((a) => ({ ...a, asks: a.cumulativeSize }))
@@ -90,13 +113,15 @@ const DepthChart = ({ grouping }: { grouping: number }) => {
   }
 
   const chartData = useMemo(() => {
-    if (!orderbook) return []
-    return mergeCumulativeData(orderbook.bids, orderbook.asks)
-  }, [orderbook])
+    if (!orderbook || !serumOrPerpMarket || !markPrice) return []
+    const formattedBids = formatOrderbookData(orderbook.bids, markPrice)
+    const formattedAsks = formatOrderbookData(orderbook.asks, markPrice)
+    return mergeCumulativeData(formattedBids, formattedAsks)
+  }, [markPrice, orderbook, serumOrPerpMarket])
 
   // find the max value for the x-axis
   const findXDomainMax = (
-    data: cumOrderbookSide[],
+    data: DepthOrderbookSide[],
     yMin: number,
     yMax: number
   ) => {
@@ -177,11 +202,20 @@ const DepthChart = ({ grouping }: { grouping: number }) => {
 
   const priceFormatter = useCallback(
     (price: number) => {
-      if (!serumOrPerpMarket) return price.toFixed(1)
+      if (!serumOrPerpMarket) return price.toFixed()
       const tickDecimals = getDecimalCount(serumOrPerpMarket.tickSize)
       if (tickDecimals >= 7) {
         return price.toExponential(3)
       } else return price.toFixed(tickDecimals)
+    },
+    [serumOrPerpMarket]
+  )
+
+  const xTickFormatter = useCallback(
+    (size: number) => {
+      if (!serumOrPerpMarket) return size.toFixed()
+      const minOrderDecimals = getDecimalCount(serumOrPerpMarket.minOrderSize)
+      return size.toFixed(minOrderDecimals)
     },
     [serumOrPerpMarket]
   )
@@ -265,7 +299,7 @@ const DepthChart = ({ grouping }: { grouping: number }) => {
     setMouseData(null)
   }
 
-  return (
+  return chartData.length ? (
     <>
       <div className="flex h-10 items-center border-b border-th-bkg-3 py-1 px-2">
         <div className="flex items-center">
@@ -274,7 +308,7 @@ const DepthChart = ({ grouping }: { grouping: number }) => {
           </span>
           <Slider
             amount={parseFloat(priceRangePercent)}
-            max="50"
+            max="100"
             min="0.5"
             onChange={(p) => setPriceRangePercentPercent(p)}
             step={0.5}
@@ -300,6 +334,7 @@ const DepthChart = ({ grouping }: { grouping: number }) => {
               type="number"
               tick={false}
               tickLine={false}
+              tickFormatter={(tick) => xTickFormatter(tick)}
             />
             <YAxis
               dataKey="price"
@@ -315,16 +350,20 @@ const DepthChart = ({ grouping }: { grouping: number }) => {
               tickFormatter={(tick) => yTickFormatter(tick)}
             />
             <Area
-              type="step"
+              type="stepBefore"
               dataKey="bids"
               stroke={COLORS.UP[theme]}
               fill="url(#bidsGradient)"
+              isAnimationActive={false}
+              strokeWidth={1}
             />
             <Area
-              type="step"
+              type="stepBefore"
               dataKey="asks"
               stroke={COLORS.DOWN[theme]}
               fill="url(#asksGradient)"
+              isAnimationActive={false}
+              strokeWidth={1}
             />
             <ReferenceLine
               y={mouseData?.price}
@@ -471,7 +510,7 @@ const DepthChart = ({ grouping }: { grouping: number }) => {
         </ResponsiveContainer>
       </div>
     </>
-  )
+  ) : null
 }
 
 export default DepthChart

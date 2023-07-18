@@ -3,17 +3,12 @@
     "assets-liabilities": "Assets & Liabilities",
     "daily-volume": "24h Volume",
     "export": "Export {{dataType}}",
-<<<<<<< Updated upstream
-    "liabilities": "Liabilities",
-    "lifetime-volume": "Lifetime Trade Volume",
-=======
     "funding-chart": "Funding Chart",
     "init-health": "Init Health",
     "liabilities": "Liabilities",
     "lifetime-volume": "Lifetime Trade Volume",
     "maint-health": "Maint Health",
     "no-data": "No data to display",
->>>>>>> Stashed changes
     "no-pnl-history": "No PnL History",
     "pnl-chart": "PnL Chart",
     "pnl-history": "PnL History",
