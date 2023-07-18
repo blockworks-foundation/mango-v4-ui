@@ -27,6 +27,7 @@
     "in-orders": "In Orders",
     "init-leverage": "Init Leverage",
     "instantaneous-funding": "Instantaneous Funding Snapshot",
+    "insufficient-perp-liquidity": "Not enough liquidity to close your position. Set a limit order instead.",
     "interval-seconds": "Interval (seconds)",
     "insured": "{{token}} Insured",
     "last-updated": "Last updated",
