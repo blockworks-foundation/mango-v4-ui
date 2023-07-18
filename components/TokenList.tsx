@@ -160,8 +160,12 @@ const TokenList = () => {
                   initContributions.find((val) => val.asset === bank.name)
                     ?.contribution || 0
 
-                const assetWeight = bank.initAssetWeight.toNumber()
-                const liabWeight = bank.initLiabWeight.toNumber()
+                const assetWeight = bank
+                  .scaledInitAssetWeight(bank.price)
+                  .toFixed(2)
+                const liabWeight = bank
+                  .scaledInitLiabWeight(bank.price)
+                  .toFixed(2)
 
                 return (
                   <TrBody key={bank.name}>
@@ -182,14 +186,17 @@ const TokenList = () => {
                     </Td>
                     <Td className="text-right">
                       <p>
-                        <FormatNumericValue value={collateralValue} isUsd />
+                        <FormatNumericValue
+                          value={collateralValue}
+                          decimals={2}
+                          isUsd
+                        />
                       </p>
                       <p className="text-sm text-th-fgd-4">
                         <FormatNumericValue
                           value={
-                            collateralValue >= 0 ? assetWeight : liabWeight
+                            collateralValue <= -0.01 ? liabWeight : assetWeight
                           }
-                          decimals={2}
                         />
                         x
                       </p>
@@ -299,8 +306,10 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
     initContributions.find((val) => val.asset === tokenBank.name)
       ?.contribution || 0
 
-  const assetWeight = tokenBank.initAssetWeight.toNumber()
-  const liabWeight = tokenBank.initLiabWeight.toNumber()
+  const assetWeight = tokenBank
+    .scaledInitAssetWeight(tokenBank.price)
+    .toFixed(2)
+  const liabWeight = tokenBank.scaledInitLiabWeight(tokenBank.price).toFixed(2)
 
   return (
     <Disclosure>
@@ -358,12 +367,17 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
                     </p>
                   </Tooltip>
                   <p className="font-mono text-th-fgd-2">
-                    <FormatNumericValue value={collateralValue} isUsd />
+                    <FormatNumericValue
+                      value={collateralValue}
+                      decimals={2}
+                      isUsd
+                    />
                     <span className="text-th-fgd-3">
                       {' '}
                       <FormatNumericValue
-                        value={collateralValue >= 0 ? assetWeight : liabWeight}
-                        decimals={2}
+                        value={
+                          collateralValue <= -0.01 ? liabWeight : assetWeight
+                        }
                       />
                       x
                     </span>
