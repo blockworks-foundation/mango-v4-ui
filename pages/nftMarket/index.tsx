@@ -39,6 +39,28 @@ const Market: NextPage = () => {
   const [sellNftModal, setSellNftModal] = useState(false)
   const [myBidsModal, setMyBidsModal] = useState(false)
 
+  //TODO leave for release
+  //   const create = async () => {
+  //     const auctionMint = new PublicKey(
+  //       'MangoCzJ36AjZyKwVj3VnYU4GTonjfVEnJmvvWaxLac'
+  //     )
+  //     const owner = new PublicKey('8SSLjXBEVk9nesbhi9UMCA32uijbVBUqWoKPPQPTekzt')
+
+  //     const auctionHouseSettingsObj = {
+  //       treasuryMint: auctionMint,
+  //       sellerFeeBasisPoints: 0,
+  //       authority: owner,
+  //       feeWithdrawalDestination: owner,
+  //       treasuryWithdrawalDestinationOwner: owner,
+  //       requireSignOff: false,
+  //       canChangeSalePrice: false,
+  //     }
+  //     const elo = await metaplex!.auctionHouse().create({
+  //       ...auctionHouseSettingsObj,
+  //     })
+  //     console.log(elo)
+  //   }
+
   return (
     <>
       <div className="mx-auto flex max-w-[1140px] flex-col px-6">
@@ -82,29 +104,3 @@ const Market: NextPage = () => {
 }
 
 export default Market
-
-//TODO move to governance
-//   const feeAccount = Keypair.generate()
-//   const treasuryAccount = Keypair.generate()
-//   const auctionMint = new PublicKey(
-//     'Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr'
-//   )
-//   const treasuryWalletWithAuctionMint = new PublicKey(
-//     '6TSTn1diScs6wWHFoazfqLZmkToZ7ZgHFf3M3yj2UH4Y'
-//   )
-//   const createAuctionHouse = async () => {
-//     const auctionHouseSettingsObj = {
-//       treasuryMint: auctionMint,
-//       sellerFeeBasisPoints: 160,
-//       auctioneerAuthority: wallet.publicKey!,
-//       auctionHouseFeeAccount: feeAccount,
-//       auctionHouseTreasury: treasuryAccount,
-//       feeWithdrawalDestination: treasuryWalletWithAuctionMint,
-//       treasuryWithdrawalDestination: treasuryWalletWithAuctionMint,
-//       requireSignOff: false,
-//       canChangeSalePrice: false,
-//     }
-//     await metaplex!.auctionHouse().create({
-//       ...auctionHouseSettingsObj,
-//     })
-//   }
