@@ -15,6 +15,7 @@ import {
   NewspaperIcon,
   PlusCircleIcon,
   ArchiveBoxArrowDownIcon,
+  ExclamationTriangleIcon,
   // ClipboardDocumentIcon,
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
@@ -191,6 +192,15 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 icon={<NewspaperIcon className="h-5 w-5" />}
                 title={t('terms-of-use')}
                 pagePath="https://docs.mango.markets/legal"
+                hideIconBg
+                isExternal
+                showTooltip={false}
+              />
+              <MenuItem
+                collapsed={false}
+                icon={<ExclamationTriangleIcon className="h-5 w-5" />}
+                title={t('risks')}
+                pagePath="https://docs.mango.markets/mango-markets/risks"
                 hideIconBg
                 isExternal
                 showTooltip={false}
