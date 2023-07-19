@@ -1,20 +1,18 @@
 import { Bank, MangoAccount } from '@blockworks-foundation/mango-v4'
-import { Disclosure, Transition } from '@headlessui/react'
+import { Disclosure, Popover, Transition } from '@headlessui/react'
 import {
   ChevronDownIcon,
   EllipsisHorizontalIcon,
-  QuestionMarkCircleIcon,
+  XMarkIcon,
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
-import Image from 'next/legacy/image'
 import { useRouter } from 'next/router'
-import { useCallback, useMemo, useState } from 'react'
+import { Fragment, useCallback, useMemo, useState } from 'react'
 import { useViewport } from '../hooks/useViewport'
 import mangoStore from '@store/mangoStore'
 import { breakpoints } from '../utils/theme'
 import Switch from './forms/Switch'
 import ContentBox from './shared/ContentBox'
-import IconDropMenu from './shared/IconDropMenu'
 import Tooltip from './shared/Tooltip'
 import { formatTokenSymbol } from 'utils/tokens'
 import useMangoAccount from 'hooks/useMangoAccount'
@@ -33,6 +31,7 @@ import useBanksWithBalances, {
 } from 'hooks/useBanksWithBalances'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import useLocalStorageState from 'hooks/useLocalStorageState'
+import TokenLogo from './shared/TokenLogo'
 
 const TokenList = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
@@ -42,7 +41,6 @@ const TokenList = () => {
   )
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
-  const { mangoTokens } = useJupiterMints()
   const totalInterestData = mangoStore(
     (s) => s.mangoAccount.interestTotals.data
   )
@@ -109,17 +107,13 @@ const TokenList = () => {
             {filteredBanks.map((b) => {
               const bank = b.bank
 
-              let logoURI
-              if (mangoTokens?.length) {
-                logoURI = mangoTokens.find(
-                  (t) => t.address === bank.mint.toString()
-                )?.logoURI
-              }
-
               const tokenBalance = b.balance
+              const symbol = bank.name === 'MSOL' ? 'mSOL' : bank.name
 
               const hasInterestEarned = totalInterestData.find(
-                (d) => d.symbol === bank.name
+                (d) =>
+                  d.symbol.toLowerCase() === symbol.toLowerCase() ||
+                  (symbol === 'ETH (Portal)' && d.symbol === 'ETH')
               )
 
               const interestAmount = hasInterestEarned
@@ -142,13 +136,9 @@ const TokenList = () => {
                   <Td>
                     <div className="flex items-center">
                       <div className="mr-2.5 flex flex-shrink-0 items-center">
-                        {logoURI ? (
-                          <Image alt="" width="24" height="24" src={logoURI} />
-                        ) : (
-                          <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
-                        )}
+                        <TokenLogo bank={bank} />
                       </div>
-                      <p className="font-body">{bank.name}</p>
+                      <p className="font-body">{symbol}</p>
                     </div>
                   </Td>
                   <Td className="text-right">
@@ -226,7 +216,6 @@ export default TokenList
 
 const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
   const { t } = useTranslation(['common', 'token'])
-  const { mangoTokens } = useJupiterMints()
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const { mangoAccount } = useMangoAccount()
   const totalInterestData = mangoStore(
@@ -234,16 +223,13 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
   )
   const tokenBank = bank.bank
   const mint = tokenBank.mint
-  const symbol = tokenBank.name
+  const symbol = tokenBank.name === 'MSOL' ? 'mSOL' : tokenBank.name
 
-  let logoURI: string | undefined
-  if (mangoTokens?.length) {
-    logoURI = mangoTokens.find(
-      (t) => t.address === tokenBank.mint.toString()
-    )!.logoURI
-  }
-
-  const hasInterestEarned = totalInterestData.find((d) => d.symbol === symbol)
+  const hasInterestEarned = totalInterestData.find(
+    (d) =>
+      d.symbol.toLowerCase() === symbol.toLowerCase() ||
+      (symbol === 'ETH (Portal)' && d.symbol === 'ETH')
+  )
 
   const interestAmount = hasInterestEarned
     ? hasInterestEarned.borrow_interest * -1 +
@@ -269,35 +255,32 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
             className={`w-full border-t border-th-bkg-3 p-4 text-left first:border-t-0 focus:outline-none`}
           >
             <div className="flex items-center justify-between">
-              <div className="flex items-start">
-                <div className="mr-2.5 mt-0.5 flex flex-shrink-0 items-center">
-                  {logoURI ? (
-                    <Image alt="" width="24" height="24" src={logoURI} />
-                  ) : (
-                    <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
-                  )}
+              <div className="flex items-center">
+                <div className="mr-2.5">
+                  <TokenLogo bank={tokenBank} />
                 </div>
                 <div>
                   <p className="mb-0.5 leading-none text-th-fgd-1">{symbol}</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="text-right">
                   <p className="font-mono text-sm text-th-fgd-2">
                     <FormatNumericValue
                       value={tokenBalance}
                       decimals={tokenBank.mintDecimals}
                     />
-                    <span className="mt-0.5 block text-sm leading-none text-th-fgd-4">
-                      <FormatNumericValue
-                        value={
-                          mangoAccount ? tokenBalance * tokenBank.uiPrice : 0
-                        }
-                        decimals={2}
-                        isUsd
-                      />
-                    </span>
                   </p>
+                  <span className="font-mono text-xs text-th-fgd-3">
+                    <FormatNumericValue
+                      value={
+                        mangoAccount ? tokenBalance * tokenBank.uiPrice : 0
+                      }
+                      decimals={2}
+                      isUsd
+                    />
+                  </span>
                 </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <ActionsMenu bank={tokenBank} mangoAccount={mangoAccount} />
                 <ChevronDownIcon
                   className={`${
                     open ? 'rotate-180' : 'rotate-360'
@@ -354,6 +337,9 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
                       %
                     </span>
                   </p>
+                </div>
+                <div className="col-span-1">
+                  <ActionsMenu bank={tokenBank} mangoAccount={mangoAccount} />
                 </div>
               </div>
             </Disclosure.Panel>
@@ -450,65 +436,93 @@ const ActionsMenu = ({
     router.push(`/trade?name=${spotMarket?.name}`, undefined, { shallow: true })
   }, [spotMarket, router])
 
-  const logoURI = useMemo(() => {
-    if (!bank || !mangoTokens?.length) return ''
-    return mangoTokens.find((t) => t.address === bank.mint.toString())?.logoURI
-  }, [bank, mangoTokens])
-
   return (
     <>
       {isUnownedAccount ? null : (
-        <IconDropMenu
-          icon={<EllipsisHorizontalIcon className="h-5 w-5" />}
-          panelClassName="w-40 shadow-md"
-          postion="leftBottom"
-        >
-          <div className="flex items-center justify-center border-b border-th-bkg-3 pb-2">
-            <div className="mr-2 flex flex-shrink-0 items-center">
-              <Image alt="" width="20" height="20" src={logoURI || ''} />
+        <Popover>
+          {({ open }) => (
+            <div className="relative">
+              <Popover.Button
+                className={`flex h-10 w-28 items-center justify-center rounded-full border border-th-button text-th-fgd-1 md:h-8 md:w-8 ${
+                  !open ? 'focus-visible:border-th-fgd-2' : ''
+                } md:hover:border-th-button-hover md:hover:text-th-fgd-1`}
+              >
+                {open ? (
+                  <XMarkIcon className="h-5 w-5" />
+                ) : (
+                  <EllipsisHorizontalIcon className="h-5 w-5" />
+                )}
+                <span className="ml-2 md:hidden">{t('actions')}</span>
+              </Popover.Button>
+              <Transition
+                appear={true}
+                show={open}
+                as={Fragment}
+                enter="transition ease-in duration-100"
+                enterFrom="scale-90"
+                enterTo="scale-100"
+                leave="transition ease-out duration-100"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+              >
+                <Popover.Panel
+                  className={`thin-scroll absolute bottom-12 left-0 z-40 max-h-60 w-32 space-y-2 overflow-auto rounded-md bg-th-bkg-2 p-4 pt-2 md:bottom-0 md:right-12 md:left-auto md:pt-4`}
+                >
+                  <div className="hidden items-center justify-center border-b border-th-bkg-3 pb-2 md:flex">
+                    <div className="mr-2 flex flex-shrink-0 items-center">
+                      <TokenLogo bank={bank} size={20} />
+                    </div>
+                    <p className="font-body">{formatTokenSymbol(bank.name)}</p>
+                  </div>
+                  <ActionsLinkButton
+                    mangoAccount={mangoAccount!}
+                    onClick={() => handleShowActionModals(bank.name, 'deposit')}
+                  >
+                    {t('deposit')}
+                  </ActionsLinkButton>
+                  {balance < 0 ? (
+                    <ActionsLinkButton
+                      mangoAccount={mangoAccount!}
+                      onClick={() => handleShowActionModals(bank.name, 'repay')}
+                    >
+                      {t('repay')}
+                    </ActionsLinkButton>
+                  ) : null}
+                  {balance && balance > 0 ? (
+                    <ActionsLinkButton
+                      mangoAccount={mangoAccount!}
+                      onClick={() =>
+                        handleShowActionModals(bank.name, 'withdraw')
+                      }
+                    >
+                      {t('withdraw')}
+                    </ActionsLinkButton>
+                  ) : null}
+                  <ActionsLinkButton
+                    mangoAccount={mangoAccount!}
+                    onClick={() => handleShowActionModals(bank.name, 'borrow')}
+                  >
+                    {t('borrow')}
+                  </ActionsLinkButton>
+                  <ActionsLinkButton
+                    mangoAccount={mangoAccount!}
+                    onClick={handleSwap}
+                  >
+                    {t('swap')}
+                  </ActionsLinkButton>
+                  {spotMarket ? (
+                    <ActionsLinkButton
+                      mangoAccount={mangoAccount!}
+                      onClick={handleTrade}
+                    >
+                      {t('trade')}
+                    </ActionsLinkButton>
+                  ) : null}
+                </Popover.Panel>
+              </Transition>
             </div>
-            <p className="font-body">{formatTokenSymbol(bank.name)}</p>
-          </div>
-          <ActionsLinkButton
-            mangoAccount={mangoAccount!}
-            onClick={() => handleShowActionModals(bank.name, 'deposit')}
-          >
-            {t('deposit')}
-          </ActionsLinkButton>
-          {balance < 0 ? (
-            <ActionsLinkButton
-              mangoAccount={mangoAccount!}
-              onClick={() => handleShowActionModals(bank.name, 'repay')}
-            >
-              {t('repay')}
-            </ActionsLinkButton>
-          ) : null}
-          {balance && balance > 0 ? (
-            <ActionsLinkButton
-              mangoAccount={mangoAccount!}
-              onClick={() => handleShowActionModals(bank.name, 'withdraw')}
-            >
-              {t('withdraw')}
-            </ActionsLinkButton>
-          ) : null}
-          <ActionsLinkButton
-            mangoAccount={mangoAccount!}
-            onClick={() => handleShowActionModals(bank.name, 'borrow')}
-          >
-            {t('borrow')}
-          </ActionsLinkButton>
-          <ActionsLinkButton mangoAccount={mangoAccount!} onClick={handleSwap}>
-            {t('swap')}
-          </ActionsLinkButton>
-          {spotMarket ? (
-            <ActionsLinkButton
-              mangoAccount={mangoAccount!}
-              onClick={handleTrade}
-            >
-              {t('trade')}
-            </ActionsLinkButton>
-          ) : null}
-        </IconDropMenu>
+          )}
+        </Popover>
       )}
       {showDepositModal ? (
         <DepositWithdrawModal

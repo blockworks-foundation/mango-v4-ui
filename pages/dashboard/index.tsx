@@ -6,12 +6,7 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import type { NextPage } from 'next'
 import { ReactNode, useCallback, useEffect, useState } from 'react'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
-import useJupiterMints from 'hooks/useJupiterMints'
-import Image from 'next/image'
-import {
-  ChevronDownIcon,
-  QuestionMarkCircleIcon,
-} from '@heroicons/react/20/solid'
+import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import { Disclosure } from '@headlessui/react'
 import MarketLogos from '@components/trade/MarketLogos'
 import Button from '@components/shared/Button'
@@ -35,6 +30,7 @@ import GovernanceStore from '@store/governanceStore'
 import { createProposal } from 'utils/governance/instructions/createProposal'
 import { notify } from 'utils/notifications'
 import GovernancePageWrapper from '@components/governance/GovernancePageWrapper'
+import TokenLogo from '@components/shared/TokenLogo'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -55,7 +51,6 @@ export async function getStaticProps({ locale }: { locale: string }) {
 
 const Dashboard: NextPage = () => {
   const { group } = useMangoGroup()
-  const { mangoTokens } = useJupiterMints()
   const client = mangoStore((s) => s.client)
   const wallet = useWallet()
   const connection = mangoStore((s) => s.connection)
@@ -75,15 +70,38 @@ const Dashboard: NextPage = () => {
       symbol: string
       //there is more fileds they are just not used on ui
     }
+    type PriceImpactRespWithoutSide = Omit<PriceImpactResp, 'side'>
     const resp = await fetch(
       'https://api.mngo.cloud/data/v4/risk/listed-tokens-one-week-price-impacts'
     )
-    const jsonReps = await resp.json()
-
-    const filteredResp = (jsonReps as PriceImpactResp[])
-      .filter((x) => x.avg_price_impact_percent < 1 && x.side === 'ask')
+    const jsonReps = (await resp.json()) as PriceImpactResp[]
+    const filteredResp = jsonReps
+      .reduce((acc: PriceImpactRespWithoutSide[], val: PriceImpactResp) => {
+        if (val.side === 'ask') {
+          const bidSide = jsonReps.find(
+            (x) =>
+              x.symbol === val.symbol &&
+              x.target_amount === val.target_amount &&
+              x.side === 'bid'
+          )
+          acc.push({
+            target_amount: val.target_amount,
+            avg_price_impact_percent: bidSide
+              ? (bidSide.avg_price_impact_percent +
+                  val.avg_price_impact_percent) /
+                2
+              : val.avg_price_impact_percent,
+            symbol: val.symbol,
+          })
+        }
+        return acc
+      }, [])
+      .filter((x) => x.avg_price_impact_percent < 1)
       .reduce(
-        (acc: { [key: string]: PriceImpactResp }, val: PriceImpactResp) => {
+        (
+          acc: { [key: string]: PriceImpactRespWithoutSide },
+          val: PriceImpactRespWithoutSide
+        ) => {
           if (
             !acc[val.symbol] ||
             val.target_amount > acc[val.symbol].target_amount
@@ -94,7 +112,6 @@ const Dashboard: NextPage = () => {
         },
         {}
       )
-
     const suggestedTiers = Object.keys(filteredResp).reduce(
       (acc: { [key: string]: string | undefined }, key: string) => {
         acc[key] = Object.values(LISTING_PRESETS).find(
@@ -104,6 +121,7 @@ const Dashboard: NextPage = () => {
       },
       {}
     )
+
     setSuggestedTiers(suggestedTiers)
   }, [])
 
@@ -173,7 +191,7 @@ const Dashboard: NextPage = () => {
           getNullOrVal(fieldsToChange.depositWeightScale),
           false,
           false,
-          null,
+          bank.reduceOnly ? 0 : null,
           null,
           null
         )
@@ -298,10 +316,6 @@ const Dashboard: NextPage = () => {
                         const mintInfo = group.mintInfosMapByMint.get(
                           bank.mint.toString()
                         )
-                        const logoUri = mangoTokens.length
-                          ? mangoTokens.find((t) => t.address === mintAddress)
-                              ?.logoURI
-                          : ''
 
                         const formattedBankValues = getFormattedBankValues(
                           group,
@@ -355,16 +369,7 @@ const Dashboard: NextPage = () => {
                                   }`}
                                 >
                                   <div className="flex items-center">
-                                    {logoUri ? (
-                                      <Image
-                                        alt=""
-                                        width="20"
-                                        height="20"
-                                        src={logoUri}
-                                      />
-                                    ) : (
-                                      <QuestionMarkCircleIcon className="h-6 w-6 text-th-fgd-3" />
-                                    )}
+                                    <TokenLogo bank={bank} />
                                     <p className="ml-2 text-th-fgd-2">
                                       {formattedBankValues.name} Bank
                                     </p>
@@ -486,7 +491,7 @@ const Dashboard: NextPage = () => {
                                   />
                                   <KeyValuePair
                                     label="Maint Asset/Liab Weight"
-                                    value={`${formattedBankValues.maintAssetWeight}/
+                                    value={`${formattedBankValues.maintAssetWeight} /
                               ${formattedBankValues.maintLiabWeight}`}
                                     proposedValue={
                                       (suggestedFields.maintAssetWeight ||
@@ -494,7 +499,7 @@ const Dashboard: NextPage = () => {
                                       `${
                                         suggestedFields.maintAssetWeight ||
                                         formattedBankValues.maintAssetWeight
-                                      }/
+                                      } /
                               ${
                                 suggestedFields.maintLiabWeight ||
                                 formattedBankValues.maintLiabWeight
@@ -503,7 +508,7 @@ const Dashboard: NextPage = () => {
                                   />
                                   <KeyValuePair
                                     label="Init Asset/Liab Weight"
-                                    value={`${formattedBankValues.initAssetWeight}/
+                                    value={`${formattedBankValues.initAssetWeight} /
                               ${formattedBankValues.initLiabWeight}`}
                                     proposedValue={
                                       (suggestedFields.initAssetWeight ||
@@ -511,12 +516,16 @@ const Dashboard: NextPage = () => {
                                       `${
                                         suggestedFields.initAssetWeight ||
                                         formattedBankValues.initAssetWeight
-                                      }/
+                                      } /
                               ${
                                 suggestedFields.initLiabWeight ||
                                 formattedBankValues.initLiabWeight
                               }`
                                     }
+                                  />
+                                  <KeyValuePair
+                                    label="Scaled Init Asset/Liab Weight"
+                                    value={`${formattedBankValues.scaledInitAssetWeight} / ${formattedBankValues.scaledInitLiabWeight}`}
                                   />
                                   <KeyValuePair
                                     label="Deposit weight scale start quote"

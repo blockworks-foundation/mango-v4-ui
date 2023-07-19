@@ -49,6 +49,8 @@ import InlineNotification from '@components/shared/InlineNotification'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import Tooltip from '@components/shared/Tooltip'
 import { formatCurrencyValue } from 'utils/numbers'
+import Switch from '@components/forms/Switch'
+import MaxAmountButton from '@components/shared/MaxAmountButton'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -134,6 +136,18 @@ const SwapForm = () => {
       }
     })
   }, [])
+
+  const setBorrowAmountOut = useCallback(
+    (borrowAmount: string) => {
+      if (swapMode === 'ExactIn') {
+        set((s) => {
+          s.swap.swapMode = 'ExactOut'
+        })
+      }
+      setAmountOutFormValue(borrowAmount.toString())
+    },
+    [setAmountOutFormValue]
+  )
 
   /* 
     Once a route is returned from the Jupiter API, use the inAmount or outAmount
@@ -267,6 +281,12 @@ const SwapForm = () => {
     amountOutAsDecimal,
   ])
 
+  const outputTokenBalanceBorrow = useMemo(() => {
+    if (!outputBank) return 0
+    const balance = mangoAccount?.getTokenBalanceUi(outputBank)
+    return balance && balance < 0 ? Math.abs(balance) : 0
+  }, [outputBank])
+
   const loadingSwapDetails: boolean = useMemo(() => {
     return (
       !!(amountInAsDecimal.toNumber() || amountOutAsDecimal.toNumber()) &&
@@ -274,6 +294,12 @@ const SwapForm = () => {
       typeof selectedRoute === 'undefined'
     )
   }, [amountInAsDecimal, amountOutAsDecimal, connected, selectedRoute])
+
+  const handleSetMargin = () => {
+    set((s) => {
+      s.swap.margin = !s.swap.margin
+    })
+  }
 
   return (
     <ContentBox
@@ -390,7 +416,24 @@ const SwapForm = () => {
               />
             </button>
           </div>
-          <p className="mb-2 text-th-fgd-2 lg:text-base">{t('swap:receive')}</p>
+          <div className="mb-2 flex items-end justify-between">
+            <p className="text-th-fgd-2 lg:text-base">{t('swap:receive')}</p>
+            {outputTokenBalanceBorrow ? (
+              <MaxAmountButton
+                className="mb-0.5 text-xs"
+                decimals={outputBank?.mintDecimals || 9}
+                label={t('repay')}
+                onClick={() =>
+                  setBorrowAmountOut(
+                    outputTokenBalanceBorrow.toFixed(
+                      outputBank?.mintDecimals || 9
+                    )
+                  )
+                }
+                value={outputTokenBalanceBorrow}
+              />
+            ) : null}
+          </div>
           <div id="swap-step-three" className="mb-3 grid grid-cols-2">
             <div className="col-span-1">
               <TokenSelect
@@ -507,12 +550,11 @@ const SwapForm = () => {
                   {t('swap:margin')}
                 </p>
               </Tooltip>
-              <LinkButton
-                className="text-right text-sm font-normal text-th-fgd-2 underline underline-offset-2 md:hover:no-underline"
-                onClick={() => setShowSettings(true)}
-              >
-                {useMargin ? t('swap:enabled') : t('swap:disabled')}
-              </LinkButton>
+              <Switch
+                className="text-th-fgd-3"
+                checked={useMargin}
+                onChange={handleSetMargin}
+              />
             </div>
             <div className="flex items-center justify-between">
               <p className="text-sm text-th-fgd-3">{t('swap:max-slippage')}</p>

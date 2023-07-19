@@ -1,6 +1,5 @@
 import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
 import { IconButton, LinkButton } from '@components/shared/Button'
-import Change from '@components/shared/Change'
 import { getOneDayPerpStats } from '@components/stats/PerpMarketsOverviewTable'
 import { ChartBarIcon, InformationCircleIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
@@ -10,9 +9,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { numberCompacter } from 'utils/numbers'
 import MarketSelectDropdown from './MarketSelectDropdown'
 import PerpFundingRate from './PerpFundingRate'
-import { useBirdeyeMarketPrices } from 'hooks/useBirdeyeMarketPrices'
 import SheenLoader from '@components/shared/SheenLoader'
-import usePrevious from '@components/shared/usePrevious'
 import PerpMarketDetailsModal from '@components/modals/PerpMarketDetailsModal'
 import useMangoGroup from 'hooks/useMangoGroup'
 import OraclePrice from './OraclePrice'
@@ -23,6 +20,7 @@ import { TickerData } from 'types'
 import ManualRefresh from '@components/shared/ManualRefresh'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
+import MarketChange from '@components/shared/MarketChange'
 
 export const fetchSpotVolume = async () => {
   try {
@@ -43,17 +41,8 @@ const AdvancedMarketHeader = ({
 }) => {
   const { t } = useTranslation(['common', 'trade'])
   const perpStats = mangoStore((s) => s.perpStats.data)
-  const loadingPerpStats = mangoStore((s) => s.perpStats.loading)
-  const {
-    serumOrPerpMarket,
-    price: stalePrice,
-    selectedMarket,
-  } = useSelectedMarket()
+  const { serumOrPerpMarket, selectedMarket } = useSelectedMarket()
   const selectedMarketName = mangoStore((s) => s.selectedMarket.name)
-  const [changePrice, setChangePrice] = useState(stalePrice)
-  const { data: birdeyePrices, isLoading: loadingPrices } =
-    useBirdeyeMarketPrices()
-  const previousMarketName = usePrevious(selectedMarketName)
   const [showMarketDetails, setShowMarketDetails] = useState(false)
   const { group } = useMangoGroup()
   const { width } = useViewport()
@@ -85,18 +74,6 @@ const AdvancedMarketHeader = ({
     }
   }, [group])
 
-  const birdeyeData = useMemo(() => {
-    if (
-      !birdeyePrices?.length ||
-      !selectedMarket ||
-      selectedMarket instanceof PerpMarket
-    )
-      return
-    return birdeyePrices.find(
-      (m) => m.mint === selectedMarket.serumMarketExternal.toString()
-    )
-  }, [birdeyePrices, selectedMarket])
-
   const oneDayPerpStats = useMemo(() => {
     if (
       !perpStats ||
@@ -107,36 +84,6 @@ const AdvancedMarketHeader = ({
       return []
     return getOneDayPerpStats(perpStats, selectedMarketName)
   }, [perpStats, selectedMarketName])
-
-  const change = useMemo(() => {
-    if (
-      !changePrice ||
-      !serumOrPerpMarket ||
-      selectedMarketName !== previousMarketName
-    )
-      return 0
-    if (serumOrPerpMarket instanceof PerpMarket) {
-      return oneDayPerpStats.length
-        ? ((changePrice - oneDayPerpStats[0].price) /
-            oneDayPerpStats[0].price) *
-            100
-        : 0
-    } else {
-      if (!birdeyeData) return 0
-      return (
-        ((changePrice - birdeyeData.data[0].value) /
-          birdeyeData.data[0].value) *
-        100
-      )
-    }
-  }, [
-    birdeyeData,
-    changePrice,
-    serumOrPerpMarket,
-    oneDayPerpStats,
-    previousMarketName,
-    selectedMarketName,
-  ])
 
   const perpVolume = useMemo(() => {
     if (!oneDayPerpStats.length) return
@@ -155,19 +102,13 @@ const AdvancedMarketHeader = ({
         <div className="hide-scroll flex w-full items-center justify-between overflow-x-auto border-t border-th-bkg-3 py-2 px-5 md:border-t-0 md:py-0 md:px-0 md:pr-6">
           <div className="flex items-center">
             <>
-              <OraclePrice setChangePrice={setChangePrice} />
+              <OraclePrice />
             </>
             <div className="ml-6 flex-col whitespace-nowrap">
               <div className="mb-0.5 text-xs text-th-fgd-4">
                 {t('rolling-change')}
               </div>
-              {!loadingPrices && !loadingPerpStats ? (
-                <Change change={change} size="small" suffix="%" />
-              ) : (
-                <SheenLoader className="mt-0.5">
-                  <div className="h-3.5 w-12 bg-th-bkg-2" />
-                </SheenLoader>
-              )}
+              <MarketChange market={selectedMarket} size="small" />
             </div>
             {serumOrPerpMarket instanceof PerpMarket ? (
               <>
@@ -217,7 +158,7 @@ const AdvancedMarketHeader = ({
                     <span className="font-mono">
                       {numberCompacter.format(spotMarketVolume.target_volume)}{' '}
                       <span className="font-body text-th-fgd-3">
-                        {selectedMarketName.split('/')[1]}
+                        {selectedMarketName?.split('/')[1]}
                       </span>
                     </span>
                   ) : (

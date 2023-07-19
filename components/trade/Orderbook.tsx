@@ -10,7 +10,7 @@ import {
   formatNumericValue,
   getDecimalCount,
 } from 'utils/numbers'
-import { ANIMATION_SETTINGS_KEY, USE_ORDERBOOK_FEED_KEY } from 'utils/constants'
+import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
 import { useTranslation } from 'next-i18next'
 import Decimal from 'decimal.js'
 import { OrderbookL2 } from 'types'
@@ -220,11 +220,12 @@ const Orderbook = () => {
   const [tickSize, setTickSize] = useState(0)
   const [showBids, setShowBids] = useState(true)
   const [showAsks, setShowAsks] = useState(true)
-  const [useOrderbookFeed, setUseOrderbookFeed] = useState(
-    localStorage.getItem(USE_ORDERBOOK_FEED_KEY) !== null
-      ? localStorage.getItem(USE_ORDERBOOK_FEED_KEY) === 'true'
-      : true
-  )
+  const [useOrderbookFeed, setUseOrderbookFeed] = useState(false)
+  // const [useOrderbookFeed, setUseOrderbookFeed] = useState(
+  //   localStorage.getItem(USE_ORDERBOOK_FEED_KEY) !== null
+  //     ? localStorage.getItem(USE_ORDERBOOK_FEED_KEY) === 'true'
+  //     : true
+  // )
 
   const currentOrderbookData = useRef<OrderbookL2>()
   const orderbookElRef = useRef<HTMLDivElement>(null)

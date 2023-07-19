@@ -91,9 +91,12 @@ const UnsettledTrades = ({
 
       console.log('mangoAccountPnl', mangoAccountPnl)
 
+      const allMangoAccounts = await client.getAllMangoAccounts(group, true)
+
       const settleCandidates = await market.getSettlePnlCandidates(
         client,
         group,
+        allMangoAccounts,
         mangoAccountPnl < 0 ? 'positive' : 'negative',
         2
       )

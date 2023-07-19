@@ -1,13 +1,9 @@
-import {
-  ChevronDownIcon,
-  QuestionMarkCircleIcon,
-} from '@heroicons/react/20/solid'
-import Image from 'next/legacy/image'
+import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import useMangoGroup from 'hooks/useMangoGroup'
-import useJupiterMints from 'hooks/useJupiterMints'
 import { Bank } from '@blockworks-foundation/mango-v4'
 import { Dispatch, SetStateAction } from 'react'
 import { formatTokenSymbol } from 'utils/tokens'
+import TokenLogo from '@components/shared/TokenLogo'
 
 type TokenSelectProps = {
   bank: Bank | undefined
@@ -17,16 +13,8 @@ type TokenSelectProps = {
 
 const TokenSelect = ({ bank, showTokenList, type }: TokenSelectProps) => {
   const { group } = useMangoGroup()
-  const { mangoTokens } = useJupiterMints()
 
   if (!group) return null
-
-  let logoURI
-  if (mangoTokens.length) {
-    logoURI = mangoTokens.find(
-      (t) => t.address === bank?.mint.toString()
-    )?.logoURI
-  }
 
   return (
     <button
@@ -34,11 +22,7 @@ const TokenSelect = ({ bank, showTokenList, type }: TokenSelectProps) => {
       className="flex h-full w-full items-center rounded-lg rounded-r-none border border-r-0 border-th-input-border bg-th-input-bkg py-2 px-3 text-th-fgd-2 focus-visible:bg-th-bkg-2 md:hover:cursor-pointer md:hover:bg-th-bkg-2 md:hover:text-th-fgd-1"
     >
       <div className="mr-2.5 flex min-w-[24px] items-center">
-        {logoURI ? (
-          <Image alt="" width="24" height="24" src={logoURI} />
-        ) : (
-          <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
-        )}
+        <TokenLogo bank={bank} />
       </div>
       <div className="flex w-full items-center justify-between">
         <div className="text-xl font-bold text-th-fgd-1">

@@ -88,10 +88,7 @@ const UserSetupModal = ({
         group,
         0,
         accountName || 'Account 1',
-        undefined, // tokenCount
-        undefined, // serum3Count
-        8, // perpCount
-        10 // perpOoCount
+        16 // tokenCount
       )
       actions.fetchMangoAccounts(publicKey)
       if (tx) {
@@ -255,6 +252,16 @@ const UserSetupModal = ({
                 target="_blank"
               >
                 {t('terms-of-use')}
+                <ArrowTopRightOnSquareIcon className="ml-1 h-4 w-4 flex-shrink-0" />
+              </a>
+              <span className="mx-1">and</span>
+              <a
+                className="flex items-center"
+                href="https://docs.mango.markets/mango-markets/risks"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                {t('risks')}
                 <ArrowTopRightOnSquareIcon className="ml-1 h-4 w-4 flex-shrink-0" />
               </a>
             </p>

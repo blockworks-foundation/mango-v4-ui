@@ -129,12 +129,12 @@ const MangoAccountDashboard: NextPage = () => {
                   mangoAccount.getHealth(group, HealthType.maint)
                 ).toFixed(4)}`}
               />
-              <KeyValuePair
+              {/* <KeyValuePair
                 label="Perp Settle Health"
                 value={`$${toUiDecimalsForQuote(
                   mangoAccount.getPerpSettleHealth(group)
                 ).toFixed(4)}`}
-              />
+              /> */}
               <KeyValuePair
                 label="Net Deposits"
                 value={`$${toUiDecimalsForQuote(
@@ -276,6 +276,15 @@ const MangoAccountDashboard: NextPage = () => {
                     <KeyValuePair
                       label="Break even price"
                       value={`$${perp.getBreakEvenPriceUi(market).toFixed(6)}`}
+                    />
+                    <KeyValuePair
+                      label="Max Settle"
+                      value={`$${toUiDecimalsForQuote(
+                        mangoAccount.perpMaxSettle(
+                          group,
+                          market.settleTokenIndex
+                        )
+                      ).toFixed(6)}`}
                     />
                     <KeyValuePair
                       label="Quote Running"

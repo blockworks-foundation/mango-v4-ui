@@ -2,7 +2,10 @@ import { useMemo } from 'react'
 
 const HealthBar = ({ health }: { health: number }) => {
   const [barWidths, fillColor] = useMemo(() => {
-    if (!health) return [[2, 0, 0, 0], 'var(--down)']
+    if (!health) return [[0, 0, 0, 0], 'var(--down)']
+    if (health < 5) {
+      return [[16, 0, 0, 0], 'var(--down)']
+    }
     if (health <= 25) {
       const fillWidth = (health / 25) * 100
       return [[fillWidth, 0, 0, 0], 'var(--down)']
@@ -25,43 +28,43 @@ const HealthBar = ({ health }: { health: number }) => {
   }
 
   return (
-    <div className="grid w-full grid-cols-4 gap-1">
-      <div className="col-span-1 flex h-1 rounded-full bg-th-bkg-3">
+    <div className="grid w-[80px] grid-cols-4 gap-1">
+      <div className="col-span-1 flex h-3 rounded-l bg-th-bkg-3">
         <div
           style={{
             ...sharedStyles,
             width: `${barWidths[0]}%`,
           }}
-          className={`flex rounded-full ${
+          className={`flex rounded-l ${
             health && health < 10 ? 'animate-pulse' : ''
           }`}
         />
       </div>
-      <div className="col-span-1 flex h-1 rounded-full bg-th-bkg-3">
+      <div className="col-span-1 flex h-3 bg-th-bkg-3">
         <div
           style={{
             ...sharedStyles,
             width: `${barWidths[1]}%`,
           }}
-          className={`flex rounded-full`}
+          className={`flex`}
         />
       </div>
-      <div className="col-span-1 flex h-1 rounded-full bg-th-bkg-3">
+      <div className="col-span-1 flex h-3 bg-th-bkg-3">
         <div
           style={{
             ...sharedStyles,
             width: `${barWidths[2]}%`,
           }}
-          className={`flex rounded-full`}
+          className={`flex`}
         />
       </div>
-      <div className="col-span-1 flex h-1 rounded-full bg-th-bkg-3">
+      <div className="col-span-1 flex h-3 rounded-r bg-th-bkg-3">
         <div
           style={{
             ...sharedStyles,
             width: `${barWidths[3]}%`,
           }}
-          className={`flex rounded-full`}
+          className={`flex rounded-r`}
         />
       </div>
     </div>

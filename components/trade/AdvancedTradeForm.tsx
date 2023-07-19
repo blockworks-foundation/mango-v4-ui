@@ -25,6 +25,8 @@ import NumberFormat, {
   NumberFormatValues,
   SourceInfo,
 } from 'react-number-format'
+import * as sentry from '@sentry/nextjs'
+
 import { notify } from 'utils/notifications'
 import SpotSlider from './SpotSlider'
 import { calculateLimitPriceForMarketOrder } from 'utils/tradeForm'
@@ -59,7 +61,7 @@ import InlineNotification from '@components/shared/InlineNotification'
 
 const set = mangoStore.getState().set
 
-const successSound = new Howl({
+export const successSound = new Howl({
   src: ['/sounds/swap-success.mp3'],
   volume: 0.5,
 })
@@ -454,6 +456,7 @@ const AdvancedTradeForm = () => {
       }
     } catch (e) {
       console.error('Place trade error:', e)
+      sentry.captureException(e)
       if (!isMangoError(e)) return
       notify({
         title: 'There was an issue.',

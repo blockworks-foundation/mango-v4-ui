@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import TabButtons from '@components/shared/TabButtons'
 import OpenOrders from './OpenOrders'
 import SwapTradeBalances from '../shared/BalancesTable'
@@ -15,11 +15,18 @@ import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
 const TradeInfoTabs = () => {
   const [selectedTab, setSelectedTab] = useState('balances')
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
+  const selectedMarketName = mangoStore((s) => s.selectedMarket.current?.name)
   const unsettledSpotBalances = useUnsettledSpotBalances()
   const unsettledPerpPositions = useUnsettledPerpPositions()
   const openPerpPositions = useOpenPerpPositions()
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints['2xl'] : false
+
+  useEffect(() => {
+    if (selectedMarketName && selectedMarketName.includes('PERP')) {
+      setSelectedTab('trade:positions')
+    }
+  }, [selectedMarketName])
 
   const tabsWithCount: [string, number][] = useMemo(() => {
     const unsettledTradeCount =

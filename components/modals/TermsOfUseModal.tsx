@@ -22,6 +22,16 @@ const TermsOfUseModal = ({ isOpen, onClose }: ModalProps) => {
             {t('terms-of-use')}
             <ArrowTopRightOnSquareIcon className="ml-1 h-4 w-4 flex-shrink-0" />
           </a>
+          <span className="mx-1">and</span>
+          <a
+            className="flex items-center"
+            href="https://docs.mango.markets/mango-markets/risks"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            {t('risks')}
+            <ArrowTopRightOnSquareIcon className="ml-1 h-4 w-4 flex-shrink-0" />
+          </a>
         </p>
         <Button className="w-full" onClick={onClose} size="large">
           {t('agree-and-continue')}

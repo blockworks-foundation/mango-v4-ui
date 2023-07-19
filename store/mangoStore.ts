@@ -18,6 +18,8 @@ import {
   PerpPosition,
   BookSide,
   ParsedFillEvent,
+  getLargestPerpPositions,
+  getClosestToLiquidationPerpPositions,
 } from '@blockworks-foundation/mango-v4'
 
 import EmptyWallet from '../utils/wallet'
@@ -58,6 +60,7 @@ import {
   TourSettings,
   ProfileDetails,
   MangoTokenStatsItem,
+  PositionStat,
 } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
@@ -148,10 +151,6 @@ export type MangoStore = {
     perpPositions: PerpPosition[]
     spotBalances: SpotBalances
     interestTotals: { data: TotalInterestDataItem[]; loading: boolean }
-    performance: {
-      data: PerformanceDataItem[]
-      loading: boolean
-    }
     swapHistory: {
       data: SwapHistoryItem[]
       initialLoad: boolean
@@ -170,13 +169,19 @@ export type MangoStore = {
   perpStats: {
     loading: boolean
     data: PerpStatsItem[] | null
+    positions: {
+      initialLoad: boolean
+      loading: boolean
+      largest: PositionStat[]
+      closestToLiq: PositionStat[]
+    }
   }
   profile: {
     details: ProfileDetails | null
     loadDetails: boolean
   }
   selectedMarket: {
-    name: string
+    name: string | undefined
     current: Serum3Market | PerpMarket | undefined
     fills: (ParsedFillEvent | SerumEvent)[]
     bidsAccount: BookSide | Orderbook | undefined
@@ -237,16 +242,13 @@ export type MangoStore = {
       params?: string,
       limit?: number
     ) => Promise<void>
-    fetchAccountPerformance: (
-      mangoAccountPk: string,
-      range: number
-    ) => Promise<void>
     fetchGroup: () => Promise<void>
     reloadMangoAccount: () => Promise<void>
     fetchMangoAccounts: (ownerPk: PublicKey) => Promise<void>
     fetchNfts: (connection: Connection, walletPk: PublicKey) => void
     fetchOpenOrders: (refetchMangoAccount?: boolean) => Promise<void>
     fetchPerpStats: () => void
+    fetchPositionsStats: () => void
     fetchProfileDetails: (walletPk: string) => void
     fetchSwapHistory: (
       mangoAccountPk: string,
@@ -304,7 +306,6 @@ const mangoStore = create<MangoStore>()(
         perpPositions: [],
         spotBalances: {},
         interestTotals: { data: [], loading: false },
-        performance: { data: [], loading: true },
         swapHistory: { data: [], loading: true, initialLoad: true },
         tradeHistory: { data: [], loading: true },
       },
@@ -316,13 +317,19 @@ const mangoStore = create<MangoStore>()(
       perpStats: {
         loading: false,
         data: [],
+        positions: {
+          initialLoad: true,
+          loading: true,
+          largest: [],
+          closestToLiq: [],
+        },
       },
       profile: {
         loadDetails: false,
         details: { profile_name: '', trader_category: '', wallet_pk: '' },
       },
       selectedMarket: {
-        name: DEFAULT_MARKET_NAME,
+        name: 'SOL/USDC',
         current: undefined,
         fills: [],
         bidsAccount: undefined,
@@ -423,43 +430,6 @@ const mangoStore = create<MangoStore>()(
             })
           }
         },
-        fetchAccountPerformance: async (
-          mangoAccountPk: string,
-          range: number
-        ) => {
-          const set = get().set
-          try {
-            const response = await fetch(
-              `${MANGO_DATA_API_URL}/stats/performance_account?mango-account=${mangoAccountPk}&start-date=${dayjs()
-                .subtract(range, 'day')
-                .format('YYYY-MM-DD')}`
-            )
-            const parsedResponse:
-              | null
-              | EmptyObject
-              | AccountPerformanceData[] = await response.json()
-
-            if (parsedResponse && Object.keys(parsedResponse)?.length) {
-              const entries = Object.entries(parsedResponse).sort((a, b) =>
-                b[0].localeCompare(a[0])
-              )
-
-              const stats = entries.map(([key, value]) => {
-                return { ...value, time: key } as PerformanceDataItem
-              })
-
-              set((state) => {
-                state.mangoAccount.performance.data = stats.reverse()
-              })
-            }
-          } catch (e) {
-            console.error('Failed to load account performance data', e)
-          } finally {
-            set((state) => {
-              state.mangoAccount.performance.loading = false
-            })
-          }
-        },
         fetchActivityFeed: async (
           mangoAccountPk: string,
           offset = 0,
@@ -522,7 +492,11 @@ const mangoStore = create<MangoStore>()(
             const set = get().set
             const client = get().client
             const group = await client.getGroup(GROUP)
-            const selectedMarketName = get().selectedMarket.name
+            let selectedMarketName = get().selectedMarket.name
+
+            if (!selectedMarketName) {
+              selectedMarketName = DEFAULT_MARKET_NAME
+            }
 
             const inputBank =
               group?.banksMapByName.get(INPUT_TOKEN_DEFAULT)?.[0]
@@ -795,6 +769,64 @@ const mangoStore = create<MangoStore>()(
             notify({
               title: 'Failed to fetch token stats data',
               type: 'error',
+            })
+          }
+        },
+        fetchPositionsStats: async () => {
+          const set = get().set
+          const group = get().group
+          const client = get().client
+          if (!group) return
+          try {
+            const allMangoAccounts = await client.getAllMangoAccounts(
+              group,
+              true
+            )
+            if (allMangoAccounts && allMangoAccounts.length) {
+              const [largestPositions, closestToLiq]: [
+                PositionStat[],
+                PositionStat[]
+              ] = await Promise.all([
+                getLargestPerpPositions(client, group, allMangoAccounts),
+                getClosestToLiquidationPerpPositions(
+                  client,
+                  group,
+                  allMangoAccounts
+                ),
+              ])
+              set((state) => {
+                if (largestPositions && largestPositions.length) {
+                  const positionsToShow = largestPositions.slice(0, 5)
+                  for (const position of positionsToShow) {
+                    const ma = allMangoAccounts.find(
+                      (acc) => acc.publicKey === position.mangoAccount
+                    )
+                    position.account = ma
+                  }
+                  state.perpStats.positions.largest = positionsToShow
+                }
+                if (closestToLiq && closestToLiq.length) {
+                  const positionsToShow = closestToLiq.slice(0, 5)
+                  for (const position of positionsToShow) {
+                    const ma = allMangoAccounts.find(
+                      (acc) => acc.publicKey === position.mangoAccount
+                    )
+                    position.account = ma
+                  }
+                  state.perpStats.positions.closestToLiq = positionsToShow
+                }
+              })
+            }
+          } catch (e) {
+            console.log('failed to fetch perp positions stats', e)
+          } finally {
+            const notLoaded =
+              mangoStore.getState().perpStats.positions.initialLoad
+            set((state) => {
+              state.perpStats.positions.loading = false
+              if (notLoaded) {
+                state.perpStats.positions.initialLoad = false
+              }
             })
           }
         },
