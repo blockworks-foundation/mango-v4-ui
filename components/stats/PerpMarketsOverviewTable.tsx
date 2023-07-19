@@ -23,6 +23,8 @@ import { NextRouter, useRouter } from 'next/router'
 import SimpleAreaChart from '@components/shared/SimpleAreaChart'
 import { Disclosure, Transition } from '@headlessui/react'
 import { LinkButton } from '@components/shared/Button'
+import SoonBadge from '@components/shared/SoonBadge'
+import { DAILY_SECONDS } from 'utils/constants'
 
 export const getOneDayPerpStats = (
   stats: PerpStatsItem[] | null,
@@ -32,7 +34,7 @@ export const getOneDayPerpStats = (
     ? stats
         .filter((s) => s.perp_market === marketName)
         .filter((f) => {
-          const seconds = 86400
+          const seconds = DAILY_SECONDS
           const dataTime = new Date(f.date_hour).getTime() / 1000
           const now = new Date().getTime() / 1000
           const limit = now - seconds
@@ -124,6 +126,7 @@ const PerpMarketsOverviewTable = () => {
               }
 
               const openInterest = market.baseLotsToUi(market.openInterest)
+              const isComingSoon = market.oracleLastUpdatedSlot == 0
 
               return (
                 <TrBody
@@ -133,16 +136,21 @@ const PerpMarketsOverviewTable = () => {
                 >
                   <Td>
                     <div className="flex items-center">
-                      <MarketLogos market={market} />
-                      <p className="whitespace-nowrap font-body">
+                      <MarketLogos market={market} size="large" />
+                      <p className="mr-2 whitespace-nowrap font-body">
                         {market.name}
                       </p>
+                      {isComingSoon ? <SoonBadge /> : null}
                     </div>
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
                       <p>
-                        <FormatNumericValue value={market.uiPrice} isUsd />
+                        {market.uiPrice ? (
+                          <FormatNumericValue value={market.uiPrice} isUsd />
+                        ) : (
+                          '–'
+                        )}
                       </p>
                     </div>
                   </Td>
@@ -178,7 +186,7 @@ const PerpMarketsOverviewTable = () => {
                   <Td>
                     <div className="flex flex-col text-right">
                       <p>
-                        {group ? (
+                        {group && market.uiPrice ? (
                           <FormatNumericValue
                             value={group.toUiPrice(
                               I80F48.fromNumber(
@@ -189,7 +197,7 @@ const PerpMarketsOverviewTable = () => {
                             isUsd
                           />
                         ) : (
-                          'N/A'
+                          '–'
                         )}
                       </p>
                     </div>
@@ -202,50 +210,66 @@ const PerpMarketsOverviewTable = () => {
                   <Td>
                     <div className="flex flex-col text-right">
                       <p>
-                        {volume ? `$${numberCompacter.format(volume)}` : '-'}
+                        {volume ? `$${numberCompacter.format(volume)}` : '–'}
                       </p>
                     </div>
                   </Td>
                   <Td>
                     <div className="flex items-center justify-end">
-                      <Tooltip
-                        content={
-                          <>
-                            {fundingRateApr ? (
-                              <div className="">
-                                The 1hr rate as an APR is{' '}
-                                <span className="font-mono text-th-fgd-2">
-                                  {fundingRateApr}
-                                </span>
+                      {fundingRate !== '–' ? (
+                        <Tooltip
+                          content={
+                            <>
+                              {fundingRateApr ? (
+                                <div className="">
+                                  The 1hr rate as an APR is{' '}
+                                  <span className="font-mono text-th-fgd-2">
+                                    {fundingRateApr}
+                                  </span>
+                                </div>
+                              ) : null}
+                              <div className="mt-2">
+                                Funding is paid continuously. The 1hr rate
+                                displayed is a rolling average of the past 60
+                                mins.
                               </div>
-                            ) : null}
-                            <div className="mt-2">
-                              Funding is paid continuously. The 1hr rate
-                              displayed is a rolling average of the past 60
-                              mins.
-                            </div>
-                            <div className="mt-2">
-                              When positive, longs will pay shorts and when
-                              negative shorts pay longs.
-                            </div>
-                          </>
-                        }
-                      >
-                        <p className="tooltip-underline">{fundingRate}</p>
-                      </Tooltip>
+                              <div className="mt-2">
+                                When positive, longs will pay shorts and when
+                                negative shorts pay longs.
+                              </div>
+                            </>
+                          }
+                        >
+                          <p className="tooltip-underline">{fundingRate}</p>
+                        </Tooltip>
+                      ) : (
+                        <p>–</p>
+                      )}
                     </div>
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
-                      <p>
-                        <FormatNumericValue
-                          value={openInterest}
-                          decimals={getDecimalCount(market.minOrderSize)}
-                        />
-                      </p>
-                      <p className="text-th-fgd-4">
-                        ${numberCompacter.format(openInterest * market.uiPrice)}
-                      </p>
+                      {openInterest ? (
+                        <>
+                          <p>
+                            <FormatNumericValue
+                              value={openInterest}
+                              decimals={getDecimalCount(market.minOrderSize)}
+                            />
+                          </p>
+                          <p className="text-th-fgd-4">
+                            $
+                            {numberCompacter.format(
+                              openInterest * market.uiPrice
+                            )}
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p>–</p>
+                          <p className="text-th-fgd-4">–</p>
+                        </>
+                      )}
                     </div>
                   </Td>
                   <Td>
@@ -298,6 +322,7 @@ const MobilePerpMarketItem = ({ market }: { market: PerpMarket }) => {
     : 0
 
   const openInterest = market.baseLotsToUi(market.openInterest)
+  const isComingSoon = market.oracleLastUpdatedSlot == 0
 
   let fundingRate: string
   let fundingRateApr: string
@@ -331,7 +356,8 @@ const MobilePerpMarketItem = ({ market }: { market: PerpMarket }) => {
                 <div className="flex flex-shrink-0 items-center">
                   <MarketLogos market={market} />
                 </div>
-                <p className="leading-none text-th-fgd-1">{market.name}</p>
+                <p className="mr-2 leading-none text-th-fgd-1">{market.name}</p>
+                {isComingSoon ? <SoonBadge /> : null}
               </div>
               <div className="flex items-center space-x-3">
                 {!loadingPerpStats ? (
@@ -372,7 +398,11 @@ const MobilePerpMarketItem = ({ market }: { market: PerpMarket }) => {
                 <div className="col-span-1">
                   <p className="text-xs text-th-fgd-3">{t('price')}</p>
                   <p className="font-mono text-th-fgd-2">
-                    <FormatNumericValue value={market.uiPrice} isUsd />
+                    {market.uiPrice ? (
+                      <FormatNumericValue value={market.uiPrice} isUsd />
+                    ) : (
+                      '–'
+                    )}
                   </p>
                 </div>
                 <div className="col-span-1">
@@ -391,7 +421,7 @@ const MobilePerpMarketItem = ({ market }: { market: PerpMarket }) => {
                   <p className="text-xs text-th-fgd-3">
                     {t('trade:funding-rate')}
                   </p>
-                  <p className="font-mono">
+                  {fundingRate !== '–' ? (
                     <Tooltip
                       content={
                         <>
@@ -414,24 +444,30 @@ const MobilePerpMarketItem = ({ market }: { market: PerpMarket }) => {
                         </>
                       }
                     >
-                      <span className="tooltip-underline text-th-fgd-2">
+                      <span className="tooltip-underline font-mono text-th-fgd-2">
                         {fundingRate}
                       </span>
                     </Tooltip>
-                  </p>
+                  ) : (
+                    <p className="text-th-fgd-2">–</p>
+                  )}
                 </div>
                 <div className="col-span-1">
                   <p className="text-xs text-th-fgd-3">
                     {t('trade:open-interest')}
                   </p>
-                  <p className="font-mono text-th-fgd-2">
-                    <FormatNumericValue
-                      value={openInterest}
-                      decimals={getDecimalCount(market.minOrderSize)}
-                    />
-                    <span className="mx-1 text-th-fgd-4">|</span>$
-                    {numberCompacter.format(openInterest * market.uiPrice)}
-                  </p>
+                  {openInterest ? (
+                    <p className="font-mono text-th-fgd-2">
+                      <FormatNumericValue
+                        value={openInterest}
+                        decimals={getDecimalCount(market.minOrderSize)}
+                      />
+                      <span className="mx-1 text-th-fgd-4">|</span>$
+                      {numberCompacter.format(openInterest * market.uiPrice)}
+                    </p>
+                  ) : (
+                    <p className="text-th-fgd-2">–</p>
+                  )}
                 </div>
                 <div className="col-span-1">
                   <LinkButton

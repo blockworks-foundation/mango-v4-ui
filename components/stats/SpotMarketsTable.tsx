@@ -20,6 +20,7 @@ import { fetchSpotVolume } from '@components/trade/AdvancedMarketHeader'
 import { TickerData } from 'types'
 import { Disclosure, Transition } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
+import MarketChange from '@components/shared/MarketChange'
 
 const SpotMarketsTable = () => {
   const { t } = useTranslation('common')
@@ -87,7 +88,7 @@ const SpotMarketsTable = () => {
                   (m) => m.mint === mkt.serumMarketExternal.toString()
                 )
 
-                const change =
+                const birdeyeChange =
                   birdeyeData && price
                     ? ((price - birdeyeData.data[0].value) /
                         birdeyeData.data[0].value) *
@@ -100,7 +101,7 @@ const SpotMarketsTable = () => {
                   <TrBody key={mkt.publicKey.toString()}>
                     <Td>
                       <div className="flex items-center">
-                        <MarketLogos market={mkt} />
+                        <MarketLogos market={mkt} size="large" />
                         <p className="font-body">{mkt.name}</p>
                       </div>
                     </Td>
@@ -108,7 +109,17 @@ const SpotMarketsTable = () => {
                       <div className="flex flex-col text-right">
                         <p>
                           {price ? (
-                            <FormatNumericValue value={price} isUsd />
+                            <>
+                              <FormatNumericValue
+                                value={price}
+                                isUsd={quoteBank?.name === 'USDC'}
+                              />{' '}
+                              {quoteBank?.name !== 'USDC' ? (
+                                <span className="font-body text-th-fgd-4">
+                                  {quoteBank?.name}
+                                </span>
+                              ) : null}
+                            </>
                           ) : (
                             '–'
                           )}
@@ -121,7 +132,7 @@ const SpotMarketsTable = () => {
                           <div className="h-10 w-24">
                             <SimpleAreaChart
                               color={
-                                change >= 0
+                                birdeyeChange >= 0
                                   ? COLORS.UP[theme]
                                   : COLORS.DOWN[theme]
                               }
@@ -143,7 +154,7 @@ const SpotMarketsTable = () => {
                     </Td>
                     <Td>
                       <div className="flex flex-col items-end">
-                        <Change change={change} suffix="%" />
+                        <MarketChange market={mkt} />
                       </div>
                     </Td>
                     <Td>
@@ -300,7 +311,21 @@ const MobileSpotMarketItem = ({
                 <div className="col-span-1">
                   <p className="text-xs text-th-fgd-3">{t('price')}</p>
                   <p className="font-mono text-th-fgd-2">
-                    {price ? <FormatNumericValue value={price} isUsd /> : '-'}
+                    {price ? (
+                      <>
+                        <FormatNumericValue
+                          value={price}
+                          isUsd={quoteBank?.name === 'USDC'}
+                        />{' '}
+                        {quoteBank?.name !== 'USDC' ? (
+                          <span className="font-body text-th-fgd-4">
+                            {quoteBank?.name}
+                          </span>
+                        ) : null}
+                      </>
+                    ) : (
+                      '-'
+                    )}
                   </p>
                 </div>
                 <div className="col-span-1">

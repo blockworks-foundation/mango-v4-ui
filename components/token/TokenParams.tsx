@@ -6,7 +6,7 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import Tooltip from '@components/shared/Tooltip'
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid'
-import { BN } from '@project-serum/anchor'
+import { BN } from '@coral-xyz/anchor'
 import mangoStore from '@store/mangoStore'
 import { getOracleProvider } from 'hooks/useOracleProvider'
 import { useTranslation } from 'next-i18next'
@@ -32,7 +32,7 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
       <div className="col-span-1 border-b border-th-bkg-3 px-6 py-4 md:col-span-2">
         <h2 className="text-base">{`${bank.name} ${t('token:parameters')}`}</h2>
       </div>
-      <div className="col-span-1 px-6 py-4  md:border-r md:border-th-bkg-3">
+      <div className="col-span-1 px-6 pt-4  md:border-r md:border-th-bkg-3">
         <div className="flex justify-between pb-4">
           <Tooltip content={t('token:tooltip-init-asset-liability-weight')}>
             <p className="tooltip-underline">
@@ -41,11 +41,11 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
           </Tooltip>
           <div className="flex space-x-2">
             <p className="font-mono text-th-fgd-2">
-              {bank.initAssetWeight.toFixed(2)}
+              {bank.scaledInitAssetWeight(bank.price).toFixed(2)}
             </p>
             <span className="text-th-fgd-4">|</span>
             <p className="font-mono text-th-fgd-2">
-              {bank.initLiabWeight.toFixed(2)}
+              {bank.scaledInitLiabWeight(bank.price).toFixed(2)}
             </p>
           </div>
         </div>

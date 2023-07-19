@@ -51,12 +51,10 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
 
-## Creating Color Themes/Skins
-
-### Color Themes
+## Creating Color Themes
 
 1. Copy one of the other color themes in [tailwind.config.js](https://github.com/blockworks-foundation/mango-v4-ui/blob/main/tailwind.config.js) (starting line 25)
-2. Modify the colors. For the variables bkg-\* and fgd-\* pick a base color for bkg-1 and fgd-1 then adjust the lightness for 2-4. Use this process to create the dark/hover colors in some of the other variables. These can be any base color that works for your theme.
+2. Modify the colors. For the variables bkg-\* and fgd-\* pick a base color for bkg-1 and fgd-1 then adjust the lightness for 2-4. Use this same process to create dark/hover variations for the colors that have these properties. The base color can be anything that works for your theme.
 3. Add your corresponding theme values [here](https://github.com/blockworks-foundation/mango-v4-ui/blob/main/styles/colors.ts). The format needs to be converted to HEX, you can paste the HSL values into [Coolors](https://coolors.co/fff05a-ffd25a-ffaa5a-ff785a-191919) to do this.
 4. Copy one of the other themes in [global.css](https://github.com/blockworks-foundation/mango-v4-ui/blob/main/styles/globals.css) and modify to match your theme name in tailwind.config.js
 5. Add a translation variable for your theme name in [locales](https://github.com/blockworks-foundation/mango-v4-ui/tree/main/public/locales). Theme names are to be added to settings.json and make sure to add this to each locale (they can all be in English to start with). Make sure the value matches data-theme from your css vars in global.css

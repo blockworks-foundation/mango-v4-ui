@@ -38,6 +38,7 @@ import { formatNumericValue } from 'utils/numbers'
 import useMangoGroup from 'hooks/useMangoGroup'
 import {
   LISTING_PRESETS,
+  LISTING_PRESETS_KEYS,
   coinTiersToNames,
   getBestMarket,
   getOracle,
@@ -48,7 +49,7 @@ import CreateOpenbookMarketModal from '@components/modals/CreateOpenbookMarketMo
 import { calculateTradingParameters } from 'utils/governance/listingTools'
 import useJupiterMints from 'hooks/useJupiterMints'
 import CreateSwitchboardOracleModal from '@components/modals/CreateSwitchboardOracleModal'
-import { BN } from '@project-serum/anchor'
+import { BN } from '@coral-xyz/anchor'
 
 type FormErrors = Partial<Record<keyof TokenListForm, string>>
 
@@ -81,6 +82,8 @@ const defaultTokenListFormValues: TokenListForm = {
   proposalTitle: '',
   proposalDescription: '',
 }
+
+const TWENTY_K_USDC_BASE = '20000000000'
 
 const ListToken = ({ goBack }: { goBack: () => void }) => {
   const wallet = useWallet()
@@ -116,7 +119,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const [orcaPoolAddress, setOrcaPoolAddress] = useState('')
   const [raydiumPoolAddress, setRaydiumPoolAddress] = useState('')
   const [oracleModalOpen, setOracleModalOpen] = useState(false)
-  const [coinTier, setCoinTier] = useState('')
+  const [coinTier, setCoinTier] = useState<LISTING_PRESETS_KEYS | ''>('')
   const isMidOrPremium = coinTier === 'PREMIUM' || coinTier === 'MID'
 
   const quoteBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
@@ -152,7 +155,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     }
   }, [quoteBank, currentTokenInfo, baseTokenPrice])
   const tierPreset = useMemo(() => {
-    return LISTING_PRESETS[coinTier] || {}
+    return coinTier ? LISTING_PRESETS[coinTier] : {}
   }, [coinTier])
 
   const handleSetAdvForm = (propertyName: string, value: string | number) => {
@@ -211,71 +214,81 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     [advForm, client.programId, connection, group, mint, proposals]
   )
 
+  const handleGetRoutesWithFixedArgs = useCallback(
+    (amount: number, tokenMint: PublicKey, mode: 'ExactIn' | 'ExactOut') => {
+      const SLIPPAGE_BPS = 50
+      const FEE = 0
+      const walletForCheck = wallet.publicKey
+        ? wallet.publicKey?.toBase58()
+        : emptyPk
+
+      return handleGetRoutes(
+        USDC_MINT,
+        tokenMint.toBase58(),
+        toNative(amount, 6).toNumber(),
+        SLIPPAGE_BPS,
+        mode,
+        FEE,
+        walletForCheck,
+        'JUPITER'
+      )
+    },
+    [wallet.publicKey]
+  )
+
   const handleLiqudityCheck = useCallback(
     async (tokenMint: PublicKey) => {
       try {
-        const SLIPPAGE_BPS = 50
-        const MODE = 'ExactIn'
-        const FEE = 0
-        const walletForCheck = wallet.publicKey
-          ? wallet.publicKey?.toBase58()
-          : emptyPk
-        const shitCoinIdx = 3
-
-        const TIERS = ['PREMIUM', 'MID', 'MEME', 'SHIT']
+        const TIERS: LISTING_PRESETS_KEYS[] = ['PREMIUM', 'MID', 'MEME', 'SHIT']
         const swaps = await Promise.all([
-          handleGetRoutes(
-            USDC_MINT,
-            tokenMint.toBase58(),
-            toNative(100000, 6).toNumber(),
-            SLIPPAGE_BPS,
-            MODE,
-            FEE,
-            walletForCheck,
-            'JUPITER'
-          ),
-          handleGetRoutes(
-            USDC_MINT,
-            tokenMint.toBase58(),
-            toNative(20000, 6).toNumber(),
-            SLIPPAGE_BPS,
-            MODE,
-            FEE,
-            walletForCheck,
-            'JUPITER'
-          ),
-          handleGetRoutes(
-            USDC_MINT,
-            tokenMint.toBase58(),
-            toNative(5000, 6).toNumber(),
-            SLIPPAGE_BPS,
-            MODE,
-            FEE,
-            walletForCheck,
-            'JUPITER'
-          ),
-          handleGetRoutes(
-            USDC_MINT,
-            tokenMint.toBase58(),
-            toNative(1000, 6).toNumber(),
-            SLIPPAGE_BPS,
-            MODE,
-            FEE,
-            walletForCheck,
-            'JUPITER'
-          ),
+          handleGetRoutesWithFixedArgs(100000, tokenMint, 'ExactIn'),
+          handleGetRoutesWithFixedArgs(20000, tokenMint, 'ExactIn'),
+          handleGetRoutesWithFixedArgs(5000, tokenMint, 'ExactIn'),
+          handleGetRoutesWithFixedArgs(1000, tokenMint, 'ExactIn'),
+          handleGetRoutesWithFixedArgs(100000, tokenMint, 'ExactOut'),
+          handleGetRoutesWithFixedArgs(20000, tokenMint, 'ExactOut'),
+          handleGetRoutesWithFixedArgs(5000, tokenMint, 'ExactOut'),
+          handleGetRoutesWithFixedArgs(1000, tokenMint, 'ExactOut'),
         ])
-        const mid = swaps[1]
-        const indexForTierFromSwaps = swaps.findIndex(
-          (x) =>
-            x.bestRoute?.priceImpactPct && x.bestRoute?.priceImpactPct * 100 < 1
+        const bestRoutesSwaps = swaps
+          .filter((x) => x.bestRoute)
+          .map((x) => x.bestRoute!)
+        const averageSwaps = bestRoutesSwaps.reduce(
+          (acc: { amount: string; priceImpactPct: number }[], val) => {
+            if (val.swapMode === 'ExactIn') {
+              const exactOutRoute = bestRoutesSwaps.find(
+                (x) => x.amount === val.amount && x.swapMode === 'ExactOut'
+              )
+              acc.push({
+                amount: val.amount.toString(),
+                priceImpactPct: exactOutRoute?.priceImpactPct
+                  ? (val.priceImpactPct + exactOutRoute.priceImpactPct) / 2
+                  : val.priceImpactPct,
+              })
+            }
+            return acc
+          },
+          []
         )
-        const tierIdx: number =
-          indexForTierFromSwaps > -1 ? indexForTierFromSwaps : shitCoinIdx
-        const tier = TIERS[tierIdx]
+
+        const midTierCheck = averageSwaps.find(
+          (x) => x.amount === TWENTY_K_USDC_BASE
+        )
+        const indexForTierFromSwaps = averageSwaps.findIndex(
+          (x) => x?.priceImpactPct && x?.priceImpactPct * 100 < 1
+        )
+        const tier =
+          indexForTierFromSwaps > -1
+            ? TIERS[indexForTierFromSwaps]
+            : 'UNTRUSTED'
         setCoinTier(tier)
-        setPriceImpact(mid.bestRoute ? mid.bestRoute.priceImpactPct * 100 : 100)
-        handleGetPoolParams(mid.routes)
+        setPriceImpact(midTierCheck ? midTierCheck.priceImpactPct * 100 : 100)
+
+        handleGetPoolParams(
+          swaps.find(
+            (x) => x.bestRoute!.amount.toString() === TWENTY_K_USDC_BASE
+          )!.routes
+        )
         return tier
       } catch (e) {
         notify({
@@ -398,86 +411,100 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
 
     const proposalTx = []
 
-    const registerTokenIx = await client!.program.methods
-      .tokenRegister(
-        Number(advForm.tokenIndex),
-        advForm.name,
-        {
-          confFilter: Number(tierPreset.oracleConfFilter),
-          maxStalenessSlots: tierPreset.maxStalenessSlots,
-        },
-        {
-          adjustmentFactor: Number(tierPreset.adjustmentFactor),
-          util0: Number(tierPreset.util0),
-          rate0: Number(tierPreset.rate0),
-          util1: Number(tierPreset.util1),
-          rate1: Number(tierPreset.rate1),
-          maxRate: Number(tierPreset.maxRate),
-        },
-        Number(tierPreset.loanFeeRate),
-        Number(tierPreset.loanOriginationFeeRate),
-        Number(tierPreset.maintAssetWeight),
-        Number(tierPreset.initAssetWeight),
-        Number(tierPreset.maintLiabWeight),
-        Number(tierPreset.initLiabWeight),
-        Number(tierPreset.liquidationFee),
-        Number(tierPreset.minVaultToDepositsRatio),
-        new BN(tierPreset.netBorrowLimitWindowSizeTs),
-        new BN(tierPreset.netBorrowLimitPerWindowQuote)
-      )
-      .accounts({
-        admin: MANGO_DAO_WALLET,
-        group: group!.publicKey,
-        mint: new PublicKey(advForm.mintPk),
-        oracle: new PublicKey(advForm.oraclePk),
-        payer: MANGO_DAO_WALLET,
-        rent: SYSVAR_RENT_PUBKEY,
-      })
-      .instruction()
-    proposalTx.push(registerTokenIx)
+    if (Object.keys(tierPreset).length) {
+      const registerTokenIx = await client!.program.methods
+        .tokenRegister(
+          Number(advForm.tokenIndex),
+          advForm.name,
+          {
+            confFilter: Number(tierPreset.oracleConfFilter),
+            maxStalenessSlots: tierPreset.maxStalenessSlots,
+          },
+          {
+            adjustmentFactor: Number(tierPreset.adjustmentFactor),
+            util0: Number(tierPreset.util0),
+            rate0: Number(tierPreset.rate0),
+            util1: Number(tierPreset.util1),
+            rate1: Number(tierPreset.rate1),
+            maxRate: Number(tierPreset.maxRate),
+          },
+          Number(tierPreset.loanFeeRate),
+          Number(tierPreset.loanOriginationFeeRate),
+          Number(tierPreset.maintAssetWeight),
+          Number(tierPreset.initAssetWeight),
+          Number(tierPreset.maintLiabWeight),
+          Number(tierPreset.initLiabWeight),
+          Number(tierPreset.liquidationFee),
+          Number(tierPreset.minVaultToDepositsRatio),
+          new BN(tierPreset.netBorrowLimitWindowSizeTs),
+          new BN(tierPreset.netBorrowLimitPerWindowQuote)
+        )
+        .accounts({
+          admin: MANGO_DAO_WALLET,
+          group: group!.publicKey,
+          mint: new PublicKey(advForm.mintPk),
+          oracle: new PublicKey(advForm.oraclePk),
+          payer: MANGO_DAO_WALLET,
+          rent: SYSVAR_RENT_PUBKEY,
+        })
+        .instruction()
+      proposalTx.push(registerTokenIx)
 
-    const editIx = await client!.program.methods
-      .tokenEdit(
-        null,
-        null,
-        tierPreset.insuranceFound ? null : false,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        tierPreset.borrowWeightScale,
-        tierPreset.depositWeightScale,
-        false,
-        false,
-        null,
-        null,
-        null
-      )
-      .accounts({
-        oracle: new PublicKey(advForm.oraclePk),
-        admin: MANGO_DAO_WALLET,
-        group: group!.publicKey,
-        mintInfo: mintInfoPk,
-      })
-      .remainingAccounts([
-        {
-          pubkey: new PublicKey(advForm.baseBankPk),
-          isWritable: true,
-          isSigner: false,
-        } as AccountMeta,
-      ])
-      .instruction()
-    proposalTx.push(editIx)
+      const editIx = await client!.program.methods
+        .tokenEdit(
+          null,
+          null,
+          tierPreset.insuranceFound ? null : false,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          tierPreset.borrowWeightScale,
+          tierPreset.depositWeightScale,
+          false,
+          false,
+          null,
+          null,
+          null
+        )
+        .accounts({
+          oracle: new PublicKey(advForm.oraclePk),
+          admin: MANGO_DAO_WALLET,
+          group: group!.publicKey,
+          mintInfo: mintInfoPk,
+        })
+        .remainingAccounts([
+          {
+            pubkey: new PublicKey(advForm.baseBankPk),
+            isWritable: true,
+            isSigner: false,
+          } as AccountMeta,
+        ])
+        .instruction()
+      proposalTx.push(editIx)
+    } else {
+      await client!.program.methods
+        .tokenRegisterTrustless(Number(advForm.tokenIndex), advForm.name)
+        .accounts({
+          mint: new PublicKey(advForm.mintPk),
+          payer: MANGO_DAO_WALLET,
+          rent: SYSVAR_RENT_PUBKEY,
+          oracle: new PublicKey(advForm.oraclePk),
+          admin: MANGO_DAO_WALLET,
+          group: group!.publicKey,
+        })
+        .instruction()
+    }
 
     const registerMarketix = await client!.program.methods
       .serum3RegisterMarket(Number(advForm.marketIndex), advForm.marketName)
@@ -614,7 +641,9 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                 </div>
                 <div className="mb-2 flex items-center justify-between">
                   <p>{t('tier')}</p>
-                  <p className="text-th-fgd-2">{coinTiersToNames[coinTier]}</p>
+                  <p className="text-th-fgd-2">
+                    {coinTier && coinTiersToNames[coinTier]}
+                  </p>
                 </div>
                 <div className="flex items-center justify-between">
                   <p>{t('mint')}</p>

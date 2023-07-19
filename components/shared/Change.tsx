@@ -15,7 +15,7 @@ const Change = ({
   size?: 'small'
   suffix?: string
 }) => {
-  return (
+  return !isNaN(change) ? (
     <div className="flex items-center space-x-1.5">
       {change > 0 ? (
         <div className="mt-[1px]">
@@ -51,6 +51,8 @@ const Change = ({
         {suffix ? suffix : ''}
       </p>
     </div>
+  ) : (
+    <p>–</p>
   )
 }
 

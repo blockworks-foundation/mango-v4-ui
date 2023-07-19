@@ -33,12 +33,16 @@ const HealthImpact = ({
       </Tooltip>
       {currentMaintHealth ? (
         <div className="flex items-center space-x-1.5 font-mono">
-          <p className={`text-th-fgd-2 ${small ? 'text-xs' : 'text-sm'}`}>
+          <p
+            className={`font-mono text-th-fgd-2 ${
+              small ? 'text-xs' : 'text-sm'
+            }`}
+          >
             {currentMaintHealth}%
           </p>
           <ArrowRightIcon className="h-4 w-4 text-th-fgd-4" />
           <p
-            className={`${
+            className={`font-mono ${
               maintProjectedHealth < 50 && maintProjectedHealth > 15
                 ? 'text-th-warning'
                 : maintProjectedHealth <= 15
@@ -48,16 +52,6 @@ const HealthImpact = ({
           >
             {maintProjectedHealth}%
           </p>
-          {/* <span
-          className={`text-xs ${
-            maintProjectedHealth >= currentMaintHealth!
-              ? 'text-th-up'
-              : 'text-th-down'
-          }`}
-        >
-          ({maintProjectedHealth >= currentMaintHealth! ? '+' : ''}
-          {maintProjectedHealth - currentMaintHealth!}%)
-        </span> */}
         </div>
       ) : (
         <span className="text-xs text-th-fgd-2">–</span>

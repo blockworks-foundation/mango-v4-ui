@@ -14,8 +14,14 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import { useMemo } from 'react'
 import Slippage from './Slippage'
-import { floorToDecimal, formatNumericValue } from 'utils/numbers'
+import {
+  floorToDecimal,
+  formatNumericValue,
+  getDecimalCount,
+} from 'utils/numbers'
 import { formatTokenSymbol } from 'utils/tokens'
+import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
+import { calculateEstPriceForBaseSize } from 'utils/tradeForm'
 
 const TradeSummary = ({
   mangoAccount,
@@ -27,7 +33,65 @@ const TradeSummary = ({
   const { t } = useTranslation(['common', 'trade'])
   const { group } = useMangoGroup()
   const tradeForm = mangoStore((s) => s.tradeForm)
+  const orderbook = mangoStore((s) => s.selectedMarket.orderbook)
   const { selectedMarket, quoteBank } = useSelectedMarket()
+  const openPerpPositions = useOpenPerpPositions()
+
+  // calc new avg price if an open position exists
+  const avgEntryPrice = useMemo(() => {
+    if (
+      !openPerpPositions?.length ||
+      !selectedMarket ||
+      !orderbook ||
+      selectedMarket instanceof Serum3Market
+    )
+      return
+
+    const openPosition = openPerpPositions.find(
+      (pos) => pos.marketIndex === selectedMarket.perpMarketIndex
+    )
+
+    const { baseSize, price, reduceOnly, side, tradeType } = tradeForm
+
+    if (!openPosition || !price || !tradeForm.baseSize) return
+
+    let orderPrice = parseFloat(price)
+    if (tradeType === 'Market') {
+      orderPrice = calculateEstPriceForBaseSize(
+        orderbook,
+        parseFloat(tradeForm.baseSize),
+        tradeForm.side
+      )
+    }
+    const currentSize = openPosition.getBasePositionUi(selectedMarket)
+    const tradeSize =
+      side === 'buy' ? parseFloat(baseSize) : parseFloat(baseSize) * -1
+    const newTotalSize = currentSize + tradeSize
+    const currentAvgPrice = openPosition.getAverageEntryPriceUi(selectedMarket)
+
+    // don't calc when closing position
+    if (newTotalSize === 0) {
+      return
+    }
+
+    // don't calc when reducing position
+    if (
+      (currentSize < 0 !== tradeSize < 0 &&
+        newTotalSize < 0 === currentSize < 0) ||
+      reduceOnly
+    ) {
+      return
+    }
+
+    // if trade side changes with new trade return new trade price
+    if (currentSize < 0 !== newTotalSize < 0) {
+      return price
+    }
+
+    const newTotalCost = currentAvgPrice * currentSize + orderPrice * tradeSize
+    const newAvgEntryPrice = newTotalCost / newTotalSize
+    return newAvgEntryPrice
+  }, [openPerpPositions, selectedMarket, tradeForm, orderbook])
 
   const maintProjectedHealth = useMemo(() => {
     if (!mangoAccount || !group) return 100
@@ -55,12 +119,14 @@ const TradeSummary = ({
             ? mangoAccount.simHealthRatioWithPerpAskUiChanges(
                 group,
                 selectedMarket.perpMarketIndex,
-                parseFloat(tradeForm.baseSize) || 0
+                parseFloat(tradeForm.baseSize) || 0,
+                HealthType.maint
               )
             : mangoAccount.simHealthRatioWithPerpBidUiChanges(
                 group,
                 selectedMarket.perpMarketIndex,
-                parseFloat(tradeForm.baseSize) || 0
+                parseFloat(tradeForm.baseSize) || 0,
+                HealthType.maint
               )
       }
     } catch (e) {
@@ -109,8 +175,8 @@ const TradeSummary = ({
       !quoteBank ||
       !tradeForm.price ||
       !tradeForm.baseSize ||
-      Number.isNaN(tradeForm.price) ||
-      Number.isNaN(tradeForm.baseSize)
+      isNaN(parseFloat(tradeForm.price)) ||
+      isNaN(parseFloat(tradeForm.baseSize))
     )
       return 0
     const basePriceDecimal = new Decimal(tradeForm.price)
@@ -126,7 +192,7 @@ const TradeSummary = ({
     <div className="space-y-2 px-3 md:px-4">
       <div className="flex justify-between text-xs">
         <p>{t('trade:order-value')}</p>
-        <p className="text-th-fgd-2">
+        <p className="font-mono text-th-fgd-2">
           {orderValue ? <FormatNumericValue value={orderValue} isUsd /> : '–'}
         </p>
       </div>
@@ -213,6 +279,19 @@ const TradeSummary = ({
         </p>
       </div> */}
       <Slippage />
+      {avgEntryPrice && selectedMarket instanceof PerpMarket ? (
+        <div className="flex justify-between text-xs">
+          <p>{t('trade:avg-entry-price')}</p>
+          <p className="text-th-fgd-2">
+            {tradeForm.tradeType === 'Market' ? '~' : null}
+            <FormatNumericValue
+              value={avgEntryPrice}
+              decimals={getDecimalCount(selectedMarket.tickSize)}
+              isUsd
+            />
+          </p>
+        </div>
+      ) : null}
     </div>
   )
 }

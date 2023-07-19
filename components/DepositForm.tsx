@@ -25,7 +25,6 @@ import MaxAmountButton from '@components/shared/MaxAmountButton'
 import Tooltip from '@components/shared/Tooltip'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
-import useJupiterMints from 'hooks/useJupiterMints'
 import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
 import useSolBalance from 'hooks/useSolBalance'
 import FormatNumericValue from './shared/FormatNumericValue'
@@ -36,6 +35,7 @@ import useBanksWithBalances from 'hooks/useBanksWithBalances'
 import { isMangoError } from 'types'
 import TokenListButton from './shared/TokenListButton'
 import { ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES, BackButton } from './BorrowForm'
+import TokenLogo from './shared/TokenLogo'
 
 interface DepositFormProps {
   onSuccess: () => void
@@ -72,7 +72,6 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
   )
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
-  const { mangoTokens } = useJupiterMints()
   const { handleConnect } = useEnhancedWallet()
   const { maxSolDeposit } = useSolBalance()
   const banks = useBanksWithBalances('walletBalance')
@@ -81,16 +80,6 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
     const group = mangoStore.getState().group
     return group?.banksMapByName.get(selectedToken)?.[0]
   }, [selectedToken])
-
-  const logoUri = useMemo(() => {
-    let logoURI
-    if (mangoTokens?.length) {
-      logoURI = mangoTokens.find(
-        (t) => t.address === bank?.mint.toString()
-      )?.logoURI
-    }
-    return logoURI
-  }, [bank?.mint, mangoTokens])
 
   const { connected, publicKey } = useWallet()
   const walletTokens = mangoStore((s) => s.wallet.tokens)
@@ -219,7 +208,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
               <div className="col-span-1">
                 <TokenListButton
                   token={selectedToken}
-                  logoUri={logoUri}
+                  logo={<TokenLogo bank={bank} />}
                   setShowList={setShowTokenList}
                 />
               </div>
@@ -264,14 +253,6 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
                   <p>{t('deposit-amount')}</p>
                   <BankAmountWithValue amount={inputAmount} bank={bank} />
                 </div>
-                {/* <div className="flex justify-between">
-              <div className="flex items-center">
-                <Tooltip content={t('asset-weight-desc')}>
-                  <p className="tooltip-underline">{t('asset-weight')}</p>
-                </Tooltip>
-              </div>
-              <p className="font-mono">{bank!.initAssetWeight.toFixed(2)}x</p>
-            </div> */}
                 <div className="flex justify-between">
                   <Tooltip content={t('tooltip-collateral-value')}>
                     <p className="tooltip-underline">{t('collateral-value')}</p>
@@ -281,7 +262,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
                       value={
                         bank.uiPrice *
                         Number(inputAmount) *
-                        Number(bank.initAssetWeight)
+                        Number(bank.scaledInitAssetWeight(bank.price))
                       }
                       isUsd
                     />

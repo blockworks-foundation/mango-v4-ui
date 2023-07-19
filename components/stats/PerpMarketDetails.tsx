@@ -25,6 +25,16 @@ const PerpMarketDetails = ({
   const [priceDaysToShow, setPriceDaysToShow] = useState('30')
   const [oiDaysToShow, setOiDaysToShow] = useState('30')
 
+  const openInterestChartData = useMemo(() => {
+    if (!marketStats || !marketStats.length) return []
+    const data = []
+    for (const stat of marketStats) {
+      const openInterest = stat.open_interest * stat.price
+      data.push({ date_hour: stat.date_hour, open_interest: openInterest })
+    }
+    return data
+  }, [marketStats])
+
   const lastStat = useMemo(() => {
     if (!marketStats.length) return undefined
     return marketStats[marketStats.length - 1]
@@ -32,7 +42,7 @@ const PerpMarketDetails = ({
 
   return (
     <div className="grid grid-cols-2">
-      {marketStats?.length && lastStat ? (
+      {marketStats?.length && lastStat && perpMarket ? (
         <>
           <div className={`${CHART_WRAPPER_CLASSES} lg:border-r`}>
             <PerpVolumeChart
@@ -42,13 +52,13 @@ const PerpMarketDetails = ({
           </div>
           <div className={CHART_WRAPPER_CLASSES}>
             <DetailedAreaOrBarChart
-              data={marketStats.concat([
+              data={openInterestChartData.concat([
                 {
-                  ...lastStat,
                   date_hour: dayjs().toISOString(),
                   open_interest:
-                    perpMarket?.baseLotsToUi(perpMarket.openInterest) ||
-                    lastStat.open_interest,
+                    perpMarket.baseLotsToUi(perpMarket.openInterest) *
+                      perpMarket.uiPrice ||
+                    lastStat.open_interest * lastStat.price,
                 },
               ])}
               daysToShow={oiDaysToShow}
@@ -56,6 +66,7 @@ const PerpMarketDetails = ({
               heightClass="h-64"
               loading={loadingPerpStats}
               loaderHeightClass="h-[350px]"
+              prefix="$"
               tickFormat={(x) => formatYAxis(x)}
               title={t('trade:open-interest')}
               xKey="date_hour"
@@ -74,7 +85,7 @@ const PerpMarketDetails = ({
                 {
                   ...lastStat,
                   date_hour: dayjs().toISOString(),
-                  price: perpMarket?._uiPrice || lastStat.price,
+                  price: perpMarket.uiPrice || lastStat.price,
                 },
               ])}
               daysToShow={priceDaysToShow}

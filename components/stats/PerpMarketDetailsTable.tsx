@@ -16,6 +16,7 @@ import { getOracleProvider } from 'hooks/useOracleProvider'
 import { goToPerpMarketDetails } from './PerpMarketsOverviewTable'
 import { useRouter } from 'next/router'
 import { LinkButton } from '@components/shared/Button'
+import SoonBadge from '@components/shared/SoonBadge'
 
 const PerpMarketDetailsTable = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -80,6 +81,7 @@ const PerpMarketDetailsTable = () => {
               } = market
 
               const [oracleProvider, oracleLinkPath] = getOracleProvider(market)
+              const isComingSoon = market.oracleLastUpdatedSlot == 0
 
               return (
                 <TrBody
@@ -89,8 +91,9 @@ const PerpMarketDetailsTable = () => {
                 >
                   <Td>
                     <div className="flex items-center">
-                      <MarketLogos market={market} />
-                      <p className="whitespace-nowrap font-body">{name}</p>
+                      <MarketLogos market={market} size="large" />
+                      <p className="mr-2 whitespace-nowrap font-body">{name}</p>
+                      {isComingSoon ? <SoonBadge /> : null}
                     </div>
                   </Td>
                   <Td>
@@ -175,6 +178,7 @@ const PerpMarketDetailsTable = () => {
               publicKey,
             } = market
             const [oracleProvider, oracleLinkPath] = getOracleProvider(market)
+            const isComingSoon = market.oracleLastUpdatedSlot == 0
             return (
               <Disclosure key={publicKey.toString()}>
                 {({ open }) => (
@@ -187,9 +191,10 @@ const PerpMarketDetailsTable = () => {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
                           <MarketLogos market={market} />
-                          <p className="whitespace-nowrap text-th-fgd-1">
+                          <p className="mr-2 whitespace-nowrap text-th-fgd-1">
                             {name}
                           </p>
+                          {isComingSoon ? <SoonBadge /> : null}
                         </div>
                         <ChevronDownIcon
                           className={`${

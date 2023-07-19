@@ -2,8 +2,8 @@ import dayjs from 'dayjs'
 import produce from 'immer'
 import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
-import { AnchorProvider, BN, Wallet, web3 } from '@project-serum/anchor'
-import { Connection, Keypair, PublicKey } from '@solana/web3.js'
+import { AnchorProvider, BN, Wallet, web3 } from '@coral-xyz/anchor'
+import { ConfirmOptions, Connection, Keypair, PublicKey } from '@solana/web3.js'
 import { OpenOrders, Order } from '@project-serum/serum/lib/market'
 import { Orderbook } from '@project-serum/serum'
 import { Wallet as WalletAdapter } from '@solana/wallet-adapter-react'
@@ -18,6 +18,8 @@ import {
   PerpPosition,
   BookSide,
   ParsedFillEvent,
+  getLargestPerpPositions,
+  getClosestToLiquidationPerpPositions,
 } from '@blockworks-foundation/mango-v4'
 
 import EmptyWallet from '../utils/wallet'
@@ -40,11 +42,9 @@ import {
   RPC_PROVIDER_KEY,
 } from '../utils/constants'
 import {
-  AccountPerformanceData,
   ActivityFeed,
   EmptyObject,
   OrderbookL2,
-  PerformanceDataItem,
   PerpStatsItem,
   PerpTradeHistory,
   SerumEvent,
@@ -59,6 +59,7 @@ import {
   ProfileDetails,
   MangoTokenStatsItem,
   ThemeData,
+  PositionStat,
 } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
@@ -77,10 +78,10 @@ const ENDPOINTS = [
     name: 'mainnet-beta',
     url:
       process.env.NEXT_PUBLIC_ENDPOINT ||
-      'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
+      'https://mango.rpcpool.com/946ef7337da3f5b8d3e4a34e7f88',
     websocket:
       process.env.NEXT_PUBLIC_ENDPOINT ||
-      'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
+      'https://mango.rpcpool.com/946ef7337da3f5b8d3e4a34e7f88',
     custom: false,
   },
   {
@@ -91,7 +92,10 @@ const ENDPOINTS = [
   },
 ]
 
-const options = AnchorProvider.defaultOptions()
+const options = {
+  ...AnchorProvider.defaultOptions(),
+  preflightCommitment: 'confirmed',
+} as ConfirmOptions
 export const CLUSTER: 'mainnet-beta' | 'devnet' = 'mainnet-beta'
 const ENDPOINT = ENDPOINTS.find((e) => e.name === CLUSTER) || ENDPOINTS[0]
 export const emptyWallet = new EmptyWallet(Keypair.generate())
@@ -146,10 +150,6 @@ export type MangoStore = {
     perpPositions: PerpPosition[]
     spotBalances: SpotBalances
     interestTotals: { data: TotalInterestDataItem[]; loading: boolean }
-    performance: {
-      data: PerformanceDataItem[]
-      loading: boolean
-    }
     swapHistory: {
       data: SwapHistoryItem[]
       initialLoad: boolean
@@ -168,13 +168,19 @@ export type MangoStore = {
   perpStats: {
     loading: boolean
     data: PerpStatsItem[] | null
+    positions: {
+      initialLoad: boolean
+      loading: boolean
+      largest: PositionStat[]
+      closestToLiq: PositionStat[]
+    }
   }
   profile: {
     details: ProfileDetails | null
     loadDetails: boolean
   }
   selectedMarket: {
-    name: string
+    name: string | undefined
     current: Serum3Market | PerpMarket | undefined
     fills: (ParsedFillEvent | SerumEvent)[]
     bidsAccount: BookSide | Orderbook | undefined
@@ -237,16 +243,13 @@ export type MangoStore = {
       params?: string,
       limit?: number
     ) => Promise<void>
-    fetchAccountPerformance: (
-      mangoAccountPk: string,
-      range: number
-    ) => Promise<void>
     fetchGroup: () => Promise<void>
     reloadMangoAccount: () => Promise<void>
     fetchMangoAccounts: (ownerPk: PublicKey) => Promise<void>
     fetchNfts: (connection: Connection, walletPk: PublicKey) => void
     fetchOpenOrders: (refetchMangoAccount?: boolean) => Promise<void>
     fetchPerpStats: () => void
+    fetchPositionsStats: () => void
     fetchProfileDetails: (walletPk: string) => void
     fetchSwapHistory: (
       mangoAccountPk: string,
@@ -270,7 +273,7 @@ const mangoStore = create<MangoStore>()(
     if (typeof window !== 'undefined' && CLUSTER === 'mainnet-beta') {
       const urlFromLocalStorage = localStorage.getItem(RPC_PROVIDER_KEY)
       rpcUrl = urlFromLocalStorage
-        ? JSON.parse(urlFromLocalStorage).value
+        ? JSON.parse(urlFromLocalStorage)
         : ENDPOINT.url
     }
 
@@ -304,7 +307,6 @@ const mangoStore = create<MangoStore>()(
         perpPositions: [],
         spotBalances: {},
         interestTotals: { data: [], loading: false },
-        performance: { data: [], loading: true },
         swapHistory: { data: [], loading: true, initialLoad: true },
         tradeHistory: { data: [], loading: true },
       },
@@ -316,13 +318,19 @@ const mangoStore = create<MangoStore>()(
       perpStats: {
         loading: false,
         data: [],
+        positions: {
+          initialLoad: true,
+          loading: true,
+          largest: [],
+          closestToLiq: [],
+        },
       },
       profile: {
         loadDetails: false,
         details: { profile_name: '', trader_category: '', wallet_pk: '' },
       },
       selectedMarket: {
-        name: DEFAULT_MARKET_NAME,
+        name: 'SOL/USDC',
         current: undefined,
         fills: [],
         bidsAccount: undefined,
@@ -425,43 +433,6 @@ const mangoStore = create<MangoStore>()(
             })
           }
         },
-        fetchAccountPerformance: async (
-          mangoAccountPk: string,
-          range: number
-        ) => {
-          const set = get().set
-          try {
-            const response = await fetch(
-              `${MANGO_DATA_API_URL}/stats/performance_account?mango-account=${mangoAccountPk}&start-date=${dayjs()
-                .subtract(range, 'day')
-                .format('YYYY-MM-DD')}`
-            )
-            const parsedResponse:
-              | null
-              | EmptyObject
-              | AccountPerformanceData[] = await response.json()
-
-            if (parsedResponse && Object.keys(parsedResponse)?.length) {
-              const entries = Object.entries(parsedResponse).sort((a, b) =>
-                b[0].localeCompare(a[0])
-              )
-
-              const stats = entries.map(([key, value]) => {
-                return { ...value, time: key } as PerformanceDataItem
-              })
-
-              set((state) => {
-                state.mangoAccount.performance.data = stats.reverse()
-              })
-            }
-          } catch (e) {
-            console.error('Failed to load account performance data', e)
-          } finally {
-            set((state) => {
-              state.mangoAccount.performance.loading = false
-            })
-          }
-        },
         fetchActivityFeed: async (
           mangoAccountPk: string,
           offset = 0,
@@ -487,7 +458,15 @@ const mangoStore = create<MangoStore>()(
 
               const latestFeed = entries
                 .map(([key, value]) => {
-                  return { ...value, symbol: key }
+                  // ETH should be renamed to ETH (Portal) in the database
+                  const symbol = value.activity_details.symbol
+                  if (symbol === 'ETH') {
+                    value.activity_details.symbol = 'ETH (Portal)'
+                  }
+                  return {
+                    ...value,
+                    symbol: key,
+                  }
                 })
                 .sort(
                   (a, b) =>
@@ -516,7 +495,11 @@ const mangoStore = create<MangoStore>()(
             const set = get().set
             const client = get().client
             const group = await client.getGroup(GROUP)
-            const selectedMarketName = get().selectedMarket.name
+            let selectedMarketName = get().selectedMarket.name
+
+            if (!selectedMarketName) {
+              selectedMarketName = DEFAULT_MARKET_NAME
+            }
 
             const inputBank =
               group?.banksMapByName.get(INPUT_TOKEN_DEFAULT)?.[0]
@@ -524,7 +507,14 @@ const mangoStore = create<MangoStore>()(
               group?.banksMapByName.get(OUTPUT_TOKEN_DEFAULT)?.[0]
             const serumMarkets = Array.from(
               group.serum3MarketsMapByExternal.values()
-            )
+            ).map((m) => {
+              // remove this when market name is updated
+              if (m.name === 'MSOL/SOL') {
+                m.name = 'mSOL/SOL'
+              }
+              return m
+            })
+
             const perpMarkets = Array.from(group.perpMarketsMapByName.values())
               .filter(
                 (p) =>
@@ -782,6 +772,64 @@ const mangoStore = create<MangoStore>()(
             notify({
               title: 'Failed to fetch token stats data',
               type: 'error',
+            })
+          }
+        },
+        fetchPositionsStats: async () => {
+          const set = get().set
+          const group = get().group
+          const client = get().client
+          if (!group) return
+          try {
+            const allMangoAccounts = await client.getAllMangoAccounts(
+              group,
+              true
+            )
+            if (allMangoAccounts && allMangoAccounts.length) {
+              const [largestPositions, closestToLiq]: [
+                PositionStat[],
+                PositionStat[]
+              ] = await Promise.all([
+                getLargestPerpPositions(client, group, allMangoAccounts),
+                getClosestToLiquidationPerpPositions(
+                  client,
+                  group,
+                  allMangoAccounts
+                ),
+              ])
+              set((state) => {
+                if (largestPositions && largestPositions.length) {
+                  const positionsToShow = largestPositions.slice(0, 5)
+                  for (const position of positionsToShow) {
+                    const ma = allMangoAccounts.find(
+                      (acc) => acc.publicKey === position.mangoAccount
+                    )
+                    position.account = ma
+                  }
+                  state.perpStats.positions.largest = positionsToShow
+                }
+                if (closestToLiq && closestToLiq.length) {
+                  const positionsToShow = closestToLiq.slice(0, 5)
+                  for (const position of positionsToShow) {
+                    const ma = allMangoAccounts.find(
+                      (acc) => acc.publicKey === position.mangoAccount
+                    )
+                    position.account = ma
+                  }
+                  state.perpStats.positions.closestToLiq = positionsToShow
+                }
+              })
+            }
+          } catch (e) {
+            console.log('failed to fetch perp positions stats', e)
+          } finally {
+            const notLoaded =
+              mangoStore.getState().perpStats.positions.initialLoad
+            set((state) => {
+              state.perpStats.positions.loading = false
+              if (notLoaded) {
+                state.perpStats.positions.initialLoad = false
+              }
             })
           }
         },

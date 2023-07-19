@@ -8,6 +8,7 @@ type ModalProps = {
   fullScreen?: boolean
   isOpen: boolean
   onClose: () => void
+  panelClassNames?: string
   hideClose?: boolean
 }
 
@@ -17,6 +18,7 @@ function Modal({
   fullScreen = false,
   isOpen,
   onClose,
+  panelClassNames,
   hideClose,
 }: ModalProps) {
   const themeData = mangoStore((s) => s.themeData)
@@ -52,7 +54,7 @@ function Modal({
             fullScreen
               ? ''
               : 'p-4 pt-6 sm:h-auto sm:max-w-md sm:rounded-lg sm:border sm:border-th-bkg-3 sm:p-6'
-          } relative `}
+          } relative ${panelClassNames}`}
         >
           <div>{children}</div>
           {!hideClose ? (

@@ -16,8 +16,16 @@ import Tooltip from '@components/shared/Tooltip'
 
 const RPC_URLS = [
   {
-    label: 'Triton',
-    value: 'https://mango.rpcpool.com/0f9acc0d45173b51bf7d7e09c1e5',
+    label: 'Triton Shared',
+    value:
+      process.env.NEXT_PUBLIC_ENDPOINT ||
+      'https://mango.rpcpool.com/946ef7337da3f5b8d3e4a34e7f88',
+  },
+  {
+    label: 'Triton Dedicated',
+    value: process.env.NEXT_PUBLIC_TRITON_TOKEN
+      ? `https://mango.rpcpool.com/${process.env.NEXT_PUBLIC_TRITON_TOKEN}`
+      : 'https://mango.rpcpool.com/946ef7337da3f5b8d3e4a34e7f88',
   },
   // {
   //   label: 'Genesys Go',
@@ -109,7 +117,7 @@ const RpcSettings = () => {
       <h2 className="mb-4 text-base">{t('rpc')}</h2>
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
         <p className="mb-2 md:mb-0">{t('rpc-provider')}</p>
-        <div className="w-full min-w-[160px] md:w-auto">
+        <div className="w-full min-w-[400px] md:w-auto">
           <ButtonGroup
             activeValue={rpcEndpoint.label}
             onChange={(v) => handleSetEndpointProvider(v)}
@@ -130,7 +138,6 @@ const RpcSettings = () => {
                   }
                 />
                 <Button
-                  className="h-12"
                   disabled={!customUrl}
                   onClick={handleSaveCustomEndpoint}
                 >

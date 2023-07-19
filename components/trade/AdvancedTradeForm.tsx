@@ -25,6 +25,8 @@ import NumberFormat, {
   NumberFormatValues,
   SourceInfo,
 } from 'react-number-format'
+import * as sentry from '@sentry/nextjs'
+
 import { notify } from 'utils/notifications'
 import SpotSlider from './SpotSlider'
 import { calculateLimitPriceForMarketOrder } from 'utils/tradeForm'
@@ -59,7 +61,7 @@ import InlineNotification from '@components/shared/InlineNotification'
 
 const set = mangoStore.getState().set
 
-const successSound = new Howl({
+export const successSound = new Howl({
   src: ['/sounds/swap-success.mp3'],
   volume: 0.5,
 })
@@ -302,6 +304,27 @@ const AdvancedTradeForm = () => {
     return [minOrderDecimals, minOrderSize]
   }, [serumOrPerpMarket])
 
+  const isMarketEnabled = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!selectedMarket || !group) return false
+    if (selectedMarket instanceof PerpMarket) {
+      return selectedMarket.oracleLastUpdatedSlot !== 0
+    } else if (selectedMarket instanceof Serum3Market) {
+      const baseBank = group.getFirstBankByTokenIndex(
+        selectedMarket.baseTokenIndex
+      )
+      const quoteBank = group.getFirstBankByTokenIndex(
+        selectedMarket.quoteTokenIndex
+      )
+      return (
+        baseBank.oracleLastUpdatedSlot !== 0 &&
+        (quoteBank.name == 'USDC'
+          ? true
+          : quoteBank.oracleLastUpdatedSlot !== 0)
+      )
+    }
+  }, [selectedMarket])
+
   /*
    * Updates the limit price on page load
    */
@@ -434,6 +457,7 @@ const AdvancedTradeForm = () => {
       }
     } catch (e) {
       console.error('Place trade error:', e)
+      sentry.captureException(e)
       if (!isMangoError(e)) return
       notify({
         title: 'There was an issue.',
@@ -460,7 +484,8 @@ const AdvancedTradeForm = () => {
   const disabled =
     (connected && (!tradeForm.baseSize || !tradeForm.price)) ||
     !serumOrPerpMarket ||
-    parseFloat(tradeForm.baseSize) < serumOrPerpMarket.minOrderSize
+    parseFloat(tradeForm.baseSize) < serumOrPerpMarket.minOrderSize ||
+    !isMarketEnabled
 
   return (
     <div>
