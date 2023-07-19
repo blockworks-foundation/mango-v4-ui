@@ -9,6 +9,7 @@ import Button from '@components/shared/Button'
 import TabUnderline from '@components/shared/TabUnderline'
 import SellNftModal from '@components/nftMarket/SellNftModal'
 import MyBidsModal from '@components/nftMarket/MyBidsModal'
+import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
 
 const LISTINGS = 'Listings'
 const BIDS_WITHOUT_LISTINGS = 'Offers'
@@ -38,6 +39,7 @@ const Market: NextPage = () => {
   const [activeTab, setActiveTab] = useState('Listings')
   const [sellNftModal, setSellNftModal] = useState(false)
   const [myBidsModal, setMyBidsModal] = useState(false)
+  const { data: isWhiteListed } = useIsWhiteListed()
 
   //TODO leave for release
   //   const create = async () => {
@@ -61,7 +63,7 @@ const Market: NextPage = () => {
   //     console.log(elo)
   //   }
 
-  return (
+  return isWhiteListed ? (
     <>
       <div className="mx-auto flex max-w-[1140px] flex-col px-6">
         <div className="flex items-center justify-between pt-8 pb-6">
@@ -100,7 +102,7 @@ const Market: NextPage = () => {
         ></MyBidsModal>
       )}
     </>
-  )
+  ) : null
 }
 
 export default Market
