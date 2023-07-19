@@ -97,7 +97,7 @@ const options = {
   ...AnchorProvider.defaultOptions(),
   preflightCommitment: 'confirmed',
 } as ConfirmOptions
-export const CLUSTER: 'mainnet-beta' | 'devnet' = 'devnet'
+export const CLUSTER: 'mainnet-beta' | 'devnet' = 'mainnet-beta'
 const ENDPOINT = ENDPOINTS.find((e) => e.name === CLUSTER) || ENDPOINTS[0]
 export const emptyWallet = new EmptyWallet(Keypair.generate())
 
@@ -269,7 +269,7 @@ const mangoStore = create<MangoStore>()(
   subscribeWithSelector((_set, get) => {
     let rpcUrl = ENDPOINT.url
 
-    if (typeof window !== 'undefined' && CLUSTER === 'devnet') {
+    if (typeof window !== 'undefined' && CLUSTER === 'mainnet-beta') {
       const urlFromLocalStorage = localStorage.getItem(RPC_PROVIDER_KEY)
       rpcUrl = urlFromLocalStorage
         ? JSON.parse(urlFromLocalStorage)
