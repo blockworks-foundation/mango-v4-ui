@@ -327,7 +327,7 @@ const SwapForm = () => {
           />
         </Transition>
         <EnterBottomExitBottom
-          className="thin-scroll absolute bottom-0 left-0 z-10 h-full w-full overflow-auto bg-th-bkg-1 p-6 pb-0"
+          className="thin-scroll absolute bottom-0 left-0 z-10 h-full w-full overflow-hidden bg-th-bkg-1 p-6 pb-0"
           show={!!showTokenSelect}
         >
           <SwapFormTokenList
