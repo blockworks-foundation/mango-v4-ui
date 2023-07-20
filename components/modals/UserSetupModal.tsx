@@ -76,7 +76,9 @@ const UserSetupModal = ({
   const walletsDisplayed = useMemo(() => {
     const firstFive = wallets.slice(0, 5)
     const detectedWallets = wallets.filter(
-      (w) => w.readyState === WalletReadyState.Installed
+      (w) =>
+        w.readyState === WalletReadyState.Installed ||
+        w.readyState === WalletReadyState.Loadable
     )
 
     if (walletsToDisplay === 'default') {
@@ -317,7 +319,8 @@ const UserSetupModal = ({
                           />
                           <div className="ml-2">{w.adapter.name}</div>
                         </div>
-                        {w.adapter.readyState === WalletReadyState.Installed ? (
+                        {w.readyState === WalletReadyState.Installed ||
+                        w.readyState === WalletReadyState.Loadable ? (
                           <div className="text-xs">Detected</div>
                         ) : null}
                       </div>

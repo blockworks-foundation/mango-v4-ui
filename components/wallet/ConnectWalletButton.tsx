@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react'
+import React, { Fragment, useMemo } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 import WalletIcon from '@components/icons/WalletIcon'
@@ -8,6 +8,7 @@ import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import { Popover, Transition } from '@headlessui/react'
 import Loading from '@components/shared/Loading'
 import mangoStore from '@store/mangoStore'
+import { WalletReadyState } from '@solana/wallet-adapter-base'
 
 export default function ConnectWalletButton({
   handleShowSetup,
@@ -18,6 +19,14 @@ export default function ConnectWalletButton({
   const { wallet, wallets, select } = useWallet()
   const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
+
+  const detectedWallets = useMemo(() => {
+    return wallets.filter(
+      (w) =>
+        w.readyState === WalletReadyState.Installed ||
+        w.readyState === WalletReadyState.Loadable
+    )
+  }, [wallets])
 
   return (
     <>
@@ -60,7 +69,7 @@ export default function ConnectWalletButton({
                 leaveTo="opacity-0"
               >
                 <Popover.Panel className="absolute top-16 right-0 z-20 w-48 rounded-md rounded-t-none bg-th-bkg-2 px-4 py-2.5 outline-none">
-                  {wallets.map((wallet, index) => (
+                  {detectedWallets.map((wallet, index) => (
                     <button
                       className="flex w-full flex-row items-center justify-between rounded-none py-2 font-normal focus:outline-none focus-visible:text-th-active md:hover:cursor-pointer md:hover:text-th-active"
                       onClick={() => {
