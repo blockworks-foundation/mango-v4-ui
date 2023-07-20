@@ -18,7 +18,7 @@ import {
   Transaction,
   TransactionInstruction,
 } from '@solana/web3.js'
-import { chunk } from 'lodash'
+import chunk from 'lodash/chunk'
 import { MANGO_MINT } from 'utils/constants'
 import { MANGO_GOVERNANCE_PROGRAM, MANGO_REALM_PK } from '../constants'
 import { VsrClient } from '../voteStakeRegistryClient'
