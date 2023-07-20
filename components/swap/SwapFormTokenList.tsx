@@ -1,8 +1,8 @@
-import { memo, useMemo, useEffect, useRef } from 'react'
+import { memo, useMemo, useEffect, useRef, useState, ChangeEvent } from 'react'
 import { Token } from '../../types/jupiter'
 import mangoStore from '@store/mangoStore'
 import { IconButton } from '../shared/Button'
-import { XMarkIcon } from '@heroicons/react/20/solid'
+import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import Decimal from 'decimal.js'
 import { getTokenInMax } from './useTokenMax'
@@ -13,32 +13,33 @@ import { PublicKey } from '@solana/web3.js'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { formatTokenSymbol } from 'utils/tokens'
 import TokenLogo from '@components/shared/TokenLogo'
+import Input from '@components/forms/Input'
 
-// const generateSearchTerm = (item: Token, searchValue: string) => {
-//   const normalizedSearchValue = searchValue.toLowerCase()
-//   const values = `${item.symbol} ${item.name}`.toLowerCase()
+const generateSearchTerm = (item: Token, searchValue: string) => {
+  const normalizedSearchValue = searchValue.toLowerCase()
+  const values = `${item.symbol} ${item.name}`.toLowerCase()
 
-//   const isMatchingWithSymbol =
-//     item.symbol.toLowerCase().indexOf(normalizedSearchValue) >= 0
-//   const matchingSymbolPercent = isMatchingWithSymbol
-//     ? normalizedSearchValue.length / item.symbol.length
-//     : 0
+  const isMatchingWithSymbol =
+    item.symbol.toLowerCase().indexOf(normalizedSearchValue) >= 0
+  const matchingSymbolPercent = isMatchingWithSymbol
+    ? normalizedSearchValue.length / item.symbol.length
+    : 0
 
-//   return {
-//     token: item,
-//     matchingIdx: values.indexOf(normalizedSearchValue),
-//     matchingSymbolPercent,
-//   }
-// }
+  return {
+    token: item,
+    matchingIdx: values.indexOf(normalizedSearchValue),
+    matchingSymbolPercent,
+  }
+}
 
-// const startSearch = (items: Token[], searchValue: string) => {
-//   return items
-//     .map((item) => generateSearchTerm(item, searchValue))
-//     .filter((item) => item.matchingIdx >= 0)
-//     .sort((i1, i2) => i1.matchingIdx - i2.matchingIdx)
-//     .sort((i1, i2) => i2.matchingSymbolPercent - i1.matchingSymbolPercent)
-//     .map((item) => item.token)
-// }
+const startSearch = (items: Token[], searchValue: string) => {
+  return items
+    .map((item) => generateSearchTerm(item, searchValue))
+    .filter((item) => item.matchingIdx >= 0)
+    .sort((i1, i2) => i1.matchingIdx - i2.matchingIdx)
+    .sort((i1, i2) => i2.matchingSymbolPercent - i1.matchingSymbolPercent)
+    .map((item) => item.token)
+}
 
 const TokenItem = ({
   token,
@@ -114,8 +115,6 @@ const TokenItem = ({
   )
 }
 
-// const popularTokenSymbols = ['USDC', 'SOL', 'USDT', 'MNGO', 'BTC']
-
 interface TokenInfoWithAmounts extends Token {
   amount?: Decimal
   amountWithBorrow?: Decimal
@@ -132,22 +131,14 @@ const SwapFormTokenList = ({
   type: 'input' | 'output' | undefined
   useMargin: boolean
 }) => {
-  const { t } = useTranslation(['common', 'swap'])
-  // const [search, setSearch] = useState('')
+  const { t } = useTranslation(['common', 'search', 'swap'])
+  const [search, setSearch] = useState('')
   const { mangoTokens } = useJupiterMints()
   const inputBank = mangoStore((s) => s.swap.inputBank)
   const outputBank = mangoStore((s) => s.swap.outputBank)
   const { group } = useMangoGroup()
   const { mangoAccount } = useMangoAccount()
-  const focusRef = useRef<HTMLButtonElement>(null)
-
-  // const popularTokens = useMemo(() => {
-  //   return tokens.filter((token) => {
-  //     return !token?.name || !token?.symbol
-  //       ? false
-  //       : popularTokenSymbols.includes(token.symbol)
-  //   })
-  // }, [tokens])
+  const focusRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     function onEscape(e: KeyboardEvent) {
@@ -202,12 +193,11 @@ const SwapFormTokenList = ({
     }
   }, [mangoTokens, inputBank, outputBank, mangoAccount, group, useMargin, type])
 
-  // const handleUpdateSearch = (e: ChangeEvent<HTMLInputElement>) => {
-  //   setSearch(e.target.value)
-  // }
+  const handleUpdateSearch = (e: ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value)
+  }
 
-  // const sortedTokens = search ? startSearch(tokenInfos, search) : tokenInfos
-  const sortedTokens = tokenInfos
+  const sortedTokens = search ? startSearch(tokenInfos, search) : tokenInfos
 
   useEffect(() => {
     if (focusRef?.current) {
@@ -228,71 +218,43 @@ const SwapFormTokenList = ({
         className="absolute top-2 right-2 text-th-fgd-3 hover:text-th-fgd-2"
         onClick={onClose}
         hideBg
-        ref={focusRef}
       >
         <XMarkIcon className="h-6 w-6" />
       </IconButton>
-      {/* No need for search/popular tokens until we have more tokens */}
-
-      {/* <div className="flex items-center text-th-fgd-4">
+      <div className="relative mb-4">
         <Input
+          className="pl-10"
           type="text"
           placeholder="Search by token or paste address"
-          prefix={<MagnifyingGlassIcon className="h-5 w-5" />}
           autoFocus
           value={search}
           onChange={handleUpdateSearch}
+          ref={focusRef}
         />
+        <MagnifyingGlassIcon className="absolute left-3 top-3.5 h-5 w-5" />
       </div>
-      {popularTokens.length ? (
-        <div className="mt-4 flex flex-wrap">
-          {popularTokens.map((token) => {
-            let logoURI
-            if (mangoTokens.length) {
-              logoURI = mangoTokens.find(
-                (t) => t.address === token.address
-              )!.logoURI
-            }
-            const disabled =
-              (type === 'input' && token.symbol === outputBank?.name) ||
-              (type === 'output' && token.symbol === inputBank?.name)
-            return (
-              <button
-                className={`${
-                  disabled ? 'opacity-20' : 'hover:border-th-fgd-3'
-                } mx-1 mb-2 flex items-center rounded-md border border-th-bkg-4 py-1 px-3 focus:border-th-fgd-2`}
-                onClick={() => onTokenSelect(token.address)}
-                disabled={disabled}
-                key={token.address}
-              >
-                {logoURI ? (
-                  <Image alt="" width="16" height="16" src={logoURI} />
-                ) : (
-                  <QuestionMarkCircleIcon className="h-5 w-5 text-th-fgd-3" />
-                )}
-                <span className="ml-1.5 text-th-fgd-1">{token.symbol}</span>
-              </button>
-            )
-          })}
-        </div>
-      ) : null} */}
-      {/* <div className="my-2 border-t border-th-bkg-4"></div> */}
-      <div className="mb-2 flex justify-between rounded bg-th-bkg-2 p-2">
+      <div className="flex justify-between rounded bg-th-bkg-2 p-2">
         <p className="text-xs text-th-fgd-4">{t('token')}</p>
         {type === 'input' ? (
           <p className="text-xs text-th-fgd-4">{t('max')}</p>
         ) : null}
       </div>
-      <div className="overflow-auto pb-2">
-        {sortedTokens.map((token) => (
-          <TokenItem
-            key={token.address}
-            token={token}
-            onSubmit={onTokenSelect}
-            useMargin={useMargin}
-            type={type}
-          />
-        ))}
+      <div className="thin-scroll h-[calc(100%-128px)] overflow-auto py-2">
+        {sortedTokens?.length ? (
+          sortedTokens.map((token) => (
+            <TokenItem
+              key={token.address}
+              token={token}
+              onSubmit={onTokenSelect}
+              useMargin={useMargin}
+              type={type}
+            />
+          ))
+        ) : (
+          <div className="mt-2 rounded-md border border-th-bkg-3 p-3">
+            <p className="text-center">{t('search:no-results')}</p>
+          </div>
+        )}
       </div>
     </>
   )
