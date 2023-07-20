@@ -21,6 +21,9 @@ Sentry.init({
   // in development and sample at a lower rate in production
   replaysSessionSampleRate: 0.1,
 
+  // Disable session tracking as it's not supported https://gitlab.com/glitchtip/glitchtip-backend/-/issues/206
+  autoSessionTracking: false,
+
   // You can remove this option if you're not planning to use the Sentry Session Replay feature:
   integrations: [
     new Sentry.Replay({
