@@ -18,7 +18,7 @@ import NftMarketButton from './NftMarketButton'
 const MyBidsModal = ({ isOpen, onClose }: ModalProps) => {
   const { publicKey } = useWallet()
   const metaplex = metaplexStore((s) => s.metaplex)
-  const { t } = useTranslation(['nftMarket'])
+  const { t } = useTranslation(['nft-market'])
   const { data: auctionHouse } = useAuctionHouse()
   const { data: lazyBids, refetch } = useBids()
   const myBids =

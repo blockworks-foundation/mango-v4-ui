@@ -22,9 +22,9 @@ import NftMarketButton from './NftMarketButton'
 const filter = [ALL_FILTER, 'My Listings']
 
 const ListingsView = () => {
-  const wallet = useWallet()
+  const { publicKey } = useWallet()
   const metaplex = metaplexStore((s) => s.metaplex)
-  // const { t } = useTranslation(['nftMarket'])
+  // const { t } = useTranslation(['nft-market'])
   const [currentFilter, setCurrentFilter] = useState(ALL_FILTER)
   const { data: bids } = useBids()
 
@@ -153,7 +153,7 @@ const ListingsView = () => {
                     {bestBid ? `Best Offer: ${bestBid} MNGO` : 'No offers'}
                   </p>
                 </div>
-                {wallet.publicKey && !x.sellerAddress.equals(wallet.publicKey) && (
+                {publicKey && !x.sellerAddress.equals(publicKey) && (
                   <div className="mt-3 flex space-x-2 border-t border-th-bkg-3 pt-4">
                     <NftMarketButton
                       className="w-1/2"
@@ -176,7 +176,7 @@ const ListingsView = () => {
                     )}
                   </div>
                 )}
-                {wallet.publicKey && x.sellerAddress.equals(wallet.publicKey) && (
+                {publicKey && x.sellerAddress.equals(publicKey) && (
                   <div className="mt-3 flex space-x-2 border-t border-th-bkg-3 pt-4">
                     <NftMarketButton
                       className="w-1/2"

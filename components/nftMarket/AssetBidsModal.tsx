@@ -17,7 +17,7 @@ const AssetBidsModal = ({
   onClose,
   listing,
 }: ModalProps & { listing: Listing }) => {
-  const { t } = useTranslation(['nftMarket'])
+  const { t } = useTranslation(['nft-market'])
   const metaplex = metaplexStore((s) => s.metaplex)
   const { data: auctionHouse } = useAuctionHouse()
   const { data: lazyBids, refetch: reftechBids } = useBids()

@@ -27,10 +27,10 @@ import { abbreviateAddress } from 'utils/formatting'
 import { NoSymbolIcon } from '@heroicons/react/20/solid'
 
 const AllBidsView = () => {
-  const wallet = useWallet()
+  const { publicKey } = useWallet()
   const { data: auctionHouse } = useAuctionHouse()
   const metaplex = metaplexStore((s) => s.metaplex)
-  // const { t } = useTranslation(['nftMarket'])
+  // const { t } = useTranslation(['nft-market'])
   const [showBidModal, setShowBidModal] = useState(false)
   const [bidListing, setBidListing] = useState<null | Listing>(null)
   const { data: bids, refetch } = useBids()
@@ -42,10 +42,10 @@ const AllBidsView = () => {
   const { data: listings } = useListings()
 
   useEffect(() => {
-    if (wallet.publicKey) {
-      fetchNfts(connection, wallet.publicKey!)
+    if (publicKey) {
+      fetchNfts(connection, publicKey!)
     }
-  }, [wallet.publicKey])
+  }, [publicKey])
 
   const cancelBid = async (bid: Bid) => {
     await metaplex!.auctionHouse().cancelBid({
@@ -155,8 +155,8 @@ const AllBidsView = () => {
                       </Td>
                       <Td>
                         <div className="flex justify-end space-x-2">
-                          {wallet.publicKey &&
-                          !x.buyerAddress.equals(wallet.publicKey) &&
+                          {publicKey &&
+                          !x.buyerAddress.equals(publicKey) &&
                           nfts.find(
                             (ownNft) =>
                               ownNft.mint === x.asset.address.toBase58()
@@ -176,8 +176,7 @@ const AllBidsView = () => {
                             />
                           ) : (
                             <>
-                              {wallet.publicKey &&
-                              x.buyerAddress.equals(wallet.publicKey) ? (
+                              {publicKey && x.buyerAddress.equals(publicKey) ? (
                                 <NftMarketButton
                                   colorClass="error"
                                   text="Cancel Offer"

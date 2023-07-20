@@ -27,14 +27,14 @@ export async function getStaticProps({ locale }: { locale: string }) {
         'settings',
         'token',
         'trade',
-        'nftMarket',
+        'nft-market',
       ])),
     },
   }
 }
 
 const Market: NextPage = () => {
-  // const { t } = useTranslation('nftMarket')
+  // const { t } = useTranslation('nft-market')
   useMetaplex()
   const [activeTab, setActiveTab] = useState('Listings')
   const [sellNftModal, setSellNftModal] = useState(false)

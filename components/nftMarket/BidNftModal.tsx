@@ -20,7 +20,7 @@ const BidNftModal = ({ isOpen, onClose, listing }: ListingModalProps) => {
   const metaplex = metaplexStore((s) => s.metaplex)
   const { data: auctionHouse } = useAuctionHouse()
   const { refetch } = useBids()
-  // const { t } = useTranslation(['nftMarket'])
+  // const { t } = useTranslation(['nft-market'])
   const noneListedAssetMode = !listing
 
   const [bidPrice, setBidPrice] = useState('')
