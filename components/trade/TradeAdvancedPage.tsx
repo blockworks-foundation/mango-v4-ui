@@ -1,6 +1,11 @@
-import { useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import dynamic from 'next/dynamic'
-import ReactGridLayout, { Responsive, WidthProvider } from 'react-grid-layout'
+import ReactGridLayout, {
+  Layout,
+  Layouts,
+  Responsive,
+  WidthProvider,
+} from 'react-grid-layout'
 import mangoStore from '@store/mangoStore'
 // import { IS_ONBOARDED_KEY } from 'utils/constants'
 // import useLocalStorageState from 'hooks/useLocalStorageState'
@@ -28,9 +33,7 @@ const TradingChartContainer = dynamic(() => import('./TradingChartContainer'), {
   ssr: false,
 })
 
-const ResponsiveGridLayout = WidthProvider(Responsive)
-
-const sidebarWidth = 63
+const sidebarWidth = 64
 const totalCols = 24
 export const gridBreakpoints = {
   md: breakpoints.md - sidebarWidth,
@@ -60,6 +63,8 @@ const TradeAdvancedPage = () => {
     'chartLeft'
   )
   const [showDepthChart] = useLocalStorageState<boolean>(DEPTH_CHART_KEY, false)
+
+  const ResponsiveGridLayout = useMemo(() => WidthProvider(Responsive), [])
 
   const defaultLayouts: ReactGridLayout.Layouts = useMemo(() => {
     const topnavbarHeight = 64
@@ -249,15 +254,27 @@ const TradeAdvancedPage = () => {
     }
   }, [height, showDepthChart, tradeLayout])
 
+  const [layouts, setLayouts] = useState<Layouts>(defaultLayouts)
+
+  const handleLayoutChange = useCallback(
+    (layout: Layout[] | undefined, layouts: Layouts) => {
+      setLayouts(layouts)
+    },
+    []
+  )
+
+  useEffect(() => {
+    handleLayoutChange(undefined, defaultLayouts)
+  }, [showDepthChart, tradeLayout])
+
   return showMobileView ? (
     <MobileTradeAdvancedPage />
   ) : (
     <TradeHotKeys>
       <FavoriteMarketsBar />
       <ResponsiveGridLayout
-        onBreakpointChange={(bp) => console.log('bp: ', bp)}
-        // layouts={savedLayouts ? savedLayouts : defaultLayouts}
-        layouts={defaultLayouts}
+        onBreakpointChange={() => setLayouts(defaultLayouts)}
+        layouts={layouts}
         breakpoints={gridBreakpoints}
         cols={{
           xxxl: totalCols,
@@ -273,6 +290,8 @@ const TradeAdvancedPage = () => {
         containerPadding={[0, 0]}
         margin={[0, 0]}
         useCSSTransforms
+        onLayoutChange={handleLayoutChange}
+        measureBeforeMount
       >
         <div key="market-header" className="z-10">
           <AdvancedMarketHeader />
