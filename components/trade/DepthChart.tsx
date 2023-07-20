@@ -17,10 +17,10 @@ import {
 import { CategoricalChartFunc } from 'recharts/types/chart/generateCategoricalChart'
 import { COLORS } from 'styles/colors'
 import { floorToDecimal, getDecimalCount } from 'utils/numbers'
-import { gridBreakpoints } from './TradeAdvancedPage'
 import { CartesianViewBox } from 'recharts/types/util/types'
 import { cumOrderbookSide } from 'types'
 import mangoStore from '@store/mangoStore'
+import { breakpoints } from 'utils/theme'
 
 type LabelPosition =
   | 'left'
@@ -75,7 +75,7 @@ const DepthChart = () => {
   const orderbook = mangoStore((s) => s.selectedMarket.orderbook)
   const [priceRangePercent, setPriceRangePercentPercent] = useState('10')
   const { width } = useViewport()
-  const increaseHeight = width ? width > gridBreakpoints.xxxl : false
+  const increaseHeight = width ? width > breakpoints['3xl'] : false
 
   const formatOrderbookData = (orderbook: RawOrderbook, markPrice: number) => {
     const maxPrice = markPrice * 4

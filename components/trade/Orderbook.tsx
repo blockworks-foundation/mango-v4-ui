@@ -23,7 +23,6 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import { OrderbookFeed } from '@blockworks-foundation/mango-feeds'
 import Switch from '@components/forms/Switch'
-import { gridBreakpoints } from './TradeAdvancedPage'
 import { breakpoints } from 'utils/theme'
 import {
   decodeBook,
@@ -66,7 +65,7 @@ const Orderbook = () => {
   const currentOrderbookData = useRef<OrderbookL2>()
 
   const depth = useMemo(() => {
-    return width > gridBreakpoints.xxxl ? 12 : 10
+    return width > breakpoints['3xl'] ? 12 : 10
   }, [width])
 
   const depthArray: number[] = useMemo(() => {
@@ -436,6 +435,7 @@ const Orderbook = () => {
           <Switch
             checked={showDepthChart}
             onChange={() => setShowDepthChart(!showDepthChart)}
+            small
           >
             <span className="text-xxs">{t('trade:depth')}</span>
           </Switch>
@@ -669,13 +669,13 @@ const OrderbookRow = ({
         </div>
 
         <Line
-          className={`absolute left-0 opacity-40 brightness-125 ${
+          className={`absolute left-0 opacity-30 brightness-125 ${
             side === 'buy' ? `bg-th-up-muted` : `bg-th-down-muted`
           }`}
           data-width={Math.max(sizePercent, 0.5) + '%'}
         />
         <Line
-          className={`absolute left-0 opacity-70 ${
+          className={`absolute left-0 opacity-40 ${
             side === 'buy' ? `bg-th-up` : `bg-th-down`
           }`}
           data-width={

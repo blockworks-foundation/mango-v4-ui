@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useLayoutEffect, useMemo, useState } from 'react'
 import dynamic from 'next/dynamic'
 import ReactGridLayout, {
   Layout,
@@ -20,7 +20,11 @@ import OrderbookAndTrades from './OrderbookAndTrades'
 // import TradeOnboardingTour from '@components/tours/TradeOnboardingTour'
 import FavoriteMarketsBar from './FavoriteMarketsBar'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { DEPTH_CHART_KEY, TRADE_LAYOUT_KEY } from 'utils/constants'
+import {
+  DEPTH_CHART_KEY,
+  SIDEBAR_COLLAPSE_KEY,
+  TRADE_LAYOUT_KEY,
+} from 'utils/constants'
 import TradeHotKeys from './TradeHotKeys'
 
 export type TradeLayout =
@@ -33,16 +37,6 @@ const TradingChartContainer = dynamic(() => import('./TradingChartContainer'), {
   ssr: false,
 })
 
-const sidebarWidth = 64
-const totalCols = 24
-export const gridBreakpoints = {
-  md: breakpoints.md - sidebarWidth,
-  lg: breakpoints.lg - sidebarWidth,
-  xl: breakpoints.xl - sidebarWidth,
-  xxl: breakpoints['2xl'] - sidebarWidth,
-  xxxl: breakpoints['3xl'] - sidebarWidth,
-}
-
 const getHeight = (
   pageHeight: number,
   minHeight: number,
@@ -50,6 +44,8 @@ const getHeight = (
 ) => {
   return Math.max(minHeight, pageHeight - remainingRowHeight)
 }
+
+const ResponsiveGridLayout = WidthProvider(Responsive)
 
 const TradeAdvancedPage = () => {
   const { height, width } = useViewport()
@@ -62,9 +58,20 @@ const TradeAdvancedPage = () => {
     TRADE_LAYOUT_KEY,
     'chartLeft'
   )
+  const [isCollapsed] = useLocalStorageState(SIDEBAR_COLLAPSE_KEY, false)
   const [showDepthChart] = useLocalStorageState<boolean>(DEPTH_CHART_KEY, false)
 
-  const ResponsiveGridLayout = useMemo(() => WidthProvider(Responsive), [])
+  const totalCols = 24
+  const gridBreakpoints = useMemo(() => {
+    const sidebarWidth = isCollapsed ? 64 : 207
+    return {
+      md: breakpoints.md - sidebarWidth,
+      lg: breakpoints.lg - sidebarWidth,
+      xl: breakpoints.xl - sidebarWidth,
+      xxl: breakpoints['2xl'] - sidebarWidth,
+      xxxl: breakpoints['3xl'] - sidebarWidth,
+    }
+  }, [isCollapsed])
 
   const defaultLayouts: ReactGridLayout.Layouts = useMemo(() => {
     const topnavbarHeight = 64
@@ -255,17 +262,18 @@ const TradeAdvancedPage = () => {
   }, [height, showDepthChart, tradeLayout])
 
   const [layouts, setLayouts] = useState<Layouts>(defaultLayouts)
+  const [breakpoint, setBreakpoint] = useState('')
 
   const handleLayoutChange = useCallback(
     (layout: Layout[] | undefined, layouts: Layouts) => {
       setLayouts(layouts)
     },
-    []
+    [setLayouts]
   )
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     handleLayoutChange(undefined, defaultLayouts)
-  }, [showDepthChart, tradeLayout])
+  }, [breakpoint, showDepthChart, tradeLayout])
 
   return showMobileView ? (
     <MobileTradeAdvancedPage />
@@ -273,9 +281,9 @@ const TradeAdvancedPage = () => {
     <TradeHotKeys>
       <FavoriteMarketsBar />
       <ResponsiveGridLayout
-        onBreakpointChange={() => setLayouts(defaultLayouts)}
         layouts={layouts}
         breakpoints={gridBreakpoints}
+        onBreakpointChange={(bp) => setBreakpoint(bp)}
         cols={{
           xxxl: totalCols,
           xxl: totalCols,
