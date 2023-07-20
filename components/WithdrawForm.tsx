@@ -30,7 +30,6 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
 import { floorToDecimal } from 'utils/numbers'
 import BankAmountWithValue from './shared/BankAmountWithValue'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
@@ -55,8 +54,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
   const { mangoAccount } = useMangoAccount()
-  const { connected } = useWallet()
-  const { handleConnect } = useEnhancedWallet()
+  const { connect, connected } = useWallet()
   const banks = useBanksWithBalances('maxWithdraw')
 
   const bank = useMemo(() => {
@@ -259,7 +257,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
             ) : null}
           </div>
           <Button
-            onClick={connected ? handleWithdraw : handleConnect}
+            onClick={connected ? handleWithdraw : connect}
             className="flex w-full items-center justify-center"
             size="large"
             disabled={

@@ -24,7 +24,6 @@ import {
   fetchJupiterTransaction,
 } from '@blockworks-foundation/mango-v4'
 import Decimal from 'decimal.js'
-import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
 import { notify } from 'utils/notifications'
 import * as sentry from '@sentry/nextjs'
 import { isMangoError } from 'types'
@@ -54,8 +53,7 @@ export default function SpotMarketOrderSwapForm() {
   const { isUnownedAccount } = useUnownedAccount()
   const [placingOrder, setPlacingOrder] = useState(false)
   const { ipAllowed, ipCountry } = useIpAddress()
-  const { connected, publicKey } = useWallet()
-  const { handleConnect } = useEnhancedWallet()
+  const { connected, publicKey, connect } = useWallet()
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const {
     selectedMarket,
@@ -240,7 +238,7 @@ export default function SpotMarketOrderSwapForm() {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    connected ? handlePlaceOrder() : handleConnect()
+    connected ? handlePlaceOrder() : connect()
   }
 
   const maintProjectedHealth = useMemo(() => {

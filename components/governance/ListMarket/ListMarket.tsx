@@ -30,7 +30,6 @@ import ListingSuccess from '../ListingSuccess'
 import { formatTokenSymbol } from 'utils/tokens'
 import OnBoarding from '../OnBoarding'
 import { calculateTradingParameters } from 'utils/governance/listingTools'
-import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
 import { tryGetPubKey } from 'utils/governance/tools'
 
 type FormErrors = Partial<Record<keyof ListMarketForm, string>>
@@ -58,8 +57,7 @@ const defaultFormValues: ListMarketForm = {
 }
 
 const ListMarket = ({ goBack }: { goBack: () => void }) => {
-  const wallet = useWallet()
-  const { handleConnect } = useEnhancedWallet()
+  const { connected, wallet, connect } = useWallet()
   const { t } = useTranslation(['governance', 'trade'])
   const { group } = useMangoGroup()
   const connection = mangoStore((s) => s.connection)
@@ -579,7 +577,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
             >
               {t('cancel')}
             </Button>
-            {wallet.connected ? (
+            {connected ? (
               <Button
                 onClick={handlePropose}
                 disabled={proposing || !marketPk}
@@ -592,7 +590,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
                 )}
               </Button>
             ) : (
-              <Button onClick={handleConnect} size="large">
+              <Button onClick={connect} size="large">
                 {t('connect-wallet')}
               </Button>
             )}

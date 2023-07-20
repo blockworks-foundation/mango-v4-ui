@@ -25,7 +25,6 @@ import MaxAmountButton from '@components/shared/MaxAmountButton'
 import Tooltip from '@components/shared/Tooltip'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
-import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
 import useSolBalance from 'hooks/useSolBalance'
 import FormatNumericValue from './shared/FormatNumericValue'
 import Decimal from 'decimal.js'
@@ -72,7 +71,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
   )
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
-  const { handleConnect } = useEnhancedWallet()
+  const { connect } = useWallet()
   const { maxSolDeposit } = useSolBalance()
   const banks = useBanksWithBalances('walletBalance')
 
@@ -272,7 +271,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
             ) : null}
           </div>
           <Button
-            onClick={connected ? handleDeposit : handleConnect}
+            onClick={connected ? handleDeposit : connect}
             className="flex w-full items-center justify-center"
             disabled={connected && (!inputAmount || showInsufficientBalance)}
             size="large"

@@ -42,7 +42,6 @@ import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import MaxSwapAmount from './MaxSwapAmount'
 import PercentageSelectButtons from './PercentageSelectButtons'
 import useIpAddress from 'hooks/useIpAddress'
-import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
 import SwapSettings from './SwapSettings'
 import InlineNotification from '@components/shared/InlineNotification'
 import useUnownedAccount from 'hooks/useUnownedAccount'
@@ -601,9 +600,8 @@ const SwapFormSubmitButton = ({
   useMargin: boolean
 }) => {
   const { t } = useTranslation('common')
-  const { connected } = useWallet()
+  const { connected, connect } = useWallet()
   const { amount: tokenMax, amountWithBorrow } = useTokenMax(useMargin)
-  const { handleConnect } = useEnhancedWallet()
 
   const showInsufficientBalance = useMargin
     ? amountWithBorrow.lt(amountIn)
@@ -616,7 +614,7 @@ const SwapFormSubmitButton = ({
       !amountOut ||
       !selectedRoute)
 
-  const onClick = connected ? () => setShowConfirm(true) : handleConnect
+  const onClick = connected ? () => setShowConfirm(true) : connect
 
   return (
     <>

@@ -42,11 +42,9 @@ import {
   RPC_PROVIDER_KEY,
 } from '../utils/constants'
 import {
-  AccountPerformanceData,
   ActivityFeed,
   EmptyObject,
   OrderbookL2,
-  PerformanceDataItem,
   PerpStatsItem,
   PerpTradeHistory,
   SerumEvent,

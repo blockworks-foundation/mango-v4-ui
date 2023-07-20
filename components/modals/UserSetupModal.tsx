@@ -3,6 +3,7 @@ import {
   ArrowDownTrayIcon,
   ArrowTopRightOnSquareIcon,
   CheckCircleIcon,
+  ChevronDownIcon,
   ExclamationCircleIcon,
   PencilIcon,
 } from '@heroicons/react/20/solid'
@@ -26,7 +27,6 @@ import ActionTokenList from '../account/ActionTokenList'
 import ButtonGroup from '../forms/ButtonGroup'
 import Input from '../forms/Input'
 import Label from '../forms/Label'
-import WalletIcon from '../icons/WalletIcon'
 // import ParticlesBackground from '../ParticlesBackground'
 // import EditNftProfilePic from '../profile/EditNftProfilePic'
 // import EditProfileForm from '../profile/EditProfileForm'
@@ -35,7 +35,6 @@ import InlineNotification from '../shared/InlineNotification'
 import Loading from '../shared/Loading'
 import MaxAmountButton from '../shared/MaxAmountButton'
 import SolBalanceWarnings from '../shared/SolBalanceWarnings'
-import { useEnhancedWallet } from '../wallet/EnhancedWalletProvider'
 import Modal from '../shared/Modal'
 import NumberFormat, { NumberFormatValues } from 'react-number-format'
 import { withValueLimit } from '@components/swap/SwapForm'
@@ -46,6 +45,7 @@ import ColorBlur from '@components/ColorBlur'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { ACCEPT_TERMS_KEY } from 'utils/constants'
 import { ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES } from '@components/BorrowForm'
+import { WalletReadyState } from '@solana/wallet-adapter-base'
 
 const UserSetupModal = ({
   isOpen,
@@ -66,10 +66,27 @@ const UserSetupModal = ({
   const [submitDeposit, setSubmitDeposit] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
   // const [showEditProfilePic, setShowEditProfilePic] = useState(false)
-  const { handleConnect } = useEnhancedWallet()
   const { maxSolDeposit } = useSolBalance()
   const banks = useBanksWithBalances('walletBalance')
   const [, setAcceptTerms] = useLocalStorageState(ACCEPT_TERMS_KEY, '')
+  const [walletsToDisplay, setWalletstoDisplay] = useState<'default' | 'all'>(
+    'default'
+  )
+
+  const walletsDisplayed = useMemo(() => {
+    const firstFive = wallets.slice(0, 5)
+    const detectedWallets = wallets.filter(
+      (w) => w.readyState === WalletReadyState.Installed
+    )
+
+    if (walletsToDisplay === 'default') {
+      return detectedWallets.length > firstFive.length
+        ? detectedWallets
+        : firstFive
+    } else {
+      return wallets
+    }
+  }, [walletsToDisplay, wallets])
 
   useEffect(() => {
     if (connected) {
@@ -279,44 +296,45 @@ const UserSetupModal = ({
                   {t('onboarding:choose-wallet')}
                 </p>
                 <div className="space-y-2">
-                  {wallets?.map((w) => (
+                  {walletsDisplayed?.map((w) => (
                     <button
                       className={`col-span-1 w-full rounded-md border py-3 px-4 text-base font-normal focus:outline-none md:hover:cursor-pointer md:hover:border-th-fgd-4 ${
                         w.adapter.name === wallet?.adapter.name
                           ? 'border-th-active text-th-fgd-1 md:hover:border-th-active'
-                          : 'border-th-bkg-4 text-th-fgd-4'
+                          : 'border-th-bkg-4 text-th-fgd-2'
                       }`}
                       onClick={() => {
                         select(w.adapter.name)
                       }}
                       key={w.adapter.name}
                     >
-                      <div className="flex items-center">
-                        <img
-                          src={w.adapter.icon}
-                          className="mr-2 h-5 w-5"
-                          alt={`${w.adapter.name} icon`}
-                        />
-                        {w.adapter.name}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <img
+                            src={w.adapter.icon}
+                            className="mr-2 h-5 w-5"
+                            alt={`${w.adapter.name} icon`}
+                          />
+                          <div className="ml-2">{w.adapter.name}</div>
+                        </div>
+                        {w.adapter.readyState === WalletReadyState.Installed ? (
+                          <div className="text-xs">Detected</div>
+                        ) : null}
                       </div>
                     </button>
                   ))}
                 </div>
-                <Button
-                  className="mt-10 flex items-center justify-center"
-                  onClick={handleConnect}
-                  size="large"
-                >
-                  {connected && mangoAccountLoading ? (
-                    <Loading />
-                  ) : (
-                    <div className="flex items-center justify-center">
-                      <WalletIcon className="mr-2 h-5 w-5" />
-
-                      {t('onboarding:connect-wallet')}
+                {walletsToDisplay !== 'all' ? (
+                  <button
+                    className="mt-4 flex w-full items-center justify-center text-base text-th-fgd-3 hover:text-th-fgd-1"
+                    onClick={() => setWalletstoDisplay('all')}
+                  >
+                    <div>More</div>
+                    <div>
+                      <ChevronDownIcon className={`h-5 w-5 flex-shrink-0`} />
                     </div>
-                  )}
-                </Button>
+                  </button>
+                ) : null}
               </div>
             ) : null}
           </UserSetupTransition>

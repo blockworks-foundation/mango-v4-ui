@@ -32,7 +32,6 @@ import Loading from '@components/shared/Loading'
 import ListingSuccess from '../ListingSuccess'
 import InlineNotification from '@components/shared/InlineNotification'
 import { Disclosure } from '@headlessui/react'
-import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
 import { abbreviateAddress } from 'utils/formatting'
 import { formatNumericValue } from 'utils/numbers'
 import useMangoGroup from 'hooks/useMangoGroup'
@@ -86,12 +85,11 @@ const defaultTokenListFormValues: TokenListForm = {
 const TWENTY_K_USDC_BASE = '20000000000'
 
 const ListToken = ({ goBack }: { goBack: () => void }) => {
-  const wallet = useWallet()
+  const { connect, publicKey, connected, wallet } = useWallet()
   const { jupiterTokens } = useJupiterMints()
   const connection = mangoStore((s) => s.connection)
   const client = mangoStore((s) => s.client)
   const { group } = useMangoGroup()
-  const { handleConnect } = useEnhancedWallet()
   const voter = GovernanceStore((s) => s.voter)
   const vsrClient = GovernanceStore((s) => s.vsrClient)
   const governances = GovernanceStore((s) => s.governances)
@@ -218,9 +216,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     (amount: number, tokenMint: PublicKey, mode: 'ExactIn' | 'ExactOut') => {
       const SLIPPAGE_BPS = 50
       const FEE = 0
-      const walletForCheck = wallet.publicKey
-        ? wallet.publicKey?.toBase58()
-        : emptyPk
+      const walletForCheck = publicKey ? publicKey?.toBase58() : emptyPk
 
       return handleGetRoutes(
         USDC_MINT,
@@ -233,7 +229,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         'JUPITER'
       )
     },
-    [wallet.publicKey]
+    [publicKey]
   )
 
   const handleLiqudityCheck = useCallback(
@@ -298,7 +294,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         })
       }
     },
-    [t, wallet.publicKey]
+    [t, handleGetRoutesWithFixedArgs]
   )
 
   const handleGetPoolParams = (routes: never[] | RouteInfo[]) => {
@@ -387,8 +383,8 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     if (Object.keys(invalidFields).length) {
       return
     }
-    if (!wallet?.publicKey || !vsrClient || !connectionContext) return
-    await getCurrentVotingPower(wallet.publicKey, vsrClient, connectionContext)
+    if (!publicKey || !vsrClient || !connectionContext) return
+    await getCurrentVotingPower(publicKey, vsrClient, connectionContext)
 
     if (voter.voteWeight.cmp(minVoterWeight) === -1) {
       notify({
@@ -960,7 +956,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                 <Button secondary onClick={cancel} size="large">
                   {t('cancel')}
                 </Button>
-                {wallet.connected ? (
+                {connected ? (
                   <Button
                     className="flex w-full items-center justify-center sm:w-44"
                     onClick={propose}
@@ -982,7 +978,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                     )}
                   </Button>
                 ) : (
-                  <Button onClick={handleConnect} size="large">
+                  <Button onClick={connect} size="large">
                     {t('connect-wallet')}
                   </Button>
                 )}

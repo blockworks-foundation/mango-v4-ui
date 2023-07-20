@@ -17,6 +17,14 @@ import {
   PhantomWalletAdapter,
   SolflareWalletAdapter,
   GlowWalletAdapter,
+  BackpackWalletAdapter,
+  BraveWalletAdapter,
+  CoinbaseWalletAdapter,
+  MathWalletAdapter,
+  Coin98WalletAdapter,
+  CloverWalletAdapter,
+  LedgerWalletAdapter,
+  ExodusWalletAdapter,
 } from '@solana/wallet-adapter-wallets'
 import { clusterApiUrl } from '@solana/web3.js'
 import TransactionNotification from '@components/notifications/TransactionNotification'
@@ -26,7 +34,6 @@ import Layout from '../components/Layout'
 import { ViewportProvider } from '../hooks/useViewport'
 import MangoProvider from '@components/MangoProvider'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import EnhancedWalletProvider from '@components/wallet/EnhancedWalletProvider'
 import { notify } from 'utils/notifications'
 import { useRouter } from 'next/router'
 import useSelectedMarket from 'hooks/useSelectedMarket'
@@ -36,16 +43,15 @@ import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { getDecimalCount } from 'utils/numbers'
 import { THEME_KEY } from 'utils/constants'
 
-// Do not add hooks to this component that will cause unnecessary rerenders
-// Top level state hydrating/updating should go in MangoProvider
-
-// Create a client
+// init react-query
 export const queryClient = new QueryClient()
 
 const metaTitle = 'Mango Markets – Safer. Smarter. Faster.'
 const metaDescription =
   'A magical new way to interact with DeFi. Groundbreaking safety features designed to keep your funds secure. The easiest way to margin trade any token pair. All powered by flashloans.'
 
+// Do not add hooks to this component, that will cause unnecessary rerenders
+// Top level state hydrating/updating should go in MangoProvider
 function MyApp({ Component, pageProps }: AppProps) {
   const network = WalletAdapterNetwork.Mainnet
   const endpoint = useMemo(() => clusterApiUrl(network), [network])
@@ -53,7 +59,15 @@ function MyApp({ Component, pageProps }: AppProps) {
     () => [
       new PhantomWalletAdapter(),
       new SolflareWalletAdapter(),
+      new BackpackWalletAdapter(),
       new GlowWalletAdapter(),
+      new BraveWalletAdapter(),
+      new CoinbaseWalletAdapter(),
+      new MathWalletAdapter(),
+      new Coin98WalletAdapter(),
+      new CloverWalletAdapter(),
+      new LedgerWalletAdapter(),
+      new ExodusWalletAdapter(),
     ],
     []
   )
@@ -100,21 +114,16 @@ function MyApp({ Component, pageProps }: AppProps) {
       <MangoProvider />
       <QueryClientProvider client={queryClient}>
         <ConnectionProvider endpoint={endpoint}>
-          <WalletProvider wallets={wallets} onError={onError}>
-            <EnhancedWalletProvider>
-              <ThemeProvider
-                defaultTheme="Mango Classic"
-                storageKey={THEME_KEY}
-              >
-                <ViewportProvider>
-                  <PageTitle />
-                  <Layout>
-                    <Component {...pageProps} />
-                  </Layout>
-                </ViewportProvider>
-                <TransactionNotification />
-              </ThemeProvider>
-            </EnhancedWalletProvider>
+          <WalletProvider wallets={wallets} onError={onError} autoConnect>
+            <ThemeProvider defaultTheme="Mango Classic" storageKey={THEME_KEY}>
+              <ViewportProvider>
+                <PageTitle />
+                <Layout>
+                  <Component {...pageProps} />
+                </Layout>
+              </ViewportProvider>
+              <TransactionNotification />
+            </ThemeProvider>
           </WalletProvider>
         </ConnectionProvider>
       </QueryClientProvider>

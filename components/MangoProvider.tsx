@@ -5,6 +5,7 @@ import { useRouter } from 'next/router'
 import { MangoAccount } from '@blockworks-foundation/mango-v4'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useInterval from './shared/useInterval'
+import { getNetworkInfo } from 'utils'
 
 const set = mangoStore.getState().set
 const actions = mangoStore.getState().actions
@@ -48,6 +49,7 @@ const HydrateStore = () => {
   useInterval(async () => {
     const actions = mangoStore.getState().actions
     actions.loadMarketFills()
+    console.log('connection', getNetworkInfo())
   }, 30000)
 
   // The websocket library solana/web3.js uses closes its websocket connection when the subscription list

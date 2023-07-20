@@ -55,7 +55,6 @@ import MaxSizeButton from './MaxSizeButton'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 import { Howl } from 'howler'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
 import { isMangoError } from 'types'
 import InlineNotification from '@components/shared/InlineNotification'
 import SpotMarketOrderSwapForm from './SpotMarketOrderSwapForm'
@@ -92,8 +91,7 @@ const AdvancedTradeForm = () => {
     SOUND_SETTINGS_KEY,
     INITIAL_SOUND_SETTINGS
   )
-  const { connected } = useWallet()
-  const { handleConnect } = useEnhancedWallet()
+  const { connected, connect } = useWallet()
   const {
     selectedMarket,
     price: oraclePrice,
@@ -478,7 +476,7 @@ const AdvancedTradeForm = () => {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    connected ? handlePlaceOrder() : handleConnect()
+    connected ? handlePlaceOrder() : connect()
   }
 
   const disabled =

@@ -10,9 +10,7 @@ import {
 import { ArrowPathIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useViewport } from '../hooks/useViewport'
 import { breakpoints } from '../utils/theme'
-import mangoStore from '@store/mangoStore'
 import BottomBar from './mobile/BottomBar'
-import BounceLoader from './shared/BounceLoader'
 import TopBar from './TopBar'
 import useLocalStorageState from '../hooks/useLocalStorageState'
 import { ACCEPT_TERMS_KEY, SIDEBAR_COLLAPSE_KEY } from '../utils/constants'
@@ -75,7 +73,6 @@ const Layout = ({ children }: { children: ReactNode }) => {
       <div className="fixed z-30">
         <SuccessParticles />
       </div>
-      <MangoAccountLoadingOverlay />
       <div className="flex-grow bg-th-bkg-1 text-th-fgd-2 transition-all">
         <div className="fixed bottom-0 left-0 z-20 w-full md:hidden">
           <BottomBar />
@@ -118,21 +115,6 @@ const Layout = ({ children }: { children: ReactNode }) => {
 }
 
 export default Layout
-
-const MangoAccountLoadingOverlay = () => {
-  const { connected } = useWallet()
-  const loadingMangoAccount = mangoStore((s) => s.mangoAccount.initialLoad)
-
-  return (
-    <>
-      {connected && loadingMangoAccount ? (
-        <div className="fixed z-30 flex h-screen w-full items-center justify-center bg-[rgba(0,0,0,0.7)]">
-          <BounceLoader />
-        </div>
-      ) : null}
-    </>
-  )
-}
 
 const TermsOfUse = () => {
   const { connected } = useWallet()
