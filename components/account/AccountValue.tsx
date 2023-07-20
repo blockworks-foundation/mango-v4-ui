@@ -19,19 +19,19 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'next-i18next'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
-import { ChartToShow } from './AccountPage'
+import { ViewToShow } from './AccountPage'
 import useAccountPerformanceData from 'hooks/useAccountPerformanceData'
 
 const AccountValue = ({
   accountValue,
   latestAccountData,
   rollingDailyData,
-  setChartToShow,
+  handleViewChange,
 }: {
   accountValue: number
   latestAccountData: PerformanceDataItem[]
   rollingDailyData: PerformanceDataItem[]
-  setChartToShow: (chart: ChartToShow) => void
+  handleViewChange: (view: ViewToShow) => void
 }) => {
   const { t } = useTranslation('common')
   const { theme } = useTheme()
@@ -62,7 +62,7 @@ const AccountValue = ({
   }
 
   const handleShowAccountValueChart = () => {
-    setChartToShow('account-value')
+    handleViewChange('account-value')
     setShowExpandChart(false)
   }
 

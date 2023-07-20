@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import dayjs from 'dayjs'
-import { ReactNode, forwardRef } from 'react'
+import { MouseEventHandler, ReactNode, forwardRef } from 'react'
 
 export const Table = ({
   children,
@@ -43,15 +44,19 @@ interface TrBodyProps {
   children: ReactNode
   className?: string
   onClick?: () => void
+  onMouseEnter?: (x: any) => void
+  onMouseLeave?: MouseEventHandler
 }
 
 export const TrBody = forwardRef<HTMLTableRowElement, TrBodyProps>(
   (props, ref) => {
-    const { children, className, onClick } = props
+    const { children, className, onClick, onMouseEnter, onMouseLeave } = props
     return (
       <tr
         className={`border-y border-th-bkg-3 ${className}`}
         onClick={onClick}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
         ref={ref}
       >
         {children}

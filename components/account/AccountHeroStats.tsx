@@ -3,7 +3,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
 import { useEffect, useMemo } from 'react'
-import { ChartToShow } from './AccountPage'
+import { ViewToShow } from './AccountPage'
 import { useQuery } from '@tanstack/react-query'
 import { fetchFundingTotals, fetchVolumeTotals } from 'utils/account'
 import Tooltip from '@components/shared/Tooltip'
@@ -25,13 +25,13 @@ const AccountHeroStats = ({
   accountValue,
   rollingDailyData,
   setShowPnlHistory,
-  setChartToShow,
+  handleViewChange,
 }: {
   accountPnl: number
   accountValue: number
   rollingDailyData: PerformanceDataItem[]
   setShowPnlHistory: (show: boolean) => void
-  setChartToShow: (view: ChartToShow) => void
+  handleViewChange: (view: ViewToShow) => void
 }) => {
   const { t } = useTranslation(['common', 'account'])
   const { group } = useMangoGroup()
@@ -162,71 +162,78 @@ const AccountHeroStats = ({
     return volume
   }, [hourlyVolumeData])
 
-  const handleChartToShow = (
-    viewName:
-      | 'pnl'
-      | 'cumulative-interest-value'
-      | 'hourly-funding'
-      | 'hourly-volume'
-  ) => {
-    setChartToShow(viewName)
-  }
-
   const loadingTotalVolume = fetchingVolumeTotalData || loadingVolumeTotalData
 
   return (
     <>
       <div className="grid grid-cols-6 border-b border-th-bkg-3">
-        <div className="col-span-6 border-t border-th-bkg-3 py-3 px-6 md:col-span-3 lg:col-span-2 lg:border-t-0 xl:col-span-1">
+        <div className="col-span-6 border-t border-th-bkg-3 py-3 pl-6 pr-4 md:col-span-3 lg:col-span-2 lg:border-t-0 xl:col-span-1">
           <div id="account-step-four">
-            <Tooltip
-              maxWidth="20rem"
-              placement="top-start"
-              delay={100}
-              content={
-                <div className="flex-col space-y-2 text-sm">
-                  <p className="text-xs">
-                    Health describes how close your account is to liquidation.
-                    The lower your account health is the more likely you are to
-                    get liquidated when prices fluctuate.
-                  </p>
-                  {maintHealth < 100 && mangoAccountAddress ? (
-                    <>
-                      <p className="text-xs font-bold text-th-fgd-1">
-                        Your account health is {maintHealth}%
-                      </p>
-                      <p className="text-xs">
-                        <span className="font-bold text-th-fgd-1">
-                          Scenario:
-                        </span>{' '}
-                        If the prices of all your liabilities increase by{' '}
-                        {maintHealth}%, even for just a moment, some of your
-                        liabilities will be liquidated.
-                      </p>
-                      <p className="text-xs">
-                        <span className="font-bold text-th-fgd-1">
-                          Scenario:
-                        </span>{' '}
-                        If the value of your total collateral decreases by{' '}
-                        {(
-                          (1 - 1 / ((maintHealth || 0) / 100 + 1)) *
-                          100
-                        ).toFixed(2)}
-                        % , some of your liabilities will be liquidated.
-                      </p>
-                      <p className="text-xs">
-                        These are examples. A combination of events can also
-                        lead to liquidation.
-                      </p>
-                    </>
-                  ) : null}
-                </div>
-              }
-            >
-              <p className="tooltip-underline text-sm font-normal text-th-fgd-3 xl:text-base">
-                {t('health')}
-              </p>
-            </Tooltip>
+            <div className="flex justify-between">
+              <Tooltip
+                maxWidth="20rem"
+                placement="top-start"
+                delay={100}
+                content={
+                  <div className="flex-col space-y-2 text-sm">
+                    <p className="text-xs">
+                      Health describes how close your account is to liquidation.
+                      The lower your account health is the more likely you are
+                      to get liquidated when prices fluctuate.
+                    </p>
+                    {maintHealth < 100 && mangoAccountAddress ? (
+                      <>
+                        <p className="text-xs font-bold text-th-fgd-1">
+                          Your account health is {maintHealth}%
+                        </p>
+                        <p className="text-xs">
+                          <span className="font-bold text-th-fgd-1">
+                            Scenario:
+                          </span>{' '}
+                          If the prices of all your liabilities increase by{' '}
+                          {maintHealth}%, even for just a moment, some of your
+                          liabilities will be liquidated.
+                        </p>
+                        <p className="text-xs">
+                          <span className="font-bold text-th-fgd-1">
+                            Scenario:
+                          </span>{' '}
+                          If the value of your total collateral decreases by{' '}
+                          {(
+                            (1 - 1 / ((maintHealth || 0) / 100 + 1)) *
+                            100
+                          ).toFixed(2)}
+                          % , some of your liabilities will be liquidated.
+                        </p>
+                        <p className="text-xs">
+                          These are examples. A combination of events can also
+                          lead to liquidation.
+                        </p>
+                      </>
+                    ) : null}
+                  </div>
+                }
+              >
+                <p className="tooltip-underline text-sm font-normal text-th-fgd-3 xl:text-base">
+                  {t('health')}
+                </p>
+              </Tooltip>
+              {mangoAccountAddress ? (
+                <Tooltip
+                  className="hidden md:block"
+                  content={t('account:health-contributions')}
+                  delay={100}
+                >
+                  <IconButton
+                    className="text-th-fgd-3"
+                    hideBg
+                    onClick={() => handleViewChange('health-contributions')}
+                  >
+                    <ChartBarIcon className="h-5 w-5" />
+                  </IconButton>
+                </Tooltip>
+              ) : null}
+            </div>
             <div className="mt-1 mb-0.5 flex items-center space-x-3">
               <p className="text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
                 {maintHealth}%
@@ -298,7 +305,7 @@ const AccountHeroStats = ({
             </span>
           </div>
         </div>
-        <div className="col-span-6 flex border-t border-th-bkg-3 py-3 px-6 md:col-span-3 lg:col-span-2 lg:border-l lg:border-t-0 xl:col-span-1">
+        <div className="col-span-6 flex border-t border-th-bkg-3 py-3 pl-6 pr-4 md:col-span-3 lg:col-span-2 lg:border-l lg:border-t-0 xl:col-span-1">
           <div
             id="account-step-seven"
             className="flex w-full flex-col items-start"
@@ -323,7 +330,7 @@ const AccountHeroStats = ({
                     <IconButton
                       className="text-th-fgd-3"
                       hideBg
-                      onClick={() => handleChartToShow('pnl')}
+                      onClick={() => handleViewChange('pnl')}
                     >
                       <ChartBarIcon className="h-5 w-5" />
                     </IconButton>
@@ -372,7 +379,7 @@ const AccountHeroStats = ({
                   <IconButton
                     className="text-th-fgd-3"
                     hideBg
-                    onClick={() => handleChartToShow('hourly-volume')}
+                    onClick={() => handleViewChange('hourly-volume')}
                   >
                     <ChartBarIcon className="h-5 w-5" />
                   </IconButton>
@@ -429,7 +436,7 @@ const AccountHeroStats = ({
                     className="text-th-fgd-3"
                     hideBg
                     onClick={() =>
-                      handleChartToShow('cumulative-interest-value')
+                      handleViewChange('cumulative-interest-value')
                     }
                   >
                     <ChartBarIcon className="h-5 w-5" />
@@ -471,7 +478,7 @@ const AccountHeroStats = ({
                 <IconButton
                   className="text-th-fgd-3"
                   hideBg
-                  onClick={() => handleChartToShow('hourly-funding')}
+                  onClick={() => handleViewChange('hourly-funding')}
                 >
                   <ChartBarIcon className="h-5 w-5" />
                 </IconButton>

@@ -20,6 +20,7 @@ import {
   ArchiveBoxArrowDownIcon,
   // ClipboardDocumentIcon,
   NewspaperIcon,
+  ExclamationTriangleIcon,
 } from '@heroicons/react/20/solid'
 import SolanaTps from '@components/SolanaTps'
 import LeaderboardIcon from '@components/icons/LeaderboardIcon'
@@ -110,7 +111,7 @@ const MoreMenuPanel = ({
   const { t } = useTranslation(['common', 'search'])
   return (
     <div
-      className={`fixed bottom-0 z-30 h-full w-full overflow-hidden rounded-t-3xl bg-th-bkg-2 px-4 transition duration-300 ease-in-out ${
+      className={`fixed bottom-0 z-30 h-full w-full overflow-hidden bg-th-bkg-2 px-4 transition duration-300 ease-in-out ${
         showPanel ? 'translate-y-0' : 'translate-y-full'
       }`}
     >
@@ -176,6 +177,12 @@ const MoreMenuPanel = ({
           title={t('terms-of-use')}
           path="https://docs.mango.markets/legal"
           icon={<NewspaperIcon className="h-5 w-5" />}
+          isExternal
+        />
+        <MoreMenuItem
+          icon={<ExclamationTriangleIcon className="h-5 w-5" />}
+          title={t('risks')}
+          path="https://docs.mango.markets/mango-markets/risks"
           isExternal
         />
       </div>
