@@ -5,6 +5,8 @@ import Decimal from 'decimal.js'
 import { RouteInfo } from 'types/jupiter'
 import { MANGO_ROUTER_API_URL } from 'utils/constants'
 import useJupiterSwapData from './useJupiterSwapData'
+import useDebounce from '@components/shared/useDebounce'
+import { useMemo } from 'react'
 
 type SwapModes = 'ALL' | 'JUPITER' | 'MANGO'
 
@@ -16,6 +18,7 @@ type useQuoteRoutesPropTypes = {
   swapMode: string
   wallet: string | undefined | null
   mode?: SwapModes
+  enabled?: () => boolean
 }
 
 const fetchJupiterRoutes = async (
@@ -185,24 +188,36 @@ const useQuoteRoutes = ({
   swapMode,
   wallet,
   mode = 'ALL',
+  enabled,
 }: useQuoteRoutesPropTypes) => {
+  const [debouncedAmount] = useDebounce(amount, 250)
   const { inputTokenInfo, outputTokenInfo } = useJupiterSwapData()
 
-  const decimals =
-    swapMode === 'ExactIn'
+  const decimals = useMemo(() => {
+    return swapMode === 'ExactIn'
       ? inputTokenInfo?.decimals || 6
       : outputTokenInfo?.decimals || 6
+  }, [swapMode, inputTokenInfo?.decimals, outputTokenInfo?.decimals])
 
-  const nativeAmount =
-    amount && !Number.isNaN(+amount)
-      ? new Decimal(amount).mul(10 ** decimals)
+  const nativeAmount = useMemo(() => {
+    return debouncedAmount && !Number.isNaN(+debouncedAmount)
+      ? new Decimal(debouncedAmount).mul(10 ** decimals)
       : new Decimal(0)
+  }, [debouncedAmount, decimals])
 
   const res = useQuery<
     { routes: RouteInfo[]; bestRoute: RouteInfo | null },
     Error
   >(
-    ['swap-routes', inputMint, outputMint, amount, slippage, swapMode, wallet],
+    [
+      'swap-routes',
+      inputMint,
+      outputMint,
+      debouncedAmount,
+      slippage,
+      swapMode,
+      wallet,
+    ],
     async () =>
       handleGetRoutes(
         inputMint,
@@ -216,8 +231,9 @@ const useQuoteRoutes = ({
       ),
     {
       cacheTime: 1000 * 60,
-      staleTime: 1000 * 30,
-      enabled: amount ? true : false,
+      staleTime: 1000 * 3,
+      enabled: enabled ? enabled() : amount ? true : false,
+      refetchInterval: 20000,
       retry: 3,
     }
   )

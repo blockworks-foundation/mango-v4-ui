@@ -19,12 +19,10 @@ export async function getStaticProps({ locale }: { locale: string }) {
         'notifications',
         'onboarding',
         'onboarding-tours',
-        'profile',
-        'search',
-        'settings',
         'trade',
         'close-account',
         'tv-chart',
+        'swap',
       ])),
     },
   }
