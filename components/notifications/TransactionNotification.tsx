@@ -22,6 +22,16 @@ import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
 
 const setMangoStore = mangoStore.getState().set
 
+function parseDescription(description: string | null | undefined) {
+  if (
+    description?.includes('{"err":{"InstructionError":[2,{"Custom":6001}]}}')
+  ) {
+    return 'Your max slippage tolerance was exceeded'
+  }
+
+  return description
+}
+
 const TransactionNotificationList = () => {
   const { t } = useTranslation()
   const transactionNotifications = mangoStore((s) => s.transactionNotifications)
@@ -134,12 +144,7 @@ const TransactionNotification = ({
     }
   }
 
-  let parsedDescription = description
-  if (
-    description?.includes('{"err":{"InstructionError":[2,{"Custom":6001}]}}')
-  ) {
-    parsedDescription = 'Your max slippage tolerance was exceeded'
-  }
+  const parsedDescription = parseDescription(description)
 
   // if the notification is a success, then hide the confirming tx notification with the same txid
   useEffect(() => {
@@ -153,35 +158,37 @@ const TransactionNotification = ({
     }
   }, [type, txid])
 
-  const hideNotification = () => {
+  const hideNotification = useCallback(() => {
     setMangoStore((s) => {
       const newNotifications = s.transactionNotifications.map((n) =>
         n.id === id ? { ...n, show: false } : n
       )
       s.transactionNotifications = newNotifications
     })
-  }
+  }, [id])
 
-  // auto hide a notification after 8 seconds unless it is a confirming or time out notification
+  // auto hide a notification
   // if no status is provided for a tx notification after 90s, hide it
   useEffect(() => {
-    const id = setTimeout(
-      () => {
-        if (show) {
-          hideNotification()
-        }
-      },
+    const timeoutInterval =
       parsedTitle || type === 'confirm'
         ? CLIENT_TX_TIMEOUT
         : type === 'error'
         ? 30000
+        : type === 'info'
+        ? 4000
         : 10000
-    )
+
+    const id = setTimeout(() => {
+      if (show) {
+        hideNotification()
+      }
+    }, timeoutInterval)
 
     return () => {
       clearInterval(id)
     }
-  })
+  }, [hideNotification, parsedTitle, show, type])
 
   const getTransformClasses = (position: string) => {
     const fromLeft = {
