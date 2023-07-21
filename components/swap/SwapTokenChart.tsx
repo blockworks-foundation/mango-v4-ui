@@ -1,4 +1,10 @@
-import { MouseEventHandler, useEffect, useMemo, useState } from 'react'
+import {
+  MouseEventHandler,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import {
@@ -191,107 +197,132 @@ const SwapTokenChart = () => {
     string | number | undefined
   >(undefined)
 
-  const handleSwapMouseEnter = (
-    swap: SwapHistoryItem | undefined,
-    coingeckoPrice: string | number | undefined
-  ) => {
-    if (swap) {
-      setSwapTooltipData(swap)
-    }
-    if (coingeckoPrice) {
-      setSwapTooltipCoingeckoPrice(coingeckoPrice)
-    }
-  }
+  const handleSwapMouseEnter = useCallback(
+    (
+      swap: SwapHistoryItem | undefined,
+      coingeckoPrice: string | number | undefined
+    ) => {
+      if (swap) {
+        setSwapTooltipData(swap)
+      }
+      if (coingeckoPrice) {
+        setSwapTooltipCoingeckoPrice(coingeckoPrice)
+      }
+    },
+    [setSwapTooltipData, setSwapTooltipCoingeckoPrice]
+  )
 
-  const handleSwapMouseLeave = () => {
+  const handleSwapMouseLeave = useCallback(() => {
     setSwapTooltipData(null)
-  }
+  }, [setSwapTooltipData])
 
-  const renderTooltipContent = (swap: SwapHistoryItem) => {
-    const {
-      swap_in_amount,
-      swap_in_symbol,
-      swap_out_price_usd,
-      swap_out_amount,
-      swap_out_symbol,
-    } = swap
+  const swapMarketName = useMemo(() => {
+    if (!inputBank || !outputBank) return ''
+    const inputSymbol = formatTokenSymbol(inputBank.name)
+    const outputSymbol = formatTokenSymbol(outputBank.name)
+    return ['usd-coin', 'tether'].includes(inputCoingeckoId || '')
+      ? !flipPrices
+        ? `${outputSymbol}/${inputSymbol}`
+        : `${inputSymbol}/${outputSymbol}`
+      : !flipPrices
+      ? `${inputSymbol}/${outputSymbol}`
+      : `${outputSymbol}/${inputSymbol}`
+  }, [flipPrices, inputBank, inputCoingeckoId, outputBank])
 
-    const swapOutValue = swap_out_price_usd * swap_out_amount
+  const renderTooltipContent = useCallback(
+    (swap: SwapHistoryItem) => {
+      const {
+        swap_in_amount,
+        swap_in_symbol,
+        swap_out_price_usd,
+        swap_out_amount,
+        swap_out_symbol,
+      } = swap
 
-    const baseMarketToken = swapMarketName.split('/')[0]
+      const swapOutValue = swap_out_price_usd * swap_out_amount
 
-    const swapSide =
-      swap_in_symbol === baseMarketToken
-        ? !flipPrices
-          ? 'sell'
-          : 'buy'
-        : !flipPrices
-        ? 'buy'
-        : 'sell'
+      const baseMarketToken = swapMarketName.split('/')[0]
 
-    const buy = {
-      price: swap_in_amount / swap_out_amount,
-      priceSymbol: swap_in_symbol,
-      amount: swap_out_amount,
-      side: 'buy',
-      symbol: swap_out_symbol,
-      value: swapOutValue,
-    }
+      const swapSide =
+        swap_in_symbol === baseMarketToken
+          ? !flipPrices
+            ? 'sell'
+            : 'buy'
+          : !flipPrices
+          ? 'buy'
+          : 'sell'
 
-    const sell = {
-      price: swap_out_amount / swap_in_amount,
-      priceSymbol: swap_out_symbol,
-      amount: swap_in_amount,
-      side: 'sell',
-      symbol: swap_in_symbol,
-      value: swapOutValue,
-    }
+      const buy = {
+        price: swap_in_amount / swap_out_amount,
+        priceSymbol: swap_in_symbol,
+        amount: swap_out_amount,
+        side: 'buy',
+        symbol: swap_out_symbol,
+        value: swapOutValue,
+      }
 
-    const swapProps =
-      swapSide === 'buy' ? (!flipPrices ? buy : sell) : !flipPrices ? sell : buy
+      const sell = {
+        price: swap_out_amount / swap_in_amount,
+        priceSymbol: swap_out_symbol,
+        amount: swap_in_amount,
+        side: 'sell',
+        symbol: swap_in_symbol,
+        value: swapOutValue,
+      }
 
-    const { amount, price, priceSymbol, side, symbol, value } = swapProps
+      const swapProps =
+        swapSide === 'buy'
+          ? !flipPrices
+            ? buy
+            : sell
+          : !flipPrices
+          ? sell
+          : buy
 
-    let coingeckoPercentageDifference = 0
-    if (
-      swapTooltipCoingeckoPrice &&
-      typeof swapTooltipCoingeckoPrice === 'number'
-    ) {
-      const difference = ((price - swapTooltipCoingeckoPrice) / price) * 100
-      coingeckoPercentageDifference = difference
-    }
+      const { amount, price, priceSymbol, side, symbol, value } = swapProps
 
-    const betterThanCoingecko =
-      swapSide === 'buy'
-        ? flipPrices
-          ? coingeckoPercentageDifference > 0
-          : coingeckoPercentageDifference < 0
-        : flipPrices
-        ? coingeckoPercentageDifference < 0
-        : coingeckoPercentageDifference > 0
+      let coingeckoPercentageDifference = 0
+      if (
+        swapTooltipCoingeckoPrice &&
+        typeof swapTooltipCoingeckoPrice === 'number'
+      ) {
+        const difference = ((price - swapTooltipCoingeckoPrice) / price) * 100
+        coingeckoPercentageDifference = difference
+      }
 
-    return (
-      <>
-        <p className="text-center text-th-fgd-2">{`${t(
-          side
-        )} ${amount} ${symbol} at ${formatNumericValue(
-          price
-        )} ${priceSymbol} for ${formatCurrencyValue(value)}`}</p>
-        {coingeckoPercentageDifference ? (
-          <p
-            className={`mt-0.5 text-center text-xs ${
-              betterThanCoingecko ? 'text-th-up' : 'text-th-down'
-            }`}
-          >
-            <span className="font-mono">
-              {coingeckoPercentageDifference.toFixed(2)}%
-            </span>{' '}
-            {betterThanCoingecko ? 'better than' : 'worse than'} Coingecko
-          </p>
-        ) : null}
-      </>
-    )
-  }
+      const betterThanCoingecko =
+        swapSide === 'buy'
+          ? flipPrices
+            ? coingeckoPercentageDifference > 0
+            : coingeckoPercentageDifference < 0
+          : flipPrices
+          ? coingeckoPercentageDifference < 0
+          : coingeckoPercentageDifference > 0
+
+      return (
+        <>
+          <p className="text-center text-th-fgd-2">{`${t(
+            side
+          )} ${amount} ${symbol} at ${formatNumericValue(
+            price
+          )} ${priceSymbol} for ${formatCurrencyValue(value)}`}</p>
+          {coingeckoPercentageDifference ? (
+            <p
+              className={`mt-0.5 text-center text-xs ${
+                betterThanCoingecko ? 'text-th-up' : 'text-th-down'
+              }`}
+            >
+              <span className="font-mono">
+                {coingeckoPercentageDifference.toFixed(2)}%
+              </span>{' '}
+              {betterThanCoingecko ? 'better than' : 'worse than'} Coingecko
+            </p>
+          ) : null}
+        </>
+      )
+    },
+    [flipPrices, swapMarketName, swapTooltipCoingeckoPrice]
+  )
 
   const {
     data: coingeckoDataQuery,
@@ -383,15 +414,18 @@ const SwapTokenChart = () => {
     } else return coingeckoData
   }, [coingeckoData, swapHistoryPoints, showSwaps])
 
-  const handleMouseMove: CategoricalChartFunc = (coords) => {
-    if (coords.activePayload) {
-      setMouseData(coords.activePayload[0].payload)
-    }
-  }
+  const handleMouseMove: CategoricalChartFunc = useCallback(
+    (coords) => {
+      if (coords.activePayload) {
+        setMouseData(coords.activePayload[0].payload)
+      }
+    },
+    [setMouseData]
+  )
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = useCallback(() => {
     setMouseData(undefined)
-  }
+  }, [setMouseData])
 
   useEffect(() => {
     if (!inputCoingeckoId || !outputCoingeckoId) return
@@ -405,7 +439,7 @@ const SwapTokenChart = () => {
     }
   }, [inputCoingeckoId, outputCoingeckoId])
 
-  const calculateChartChange = () => {
+  const calculateChartChange = useCallback(() => {
     if (!chartData?.length) return 0
     if (mouseData) {
       const index = chartData.findIndex((d) => d.time === mouseData.time)
@@ -421,20 +455,7 @@ const SwapTokenChart = () => {
         100
       )
     }
-  }
-
-  const swapMarketName = useMemo(() => {
-    if (!inputBank || !outputBank) return ''
-    const inputSymbol = formatTokenSymbol(inputBank.name)
-    const outputSymbol = formatTokenSymbol(outputBank.name)
-    return ['usd-coin', 'tether'].includes(inputCoingeckoId || '')
-      ? !flipPrices
-        ? `${outputSymbol}/${inputSymbol}`
-        : `${inputSymbol}/${outputSymbol}`
-      : !flipPrices
-      ? `${inputSymbol}/${outputSymbol}`
-      : `${outputSymbol}/${inputSymbol}`
-  }, [flipPrices, inputBank, inputCoingeckoId, outputBank])
+  }, [chartData, mouseData])
 
   return (
     <ContentBox hideBorder hidePadding className="h-full px-6 py-3">
