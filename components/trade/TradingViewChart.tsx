@@ -1,5 +1,4 @@
 import { useEffect, useRef, useMemo, useState, useCallback } from 'react'
-import { useTheme } from 'next-themes'
 import {
   widget,
   ChartingLibraryWidgetOptions,
@@ -36,6 +35,7 @@ import useTradeHistory from 'hooks/useTradeHistory'
 import dayjs from 'dayjs'
 import ModifyTvOrderModal from '@components/modals/ModifyTvOrderModal'
 import { findSerum3MarketPkInOpenOrders } from './OpenOrders'
+import useThemeWrapper from 'hooks/useThemeWrapper'
 
 export interface ChartContainerProps {
   container: ChartingLibraryWidgetOptions['container']
@@ -65,7 +65,7 @@ function hexToRgb(hex: string) {
 
 const TradingViewChart = () => {
   const { t } = useTranslation(['tv-chart', 'trade'])
-  const { theme } = useTheme()
+  const { theme } = useThemeWrapper()
   const { width } = useViewport()
   const [chartReady, setChartReady] = useState(false)
   const [headerReady, setHeaderReady] = useState(false)

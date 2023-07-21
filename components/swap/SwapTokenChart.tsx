@@ -23,7 +23,6 @@ import ContentBox from '../shared/ContentBox'
 import { formatCurrencyValue, formatNumericValue } from '../../utils/numbers'
 import SheenLoader from '../shared/SheenLoader'
 import { COLORS } from '../../styles/colors'
-import { useTheme } from 'next-themes'
 import Change from '../shared/Change'
 import ChartRangeButtons from '../shared/ChartRangeButtons'
 import { useViewport } from 'hooks/useViewport'
@@ -48,6 +47,7 @@ import { interpolateNumber } from 'd3-interpolate'
 import { IconButton } from '@components/shared/Button'
 import Tooltip from '@components/shared/Tooltip'
 import { SwapHistoryItem } from 'types'
+import useThemeWrapper from 'hooks/useThemeWrapper'
 
 dayjs.extend(relativeTime)
 
@@ -183,7 +183,7 @@ const SwapTokenChart = () => {
   const [mouseData, setMouseData] = useState<ChartDataItem>()
   const [daysToShow, setDaysToShow] = useState('1')
   const [flipPrices, setFlipPrices] = useState(false)
-  const { theme } = useTheme()
+  const { theme } = useThemeWrapper()
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
     INITIAL_ANIMATION_SETTINGS,

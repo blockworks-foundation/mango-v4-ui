@@ -21,7 +21,6 @@ import {
   ReferenceLine,
   ResponsiveContainer,
 } from 'recharts'
-import { useTheme } from 'next-themes'
 import { COLORS } from 'styles/colors'
 import { formatDateAxis } from '@components/shared/DetailedAreaOrBarChart'
 import { formatYAxis } from 'utils/formatting'
@@ -32,6 +31,7 @@ import { ArrowLeftIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 import { FadeInFadeOut } from '@components/shared/Transitions'
 import ContentBox from '@components/shared/ContentBox'
 import SheenLoader from '@components/shared/SheenLoader'
+import useThemeWrapper from 'hooks/useThemeWrapper'
 
 const fetchHourlyFunding = async (mangoAccountPk: string) => {
   try {
@@ -65,7 +65,7 @@ const FundingChart = ({ hideChart }: { hideChart: () => void }) => {
   const { t } = useTranslation('common')
   const { mangoAccountAddress } = useMangoAccount()
   const [daysToShow, setDaysToShow] = useState('30')
-  const { theme } = useTheme()
+  const { theme } = useThemeWrapper()
   const {
     data: fundingData,
     isLoading: loadingFunding,

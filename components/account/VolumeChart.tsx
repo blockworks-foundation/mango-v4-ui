@@ -13,7 +13,6 @@ import {
   ReferenceLine,
   ResponsiveContainer,
 } from 'recharts'
-import { useTheme } from 'next-themes'
 import { COLORS } from 'styles/colors'
 import { formatDateAxis } from '@components/shared/DetailedAreaOrBarChart'
 import { formatYAxis } from 'utils/formatting'
@@ -27,6 +26,7 @@ import SheenLoader from '@components/shared/SheenLoader'
 import useAccountHourlyVolumeStats from 'hooks/useAccountHourlyVolumeStats'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { DAILY_MILLISECONDS } from 'utils/constants'
+import useThemeWrapper from 'hooks/useThemeWrapper'
 
 const VolumeChart = ({ hideChart }: { hideChart: () => void }) => {
   const { t } = useTranslation(['account', 'common', 'stats'])
@@ -34,7 +34,7 @@ const VolumeChart = ({ hideChart }: { hideChart: () => void }) => {
   const { hourlyVolumeData: chartData, loadingHourlyVolume: loading } =
     useAccountHourlyVolumeStats()
   const [daysToShow, setDaysToShow] = useState('30')
-  const { theme } = useTheme()
+  const { theme } = useThemeWrapper()
 
   const CustomTooltip = ({
     active,

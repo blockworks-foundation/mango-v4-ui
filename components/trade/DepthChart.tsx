@@ -2,7 +2,6 @@ import Slider from '@components/forms/Slider'
 import useMarkPrice from 'hooks/useMarkPrice'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useViewport } from 'hooks/useViewport'
-import { useTheme } from 'next-themes'
 import { useCallback, useMemo, useState } from 'react'
 import {
   XAxis,
@@ -21,6 +20,7 @@ import { CartesianViewBox } from 'recharts/types/util/types'
 import { cumOrderbookSide } from 'types'
 import mangoStore from '@store/mangoStore'
 import { breakpoints } from 'utils/theme'
+import useThemeWrapper from 'hooks/useThemeWrapper'
 
 type LabelPosition =
   | 'left'
@@ -68,7 +68,7 @@ type DepthOrderbookSide = {
 }
 
 const DepthChart = () => {
-  const { theme } = useTheme()
+  const { theme } = useThemeWrapper()
   const { serumOrPerpMarket } = useSelectedMarket()
   const [mouseData, setMouseData] = useState<cumOrderbookSide | null>(null)
   const markPrice = useMarkPrice()

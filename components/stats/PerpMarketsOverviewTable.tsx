@@ -1,6 +1,5 @@
 import { I80F48, PerpMarket } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
-import { useTheme } from 'next-themes'
 import { useViewport } from '../../hooks/useViewport'
 import mangoStore from '@store/mangoStore'
 import { COLORS } from '../../styles/colors'
@@ -25,6 +24,7 @@ import { Disclosure, Transition } from '@headlessui/react'
 import { LinkButton } from '@components/shared/Button'
 import SoonBadge from '@components/shared/SoonBadge'
 import { DAILY_SECONDS } from 'utils/constants'
+import useThemeWrapper from 'hooks/useThemeWrapper'
 
 export const getOneDayPerpStats = (
   stats: PerpStatsItem[] | null,
@@ -57,7 +57,7 @@ const PerpMarketsOverviewTable = () => {
   const perpMarkets = mangoStore((s) => s.perpMarkets)
   const loadingPerpStats = mangoStore((s) => s.perpStats.loading)
   const perpStats = mangoStore((s) => s.perpStats.data)
-  const { theme } = useTheme()
+  const { theme } = useThemeWrapper()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const rate = usePerpFundingRate()
@@ -304,7 +304,7 @@ const MobilePerpMarketItem = ({ market }: { market: PerpMarket }) => {
   const { t } = useTranslation('common')
   const loadingPerpStats = mangoStore((s) => s.perpStats.loading)
   const perpStats = mangoStore((s) => s.perpStats.data)
-  const { theme } = useTheme()
+  const { theme } = useThemeWrapper()
   const router = useRouter()
   const rate = usePerpFundingRate()
 

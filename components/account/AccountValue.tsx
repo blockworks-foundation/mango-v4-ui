@@ -8,7 +8,6 @@ import { Transition } from '@headlessui/react'
 import SheenLoader from '../shared/SheenLoader'
 import Change from '../shared/Change'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
-import { useTheme } from 'next-themes'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
@@ -21,6 +20,7 @@ import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import { ViewToShow } from './AccountPage'
 import useAccountPerformanceData from 'hooks/useAccountPerformanceData'
+import useThemeWrapper from 'hooks/useThemeWrapper'
 
 const AccountValue = ({
   accountValue,
@@ -34,7 +34,7 @@ const AccountValue = ({
   handleViewChange: (view: ViewToShow) => void
 }) => {
   const { t } = useTranslation('common')
-  const { theme } = useTheme()
+  const { theme } = useThemeWrapper()
   const { group } = useMangoGroup()
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const [showExpandChart, setShowExpandChart] = useState<boolean>(false)

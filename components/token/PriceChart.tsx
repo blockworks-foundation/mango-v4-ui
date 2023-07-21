@@ -1,7 +1,7 @@
 import { formatDateAxis } from '@components/shared/DetailedAreaOrBarChart'
 import dayjs from 'dayjs'
 import { BirdeyePriceResponse } from 'hooks/useBirdeyeMarketPrices'
-import { useTheme } from 'next-themes'
+import useThemeWrapper from 'hooks/useThemeWrapper'
 import { useMemo } from 'react'
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis } from 'recharts'
 import { COLORS } from 'styles/colors'
@@ -14,7 +14,7 @@ const PriceChart = ({
   prices: BirdeyePriceResponse[]
   daysToShow: number
 }) => {
-  const { theme } = useTheme()
+  const { theme } = useThemeWrapper()
 
   const change = useMemo(() => {
     return prices[prices.length - 1].value - prices[0].value

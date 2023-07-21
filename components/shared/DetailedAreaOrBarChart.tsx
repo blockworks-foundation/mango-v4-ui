@@ -18,7 +18,6 @@ import FlipNumbers from 'react-flip-numbers'
 import ContentBox from './ContentBox'
 import SheenLoader from './SheenLoader'
 import { COLORS } from '../../styles/colors'
-import { useTheme } from 'next-themes'
 import { IconButton } from './Button'
 import { ArrowLeftIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 import { FadeInFadeOut } from './Transitions'
@@ -33,6 +32,7 @@ import { useTranslation } from 'next-i18next'
 import FormatNumericValue from './FormatNumericValue'
 import { ContentType } from 'recharts/types/component/Tooltip'
 import Tooltip from './Tooltip'
+import useThemeWrapper from 'hooks/useThemeWrapper'
 
 dayjs.extend(relativeTime)
 
@@ -97,7 +97,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
 }) => {
   const { t } = useTranslation('common')
   const [mouseData, setMouseData] = useState<any>(null)
-  const { theme } = useTheme()
+  const { theme } = useThemeWrapper()
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
     INITIAL_ANIMATION_SETTINGS,
