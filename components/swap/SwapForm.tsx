@@ -562,6 +562,7 @@ const SwapForm = () => {
                 className="text-th-fgd-3"
                 checked={useMargin}
                 onChange={handleSetMargin}
+                small
               />
             </div>
             <div className="flex items-center justify-between">

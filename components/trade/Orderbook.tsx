@@ -1,36 +1,39 @@
-import { AccountInfo, PublicKey } from '@solana/web3.js'
-import Big from 'big.js'
+import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Market, Orderbook as SpotOrderBook } from '@project-serum/serum'
-import isEqual from 'lodash/isEqual'
+import { Market } from '@project-serum/serum'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import {
   floorToDecimal,
   formatNumericValue,
   getDecimalCount,
 } from 'utils/numbers'
-import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
+import {
+  ANIMATION_SETTINGS_KEY,
+  DEPTH_CHART_KEY,
+  // USE_ORDERBOOK_FEED_KEY,
+} from 'utils/constants'
 import { useTranslation } from 'next-i18next'
 import Decimal from 'decimal.js'
-import { OrderbookL2 } from 'types'
-import OrderbookIcon from '@components/icons/OrderbookIcon'
 import Tooltip from '@components/shared/Tooltip'
 import GroupSize from './GroupSize'
-import { breakpoints } from '../../utils/theme'
 import { useViewport } from 'hooks/useViewport'
-import {
-  BookSide,
-  BookSideType,
-  MangoClient,
-  PerpMarket,
-  Serum3Market,
-} from '@blockworks-foundation/mango-v4'
+import { BookSide, Serum3Market } from '@blockworks-foundation/mango-v4'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
-import { ArrowPathIcon } from '@heroicons/react/20/solid'
-import { sleep } from 'utils'
 import { OrderbookFeed } from '@blockworks-foundation/mango-feeds'
+import Switch from '@components/forms/Switch'
+import { breakpoints } from 'utils/theme'
+import {
+  decodeBook,
+  decodeBookL2,
+  getCumulativeOrderbookSide,
+  getMarket,
+  groupBy,
+  updatePerpMarketOnGroup,
+} from 'utils/orderbook'
+import { OrderbookData, OrderbookL2 } from 'types'
+import { isEqual } from 'lodash'
 
 const sizeCompacter = Intl.NumberFormat('en', {
   maximumFractionDigits: 6,
@@ -39,202 +42,31 @@ const sizeCompacter = Intl.NumberFormat('en', {
 
 const SHOW_EXPONENTIAL_THRESHOLD = 0.00001
 
-const getMarket = () => {
-  const group = mangoStore.getState().group
-  const selectedMarket = mangoStore.getState().selectedMarket.current
-  if (!group || !selectedMarket) return
-  return selectedMarket instanceof PerpMarket
-    ? selectedMarket
-    : group?.getSerum3ExternalMarket(selectedMarket.serumMarketExternal)
-}
-
-export const decodeBookL2 = (book: SpotOrderBook | BookSide): number[][] => {
-  const depth = 300
-  if (book instanceof SpotOrderBook) {
-    return book.getL2(depth).map(([price, size]) => [price, size])
-  } else if (book instanceof BookSide) {
-    return book.getL2Ui(depth)
-  }
-  return []
-}
-
-export function decodeBook(
-  client: MangoClient,
-  market: Market | PerpMarket,
-  accInfo: AccountInfo<Buffer>,
-  side: 'bids' | 'asks'
-): SpotOrderBook | BookSide {
-  if (market instanceof Market) {
-    const book = SpotOrderBook.decode(market, accInfo.data)
-    return book
-  } else {
-    const decodedAcc = client.program.coder.accounts.decode(
-      'bookSide',
-      accInfo.data
-    )
-    const book = BookSide.from(
-      client,
-      market,
-      side === 'bids' ? BookSideType.bids : BookSideType.asks,
-      decodedAcc
-    )
-    return book
-  }
-}
-
-type cumOrderbookSide = {
-  price: number
-  size: number
-  cumulativeSize: number
-  sizePercent: number
-  maxSizePercent: number
-  cumulativeSizePercent: number
-  isUsersOrder: boolean
-}
-
-const getCumulativeOrderbookSide = (
-  orders: number[][],
-  totalSize: number,
-  maxSize: number,
-  depth: number,
-  usersOpenOrderPrices: number[],
-  grouping: number,
-  isGrouped: boolean
-): cumOrderbookSide[] => {
-  let cumulativeSize = 0
-  return orders.slice(0, depth).map(([price, size]) => {
-    cumulativeSize += size
-    return {
-      price: Number(price),
-      size,
-      cumulativeSize,
-      sizePercent: Math.round((cumulativeSize / (totalSize || 1)) * 100),
-      cumulativeSizePercent: Math.round((size / (cumulativeSize || 1)) * 100),
-      maxSizePercent: Math.round((size / (maxSize || 1)) * 100),
-      isUsersOrder: hasOpenOrderForPriceGroup(
-        usersOpenOrderPrices,
-        price,
-        grouping,
-        isGrouped
-      ),
-    }
-  })
-}
-
-const groupBy = (
-  ordersArray: number[][],
-  market: PerpMarket | Market,
-  grouping: number,
-  isBids: boolean
-) => {
-  if (!ordersArray || !market || !grouping || grouping == market?.tickSize) {
-    return ordersArray || []
-  }
-  const groupFloors: Record<number, number> = {}
-  for (let i = 0; i < ordersArray.length; i++) {
-    if (typeof ordersArray[i] == 'undefined') {
-      break
-    }
-    const bigGrouping = Big(grouping)
-    const bigOrder = Big(ordersArray[i][0])
-
-    const floor = isBids
-      ? bigOrder
-          .div(bigGrouping)
-          .round(0, Big.roundDown)
-          .times(bigGrouping)
-          .toNumber()
-      : bigOrder
-          .div(bigGrouping)
-          .round(0, Big.roundUp)
-          .times(bigGrouping)
-          .toNumber()
-    if (typeof groupFloors[floor] == 'undefined') {
-      groupFloors[floor] = ordersArray[i][1]
-    } else {
-      groupFloors[floor] = ordersArray[i][1] + groupFloors[floor]
-    }
-  }
-  const sortedGroups = Object.entries(groupFloors)
-    .map((entry) => {
-      return [
-        +parseFloat(entry[0]).toFixed(getDecimalCount(grouping)),
-        entry[1],
-      ]
-    })
-    .sort((a: number[], b: number[]) => {
-      if (!a || !b) {
-        return -1
-      }
-      return isBids ? b[0] - a[0] : a[0] - b[0]
-    })
-  return sortedGroups
-}
-
-const hasOpenOrderForPriceGroup = (
-  openOrderPrices: number[],
-  price: number,
-  grouping: number,
-  isGrouped: boolean
-) => {
-  if (!isGrouped) {
-    return !!openOrderPrices.find((ooPrice) => {
-      return ooPrice === price
-    })
-  }
-  return !!openOrderPrices.find((ooPrice) => {
-    return ooPrice >= price - grouping && ooPrice <= price + grouping
-  })
-}
-
-const updatePerpMarketOnGroup = (book: BookSide, side: 'bids' | 'asks') => {
-  const group = mangoStore.getState().group
-  const perpMarket = group?.getPerpMarketByMarketIndex(
-    book.perpMarket.perpMarketIndex
-  )
-  if (perpMarket) {
-    perpMarket[`_${side}`] = book
-    // mangoStore.getState().actions.fetchOpenOrders()
-  }
-}
-
-type OrderbookData = {
-  bids: cumOrderbookSide[]
-  asks: cumOrderbookSide[]
-  spread: number
-  spreadPercentage: number
-}
-
 const Orderbook = () => {
   const { t } = useTranslation(['common', 'trade'])
-  const {
-    serumOrPerpMarket: market,
-    baseSymbol,
-    quoteSymbol,
-  } = useSelectedMarket()
+  const { serumOrPerpMarket: market } = useSelectedMarket()
   const connection = mangoStore((s) => s.connection)
 
-  const [isScrolled, setIsScrolled] = useState(false)
-  const [orderbookData, setOrderbookData] = useState<OrderbookData | null>(null)
-  const [grouping, setGrouping] = useState(0.01)
   const [tickSize, setTickSize] = useState(0)
-  const [showBids, setShowBids] = useState(true)
-  const [showAsks, setShowAsks] = useState(true)
+  const [grouping, setGrouping] = useState(0.01)
   const [useOrderbookFeed, setUseOrderbookFeed] = useState(false)
   // const [useOrderbookFeed, setUseOrderbookFeed] = useState(
   //   localStorage.getItem(USE_ORDERBOOK_FEED_KEY) !== null
   //     ? localStorage.getItem(USE_ORDERBOOK_FEED_KEY) === 'true'
   //     : true
   // )
-
-  const currentOrderbookData = useRef<OrderbookL2>()
-  const orderbookElRef = useRef<HTMLDivElement>(null)
+  const [showDepthChart, setShowDepthChart] = useLocalStorageState<boolean>(
+    DEPTH_CHART_KEY,
+    false
+  )
   const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.md : false
+  const isMobile = width ? width < breakpoints.lg : false
+  const [orderbookData, setOrderbookData] = useState<OrderbookData | null>(null)
+  const currentOrderbookData = useRef<OrderbookL2>()
 
   const depth = useMemo(() => {
-    return isMobile ? 9 : 40
-  }, [isMobile])
+    return width > breakpoints['3xl'] ? 12 : 10
+  }, [width])
 
   const depthArray: number[] = useMemo(() => {
     return Array(depth).fill(0)
@@ -249,19 +81,19 @@ const Orderbook = () => {
     }
   }, [market, tickSize])
 
-  const verticallyCenterOrderbook = useCallback(() => {
-    const element = orderbookElRef.current
-    if (element) {
-      if (element.scrollHeight > window.innerHeight) {
-        element.scrollTop =
-          (element.scrollHeight - element.scrollHeight) / 2 +
-          (element.scrollHeight - window.innerHeight) / 2 +
-          94
-      } else {
-        element.scrollTop = (element.scrollHeight - element.offsetHeight) / 2
-      }
-    }
-  }, [])
+  const bidAccountAddress = useMemo(() => {
+    if (!market) return ''
+    const bidsPk =
+      market instanceof Market ? market['_decoded'].bids : market.bids
+    return bidsPk.toString()
+  }, [market])
+
+  const askAccountAddress = useMemo(() => {
+    if (!market) return ''
+    const asksPk =
+      market instanceof Market ? market['_decoded'].asks : market.asks
+    return asksPk.toString()
+  }, [market])
 
   useEffect(
     () =>
@@ -357,31 +189,14 @@ const Orderbook = () => {
                 spread,
                 spreadPercentage,
               })
-              if (!isScrolled) {
-                verticallyCenterOrderbook()
-              }
             } else {
               setOrderbookData(null)
             }
           }
         }
       ),
-    [grouping, market, isScrolled, verticallyCenterOrderbook]
+    [depth, grouping, market]
   )
-
-  const bidAccountAddress = useMemo(() => {
-    if (!market) return ''
-    const bidsPk =
-      market instanceof Market ? market['_decoded'].bids : market.bids
-    return bidsPk.toString()
-  }, [market])
-
-  const askAccountAddress = useMemo(() => {
-    if (!market) return ''
-    const asksPk =
-      market instanceof Market ? market['_decoded'].asks : market.asks
-    return asksPk.toString()
-  }, [market])
 
   // subscribe to the bids and asks orderbook accounts
   useEffect(() => {
@@ -609,82 +424,25 @@ const Orderbook = () => {
     })
   }, [bidAccountAddress])
 
-  useEffect(() => {
-    window.addEventListener('resize', verticallyCenterOrderbook)
-  }, [verticallyCenterOrderbook])
-
-  const resetOrderbook = useCallback(async () => {
-    setShowBids(true)
-    setShowAsks(true)
-    await sleep(300)
-    verticallyCenterOrderbook()
-  }, [verticallyCenterOrderbook])
-
   const onGroupSizeChange = useCallback((groupSize: number) => {
     setGrouping(groupSize)
   }, [])
 
-  const handleScroll = useCallback(() => {
-    setIsScrolled(true)
-  }, [])
-
-  const toggleSides = (side: string) => {
-    if (side === 'bids') {
-      setShowBids(true)
-      setShowAsks(false)
-    } else {
-      setShowBids(false)
-      setShowAsks(true)
-    }
-  }
-
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b border-th-bkg-3 px-4 py-2">
-        <div
-          id="trade-step-three"
-          className="hidden items-center space-x-1.5 md:flex"
-        >
-          <Tooltip
-            className={`${!showAsks ? 'hidden' : ''}`}
-            content={t('trade:show-bids')}
-            placement="bottom"
+    <div>
+      <div className="flex h-10 items-center justify-between border-b border-th-bkg-3 px-4">
+        {!isMobile ? (
+          <Switch
+            checked={showDepthChart}
+            onChange={() => setShowDepthChart(!showDepthChart)}
+            small
           >
-            <button
-              className={`rounded ${
-                showAsks ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
-              } flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none focus-visible:bg-th-bkg-4 disabled:cursor-not-allowed`}
-              onClick={() => toggleSides('bids')}
-            >
-              <OrderbookIcon className="h-4 w-4" side="buy" />
-            </button>
-          </Tooltip>
-          <Tooltip
-            className={`${!showBids ? 'hidden' : ''}`}
-            content={t('trade:show-asks')}
-            placement="bottom"
-          >
-            <button
-              className={`rounded ${
-                showBids ? 'bg-th-bkg-3' : 'bg-th-bkg-2'
-              } flex h-6 w-6 items-center justify-center hover:border-th-fgd-4 focus:outline-none focus-visible:bg-th-bkg-4 disabled:cursor-not-allowed`}
-              onClick={() => toggleSides('asks')}
-            >
-              <OrderbookIcon className="h-4 w-4" side="sell" />
-            </button>
-          </Tooltip>
-          <Tooltip content={'Reset and center orderbook'} placement="bottom">
-            <button
-              className="flex h-6 w-6 items-center justify-center rounded bg-th-bkg-3 hover:border-th-fgd-4 focus:outline-none focus-visible:bg-th-bkg-4 disabled:cursor-not-allowed"
-              onClick={resetOrderbook}
-            >
-              <ArrowPathIcon className="h-4 w-4" />
-            </button>
-          </Tooltip>
-        </div>
+            <span className="text-xxs">{t('trade:depth')}</span>
+          </Switch>
+        ) : null}
         {market ? (
           <>
-            <p className="text-xs md:hidden">{t('trade:grouping')}:</p>
+            <p className="text-xs lg:hidden">{t('trade:grouping')}:</p>
             <div id="trade-step-four">
               <Tooltip
                 className="hidden md:block"
@@ -702,95 +460,80 @@ const Orderbook = () => {
           </>
         ) : null}
       </div>
-      <div className="grid grid-cols-2 px-4 pt-2 pb-1 text-xxs text-th-fgd-4">
-        <div className="col-span-1 text-right">
-          {t('trade:size')} ({baseSymbol})
-        </div>
-        <div className="col-span-1 text-right">
-          {t('price')} ({quoteSymbol})
-        </div>
+      <div className="grid grid-cols-2 px-2 py-0.5 text-xxs text-th-fgd-4">
+        <div className="col-span-1">{t('price')}</div>
+        <div className="col-span-1 text-right">{t('trade:size')}</div>
       </div>
-      <div
-        className="hide-scroll relative h-full overflow-y-scroll"
-        ref={orderbookElRef}
-        onScroll={handleScroll}
-      >
-        {showAsks
-          ? depthArray.map((_x, idx) => {
-              let index = idx
-              const reverse = showAsks && !showBids
-              if (orderbookData?.asks && !reverse) {
-                const lengthDiff = depthArray.length - orderbookData.asks.length
-                if (lengthDiff > 0) {
-                  index = index < lengthDiff ? -1 : Math.abs(lengthDiff - index)
-                }
-              }
-              return (
-                <div className="h-[24px]" key={idx}>
-                  {!!orderbookData?.asks[index] && market ? (
-                    <MemoizedOrderbookRow
-                      minOrderSize={market.minOrderSize}
-                      tickSize={market.tickSize}
-                      hasOpenOrder={orderbookData?.asks[index].isUsersOrder}
-                      key={orderbookData?.asks[index].price}
-                      price={orderbookData?.asks[index].price}
-                      size={orderbookData?.asks[index].size}
-                      side="sell"
-                      sizePercent={orderbookData?.asks[index].sizePercent}
-                      cumulativeSizePercent={
-                        orderbookData?.asks[index].cumulativeSizePercent
-                      }
-                      grouping={grouping}
-                    />
-                  ) : null}
-                </div>
-              )
-            })
-          : null}
-        {showBids && showAsks ? (
-          <div
-            className="my-2 grid grid-cols-2 border-y border-th-bkg-3 py-2 px-4 text-xs text-th-fgd-4"
-            id="trade-step-nine"
-          >
-            <div className="col-span-1 flex justify-between">
-              <div className="text-xxs">{t('trade:spread')}</div>
-              <div className="font-mono">
-                {orderbookData?.spreadPercentage.toFixed(2)}%
-              </div>
+      <div className="relative h-full">
+        {depthArray.map((_x, idx) => {
+          let index = idx
+          if (orderbookData?.asks) {
+            const lengthDiff = depthArray.length - orderbookData.asks.length
+            if (lengthDiff > 0) {
+              index = index < lengthDiff ? -1 : Math.abs(lengthDiff - index)
+            }
+          }
+          return (
+            <div className="h-[20px]" key={idx}>
+              {!!orderbookData?.asks[index] && market ? (
+                <MemoizedOrderbookRow
+                  minOrderSize={market.minOrderSize}
+                  tickSize={market.tickSize}
+                  hasOpenOrder={orderbookData?.asks[index].isUsersOrder}
+                  key={orderbookData?.asks[index].price}
+                  price={orderbookData?.asks[index].price}
+                  size={orderbookData?.asks[index].size}
+                  side="sell"
+                  sizePercent={orderbookData?.asks[index].sizePercent}
+                  cumulativeSizePercent={
+                    orderbookData?.asks[index].cumulativeSizePercent
+                  }
+                  grouping={grouping}
+                />
+              ) : null}
             </div>
-            <div className="col-span-1 text-right font-mono">
-              {orderbookData?.spread
-                ? orderbookData.spread < SHOW_EXPONENTIAL_THRESHOLD
-                  ? orderbookData.spread.toExponential()
-                  : formatNumericValue(
-                      orderbookData.spread,
-                      market ? getDecimalCount(market.tickSize) : undefined
-                    )
-                : null}
+          )
+        })}
+        <div
+          className="my-1 grid grid-cols-2 border-y border-th-bkg-3 py-1 px-4 text-xs text-th-fgd-4"
+          id="trade-step-nine"
+        >
+          <div className="col-span-1 flex justify-between">
+            <div className="text-xxs">{t('trade:spread')}</div>
+            <div className="font-mono">
+              {orderbookData?.spreadPercentage.toFixed(2)}%
             </div>
           </div>
-        ) : null}
-        {showBids
-          ? depthArray.map((_x, index) => (
-              <div className="h-[24px]" key={index}>
-                {!!orderbookData?.bids[index] && market ? (
-                  <MemoizedOrderbookRow
-                    minOrderSize={market.minOrderSize}
-                    tickSize={market.tickSize}
-                    hasOpenOrder={orderbookData?.bids[index].isUsersOrder}
-                    price={orderbookData?.bids[index].price}
-                    size={orderbookData?.bids[index].size}
-                    side="buy"
-                    sizePercent={orderbookData?.bids[index].sizePercent}
-                    cumulativeSizePercent={
-                      orderbookData?.bids[index].cumulativeSizePercent
-                    }
-                    grouping={grouping}
-                  />
-                ) : null}
-              </div>
-            ))
-          : null}
+          <div className="col-span-1 text-right font-mono">
+            {orderbookData?.spread
+              ? orderbookData.spread < SHOW_EXPONENTIAL_THRESHOLD
+                ? orderbookData.spread.toExponential()
+                : formatNumericValue(
+                    orderbookData.spread,
+                    market ? getDecimalCount(market.tickSize) : undefined
+                  )
+              : null}
+          </div>
+        </div>
+        {depthArray.map((_x, index) => (
+          <div className="h-[20px]" key={index}>
+            {!!orderbookData?.bids[index] && market ? (
+              <MemoizedOrderbookRow
+                minOrderSize={market.minOrderSize}
+                tickSize={market.tickSize}
+                hasOpenOrder={orderbookData?.bids[index].isUsersOrder}
+                price={orderbookData?.bids[index].price}
+                size={orderbookData?.bids[index].size}
+                side="buy"
+                sizePercent={orderbookData?.bids[index].sizePercent}
+                cumulativeSizePercent={
+                  orderbookData?.bids[index].cumulativeSizePercent
+                }
+                grouping={grouping}
+              />
+            ) : null}
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -893,13 +636,23 @@ const OrderbookRow = ({
 
   return (
     <div
-      className={`relative flex h-[24px] cursor-pointer justify-between border-b border-b-th-bkg-1 text-sm`}
+      className={`relative flex h-[20px] cursor-pointer justify-between border-b border-b-th-bkg-1 text-sm`}
       ref={element}
     >
       <>
         <div className="flex h-full w-full items-center justify-between text-th-fgd-3 hover:bg-th-bkg-2">
           <div
-            className="flex h-full w-full items-center justify-start pl-2 hover:underline"
+            className={`z-10 flex h-full w-full items-center pl-2 hover:underline`}
+            onClick={handlePriceClick}
+          >
+            <span className="w-full font-mono text-xs">
+              {price < SHOW_EXPONENTIAL_THRESHOLD
+                ? formattedPrice.toExponential()
+                : formattedPrice.toFixed(groupingDecimalCount)}
+            </span>
+          </div>
+          <div
+            className="flex h-full w-full items-center justify-start pr-2 hover:underline"
             onClick={handleSizeClick}
           >
             <div
@@ -913,26 +666,16 @@ const OrderbookRow = ({
                 : formattedSize.toFixed(minOrderSizeDecimals)}
             </div>
           </div>
-          <div
-            className={`z-10 flex h-full w-full items-center pr-4 hover:underline`}
-            onClick={handlePriceClick}
-          >
-            <div className="w-full text-right font-mono text-xs">
-              {price < SHOW_EXPONENTIAL_THRESHOLD
-                ? formattedPrice.toExponential()
-                : formattedPrice.toFixed(groupingDecimalCount)}
-            </div>
-          </div>
         </div>
 
         <Line
-          className={`absolute left-0 opacity-40 brightness-125 ${
+          className={`absolute left-0 opacity-30 brightness-125 ${
             side === 'buy' ? `bg-th-up-muted` : `bg-th-down-muted`
           }`}
           data-width={Math.max(sizePercent, 0.5) + '%'}
         />
         <Line
-          className={`absolute left-0 opacity-70 ${
+          className={`absolute left-0 opacity-40 ${
             side === 'buy' ? `bg-th-up` : `bg-th-down`
           }`}
           data-width={

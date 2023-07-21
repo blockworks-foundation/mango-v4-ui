@@ -6,6 +6,8 @@
     "daily-volume": "24h Volume",
     "export": "Export {{dataType}}",
     "funding-chart": "Funding Chart",
+    "init-health": "Init Health",
+    "maint-health": "Maint Health",
     "health-contributions": "Health Contributions",
     "init-health-contribution": "Init Health Contribution",
     "init-health-contributions": "Init Health Contributions",

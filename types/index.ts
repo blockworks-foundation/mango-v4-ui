@@ -414,6 +414,23 @@ export type TickerData = {
   ticker_id: string
 }
 
+export type cumOrderbookSide = {
+  price: number
+  size: number
+  cumulativeSize: number
+  sizePercent: number
+  maxSizePercent: number
+  cumulativeSizePercent: number
+  isUsersOrder: boolean
+}
+
+export type OrderbookData = {
+  bids: cumOrderbookSide[]
+  asks: cumOrderbookSide[]
+  spread: number
+  spreadPercentage: number
+}
+
 export interface HealthContribution {
   asset: string
   contribution: number
