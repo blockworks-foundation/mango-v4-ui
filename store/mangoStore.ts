@@ -103,7 +103,7 @@ const initMangoClient = (
 ): MangoClient => {
   return MangoClient.connect(provider, CLUSTER, MANGO_V4_ID[CLUSTER], {
     prioritizationFee: opts.prioritizationFee,
-    idsSource: 'get-program-accounts',
+    idsSource: 'api',
     postSendTxCallback: ({ txid }: { txid: string }) => {
       notify({
         title: 'Transaction sent',
