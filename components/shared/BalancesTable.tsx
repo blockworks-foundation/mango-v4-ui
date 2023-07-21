@@ -63,7 +63,7 @@ const BalancesTable = () => {
               <div className="flex justify-end">
                 <Tooltip content={t('account:tooltip-collateral-value')}>
                   <span className="tooltip-underline">
-                    {t('account:collateral-value')}
+                    {t('collateral-value')}
                   </span>
                 </Tooltip>
               </div>
@@ -202,7 +202,7 @@ const BalancesTable = () => {
                             content={t('account:tooltip-collateral-value')}
                           >
                             <p className="tooltip-underline text-xs text-th-fgd-3">
-                              {t('account:collateral-value')}
+                              {t('collateral-value')}
                             </p>
                           </Tooltip>
                           <p className="font-mono text-th-fgd-2">

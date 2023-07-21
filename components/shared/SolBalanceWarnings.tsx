@@ -63,7 +63,7 @@ const SolBalanceWarnings = ({
     <div className={className}>
       <InlineNotification
         type="info"
-        desc={`SOL deposits are restricted to leave ${MIN_SOL_BALANCE} SOL in your wallet for sending transactions`}
+        desc={`Max SOL deposits are reduced to leave ${MIN_SOL_BALANCE} SOL in your wallet for sending transactions`}
       />
     </div>
   ) : null

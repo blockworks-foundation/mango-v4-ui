@@ -99,14 +99,13 @@ const TokenList = () => {
                 </Th>
                 <Th>
                   <div className="flex justify-end">
-                    <Tooltip content={t('account:tooltip-collateral-value')}>
+                    <Tooltip content={t('tooltip-collateral-value')}>
                       <span className="tooltip-underline">
-                        {t('account:collateral-value')}
+                        {t('collateral-value')}
                       </span>
                     </Tooltip>
                   </div>
                 </Th>
-                <Th className="text-right">{t('trade:in-orders')}</Th>
                 <Th className="text-right">{t('trade:unsettled')}</Th>
                 <Th className="flex justify-end" id="account-step-nine">
                   <Tooltip content="The sum of interest earned and interest paid for each token">
@@ -297,9 +296,6 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
     : 0
 
   const tokenBalance = bank.balance
-
-  const inOrders = spotBalances[mint.toString()]?.inOrders || 0
-
   const unsettled = spotBalances[mint.toString()]?.unsettled || 0
 
   const collateralValue =
@@ -361,9 +357,9 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
             <Disclosure.Panel>
               <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4 pb-4">
                 <div className="col-span-1">
-                  <Tooltip content={t('account:tooltip-collateral-value')}>
+                  <Tooltip content={t('tooltip-collateral-value')}>
                     <p className="tooltip-underline text-xs text-th-fgd-3">
-                      {t('account:collateral-value')}
+                      {t('collateral-value')}
                     </p>
                   </Tooltip>
                   <p className="font-mono text-th-fgd-2">
@@ -382,12 +378,6 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
                       x
                     </span>
                   </p>
-                </div>
-                <div className="col-span-1">
-                  <p className="text-xs text-th-fgd-3">
-                    {t('trade:in-orders')}
-                  </p>
-                  <BankAmountWithValue amount={inOrders} bank={tokenBank} />
                 </div>
                 <div className="col-span-1">
                   <p className="text-xs text-th-fgd-3">
