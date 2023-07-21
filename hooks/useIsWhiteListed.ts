@@ -17,6 +17,6 @@ export function useIsWhiteListed() {
       staleTime: refetchMs,
       retry: 1,
       refetchInterval: refetchMs,
-    }
+    },
   )
 }

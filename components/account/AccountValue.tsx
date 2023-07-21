@@ -40,7 +40,7 @@ const AccountValue = ({
   const [showExpandChart, setShowExpandChart] = useState<boolean>(false)
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
-    INITIAL_ANIMATION_SETTINGS
+    INITIAL_ANIMATION_SETTINGS,
   )
   const { width } = useViewport()
   const { performanceLoading: loading } = useAccountPerformanceData()

@@ -11,7 +11,7 @@ export const useSpotMarketMax = (
   mangoAccount: MangoAccount | undefined,
   selectedMarket: GenericMarket | undefined,
   side: string,
-  useMargin: boolean
+  useMargin: boolean,
 ) => {
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const max = useMemo(() => {
@@ -25,10 +25,10 @@ export const useSpotMarketMax = (
       if (side === 'buy') {
         leverageMax = mangoAccount.getMaxQuoteForSerum3BidUi(
           group,
-          selectedMarket.serumMarketExternal
+          selectedMarket.serumMarketExternal,
         )
         const bank = group.getFirstBankByTokenIndex(
-          selectedMarket.quoteTokenIndex
+          selectedMarket.quoteTokenIndex,
         )
         const balance = mangoAccount.getTokenBalanceUi(bank)
         const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
@@ -36,10 +36,10 @@ export const useSpotMarketMax = (
       } else {
         leverageMax = mangoAccount.getMaxBaseForSerum3AskUi(
           group,
-          selectedMarket.serumMarketExternal
+          selectedMarket.serumMarketExternal,
         )
         const bank = group.getFirstBankByTokenIndex(
-          selectedMarket.baseTokenIndex
+          selectedMarket.baseTokenIndex,
         )
         const balance = mangoAccount.getTokenBalanceUi(bank)
         const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
@@ -86,7 +86,7 @@ const SpotSlider = ({
           if (Number(price)) {
             const baseSize = floorToDecimal(
               parseFloat(val) / price,
-              minOrderDecimals
+              minOrderDecimals,
             )
             const quoteSize = floorToDecimal(baseSize.mul(price), tickDecimals)
             s.tradeForm.baseSize = baseSize.toFixed()
@@ -100,13 +100,13 @@ const SpotSlider = ({
           if (Number(price)) {
             s.tradeForm.quoteSize = floorToDecimal(
               parseFloat(val) * price,
-              tickDecimals
+              tickDecimals,
             ).toFixed()
           }
         }
       })
     },
-    [marketPrice, minOrderDecimals, tickDecimals]
+    [marketPrice, minOrderDecimals, tickDecimals],
   )
 
   return (

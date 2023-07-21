@@ -105,7 +105,7 @@ const DepthChart = () => {
   // format chart data for the bids and asks series
   const mergeCumulativeData = (
     bids: DepthOrderbookSide[],
-    asks: DepthOrderbookSide[]
+    asks: DepthOrderbookSide[],
   ) => {
     const bidsWithSide = bids.map((b) => ({ ...b, bids: b.cumulativeSize }))
     const asksWithSide = asks.map((a) => ({ ...a, asks: a.cumulativeSize }))
@@ -123,7 +123,7 @@ const DepthChart = () => {
   const findXDomainMax = (
     data: DepthOrderbookSide[],
     yMin: number,
-    yMax: number
+    yMax: number,
   ) => {
     let closestItemForYMin = 0
     let minDifferenceForYMin = Infinity
@@ -208,7 +208,7 @@ const DepthChart = () => {
         return price.toExponential(3)
       } else return price.toFixed(tickDecimals)
     },
-    [serumOrPerpMarket]
+    [serumOrPerpMarket],
   )
 
   const xTickFormatter = useCallback(
@@ -217,7 +217,7 @@ const DepthChart = () => {
       const minOrderDecimals = getDecimalCount(serumOrPerpMarket.minOrderSize)
       return size.toFixed(minOrderDecimals)
     },
-    [serumOrPerpMarket]
+    [serumOrPerpMarket],
   )
 
   const isWithinRangeOfTick = useCallback(
@@ -227,7 +227,7 @@ const DepthChart = () => {
 
       return difference <= range
     },
-    [yMin, yMax]
+    [yMin, yMax],
   )
 
   const yTickFormatter = useCallback(
@@ -237,7 +237,7 @@ const DepthChart = () => {
       }
       return priceFormatter(tick)
     },
-    [markPrice, mouseData]
+    [markPrice, mouseData],
   )
 
   const getChartReferenceColor = (price: number | undefined) => {
@@ -256,10 +256,10 @@ const DepthChart = () => {
       if (!size || !serumOrPerpMarket) return
       return floorToDecimal(
         size,
-        getDecimalCount(serumOrPerpMarket.tickSize)
+        getDecimalCount(serumOrPerpMarket.tickSize),
       ).toString()
     },
-    [serumOrPerpMarket]
+    [serumOrPerpMarket],
   )
 
   const getSizeLabelPosition = useCallback(
@@ -270,7 +270,7 @@ const DepthChart = () => {
       const xPosition = size > midPoint ? 'Left' : 'Right'
       return `inside${yPosition}${xPosition}` as LabelPosition
     },
-    [xMax, markPrice]
+    [xMax, markPrice],
   )
 
   const getPercentLabelPosition = useCallback(
@@ -286,7 +286,7 @@ const DepthChart = () => {
         ? 'bottom'
         : 'top'
     },
-    [markPrice, yMax, yMin]
+    [markPrice, yMax, yMin],
   )
 
   const handleMouseMove: CategoricalChartFunc = (coords) => {
@@ -406,7 +406,7 @@ const DepthChart = () => {
                 fontSize={9}
                 fill={getChartReferenceColor(mouseData?.price)}
                 position={getPercentLabelPosition(
-                  opposingMouseReference?.price
+                  opposingMouseReference?.price,
                 )}
                 offset={6}
               />
@@ -432,7 +432,7 @@ const DepthChart = () => {
                 fill={getChartReferenceColor(mouseData?.price)}
                 position={getSizeLabelPosition(
                   mouseData?.cumulativeSize,
-                  mouseData?.price
+                  mouseData?.price,
                 )}
                 offset={6}
               />
@@ -461,13 +461,13 @@ const DepthChart = () => {
             >
               <Label
                 value={getSizeFromMouseData(
-                  opposingMouseReference?.cumulativeSize
+                  opposingMouseReference?.cumulativeSize,
                 )}
                 fontSize={9}
                 fill={getChartReferenceColor(opposingMouseReference?.price)}
                 position={getSizeLabelPosition(
                   opposingMouseReference?.cumulativeSize,
-                  opposingMouseReference?.price
+                  opposingMouseReference?.price,
                 )}
                 offset={6}
               />

@@ -57,7 +57,7 @@ const Orderbook = () => {
   // )
   const [showDepthChart, setShowDepthChart] = useLocalStorageState<boolean>(
     DEPTH_CHART_KEY,
-    false
+    false,
   )
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.lg : false
@@ -143,12 +143,12 @@ const Orderbook = () => {
               Math.max(
                 ...bids.map((b: number[]) => {
                   return b[1]
-                })
+                }),
               ) +
               Math.max(
                 ...asks.map((a: number[]) => {
                   return a[1]
-                })
+                }),
               )
             const isGrouped = grouping !== market.tickSize
             const bidsToDisplay = getCumulativeOrderbookSide(
@@ -158,7 +158,7 @@ const Orderbook = () => {
               depth,
               usersOpenOrderPrices,
               grouping,
-              isGrouped
+              isGrouped,
             )
             const asksToDisplay = getCumulativeOrderbookSide(
               asks,
@@ -167,7 +167,7 @@ const Orderbook = () => {
               depth,
               usersOpenOrderPrices,
               grouping,
-              isGrouped
+              isGrouped,
             )
 
             currentOrderbookData.current = newOrderbook
@@ -178,7 +178,7 @@ const Orderbook = () => {
                 spreadPercentage = 0
               if (bid && ask) {
                 spread = parseFloat(
-                  (ask - bid).toFixed(getDecimalCount(market.tickSize))
+                  (ask - bid).toFixed(getDecimalCount(market.tickSize)),
                 )
                 spreadPercentage = (spread / ask) * 100
               }
@@ -193,9 +193,9 @@ const Orderbook = () => {
               setOrderbookData(null)
             }
           }
-        }
+        },
       ),
-    [depth, grouping, market]
+    [depth, grouping, market],
   )
 
   // subscribe to the bids and asks orderbook accounts
@@ -213,7 +213,7 @@ const Orderbook = () => {
           {
             reconnectionIntervalMs: 5_000,
             reconnectionMaxAttempts: 6,
-          }
+          },
         )
       }
 
@@ -270,7 +270,7 @@ const Orderbook = () => {
         for (const diff of update.update) {
           // find existing level for each update
           const levelIndex = new_bookside.findIndex(
-            (level) => level && level.length && level[0] === diff[0]
+            (level) => level && level.length && level[0] === diff[0],
           )
           if (diff[1] > 0) {
             // level being added or updated
@@ -323,7 +323,7 @@ const Orderbook = () => {
       return () => {
         if (!orderbookFeed.current) return
         console.log(
-          `[OrderbookFeed] unsubscribe ${market.publicKey.toBase58()}`
+          `[OrderbookFeed] unsubscribe ${market.publicKey.toBase58()}`,
         )
         orderbookFeed.current.unsubscribe(market.publicKey.toBase58())
       }
@@ -364,7 +364,7 @@ const Orderbook = () => {
               })
             }
           },
-          'processed'
+          'processed',
         )
       }
 
@@ -400,7 +400,7 @@ const Orderbook = () => {
               })
             }
           },
-          'processed'
+          'processed',
         )
       }
       return () => {
@@ -510,7 +510,7 @@ const Orderbook = () => {
                 ? orderbookData.spread.toExponential()
                 : formatNumericValue(
                     orderbookData.spread,
-                    market ? getDecimalCount(market.tickSize) : undefined
+                    market ? getDecimalCount(market.tickSize) : undefined,
                   )
               : null}
           </div>
@@ -565,7 +565,7 @@ const OrderbookRow = ({
   const element = useRef<HTMLDivElement>(null)
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
-    INITIAL_ANIMATION_SETTINGS
+    INITIAL_ANIMATION_SETTINGS,
   )
   const flashClassName = side === 'sell' ? 'red-flash' : 'green-flash'
 
@@ -577,7 +577,7 @@ const OrderbookRow = ({
       () =>
         element.current?.classList.contains(`${flashClassName}`) &&
         element.current?.classList.remove(`${flashClassName}`),
-      500
+      500,
     )
     return () => clearTimeout(id)
   }, [price, size])
@@ -602,7 +602,7 @@ const OrderbookRow = ({
       if (state.tradeForm.baseSize) {
         const quoteSize = floorToDecimal(
           formattedPrice.mul(new Decimal(state.tradeForm.baseSize)),
-          getDecimalCount(tickSize)
+          getDecimalCount(tickSize),
         )
         state.tradeForm.quoteSize = quoteSize.toFixed()
       }
@@ -616,7 +616,7 @@ const OrderbookRow = ({
       if (formattedSize && state.tradeForm.price) {
         const quoteSize = floorToDecimal(
           formattedSize.mul(new Decimal(state.tradeForm.price)),
-          getDecimalCount(tickSize)
+          getDecimalCount(tickSize),
         )
         state.tradeForm.quoteSize = quoteSize.toString()
       }
@@ -625,11 +625,11 @@ const OrderbookRow = ({
 
   const groupingDecimalCount = useMemo(
     () => getDecimalCount(grouping),
-    [grouping]
+    [grouping],
   )
   const minOrderSizeDecimals = useMemo(
     () => getDecimalCount(minOrderSize),
-    [minOrderSize]
+    [minOrderSize],
   )
 
   if (!minOrderSize) return null

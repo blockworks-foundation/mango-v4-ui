@@ -28,7 +28,7 @@ import { DAILY_SECONDS } from 'utils/constants'
 
 export const getOneDayPerpStats = (
   stats: PerpStatsItem[] | null,
-  marketName: string
+  marketName: string,
 ) => {
   return stats
     ? stats
@@ -46,7 +46,7 @@ export const getOneDayPerpStats = (
 
 export const goToPerpMarketDetails = (
   market: PerpMarket,
-  router: NextRouter
+  router: NextRouter,
 ) => {
   const query = { ...router.query, ['market']: market.name }
   router.push({ pathname: router.pathname, query })
@@ -107,14 +107,14 @@ const PerpMarketsOverviewTable = () => {
               let fundingRateApr
               if (rate.isSuccess) {
                 const marketRate = rate?.data?.find(
-                  (r) => r.market_index === market.perpMarketIndex
+                  (r) => r.market_index === market.perpMarketIndex,
                 )
                 if (marketRate) {
                   fundingRate = formatFunding.format(
-                    marketRate.funding_rate_hourly
+                    marketRate.funding_rate_hourly,
                   )
                   fundingRateApr = formatFunding.format(
-                    marketRate.funding_rate_hourly * 8760
+                    marketRate.funding_rate_hourly * 8760,
                   )
                 } else {
                   fundingRate = '–'
@@ -190,9 +190,9 @@ const PerpMarketsOverviewTable = () => {
                           <FormatNumericValue
                             value={group.toUiPrice(
                               I80F48.fromNumber(
-                                market.stablePriceModel.stablePrice
+                                market.stablePriceModel.stablePrice,
                               ),
-                              market.baseDecimals
+                              market.baseDecimals,
                             )}
                             isUsd
                           />
@@ -260,7 +260,7 @@ const PerpMarketsOverviewTable = () => {
                           <p className="text-th-fgd-4">
                             $
                             {numberCompacter.format(
-                              openInterest * market.uiPrice
+                              openInterest * market.uiPrice,
                             )}
                           </p>
                         </>
@@ -328,12 +328,12 @@ const MobilePerpMarketItem = ({ market }: { market: PerpMarket }) => {
   let fundingRateApr: string
   if (rate.isSuccess) {
     const marketRate = rate?.data?.find(
-      (r) => r.market_index === market.perpMarketIndex
+      (r) => r.market_index === market.perpMarketIndex,
     )
     if (marketRate) {
       fundingRate = formatFunding.format(marketRate.funding_rate_hourly)
       fundingRateApr = formatFunding.format(
-        marketRate.funding_rate_hourly * 8760
+        marketRate.funding_rate_hourly * 8760,
       )
     } else {
       fundingRate = '–'

@@ -36,7 +36,7 @@ const termsLastUpdated = 1679441610978
 const Layout = ({ children }: { children: ReactNode }) => {
   const [isCollapsed, setIsCollapsed] = useLocalStorageState(
     SIDEBAR_COLLAPSE_KEY,
-    false
+    false,
   )
 
   const { width } = useViewport()
@@ -52,9 +52,12 @@ const Layout = ({ children }: { children: ReactNode }) => {
     const animationFrames = 15
 
     for (let x = 1; x <= animationFrames; x++) {
-      setTimeout(() => {
-        window.dispatchEvent(new Event('resize'))
-      }, (sideBarAnimationDuration / animationFrames) * x)
+      setTimeout(
+        () => {
+          window.dispatchEvent(new Event('resize'))
+        },
+        (sideBarAnimationDuration / animationFrames) * x,
+      )
     }
   }, [isCollapsed])
 
@@ -124,7 +127,7 @@ const TermsOfUse = () => {
   const { connected } = useWallet()
   const [acceptTerms, setAcceptTerms] = useLocalStorageState(
     ACCEPT_TERMS_KEY,
-    ''
+    '',
   )
 
   const showTermsOfUse = useMemo(() => {

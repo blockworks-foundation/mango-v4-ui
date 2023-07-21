@@ -51,7 +51,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
   const group = mangoStore((s) => s.group)
   const [soundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,
-    INITIAL_SOUND_SETTINGS
+    INITIAL_SOUND_SETTINGS,
   )
   const [asks, setAsks] = useState<BidsAndAsks>(null)
   const [bids, setBids] = useState<BidsAndAsks>(null)
@@ -88,7 +88,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
             setBids(decodeBookL2(decodedBook))
           }
         },
-        'processed'
+        'processed',
       )
     }
 
@@ -110,7 +110,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
             setAsks(decodeBookL2(decodedBook))
           }
         },
-        'processed'
+        'processed',
       )
     }
     return () => {
@@ -159,7 +159,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
         const price = calculateEstPriceForBaseSize(
           orderbook,
           baseSize,
-          sideToClose
+          sideToClose,
         )
 
         const maxSlippage = 0.025
@@ -175,7 +175,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
           PerpOrderType.immediateOrCancel,
           true, // reduce only
           undefined,
-          undefined
+          undefined,
         )
         actions.fetchOpenOrders()
         set((s) => {
@@ -204,7 +204,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
         onClose()
       }
     },
-    [perpMarket, position, group, onClose, soundSettings]
+    [perpMarket, position, group, onClose, soundSettings],
   )
 
   return (

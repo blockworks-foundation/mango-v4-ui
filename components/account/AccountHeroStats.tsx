@@ -40,7 +40,7 @@ const AccountHeroStats = ({
     useAccountHourlyVolumeStats()
 
   const totalInterestData = mangoStore(
-    (s) => s.mangoAccount.interestTotals.data
+    (s) => s.mangoAccount.interestTotals.data,
   )
 
   useEffect(() => {
@@ -63,7 +63,7 @@ const AccountHeroStats = ({
       retry: 3,
       refetchOnWindowFocus: false,
       enabled: !!mangoAccountAddress,
-    }
+    },
   )
 
   const {
@@ -79,7 +79,7 @@ const AccountHeroStats = ({
       retry: 3,
       refetchOnWindowFocus: false,
       enabled: !!mangoAccountAddress,
-    }
+    },
   )
 
   const maintHealth = useMemo(() => {
@@ -91,7 +91,7 @@ const AccountHeroStats = ({
   const leverage = useMemo(() => {
     if (!group || !mangoAccount) return 0
     const assetsValue = toUiDecimalsForQuote(
-      mangoAccount.getAssetsValue(group).toNumber()
+      mangoAccount.getAssetsValue(group).toNumber(),
     )
 
     if (isNaN(assetsValue / accountValue)) {
@@ -110,7 +110,7 @@ const AccountHeroStats = ({
     if (totalInterestData.length) {
       return totalInterestData.reduce(
         (a, c) => a + (c.borrow_interest_usd * -1 + c.deposit_interest_usd),
-        0
+        0,
       )
     }
     return 0.0
@@ -120,7 +120,7 @@ const AccountHeroStats = ({
     if (fundingData?.length && mangoAccountAddress) {
       return fundingData.reduce(
         (a, c) => a + c.long_funding + c.short_funding,
-        0
+        0,
       )
     }
     return 0.0
@@ -268,7 +268,7 @@ const AccountHeroStats = ({
                 value={
                   group && mangoAccount
                     ? toUiDecimalsForQuote(
-                        mangoAccount.getCollateralValue(group)
+                        mangoAccount.getCollateralValue(group),
                       )
                     : 0
                 }
@@ -289,7 +289,7 @@ const AccountHeroStats = ({
                     value={
                       group && mangoAccount
                         ? toUiDecimalsForQuote(
-                            mangoAccount.getAssetsValue(group, HealthType.init)
+                            mangoAccount.getAssetsValue(group, HealthType.init),
                           )
                         : 0
                     }

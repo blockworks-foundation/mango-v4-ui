@@ -11,7 +11,7 @@ const fetchJupiterTokens = async (group: Group) => {
   const data: Token[] = await response.json()
 
   const bankMints = Array.from(group.banksMapByName.values()).map((b) =>
-    b[0].mint.toString()
+    b[0].mint.toString(),
   )
   const mangoTokens = data.filter((t) => bankMints.includes(t.address))
 
@@ -37,7 +37,7 @@ const useJupiterMints = (): {
       retry: 3,
       enabled: !!group,
       refetchOnWindowFocus: false,
-    }
+    },
   )
 
   return {

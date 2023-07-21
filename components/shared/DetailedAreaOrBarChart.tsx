@@ -100,7 +100,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
   const { theme } = useTheme()
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
-    INITIAL_ANIMATION_SETTINGS
+    INITIAL_ANIMATION_SETTINGS,
   )
 
   const handleMouseMove = (coords: any) => {
@@ -134,7 +134,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
     if (filteredData.length) {
       if (mouseData) {
         const index = filteredData.findIndex(
-          (d: any) => d[xKey] === mouseData[xKey]
+          (d: any) => d[xKey] === mouseData[xKey],
         )
         const change =
           index >= 0 ? filteredData[index][yKey] - filteredData[0][yKey] : 0
@@ -216,7 +216,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
                               mouseData[yKey] < 0 ? '-' : ''
                             }${prefix}${formatNumericValue(
                               Math.abs(mouseData[yKey]),
-                              yDecimals
+                              yDecimals,
                             )}${suffix}`}
                           />
                         ) : (
@@ -249,7 +249,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
                         {dayjs(mouseData[xKey]).format(
                           tooltipDateFormat
                             ? tooltipDateFormat
-                            : 'DD MMM YY, h:mma'
+                            : 'DD MMM YY, h:mma',
                         )}
                       </p>
                     </div>
@@ -273,9 +273,9 @@ const DetailedAreaOrBarChart: FunctionComponent<
                                 : ''
                             }${prefix}${formatNumericValue(
                               Math.abs(
-                                filteredData[filteredData.length - 1][yKey]
+                                filteredData[filteredData.length - 1][yKey],
                               ),
-                              yDecimals
+                              yDecimals,
                             )}${suffix}`}
                           />
                         ) : (
@@ -308,11 +308,11 @@ const DetailedAreaOrBarChart: FunctionComponent<
                         } text-th-fgd-4`}
                       >
                         {dayjs(
-                          filteredData[filteredData.length - 1][xKey]
+                          filteredData[filteredData.length - 1][xKey],
                         ).format(
                           tooltipDateFormat
                             ? tooltipDateFormat
-                            : 'DD MMM YY, h:mma'
+                            : 'DD MMM YY, h:mma',
                         )}
                       </p>
                     </div>
@@ -341,7 +341,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
                         <linearGradient
                           id={`gradientArea-${title?.replace(
                             /[^a-zA-Z]/g,
-                            ''
+                            '',
                           )}`}
                           x1="0"
                           y1={flipGradientCoords ? '1' : '0'}
@@ -380,7 +380,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
                         strokeWidth={1.5}
                         fill={`url(#gradientArea-${title?.replace(
                           /[^a-zA-Z]/g,
-                          ''
+                          '',
                         )})`}
                       />
                       <XAxis

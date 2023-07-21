@@ -51,7 +51,7 @@ export function subscribeOnStream(
   onRealtimeCallback: any,
   subscriberUID: any,
   onResetCacheNeededCallback: any,
-  lastBar: any
+  lastBar: any,
 ) {
   subscriptionItem = {
     resolution,

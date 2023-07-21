@@ -53,15 +53,15 @@ const RiskDashboard: NextPage = () => {
         new web3.Connection(
           process.env.NEXT_PUBLIC_ENDPOINT ||
             'https://mango.rpcpool.com/946ef7337da3f5b8d3e4a34e7f88',
-          'processed'
+          'processed',
         ),
         emptyWallet,
-        AnchorProvider.defaultOptions()
+        AnchorProvider.defaultOptions(),
       )
       const client = MangoClient.connect(
         provider,
         'mainnet-beta',
-        MANGO_V4_ID['mainnet-beta']
+        MANGO_V4_ID['mainnet-beta'],
       )
       if (group) {
         return getRiskStats(client, group)
@@ -73,7 +73,7 @@ const RiskDashboard: NextPage = () => {
       retry: 0,
       refetchOnWindowFocus: false,
       enabled: !!group,
-    }
+    },
   )
 
   console.log('resp', data)
@@ -120,7 +120,7 @@ const RiskDashboard: NextPage = () => {
                                       : ''}
                                   </Th>
                                 )
-                              }
+                              },
                             )}
                           </TrHead>
                         </thead>
@@ -141,7 +141,7 @@ const RiskDashboard: NextPage = () => {
                                         {formatValue(val?.val)}
                                       </Td>
                                     )
-                                  }
+                                  },
                                 )}
                               </TrBody>
                             )
@@ -150,7 +150,7 @@ const RiskDashboard: NextPage = () => {
                       </Table>
                     </div>
                   )
-                }
+                },
               )}
             </div>
           ) : (

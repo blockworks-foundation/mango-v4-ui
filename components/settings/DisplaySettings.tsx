@@ -63,21 +63,21 @@ const DisplaySettings = () => {
   const { theme, setTheme } = useTheme()
   const [savedLanguage, setSavedLanguage] = useLocalStorageState(
     'language',
-    'en'
+    'en',
   )
   const router = useRouter()
   const { pathname, asPath, query } = router
   const [notificationPosition, setNotificationPosition] = useLocalStorageState(
     NOTIFICATION_POSITION_KEY,
-    'bottom-left'
+    'bottom-left',
   )
   const [tradeFormUi, setTradeFormUi] = useLocalStorageState(
     SIZE_INPUT_UI_KEY,
-    'slider'
+    'slider',
   )
   const [tradeChartUi, setTradeChartUi] = useLocalStorageState(
     TRADE_CHART_UI_KEY,
-    'trading-view'
+    'trading-view',
   )
   const [, setTradeLayout] = useLocalStorageState(TRADE_LAYOUT_KEY, 'chartLeft')
 
@@ -87,7 +87,7 @@ const DisplaySettings = () => {
       router.push({ pathname, query }, asPath, { locale: l })
       dayjs.locale(l == 'zh_tw' ? 'zh-tw' : l)
     },
-    [router, pathname, query, asPath, setSavedLanguage]
+    [router, pathname, query, asPath, setSavedLanguage],
   )
 
   return (

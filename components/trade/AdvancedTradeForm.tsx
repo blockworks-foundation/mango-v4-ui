@@ -89,7 +89,7 @@ const AdvancedTradeForm = () => {
   const { ipAllowed, ipCountry } = useIpAddress()
   const [soundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,
-    INITIAL_SOUND_SETTINGS
+    INITIAL_SOUND_SETTINGS,
   )
   const { connected, connect } = useWallet()
   const {
@@ -120,7 +120,7 @@ const AdvancedTradeForm = () => {
         }
       })
     },
-    []
+    [],
   )
 
   const handleBaseSizeChange = useCallback(
@@ -140,7 +140,7 @@ const AdvancedTradeForm = () => {
         }
       })
     },
-    [oraclePrice]
+    [oraclePrice],
   )
 
   const handleQuoteSizeChange = useCallback(
@@ -160,7 +160,7 @@ const AdvancedTradeForm = () => {
         }
       })
     },
-    [oraclePrice]
+    [oraclePrice],
   )
 
   const handlePostOnlyChange = useCallback(
@@ -179,7 +179,7 @@ const AdvancedTradeForm = () => {
         post: postOnly,
       })
     },
-    [savedCheckboxSettings]
+    [savedCheckboxSettings],
   )
 
   const handleIocChange = useCallback(
@@ -198,7 +198,7 @@ const AdvancedTradeForm = () => {
         post: postOnly,
       })
     },
-    [savedCheckboxSettings]
+    [savedCheckboxSettings],
   )
 
   useEffect(() => {
@@ -245,7 +245,7 @@ const AdvancedTradeForm = () => {
       const tokenIndex =
         selectedMarket[isBuySide ? 'quoteTokenIndex' : 'baseTokenIndex']
       const balance = mangoAccount.getTokenBalanceUi(
-        group.getFirstBankByTokenIndex(tokenIndex)
+        group.getFirstBankByTokenIndex(tokenIndex),
       )
       const max = Math.max(balance, 0)
 
@@ -263,16 +263,16 @@ const AdvancedTradeForm = () => {
             s.tradeForm.quoteSize = floorToDecimal(max, tickDecimals).toFixed()
             s.tradeForm.baseSize = floorToDecimal(
               max / Number(tradePrice),
-              minOrderDecimals
+              minOrderDecimals,
             ).toFixed()
           } else {
             s.tradeForm.baseSize = floorToDecimal(
               max,
-              minOrderDecimals
+              minOrderDecimals,
             ).toFixed()
             s.tradeForm.quoteSize = floorToDecimal(
               max * Number(tradePrice),
-              tickDecimals
+              tickDecimals,
             ).toFixed()
           }
         }
@@ -285,7 +285,7 @@ const AdvancedTradeForm = () => {
       selectedMarket,
       set,
       tradeForm,
-    ]
+    ],
   )
 
   const [tickDecimals, tickSize] = useMemo(() => {
@@ -309,10 +309,10 @@ const AdvancedTradeForm = () => {
       return selectedMarket.oracleLastUpdatedSlot !== 0
     } else if (selectedMarket instanceof Serum3Market) {
       const baseBank = group.getFirstBankByTokenIndex(
-        selectedMarket.baseTokenIndex
+        selectedMarket.baseTokenIndex,
       )
       const quoteBank = group.getFirstBankByTokenIndex(
-        selectedMarket.quoteTokenIndex
+        selectedMarket.quoteTokenIndex,
       )
       return (
         baseBank.oracleLastUpdatedSlot !== 0 &&
@@ -381,7 +381,7 @@ const AdvancedTradeForm = () => {
         price = calculateLimitPriceForMarketOrder(
           orderbook,
           baseSize,
-          tradeForm.side
+          tradeForm.side,
         )
       }
 
@@ -401,7 +401,7 @@ const AdvancedTradeForm = () => {
           Serum3SelfTradeBehavior.decrementTake,
           spotOrderType,
           Date.now(),
-          10
+          10,
         )
         actions.fetchOpenOrders(true)
         set((s) => {
@@ -438,7 +438,7 @@ const AdvancedTradeForm = () => {
           perpOrderType,
           selectedMarket.reduceOnly || tradeForm.reduceOnly,
           undefined,
-          undefined
+          undefined,
         )
         actions.fetchOpenOrders(true)
         set((s) => {

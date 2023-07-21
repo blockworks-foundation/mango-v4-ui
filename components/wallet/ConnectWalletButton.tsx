@@ -21,14 +21,14 @@ export default function ConnectWalletButton({
   const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
   const [lastWalletName] = useLocalStorageState<WalletName | null>(
     'lastWalletName',
-    ''
+    '',
   )
 
   const detectedWallets = useMemo(() => {
     return wallets.filter(
       (w) =>
         w.readyState === WalletReadyState.Installed ||
-        w.readyState === WalletReadyState.Loadable
+        w.readyState === WalletReadyState.Loadable,
     )
   }, [wallets])
 

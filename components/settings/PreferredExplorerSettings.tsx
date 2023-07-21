@@ -15,7 +15,7 @@ const PreferredExplorerSettings = () => {
   const { t } = useTranslation('settings')
   const [preferredExplorer, setPreferredExplorer] = useLocalStorageState(
     PREFERRED_EXPLORER_KEY,
-    EXPLORERS[0]
+    EXPLORERS[0],
   )
   return (
     <>

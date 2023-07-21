@@ -98,7 +98,7 @@ const TokenDetailsTable = () => {
                 const [oracleProvider, oracleLinkPath] = getOracleProvider(bank)
 
                 const mintInfo = group.mintInfosMapByMint.get(
-                  bank.mint.toString()
+                  bank.mint.toString(),
                 )
 
                 return (
@@ -131,7 +131,7 @@ const TokenDetailsTable = () => {
                     <Td>
                       <p className="text-right">
                         {(100 * bank.loanOriginationFeeRate.toNumber()).toFixed(
-                          2
+                          2,
                         )}
                         %
                       </p>
@@ -262,7 +262,7 @@ const TokenDetailsTable = () => {
                             </Tooltip>
                             <p className="font-mono text-th-fgd-1">
                               {(bank.liquidationFee.toNumber() * 100).toFixed(
-                                2
+                                2,
                               )}
                               %
                             </p>

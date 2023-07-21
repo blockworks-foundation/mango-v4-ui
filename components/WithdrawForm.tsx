@@ -49,7 +49,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [selectedToken, setSelectedToken] = useState(
-    token || INPUT_TOKEN_DEFAULT
+    token || INPUT_TOKEN_DEFAULT,
   )
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
@@ -82,17 +82,17 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
       if (percentage !== '100') {
         amount = floorToDecimal(
           new Decimal(adjustedTokenMax).mul(percentage).div(100),
-          bank.mintDecimals
+          bank.mintDecimals,
         )
       } else {
         amount = floorToDecimal(
           new Decimal(adjustedTokenMax),
-          bank.mintDecimals
+          bank.mintDecimals,
         )
       }
       setInputAmount(amount.toString())
     },
-    [bank, adjustedTokenMax]
+    [bank, adjustedTokenMax],
   )
 
   const setMax = useCallback(() => {
@@ -116,7 +116,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
         mangoAccount,
         bank.mint,
         withdrawAmount,
-        false
+        false,
       )
       notify({
         title: 'Transaction confirmed',
@@ -227,7 +227,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
                   value={inputAmount}
                   onValueChange={(e: NumberFormatValues) =>
                     setInputAmount(
-                      !Number.isNaN(Number(e.value)) ? e.value : ''
+                      !Number.isNaN(Number(e.value)) ? e.value : '',
                     )
                   }
                   isAllowed={withValueLimit}

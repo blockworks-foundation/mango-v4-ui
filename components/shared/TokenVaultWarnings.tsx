@@ -26,7 +26,7 @@ const TokenVaultWarnings = ({
     const maxWithdraw = getMaxWithdrawForBank(group, bank, mangoAccount)
     const maxBorrow = mangoAccount.getMaxWithdrawWithBorrowForTokenUi(
       group,
-      bank.mint
+      bank.mint,
     )
 
     return [maxWithdraw, maxBorrow]

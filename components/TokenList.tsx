@@ -38,13 +38,13 @@ const TokenList = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
   const [showZeroBalances, setShowZeroBalances] = useLocalStorageState(
     SHOW_ZERO_BALANCES_KEY,
-    true
+    true,
   )
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const { initContributions } = useHealthContributions()
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const totalInterestData = mangoStore(
-    (s) => s.mangoAccount.interestTotals.data
+    (s) => s.mangoAccount.interestTotals.data,
   )
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
@@ -136,7 +136,7 @@ const TokenList = () => {
                 const hasInterestEarned = totalInterestData.find(
                   (d) =>
                     d.symbol.toLowerCase() === symbol.toLowerCase() ||
-                    (symbol === 'ETH (Portal)' && d.symbol === 'ETH')
+                    (symbol === 'ETH (Portal)' && d.symbol === 'ETH'),
                 )
 
                 const interestAmount = hasInterestEarned
@@ -273,7 +273,7 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
   const { mangoAccount } = useMangoAccount()
   const { initContributions } = useHealthContributions()
   const totalInterestData = mangoStore(
-    (s) => s.mangoAccount.interestTotals.data
+    (s) => s.mangoAccount.interestTotals.data,
   )
   const tokenBank = bank.bank
   const mint = tokenBank.mint
@@ -282,7 +282,7 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
   const hasInterestEarned = totalInterestData.find(
     (d) =>
       d.symbol.toLowerCase() === symbol.toLowerCase() ||
-      (symbol === 'ETH (Portal)' && d.symbol === 'ETH')
+      (symbol === 'ETH (Portal)' && d.symbol === 'ETH'),
   )
 
   const interestAmount = hasInterestEarned
@@ -464,7 +464,7 @@ const ActionsMenu = ({
         ? setShowWithdrawModal(true)
         : setShowRepayModal(true)
     },
-    []
+    [],
   )
 
   const balance = useMemo(() => {
@@ -474,7 +474,7 @@ const ActionsMenu = ({
 
   const handleSwap = useCallback(() => {
     const tokenInfo = mangoTokens.find(
-      (t) => t.address === bank.mint.toString()
+      (t) => t.address === bank.mint.toString(),
     )
     const group = mangoStore.getState().group
     if (balance && balance > 0) {
@@ -493,7 +493,7 @@ const ActionsMenu = ({
     } else {
       if (tokenInfo?.symbol === 'USDC') {
         const solTokenInfo = mangoTokens.find(
-          (t) => t.address === WRAPPED_SOL_MINT.toString()
+          (t) => t.address === WRAPPED_SOL_MINT.toString(),
         )
         const solBank = group?.getFirstBankByMint(WRAPPED_SOL_MINT)
         set((s) => {

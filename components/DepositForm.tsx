@@ -43,7 +43,7 @@ interface DepositFormProps {
 
 export const walletBalanceForToken = (
   walletTokens: TokenAccount[],
-  token: string
+  token: string,
 ): { maxAmount: number; maxDecimals: number } => {
   const group = mangoStore.getState().group
   const bank = group?.banksMapByName.get(token)?.[0]
@@ -67,7 +67,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [selectedToken, setSelectedToken] = useState(
-    token || INPUT_TOKEN_DEFAULT
+    token || INPUT_TOKEN_DEFAULT,
   )
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
@@ -98,11 +98,11 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
       setSizePercentage(percentage)
       const amount = floorToDecimal(
         new Decimal(tokenMax.maxAmount).mul(percentage).div(100),
-        tokenMax.maxDecimals
+        tokenMax.maxDecimals,
       )
       setInputAmount(amount.toFixed())
     },
-    [tokenMax]
+    [tokenMax],
   )
 
   const handleSelectToken = (token: string) => {
@@ -124,7 +124,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
         group,
         mangoAccount,
         bank.mint,
-        parseFloat(inputAmount)
+        parseFloat(inputAmount),
       )
       notify({
         title: 'Transaction confirmed',
@@ -225,7 +225,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
                   value={inputAmount}
                   onValueChange={(e: NumberFormatValues) => {
                     setInputAmount(
-                      !Number.isNaN(Number(e.value)) ? e.value : ''
+                      !Number.isNaN(Number(e.value)) ? e.value : '',
                     )
                   }}
                   isAllowed={withValueLimit}

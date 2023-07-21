@@ -40,7 +40,7 @@ const TradingChartContainer = dynamic(() => import('./TradingChartContainer'), {
 const getHeight = (
   pageHeight: number,
   minHeight: number,
-  remainingRowHeight: number
+  remainingRowHeight: number,
 ) => {
   return Math.max(minHeight, pageHeight - remainingRowHeight)
 }
@@ -56,7 +56,7 @@ const TradeAdvancedPage = () => {
   // const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const [tradeLayout] = useLocalStorageState<TradeLayout>(
     TRADE_LAYOUT_KEY,
-    'chartLeft'
+    'chartLeft',
   )
   const [isCollapsed] = useLocalStorageState(SIDEBAR_COLLAPSE_KEY, false)
   const [showDepthChart] = useLocalStorageState<boolean>(DEPTH_CHART_KEY, false)
@@ -268,7 +268,7 @@ const TradeAdvancedPage = () => {
     (layout: Layout[] | undefined, layouts: Layouts) => {
       setLayouts(layouts)
     },
-    [setLayouts]
+    [setLayouts],
   )
 
   useLayoutEffect(() => {

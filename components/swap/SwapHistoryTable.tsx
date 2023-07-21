@@ -36,7 +36,7 @@ const SwapHistoryTable = () => {
   const showTableView = width ? width > breakpoints.md : false
   const [preferredExplorer] = useLocalStorageState(
     PREFERRED_EXPLORER_KEY,
-    EXPLORERS[0]
+    EXPLORERS[0],
   )
 
   useEffect(() => {
@@ -56,7 +56,7 @@ const SwapHistoryTable = () => {
     actions.fetchSwapHistory(
       mangoAccountAddress,
       0,
-      offset + PAGINATION_PAGE_LENGTH
+      offset + PAGINATION_PAGE_LENGTH,
     )
   }, [actions, offset, mangoAccountAddress])
 
@@ -196,7 +196,7 @@ const SwapHistoryTable = () => {
                     <div className="flex items-center justify-end">
                       <Tooltip
                         content={`View on ${t(
-                          `settings:${preferredExplorer.name}`
+                          `settings:${preferredExplorer.name}`,
                         )}`}
                         placement="top-end"
                       >

@@ -54,16 +54,16 @@ const CreateAccountForm = ({
         group,
         newAccountNum,
         name || `Account ${newAccountNum + 1}`,
-        16 // tokenCount
+        16, // tokenCount
       )
       if (tx) {
         const pk = wallet.adapter.publicKey
         const mangoAccounts = await client.getMangoAccountsForOwner(group, pk!)
         const reloadedMangoAccounts = await Promise.all(
-          mangoAccounts.map((ma) => ma.reloadSerum3OpenOrders(client))
+          mangoAccounts.map((ma) => ma.reloadSerum3OpenOrders(client)),
         )
         const newAccount = mangoAccounts.find(
-          (acc) => acc.accountNum === newAccountNum
+          (acc) => acc.accountNum === newAccountNum,
         )
         if (newAccount) {
           await newAccount.reloadSerum3OpenOrders(client)

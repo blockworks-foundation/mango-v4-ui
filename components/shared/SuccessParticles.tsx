@@ -15,7 +15,7 @@ const SuccessParticles = () => {
   const set = mangoStore((s) => s.set)
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
-    INITIAL_ANIMATION_SETTINGS
+    INITIAL_ANIMATION_SETTINGS,
   )
 
   const tokenLogo = useMemo(() => {
@@ -70,7 +70,7 @@ const SuccessParticles = () => {
           set((s) => {
             s.successAnimation.swap = false
           }),
-        8000
+        8000,
       )
     }
     if (showForTrade) {
@@ -79,7 +79,7 @@ const SuccessParticles = () => {
           set((s) => {
             s.successAnimation.trade = false
           }),
-        8000
+        8000,
       )
     }
   }, [showForSwap, showForTrade])

@@ -102,7 +102,7 @@ interface ExtendedReferenceDotProps extends ReferenceDotProps {
   flipPrices: boolean
   mouseEnter: (
     swap: SwapHistoryItem | undefined,
-    coingeckoPrice: string | number | undefined
+    coingeckoPrice: string | number | undefined,
   ) => void
   mouseLeave: MouseEventHandler
 }
@@ -120,7 +120,7 @@ const SwapHistoryArrows = (props: ExtendedReferenceDotProps) => {
     mouseLeave,
   } = props
   const swapDetails = swapHistory.find(
-    (swap) => dayjs(swap.block_datetime).unix() * 1000 === x
+    (swap) => dayjs(swap.block_datetime).unix() * 1000 === x,
   )
   const side =
     swapDetails?.swap_in_symbol === swapMarketName.split('/')[0]
@@ -186,7 +186,7 @@ const SwapTokenChart = () => {
   const { theme } = useTheme()
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
-    INITIAL_ANIMATION_SETTINGS
+    INITIAL_ANIMATION_SETTINGS,
   )
   const swapHistory = mangoStore((s) => s.mangoAccount.swapHistory.data)
   const loadSwapHistory = mangoStore((s) => s.mangoAccount.swapHistory.loading)
@@ -200,7 +200,7 @@ const SwapTokenChart = () => {
   const handleSwapMouseEnter = useCallback(
     (
       swap: SwapHistoryItem | undefined,
-      coingeckoPrice: string | number | undefined
+      coingeckoPrice: string | number | undefined,
     ) => {
       if (swap) {
         setSwapTooltipData(swap)
@@ -209,7 +209,7 @@ const SwapTokenChart = () => {
         setSwapTooltipCoingeckoPrice(coingeckoPrice)
       }
     },
-    [setSwapTooltipData, setSwapTooltipCoingeckoPrice]
+    [setSwapTooltipData, setSwapTooltipCoingeckoPrice],
   )
 
   const handleSwapMouseLeave = useCallback(() => {
@@ -302,9 +302,9 @@ const SwapTokenChart = () => {
       return (
         <>
           <p className="text-center text-th-fgd-2">{`${t(
-            side
+            side,
           )} ${amount} ${symbol} at ${formatNumericValue(
-            price
+            price,
           )} ${priceSymbol} for ${formatCurrencyValue(value)}`}</p>
           {coingeckoPercentageDifference ? (
             <p
@@ -321,7 +321,7 @@ const SwapTokenChart = () => {
         </>
       )
     },
-    [flipPrices, swapMarketName, swapTooltipCoingeckoPrice]
+    [flipPrices, swapMarketName, swapTooltipCoingeckoPrice],
   )
 
   const {
@@ -336,7 +336,7 @@ const SwapTokenChart = () => {
       staleTime: 1000 * 60 * 1,
       enabled: !!baseTokenId && !!quoteTokenId,
       refetchOnWindowFocus: false,
-    }
+    },
   )
 
   const coingeckoData = useMemo(() => {
@@ -371,7 +371,7 @@ const SwapTokenChart = () => {
       .filter(
         (swap) =>
           chartSymbols.includes(swap.swap_in_symbol) &&
-          chartSymbols.includes(swap.swap_out_symbol)
+          chartSymbols.includes(swap.swap_out_symbol),
       )
       .map((val) => dayjs(val.block_datetime).unix() * 1000)
   }, [swapHistory, loadSwapHistory, inputBank, outputBank])
@@ -408,7 +408,7 @@ const SwapTokenChart = () => {
     const maxTime = coingeckoData[coingeckoData.length - 1].time
     if (swapHistoryPoints.length && showSwaps) {
       const swapPoints = swapHistoryPoints.filter(
-        (point) => point.time >= minTime && point.time <= maxTime
+        (point) => point.time >= minTime && point.time <= maxTime,
       )
       return coingeckoData.concat(swapPoints).sort((a, b) => a.time - b.time)
     } else return coingeckoData
@@ -420,7 +420,7 @@ const SwapTokenChart = () => {
         setMouseData(coords.activePayload[0].payload)
       }
     },
-    [setMouseData]
+    [setMouseData],
   )
 
   const handleMouseLeave = useCallback(() => {
@@ -524,7 +524,7 @@ const SwapTokenChart = () => {
                         width={35}
                         play
                         numbers={formatNumericValue(
-                          chartData[chartData.length - 1].price
+                          chartData[chartData.length - 1].price,
                         )}
                       />
                     ) : (
@@ -540,7 +540,7 @@ const SwapTokenChart = () => {
                   </div>
                   <p className="text-sm text-th-fgd-4">
                     {dayjs(chartData[chartData.length - 1].time).format(
-                      'DD MMM YY, h:mma'
+                      'DD MMM YY, h:mma',
                     )}
                   </p>
                 </>

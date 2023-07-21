@@ -33,7 +33,7 @@ const MarketSelectDropdown = () => {
   const { t } = useTranslation('common')
   const { selectedMarket } = useSelectedMarket()
   const [spotOrPerp, setSpotOrPerp] = useState(
-    selectedMarket instanceof PerpMarket ? 'perp' : 'spot'
+    selectedMarket instanceof PerpMarket ? 'perp' : 'spot',
   )
   const serumMarkets = mangoStore((s) => s.serumMarkets)
   const allPerpMarkets = mangoStore((s) => s.perpMarkets)
@@ -45,10 +45,10 @@ const MarketSelectDropdown = () => {
       .filter(
         (p) =>
           p.publicKey.toString() !==
-          '9Y8paZ5wUpzLFfQuHz8j2RtPrKsDtHx9sbgFmWb5abCw'
+          '9Y8paZ5wUpzLFfQuHz8j2RtPrKsDtHx9sbgFmWb5abCw',
       )
       .sort((a, b) =>
-        a.oracleLastUpdatedSlot == 0 ? -1 : a.name.localeCompare(b.name)
+        a.oracleLastUpdatedSlot == 0 ? -1 : a.name.localeCompare(b.name),
       )
   }, [allPerpMarkets])
 
@@ -149,7 +149,7 @@ const MarketSelectDropdown = () => {
                                 <span className="mr-3 font-mono text-xs text-th-fgd-2">
                                   {formatCurrencyValue(
                                     m.uiPrice,
-                                    getDecimalCount(m.tickSize)
+                                    getDecimalCount(m.tickSize),
                                   )}
                                 </span>
                                 <MarketChange market={m} size="small" />
@@ -192,19 +192,19 @@ const MarketSelectDropdown = () => {
                     .sort((a, b) => a.name.localeCompare(b.name))
                     .map((m) => {
                       const baseBank = group?.getFirstBankByTokenIndex(
-                        m.baseTokenIndex
+                        m.baseTokenIndex,
                       )
                       const quoteBank = group?.getFirstBankByTokenIndex(
-                        m.quoteTokenIndex
+                        m.quoteTokenIndex,
                       )
                       const market = group?.getSerum3ExternalMarket(
-                        m.serumMarketExternal
+                        m.serumMarketExternal,
                       )
                       let price
                       if (baseBank && market && quoteBank) {
                         price = floorToDecimal(
                           baseBank.uiPrice / quoteBank.uiPrice,
-                          getDecimalCount(market.tickSize)
+                          getDecimalCount(market.tickSize),
                         ).toNumber()
                       }
                       return (
@@ -234,7 +234,7 @@ const MarketSelectDropdown = () => {
                                   {getDecimalCount(market.tickSize) <= 6
                                     ? formatNumericValue(
                                         price,
-                                        getDecimalCount(market.tickSize)
+                                        getDecimalCount(market.tickSize),
                                       )
                                     : price.toExponential(3)}{' '}
                                   {quoteBank?.name !== 'USDC' ? (

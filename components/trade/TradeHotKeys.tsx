@@ -37,7 +37,7 @@ const calcBaseSize = (
   oraclePrice: number,
   quoteTokenIndex: number,
   group: Group,
-  limitPrice?: number
+  limitPrice?: number,
 ) => {
   const { orderSize, orderSide, orderSizeType, orderType } = orderDetails
   let baseSize: number
@@ -62,32 +62,32 @@ const calcBaseSize = (
     if (orderType === 'market') {
       baseSize = floorToDecimal(
         quoteSize / oraclePrice,
-        getDecimalCount(market.minOrderSize)
+        getDecimalCount(market.minOrderSize),
       ).toNumber()
     } else {
       const price = limitPrice ? limitPrice : 0
       baseSize = floorToDecimal(
         quoteSize / price,
-        getDecimalCount(market.minOrderSize)
+        getDecimalCount(market.minOrderSize),
       ).toNumber()
     }
   } else {
     if (orderSizeType === 'percentage') {
       baseSize = floorToDecimal(
         (Number(orderSize) / 100) * maxSize,
-        getDecimalCount(market.minOrderSize)
+        getDecimalCount(market.minOrderSize),
       ).toNumber()
     } else {
       if (orderType === 'market') {
         baseSize = floorToDecimal(
           Number(orderSize) / oraclePrice,
-          getDecimalCount(market.minOrderSize)
+          getDecimalCount(market.minOrderSize),
         ).toNumber()
       } else {
         const price = limitPrice ? limitPrice : 0
         baseSize = floorToDecimal(
           Number(orderSize) / price,
-          getDecimalCount(market.minOrderSize)
+          getDecimalCount(market.minOrderSize),
         ).toNumber()
       }
     }
@@ -99,7 +99,7 @@ const calcSpotMarketMax = (
   mangoAccount: MangoAccount | undefined,
   selectedMarket: GenericMarket | undefined,
   side: string,
-  useMargin: boolean
+  useMargin: boolean,
 ) => {
   const spotBalances = mangoStore.getState().mangoAccount.spotBalances
   const group = mangoStore.getState().group
@@ -112,10 +112,10 @@ const calcSpotMarketMax = (
     if (side === 'buy') {
       leverageMax = mangoAccount.getMaxQuoteForSerum3BidUi(
         group,
-        selectedMarket.serumMarketExternal
+        selectedMarket.serumMarketExternal,
       )
       const bank = group.getFirstBankByTokenIndex(
-        selectedMarket.quoteTokenIndex
+        selectedMarket.quoteTokenIndex,
       )
       const balance = mangoAccount.getTokenBalanceUi(bank)
       const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
@@ -123,7 +123,7 @@ const calcSpotMarketMax = (
     } else {
       leverageMax = mangoAccount.getMaxBaseForSerum3AskUi(
         group,
-        selectedMarket.serumMarketExternal
+        selectedMarket.serumMarketExternal,
       )
       const bank = group.getFirstBankByTokenIndex(selectedMarket.baseTokenIndex)
       const balance = mangoAccount.getTokenBalanceUi(bank)
@@ -140,7 +140,7 @@ const calcSpotMarketMax = (
 const calcPerpMax = (
   mangoAccount: MangoAccount,
   selectedMarket: GenericMarket,
-  side: string
+  side: string,
 ) => {
   const group = mangoStore.getState().group
   if (
@@ -154,12 +154,12 @@ const calcPerpMax = (
     if (side === 'buy') {
       return mangoAccount.getMaxQuoteForPerpBidUi(
         group,
-        selectedMarket.perpMarketIndex
+        selectedMarket.perpMarketIndex,
       )
     } else {
       return mangoAccount.getMaxBaseForPerpAskUi(
         group,
-        selectedMarket.perpMarketIndex
+        selectedMarket.perpMarketIndex,
       )
     }
   } catch (e) {
@@ -177,7 +177,7 @@ const TradeHotKeys = ({ children }: { children: ReactNode }) => {
   const [hotKeys] = useLocalStorageState(HOT_KEYS_KEY, [])
   const [soundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,
-    INITIAL_SOUND_SETTINGS
+    INITIAL_SOUND_SETTINGS,
   )
 
   const handlePlaceOrder = useCallback(
@@ -217,13 +217,13 @@ const TradeHotKeys = ({ children }: { children: ReactNode }) => {
             serumOrPerpMarket,
             oraclePrice,
             quoteTokenIndex,
-            group
+            group,
           )
           const orderbook = mangoStore.getState().selectedMarket.orderbook
           price = calculateLimitPriceForMarketOrder(
             orderbook,
             baseSize,
-            orderSide
+            orderSide,
           )
         } else {
           // change in price from oracle for limit order
@@ -235,7 +235,7 @@ const TradeHotKeys = ({ children }: { children: ReactNode }) => {
               : oraclePrice + priceChange
           price = floorToDecimal(
             rawPrice,
-            getDecimalCount(serumOrPerpMarket.tickSize)
+            getDecimalCount(serumOrPerpMarket.tickSize),
           ).toNumber()
           baseSize = calcBaseSize(
             hkOrder,
@@ -244,7 +244,7 @@ const TradeHotKeys = ({ children }: { children: ReactNode }) => {
             oraclePrice,
             quoteTokenIndex,
             group,
-            price
+            price,
           )
         }
 
@@ -294,7 +294,7 @@ const TradeHotKeys = ({ children }: { children: ReactNode }) => {
             Serum3SelfTradeBehavior.decrementTake,
             spotOrderType,
             Date.now(),
-            10
+            10,
           )
           actions.fetchOpenOrders(true)
           set((s) => {
@@ -331,7 +331,7 @@ const TradeHotKeys = ({ children }: { children: ReactNode }) => {
             perpOrderType,
             selectedMarket.reduceOnly || reduceOnly,
             undefined,
-            undefined
+            undefined,
           )
           actions.fetchOpenOrders(true)
           set((s) => {
@@ -357,19 +357,19 @@ const TradeHotKeys = ({ children }: { children: ReactNode }) => {
         })
       }
     },
-    [serumOrPerpMarket]
+    [serumOrPerpMarket],
   )
 
   const onKeyDown = useCallback(
     (keyName: string) => {
       const orderDetails = hotKeys.find(
-        (hk: HotKey) => hk.keySequence === keyName
+        (hk: HotKey) => hk.keySequence === keyName,
       )
       if (orderDetails) {
         handlePlaceOrder(orderDetails)
       }
     },
-    [handlePlaceOrder, hotKeys]
+    [handlePlaceOrder, hotKeys],
   )
 
   const showHotKeys =

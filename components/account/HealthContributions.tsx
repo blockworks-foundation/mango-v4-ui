@@ -22,10 +22,10 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
   const { group } = useMangoGroup()
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const [initActiveIndex, setInitActiveIndex] = useState<number | undefined>(
-    undefined
+    undefined,
   )
   const [maintActiveIndex, setMaintActiveIndex] = useState<number | undefined>(
-    undefined
+    undefined,
   )
   const { initContributions, maintContributions } = useHealthContributions()
 
@@ -37,7 +37,7 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
       if (item.asset === 'USDC') {
         const hasPerp =
           !!item.contributionDetails?.perpMarketContributions.find(
-            (perp: PerpMarketContribution) => Math.abs(perp.contributionUi) > 0
+            (perp: PerpMarketContribution) => Math.abs(perp.contributionUi) > 0,
           )
         initHealthContributions.push({
           ...item,
@@ -73,7 +73,7 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
       if (item.asset === 'USDC') {
         const hasPerp =
           !!item.contributionDetails?.perpMarketContributions.find(
-            (perp: PerpMarketContribution) => Math.abs(perp.contributionUi) > 0
+            (perp: PerpMarketContribution) => Math.abs(perp.contributionUi) > 0,
           )
         maintHealthContributions.push({
           ...item,
@@ -111,7 +111,7 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
     const splitData = initHealthContributions.reduce(
       (
         acc: { market: HealthContribution[]; token: HealthContribution[] },
-        obj: HealthContribution
+        obj: HealthContribution,
       ) => {
         const isPerp = obj.asset.includes('PERP')
         const isSpotMarket = obj.asset.includes('/')
@@ -123,7 +123,7 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
         }
         return acc
       },
-      { market: [], token: [] }
+      { market: [], token: [] },
     )
     return [splitData.market, splitData.token]
   }, [initHealthContributions])
@@ -133,7 +133,7 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
     const splitData = maintHealthContributions.reduce(
       (
         acc: { market: HealthContribution[]; token: HealthContribution[] },
-        obj: HealthContribution
+        obj: HealthContribution,
       ) => {
         const isPerp = obj.asset.includes('PERP')
         const isSpotMarket = obj.asset.includes('/')
@@ -145,7 +145,7 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
         }
         return acc
       },
-      { market: [], token: [] }
+      { market: [], token: [] },
     )
     const markets = splitData.market.filter((d) => d.contribution > 0)
     const tokens = splitData.token

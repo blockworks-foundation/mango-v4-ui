@@ -16,7 +16,7 @@ const localStorageListeners: LocalStorageListenersType = {}
 
 function useLocalStorageStringState(
   key: string,
-  defaultState: string
+  defaultState: string,
 ): [string | undefined, (newState: string) => void] {
   const state =
     typeof window !== 'undefined'
@@ -32,7 +32,7 @@ function useLocalStorageStringState(
     localStorageListeners[key].push(notify)
     return () => {
       localStorageListeners[key] = localStorageListeners[key].filter(
-        (listener) => listener !== notify
+        (listener) => listener !== notify,
       )
       if (localStorageListeners[key].length === 0) {
         delete localStorageListeners[key]
@@ -52,10 +52,10 @@ function useLocalStorageStringState(
         localStorage.setItem(key, newState)
       }
       localStorageListeners[key].forEach((listener) =>
-        listener(key + '\n' + newState)
+        listener(key + '\n' + newState),
       )
     },
-    [key]
+    [key],
   )
 
   return [state, setState]
@@ -63,18 +63,18 @@ function useLocalStorageStringState(
 
 export default function useLocalStorageState<T = any>(
   key: string,
-  defaultState?: string | number | object | undefined | null | boolean
+  defaultState?: string | number | object | undefined | null | boolean,
 ): [T, (newState: string | number | object | null | boolean) => void] {
   const [stringState, setStringState] = useLocalStorageStringState(
     key,
-    JSON.stringify(defaultState)
+    JSON.stringify(defaultState),
   )
 
   const setState = useCallback(
     (newState: string | number | object | null | boolean) => {
       setStringState(JSON.stringify(newState))
     },
-    [setStringState]
+    [setStringState],
   )
 
   const state: T = useMemo(() => {

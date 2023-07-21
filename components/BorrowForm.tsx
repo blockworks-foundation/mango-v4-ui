@@ -57,7 +57,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [selectedToken, setSelectedToken] = useState(
-    token || INPUT_TOKEN_DEFAULT
+    token || INPUT_TOKEN_DEFAULT,
   )
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
@@ -91,11 +91,11 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
       setSizePercentage(percentage)
       const amount = floorToDecimal(
         new Decimal(percentage).div(100).mul(tokenMax),
-        bank.mintDecimals
+        bank.mintDecimals,
       )
       setInputAmount(amount.toFixed())
     },
-    [tokenMax, bank]
+    [tokenMax, bank],
   )
 
   const setMax = useCallback(() => {
@@ -123,7 +123,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
         mangoAccount,
         bank!.mint,
         Number(inputAmount),
-        true
+        true,
       )
       notify({
         title: 'Transaction confirmed',

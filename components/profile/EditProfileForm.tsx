@@ -31,7 +31,7 @@ const EditProfileForm = ({
   const profile = mangoStore((s) => s.profile.details)
   const { publicKey, signMessage } = useWallet()
   const [profileName, setProfileName] = useState(
-    startCase(profile?.profile_name) || ''
+    startCase(profile?.profile_name) || '',
   )
   const [inputError, setInputError] = useState('')
   const [loadUniquenessCheck, setLoadUniquenessCheck] = useState(false)
@@ -43,7 +43,7 @@ const EditProfileForm = ({
     try {
       setLoadUniquenessCheck(true)
       const response = await fetch(
-        `${MANGO_DATA_API_URL}/user-data/check-profile-name-unique?profile-name=${name}`
+        `${MANGO_DATA_API_URL}/user-data/check-profile-name-unique?profile-name=${name}`,
       )
       const uniquenessCheck = await response.json()
 
@@ -105,7 +105,7 @@ const EditProfileForm = ({
         }
         const response = await fetch(
           `${MANGO_DATA_API_URL}/user-data/profile-details`,
-          requestOptions
+          requestOptions,
         )
         if (response.status === 200) {
           setLoadUpdateProfile(false)

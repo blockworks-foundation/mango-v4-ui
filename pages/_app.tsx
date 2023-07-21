@@ -69,7 +69,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       new LedgerWalletAdapter(),
       new ExodusWalletAdapter(),
     ],
-    []
+    [],
   )
 
   const onError = useCallback((error: WalletError, adapter?: Adapter) => {
@@ -144,13 +144,13 @@ const PageTitle = () => {
       return [selectedMarket, selectedMarket.uiPrice]
     } else {
       const baseBank = group.getFirstBankByTokenIndex(
-        selectedMarket.baseTokenIndex
+        selectedMarket.baseTokenIndex,
       )
       const quoteBank = group.getFirstBankByTokenIndex(
-        selectedMarket.quoteTokenIndex
+        selectedMarket.quoteTokenIndex,
       )
       const market = group.getSerum3ExternalMarket(
-        selectedMarket.serumMarketExternal
+        selectedMarket.serumMarketExternal,
       )
       const price = baseBank.uiPrice / quoteBank.uiPrice
       return [market, price]

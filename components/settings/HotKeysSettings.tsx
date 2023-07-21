@@ -120,7 +120,7 @@ const HotKeysSettings = () => {
                     {Object.entries(options).map((e) => {
                       return e[1]
                         ? `${e[0] !== 'margin' ? ', ' : ''}${t(
-                            `trade:${e[0]}`
+                            `trade:${e[0]}`,
                           )}`
                         : ''
                     })}

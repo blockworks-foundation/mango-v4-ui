@@ -43,7 +43,7 @@ import PerpSideBadge from './PerpSideBadge'
 import TableMarketName from './TableMarketName'
 
 export const findSerum3MarketPkInOpenOrders = (
-  o: Order
+  o: Order,
 ): string | undefined => {
   const openOrders = mangoStore.getState().mangoAccount.openOrders
   let foundedMarketPk: string | undefined = undefined
@@ -66,7 +66,7 @@ const OpenOrders = () => {
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
   const [cancelId, setCancelId] = useState<string>('')
   const [modifyOrderId, setModifyOrderId] = useState<string | undefined>(
-    undefined
+    undefined,
   )
   const [loadingModifyOrder, setLoadingModifyOrder] = useState(false)
   const [modifiedOrderSize, setModifiedOrderSize] = useState('')
@@ -88,7 +88,7 @@ const OpenOrders = () => {
       const marketPk = findSerum3MarketPkInOpenOrders(o)
       if (!marketPk) return
       const market = group.getSerum3MarketByExternalMarket(
-        new PublicKey(marketPk)
+        new PublicKey(marketPk),
       )
 
       setCancelId(o.orderId.toString())
@@ -98,7 +98,7 @@ const OpenOrders = () => {
           mangoAccount,
           market!.serumMarketExternal,
           o.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
-          o.orderId
+          o.orderId,
         )
 
         actions.fetchOpenOrders()
@@ -121,7 +121,7 @@ const OpenOrders = () => {
         setCancelId('')
       }
     },
-    [t]
+    [t],
   )
 
   const modifyOrder = useCallback(
@@ -149,13 +149,13 @@ const OpenOrders = () => {
             Date.now(),
             PerpOrderType.limit,
             undefined,
-            undefined
+            undefined,
           )
         } else {
           const marketPk = findSerum3MarketPkInOpenOrders(o)
           if (!marketPk) return
           const market = group.getSerum3MarketByExternalMarket(
-            new PublicKey(marketPk)
+            new PublicKey(marketPk),
           )
           tx = await client.modifySerum3Order(
             group,
@@ -168,7 +168,7 @@ const OpenOrders = () => {
             Serum3SelfTradeBehavior.decrementTake,
             Serum3OrderType.limit,
             Date.now(),
-            10
+            10,
           )
         }
         actions.fetchOpenOrders()
@@ -191,7 +191,7 @@ const OpenOrders = () => {
         cancelEditOrderForm()
       }
     },
-    [t, modifiedOrderSize, modifiedOrderPrice]
+    [t, modifiedOrderSize, modifiedOrderPrice],
   )
 
   const handleCancelPerpOrder = useCallback(
@@ -207,7 +207,7 @@ const OpenOrders = () => {
           group,
           mangoAccount,
           o.perpMarketIndex,
-          o.orderId
+          o.orderId,
         )
         actions.fetchOpenOrders()
         notify({
@@ -229,7 +229,7 @@ const OpenOrders = () => {
         setCancelId('')
       }
     },
-    [t]
+    [t],
   )
 
   const showEditOrderForm = (order: Order | PerpOrder, tickSize: number) => {
@@ -280,13 +280,13 @@ const OpenOrders = () => {
                   value = o.size * o.price
                 } else {
                   market = group.getSerum3MarketByExternalMarket(
-                    new PublicKey(marketPk)
+                    new PublicKey(marketPk),
                   )
                   const serumMarket = group.getSerum3ExternalMarket(
-                    market.serumMarketExternal
+                    market.serumMarketExternal,
                   )
                   const quoteBank = group.getFirstBankByTokenIndex(
-                    market.quoteTokenIndex
+                    market.quoteTokenIndex,
                   )
                   tickSize = serumMarket.tickSize
                   minOrderSize = serumMarket.minOrderSize
@@ -350,7 +350,7 @@ const OpenOrders = () => {
                       <FormatNumericValue value={value} isUsd />
                       {expiryTimestamp ? (
                         <div className="h-min text-xxs leading-tight text-th-fgd-4">{`Expires ${new Date(
-                          expiryTimestamp * 1000
+                          expiryTimestamp * 1000,
                         ).toLocaleTimeString()}`}</div>
                       ) : null}
                     </Td>
@@ -428,10 +428,10 @@ const OpenOrders = () => {
               minOrderSize = market.minOrderSize
             } else {
               market = group.getSerum3MarketByExternalMarket(
-                new PublicKey(marketPk)
+                new PublicKey(marketPk),
               )
               const serumMarket = group.getSerum3ExternalMarket(
-                market.serumMarketExternal
+                market.serumMarketExternal,
               )
 
               quoteBank = group.getFirstBankByTokenIndex(market.quoteTokenIndex)

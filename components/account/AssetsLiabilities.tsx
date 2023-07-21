@@ -19,7 +19,7 @@ const AssetsLiabilities = ({ isMobile }: { isMobile: boolean }) => {
   const { theme } = useTheme()
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
-    INITIAL_ANIMATION_SETTINGS
+    INITIAL_ANIMATION_SETTINGS,
   )
 
   const [assetsValue, assetsRatio, liabsValue, liabsRatio] = useMemo(() => {

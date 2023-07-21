@@ -63,7 +63,7 @@ const AdvancedMarketHeader = ({
   const spotMarketVolume = useMemo(() => {
     if (!spotVolumeData || !spotVolumeData.length) return
     return spotVolumeData.find(
-      (mkt: TickerData) => mkt.ticker_id === selectedMarketName
+      (mkt: TickerData) => mkt.ticker_id === selectedMarketName,
     )
   }, [selectedMarketName, spotVolumeData])
 
@@ -133,14 +133,14 @@ const AdvancedMarketHeader = ({
                     $
                     {numberCompacter.format(
                       serumOrPerpMarket.baseLotsToUi(
-                        serumOrPerpMarket.openInterest
-                      ) * serumOrPerpMarket.uiPrice
+                        serumOrPerpMarket.openInterest,
+                      ) * serumOrPerpMarket.uiPrice,
                     )}
                     <span className="mx-1">|</span>
                     {numberCompacter.format(
                       serumOrPerpMarket.baseLotsToUi(
-                        serumOrPerpMarket.openInterest
-                      )
+                        serumOrPerpMarket.openInterest,
+                      ),
                     )}{' '}
                     <span className="font-body text-th-fgd-3">
                       {serumOrPerpMarket.name.split('-')[0]}

@@ -19,18 +19,18 @@ export default function useSelectedMarket() {
     if (!group) return 0
     if (selectedMarket instanceof Serum3Market) {
       const baseBank = group.getFirstBankByTokenIndex(
-        selectedMarket.baseTokenIndex
+        selectedMarket.baseTokenIndex,
       )
       const quoteBank = group.getFirstBankByTokenIndex(
-        selectedMarket.quoteTokenIndex
+        selectedMarket.quoteTokenIndex,
       )
       const market = group.getSerum3ExternalMarket(
-        selectedMarket.serumMarketExternal
+        selectedMarket.serumMarketExternal,
       )
 
       return floorToDecimal(
         baseBank.uiPrice / quoteBank.uiPrice,
-        getDecimalCount(market.tickSize)
+        getDecimalCount(market.tickSize),
       ).toNumber()
     } else if (selectedMarket) {
       return selectedMarket._uiPrice
@@ -61,10 +61,10 @@ export default function useSelectedMarket() {
     } else {
       const token =
         mangoTokens.find(
-          (t) => t.symbol.toLowerCase() === lowerCaseBaseSymbol
+          (t) => t.symbol.toLowerCase() === lowerCaseBaseSymbol,
         ) ||
-        mangoTokens.find((t) =>
-          t.symbol.toLowerCase()?.includes(lowerCaseBaseSymbol)
+        mangoTokens.find(
+          (t) => t.symbol.toLowerCase()?.includes(lowerCaseBaseSymbol),
         )
       if (token) {
         return token.logoURI
@@ -94,7 +94,7 @@ export default function useSelectedMarket() {
       return `/icons/${lowerCaseQuoteSymbol}.svg`
     } else {
       const token = mangoTokens.find(
-        (t) => t.symbol.toLowerCase() === lowerCaseQuoteSymbol
+        (t) => t.symbol.toLowerCase() === lowerCaseQuoteSymbol,
       )
       if (token) {
         return token.logoURI

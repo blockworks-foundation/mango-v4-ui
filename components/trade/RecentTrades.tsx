@@ -34,7 +34,7 @@ type Test = { buys: number; sells: number }
 
 const formatPrice = (
   market: Market | PerpMarket | undefined,
-  price: number | string
+  price: number | string,
 ) => {
   return market?.tickSize
     ? formatNumericValue(price, getDecimalCount(market.tickSize))
@@ -43,7 +43,7 @@ const formatPrice = (
 
 const formatSize = (
   market: Market | PerpMarket | undefined,
-  size: number | string
+  size: number | string,
 ) => {
   return market?.minOrderSize
     ? formatNumericValue(size, getDecimalCount(market.minOrderSize))
@@ -52,7 +52,7 @@ const formatSize = (
 
 const fetchMarketTradeHistory = async (marketAddress: string) => {
   const response = await fetch(
-    `${MANGO_DATA_API_URL}/stats/perp-market-history?perp-market=${marketAddress}`
+    `${MANGO_DATA_API_URL}/stats/perp-market-history?perp-market=${marketAddress}`,
   )
   return response.json()
 }
@@ -63,11 +63,11 @@ const RecentTrades = () => {
   const [latestFillId, setLatestFillId] = useState('')
   const [soundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,
-    INITIAL_SOUND_SETTINGS
+    INITIAL_SOUND_SETTINGS,
   )
   const [alertSettings] = useLocalStorageState(
     TRADE_VOLUME_ALERT_KEY,
-    DEFAULT_VOLUME_ALERT_SETTINGS
+    DEFAULT_VOLUME_ALERT_SETTINGS,
   )
   const [showVolumeAlertModal, setShowVolumeAlertModal] = useState(false)
 
@@ -89,7 +89,7 @@ const RecentTrades = () => {
       enabled: !!selectedMarketAddress && market instanceof PerpMarket,
       refetchOnWindowFocus: true,
       refetchInterval: 1000 * 10,
-    }
+    },
   )
 
   useEffect(() => {
@@ -153,7 +153,7 @@ const RecentTrades = () => {
         }
         return acc
       },
-      { buys: 0, sells: 0 }
+      { buys: 0, sells: 0 },
     )
     const totalVol = vol.buys + vol.sells
     return [vol.buys / totalVol, vol.sells / totalVol]
@@ -195,7 +195,7 @@ const RecentTrades = () => {
             <thead>
               <tr className="text-right text-xxs text-th-fgd-4">
                 <th className="py-2 font-normal">{`${t(
-                  'price'
+                  'price',
                 )} (${quoteSymbol})`}</th>
                 <th className="py-2 font-normal">
                   {t('trade:size')} ({baseSymbol})
@@ -227,7 +227,7 @@ const RecentTrades = () => {
                             <Tooltip
                               placement="right"
                               content={new Date(
-                                t.block_datetime
+                                t.block_datetime,
                               ).toLocaleDateString()}
                             >
                               {new Date(t.block_datetime).toLocaleTimeString()}

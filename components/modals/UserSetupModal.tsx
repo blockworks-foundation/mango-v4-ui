@@ -70,7 +70,7 @@ const UserSetupModal = ({
   const banks = useBanksWithBalances('walletBalance')
   const [, setAcceptTerms] = useLocalStorageState(ACCEPT_TERMS_KEY, '')
   const [walletsToDisplay, setWalletstoDisplay] = useState<'default' | 'all'>(
-    'default'
+    'default',
   )
 
   const walletsDisplayed = useMemo(() => {
@@ -78,7 +78,7 @@ const UserSetupModal = ({
     const detectedWallets = wallets.filter(
       (w) =>
         w.readyState === WalletReadyState.Installed ||
-        w.readyState === WalletReadyState.Loadable
+        w.readyState === WalletReadyState.Loadable,
     )
 
     if (walletsToDisplay === 'default') {
@@ -107,7 +107,7 @@ const UserSetupModal = ({
         group,
         0,
         accountName || 'Account 1',
-        16 // tokenCount
+        16, // tokenCount
       )
       actions.fetchMangoAccounts(publicKey)
       if (tx) {
@@ -147,7 +147,7 @@ const UserSetupModal = ({
         group,
         mangoAccount,
         bank.mint,
-        parseFloat(depositAmount)
+        parseFloat(depositAmount),
       )
       notify({
         title: 'Transaction confirmed',
@@ -197,7 +197,7 @@ const UserSetupModal = ({
   const setMax = useCallback(() => {
     const max = new Decimal(tokenMax.amount).toDecimalPlaces(
       tokenMax.decimals,
-      Decimal.ROUND_FLOOR
+      Decimal.ROUND_FLOOR,
     )
     setDepositAmount(max.toString())
     setSizePercentage('100')
@@ -212,7 +212,7 @@ const UserSetupModal = ({
         .toDecimalPlaces(tokenMax.decimals, Decimal.ROUND_FLOOR)
       setDepositAmount(amount.toString())
     },
-    [tokenMax]
+    [tokenMax],
   )
 
   const handleNextStep = () => {
@@ -456,7 +456,7 @@ const UserSetupModal = ({
                       value={depositAmount}
                       onValueChange={(e: NumberFormatValues) => {
                         setDepositAmount(
-                          !Number.isNaN(Number(e.value)) ? e.value : ''
+                          !Number.isNaN(Number(e.value)) ? e.value : '',
                         )
                       }}
                       isAllowed={withValueLimit}

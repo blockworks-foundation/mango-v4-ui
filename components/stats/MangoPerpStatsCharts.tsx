@@ -39,15 +39,15 @@ const MangoPerpStatsCharts = () => {
     const data = perpStats.reduce(
       (a: PerpStatsData, c: PerpStatsItem) => {
         const hasDateFee = a.feeValues.find(
-          (d: FeeValueItem) => d.date === c.date_hour
+          (d: FeeValueItem) => d.date === c.date_hour,
         )
 
         const hasDateOpenInterest = a.openInterestValues.find(
-          (d: OiValueItem) => d.date === c.date_hour
+          (d: OiValueItem) => d.date === c.date_hour,
         )
 
         const hasDateVolume = a.volumeValues.find(
-          (d: VolumeValueItem) => d.date === c.date_hour
+          (d: VolumeValueItem) => d.date === c.date_hour,
         )
 
         if (!hasDateFee) {
@@ -66,7 +66,7 @@ const MangoPerpStatsCharts = () => {
           })
         } else {
           hasDateOpenInterest.openInterest += Math.floor(
-            c.open_interest * c.price
+            c.open_interest * c.price,
           )
         }
 
@@ -81,19 +81,19 @@ const MangoPerpStatsCharts = () => {
 
         return a
       },
-      { feeValues: [], openInterestValues: [], volumeValues: [] }
+      { feeValues: [], openInterestValues: [], volumeValues: [] },
     )
 
     const { feeValues, openInterestValues, volumeValues } = data
 
     const sortedFeeValues = feeValues.sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     )
     const sortedOpenInterestValues = openInterestValues.sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     )
     const sortedVolumeValues = volumeValues.sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     )
 
     return [sortedFeeValues, sortedOpenInterestValues, sortedVolumeValues]

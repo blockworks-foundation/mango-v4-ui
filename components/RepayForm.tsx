@@ -45,7 +45,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [selectedToken, setSelectedToken] = useState(
-    token || INPUT_TOKEN_DEFAULT
+    token || INPUT_TOKEN_DEFAULT,
   )
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
@@ -69,7 +69,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
   const borrowAmount = useMemo(() => {
     if (!mangoAccount || !bank) return new Decimal(0)
     const amount = new Decimal(
-      mangoAccount.getTokenBorrowsUi(bank)
+      mangoAccount.getTokenBorrowsUi(bank),
     ).toDecimalPlaces(bank.mintDecimals, Decimal.ROUND_UP)
     return amount
   }, [bank, mangoAccount])
@@ -78,7 +78,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
     if (!bank) return
     const amount = new Decimal(borrowAmount).toDecimalPlaces(
       bank.mintDecimals,
-      Decimal.ROUND_UP
+      Decimal.ROUND_UP,
     )
     setInputAmount(amount.toFixed())
     setSizePercentage('100')
@@ -95,7 +95,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
 
       setInputAmount(amount.toFixed())
     },
-    [bank, borrowAmount]
+    [bank, borrowAmount],
   )
 
   const handleSelectToken = (token: string) => {
@@ -130,7 +130,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
           mangoAccount,
           bank.mint,
           actualAmount,
-          true
+          true,
         )
         notify({
           title: 'Transaction confirmed',
@@ -154,7 +154,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
         })
       }
     },
-    [bank, publicKey?.toBase58(), sizePercentage]
+    [bank, publicKey?.toBase58(), sizePercentage],
   )
 
   useEffect(() => {
@@ -236,7 +236,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
                   value={inputAmount}
                   onValueChange={(e: NumberFormatValues) => {
                     setInputAmount(
-                      !Number.isNaN(Number(e.value)) ? e.value : ''
+                      !Number.isNaN(Number(e.value)) ? e.value : '',
                     )
                   }}
                   isAllowed={withValueLimit}

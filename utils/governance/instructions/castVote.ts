@@ -29,7 +29,7 @@ export async function castVote(
   voteKind: VoteKind,
   vsrClient: VsrClient,
   mangoClient: MangoClient,
-  message?: ChatMessageBody | undefined
+  message?: ChatMessageBody | undefined,
 ) {
   const signers: Keypair[] = []
   const instructions: TransactionInstruction[] = []
@@ -39,13 +39,13 @@ export async function castVote(
   const payer = walletPubkey
   const programVersion = await getGovernanceProgramVersion(
     connection,
-    MANGO_GOVERNANCE_PROGRAM
+    MANGO_GOVERNANCE_PROGRAM,
   )
 
   const { updateVoterWeightRecordIx, voterWeightPk } =
     await updateVoterWeightRecord(
       vsrClient,
-      tokenOwnerRecord.account.governingTokenOwner
+      tokenOwnerRecord.account.governingTokenOwner,
     )
   instructions.push(updateVoterWeightRecordIx)
 
@@ -95,14 +95,14 @@ export async function castVote(
     tokenMint,
     vote,
     payer,
-    voterWeightPk
+    voterWeightPk,
   )
 
   if (message) {
     const { updateVoterWeightRecordIx, voterWeightPk } =
       await updateVoterWeightRecord(
         vsrClient,
-        tokenOwnerRecord.account.governingTokenOwner
+        tokenOwnerRecord.account.governingTokenOwner,
       )
     instructions.push(updateVoterWeightRecordIx)
 
@@ -119,7 +119,7 @@ export async function castVote(
       payer,
       undefined,
       message,
-      voterWeightPk
+      voterWeightPk,
     )
   }
 

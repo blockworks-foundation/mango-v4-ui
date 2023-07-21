@@ -36,7 +36,7 @@ import SheenLoader from '@components/shared/SheenLoader'
 const fetchHourlyFunding = async (mangoAccountPk: string) => {
   try {
     const data = await fetch(
-      `${MANGO_DATA_API_URL}/stats/funding-account-hourly?mango-account=${mangoAccountPk}`
+      `${MANGO_DATA_API_URL}/stats/funding-account-hourly?mango-account=${mangoAccountPk}`,
     )
     const res = await data.json()
     if (res) {
@@ -80,7 +80,7 @@ const FundingChart = ({ hideChart }: { hideChart: () => void }) => {
       retry: 3,
       refetchOnWindowFocus: false,
       enabled: !!mangoAccountAddress,
-    }
+    },
   )
 
   useEffect(() => {
@@ -100,7 +100,7 @@ const FundingChart = ({ hideChart }: { hideChart: () => void }) => {
     }
     const data = rawData.reduce((a: HourlyFundingChartData[], c) => {
       const found: HourlyFundingChartData | undefined = a.find(
-        (item) => item['time'] === c.time
+        (item) => item['time'] === c.time,
       )
       const marketKey = Object.keys(c)[0]
       const marketFunding = Object.values(c)[0]
@@ -123,7 +123,7 @@ const FundingChart = ({ hideChart }: { hideChart: () => void }) => {
     if (active && payload && payload.length) {
       const load = payload[0].payload
       const data: [string, any][] = Object.entries(load).filter(
-        (p) => p[0] !== 'time' && p[0] !== 'total'
+        (p) => p[0] !== 'time' && p[0] !== 'total',
       )
       return (
         <div className="rounded-md bg-th-bkg-2 p-4">

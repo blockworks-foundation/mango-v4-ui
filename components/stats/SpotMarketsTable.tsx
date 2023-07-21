@@ -40,7 +40,7 @@ const SpotMarketsTable = () => {
       staleTime: 1000 * 60,
       retry: 3,
       refetchOnWindowFocus: false,
-    }
+    },
   )
 
   return (
@@ -62,30 +62,30 @@ const SpotMarketsTable = () => {
               .sort((a, b) => a.name.localeCompare(b.name))
               .map((mkt) => {
                 const baseBank = group?.getFirstBankByTokenIndex(
-                  mkt.baseTokenIndex
+                  mkt.baseTokenIndex,
                 )
                 const quoteBank = group?.getFirstBankByTokenIndex(
-                  mkt.quoteTokenIndex
+                  mkt.quoteTokenIndex,
                 )
                 const market = group?.getSerum3ExternalMarket(
-                  mkt.serumMarketExternal
+                  mkt.serumMarketExternal,
                 )
                 let price
                 if (baseBank && market && quoteBank) {
                   price = floorToDecimal(
                     baseBank.uiPrice / quoteBank.uiPrice,
-                    getDecimalCount(market.tickSize)
+                    getDecimalCount(market.tickSize),
                   ).toNumber()
                 }
                 let tickerData: TickerData | undefined
                 if (spotVolumeData && spotVolumeData.length) {
                   tickerData = spotVolumeData.find(
-                    (m: TickerData) => m.ticker_id === mkt.name
+                    (m: TickerData) => m.ticker_id === mkt.name,
                   )
                 }
 
                 const birdeyeData = birdeyePrices.find(
-                  (m) => m.mint === mkt.serumMarketExternal.toString()
+                  (m) => m.mint === mkt.serumMarketExternal.toString(),
                 )
 
                 const birdeyeChange =
@@ -163,7 +163,7 @@ const SpotMarketsTable = () => {
                           {tickerData ? (
                             <span>
                               {numberCompacter.format(
-                                parseFloat(tickerData.target_volume)
+                                parseFloat(tickerData.target_volume),
                               )}{' '}
                               <span className="font-body text-th-fgd-4">
                                 {quoteBank?.name}
@@ -222,14 +222,14 @@ const MobileSpotMarketItem = ({
     if (!baseBank || !quoteBank || !serumMarket) return 0
     return floorToDecimal(
       baseBank.uiPrice / quoteBank.uiPrice,
-      getDecimalCount(serumMarket.tickSize)
+      getDecimalCount(serumMarket.tickSize),
     ).toNumber()
   }, [baseBank, quoteBank, serumMarket])
 
   const birdeyeData = useMemo(() => {
     if (!loadingPrices) {
       return birdeyePrices.find(
-        (m) => m.mint === market.serumMarketExternal.toString()
+        (m) => m.mint === market.serumMarketExternal.toString(),
       )
     }
     return null
@@ -254,7 +254,7 @@ const MobileSpotMarketItem = ({
   let tickerData: TickerData | undefined
   if (spotVolumeData && spotVolumeData.length) {
     tickerData = spotVolumeData.find(
-      (m: TickerData) => m.ticker_id === market.name
+      (m: TickerData) => m.ticker_id === market.name,
     )
   }
 
@@ -336,7 +336,7 @@ const MobileSpotMarketItem = ({
                     {tickerData ? (
                       <span>
                         {numberCompacter.format(
-                          parseFloat(tickerData.target_volume)
+                          parseFloat(tickerData.target_volume),
                         )}{' '}
                         <span className="font-body text-th-fgd-4">
                           {quoteBank?.name}

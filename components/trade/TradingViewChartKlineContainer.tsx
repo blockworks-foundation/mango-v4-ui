@@ -16,7 +16,7 @@ const TradingViewChartKlineContainer = () => {
             setIsFullView={setIsFullView}
             isFullView={isFullView}
           ></TradingViewChartKline>,
-          document.body
+          document.body,
         )
       ) : (
         <TradingViewChartKline

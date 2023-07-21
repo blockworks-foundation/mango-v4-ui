@@ -49,7 +49,7 @@ const OraclePrice = () => {
       decimals = selectedMarket.baseDecimals
     } else {
       const baseBank = group.getFirstBankByTokenIndex(
-        selectedMarket.baseTokenIndex
+        selectedMarket.baseTokenIndex,
       )
       marketOrBank = baseBank
       decimals = group.getMintDecimals(baseBank.mint)
@@ -66,7 +66,7 @@ const OraclePrice = () => {
             marketOrBank.oracle,
             info,
             decimals,
-            client
+            client,
           )
         marketOrBank._price = price
         marketOrBank._uiPrice = uiPrice
@@ -80,14 +80,14 @@ const OraclePrice = () => {
           marketSlot.bids,
           marketSlot.asks,
           oracleWriteSlot,
-          accountSlot
+          accountSlot,
         )
         const maxStalenessSlots =
           marketOrBank.oracleConfig.maxStalenessSlots.toNumber()
         setHighestSlot(highestSlot)
         setIsStale(
           maxStalenessSlots > 0 &&
-            highestSlot - lastUpdatedSlot > maxStalenessSlots
+            highestSlot - lastUpdatedSlot > maxStalenessSlots,
         )
 
         if (selectedMarket instanceof PerpMarket) {
@@ -97,7 +97,7 @@ const OraclePrice = () => {
           if (quoteBank && serumOrPerpMarket) {
             price = floorToDecimal(
               uiPrice / quoteBank.uiPrice,
-              getDecimalCount(serumOrPerpMarket.tickSize)
+              getDecimalCount(serumOrPerpMarket.tickSize),
             ).toNumber()
           } else {
             price = 0
@@ -105,7 +105,7 @@ const OraclePrice = () => {
           setPrice(price)
         }
       },
-      'processed'
+      'processed',
     )
     return () => {
       if (typeof subId !== 'undefined') {

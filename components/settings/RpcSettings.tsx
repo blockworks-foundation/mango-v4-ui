@@ -50,11 +50,11 @@ const RpcSettings = () => {
   const [showCustomForm, setShowCustomForm] = useState(false)
   const [rpcEndpointProvider, setRpcEndpointProvider] = useLocalStorageState(
     RPC_PROVIDER_KEY,
-    RPC_URLS[0].value
+    RPC_URLS[0].value,
   )
   const [storedPriorityFee, setStoredPriorityFee] = useLocalStorageState(
     PRIORITY_FEE_KEY,
-    DEFAULT_PRIORITY_FEE.value
+    DEFAULT_PRIORITY_FEE.value,
   )
   const [storedUseOrderbookFeed, setStoredUseOrderbookFeed] =
     useLocalStorageState(USE_ORDERBOOK_FEED_KEY, true)
@@ -77,7 +77,7 @@ const RpcSettings = () => {
 
   const handleSetEndpointProvider = (provider: string) => {
     const endpointProvider = RPC_URLS.find(
-      (node) => node.label === provider
+      (node) => node.label === provider,
     ) || { label: 'Custom', value: rpcEndpointProvider }
     setRpcEndpointProvider(endpointProvider.value)
     if (provider !== 'Custom') {
@@ -96,7 +96,7 @@ const RpcSettings = () => {
         }
       }
     },
-    [setStoredPriorityFee, actions, wallet]
+    [setStoredPriorityFee, actions, wallet],
   )
 
   useEffect(() => {

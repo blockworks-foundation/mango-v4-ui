@@ -11,7 +11,7 @@ export default class EmptyWallet implements Wallet {
   constructor(readonly payer: Keypair) {}
 
   async signTransaction<T extends Transaction | VersionedTransaction>(
-    tx: T
+    tx: T,
   ): Promise<T> {
     if (isVersionedTransaction(tx)) {
       tx.sign([this.payer])
@@ -21,7 +21,7 @@ export default class EmptyWallet implements Wallet {
     return tx
   }
   async signAllTransactions<T extends Transaction | VersionedTransaction>(
-    txs: T[]
+    txs: T[],
   ): Promise<T[]> {
     return txs.map((t) => {
       if (isVersionedTransaction(t)) {

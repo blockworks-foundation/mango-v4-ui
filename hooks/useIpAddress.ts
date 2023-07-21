@@ -32,7 +32,7 @@ const SANCTIONED_COUNTRIES = [
 ]
 
 const SANCTIONED_COUNTRY_CODES = SANCTIONED_COUNTRIES.map(
-  (country) => country[0]
+  (country) => country[0],
 )
 
 const SPOT_ALLOWED = ['GB']
@@ -58,7 +58,7 @@ export default function useIpAddress() {
       staleTime: 1000 * 60 * 2,
       retry: 3,
       refetchOnWindowFocus: true,
-    }
+    },
   )
 
   useEffect(() => {

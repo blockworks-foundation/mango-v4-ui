@@ -22,7 +22,7 @@ const TokenLogo = ({
     let jupiterLogoURI
     if (mangoTokens?.length) {
       jupiterLogoURI = mangoTokens.find(
-        (t) => t.address === bank?.mint.toString()
+        (t) => t.address === bank?.mint.toString(),
       )?.logoURI
     }
     return jupiterLogoURI

@@ -135,7 +135,7 @@ const CreateSwitchboardOracleModal = ({
                       },
                     },
                   ],
-                })
+                }),
               ).finish(),
             },
             {
@@ -201,7 +201,7 @@ const CreateSwitchboardOracleModal = ({
                       },
                     },
                   ],
-                })
+                }),
               ).finish(),
             },
           ],

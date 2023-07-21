@@ -21,7 +21,7 @@ export default function useAccountPerformanceData() {
       retry: 3,
       refetchOnWindowFocus: false,
       enabled: !!mangoAccountAddress,
-    }
+    },
   )
 
   const rollingDailyData: PerformanceDataItem[] | [] = useMemo(() => {

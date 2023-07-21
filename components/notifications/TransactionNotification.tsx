@@ -39,7 +39,7 @@ const TransactionNotificationList = () => {
   const notEnoughSoLMessage = t('deposit-more-sol')
   const [notificationPosition] = useLocalStorageState(
     NOTIFICATION_POSITION_KEY,
-    'bottom-left'
+    'bottom-left',
   )
   const [mounted, setMounted] = useState(false)
   const { maxSolDeposit } = useSolBalance()
@@ -49,10 +49,10 @@ const TransactionNotificationList = () => {
   useEffect(() => {
     if (transactionNotifications.length) {
       const customErrorNotification = transactionNotifications.find(
-        (n) => n.description && n.description.includes('"Custom":1')
+        (n) => n.description && n.description.includes('"Custom":1'),
       )
       const notEnoughSolNotification = transactionNotifications.find(
-        (n) => n.title && n.title.includes(notEnoughSoLMessage)
+        (n) => n.title && n.title.includes(notEnoughSoLMessage),
       )
 
       if (
@@ -125,11 +125,11 @@ const TransactionNotification = ({
 }) => {
   const [notificationPosition] = useLocalStorageState(
     NOTIFICATION_POSITION_KEY,
-    'Bottom-Left'
+    'Bottom-Left',
   )
   const [preferredExplorer] = useLocalStorageState(
     PREFERRED_EXPLORER_KEY,
-    EXPLORERS[0]
+    EXPLORERS[0],
   )
   const { type, title, description, txid, show, id } = notification
 
@@ -151,7 +151,7 @@ const TransactionNotification = ({
     if ((type === 'error' || type === 'success') && txid) {
       setMangoStore((s) => {
         const newNotifications = s.transactionNotifications.map((n) =>
-          n.txid === txid && n.type === 'confirm' ? { ...n, show: false } : n
+          n.txid === txid && n.type === 'confirm' ? { ...n, show: false } : n,
         )
         s.transactionNotifications = newNotifications
       })
@@ -161,7 +161,7 @@ const TransactionNotification = ({
   const hideNotification = useCallback(() => {
     setMangoStore((s) => {
       const newNotifications = s.transactionNotifications.map((n) =>
-        n.id === id ? { ...n, show: false } : n
+        n.id === id ? { ...n, show: false } : n,
       )
       s.transactionNotifications = newNotifications
     })

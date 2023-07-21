@@ -3,7 +3,7 @@ import Decimal from 'decimal.js'
 export const formatNumericValue = (
   value: number | string | Decimal,
   decimals?: number,
-  roundUp?: boolean
+  roundUp?: boolean,
 ): string => {
   const numberValue = Number(value)
   let formattedValue
@@ -31,7 +31,7 @@ export const formatNumericValue = (
 
 export const formatCurrencyValue = (
   value: number | string | Decimal,
-  decimals?: number
+  decimals?: number,
 ): string => {
   const numberValue = Number(value)
   let formattedValue
@@ -59,7 +59,7 @@ export const formatCurrencyValue = (
 const roundValue = (
   value: number | string | Decimal,
   decimals: number,
-  roundUp?: boolean
+  roundUp?: boolean,
 ): string => {
   const decimalValue = value instanceof Decimal ? value : new Decimal(value)
   const roundMode = roundUp ? Decimal.ROUND_UP : Decimal.ROUND_FLOOR
@@ -94,7 +94,7 @@ export const numberFormat = new Intl.NumberFormat('en', {
 
 export const floorToDecimal = (
   value: number | string | Decimal,
-  decimals: number
+  decimals: number,
 ): Decimal => {
   const decimal = value instanceof Decimal ? value : new Decimal(value)
 

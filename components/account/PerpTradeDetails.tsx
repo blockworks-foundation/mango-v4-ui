@@ -19,7 +19,7 @@ const PerpTradeDetails = ({ activity }: { activity: PerpTradeActivity }) => {
   const { mangoAccountAddress } = useMangoAccount()
   const [preferredExplorer] = useLocalStorageState(
     PREFERRED_EXPLORER_KEY,
-    EXPLORERS[0]
+    EXPLORERS[0],
   )
   const {
     maker,

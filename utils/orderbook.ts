@@ -34,7 +34,7 @@ export function decodeBook(
   client: MangoClient,
   market: Market | PerpMarket,
   accInfo: AccountInfo<Buffer>,
-  side: 'bids' | 'asks'
+  side: 'bids' | 'asks',
 ): SpotOrderBook | BookSide {
   if (market instanceof Market) {
     const book = SpotOrderBook.decode(market, accInfo.data)
@@ -42,13 +42,13 @@ export function decodeBook(
   } else {
     const decodedAcc = client.program.coder.accounts.decode(
       'bookSide',
-      accInfo.data
+      accInfo.data,
     )
     const book = BookSide.from(
       client,
       market,
       side === 'bids' ? BookSideType.bids : BookSideType.asks,
-      decodedAcc
+      decodedAcc,
     )
     return book
   }
@@ -56,11 +56,11 @@ export function decodeBook(
 
 export const updatePerpMarketOnGroup = (
   book: BookSide,
-  side: 'bids' | 'asks'
+  side: 'bids' | 'asks',
 ) => {
   const group = mangoStore.getState().group
   const perpMarket = group?.getPerpMarketByMarketIndex(
-    book.perpMarket.perpMarketIndex
+    book.perpMarket.perpMarketIndex,
   )
   if (perpMarket) {
     perpMarket[`_${side}`] = book
@@ -72,7 +72,7 @@ export const hasOpenOrderForPriceGroup = (
   openOrderPrices: number[],
   price: number,
   grouping: number,
-  isGrouped: boolean
+  isGrouped: boolean,
 ) => {
   if (!isGrouped) {
     return !!openOrderPrices.find((ooPrice) => {
@@ -91,7 +91,7 @@ export const getCumulativeOrderbookSide = (
   depth: number,
   usersOpenOrderPrices: number[],
   grouping: number,
-  isGrouped: boolean
+  isGrouped: boolean,
 ): cumOrderbookSide[] => {
   let cumulativeSize = 0
   return orders.slice(0, depth).map(([price, size]) => {
@@ -107,7 +107,7 @@ export const getCumulativeOrderbookSide = (
         usersOpenOrderPrices,
         price,
         grouping,
-        isGrouped
+        isGrouped,
       ),
     }
   })
@@ -117,7 +117,7 @@ export const groupBy = (
   ordersArray: number[][],
   market: PerpMarket | Market,
   grouping: number,
-  isBids: boolean
+  isBids: boolean,
 ) => {
   if (!ordersArray || !market || !grouping || grouping == market?.tickSize) {
     return ordersArray || []

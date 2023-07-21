@@ -38,17 +38,23 @@ const HydrateStore = () => {
     actions.fetchGroup()
   }, [marketName])
 
-  useInterval(() => {
-    actions.fetchGroup()
-  }, (slowNetwork ? 40 : 20) * SECONDS)
+  useInterval(
+    () => {
+      actions.fetchGroup()
+    },
+    (slowNetwork ? 40 : 20) * SECONDS,
+  )
 
   // refetches open orders every 30 seconds
   // only the selected market's open orders are updated via websocket
-  useInterval(() => {
-    if (mangoAccountAddress) {
-      actions.fetchOpenOrders()
-    }
-  }, (slowNetwork ? 60 : 30) * SECONDS)
+  useInterval(
+    () => {
+      if (mangoAccountAddress) {
+        actions.fetchOpenOrders()
+      }
+    },
+    (slowNetwork ? 60 : 30) * SECONDS,
+  )
 
   // refetch trade history and activity feed when switching accounts
   useEffect(() => {
@@ -59,10 +65,13 @@ const HydrateStore = () => {
   }, [mangoAccountAddress])
 
   // reload and parse market fills from the event queue
-  useInterval(async () => {
-    const actions = mangoStore.getState().actions
-    actions.loadMarketFills()
-  }, (slowNetwork ? 60 : 20) * SECONDS)
+  useInterval(
+    async () => {
+      const actions = mangoStore.getState().actions
+      actions.loadMarketFills()
+    },
+    (slowNetwork ? 60 : 20) * SECONDS,
+  )
 
   // The websocket library solana/web3.js uses closes its websocket connection when the subscription list
   // is empty after opening its first time, preventing subsequent subscriptions from receiving responses.
@@ -92,11 +101,11 @@ const HydrateStore = () => {
         if (context.slot > lastSeenSlot) {
           const decodedMangoAccount = client.program.coder.accounts.decode(
             'mangoAccount',
-            info?.data
+            info?.data,
           )
           const newMangoAccount = MangoAccount.from(
             mangoAccount.publicKey,
-            decodedMangoAccount
+            decodedMangoAccount,
           )
           if (newMangoAccount.serum3Active().length > 0) {
             await newMangoAccount.reloadSerum3OpenOrders(client)
@@ -107,7 +116,7 @@ const HydrateStore = () => {
           })
           actions.fetchOpenOrders()
         }
-      }
+      },
     )
 
     return () => {

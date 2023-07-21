@@ -44,7 +44,7 @@ const BorrowPage = () => {
   }
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
-    INITIAL_ANIMATION_SETTINGS
+    INITIAL_ANIMATION_SETTINGS,
   )
 
   const filteredBanks = useMemo(() => {
@@ -58,7 +58,7 @@ const BorrowPage = () => {
     if (!filteredBanks.length) return 0
     return filteredBanks.reduce(
       (a, c) => a + Math.abs(c.borrowedAmount) * c.bank.uiPrice,
-      0
+      0,
     )
   }, [filteredBanks])
 
@@ -75,7 +75,7 @@ const BorrowPage = () => {
         group,
         usdcBank,
         mangoAccount,
-        true
+        true,
       ).toNumber()
 
       if (borrowValue) {
