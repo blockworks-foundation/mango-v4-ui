@@ -36,7 +36,7 @@ const SolanaTps = () => {
 
   useInterval(() => {
     getRecentPerformance(connection, setTps)
-  }, 45 * 1000)
+  }, 60 * 1000)
 
   if (CLUSTER == 'mainnet-beta') {
     return (

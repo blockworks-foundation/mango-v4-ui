@@ -55,3 +55,7 @@ export function getNetworkInfo() {
   }
   return 'unknown'
 }
+
+export function isNetworkSlow() {
+  return ['slow-2g', '2g', '3g'].includes(getNetworkInfo()) ? true : false
+}

@@ -13,7 +13,11 @@ import { breakpoints } from '../utils/theme'
 import BottomBar from './mobile/BottomBar'
 import TopBar from './TopBar'
 import useLocalStorageState from '../hooks/useLocalStorageState'
-import { ACCEPT_TERMS_KEY, SIDEBAR_COLLAPSE_KEY } from '../utils/constants'
+import {
+  ACCEPT_TERMS_KEY,
+  SECONDS,
+  SIDEBAR_COLLAPSE_KEY,
+} from '../utils/constants'
 import { useWallet } from '@solana/wallet-adapter-react'
 import SuccessParticles from './shared/SuccessParticles'
 import { tsParticles } from 'tsparticles-engine'
@@ -151,7 +155,7 @@ function DeployRefreshManager(): JSX.Element | null {
       // There's a new version deployed that we need to load
       setNewBuildAvailable(true)
     }
-  }, 300000)
+  }, 300 * SECONDS)
 
   return (
     <Transition
