@@ -26,7 +26,7 @@ const ButtonGroup = <T extends Values>({
       <div className="relative flex">
         {activeValue && values.includes(activeValue) ? (
           <div
-            className={`absolute left-0 top-0 h-full transform rounded-md bg-th-bkg-3 shadow-inner shadow-th-bkg-4`}
+            className={`absolute left-0 top-0 h-full transform rounded-md bg-th-bkg-3`}
             style={{
               transform: `translateX(${
                 values.findIndex((v) => v === activeValue) * 100
