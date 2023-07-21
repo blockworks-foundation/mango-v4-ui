@@ -5,8 +5,8 @@ import { useRouter } from 'next/router'
 import { MangoAccount } from '@blockworks-foundation/mango-v4'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useInterval from './shared/useInterval'
-import { isNetworkSlow } from 'utils'
 import { SECONDS } from 'utils/constants'
+import useNetworkSpeed from 'hooks/useNetworkSpeed'
 
 const set = mangoStore.getState().set
 const actions = mangoStore.getState().actions
@@ -16,7 +16,7 @@ const HydrateStore = () => {
   const { name: marketName } = router.query
   const { mangoAccountPk, mangoAccountAddress } = useMangoAccount()
   const connection = mangoStore((s) => s.connection)
-  const slowNetwork = isNetworkSlow()
+  const slowNetwork = useNetworkSpeed()
 
   useEffect(() => {
     if (marketName && typeof marketName === 'string') {

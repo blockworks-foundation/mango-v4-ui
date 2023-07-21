@@ -44,18 +44,3 @@ export const copyToClipboard = (copyThis: string) => {
   document.execCommand('copy')
   document.body.removeChild(el)
 }
-
-export function getNetworkInfo() {
-  const connection =
-    (navigator as any).connection ||
-    (navigator as any).mozConnection ||
-    (navigator as any).webkitConnection
-  if (connection) {
-    return connection.effectiveType
-  }
-  return 'unknown'
-}
-
-export function isNetworkSlow() {
-  return ['slow-2g', '2g', '3g'].includes(getNetworkInfo()) ? true : false
-}
