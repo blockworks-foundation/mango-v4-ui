@@ -52,6 +52,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
 const Dashboard: NextPage = () => {
   const { group } = useMangoGroup()
   const client = mangoStore((s) => s.client)
+  //do not deconstruct wallet is used for anchor to sign
   const wallet = useWallet()
   const connection = mangoStore((s) => s.connection)
   const voter = GovernanceStore((s) => s.voter)

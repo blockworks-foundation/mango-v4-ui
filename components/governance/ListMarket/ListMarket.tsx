@@ -57,7 +57,8 @@ const defaultFormValues: ListMarketForm = {
 }
 
 const ListMarket = ({ goBack }: { goBack: () => void }) => {
-  const { connected, wallet, connect } = useWallet()
+  //do not deconstruct wallet is used for anchor to sign
+  const wallet = useWallet()
   const { t } = useTranslation(['governance', 'trade'])
   const { group } = useMangoGroup()
   const connection = mangoStore((s) => s.connection)
@@ -577,7 +578,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
             >
               {t('cancel')}
             </Button>
-            {connected ? (
+            {wallet.connected ? (
               <Button
                 onClick={handlePropose}
                 disabled={proposing || !marketPk}
@@ -590,7 +591,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
                 )}
               </Button>
             ) : (
-              <Button onClick={connect} size="large">
+              <Button onClick={wallet.connect} size="large">
                 {t('connect-wallet')}
               </Button>
             )}

@@ -85,7 +85,8 @@ const defaultTokenListFormValues: TokenListForm = {
 const TWENTY_K_USDC_BASE = '20000000000'
 
 const ListToken = ({ goBack }: { goBack: () => void }) => {
-  const { connect, publicKey, connected, wallet } = useWallet()
+  //do not deconstruct wallet is used for anchor to sign
+  const wallet = useWallet()
   const { jupiterTokens } = useJupiterMints()
   const connection = mangoStore((s) => s.connection)
   const client = mangoStore((s) => s.client)
@@ -216,7 +217,9 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     (amount: number, tokenMint: PublicKey, mode: 'ExactIn' | 'ExactOut') => {
       const SLIPPAGE_BPS = 50
       const FEE = 0
-      const walletForCheck = publicKey ? publicKey?.toBase58() : emptyPk
+      const walletForCheck = wallet.publicKey
+        ? wallet.publicKey?.toBase58()
+        : emptyPk
 
       return handleGetRoutes(
         USDC_MINT,
@@ -229,7 +232,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         'JUPITER'
       )
     },
-    [publicKey]
+    [wallet.publicKey]
   )
 
   const handleLiqudityCheck = useCallback(
@@ -383,8 +386,8 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     if (Object.keys(invalidFields).length) {
       return
     }
-    if (!publicKey || !vsrClient || !connectionContext) return
-    await getCurrentVotingPower(publicKey, vsrClient, connectionContext)
+    if (!wallet.publicKey || !vsrClient || !connectionContext) return
+    await getCurrentVotingPower(wallet.publicKey, vsrClient, connectionContext)
 
     if (voter.voteWeight.cmp(minVoterWeight) === -1) {
       notify({
@@ -956,7 +959,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                 <Button secondary onClick={cancel} size="large">
                   {t('cancel')}
                 </Button>
-                {connected ? (
+                {wallet.connected ? (
                   <Button
                     className="flex w-full items-center justify-center sm:w-44"
                     onClick={propose}
@@ -978,7 +981,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                     )}
                   </Button>
                 ) : (
-                  <Button onClick={connect} size="large">
+                  <Button onClick={wallet.connect} size="large">
                     {t('connect-wallet')}
                   </Button>
                 )}
