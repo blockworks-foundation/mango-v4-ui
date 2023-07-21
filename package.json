@@ -15,7 +15,7 @@
     "typecheck": "tsc --noEmit",
     "prepare": "husky install",
     "lint-all": "yarn typecheck && yarn lint && yarn format",
-    "postinstall": "tar -xzC public -f vendor/charting_library.tgz;tar -xzC public -f vendor/datafeeds.tgz && patch-packge"
+    "postinstall": "tar -xzC public -f vendor/charting_library.tgz;tar -xzC public -f vendor/datafeeds.tgz"
   },
   "engines": {
     "node": ">=18.x"
@@ -102,7 +102,6 @@
     "eslint-plugin-react": "7.29.4",
     "eslint-plugin-react-hooks": "4.4.0",
     "husky": "8.0.1",
-    "patch-package": "7.0.2",
     "postcss": "8.4.12",
     "prettier": "2.6.2",
     "prettier-plugin-tailwindcss": "0.1.8",
