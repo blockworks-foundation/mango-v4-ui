@@ -7,6 +7,8 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import useInterval from './shared/useInterval'
 import { SECONDS } from 'utils/constants'
 import useNetworkSpeed from 'hooks/useNetworkSpeed'
+import { useWallet } from '@solana/wallet-adapter-react'
+import useLocalStorageState from 'hooks/useLocalStorageState'
 
 const set = mangoStore.getState().set
 const actions = mangoStore.getState().actions
@@ -17,6 +19,15 @@ const HydrateStore = () => {
   const { mangoAccountPk, mangoAccountAddress } = useMangoAccount()
   const connection = mangoStore((s) => s.connection)
   const slowNetwork = useNetworkSpeed()
+  const { wallet } = useWallet()
+
+  const [, setLastWalletName] = useLocalStorageState('lastWalletName', '')
+
+  useEffect(() => {
+    if (wallet?.adapter) {
+      setLastWalletName(wallet?.adapter.name)
+    }
+  }, [wallet, setLastWalletName])
 
   useEffect(() => {
     if (marketName && typeof marketName === 'string') {
