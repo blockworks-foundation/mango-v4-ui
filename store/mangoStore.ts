@@ -138,6 +138,7 @@ export type MangoStore = {
   group: Group | undefined
   groupLoaded: boolean
   client: MangoClient
+  showUserSetup: boolean
   mangoAccount: {
     current: MangoAccount | undefined
     initialLoad: boolean
@@ -293,6 +294,7 @@ const mangoStore = create<MangoStore>()(
       group: undefined,
       groupLoaded: false,
       client,
+      showUserSetup: false,
       mangoAccount: {
         current: undefined,
         initialLoad: true,

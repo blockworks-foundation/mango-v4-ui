@@ -25,6 +25,7 @@ import {
   CloverWalletAdapter,
   LedgerWalletAdapter,
   ExodusWalletAdapter,
+  WalletConnectWalletAdapter,
 } from '@solana/wallet-adapter-wallets'
 import { clusterApiUrl } from '@solana/web3.js'
 import TransactionNotification from '@components/notifications/TransactionNotification'
@@ -41,7 +42,8 @@ import Head from 'next/head'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { getDecimalCount } from 'utils/numbers'
-import { THEME_KEY } from 'utils/constants'
+import { AUTO_CONNECT_WALLET, THEME_KEY } from 'utils/constants'
+import useLocalStorageState from 'hooks/useLocalStorageState'
 
 // init react-query
 export const queryClient = new QueryClient()
@@ -55,8 +57,8 @@ const metaDescription =
 function MyApp({ Component, pageProps }: AppProps) {
   const network = WalletAdapterNetwork.Mainnet
   const endpoint = useMemo(() => clusterApiUrl(network), [network])
-  const wallets = useMemo(
-    () => [
+  const wallets = useMemo(() => {
+    return [
       new PhantomWalletAdapter(),
       new SolflareWalletAdapter(),
       new BackpackWalletAdapter(),
@@ -68,9 +70,9 @@ function MyApp({ Component, pageProps }: AppProps) {
       new CloverWalletAdapter(),
       new LedgerWalletAdapter(),
       new ExodusWalletAdapter(),
-    ],
-    [],
-  )
+      new WalletConnectWalletAdapter({ network, options: {} }),
+    ]
+  }, [network])
 
   const onError = useCallback((error: WalletError, adapter?: Adapter) => {
     console.error(error, adapter)
@@ -83,8 +85,15 @@ function MyApp({ Component, pageProps }: AppProps) {
       if (typeof window !== 'undefined') {
         window.open(adapter.url, '_blank')
       }
+    } else {
+      notify({
+        title: `${adapter?.name} ${error.error}`,
+        type: 'error',
+      })
     }
   }, [])
+
+  const [autoConnect] = useLocalStorageState(AUTO_CONNECT_WALLET, true)
 
   return (
     <>
@@ -113,7 +122,11 @@ function MyApp({ Component, pageProps }: AppProps) {
       </Head>
       <QueryClientProvider client={queryClient}>
         <ConnectionProvider endpoint={endpoint}>
-          <WalletProvider wallets={wallets} onError={onError} autoConnect>
+          <WalletProvider
+            wallets={wallets}
+            onError={onError}
+            autoConnect={autoConnect === false ? false : true}
+          >
             <MangoProvider />
             <ThemeProvider defaultTheme="Mango Classic" storageKey={THEME_KEY}>
               <ViewportProvider>
