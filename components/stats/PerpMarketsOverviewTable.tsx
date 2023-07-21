@@ -1,4 +1,4 @@
-import { I80F48, PerpMarket } from '@blockworks-foundation/mango-v4'
+import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
 import { useTheme } from 'next-themes'
 import { useViewport } from '../../hooks/useViewport'
@@ -6,7 +6,6 @@ import mangoStore from '@store/mangoStore'
 import { COLORS } from '../../styles/colors'
 import { breakpoints } from '../../utils/theme'
 import ContentBox from '../shared/ContentBox'
-import Change from '../shared/Change'
 import MarketLogos from '@components/trade/MarketLogos'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import {
@@ -17,32 +16,15 @@ import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { getDecimalCount, numberCompacter } from 'utils/numbers'
 import Tooltip from '@components/shared/Tooltip'
-import { PerpStatsItem } from 'types'
-import useMangoGroup from 'hooks/useMangoGroup'
+import { MarketData } from 'types'
 import { NextRouter, useRouter } from 'next/router'
 import SimpleAreaChart from '@components/shared/SimpleAreaChart'
 import { Disclosure, Transition } from '@headlessui/react'
 import { LinkButton } from '@components/shared/Button'
 import SoonBadge from '@components/shared/SoonBadge'
-import { DAILY_SECONDS } from 'utils/constants'
-
-export const getOneDayPerpStats = (
-  stats: PerpStatsItem[] | null,
-  marketName: string
-) => {
-  return stats
-    ? stats
-        .filter((s) => s.perp_market === marketName)
-        .filter((f) => {
-          const seconds = DAILY_SECONDS
-          const dataTime = new Date(f.date_hour).getTime() / 1000
-          const now = new Date().getTime() / 1000
-          const limit = now - seconds
-          return dataTime >= limit
-        })
-        .reverse()
-    : []
-}
+import useMarketsData from 'hooks/useMarketsData'
+import { useMemo } from 'react'
+import MarketChange from '@components/shared/MarketChange'
 
 export const goToPerpMarketDetails = (
   market: PerpMarket,
@@ -55,14 +37,19 @@ export const goToPerpMarketDetails = (
 const PerpMarketsOverviewTable = () => {
   const { t } = useTranslation(['common', 'trade'])
   const perpMarkets = mangoStore((s) => s.perpMarkets)
-  const loadingPerpStats = mangoStore((s) => s.perpStats.loading)
-  const perpStats = mangoStore((s) => s.perpStats.data)
   const { theme } = useTheme()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const rate = usePerpFundingRate()
-  const { group } = useMangoGroup()
   const router = useRouter()
+  const { data: marketsData, isLoading, isFetching } = useMarketsData()
+
+  const perpData: MarketData = useMemo(() => {
+    if (!marketsData) return []
+    return marketsData?.perpData || []
+  }, [marketsData])
+
+  const loadingMarketData = isLoading || isFetching
 
   return (
     <ContentBox hideBorder hidePadding>
@@ -72,15 +59,8 @@ const PerpMarketsOverviewTable = () => {
             <TrHead>
               <Th className="text-left">{t('market')}</Th>
               <Th className="text-right">{t('price')}</Th>
-              <Th className="text-right"></Th>
-              <Th className="text-right">
-                <Tooltip content={t('trade:tooltip-stable-price')}>
-                  <span className="tooltip-underline">
-                    {t('trade:stable-price')}
-                  </span>
-                </Tooltip>
-              </Th>
               <Th className="text-right">{t('rolling-change')}</Th>
+              <Th className="text-right"></Th>
               <Th className="text-right">{t('trade:24h-volume')}</Th>
               <Th className="text-right">{t('trade:funding-rate')}</Th>
               <Th className="text-right">{t('trade:open-interest')}</Th>
@@ -90,17 +70,18 @@ const PerpMarketsOverviewTable = () => {
           <tbody>
             {perpMarkets.map((market) => {
               const symbol = market.name.split('-')[0]
-              const marketStats = getOneDayPerpStats(perpStats, market.name)
 
-              const change = marketStats.length
-                ? ((market.uiPrice - marketStats[0].price) /
-                    marketStats[0].price) *
-                  100
-                : 0
+              const perpDataEntries = Object.entries(perpData).find(
+                (e) => e[0].toLowerCase() === market.name.toLowerCase()
+              )
+              const marketData = perpDataEntries
+                ? perpDataEntries[1][0]
+                : undefined
 
-              const volume = marketStats.length
-                ? marketStats[marketStats.length - 1].cumulative_quote_volume -
-                  marketStats[0].cumulative_quote_volume
+              const priceHistory = marketData?.price_history
+
+              const volume = marketData?.quote_volume_24h
+                ? marketData.quote_volume_24h
                 : 0
 
               let fundingRate
@@ -127,6 +108,10 @@ const PerpMarketsOverviewTable = () => {
 
               const openInterest = market.baseLotsToUi(market.openInterest)
               const isComingSoon = market.oracleLastUpdatedSlot == 0
+              const isUp =
+                priceHistory && priceHistory.length
+                  ? market.uiPrice >= priceHistory[0].price
+                  : false
 
               return (
                 <TrBody
@@ -155,24 +140,24 @@ const PerpMarketsOverviewTable = () => {
                     </div>
                   </Td>
                   <Td>
-                    {!loadingPerpStats ? (
-                      marketStats.length ? (
+                    <div className="flex flex-col items-end">
+                      <MarketChange market={market} />
+                    </div>
+                  </Td>
+                  <Td>
+                    {!loadingMarketData ? (
+                      priceHistory && priceHistory.length ? (
                         <div className="h-10 w-24">
                           <SimpleAreaChart
-                            color={
-                              change >= 0
-                                ? COLORS.UP[theme]
-                                : COLORS.DOWN[theme]
-                            }
-                            data={marketStats.concat([
+                            color={isUp ? COLORS.UP[theme] : COLORS.DOWN[theme]}
+                            data={priceHistory.concat([
                               {
-                                ...marketStats[marketStats.length - 1],
-                                date_hour: new Date().toString(),
+                                time: new Date().toString(),
                                 price: market.uiPrice,
                               },
                             ])}
                             name={symbol}
-                            xKey="date_hour"
+                            xKey="time"
                             yKey="price"
                           />
                         </div>
@@ -182,30 +167,6 @@ const PerpMarketsOverviewTable = () => {
                     ) : (
                       <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
                     )}
-                  </Td>
-                  <Td>
-                    <div className="flex flex-col text-right">
-                      <p>
-                        {group && market.uiPrice ? (
-                          <FormatNumericValue
-                            value={group.toUiPrice(
-                              I80F48.fromNumber(
-                                market.stablePriceModel.stablePrice
-                              ),
-                              market.baseDecimals
-                            )}
-                            isUsd
-                          />
-                        ) : (
-                          '–'
-                        )}
-                      </p>
-                    </div>
-                  </Td>
-                  <Td>
-                    <div className="flex flex-col items-end">
-                      <Change change={change} suffix="%" />
-                    </div>
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
@@ -302,27 +263,35 @@ export default PerpMarketsOverviewTable
 
 const MobilePerpMarketItem = ({ market }: { market: PerpMarket }) => {
   const { t } = useTranslation('common')
-  const loadingPerpStats = mangoStore((s) => s.perpStats.loading)
-  const perpStats = mangoStore((s) => s.perpStats.data)
   const { theme } = useTheme()
   const router = useRouter()
   const rate = usePerpFundingRate()
+  const { data: marketsData, isLoading, isFetching } = useMarketsData()
+
+  const perpData: MarketData = useMemo(() => {
+    if (!marketsData) return []
+    return marketsData?.perpData || []
+  }, [marketsData])
+
+  const perpDataEntries = Object.entries(perpData).find(
+    (e) => e[0].toLowerCase() === market.name.toLowerCase()
+  )
+  const marketData = perpDataEntries ? perpDataEntries[1][0] : undefined
+
+  const priceHistory = marketData?.price_history
+
+  const volume = marketData?.quote_volume_24h ? marketData.quote_volume_24h : 0
+
+  const loadingMarketData = isLoading || isFetching
 
   const symbol = market.name.split('-')[0]
 
-  const marketStats = getOneDayPerpStats(perpStats, market.name)
-
-  const change = marketStats.length
-    ? ((market.uiPrice - marketStats[0].price) / marketStats[0].price) * 100
-    : 0
-
-  const volume = marketStats.length
-    ? marketStats[marketStats.length - 1].cumulative_quote_volume -
-      marketStats[0].cumulative_quote_volume
-    : 0
-
   const openInterest = market.baseLotsToUi(market.openInterest)
   const isComingSoon = market.oracleLastUpdatedSlot == 0
+  const isUp =
+    priceHistory && priceHistory.length
+      ? market.uiPrice >= priceHistory[0].price
+      : false
 
   let fundingRate: string
   let fundingRateApr: string
@@ -360,16 +329,19 @@ const MobilePerpMarketItem = ({ market }: { market: PerpMarket }) => {
                 {isComingSoon ? <SoonBadge /> : null}
               </div>
               <div className="flex items-center space-x-3">
-                {!loadingPerpStats ? (
-                  marketStats.length ? (
+                {!loadingMarketData ? (
+                  priceHistory && priceHistory.length ? (
                     <div className="ml-4 h-10 w-20">
                       <SimpleAreaChart
-                        color={
-                          change >= 0 ? COLORS.UP[theme] : COLORS.DOWN[theme]
-                        }
-                        data={marketStats}
-                        name={market.name}
-                        xKey="date_hour"
+                        color={isUp ? COLORS.UP[theme] : COLORS.DOWN[theme]}
+                        data={priceHistory.concat([
+                          {
+                            time: new Date().toString(),
+                            price: market.uiPrice,
+                          },
+                        ])}
+                        name={symbol}
+                        xKey="time"
                         yKey="price"
                       />
                     </div>
@@ -379,7 +351,7 @@ const MobilePerpMarketItem = ({ market }: { market: PerpMarket }) => {
                 ) : (
                   <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
                 )}
-                <Change change={change} suffix="%" />
+                <MarketChange market={market} />
                 <ChevronDownIcon
                   className={`${
                     open ? 'rotate-180' : 'rotate-360'

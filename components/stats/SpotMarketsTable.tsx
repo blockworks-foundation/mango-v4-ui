@@ -7,20 +7,17 @@ import mangoStore from '@store/mangoStore'
 import { COLORS } from '../../styles/colors'
 import { breakpoints } from '../../utils/theme'
 import ContentBox from '../shared/ContentBox'
-import Change from '../shared/Change'
 import MarketLogos from '@components/trade/MarketLogos'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
-import { useBirdeyeMarketPrices } from 'hooks/useBirdeyeMarketPrices'
 import { floorToDecimal, getDecimalCount, numberCompacter } from 'utils/numbers'
 import SimpleAreaChart from '@components/shared/SimpleAreaChart'
-import { useQuery } from '@tanstack/react-query'
-import { fetchSpotVolume } from '@components/trade/AdvancedMarketHeader'
-import { TickerData } from 'types'
+import { MarketData } from 'types'
 import { Disclosure, Transition } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import MarketChange from '@components/shared/MarketChange'
+import useMarketsData from 'hooks/useMarketsData'
 
 const SpotMarketsTable = () => {
   const { t } = useTranslation('common')
@@ -29,19 +26,14 @@ const SpotMarketsTable = () => {
   const { theme } = useTheme()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
-  const { data: birdeyePrices, isLoading: loadingPrices } =
-    useBirdeyeMarketPrices()
+  const { data: marketsData, isLoading, isFetching } = useMarketsData()
 
-  const { data: spotVolumeData } = useQuery(
-    ['spot-market-volume'],
-    () => fetchSpotVolume(),
-    {
-      cacheTime: 1000 * 60 * 10,
-      staleTime: 1000 * 60,
-      retry: 3,
-      refetchOnWindowFocus: false,
-    }
-  )
+  const spotData: MarketData = useMemo(() => {
+    if (!marketsData) return []
+    return marketsData?.spotData || []
+  }, [marketsData])
+
+  const loadingMarketData = isLoading || isFetching
 
   return (
     <ContentBox hideBorder hidePadding>
@@ -51,8 +43,8 @@ const SpotMarketsTable = () => {
             <TrHead>
               <Th className="text-left">{t('market')}</Th>
               <Th className="text-right">{t('price')}</Th>
-              <Th className="hidden text-right md:block"></Th>
               <Th className="text-right">{t('rolling-change')}</Th>
+              <Th className="hidden text-right md:block"></Th>
               <Th className="text-right">{t('trade:24h-volume')}</Th>
             </TrHead>
           </thead>
@@ -77,25 +69,24 @@ const SpotMarketsTable = () => {
                     getDecimalCount(market.tickSize)
                   ).toNumber()
                 }
-                let tickerData: TickerData | undefined
-                if (spotVolumeData && spotVolumeData.length) {
-                  tickerData = spotVolumeData.find(
-                    (m: TickerData) => m.ticker_id === mkt.name
-                  )
-                }
 
-                const birdeyeData = birdeyePrices.find(
-                  (m) => m.mint === mkt.serumMarketExternal.toString()
+                const spotDataEntries = Object.entries(spotData).find(
+                  (e) => e[0].toLowerCase() === mkt.name.toLowerCase()
                 )
+                const marketData = spotDataEntries
+                  ? spotDataEntries[1][0]
+                  : undefined
 
-                const birdeyeChange =
-                  birdeyeData && price
-                    ? ((price - birdeyeData.data[0].value) /
-                        birdeyeData.data[0].value) *
-                      100
-                    : 0
+                const priceHistory = marketData?.price_history
 
-                const chartData = birdeyeData ? birdeyeData.data : undefined
+                const volume = marketData?.quote_volume_24h
+                  ? marketData.quote_volume_24h
+                  : 0
+
+                const isUp =
+                  price && priceHistory && priceHistory.length
+                    ? price >= priceHistory[0].price
+                    : false
 
                 return (
                   <TrBody key={mkt.publicKey.toString()}>
@@ -127,19 +118,22 @@ const SpotMarketsTable = () => {
                       </div>
                     </Td>
                     <Td>
-                      {!loadingPrices ? (
-                        chartData !== undefined ? (
+                      <div className="flex flex-col items-end">
+                        <MarketChange market={mkt} />
+                      </div>
+                    </Td>
+                    <Td>
+                      {!loadingMarketData ? (
+                        priceHistory && priceHistory.length ? (
                           <div className="h-10 w-24">
                             <SimpleAreaChart
                               color={
-                                birdeyeChange >= 0
-                                  ? COLORS.UP[theme]
-                                  : COLORS.DOWN[theme]
+                                isUp ? COLORS.UP[theme] : COLORS.DOWN[theme]
                               }
-                              data={chartData}
+                              data={priceHistory}
                               name={baseBank!.name + quoteBank!.name}
-                              xKey="unixTime"
-                              yKey="value"
+                              xKey="time"
+                              yKey="price"
                             />
                           </div>
                         ) : baseBank?.name === 'USDC' ||
@@ -153,18 +147,11 @@ const SpotMarketsTable = () => {
                       )}
                     </Td>
                     <Td>
-                      <div className="flex flex-col items-end">
-                        <MarketChange market={mkt} />
-                      </div>
-                    </Td>
-                    <Td>
                       <div className="flex flex-col text-right">
                         <p>
-                          {tickerData ? (
+                          {volume ? (
                             <span>
-                              {numberCompacter.format(
-                                parseFloat(tickerData.target_volume)
-                              )}{' '}
+                              {numberCompacter.format(volume)}{' '}
                               <span className="font-body text-th-fgd-4">
                                 {quoteBank?.name}
                               </span>
@@ -190,7 +177,6 @@ const SpotMarketsTable = () => {
                 <MobileSpotMarketItem
                   key={market.publicKey.toString()}
                   market={market}
-                  spotVolumeData={spotVolumeData}
                 />
               )
             })}
@@ -202,21 +188,21 @@ const SpotMarketsTable = () => {
 
 export default SpotMarketsTable
 
-const MobileSpotMarketItem = ({
-  market,
-  spotVolumeData,
-}: {
-  market: Serum3Market
-  spotVolumeData: TickerData[] | undefined
-}) => {
+const MobileSpotMarketItem = ({ market }: { market: Serum3Market }) => {
   const { t } = useTranslation('common')
-  const { data: birdeyePrices, isLoading: loadingPrices } =
-    useBirdeyeMarketPrices()
   const { group } = useMangoGroup()
   const { theme } = useTheme()
   const baseBank = group?.getFirstBankByTokenIndex(market.baseTokenIndex)
   const quoteBank = group?.getFirstBankByTokenIndex(market.quoteTokenIndex)
   const serumMarket = group?.getSerum3ExternalMarket(market.serumMarketExternal)
+  const { data: marketsData, isLoading, isFetching } = useMarketsData()
+
+  const spotData: MarketData = useMemo(() => {
+    if (!marketsData) return []
+    return marketsData?.spotData || []
+  }, [marketsData])
+
+  const loadingMarketData = isLoading || isFetching
 
   const price = useMemo(() => {
     if (!baseBank || !quoteBank || !serumMarket) return 0
@@ -226,37 +212,19 @@ const MobileSpotMarketItem = ({
     ).toNumber()
   }, [baseBank, quoteBank, serumMarket])
 
-  const birdeyeData = useMemo(() => {
-    if (!loadingPrices) {
-      return birdeyePrices.find(
-        (m) => m.mint === market.serumMarketExternal.toString()
-      )
-    }
-    return null
-  }, [loadingPrices])
+  const spotDataEntries = Object.entries(spotData).find(
+    (e) => e[0].toLowerCase() === market.name.toLowerCase()
+  )
+  const marketData = spotDataEntries ? spotDataEntries[1][0] : undefined
 
-  const change = useMemo(() => {
-    if (birdeyeData && price) {
-      return (
-        ((price - birdeyeData.data[0].value) / birdeyeData.data[0].value) * 100
-      )
-    }
-    return 0
-  }, [birdeyeData, price])
+  const priceHistory = marketData?.price_history
 
-  const chartData = useMemo(() => {
-    if (birdeyeData) {
-      return birdeyeData.data
-    }
-    return undefined
-  }, [birdeyeData])
+  const volume = marketData?.quote_volume_24h ? marketData.quote_volume_24h : 0
 
-  let tickerData: TickerData | undefined
-  if (spotVolumeData && spotVolumeData.length) {
-    tickerData = spotVolumeData.find(
-      (m: TickerData) => m.ticker_id === market.name
-    )
-  }
+  const isUp =
+    price && priceHistory && priceHistory.length
+      ? price >= priceHistory[0].price
+      : false
 
   return (
     <Disclosure>
@@ -273,17 +241,15 @@ const MobileSpotMarketItem = ({
                 <p className="leading-none text-th-fgd-1">{market.name}</p>
               </div>
               <div className="flex items-center space-x-3">
-                {!loadingPrices ? (
-                  chartData !== undefined ? (
+                {!loadingMarketData ? (
+                  priceHistory && priceHistory.length ? (
                     <div className="h-10 w-20">
                       <SimpleAreaChart
-                        color={
-                          change >= 0 ? COLORS.UP[theme] : COLORS.DOWN[theme]
-                        }
-                        data={chartData}
+                        color={isUp ? COLORS.UP[theme] : COLORS.DOWN[theme]}
+                        data={priceHistory}
                         name={baseBank!.name + quoteBank!.name}
-                        xKey="unixTime"
-                        yKey="value"
+                        xKey="time"
+                        yKey="price"
                       />
                     </div>
                   ) : (
@@ -292,7 +258,7 @@ const MobileSpotMarketItem = ({
                 ) : (
                   <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
                 )}
-                <Change change={change} suffix="%" />
+                <MarketChange market={market} />
                 <ChevronDownIcon
                   className={`${
                     open ? 'rotate-180' : 'rotate-360'
@@ -333,11 +299,9 @@ const MobileSpotMarketItem = ({
                     {t('trade:24h-volume')}
                   </p>
                   <p className="font-mono text-th-fgd-2">
-                    {tickerData ? (
+                    {volume ? (
                       <span>
-                        {numberCompacter.format(
-                          parseFloat(tickerData.target_volume)
-                        )}{' '}
+                        {numberCompacter.format(volume)}{' '}
                         <span className="font-body text-th-fgd-4">
                           {quoteBank?.name}
                         </span>
