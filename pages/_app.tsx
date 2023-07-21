@@ -55,6 +55,7 @@ const metaDescription =
 function MyApp({ Component, pageProps }: AppProps) {
   const network = WalletAdapterNetwork.Mainnet
   const endpoint = useMemo(() => clusterApiUrl(network), [network])
+  const router = useRouter()
   const wallets = useMemo(
     () => [
       new PhantomWalletAdapter(),
@@ -114,7 +115,11 @@ function MyApp({ Component, pageProps }: AppProps) {
       <MangoProvider />
       <QueryClientProvider client={queryClient}>
         <ConnectionProvider endpoint={endpoint}>
-          <WalletProvider wallets={wallets} onError={onError} autoConnect>
+          <WalletProvider
+            wallets={wallets}
+            onError={onError}
+            autoConnect={router.asPath.includes('?address') ? false : true}
+          >
             <ThemeProvider defaultTheme="Mango Classic" storageKey={THEME_KEY}>
               <ViewportProvider>
                 <PageTitle />
