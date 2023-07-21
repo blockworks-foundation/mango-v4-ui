@@ -31,5 +31,6 @@
     "total-funding-earned": "Total Funding Earned",
     "volume-chart": "Volume Chart",
     "week-starting": "Week starting {{week}}",
-    "zero-collateral": "Zero Collateral"
+    "zero-collateral": "Zero Collateral",
+    "zero-balances": "Show Zero Balances"
 }

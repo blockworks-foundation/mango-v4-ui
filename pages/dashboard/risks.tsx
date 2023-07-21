@@ -154,7 +154,9 @@ const RiskDashboard: NextPage = () => {
               )}
             </div>
           ) : (
-            'Loading'
+            <div className="mt-8 w-full text-center">
+              Loading... make take up to 60 seconds
+            </div>
           )}
         </div>
       </div>

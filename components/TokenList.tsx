@@ -50,26 +50,26 @@ const TokenList = () => {
   const showTableView = width ? width > breakpoints.md : false
   const banks = useBanksWithBalances('balance')
 
-  // const filteredBanks = useMemo(() => {
-  //   if (banks.length) {
-  //     return showZeroBalances || !mangoAccountAddress
-  //       ? banks
-  //       : banks.filter((b) => Math.abs(b.balance) > 0)
-  //   }
-  //   return []
-  // }, [banks, mangoAccountAddress, showZeroBalances])
-
   const filteredBanks = useMemo(() => {
-    if (!banks.length) return []
-    if (showZeroBalances || !mangoAccountAddress) return banks
-    const filtered = banks.filter((b) => {
-      const contribution =
-        initContributions.find((cont) => cont.asset === b.bank.name)
-          ?.contribution || 0
-      return Math.abs(contribution) > 0
-    })
-    return filtered
-  }, [banks, mangoAccountAddress, showZeroBalances, initContributions])
+    if (banks.length) {
+      return showZeroBalances || !mangoAccountAddress
+        ? banks
+        : banks.filter((b) => Math.abs(b.balance) > 0)
+    }
+    return []
+  }, [banks, mangoAccountAddress, showZeroBalances])
+
+  // const filteredBanks = useMemo(() => {
+  //   if (!banks.length) return []
+  //   if (showZeroBalances || !mangoAccountAddress) return banks
+  //   const filtered = banks.filter((b) => {
+  //     const contribution =
+  //       initContributions.find((cont) => cont.asset === b.bank.name)
+  //         ?.contribution || 0
+  //     return Math.abs(contribution) > 0
+  //   })
+  //   return filtered
+  // }, [banks, mangoAccountAddress, showZeroBalances, initContributions])
 
   return (
     <ContentBox hideBorder hidePadding>
@@ -80,7 +80,7 @@ const TokenList = () => {
             disabled={!mangoAccount}
             onChange={() => setShowZeroBalances(!showZeroBalances)}
           >
-            {t('account:zero-collateral')}
+            {t('account:zero-balances')}
           </Switch>
         </div>
       ) : null}
