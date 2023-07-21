@@ -157,7 +157,12 @@ const SpotMarketsTable = () => {
                               </span>
                             </span>
                           ) : (
-                            '–'
+                            <span>
+                              0{' '}
+                              <span className="font-body text-th-fgd-4">
+                                {quoteBank?.name}
+                              </span>
+                            </span>
                           )}
                         </p>
                       </div>
@@ -307,7 +312,12 @@ const MobileSpotMarketItem = ({ market }: { market: Serum3Market }) => {
                         </span>
                       </span>
                     ) : (
-                      '–'
+                      <span>
+                        0{' '}
+                        <span className="font-body text-th-fgd-4">
+                          {quoteBank?.name}
+                        </span>
+                      </span>
                     )}
                   </p>
                 </div>

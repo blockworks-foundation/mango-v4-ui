@@ -171,7 +171,7 @@ const PerpMarketsOverviewTable = () => {
                   <Td>
                     <div className="flex flex-col text-right">
                       <p>
-                        {volume ? `$${numberCompacter.format(volume)}` : '–'}
+                        {volume ? `$${numberCompacter.format(volume)}` : '$0'}
                       </p>
                     </div>
                   </Td>
@@ -385,7 +385,7 @@ const MobilePerpMarketItem = ({ market }: { market: PerpMarket }) => {
                     {volume ? (
                       <span>{numberCompacter.format(volume)}</span>
                     ) : (
-                      '–'
+                      '$0'
                     )}
                   </p>
                 </div>

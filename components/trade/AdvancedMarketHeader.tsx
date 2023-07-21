@@ -82,10 +82,10 @@ const AdvancedMarketHeader = ({
                     </SheenLoader>
                   ) : volume ? (
                     <span className="font-mono">
-                      ${numberCompacter.format(volume)}{' '}
+                      ${numberCompacter.format(volume)}
                     </span>
                   ) : (
-                    '-'
+                    <span className="font-mono">$0</span>
                   )}
                 </div>
                 <PerpFundingRate />
@@ -129,7 +129,12 @@ const AdvancedMarketHeader = ({
                     </span>
                   </span>
                 ) : (
-                  '–'
+                  <span className="font-mono">
+                    0{' '}
+                    <span className="font-body text-th-fgd-3">
+                      {selectedMarketName?.split('/')[1]}
+                    </span>
+                  </span>
                 )}
               </div>
             )}
