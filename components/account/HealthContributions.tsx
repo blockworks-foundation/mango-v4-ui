@@ -2,7 +2,6 @@ import HealthContributionsChart from './HealthContributionsChart'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useMemo, useState } from 'react'
-import { HealthType } from '@blockworks-foundation/mango-v4'
 import {
   ArrowLeftIcon,
   NoSymbolIcon,
@@ -16,6 +15,7 @@ import mangoStore from '@store/mangoStore'
 import TokensHealthTable from './TokensHealthTable'
 import MarketsHealthTable from './MarketsHealthTable'
 import { HealthContribution, PerpMarketContribution } from 'types'
+import useHealthContributions from 'hooks/useHealthContributions'
 
 const HealthContributions = ({ hideView }: { hideView: () => void }) => {
   const { t } = useTranslation(['common', 'account', 'trade'])
@@ -27,22 +27,19 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
   const [maintActiveIndex, setMaintActiveIndex] = useState<number | undefined>(
     undefined
   )
+  const { initContributions, maintContributions } = useHealthContributions()
 
   const [initHealthContributions, maintHealthContributions] = useMemo(() => {
     if (!group || !mangoAccount) return [[], []]
-    const initAssets = mangoAccount.getHealthContributionPerAssetUi(
-      group,
-      HealthType.init
-    )
-    const initContributions = []
-    for (const item of initAssets) {
+    const initHealthContributions = []
+    for (const item of initContributions) {
       const contribution = item.contribution
       if (item.asset === 'USDC') {
         const hasPerp =
           !!item.contributionDetails?.perpMarketContributions.find(
             (perp: PerpMarketContribution) => Math.abs(perp.contributionUi) > 0
           )
-        initContributions.push({
+        initHealthContributions.push({
           ...item,
           contribution: Math.abs(contribution),
           hasPerp: hasPerp,
@@ -53,7 +50,7 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
             .perpMarketContributions) {
             const contribution = Math.abs(perpMarket.contributionUi)
             if (contribution > 0) {
-              initContributions.push({
+              initHealthContributions.push({
                 asset: perpMarket.market,
                 contribution: contribution,
                 isAsset: perpMarket.contributionUi > 0 ? true : false,
@@ -62,7 +59,7 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
           }
         }
       } else {
-        initContributions.push({
+        initHealthContributions.push({
           ...item,
           isAsset: contribution > 0 ? true : false,
           contribution: Math.abs(contribution),
@@ -70,19 +67,15 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
       }
     }
 
-    const maintAssets = mangoAccount.getHealthContributionPerAssetUi(
-      group,
-      HealthType.maint
-    )
-    const maintContributions = []
-    for (const item of maintAssets) {
+    const maintHealthContributions = []
+    for (const item of maintContributions) {
       const contribution = item.contribution
       if (item.asset === 'USDC') {
         const hasPerp =
           !!item.contributionDetails?.perpMarketContributions.find(
             (perp: PerpMarketContribution) => Math.abs(perp.contributionUi) > 0
           )
-        maintContributions.push({
+        maintHealthContributions.push({
           ...item,
           hasPerp: hasPerp,
           isAsset: contribution > 0 ? true : false,
@@ -93,7 +86,7 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
             .perpMarketContributions) {
             const contribution = Math.abs(perpMarket.contributionUi)
             if (contribution > 0) {
-              maintContributions.push({
+              maintHealthContributions.push({
                 asset: perpMarket.market,
                 contribution: contribution,
                 isAsset: perpMarket.contributionUi > 0 ? true : false,
@@ -102,7 +95,7 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
           }
         }
       } else {
-        maintContributions.push({
+        maintHealthContributions.push({
           ...item,
           isAsset: contribution > 0 ? true : false,
           contribution: Math.abs(contribution),
@@ -110,8 +103,8 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
       }
     }
 
-    return [initContributions, maintContributions]
-  }, [group, mangoAccount])
+    return [initHealthContributions, maintHealthContributions]
+  }, [group, mangoAccount, initContributions, maintContributions])
 
   const [initHealthMarkets, initHealthTokens] = useMemo(() => {
     if (!initHealthContributions.length) return [[], []]
