@@ -116,7 +116,7 @@ const TradeAdvancedPage = () => {
         lg: showDepthChart ? 16 : 19,
       },
       chartMiddleOBLeft: { xxxl: 0, xxl: 0, xl: 0, lg: 0 },
-      chartRight: { xxxl: 4, xxl: 5, xl: 5, lg: 6 },
+      chartRight: { xxxl: 4, xxl: 5, xl: 5, lg: 5 },
     }
 
     const formXPos = {
@@ -306,34 +306,41 @@ const TradeAdvancedPage = () => {
         </div>
         <div
           key="tv-chart"
-          className="box-border h-full border border-x-0 border-th-bkg-3"
+          className="h-full border border-x-0 border-th-bkg-3"
         >
           <div className={`relative h-full overflow-auto`}>
             <TradingChartContainer />
           </div>
         </div>
-        <div key="balances">
+        <div
+          className={`${
+            tradeLayout === 'chartLeft' ? 'lg:border-r lg:border-th-bkg-3' : ''
+          }`}
+          key="balances"
+        >
           <TradeInfoTabs />
         </div>
         <div
-          className={`box-border border-y border-l border-th-bkg-3 lg:border-b-0 ${
+          className={`border-y border-l border-th-bkg-3 lg:border-b-0 ${
             tradeLayout === 'chartMiddleOBRight'
               ? 'lg:border-r lg:border-l-0'
               : ''
-          } ${tradeLayout === 'chartRight' ? 'lg:border-r lg:border-l-0' : ''}`}
+          } ${
+            tradeLayout === 'chartRight' ? 'lg:border-r lg:border-l-0' : ''
+          } ${tradeLayout === 'chartLeft' ? 'lg:border-l-0' : ''}`}
           key="trade-form"
         >
           <AdvancedTradeForm />
         </div>
         <div
           key="orderbook"
-          className={`box-border overflow-hidden border-l border-th-bkg-3 lg:border-y ${
+          className={`overflow-hidden border-l border-th-bkg-3 lg:border-y ${
             tradeLayout === 'chartRight' ? 'lg:border-l-0 lg:border-r' : ''
           } ${
             tradeLayout === 'chartMiddleOBLeft'
               ? 'lg:border-l-0 lg:border-r'
               : ''
-          }`}
+          } ${tradeLayout === 'chartLeft' ? 'lg:border-r' : ''}`}
         >
           <OrderbookAndTrades />
         </div>
