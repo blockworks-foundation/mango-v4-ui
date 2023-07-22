@@ -88,8 +88,8 @@ function MyApp({ Component, pageProps }: AppProps) {
       }
     } else {
       notify({
-        title: `${adapter?.name} ${error.error}`,
-        type: 'error',
+        title: `${adapter?.name} ${error.error?.message || 'Error'}`,
+        type: 'info',
       })
     }
   }, [])

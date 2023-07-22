@@ -16,8 +16,7 @@ export default function ConnectWalletButton({
   handleShowSetup: () => void
 }) {
   const { t } = useTranslation('common')
-  const { wallet, wallets, select, connected, autoConnect, connect } =
-    useWallet()
+  const { wallet, wallets, select, connected, connect } = useWallet()
   const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
   const [lastWalletName] = useLocalStorageState<WalletName | null>(
@@ -44,11 +43,10 @@ export default function ConnectWalletButton({
         <div className="flex">
           <button
             onClick={() => {
-              if (autoConnect) {
-                select(lastWalletName)
+              if (wallet) {
+                connect()
               } else {
                 select(lastWalletName)
-                connect()
               }
             }}
             className="relative flex h-16 bg-th-bkg-3 py-2 text-white before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-th-bkg-4 before:to-transparent before:opacity-0 hover:overflow-hidden hover:before:-translate-x-full hover:before:animate-[shimmer_0.75s_normal] hover:before:opacity-100 focus-visible:bg-th-bkg-4 disabled:cursor-wait disabled:opacity-25"
