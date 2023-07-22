@@ -298,6 +298,7 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
 
   const tokenBalance = bank.balance
   const unsettled = spotBalances[mint.toString()]?.unsettled || 0
+  const inOrders = spotBalances[mint.toString()]?.inOrders || 0
 
   const collateralValue =
     initContributions.find((val) => val.asset === tokenBank.name)
@@ -379,6 +380,12 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
                       x
                     </span>
                   </p>
+                </div>
+                <div className="col-span-1">
+                  <p className="text-xs text-th-fgd-3">
+                    {t('trade:in-orders')}
+                  </p>
+                  <BankAmountWithValue amount={inOrders} bank={tokenBank} />
                 </div>
                 <div className="col-span-1">
                   <p className="text-xs text-th-fgd-3">
