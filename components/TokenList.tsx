@@ -85,7 +85,7 @@ const TokenList = () => {
         </div>
       ) : null}
       {showTableView ? (
-        <div className="thin-scroll overflow-x-auto">
+        <>
           <Table>
             <thead>
               <TrHead>
@@ -106,6 +106,7 @@ const TokenList = () => {
                     </Tooltip>
                   </div>
                 </Th>
+                <Th className="text-right">{t('trade:in-orders')}</Th>
                 <Th className="text-right">{t('trade:unsettled')}</Th>
                 <Th className="flex justify-end" id="account-step-nine">
                   <Tooltip content="The sum of interest earned and interest paid for each token">
@@ -253,7 +254,7 @@ const TokenList = () => {
               })}
             </tbody>
           </Table>
-        </div>
+        </>
       ) : (
         <div className="border-b border-th-bkg-3">
           {filteredBanks.map((b) => {
@@ -543,7 +544,7 @@ const ActionsMenu = ({
                 leaveTo="opacity-0"
               >
                 <Popover.Panel
-                  className={`thin-scroll absolute bottom-12 left-0 z-40 max-h-60 w-32 space-y-2 overflow-auto rounded-md bg-th-bkg-2 p-4 pt-2 md:bottom-0 md:right-12 md:left-auto md:pt-4`}
+                  className={`thin-scroll absolute bottom-12 left-0 z-20 max-h-60 w-32 space-y-2 overflow-auto rounded-md bg-th-bkg-2 p-4 pt-2 md:bottom-0 md:right-12 md:left-auto md:pt-4`}
                 >
                   <div className="hidden items-center justify-center border-b border-th-bkg-3 pb-2 md:flex">
                     <div className="mr-2 flex flex-shrink-0 items-center">
