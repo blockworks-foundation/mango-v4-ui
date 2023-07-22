@@ -84,7 +84,7 @@ const DisplaySettings = () => {
   const [, setTradeLayout] = useLocalStorageState(TRADE_LAYOUT_KEY, 'chartLeft')
   const [autoConnect, setAutoConnect] = useLocalStorageState(
     AUTO_CONNECT_WALLET,
-    true
+    true,
   )
 
   const handleLangChange = useCallback(
