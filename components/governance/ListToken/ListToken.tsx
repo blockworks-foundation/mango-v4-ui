@@ -492,7 +492,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         .instruction()
       proposalTx.push(editIx)
     } else {
-      await client!.program.methods
+      const trustlessIx = await client!.program.methods
         .tokenRegisterTrustless(Number(advForm.tokenIndex), advForm.name)
         .accounts({
           mint: new PublicKey(advForm.mintPk),
@@ -503,6 +503,8 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           group: group!.publicKey,
         })
         .instruction()
+
+      proposalTx.push(trustlessIx)
     }
 
     const registerMarketix = await client!.program.methods

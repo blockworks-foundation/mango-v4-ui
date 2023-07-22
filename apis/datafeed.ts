@@ -102,7 +102,7 @@ let marketType: 'spot' | 'perp'
 
 export const queryPerpBars = async (
   tokenAddress: string,
-  resolution: (typeof SUPPORTED_RESOLUTIONS)[number],
+  resolution: typeof SUPPORTED_RESOLUTIONS[number],
   periodParams: {
     firstDataRequest: boolean
     from: number
@@ -150,7 +150,7 @@ export const queryPerpBars = async (
 
 export const queryBirdeyeBars = async (
   tokenAddress: string,
-  resolution: (typeof SUPPORTED_RESOLUTIONS)[number],
+  resolution: typeof SUPPORTED_RESOLUTIONS[number],
   periodParams: {
     firstDataRequest: boolean
     from: number

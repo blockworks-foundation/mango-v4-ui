@@ -52,12 +52,9 @@ const Layout = ({ children }: { children: ReactNode }) => {
     const animationFrames = 15
 
     for (let x = 1; x <= animationFrames; x++) {
-      setTimeout(
-        () => {
-          window.dispatchEvent(new Event('resize'))
-        },
-        (sideBarAnimationDuration / animationFrames) * x,
-      )
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'))
+      }, (sideBarAnimationDuration / animationFrames) * x)
     }
   }, [isCollapsed])
 

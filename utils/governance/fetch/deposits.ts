@@ -85,7 +85,7 @@ export const getDeposits = async ({
             ...x,
             mint: mints[mintCfgs![x.votingMintConfigIdx].mint.toBase58()],
             index: idx,
-          }) as unknown as DepositWithMintAccount,
+          } as unknown as DepositWithMintAccount),
       )
       .filter((x) => typeof isUsed === 'undefined' || x.isUsed === isUsed)
     const usedDeposits = deposits.filter((x) => x.isUsed)

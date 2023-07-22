@@ -63,8 +63,8 @@ export default function useSelectedMarket() {
         mangoTokens.find(
           (t) => t.symbol.toLowerCase() === lowerCaseBaseSymbol,
         ) ||
-        mangoTokens.find(
-          (t) => t.symbol.toLowerCase()?.includes(lowerCaseBaseSymbol),
+        mangoTokens.find((t) =>
+          t.symbol.toLowerCase()?.includes(lowerCaseBaseSymbol),
         )
       if (token) {
         return token.logoURI
