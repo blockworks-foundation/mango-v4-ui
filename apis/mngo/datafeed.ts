@@ -66,7 +66,7 @@ const configurationData = {
 
 export const queryBars = async (
   tokenAddress: string,
-  resolution: typeof SUPPORTED_RESOLUTIONS[number],
+  resolution: (typeof SUPPORTED_RESOLUTIONS)[number],
   periodParams: {
     firstDataRequest: boolean
     from: number
