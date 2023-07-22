@@ -825,11 +825,11 @@ const Dashboard: NextPage = () => {
                           ${
                             perpMarket.quoteLotSize
                           } quote (tick size: $${perpMarket.priceLotsToUi(
-                            new BN(1),
-                          )}, 1 base lot: $${(
-                            perpMarket.baseLotsToUi(new BN(1)) *
-                            perpMarket.uiPrice
-                          ).toFixed(3)})`}
+                                    new BN(1),
+                                  )}, 1 base lot: $${(
+                                    perpMarket.baseLotsToUi(new BN(1)) *
+                                    perpMarket.uiPrice
+                                  ).toFixed(3)})`}
                                 />
                                 <KeyValuePair
                                   label="Maint Asset/Liab Weight"
@@ -839,12 +839,14 @@ const Dashboard: NextPage = () => {
                           ${perpMarket.maintBaseLiabWeight.toFixed(
                             4,
                           )} (maint leverage: ${(
-                            1 /
-                            (perpMarket.maintBaseLiabWeight.toNumber() - 1)
-                          ).toFixed(2)}x, init leverage: ${(
-                            1 /
-                            (perpMarket.initBaseLiabWeight.toNumber() - 1)
-                          ).toFixed(2)}x)`}
+                                    1 /
+                                    (perpMarket.maintBaseLiabWeight.toNumber() -
+                                      1)
+                                  ).toFixed(2)}x, init leverage: ${(
+                                    1 /
+                                    (perpMarket.initBaseLiabWeight.toNumber() -
+                                      1)
+                                  ).toFixed(2)}x)`}
                                 />
                                 <KeyValuePair
                                   label="Init Asset/Liab Weight"
