@@ -26,52 +26,27 @@ const MarketChange = ({
     return baseBank.uiPrice / quoteBank.uiPrice
   }, [market])
 
-  const pastPrice = useMemo(() => {
-    if (!market || !marketsData) return 0
-    if (market instanceof PerpMarket) {
-      const perpData: MarketData = marketsData?.perpData
-      const perpEntries = Object.entries(perpData).find(
-        (e) => e[0].toLowerCase() === market.name.toLowerCase(),
-      )
-      return perpEntries ? perpEntries[1][0]?.price_history[0]?.price : 0
-    } else {
-      const spotData: MarketData = marketsData?.spotData
-      const spotEntries = Object.entries(spotData).find(
-        (e) => e[0].toLowerCase() === market.name.toLowerCase(),
-      )
-      return spotEntries ? spotEntries[1][0]?.price_history[0]?.price : 0
-    }
-  }, [marketsData, market])
-
-  const [stalePrice, staleChange] = useMemo(() => {
-    if (!market || !marketsData) return [0, 0]
-    if (market instanceof PerpMarket) {
-      const perpData: MarketData = marketsData?.perpData
-      const perpEntries = Object.entries(perpData).find(
-        (e) => e[0].toLowerCase() === market.name.toLowerCase(),
-      )
-      const price = perpEntries ? perpEntries[1][0]?.last_price : 0
-      const change = perpEntries ? perpEntries[1][0]?.change_24h : 0
-      return [price, change]
-    } else {
-      const spotData: MarketData = marketsData?.spotData
-      const spotEntries = Object.entries(spotData).find(
-        (e) => e[0].toLowerCase() === market.name.toLowerCase(),
-      )
-      const price = spotEntries ? spotEntries[1][0]?.last_price : 0
-      const change = spotEntries ? spotEntries[1][0]?.change_24h : 0
-      return [price, change]
-    }
-  }, [marketsData, market])
-
   const change = useMemo(() => {
-    if (!stalePrice || !staleChange) return
+    if (!market || !marketsData) return
+    let pastPrice = 0
+    if (market instanceof PerpMarket) {
+      const perpData: MarketData = marketsData?.perpData
+      const perpEntries = Object.entries(perpData).find(
+        (e) => e[0].toLowerCase() === market.name.toLowerCase(),
+      )
+      pastPrice = perpEntries ? perpEntries[1][0]?.price_24h : 0
+    } else {
+      const spotData: MarketData = marketsData?.spotData
+      const spotEntries = Object.entries(spotData).find(
+        (e) => e[0].toLowerCase() === market.name.toLowerCase(),
+      )
+      pastPrice = spotEntries ? spotEntries[1][0]?.price_24h : 0
+    }
     const currentPrice =
       market instanceof PerpMarket ? market.uiPrice : currentSpotPrice
-    const change =
-      ((currentPrice - stalePrice) / stalePrice + staleChange) * 100
+    const change = ((currentPrice - pastPrice) / pastPrice) * 100
     return change
-  }, [market, pastPrice, currentSpotPrice])
+  }, [marketsData, currentSpotPrice])
 
   const loading = isLoading || isFetching
 
