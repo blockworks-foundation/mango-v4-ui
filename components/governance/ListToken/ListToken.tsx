@@ -8,11 +8,7 @@ import { handleGetRoutes } from '@components/swap/useQuoteRoutes'
 import { JUPITER_PRICE_API_MAINNET, USDC_MINT } from 'utils/constants'
 import { AccountMeta, PublicKey, SYSVAR_RENT_PUBKEY } from '@solana/web3.js'
 import { useWallet } from '@solana/wallet-adapter-react'
-import {
-  OPENBOOK_PROGRAM_ID,
-  RouteInfo,
-  toNative,
-} from '@blockworks-foundation/mango-v4'
+import { OPENBOOK_PROGRAM_ID, toNative } from '@blockworks-foundation/mango-v4'
 import {
   MANGO_DAO_WALLET,
   MANGO_DAO_WALLET_GOVERNANCE,
@@ -214,7 +210,12 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   )
 
   const handleGetRoutesWithFixedArgs = useCallback(
-    (amount: number, tokenMint: PublicKey, mode: 'ExactIn' | 'ExactOut') => {
+    (
+      amount: number,
+      tokenMint: PublicKey,
+      mode: 'ExactIn' | 'ExactOut',
+      onlyDirect = false,
+    ) => {
       const SLIPPAGE_BPS = 50
       const FEE = 0
       const walletForCheck = wallet.publicKey
@@ -230,6 +231,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         FEE,
         walletForCheck,
         'JUPITER',
+        onlyDirect,
       )
     },
     [wallet.publicKey],
@@ -282,12 +284,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
             : 'UNTRUSTED'
         setCoinTier(tier)
         setPriceImpact(midTierCheck ? midTierCheck.priceImpactPct * 100 : 100)
-
-        handleGetPoolParams(
-          swaps.find(
-            (x) => x.bestRoute!.amount.toString() === TWENTY_K_USDC_BASE,
-          )!.routes,
-        )
+        handleGetPoolParams(tier, tokenMint)
         return tier
       } catch (e) {
         notify({
@@ -300,8 +297,24 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     [t, handleGetRoutesWithFixedArgs],
   )
 
-  const handleGetPoolParams = (routes: never[] | RouteInfo[]) => {
-    const marketInfos = routes.flatMap((x) => x.marketInfos)
+  const handleGetPoolParams = async (
+    tier: LISTING_PRESETS_KEYS,
+    tokenMint: PublicKey,
+  ) => {
+    const tierToSwapValue: { [key: string]: number } = {
+      PREMIUM: 100000,
+      MID: 20000,
+      MEME: 5000,
+      SHIT: 1000,
+      UNTRUSTED: 100,
+    }
+    const swaps = await handleGetRoutesWithFixedArgs(
+      tierToSwapValue[tier],
+      tokenMint,
+      'ExactIn',
+      true,
+    )
+    const marketInfos = swaps.routes.flatMap((x) => x.marketInfos)
     const orcaPool = marketInfos.find((x) => x.label === 'Orca')
     const raydiumPool = marketInfos.find((x) => x.label === 'Raydium')
     setOrcaPoolAddress(orcaPool?.id || '')

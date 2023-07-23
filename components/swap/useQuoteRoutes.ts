@@ -28,6 +28,7 @@ const fetchJupiterRoutes = async (
   slippage = 50,
   swapMode = 'ExactIn',
   feeBps = 0,
+  onlyDirectRoutes = true,
 ) => {
   {
     const paramsString = new URLSearchParams({
@@ -37,15 +38,14 @@ const fetchJupiterRoutes = async (
       slippageBps: Math.ceil(slippage * 100).toString(),
       feeBps: feeBps.toString(),
       swapMode,
+      onlyDirectRoutes: `${onlyDirectRoutes}`,
     }).toString()
 
     const response = await fetch(
       `https://quote-api.jup.ag/v4/quote?${paramsString}`,
     )
-
     const res = await response.json()
     const data = res.data
-
     return {
       routes: res.data as RouteInfo[],
       bestRoute: (data.length ? data[0] : null) as RouteInfo | null,
@@ -119,6 +119,7 @@ export const handleGetRoutes = async (
   feeBps = 0,
   wallet: string | undefined | null,
   mode: SwapModes = 'ALL',
+  jupiterOnlyDirectRoutes = false,
 ) => {
   try {
     wallet ||= PublicKey.default.toBase58()
@@ -138,6 +139,7 @@ export const handleGetRoutes = async (
       slippage,
       swapMode,
       feeBps,
+      jupiterOnlyDirectRoutes,
     )
 
     const routes = []
