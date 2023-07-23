@@ -12,10 +12,13 @@ import { useViewport } from '../hooks/useViewport'
 import { breakpoints, nftThemeMeta } from '../utils/theme'
 import mangoStore from '@store/mangoStore'
 import BottomBar from './mobile/BottomBar'
-import BounceLoader from './shared/BounceLoader'
 import TopBar from './TopBar'
 import useLocalStorageState from '../hooks/useLocalStorageState'
-import { ACCEPT_TERMS_KEY, SIDEBAR_COLLAPSE_KEY } from '../utils/constants'
+import {
+  ACCEPT_TERMS_KEY,
+  SECONDS,
+  SIDEBAR_COLLAPSE_KEY,
+} from '../utils/constants'
 import { useWallet } from '@solana/wallet-adapter-react'
 import SuccessParticles from './shared/SuccessParticles'
 import { tsParticles } from 'tsparticles-engine'
@@ -36,14 +39,14 @@ const Layout = ({ children }: { children: ReactNode }) => {
   const { theme } = useTheme()
   const [isCollapsed, setIsCollapsed] = useLocalStorageState(
     SIDEBAR_COLLAPSE_KEY,
-    false
+    false,
   )
 
   const { width } = useViewport()
   const { asPath } = useRouter()
 
   useEffect(() => {
-    if (width < breakpoints.xl) {
+    if (width < breakpoints['2xl']) {
       setIsCollapsed(true)
     }
   }, [width])
@@ -52,9 +55,12 @@ const Layout = ({ children }: { children: ReactNode }) => {
     const animationFrames = 15
 
     for (let x = 1; x <= animationFrames; x++) {
-      setTimeout(() => {
-        window.dispatchEvent(new Event('resize'))
-      }, (sideBarAnimationDuration / animationFrames) * x)
+      setTimeout(
+        () => {
+          window.dispatchEvent(new Event('resize'))
+        },
+        (sideBarAnimationDuration / animationFrames) * x,
+      )
     }
   }, [isCollapsed])
 
@@ -72,7 +78,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const set = mangoStore.getState().set
-    if (nftThemeMeta[theme]) {
+    if (theme && nftThemeMeta[theme]) {
       set((s) => {
         s.themeData = nftThemeMeta[theme]
       })
@@ -90,7 +96,6 @@ const Layout = ({ children }: { children: ReactNode }) => {
       <div className="fixed z-30">
         <SuccessParticles />
       </div>
-      <MangoAccountLoadingOverlay />
       <div
         className={`min-h-screen flex-grow ${
           !themeData.useGradientBg
@@ -104,7 +109,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
         <div className="fixed z-20 hidden h-screen md:block">
           <button
-            className="absolute right-0 top-1/2 z-20 hidden h-8 w-3 -translate-y-1/2 rounded-none rounded-l bg-th-bkg-3 hover:bg-th-bkg-4 focus:outline-none focus-visible:bg-th-bkg-4 xl:block"
+            className="absolute right-0 top-1/2 z-20 hidden h-8 w-3 -translate-y-1/2 rounded-none rounded-l bg-th-bkg-3 hover:bg-th-bkg-4 focus:outline-none focus-visible:bg-th-bkg-4 2xl:block"
             onClick={handleToggleSidebar}
           >
             <ChevronRightIcon
@@ -140,26 +145,11 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
 export default Layout
 
-const MangoAccountLoadingOverlay = () => {
-  const { connected } = useWallet()
-  const loadingMangoAccount = mangoStore((s) => s.mangoAccount.initialLoad)
-
-  return (
-    <>
-      {connected && loadingMangoAccount ? (
-        <div className="fixed z-30 flex h-screen w-full items-center justify-center bg-[rgba(0,0,0,0.7)]">
-          <BounceLoader />
-        </div>
-      ) : null}
-    </>
-  )
-}
-
 const TermsOfUse = () => {
   const { connected } = useWallet()
   const [acceptTerms, setAcceptTerms] = useLocalStorageState(
     ACCEPT_TERMS_KEY,
-    ''
+    '',
   )
 
   const showTermsOfUse = useMemo(() => {
@@ -190,7 +180,7 @@ function DeployRefreshManager(): JSX.Element | null {
       // There's a new version deployed that we need to load
       setNewBuildAvailable(true)
     }
-  }, 300000)
+  }, 300 * SECONDS)
 
   return (
     <Transition

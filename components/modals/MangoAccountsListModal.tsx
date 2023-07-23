@@ -117,11 +117,11 @@ const MangoAccountsListModal = ({
                     acc = mangoAccount
                   }
                   const accountValue = toUiDecimalsForQuote(
-                    Number(acc.getEquity(group!))
+                    Number(acc.getEquity(group!)),
                   ).toFixed(2)
                   const maintHealth = acc.getHealthRatioUi(
                     group!,
-                    HealthType.maint
+                    HealthType.maint,
                   )
                   return (
                     <div
@@ -207,7 +207,7 @@ const MangoAccountsListModal = ({
                                 acc,
                                 t('copy-address-success', {
                                   pk: abbreviateAddress(acc.publicKey),
-                                })
+                                }),
                               )
                             }
                             hideBg

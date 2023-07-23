@@ -2,7 +2,6 @@ import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
-import { useTheme } from 'next-themes'
 import { useMemo } from 'react'
 import { Cell, Pie, PieChart } from 'recharts'
 import { COLORS } from 'styles/colors'
@@ -11,15 +10,16 @@ import FlipNumbers from 'react-flip-numbers'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
+import useThemeWrapper from 'hooks/useThemeWrapper'
 
 const AssetsLiabilities = ({ isMobile }: { isMobile: boolean }) => {
   const { t } = useTranslation('account')
   const { group } = useMangoGroup()
   const { mangoAccount } = useMangoAccount()
-  const { theme } = useTheme()
+  const { theme } = useThemeWrapper()
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
-    INITIAL_ANIMATION_SETTINGS
+    INITIAL_ANIMATION_SETTINGS,
   )
 
   const [assetsValue, assetsRatio, liabsValue, liabsRatio] = useMemo(() => {

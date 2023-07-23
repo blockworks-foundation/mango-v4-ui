@@ -18,7 +18,7 @@ const SuccessParticles = () => {
   const set = mangoStore((s) => s.set)
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
-    INITIAL_ANIMATION_SETTINGS
+    INITIAL_ANIMATION_SETTINGS,
   )
   const { theme } = useTheme()
 
@@ -77,7 +77,7 @@ const SuccessParticles = () => {
           set((s) => {
             s.successAnimation.swap = false
           }),
-        8000
+        8000,
       )
     }
     if (showForTheme) {
@@ -86,7 +86,7 @@ const SuccessParticles = () => {
           set((s) => {
             s.successAnimation.theme = false
           }),
-        6000
+        6000,
       )
     }
     if (showForTrade) {
@@ -95,7 +95,7 @@ const SuccessParticles = () => {
           set((s) => {
             s.successAnimation.trade = false
           }),
-        8000
+        8000,
       )
     }
   }, [showForSwap, showForTheme, showForTrade])

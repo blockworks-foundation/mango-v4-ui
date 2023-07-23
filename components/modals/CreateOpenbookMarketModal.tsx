@@ -13,7 +13,6 @@ import { LAMPORTS_PER_SOL, PublicKey, Transaction } from '@solana/web3.js'
 import { MARKET_STATE_LAYOUT_V2 } from '@project-serum/serum'
 import { notify } from 'utils/notifications'
 import InlineNotification from '@components/shared/InlineNotification'
-import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
 
 type CreateObMarketForm = {
   programId: string
@@ -63,8 +62,7 @@ const CreateOpenbookMarketModal = ({
 }: ModalProps & CreateOpenbookMarketModalProps) => {
   const { t } = useTranslation(['governance'])
   const connection = mangoStore((s) => s.connection)
-  const wallet = useWallet()
-  const { handleConnect } = useEnhancedWallet()
+  const { connect, signAllTransactions, connected, publicKey } = useWallet()
 
   const [form, setForm] = useState({ ...defaultFormValues })
   const [formErrors, setFormErrors] = useState<FormErrors>({})
@@ -77,7 +75,7 @@ const CreateOpenbookMarketModal = ({
   }
 
   const handleCreate = async () => {
-    if (!wallet || !wallet.signAllTransactions) {
+    if (!publicKey || !signAllTransactions) {
       return
     }
     let sig = ''
@@ -85,7 +83,7 @@ const CreateOpenbookMarketModal = ({
     try {
       const ixObj = await makeCreateOpenBookMarketInstructionSimple({
         connection,
-        wallet: wallet.publicKey!,
+        wallet: publicKey,
         baseInfo: {
           mint: new PublicKey(baseMint),
           decimals: baseDecimals,
@@ -107,11 +105,11 @@ const CreateOpenbookMarketModal = ({
         tx.add(...chunk.instructions)
         tx.lastValidBlockHeight = latestBlockhash.lastValidBlockHeight
         tx.recentBlockhash = latestBlockhash.blockhash
-        tx.feePayer = wallet.publicKey!
+        tx.feePayer = publicKey
         tx.sign(...chunk.signers)
         transactions.push(tx)
       }
-      const signedTransactions = await wallet.signAllTransactions(transactions)
+      const signedTransactions = await signAllTransactions(transactions)
 
       for (const tx of signedTransactions) {
         const rawTransaction = tx.serialize()
@@ -159,11 +157,11 @@ const CreateOpenbookMarketModal = ({
     const getMinLamportsToCreateMarket = async () => {
       const accountsSpace = 84522 + MARKET_STATE_LAYOUT_V2.span
       const minLamports = await connection.getMinimumBalanceForRentExemption(
-        accountsSpace
+        accountsSpace,
       )
       setSolNeededToCreateMarket(
         Math.round((minLamports / LAMPORTS_PER_SOL + Number.EPSILON) * 100) /
-          100
+          100,
       )
     }
     getMinLamportsToCreateMarket()
@@ -257,7 +255,7 @@ const CreateOpenbookMarketModal = ({
           )}
         </div>
       </div>
-      {wallet.connected ? (
+      {connected ? (
         <Button
           className="mt-6 w-full"
           onClick={handleCreate}
@@ -267,7 +265,7 @@ const CreateOpenbookMarketModal = ({
           {t('create')}
         </Button>
       ) : (
-        <Button className="mt-6 w-full" onClick={handleConnect} size="large">
+        <Button className="mt-6 w-full" onClick={connect} size="large">
           {t('connect-wallet')}
         </Button>
       )}

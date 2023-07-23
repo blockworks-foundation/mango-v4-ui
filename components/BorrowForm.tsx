@@ -35,7 +35,6 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
 import FormatNumericValue from './shared/FormatNumericValue'
 import { floorToDecimal } from 'utils/numbers'
 import BankAmountWithValue from './shared/BankAmountWithValue'
@@ -58,13 +57,12 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [selectedToken, setSelectedToken] = useState(
-    token || INPUT_TOKEN_DEFAULT
+    token || INPUT_TOKEN_DEFAULT,
   )
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
   const { mangoAccount } = useMangoAccount()
-  const { connected, publicKey } = useWallet()
-  const { handleConnect } = useEnhancedWallet()
+  const { connected, publicKey, connect } = useWallet()
   const banks = useBanksWithBalances('maxBorrow')
 
   const bank = useMemo(() => {
@@ -93,11 +91,11 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
       setSizePercentage(percentage)
       const amount = floorToDecimal(
         new Decimal(percentage).div(100).mul(tokenMax),
-        bank.mintDecimals
+        bank.mintDecimals,
       )
       setInputAmount(amount.toFixed())
     },
-    [tokenMax, bank]
+    [tokenMax, bank],
   )
 
   const setMax = useCallback(() => {
@@ -125,7 +123,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
         mangoAccount,
         bank!.mint,
         Number(inputAmount),
-        true
+        true,
       )
       notify({
         title: 'Transaction confirmed',
@@ -329,7 +327,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
             ) : null}
           </div>
           <Button
-            onClick={connected ? handleBorrow : handleConnect}
+            onClick={connected ? handleBorrow : connect}
             className="flex w-full items-center justify-center"
             disabled={connected && (!inputAmount || showInsufficientBalance)}
             size="large"

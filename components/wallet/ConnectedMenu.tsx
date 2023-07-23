@@ -4,7 +4,7 @@ import {
   CurrencyDollarIcon,
   UserCircleIcon,
 } from '@heroicons/react/20/solid'
-import { useWallet, Wallet } from '@solana/wallet-adapter-react'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 import { Fragment, useCallback, useEffect, useState } from 'react'
 import mangoStore from '@store/mangoStore'
@@ -15,28 +15,26 @@ import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from '../../utils/theme'
 import EditProfileModal from '@components/modals/EditProfileModal'
 import MangoAccountsListModal from '@components/modals/MangoAccountsListModal'
+import { TV_USER_ID_KEY } from 'utils/constants'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import Loading from '@components/shared/Loading'
+
+const set = mangoStore.getState().set
+const actions = mangoStore.getState().actions
 
 const ConnectedMenu = () => {
   const { t } = useTranslation('common')
   const { publicKey, disconnect, wallet } = useWallet()
   const { width } = useViewport()
-
+  const [tvUserId, setTvUserId] = useLocalStorageState(TV_USER_ID_KEY, '')
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)
   const [showMangoAccountsModal, setShowMangoAccountsModal] = useState(false)
 
-  const set = mangoStore((s) => s.set)
-  const actions = mangoStore.getState().actions
   // const profileDetails = mangoStore((s) => s.profile.details)
   const loadProfileDetails = mangoStore((s) => s.profile.loadDetails)
-
+  const groupLoaded = mangoStore((s) => s.groupLoaded)
+  const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
   const isMobile = width ? width < breakpoints.md : false
-
-  const onConnectFetchAccountData = async (wallet: Wallet) => {
-    if (!wallet.adapter.publicKey) return
-    await actions.fetchMangoAccounts(wallet.adapter.publicKey)
-    // actions.fetchTourSettings(wallet.adapter.publicKey?.toString() as string)
-    actions.fetchWalletTokens(wallet.adapter.publicKey)
-  }
 
   const handleDisconnect = useCallback(() => {
     set((state) => {
@@ -52,20 +50,20 @@ const ConnectedMenu = () => {
       type: 'info',
       title: t('wallet-disconnected'),
     })
-  }, [set, t, disconnect])
+  }, [t, disconnect])
 
   useEffect(() => {
-    const handleGetWalletMangoData = async (wallet: Wallet) => {
-      const actions = mangoStore.getState().actions
-      await actions.connectMangoClientWithWallet(wallet)
-      await onConnectFetchAccountData(wallet)
-    }
-
-    if (publicKey && wallet) {
+    if (publicKey && wallet && groupLoaded) {
+      actions.connectMangoClientWithWallet(wallet)
+      actions.fetchMangoAccounts(publicKey)
+      // actions.fetchTourSettings(publicKey?.toString() as string)
       actions.fetchProfileDetails(publicKey.toString())
-      handleGetWalletMangoData(wallet)
+      actions.fetchWalletTokens(publicKey)
+      if (!tvUserId) {
+        setTvUserId(publicKey.toString())
+      }
     }
-  }, [publicKey, actions, wallet])
+  }, [publicKey, wallet, groupLoaded, tvUserId, setTvUserId])
 
   return (
     <>
@@ -80,11 +78,15 @@ const ConnectedMenu = () => {
               className="flex items-center justify-center md:justify-start"
               id="account-step-one"
             >
-              <ProfileImage
-                imageSize="40"
-                placeholderSize="24"
-                isOwnerProfile
-              />
+              {!mangoAccountLoading ? (
+                <ProfileImage
+                  imageSize="40"
+                  placeholderSize="24"
+                  isOwnerProfile
+                />
+              ) : (
+                <Loading className="h-6 w-6" />
+              )}
               {!loadProfileDetails && !isMobile ? (
                 <div className="ml-2.5 overflow-hidden text-left">
                   <p className="text-xs text-th-fgd-3">

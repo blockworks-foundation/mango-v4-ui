@@ -50,7 +50,7 @@ const ActivityFilters = () => {
   const actions = mangoStore((s) => s.actions)
   const { mangoAccountAddress } = useMangoAccount()
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>(
-    DEFAULT_ADVANCED_FILTERS
+    DEFAULT_ADVANCED_FILTERS,
   )
   const [params, setParams] = useState<string[]>([])
   const { t } = useTranslation(['common', 'activity'])
@@ -64,7 +64,7 @@ const ActivityFilters = () => {
       if (entry[1].length) {
         // ETH should be renamed to ETH (Portal) in the database
         const alignSymbolsToBackend = entry[1].map((e: string) =>
-          e === 'ETH (Portal)' ? 'ETH' : e
+          e === 'ETH (Portal)' ? 'ETH' : e,
         )
         advancedParams =
           advancedParams + `&${entry[0]}=${alignSymbolsToBackend}`

@@ -17,7 +17,7 @@ const ChatForm = ({
   const validateMessageText = useCallback(async (text: string) => {
     try {
       const response = await fetch(
-        `https://www.purgomalum.com/service/json?text=${text}&fill_char=*`
+        `https://www.purgomalum.com/service/json?text=${text}&fill_char=*`,
       )
       const profanityCheck = await response.json()
 
@@ -45,7 +45,7 @@ const ChatForm = ({
       setLatestMessages(newMessages)
       setMessageText('')
     },
-    [messageText, messages, publicKey, validateMessageText, setLatestMessages]
+    [messageText, messages, publicKey, validateMessageText, setLatestMessages],
   )
 
   const callbackRef = useCallback((inputElement: HTMLInputElement) => {

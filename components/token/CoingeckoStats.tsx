@@ -41,7 +41,7 @@ interface BirdeyeResponse {
 
 const fetchBirdeyePrices = async (
   daysToShow: string,
-  mint: string
+  mint: string,
 ): Promise<BirdeyePriceResponse[] | []> => {
   const interval = daysToShow === '1' ? '30m' : daysToShow === '7' ? '1H' : '4H'
   const queryEnd = Math.floor(Date.now() / 1000)
@@ -81,7 +81,7 @@ const CoingeckoStats = ({
       retry: 3,
       enabled: !!bank,
       refetchOnWindowFocus: false,
-    }
+    },
   )
 
   const {

@@ -34,7 +34,7 @@ export async function fetchGovernances({
     connection,
     programId,
     Governance,
-    [pubkeyFilter(1, realmId)!]
+    [pubkeyFilter(1, realmId)!],
   )
   const governancesMap = accountsToPubkeyMap(governances)
   return governancesMap
@@ -46,7 +46,7 @@ export function accountsToPubkeyMap<T>(accounts: ProgramAccount<T>[]) {
 
 export function arrayToRecord<T>(
   source: readonly T[],
-  getKey: (item: T) => string
+  getKey: (item: T) => string,
 ) {
   return source.reduce((all, a) => ({ ...all, [getKey(a)]: a }), {}) as Record<
     string,
@@ -56,7 +56,7 @@ export function arrayToRecord<T>(
 
 export async function tryGetMint(
   connection: Connection,
-  publicKey: PublicKey
+  publicKey: PublicKey,
 ): Promise<TokenProgramAccount<RawMint> | undefined> {
   try {
     const result = await connection.getAccountInfo(publicKey)
@@ -69,7 +69,7 @@ export async function tryGetMint(
   } catch (ex) {
     console.error(
       `Can't fetch mint ${publicKey?.toBase58()} @ ${connection.rpcEndpoint}`,
-      ex
+      ex,
     )
     return undefined
   }
@@ -142,7 +142,7 @@ export async function resolveProposalDescription(descriptionLink: string) {
 
 export const compareObjectsAndGetDifferentKeys = <T extends object>(
   object1: T,
-  object2: T
+  object2: T,
 ): (keyof T)[] => {
   const diffKeys: string[] = []
 

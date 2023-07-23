@@ -22,7 +22,7 @@ const HealthImpactTokenChange = ({
       mangoAccount.simHealthRatioWithTokenPositionUiChanges(
         group,
         [{ mintPk, uiTokenAmount }],
-        HealthType.maint
+        HealthType.maint,
       )
 
     return projectedHealth! > 100

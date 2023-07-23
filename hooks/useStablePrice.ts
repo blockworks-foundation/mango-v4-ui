@@ -21,19 +21,19 @@ const useStablePrice = () => {
       stablePrice = selectedMarket.stablePriceModel.stablePrice || 0
     } else {
       const baseBank = banks.find(
-        (b) => b.tokenIndex === selectedMarket.baseTokenIndex
+        (b) => b.tokenIndex === selectedMarket.baseTokenIndex,
       )
       const quoteBank = banks.find(
-        (b) => b.tokenIndex === selectedMarket.quoteTokenIndex
+        (b) => b.tokenIndex === selectedMarket.quoteTokenIndex,
       )
 
       const baseStablePrice = group.toUiPrice(
         I80F48.fromNumber(baseBank!.stablePriceModel.stablePrice),
-        baseBank!.mintDecimals
+        baseBank!.mintDecimals,
       )
       const quoteStablePrice = group.toUiPrice(
         I80F48.fromNumber(quoteBank!.stablePriceModel.stablePrice),
-        quoteBank!.mintDecimals
+        quoteBank!.mintDecimals,
       )
       stablePrice = baseStablePrice / quoteStablePrice
     }

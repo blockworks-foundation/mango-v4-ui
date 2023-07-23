@@ -49,7 +49,7 @@ const NotificationSettings = () => {
             onChange={() =>
               handleSettingChange(
                 'fillsNotifications',
-                !data?.fillsNotifications
+                !data?.fillsNotifications,
               )
             }
           />

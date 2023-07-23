@@ -19,7 +19,7 @@ const StatsPage = () => {
   const actions = mangoStore.getState().actions
   const perpStats = mangoStore((s) => s.perpStats.data)
   const perpPositionsStatsNotLoaded = mangoStore(
-    (s) => s.perpStats.positions.initialLoad
+    (s) => s.perpStats.positions.initialLoad,
   )
   const { group } = useMangoGroup()
   const { width } = useViewport()

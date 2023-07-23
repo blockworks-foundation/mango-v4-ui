@@ -17,7 +17,7 @@ const spotBalancesUpdater = () => {
     const market = group.getSerum3MarketByMarketIndex(serumMarket.marketIndex)
     if (!market) continue
     const openOrdersAccForMkt = openOrdersAccounts.find((oo) =>
-      oo.market.equals(market.serumMarketExternal)
+      oo.market.equals(market.serumMarketExternal),
     )
 
     let baseTokenUnsettled = 0
@@ -27,26 +27,28 @@ const spotBalancesUpdater = () => {
     if (openOrdersAccForMkt) {
       baseTokenUnsettled = toUiDecimals(
         openOrdersAccForMkt.baseTokenFree.toNumber(),
-        group.getFirstBankByTokenIndex(serumMarket.baseTokenIndex).mintDecimals
+        group.getFirstBankByTokenIndex(serumMarket.baseTokenIndex).mintDecimals,
       )
       quoteTokenUnsettled = toUiDecimals(
         openOrdersAccForMkt.quoteTokenFree
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .add((openOrdersAccForMkt as any)['referrerRebatesAccrued'])
           .toNumber(),
-        group.getFirstBankByTokenIndex(serumMarket.quoteTokenIndex).mintDecimals
+        group.getFirstBankByTokenIndex(serumMarket.quoteTokenIndex)
+          .mintDecimals,
       )
       baseTokenLockedInOrder = toUiDecimals(
         openOrdersAccForMkt.baseTokenTotal
           .sub(openOrdersAccForMkt.baseTokenFree)
           .toNumber(),
-        group.getFirstBankByTokenIndex(serumMarket.baseTokenIndex).mintDecimals
+        group.getFirstBankByTokenIndex(serumMarket.baseTokenIndex).mintDecimals,
       )
       quoteTokenLockedInOrder = toUiDecimals(
         openOrdersAccForMkt.quoteTokenTotal
           .sub(openOrdersAccForMkt.quoteTokenFree)
           .toNumber(),
-        group.getFirstBankByTokenIndex(serumMarket.quoteTokenIndex).mintDecimals
+        group.getFirstBankByTokenIndex(serumMarket.quoteTokenIndex)
+          .mintDecimals,
       )
     }
 

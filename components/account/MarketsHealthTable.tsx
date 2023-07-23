@@ -63,7 +63,7 @@ const MarketsHealthTable = ({
               const { asset, contribution, isAsset } = cont
               const market = group.getSerum3MarketByName(asset)
               const bank = group.banksMapByTokenIndex.get(
-                market.baseTokenIndex
+                market.baseTokenIndex,
               )?.[0]
 
               let initAssetWeight = 0
@@ -155,7 +155,7 @@ const MarketsHealthTable = ({
             const { asset, contribution, isAsset } = cont
             const market = group.getSerum3MarketByName(asset)
             const bank = group.banksMapByTokenIndex.get(
-              market.baseTokenIndex
+              market.baseTokenIndex,
             )?.[0]
 
             let initAssetWeight = 0

@@ -22,18 +22,21 @@ import useBanksWithBalances, {
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import { Disclosure, Transition } from '@headlessui/react'
 import TokenLogo from './TokenLogo'
+import useHealthContributions from 'hooks/useHealthContributions'
+import Tooltip from './Tooltip'
 import { PublicKey } from '@solana/web3.js'
 import { USDC_MINT } from 'utils/constants'
 import { WRAPPED_SOL_MINT } from '@project-serum/serum/lib/token-instructions'
 
 const BalancesTable = () => {
-  const { t } = useTranslation(['common', 'trade'])
+  const { t } = useTranslation(['common', 'account', 'trade'])
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const { width } = useViewport()
   const { connected } = useWallet()
   const showTableView = width ? width > breakpoints.md : false
   const banks = useBanksWithBalances('balance')
+  const { initContributions } = useHealthContributions()
 
   const filteredBanks = useMemo(() => {
     if (banks.length) {
@@ -56,6 +59,15 @@ const BalancesTable = () => {
           <TrHead>
             <Th className="bg-th-bkg-1 text-left">{t('token')}</Th>
             <Th className="bg-th-bkg-1 text-right">{t('balance')}</Th>
+            <Th>
+              <div className="flex justify-end">
+                <Tooltip content={t('account:tooltip-collateral-value')}>
+                  <span className="tooltip-underline">
+                    {t('collateral-value')}
+                  </span>
+                </Tooltip>
+              </div>
+            </Th>
             <Th className="bg-th-bkg-1 text-right">{t('trade:in-orders')}</Th>
             <Th className="bg-th-bkg-1 text-right" id="trade-step-ten">
               {t('trade:unsettled')}
@@ -69,6 +81,15 @@ const BalancesTable = () => {
 
             const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0
             const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
+
+            const collateralValue =
+              initContributions.find((val) => val.asset === bank.name)
+                ?.contribution || 0
+
+            const assetWeight = bank
+              .scaledInitAssetWeight(bank.price)
+              .toFixed(2)
+            const liabWeight = bank.scaledInitLiabWeight(bank.price).toFixed(2)
 
             return (
               <TrBody key={bank.name} className="text-sm">
@@ -90,6 +111,23 @@ const BalancesTable = () => {
                   </p>
                 </Td>
                 <Td className="text-right">
+                  <p>
+                    <FormatNumericValue
+                      value={collateralValue}
+                      decimals={2}
+                      isUsd
+                    />
+                  </p>
+                  <p className="text-sm text-th-fgd-4">
+                    <FormatNumericValue
+                      value={
+                        collateralValue <= -0.01 ? liabWeight : assetWeight
+                      }
+                    />
+                    x
+                  </p>
+                </Td>
+                <Td className="text-right">
                   <BankAmountWithValue amount={inOrders} bank={bank} stacked />
                 </Td>
                 <Td className="text-right">
@@ -108,6 +146,13 @@ const BalancesTable = () => {
 
           const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0
           const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
+
+          const collateralValue =
+            initContributions.find((val) => val.asset === bank.name)
+              ?.contribution || 0
+
+          const assetWeight = bank.scaledInitAssetWeight(bank.price).toFixed(2)
+          const liabWeight = bank.scaledInitLiabWeight(bank.price).toFixed(2)
 
           return (
             <Disclosure key={bank.name}>
@@ -152,6 +197,33 @@ const BalancesTable = () => {
                   >
                     <Disclosure.Panel>
                       <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4 pb-4">
+                        <div className="col-span-1">
+                          <Tooltip
+                            content={t('account:tooltip-collateral-value')}
+                          >
+                            <p className="tooltip-underline text-xs text-th-fgd-3">
+                              {t('collateral-value')}
+                            </p>
+                          </Tooltip>
+                          <p className="font-mono text-th-fgd-2">
+                            <FormatNumericValue
+                              value={collateralValue}
+                              decimals={2}
+                              isUsd
+                            />
+                            <span className="text-th-fgd-3">
+                              {' '}
+                              <FormatNumericValue
+                                value={
+                                  collateralValue <= -0.01
+                                    ? liabWeight
+                                    : assetWeight
+                                }
+                              />
+                              x
+                            </span>
+                          </p>
+                        </div>
                         <div className="col-span-1">
                           <p className="text-xs text-th-fgd-3">
                             {t('trade:in-orders')}
@@ -221,7 +293,7 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
       let tickDecimals: number
       if (selectedMarket instanceof Serum3Market) {
         const market = group.getSerum3ExternalMarket(
-          selectedMarket.serumMarketExternal
+          selectedMarket.serumMarketExternal,
         )
         minOrderDecimals = getDecimalCount(market.minOrderSize)
         tickDecimals = getDecimalCount(market.tickSize)
@@ -234,7 +306,7 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
         const floorBalance = floorToDecimal(balance, tickDecimals).toNumber()
         const baseSize = floorToDecimal(
           floorBalance / price,
-          minOrderDecimals
+          minOrderDecimals,
         ).toNumber()
         const quoteSize = floorToDecimal(baseSize * price, tickDecimals)
         set((s) => {
@@ -250,7 +322,7 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
         })
       }
     },
-    [selectedMarket]
+    [selectedMarket],
   )
 
   const handleSwapFormBalanceClick = useCallback(
@@ -284,7 +356,7 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
         })
       }
     },
-    [bank]
+    [bank],
   )
 
   const balance = bank.balance
@@ -321,7 +393,7 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
             className="font-normal underline underline-offset-2 md:underline-offset-4 md:hover:no-underline"
             onClick={() =>
               handleSwapFormBalanceClick(
-                Number(floorToDecimal(balance, tokenBank.mintDecimals))
+                Number(floorToDecimal(balance, tokenBank.mintDecimals)),
               )
             }
           >

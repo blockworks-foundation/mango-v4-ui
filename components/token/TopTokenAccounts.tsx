@@ -31,17 +31,17 @@ const fetchTopTokenAccounts = async (tokenIndex: number) => {
   try {
     const promises = [
       fetch(
-        `${MANGO_DATA_API_URL}/leaderboard-token-deposits?token-index=${tokenIndex}`
+        `${MANGO_DATA_API_URL}/leaderboard-token-deposits?token-index=${tokenIndex}`,
       ),
       fetch(
-        `${MANGO_DATA_API_URL}/leaderboard-token-borrows?token-index=${tokenIndex}`
+        `${MANGO_DATA_API_URL}/leaderboard-token-borrows?token-index=${tokenIndex}`,
       ),
     ]
     const [depositsResponse, borrowsResponse] = await Promise.all(promises)
 
     const [depositsData, borrowsData]: [
       TopDepositorBorrower[],
-      TopDepositorBorrower[]
+      TopDepositorBorrower[],
     ] = await Promise.all([depositsResponse.json(), borrowsResponse.json()])
 
     // const depositorProfilesResponse = await Promise.all(
@@ -93,7 +93,7 @@ const TopTokenAccounts = ({ bank }: { bank: Bank }) => {
       staleTime: 1000 * 60,
       retry: 3,
       refetchOnWindowFocus: false,
-    }
+    },
   )
 
   const topAccountsData = data ? data : [[], []]

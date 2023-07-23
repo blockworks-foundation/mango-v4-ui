@@ -1,5 +1,4 @@
 import { useTranslation } from 'next-i18next'
-import { useTheme } from 'next-themes'
 import {
   Cell,
   Pie,
@@ -14,6 +13,7 @@ import { formatCurrencyValue } from 'utils/numbers'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import { HealthContribution } from 'types'
+import useThemeWrapper from 'hooks/useThemeWrapper'
 
 const HealthContributionsChart = ({
   data,
@@ -25,7 +25,7 @@ const HealthContributionsChart = ({
   setActiveIndex: (i: number | undefined) => void
 }) => {
   const { t } = useTranslation(['common', 'account'])
-  const { theme } = useTheme()
+  const { theme } = useThemeWrapper()
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.sm : false
 

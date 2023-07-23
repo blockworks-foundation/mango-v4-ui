@@ -12,12 +12,9 @@ import { useTranslation } from 'next-i18next'
 import WalletIcon from './icons/WalletIcon'
 import Button from './shared/Button'
 import ConnectedMenu from './wallet/ConnectedMenu'
-import { ConnectWalletButton } from './wallet/ConnectWalletButton'
-import { IS_ONBOARDED_KEY } from '../utils/constants'
-import useLocalStorageState from '../hooks/useLocalStorageState'
+import ConnectWalletButton from './wallet/ConnectWalletButton'
 import CreateAccountModal from './modals/CreateAccountModal'
 import { useRouter } from 'next/router'
-import UserSetupModal from './modals/UserSetupModal'
 import SolanaTps from './SolanaTps'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useOnlineStatus from 'hooks/useOnlineStatus'
@@ -31,33 +28,46 @@ import NotificationsButton from './notifications/NotificationsButton'
 import Tooltip from './shared/Tooltip'
 import { copyToClipboard } from 'utils'
 import mangoStore from '@store/mangoStore'
+import UserSetupModal from './modals/UserSetupModal'
+import { IS_ONBOARDED_KEY } from 'utils/constants'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+
+const set = mangoStore.getState().set
 
 const TopBar = () => {
   const { t } = useTranslation('common')
   const { mangoAccount } = useMangoAccount()
   const { connected } = useWallet()
   const themeData = mangoStore((s) => s.themeData)
-  const [isOnboarded, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
+
   const [action, setAction] = useState<'deposit' | 'withdraw'>('deposit')
-  const [showUserSetup, setShowUserSetup] = useState(false)
   const [copied, setCopied] = useState('')
   const [showDepositWithdrawModal, setShowDepositWithdrawModal] =
     useState(false)
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
   const isOnline = useOnlineStatus()
+
   const router = useRouter()
   const { query } = router
+
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.sm : false
+
   const { isUnownedAccount } = useUnownedAccount()
+  const showUserSetup = mangoStore((s) => s.showUserSetup)
+  const [, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
 
   const handleCloseSetup = useCallback(() => {
-    setShowUserSetup(false)
+    set((s) => {
+      s.showUserSetup = false
+    })
     setIsOnboarded(true)
-  }, [setShowUserSetup, setIsOnboarded])
+  }, [setIsOnboarded])
 
   const handleShowSetup = useCallback(() => {
-    setShowUserSetup(true)
+    set((s) => {
+      s.showUserSetup = true
+    })
   }, [])
 
   const handleDepositWithdrawModal = (action: 'deposit' | 'withdraw') => {
@@ -194,18 +204,8 @@ const TopBar = () => {
               <AccountsButton />
               <ConnectedMenu />
             </div>
-          ) : isOnboarded ? (
-            <ConnectWalletButton />
           ) : (
-            <button
-              className="relative h-16 rounded-none bg-th-bkg-2 bg-gradient-to-bl px-6 font-display text-base text-th-fgd-1 before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-th-bkg-4 before:to-transparent before:opacity-0 hover:cursor-pointer hover:overflow-hidden hover:before:-translate-x-full hover:before:animate-[shimmer_0.75s_normal] hover:before:opacity-100"
-              onClick={handleShowSetup}
-            >
-              <div className="relative z-10 flex items-center justify-center">
-                <WalletIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-                {t('connect')}
-              </div>
-            </button>
+            <ConnectWalletButton handleShowSetup={handleShowSetup} />
           )}
         </div>
       </div>

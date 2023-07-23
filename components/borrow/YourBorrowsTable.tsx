@@ -26,7 +26,7 @@ import TokenLogo from '@components/shared/TokenLogo'
 
 export const getAvailableToBorrow = (
   bankWithBal: BankWithBalance,
-  group: Group
+  group: Group,
 ) => {
   const { balance, bank, maxBorrow } = bankWithBal
   const { mint, mintDecimals, minVaultToDepositsRatio } = bankWithBal.bank
@@ -40,7 +40,7 @@ export const getAvailableToBorrow = (
 
   const available = Decimal.min(
     availableAccountBorrow.toFixed(bank.mintDecimals),
-    Decimal.max(0, availableVaultBalance.toFixed(mintDecimals))
+    Decimal.max(0, availableVaultBalance.toFixed(mintDecimals)),
   )
   return available
 }
@@ -61,7 +61,7 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
       setSelectedToken(token)
       action === 'borrow' ? setShowBorrowModal(true) : setShowRepayModal(true)
     },
-    []
+    [],
   )
 
   return (

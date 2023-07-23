@@ -26,11 +26,11 @@ const TradeVolumeAlertModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation(['common', 'trade'])
   const [soundSettings, setSoundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,
-    INITIAL_SOUND_SETTINGS
+    INITIAL_SOUND_SETTINGS,
   )
   const [alertSettings, setAlertSettings] = useLocalStorageState(
     TRADE_VOLUME_ALERT_KEY,
-    DEFAULT_VOLUME_ALERT_SETTINGS
+    DEFAULT_VOLUME_ALERT_SETTINGS,
   )
   const [formValues, setFormValues] = useState(alertSettings)
 

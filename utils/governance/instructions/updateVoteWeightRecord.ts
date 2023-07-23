@@ -10,18 +10,18 @@ import { SYSTEM_PROGRAM_ID } from '@solana/spl-governance'
 
 export const updateVoterWeightRecord = async (
   client: VsrClient,
-  walletPk: PublicKey
+  walletPk: PublicKey,
 ) => {
   const { registrar } = await getRegistrarPDA(
     MANGO_REALM_PK,
     new PublicKey(MANGO_MINT),
-    DEFAULT_VSR_ID
+    DEFAULT_VSR_ID,
   )
   const { voter } = await getVoterPDA(registrar, walletPk, DEFAULT_VSR_ID)
   const { voterWeightPk } = await getVoterWeightPDA(
     registrar,
     walletPk,
-    DEFAULT_VSR_ID
+    DEFAULT_VSR_ID,
   )
   const updateVoterWeightRecordIx = await client!.program.methods
     .updateVoterWeightRecord()

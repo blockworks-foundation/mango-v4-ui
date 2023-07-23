@@ -54,7 +54,7 @@ const Leaderboards = ({
       staleTime: 1000 * 60,
       retry: 3,
       refetchOnWindowFocus: false,
-    }
+    },
   )
 
   const isLoading =
@@ -96,7 +96,7 @@ const Leaderboards = ({
             rewardsLeaderboardData.map(
               (wallet: RewardsLeaderboardItem, i: number) => (
                 <LeaderboardCard rank={i + 1} key={i} wallet={wallet} />
-              )
+              ),
             )
           ) : (
             <div className="flex justify-center rounded-lg border border-th-bkg-3 p-8">

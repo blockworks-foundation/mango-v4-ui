@@ -480,9 +480,6 @@ module.exports = {
           },
         },
       },
-      screens: {
-        xl: '1600px',
-      },
     },
   },
   // variants: {

@@ -24,7 +24,7 @@ export const breakpoints = {
   // => @media (min-width: 1536px) { ... }
 
   '3xl': 1792,
-  // => @media (min-width: 1536px) { ... }
+  // => @media (min-width: 1792px) { ... }
 }
 
 type NftThemeMeta = {

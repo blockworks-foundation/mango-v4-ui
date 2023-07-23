@@ -6,7 +6,6 @@ import {
   useCallback,
   Fragment,
 } from 'react'
-import { useTheme } from 'next-themes'
 import {
   widget,
   ChartingLibraryWidgetOptions,
@@ -44,6 +43,7 @@ import dayjs from 'dayjs'
 import ModifyTvOrderModal from '@components/modals/ModifyTvOrderModal'
 import { findSerum3MarketPkInOpenOrders } from './OpenOrders'
 import { Transition } from '@headlessui/react'
+import useThemeWrapper from 'hooks/useThemeWrapper'
 
 export interface ChartContainerProps {
   container: ChartingLibraryWidgetOptions['container']
@@ -66,25 +66,25 @@ function hexToRgb(hex: string) {
   return result
     ? `rgb(${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(
         result[3],
-        16
+        16,
       )})`
     : null
 }
 
 const TradingViewChart = () => {
   const { t } = useTranslation(['tv-chart', 'trade'])
-  const { theme } = useTheme()
+  const { theme } = useThemeWrapper()
   const { width } = useViewport()
   const [chartReady, setChartReady] = useState(false)
   const [headerReady, setHeaderReady] = useState(false)
   const [orderToModify, setOrderToModify] = useState<Order | PerpOrder | null>(
-    null
+    null,
   )
   const [modifiedPrice, setModifiedPrice] = useState('')
   const [showOrderLinesLocalStorage, toggleShowOrderLinesLocalStorage] =
     useLocalStorageState(SHOW_ORDER_LINES_KEY, true)
   const [showOrderLines, toggleShowOrderLines] = useState(
-    showOrderLinesLocalStorage
+    showOrderLinesLocalStorage,
   )
   const tradeExecutions = mangoStore((s) => s.tradingView.tradeExecutions)
   const themeData = mangoStore((s) => s.themeData)
@@ -150,7 +150,7 @@ const TradingViewChart = () => {
               drawLinesForMarket(openOrders)
             }
             return
-          }
+          },
         )
       } catch (e) {
         console.warn('Trading View change symbol error: ', e)
@@ -194,7 +194,7 @@ const TradingViewChart = () => {
     } else {
       const group = mangoStore.getState().group
       const market = group?.getSerum3ExternalMarket(
-        selectedMarket.serumMarketExternal
+        selectedMarket.serumMarketExternal,
       )
       if (market) {
         minOrderDecimals = getDecimalCount(market.minOrderSize)
@@ -214,7 +214,7 @@ const TradingViewChart = () => {
       const marketPk = findSerum3MarketPkInOpenOrders(o)
       if (!marketPk) return
       const market = group.getSerum3MarketByExternalMarket(
-        new PublicKey(marketPk)
+        new PublicKey(marketPk),
       )
       try {
         const tx = await client.serum3CancelOrder(
@@ -222,7 +222,7 @@ const TradingViewChart = () => {
           mangoAccount,
           market!.serumMarketExternal,
           o.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
-          o.orderId
+          o.orderId,
         )
 
         actions.fetchOpenOrders()
@@ -242,7 +242,7 @@ const TradingViewChart = () => {
         })
       }
     },
-    [t, findSerum3MarketPkInOpenOrders]
+    [t, findSerum3MarketPkInOpenOrders],
   )
 
   const cancelPerpOrder = useCallback(
@@ -257,7 +257,7 @@ const TradingViewChart = () => {
           group,
           mangoAccount,
           o.perpMarketIndex,
-          o.orderId
+          o.orderId,
         )
         actions.fetchOpenOrders()
         notify({
@@ -276,7 +276,7 @@ const TradingViewChart = () => {
         })
       }
     },
-    [t]
+    [t],
   )
 
   const drawLine = useCallback(
@@ -294,7 +294,7 @@ const TradingViewChart = () => {
       const [minOrderDecimals, tickSizeDecimals] = getOrderDecimals()
       const orderSizeUi: string = formatNumericValue(
         order.size,
-        minOrderDecimals
+        minOrderDecimals,
       )
       if (!tvWidgetRef?.current?.chart()) return
       return (
@@ -330,7 +330,7 @@ const TradingViewChart = () => {
             } else {
               setOrderToModify(order)
               setModifiedPrice(
-                formatNumericValue(updatedOrderPrice, tickSizeDecimals)
+                formatNumericValue(updatedOrderPrice, tickSizeDecimals),
               )
             }
           })
@@ -367,10 +367,10 @@ const TradingViewChart = () => {
           .setCancelButtonIconColor(COLORS.FGD4[theme])
           .setBodyBorderColor(isLong ? COLORS.UP[theme] : COLORS.DOWN[theme])
           .setQuantityBorderColor(
-            isLong ? COLORS.UP[theme] : COLORS.DOWN[theme]
+            isLong ? COLORS.UP[theme] : COLORS.DOWN[theme],
           )
           .setCancelButtonBorderColor(
-            isLong ? COLORS.UP[theme] : COLORS.DOWN[theme]
+            isLong ? COLORS.UP[theme] : COLORS.DOWN[theme],
           )
           .setBodyBackgroundColor(COLORS.BKG1[theme])
           .setQuantityBackgroundColor(COLORS.BKG1[theme])
@@ -388,7 +388,7 @@ const TradingViewChart = () => {
       t,
       theme,
       getOrderDecimals,
-    ]
+    ],
   )
 
   const drawLinesForMarket = useCallback(
@@ -417,7 +417,7 @@ const TradingViewChart = () => {
         state.tradingView.orderLines = newOrderLines
       })
     },
-    [drawLine]
+    [drawLine],
   )
 
   const toggleOrderLines = useCallback(
@@ -432,7 +432,7 @@ const TradingViewChart = () => {
         el.style.color = COLORS.ACTIVE[theme]
       }
     },
-    [drawLinesForMarket, deleteLines, theme]
+    [drawLinesForMarket, deleteLines, theme],
   )
 
   const closeModifyOrderModal = useCallback(() => {
@@ -451,7 +451,7 @@ const TradingViewChart = () => {
         el.style.color = COLORS.ACTIVE[theme]
       }
     },
-    [theme]
+    [theme],
   )
 
   const toggleThemeEasterEgg = useCallback(
@@ -463,7 +463,7 @@ const TradingViewChart = () => {
         el.style.color = COLORS.ACTIVE[theme]
       }
     },
-    [theme]
+    [theme],
   )
 
   const createOLButton = useCallback(() => {
@@ -688,7 +688,7 @@ const TradingViewChart = () => {
                 ([marketPk, orders]) => ({
                   orders,
                   marketPk,
-                })
+                }),
               )
 
               for (const [key] of orderLines) {
@@ -725,7 +725,7 @@ const TradingViewChart = () => {
               })
             })
           }
-        }
+        },
       )
     }
     return subscription
@@ -749,7 +749,7 @@ const TradingViewChart = () => {
             .setDirection(trade.side as Direction)
             .setArrowHeight(6)
             .setArrowColor(
-              trade.side === 'buy' ? COLORS.UP[theme] : COLORS.DOWN[theme]
+              trade.side === 'buy' ? COLORS.UP[theme] : COLORS.DOWN[theme],
             )
             .setTooltip(`${trade.size} at ${trade.price}`)
           if (arrowID) {
@@ -760,7 +760,7 @@ const TradingViewChart = () => {
             }
           } else {
             console.log(
-              `Could not create execution shape for trade ${trade.time}${i}`
+              `Could not create execution shape for trade ${trade.time}${i}`,
             )
           }
         } catch (error) {
@@ -769,7 +769,7 @@ const TradingViewChart = () => {
       }
       return newTradeExecutions
     },
-    [selectedMarketName, theme]
+    [selectedMarketName, theme],
   )
 
   const removeTradeExecutions = useCallback(
@@ -788,7 +788,7 @@ const TradingViewChart = () => {
         s.tradingView.tradeExecutions = new Map()
       })
     },
-    [chartReady, tvWidgetRef?.current]
+    [chartReady, tvWidgetRef?.current],
   )
 
   useEffect(() => {

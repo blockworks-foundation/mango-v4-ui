@@ -58,7 +58,7 @@ const ProposalCard = ({
   const [voteType, setVoteType] = useState<VoteKind | undefined>(undefined)
 
   const [voteRecordAddress, setVoteRecordAddress] = useState<PublicKey | null>(
-    null
+    null,
   )
   const [isVoteCast, setIsVoteCast] = useState(false)
   const [description, setDescription] = useState('')
@@ -73,7 +73,7 @@ const ProposalCard = ({
     setProcessedVoteType(
       voteType === VoteKind.Approve
         ? PROCESSED_VOTE_TYPE.APPROVE
-        : PROCESSED_VOTE_TYPE.DENY
+        : PROCESSED_VOTE_TYPE.DENY,
     )
     try {
       await castVote(
@@ -83,7 +83,7 @@ const ProposalCard = ({
         voter.tokenOwnerRecord!,
         voteType,
         vsrClient!,
-        client
+        client,
       )
       await updateProposals(proposal.pubkey)
     } catch (e) {
@@ -106,7 +106,7 @@ const ProposalCard = ({
         proposal,
         voter.tokenOwnerRecord!,
         client,
-        voteRecordAddress!
+        voteRecordAddress!,
       )
       await updateProposals(proposal.pubkey)
     } catch (e) {
@@ -140,14 +140,14 @@ const ProposalCard = ({
       const voteRecordAddress = await getVoteRecordAddress(
         MANGO_GOVERNANCE_PROGRAM,
         proposal.pubkey,
-        voter.tokenOwnerRecord!.pubkey!
+        voter.tokenOwnerRecord!.pubkey!,
       )
       setVoteRecordAddress(voteRecordAddress)
       try {
         const governanceAccount = await getGovernanceAccount(
           connection,
           voteRecordAddress,
-          VoteRecord
+          VoteRecord,
         )
         setIsVoteCast(true)
         setVoteType(governanceAccount.account.vote?.voteType)

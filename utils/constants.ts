@@ -2,6 +2,8 @@ export const LAST_ACCOUNT_KEY = 'mangoAccount-0.4'
 
 export const CLIENT_TX_TIMEOUT = 90000
 
+export const SECONDS = 1000
+
 export const INPUT_TOKEN_DEFAULT = 'USDC'
 export const MANGO_MINT = 'MangoCzJ36AjZyKwVj3VnYU4GTonjfVEnJmvvWaxLac'
 export const USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
@@ -43,7 +45,7 @@ export const FAVORITE_MARKETS_KEY = 'favoriteMarkets-0.2'
 
 export const THEME_KEY = 'theme-0.1'
 
-export const RPC_PROVIDER_KEY = 'rpcProviderKey-0.6'
+export const RPC_PROVIDER_KEY = 'rpcProviderKey-0.7'
 
 export const PRIORITY_FEE_KEY = 'priorityFeeKey-0.1'
 
@@ -55,11 +57,15 @@ export const ACCEPT_TERMS_KEY = 'termsOfUseAccepted-0.1'
 
 export const TRADE_LAYOUT_KEY = 'tradeLayoutKey-0.1'
 
+export const DEPTH_CHART_KEY = 'showDepthChart-0.1'
+
 export const STATS_TAB_KEY = 'activeStatsTab-0.1'
 
 export const USE_ORDERBOOK_FEED_KEY = 'useOrderbookFeed-0.1'
 
 export const HOT_KEYS_KEY = 'hotKeys-0.1'
+
+export const AUTO_CONNECT_WALLET = 'auto-connect-0.1'
 
 // Unused
 export const PROFILE_CATEGORIES = [

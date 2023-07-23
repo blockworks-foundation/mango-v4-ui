@@ -17,13 +17,13 @@ export function useUnsettledSpotBalances() {
     mangoAccount.serum3Active().forEach((serumMarket) => {
       const market = group.getSerum3MarketByMarketIndex(serumMarket.marketIndex)
       const openOrdersAccForMkt = openOrdersAccounts.find((oo) =>
-        oo.market.equals(market.serumMarketExternal)
+        oo.market.equals(market.serumMarketExternal),
       )
       if (openOrdersAccForMkt) {
         const baseTokenUnsettled = toUiDecimals(
           openOrdersAccForMkt.baseTokenFree.toNumber(),
           group.getFirstBankByTokenIndex(serumMarket.baseTokenIndex)
-            .mintDecimals
+            .mintDecimals,
         )
         const quoteTokenUnsettled = toUiDecimals(
           openOrdersAccForMkt.quoteTokenFree
@@ -31,7 +31,7 @@ export function useUnsettledSpotBalances() {
             .add(openOrdersAccForMkt['referrerRebatesAccrued'])
             .toNumber(),
           group.getFirstBankByTokenIndex(serumMarket.quoteTokenIndex)
-            .mintDecimals
+            .mintDecimals,
         )
         unsettledBalances[market.serumMarketExternal.toString()] = {
           base: baseTokenUnsettled,
@@ -41,7 +41,7 @@ export function useUnsettledSpotBalances() {
     })
 
     const filtered = Object.entries(unsettledBalances).filter(
-      ([_mkt, balance]) => balance.base > 0 || balance.quote > 0
+      ([_mkt, balance]) => balance.base > 0 || balance.quote > 0,
     )
     return Object.fromEntries(filtered)
   }, [mangoAccount, group, openOrdersAccounts])

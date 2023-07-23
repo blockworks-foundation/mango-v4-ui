@@ -21,7 +21,7 @@ const Slippage = () => {
           orderbook,
           Number(tradeForm.baseSize),
           tradeForm.side,
-          markPrice
+          markPrice,
         )
       }
     } catch (e) {

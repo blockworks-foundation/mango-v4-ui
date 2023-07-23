@@ -48,7 +48,7 @@ const TradeSummary = ({
       return
 
     const openPosition = openPerpPositions.find(
-      (pos) => pos.marketIndex === selectedMarket.perpMarketIndex
+      (pos) => pos.marketIndex === selectedMarket.perpMarketIndex,
     )
 
     const { baseSize, price, reduceOnly, side, tradeType } = tradeForm
@@ -60,7 +60,7 @@ const TradeSummary = ({
       orderPrice = calculateEstPriceForBaseSize(
         orderbook,
         parseFloat(tradeForm.baseSize),
-        tradeForm.side
+        tradeForm.side,
       )
     }
     const currentSize = openPosition.getBasePositionUi(selectedMarket)
@@ -105,13 +105,13 @@ const TradeSummary = ({
                 group,
                 Number(tradeForm.baseSize),
                 selectedMarket.serumMarketExternal,
-                HealthType.maint
+                HealthType.maint,
               )
             : mangoAccount.simHealthRatioWithSerum3BidUiChanges(
                 group,
                 Number(tradeForm.quoteSize),
                 selectedMarket.serumMarketExternal,
-                HealthType.maint
+                HealthType.maint,
               )
       } else if (selectedMarket instanceof PerpMarket) {
         simulatedHealthRatio =
@@ -120,13 +120,13 @@ const TradeSummary = ({
                 group,
                 selectedMarket.perpMarketIndex,
                 parseFloat(tradeForm.baseSize) || 0,
-                HealthType.maint
+                HealthType.maint,
               )
             : mangoAccount.simHealthRatioWithPerpBidUiChanges(
                 group,
                 selectedMarket.perpMarketIndex,
                 parseFloat(tradeForm.baseSize) || 0,
-                HealthType.maint
+                HealthType.maint,
               )
       }
     } catch (e) {
@@ -184,7 +184,7 @@ const TradeSummary = ({
     const sizeDecimal = new Decimal(tradeForm.baseSize)
     return floorToDecimal(
       basePriceDecimal.mul(quotePriceDecimal).mul(sizeDecimal),
-      2
+      2,
     )
   }, [quoteBank, tradeForm])
 
@@ -209,7 +209,7 @@ const TradeSummary = ({
                       token: formatTokenSymbol(balanceBank.name),
                       rate: formatNumericValue(
                         balanceBank.getBorrowRateUi(),
-                        2
+                        2,
                       ),
                     })
                   : t('trade:tooltip-borrow-no-balance', {
@@ -217,7 +217,7 @@ const TradeSummary = ({
                       token: formatTokenSymbol(balanceBank.name),
                       rate: formatNumericValue(
                         balanceBank.getBorrowRateUi(),
-                        2
+                        2,
                       ),
                     })
               }

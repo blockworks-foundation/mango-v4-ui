@@ -39,7 +39,7 @@ const ChartTabs = ({ bank }: { bank: Bank }) => {
       }
       return a.sort(
         (a, b) =>
-          new Date(a.date_hour).getTime() - new Date(b.date_hour).getTime()
+          new Date(a.date_hour).getTime() - new Date(b.date_hour).getTime(),
       )
     }, [])
   }, [tokenStats, bank])

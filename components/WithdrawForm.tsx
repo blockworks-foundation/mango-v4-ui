@@ -30,7 +30,6 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
 import { floorToDecimal } from 'utils/numbers'
 import BankAmountWithValue from './shared/BankAmountWithValue'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
@@ -50,13 +49,12 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [selectedToken, setSelectedToken] = useState(
-    token || INPUT_TOKEN_DEFAULT
+    token || INPUT_TOKEN_DEFAULT,
   )
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
   const { mangoAccount } = useMangoAccount()
-  const { connected } = useWallet()
-  const { handleConnect } = useEnhancedWallet()
+  const { connect, connected } = useWallet()
   const banks = useBanksWithBalances('maxWithdraw')
 
   const bank = useMemo(() => {
@@ -84,17 +82,17 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
       if (percentage !== '100') {
         amount = floorToDecimal(
           new Decimal(adjustedTokenMax).mul(percentage).div(100),
-          bank.mintDecimals
+          bank.mintDecimals,
         )
       } else {
         amount = floorToDecimal(
           new Decimal(adjustedTokenMax),
-          bank.mintDecimals
+          bank.mintDecimals,
         )
       }
       setInputAmount(amount.toString())
     },
-    [bank, adjustedTokenMax]
+    [bank, adjustedTokenMax],
   )
 
   const setMax = useCallback(() => {
@@ -118,7 +116,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
         mangoAccount,
         bank.mint,
         withdrawAmount,
-        false
+        false,
       )
       notify({
         title: 'Transaction confirmed',
@@ -229,7 +227,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
                   value={inputAmount}
                   onValueChange={(e: NumberFormatValues) =>
                     setInputAmount(
-                      !Number.isNaN(Number(e.value)) ? e.value : ''
+                      !Number.isNaN(Number(e.value)) ? e.value : '',
                     )
                   }
                   isAllowed={withValueLimit}
@@ -259,7 +257,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
             ) : null}
           </div>
           <Button
-            onClick={connected ? handleWithdraw : handleConnect}
+            onClick={connected ? handleWithdraw : connect}
             className="flex w-full items-center justify-center"
             size="large"
             disabled={

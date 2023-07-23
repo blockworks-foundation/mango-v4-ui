@@ -10,7 +10,7 @@ const TradingViewChartKlineContainer = dynamic(
   () => import('./TradingViewChartKlineContainer'),
   {
     ssr: false,
-  }
+  },
 )
 
 const TradingChartContainer = () => {

@@ -11,10 +11,10 @@ const useJupiterSwapData = () => {
     if (inputBank && outputBank) {
       return [
         mangoTokens?.find(
-          (item) => item?.address === inputBank.mint.toString() || ''
+          (item) => item?.address === inputBank.mint.toString() || '',
         ),
         mangoTokens?.find(
-          (item) => item?.address === outputBank.mint.toString() || ''
+          (item) => item?.address === outputBank.mint.toString() || '',
         ),
       ]
     } else {

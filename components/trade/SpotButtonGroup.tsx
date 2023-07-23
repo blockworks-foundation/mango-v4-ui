@@ -34,7 +34,7 @@ const SpotButtonGroup = ({
           if (Number(s.tradeForm.price)) {
             s.tradeForm.baseSize = floorToDecimal(
               size / Number(s.tradeForm.price),
-              minOrderDecimals
+              minOrderDecimals,
             ).toString()
           } else {
             s.tradeForm.baseSize = ''
@@ -45,13 +45,13 @@ const SpotButtonGroup = ({
           if (Number(s.tradeForm.price)) {
             s.tradeForm.quoteSize = floorToDecimal(
               size * Number(s.tradeForm.price),
-              tickDecimals
+              tickDecimals,
             ).toString()
           }
         }
       })
     },
-    [minOrderDecimals, tickDecimals, max]
+    [minOrderDecimals, tickDecimals, max],
   )
 
   return (

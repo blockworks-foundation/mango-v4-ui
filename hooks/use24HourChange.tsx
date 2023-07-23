@@ -20,10 +20,10 @@ const fetchPrices = async (market: Serum3Market | PerpMarket | undefined) => {
     .format('YYYY-MM-DDTHH:mm:ss[Z]')
   const promises = [
     fetch(
-      `${MANGO_DATA_API_URL}/stats/token-price?token-index=${baseTokenIndex}&price-time=${changePriceTime}`
+      `${MANGO_DATA_API_URL}/stats/token-price?token-index=${baseTokenIndex}&price-time=${changePriceTime}`,
     ),
     fetch(
-      `${MANGO_DATA_API_URL}/stats/token-price?token-index=${quoteTokenIndex}&price-time=${changePriceTime}`
+      `${MANGO_DATA_API_URL}/stats/token-price?token-index=${quoteTokenIndex}&price-time=${changePriceTime}`,
     ),
   ]
   try {
@@ -40,7 +40,7 @@ const fetchPrices = async (market: Serum3Market | PerpMarket | undefined) => {
 }
 
 export default function use24HourChange(
-  market: Serum3Market | PerpMarket | undefined
+  market: Serum3Market | PerpMarket | undefined,
 ) {
   const perpStats = mangoStore((s) => s.perpStats.data)
   const loadingPerpStats = mangoStore((s) => s.perpStats.loading)

@@ -18,7 +18,7 @@ const GroupSize = ({
     (multiplier: number) => {
       return new Decimal(tickSize).mul(multiplier).toNumber()
     },
-    [tickSize]
+    [tickSize],
   )
 
   const sizes = useMemo(
@@ -29,7 +29,7 @@ const GroupSize = ({
       formatSize(50),
       formatSize(100),
     ],
-    [tickSize]
+    [tickSize],
   )
 
   return (

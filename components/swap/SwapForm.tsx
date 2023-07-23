@@ -15,7 +15,6 @@ import mangoStore from '@store/mangoStore'
 import ContentBox from '../shared/ContentBox'
 import SwapReviewRouteInfo from './SwapReviewRouteInfo'
 import TokenSelect from './TokenSelect'
-import useDebounce from '../shared/useDebounce'
 import { useTranslation } from 'next-i18next'
 import SwapFormTokenList from './SwapFormTokenList'
 import { Transition } from '@headlessui/react'
@@ -43,7 +42,6 @@ import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import MaxSwapAmount from './MaxSwapAmount'
 import PercentageSelectButtons from './PercentageSelectButtons'
 import useIpAddress from 'hooks/useIpAddress'
-import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
 import SwapSettings from './SwapSettings'
 import InlineNotification from '@components/shared/InlineNotification'
 import useUnownedAccount from 'hooks/useUnownedAccount'
@@ -86,27 +84,25 @@ const SwapForm = () => {
     amountOut: amountOutFormValue,
     swapMode,
   } = mangoStore((s) => s.swap)
-  const [debouncedAmountIn] = useDebounce(amountInFormValue, 300)
-  const [debouncedAmountOut] = useDebounce(amountOutFormValue, 300)
   const { mangoAccount } = useMangoAccount()
   const { connected, publicKey } = useWallet()
 
   const amountInAsDecimal: Decimal | null = useMemo(() => {
-    return Number(debouncedAmountIn)
-      ? new Decimal(debouncedAmountIn)
+    return Number(amountInFormValue)
+      ? new Decimal(amountInFormValue)
       : new Decimal(0)
-  }, [debouncedAmountIn])
+  }, [amountInFormValue])
 
   const amountOutAsDecimal: Decimal | null = useMemo(() => {
-    return Number(debouncedAmountOut)
-      ? new Decimal(debouncedAmountOut)
+    return Number(amountOutFormValue)
+      ? new Decimal(amountOutFormValue)
       : new Decimal(0)
-  }, [debouncedAmountOut])
+  }, [amountOutFormValue])
 
   const { bestRoute, routes } = useQuoteRoutes({
     inputMint: inputBank?.mint.toString() || USDC_MINT,
     outputMint: outputBank?.mint.toString() || MANGO_MINT,
-    amount: swapMode === 'ExactIn' ? debouncedAmountIn : debouncedAmountOut,
+    amount: swapMode === 'ExactIn' ? amountInFormValue : amountOutFormValue,
     slippage,
     swapMode,
     wallet: publicKey?.toBase58(),
@@ -125,7 +121,14 @@ const SwapForm = () => {
         }
       })
     },
-    []
+    [],
+  )
+
+  const setAmountFromSlider = useCallback(
+    (amount: string) => {
+      setAmountInFormValue(amount, true)
+    },
+    [setAmountInFormValue],
   )
 
   const setAmountOutFormValue = useCallback((amountOut: string) => {
@@ -146,7 +149,7 @@ const SwapForm = () => {
       }
       setAmountOutFormValue(borrowAmount.toString())
     },
-    [setAmountOutFormValue]
+    [setAmountOutFormValue],
   )
 
   /* 
@@ -189,7 +192,7 @@ const SwapForm = () => {
       }
       setAmountInFormValue(e.value)
     },
-    [swapMode, setAmountInFormValue]
+    [swapMode, setAmountInFormValue],
   )
 
   const handleAmountOutChange = useCallback(
@@ -202,7 +205,7 @@ const SwapForm = () => {
       }
       setAmountOutFormValue(e.value)
     },
-    [swapMode, setAmountOutFormValue]
+    [swapMode, setAmountOutFormValue],
   )
 
   const handleTokenInSelect = useCallback((mintAddress: string) => {
@@ -227,20 +230,23 @@ const SwapForm = () => {
     setShowTokenSelect(undefined)
   }, [])
 
-  const handleSwitchTokens = useCallback(() => {
-    if (amountInAsDecimal?.gt(0) && amountOutAsDecimal.gte(0)) {
-      setAmountInFormValue(amountOutAsDecimal.toString())
-    }
-    const inputBank = mangoStore.getState().swap.inputBank
-    const outputBank = mangoStore.getState().swap.outputBank
-    set((s) => {
-      s.swap.inputBank = outputBank
-      s.swap.outputBank = inputBank
-    })
-    setAnimateSwitchArrow(
-      (prevanimateSwitchArrow) => prevanimateSwitchArrow + 1
-    )
-  }, [setAmountInFormValue, amountOutAsDecimal, amountInAsDecimal])
+  const handleSwitchTokens = useCallback(
+    (amountIn: Decimal, amountOut: Decimal) => {
+      if (amountIn?.gt(0) && amountOut.gte(0)) {
+        setAmountInFormValue(amountOut.toString())
+      }
+      const inputBank = mangoStore.getState().swap.inputBank
+      const outputBank = mangoStore.getState().swap.outputBank
+      set((s) => {
+        s.swap.inputBank = outputBank
+        s.swap.outputBank = inputBank
+      })
+      setAnimateSwitchArrow(
+        (prevanimateSwitchArrow) => prevanimateSwitchArrow + 1,
+      )
+    },
+    [setAmountInFormValue],
+  )
 
   const maintProjectedHealth = useMemo(() => {
     const group = mangoStore.getState().group
@@ -266,7 +272,7 @@ const SwapForm = () => {
             uiTokenAmount: amountOutAsDecimal.toNumber(),
           },
         ],
-        HealthType.maint
+        HealthType.maint,
       )
     return simulatedHealthRatio > 100
       ? 100
@@ -327,7 +333,7 @@ const SwapForm = () => {
           />
         </Transition>
         <EnterBottomExitBottom
-          className="thin-scroll absolute bottom-0 left-0 z-10 h-full w-full overflow-auto bg-th-bkg-1 p-6 pb-0"
+          className="thin-scroll absolute bottom-0 left-0 z-10 h-full w-full overflow-hidden bg-th-bkg-1 p-6 pb-0"
           show={!!showTokenSelect}
         >
           <SwapFormTokenList
@@ -395,7 +401,7 @@ const SwapForm = () => {
               <span className="absolute right-3 bottom-1.5 text-xxs text-th-fgd-4">
                 {inputBank
                   ? formatCurrencyValue(
-                      inputBank.uiPrice * Number(amountInFormValue)
+                      inputBank.uiPrice * Number(amountInFormValue),
                     )
                   : '–'}
               </span>
@@ -404,7 +410,9 @@ const SwapForm = () => {
           <div className="-mb-2 flex justify-center">
             <button
               className="rounded-full border border-th-bkg-4 p-1.5 text-th-fgd-3 focus-visible:border-th-fgd-4 md:hover:text-th-active"
-              onClick={handleSwitchTokens}
+              onClick={() =>
+                handleSwitchTokens(amountInAsDecimal, amountOutAsDecimal)
+              }
             >
               <ArrowDownIcon
                 className="h-5 w-5"
@@ -426,8 +434,8 @@ const SwapForm = () => {
                 onClick={() =>
                   setBorrowAmountOut(
                     outputTokenBalanceBorrow.toFixed(
-                      outputBank?.mintDecimals || 9
-                    )
+                      outputBank?.mintDecimals || 9,
+                    ),
                   )
                 }
                 value={outputTokenBalanceBorrow}
@@ -468,7 +476,7 @@ const SwapForm = () => {
                   <span className="absolute right-3 bottom-1.5 text-xxs text-th-fgd-4">
                     {outputBank
                       ? formatCurrencyValue(
-                          outputBank.uiPrice * Number(amountOutFormValue)
+                          outputBank.uiPrice * Number(amountOutFormValue),
                         )
                       : '–'}
                   </span>
@@ -480,13 +488,13 @@ const SwapForm = () => {
             <SwapSlider
               useMargin={useMargin}
               amount={amountInAsDecimal.toNumber()}
-              onChange={(v) => setAmountInFormValue(v, true)}
+              onChange={setAmountFromSlider}
               step={1 / 10 ** (inputBank?.mintDecimals || 6)}
             />
           ) : (
             <PercentageSelectButtons
               amountIn={amountInAsDecimal.toString()}
-              setAmountIn={(v) => setAmountInFormValue(v, true)}
+              setAmountIn={setAmountFromSlider}
               useMargin={useMargin}
             />
           )}
@@ -554,6 +562,7 @@ const SwapForm = () => {
                 className="text-th-fgd-3"
                 checked={useMargin}
                 onChange={handleSetMargin}
+                small
               />
             </div>
             <div className="flex items-center justify-between">
@@ -592,9 +601,8 @@ const SwapFormSubmitButton = ({
   useMargin: boolean
 }) => {
   const { t } = useTranslation('common')
-  const { connected } = useWallet()
+  const { connected, connect } = useWallet()
   const { amount: tokenMax, amountWithBorrow } = useTokenMax(useMargin)
-  const { handleConnect } = useEnhancedWallet()
 
   const showInsufficientBalance = useMargin
     ? amountWithBorrow.lt(amountIn)
@@ -607,7 +615,7 @@ const SwapFormSubmitButton = ({
       !amountOut ||
       !selectedRoute)
 
-  const onClick = connected ? () => setShowConfirm(true) : handleConnect
+  const onClick = connected ? () => setShowConfirm(true) : connect
 
   return (
     <>

@@ -40,7 +40,7 @@ const AccountHeroStats = ({
     useAccountHourlyVolumeStats()
 
   const totalInterestData = mangoStore(
-    (s) => s.mangoAccount.interestTotals.data
+    (s) => s.mangoAccount.interestTotals.data,
   )
 
   useEffect(() => {
@@ -63,7 +63,7 @@ const AccountHeroStats = ({
       retry: 3,
       refetchOnWindowFocus: false,
       enabled: !!mangoAccountAddress,
-    }
+    },
   )
 
   const {
@@ -79,7 +79,7 @@ const AccountHeroStats = ({
       retry: 3,
       refetchOnWindowFocus: false,
       enabled: !!mangoAccountAddress,
-    }
+    },
   )
 
   const maintHealth = useMemo(() => {
@@ -91,7 +91,7 @@ const AccountHeroStats = ({
   const leverage = useMemo(() => {
     if (!group || !mangoAccount) return 0
     const assetsValue = toUiDecimalsForQuote(
-      mangoAccount.getAssetsValue(group).toNumber()
+      mangoAccount.getAssetsValue(group).toNumber(),
     )
 
     if (isNaN(assetsValue / accountValue)) {
@@ -110,7 +110,7 @@ const AccountHeroStats = ({
     if (totalInterestData.length) {
       return totalInterestData.reduce(
         (a, c) => a + (c.borrow_interest_usd * -1 + c.deposit_interest_usd),
-        0
+        0,
       )
     }
     return 0.0
@@ -120,7 +120,7 @@ const AccountHeroStats = ({
     if (fundingData?.length && mangoAccountAddress) {
       return fundingData.reduce(
         (a, c) => a + c.long_funding + c.short_funding,
-        0
+        0,
       )
     }
     return 0.0
@@ -167,7 +167,7 @@ const AccountHeroStats = ({
   return (
     <>
       <div className="grid grid-cols-6 border-b border-th-bkg-3">
-        <div className="col-span-6 border-t border-th-bkg-3 py-3 pl-6 pr-4 md:col-span-3 lg:col-span-2 lg:border-t-0 xl:col-span-1">
+        <div className="col-span-6 border-t border-th-bkg-3 py-3 pl-6 pr-4 md:col-span-3 lg:col-span-2 lg:border-t-0 2xl:col-span-1">
           <div id="account-step-four">
             <div className="flex justify-between">
               <Tooltip
@@ -214,9 +214,7 @@ const AccountHeroStats = ({
                   </div>
                 }
               >
-                <p className="tooltip-underline text-sm font-normal text-th-fgd-3 xl:text-base">
-                  {t('health')}
-                </p>
+                <p className="tooltip-underline">{t('health')}</p>
               </Tooltip>
               {mangoAccountAddress ? (
                 <Tooltip
@@ -255,7 +253,7 @@ const AccountHeroStats = ({
             </span>
           </div>
         </div>
-        <div className="col-span-6 flex border-t border-th-bkg-3 py-3 pl-6 md:col-span-3 md:border-l lg:col-span-2 lg:border-t-0 xl:col-span-1">
+        <div className="col-span-6 flex border-t border-th-bkg-3 py-3 pl-6 md:col-span-3 md:border-l lg:col-span-2 lg:border-t-0 2xl:col-span-1">
           <div id="account-step-five">
             <Tooltip
               content={t('account:tooltip-free-collateral')}
@@ -263,16 +261,14 @@ const AccountHeroStats = ({
               placement="top-start"
               delay={100}
             >
-              <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
-                {t('free-collateral')}
-              </p>
+              <p className="tooltip-underline">{t('free-collateral')}</p>
             </Tooltip>
             <p className="mt-1 mb-0.5 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
               <FormatNumericValue
                 value={
                   group && mangoAccount
                     ? toUiDecimalsForQuote(
-                        mangoAccount.getCollateralValue(group)
+                        mangoAccount.getCollateralValue(group),
                       )
                     : 0
                 }
@@ -293,7 +289,7 @@ const AccountHeroStats = ({
                     value={
                       group && mangoAccount
                         ? toUiDecimalsForQuote(
-                            mangoAccount.getAssetsValue(group, HealthType.init)
+                            mangoAccount.getAssetsValue(group, HealthType.init),
                           )
                         : 0
                     }
@@ -305,7 +301,7 @@ const AccountHeroStats = ({
             </span>
           </div>
         </div>
-        <div className="col-span-6 flex border-t border-th-bkg-3 py-3 pl-6 pr-4 md:col-span-3 lg:col-span-2 lg:border-l lg:border-t-0 xl:col-span-1">
+        <div className="col-span-6 flex border-t border-th-bkg-3 py-3 pl-6 pr-4 md:col-span-3 lg:col-span-2 lg:border-l lg:border-t-0 2xl:col-span-1">
           <div
             id="account-step-seven"
             className="flex w-full flex-col items-start"
@@ -316,9 +312,7 @@ const AccountHeroStats = ({
                 placement="top-start"
                 delay={100}
               >
-                <p className="tooltip-underline inline text-sm text-th-fgd-3 xl:text-base">
-                  {t('pnl')}
-                </p>
+                <p className="tooltip-underline">{t('pnl')}</p>
               </Tooltip>
               {mangoAccountAddress ? (
                 <div className="flex items-center space-x-3">
@@ -364,12 +358,10 @@ const AccountHeroStats = ({
             </div>
           </div>
         </div>
-        <div className="col-span-6 border-t border-th-bkg-3 py-3 pl-6 pr-4 md:col-span-3 md:border-l lg:col-span-2 lg:border-l-0 xl:col-span-1 xl:border-l xl:border-t-0">
+        <div className="col-span-6 border-t border-th-bkg-3 py-3 pl-6 pr-4 md:col-span-3 md:border-l lg:col-span-2 lg:border-l-0 2xl:col-span-1 2xl:border-l 2xl:border-t-0">
           <div id="account-step-six">
             <div className="flex w-full items-center justify-between">
-              <p className="text-sm text-th-fgd-3 xl:text-base">
-                {t('account:lifetime-volume')}
-              </p>
+              <p>{t('account:lifetime-volume')}</p>
               {mangoAccountAddress ? (
                 <Tooltip
                   className="hidden md:block"
@@ -413,7 +405,7 @@ const AccountHeroStats = ({
             </span>
           </div>
         </div>
-        <div className="col-span-6 border-t border-th-bkg-3 py-3 pl-6 pr-4 text-left md:col-span-3 lg:col-span-2 lg:border-l xl:col-span-1 xl:border-t-0">
+        <div className="col-span-6 border-t border-th-bkg-3 py-3 pl-6 pr-4 text-left md:col-span-3 lg:col-span-2 lg:border-l 2xl:col-span-1 2xl:border-t-0">
           <div id="account-step-eight">
             <div className="flex w-full items-center justify-between">
               <Tooltip
@@ -422,7 +414,7 @@ const AccountHeroStats = ({
                 placement="top-start"
                 delay={100}
               >
-                <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
+                <p className="tooltip-underline">
                   {t('total-interest-earned')}
                 </p>
               </Tooltip>
@@ -457,7 +449,7 @@ const AccountHeroStats = ({
             </div>
           </div>
         </div>
-        <div className="col-span-6 border-t border-th-bkg-3 py-3 pl-6 pr-4 text-left md:col-span-3 md:border-l lg:col-span-2 xl:col-span-1 xl:border-t-0">
+        <div className="col-span-6 border-t border-th-bkg-3 py-3 pl-6 pr-4 text-left md:col-span-3 md:border-l lg:col-span-2 2xl:col-span-1 2xl:border-t-0">
           <div className="flex w-full items-center justify-between">
             <Tooltip
               content={t('account:tooltip-total-funding')}
@@ -465,7 +457,7 @@ const AccountHeroStats = ({
               placement="top-start"
               delay={100}
             >
-              <p className="tooltip-underline text-sm text-th-fgd-3 xl:text-base">
+              <p className="tooltip-underline">
                 {t('account:total-funding-earned')}
               </p>
             </Tooltip>

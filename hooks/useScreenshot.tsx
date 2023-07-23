@@ -17,7 +17,7 @@ import html2canvas from 'html2canvas'
 const useScreenshot: () => [
   HTMLCanvasElement | null,
   (node: HTMLElement) => Promise<void | HTMLCanvasElement>,
-  { error: null }
+  { error: null },
 ] = () => {
   const [image, setImage] = useState<HTMLCanvasElement | null>(null)
   const [error, setError] = useState(null)
@@ -45,7 +45,7 @@ const useScreenshot: () => [
         croppedCanvasContext?.drawImage(
           canvas,
           cropPositionLeft,
-          cropPositionTop
+          cropPositionTop,
         )
 
         setImage(croppedCanvas)

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 
 export default function useDebounce<T>(
   value: T,
-  delay: number
+  delay: number,
 ): [T, (value: T) => void] {
   // State and setters for debounced value
   const [debouncedValue, setDebouncedValue] = useState(value)
@@ -19,7 +19,7 @@ export default function useDebounce<T>(
         clearTimeout(handler)
       }
     },
-    [value, delay] // Only re-call effect if value or delay changes
+    [value, delay], // Only re-call effect if value or delay changes
   )
   return [debouncedValue, setDebouncedValue]
 }

@@ -22,6 +22,16 @@ import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
 
 const setMangoStore = mangoStore.getState().set
 
+function parseDescription(description: string | null | undefined) {
+  if (
+    description?.includes('{"err":{"InstructionError":[2,{"Custom":6001}]}}')
+  ) {
+    return 'Your max slippage tolerance was exceeded'
+  }
+
+  return description
+}
+
 const TransactionNotificationList = () => {
   const { t } = useTranslation()
   const transactionNotifications = mangoStore((s) => s.transactionNotifications)
@@ -29,7 +39,7 @@ const TransactionNotificationList = () => {
   const notEnoughSoLMessage = t('deposit-more-sol')
   const [notificationPosition] = useLocalStorageState(
     NOTIFICATION_POSITION_KEY,
-    'bottom-left'
+    'bottom-left',
   )
   const [mounted, setMounted] = useState(false)
   const { maxSolDeposit } = useSolBalance()
@@ -39,10 +49,10 @@ const TransactionNotificationList = () => {
   useEffect(() => {
     if (transactionNotifications.length) {
       const customErrorNotification = transactionNotifications.find(
-        (n) => n.description && n.description.includes('"Custom":1')
+        (n) => n.description && n.description.includes('"Custom":1'),
       )
       const notEnoughSolNotification = transactionNotifications.find(
-        (n) => n.title && n.title.includes(notEnoughSoLMessage)
+        (n) => n.title && n.title.includes(notEnoughSoLMessage),
       )
 
       if (
@@ -115,11 +125,11 @@ const TransactionNotification = ({
 }) => {
   const [notificationPosition] = useLocalStorageState(
     NOTIFICATION_POSITION_KEY,
-    'Bottom-Left'
+    'Bottom-Left',
   )
   const [preferredExplorer] = useLocalStorageState(
     PREFERRED_EXPLORER_KEY,
-    EXPLORERS[0]
+    EXPLORERS[0],
   )
   const { type, title, description, txid, show, id } = notification
 
@@ -134,54 +144,51 @@ const TransactionNotification = ({
     }
   }
 
-  let parsedDescription = description
-  if (
-    description?.includes('{"err":{"InstructionError":[2,{"Custom":6001}]}}')
-  ) {
-    parsedDescription = 'Your max slippage tolerance was exceeded'
-  }
+  const parsedDescription = parseDescription(description)
 
   // if the notification is a success, then hide the confirming tx notification with the same txid
   useEffect(() => {
     if ((type === 'error' || type === 'success') && txid) {
       setMangoStore((s) => {
         const newNotifications = s.transactionNotifications.map((n) =>
-          n.txid === txid && n.type === 'confirm' ? { ...n, show: false } : n
+          n.txid === txid && n.type === 'confirm' ? { ...n, show: false } : n,
         )
         s.transactionNotifications = newNotifications
       })
     }
   }, [type, txid])
 
-  const hideNotification = () => {
+  const hideNotification = useCallback(() => {
     setMangoStore((s) => {
       const newNotifications = s.transactionNotifications.map((n) =>
-        n.id === id ? { ...n, show: false } : n
+        n.id === id ? { ...n, show: false } : n,
       )
       s.transactionNotifications = newNotifications
     })
-  }
+  }, [id])
 
-  // auto hide a notification after 8 seconds unless it is a confirming or time out notification
+  // auto hide a notification
   // if no status is provided for a tx notification after 90s, hide it
   useEffect(() => {
-    const id = setTimeout(
-      () => {
-        if (show) {
-          hideNotification()
-        }
-      },
+    const timeoutInterval =
       parsedTitle || type === 'confirm'
         ? CLIENT_TX_TIMEOUT
         : type === 'error'
         ? 30000
+        : type === 'info'
+        ? 4000
         : 10000
-    )
+
+    const id = setTimeout(() => {
+      if (show) {
+        hideNotification()
+      }
+    }, timeoutInterval)
 
     return () => {
       clearInterval(id)
     }
-  })
+  }, [hideNotification, parsedTitle, show, type])
 
   const getTransformClasses = (position: string) => {
     const fromLeft = {

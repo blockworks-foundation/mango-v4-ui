@@ -32,11 +32,11 @@ const PerpPositions = () => {
   const { group } = useMangoGroup()
   const [showMarketCloseModal, setShowMarketCloseModal] = useState(false)
   const [positionToClose, setPositionToClose] = useState<PerpPosition | null>(
-    null
+    null,
   )
   const [showShareModal, setShowShareModal] = useState(false)
   const [positionToShare, setPositionToShare] = useState<PerpPosition | null>(
-    null
+    null,
   )
   const openPerpPositions = useOpenPerpPositions()
   const { selectedMarket } = useSelectedMarket()
@@ -56,14 +56,14 @@ const PerpPositions = () => {
       price = calculateLimitPriceForMarketOrder(
         orderbook,
         positionSize,
-        tradeForm.side
+        tradeForm.side,
       )
     }
     const newSide = positionSize > 0 ? 'sell' : 'buy'
     const baseSize = Math.abs(positionSize)
     const quoteSize = floorToDecimal(
       baseSize * price,
-      getDecimalCount(market.tickSize)
+      getDecimalCount(market.tickSize),
     )
 
     set((s) => {
@@ -117,12 +117,12 @@ const PerpPositions = () => {
               <tbody>
                 {openPerpPositions.map((position, index) => {
                   const market = group.getPerpMarketByMarketIndex(
-                    position.marketIndex
+                    position.marketIndex,
                   )
                   const basePosition = position.getBasePositionUi(market)
                   const floorBasePosition = floorToDecimal(
                     basePosition,
-                    getDecimalCount(market.minOrderSize)
+                    getDecimalCount(market.minOrderSize),
                   ).toNumber()
                   const isSelectedMarket =
                     selectedMarket instanceof PerpMarket &&
@@ -142,7 +142,7 @@ const PerpPositions = () => {
                     100
                   const estLiqPrice = position.getLiquidationPriceUi(
                     group,
-                    mangoAccount
+                    mangoAccount,
                   )
 
                   return (
@@ -295,12 +295,12 @@ const PerpPositions = () => {
           <div className="border-b border-th-bkg-3">
             {openPerpPositions.map((position, i) => {
               const market = group.getPerpMarketByMarketIndex(
-                position.marketIndex
+                position.marketIndex,
               )
               const basePosition = position.getBasePositionUi(market)
               const floorBasePosition = floorToDecimal(
                 basePosition,
-                getDecimalCount(market.minOrderSize)
+                getDecimalCount(market.minOrderSize),
               ).toNumber()
               const isSelectedMarket =
                 selectedMarket instanceof PerpMarket &&
@@ -318,7 +318,7 @@ const PerpPositions = () => {
                 (unrealizedPnl / (Math.abs(basePosition) * avgEntryPrice)) * 100
               const estLiqPrice = position.getLiquidationPriceUi(
                 group,
-                mangoAccount
+                mangoAccount,
               )
               const unsettledPnl = position.getUnsettledPnlUi(market)
               const notional = Math.abs(floorBasePosition) * market._uiPrice
@@ -347,7 +347,7 @@ const PerpPositions = () => {
                                 <FormatNumericValue
                                   value={Math.abs(basePosition)}
                                   decimals={getDecimalCount(
-                                    market.minOrderSize
+                                    market.minOrderSize,
                                   )}
                                 />
                               </span>
@@ -395,14 +395,14 @@ const PerpPositions = () => {
                                     onClick={() =>
                                       handlePositionClick(
                                         floorBasePosition,
-                                        market
+                                        market,
                                       )
                                     }
                                   >
                                     <FormatNumericValue
                                       value={Math.abs(basePosition)}
                                       decimals={getDecimalCount(
-                                        market.minOrderSize
+                                        market.minOrderSize,
                                       )}
                                     />
                                   </LinkButton>
@@ -417,7 +417,7 @@ const PerpPositions = () => {
                                   <FormatNumericValue
                                     value={Math.abs(basePosition)}
                                     decimals={getDecimalCount(
-                                      market.minOrderSize
+                                      market.minOrderSize,
                                     )}
                                   />
                                   <FormatNumericValue

@@ -5,6 +5,8 @@ import Decimal from 'decimal.js'
 import { RouteInfo } from 'types/jupiter'
 import { MANGO_ROUTER_API_URL } from 'utils/constants'
 import useJupiterSwapData from './useJupiterSwapData'
+import useDebounce from '@components/shared/useDebounce'
+import { useMemo } from 'react'
 
 type SwapModes = 'ALL' | 'JUPITER' | 'MANGO'
 
@@ -16,6 +18,7 @@ type useQuoteRoutesPropTypes = {
   swapMode: string
   wallet: string | undefined | null
   mode?: SwapModes
+  enabled?: () => boolean
 }
 
 const fetchJupiterRoutes = async (
@@ -24,7 +27,7 @@ const fetchJupiterRoutes = async (
   amount = 0,
   slippage = 50,
   swapMode = 'ExactIn',
-  feeBps = 0
+  feeBps = 0,
 ) => {
   {
     const paramsString = new URLSearchParams({
@@ -37,7 +40,7 @@ const fetchJupiterRoutes = async (
     }).toString()
 
     const response = await fetch(
-      `https://quote-api.jup.ag/v4/quote?${paramsString}`
+      `https://quote-api.jup.ag/v4/quote?${paramsString}`,
     )
 
     const res = await response.json()
@@ -57,7 +60,7 @@ const fetchMangoRoutes = async (
   slippage = 50,
   swapMode = 'ExactIn',
   feeBps = 0,
-  wallet = PublicKey.default.toBase58()
+  wallet = PublicKey.default.toBase58(),
 ) => {
   {
     const defaultOtherAmount =
@@ -115,7 +118,7 @@ export const handleGetRoutes = async (
   swapMode = 'ExactIn',
   feeBps = 0,
   wallet: string | undefined | null,
-  mode: SwapModes = 'ALL'
+  mode: SwapModes = 'ALL',
 ) => {
   try {
     wallet ||= PublicKey.default.toBase58()
@@ -126,7 +129,7 @@ export const handleGetRoutes = async (
       slippage,
       swapMode,
       feeBps,
-      wallet
+      wallet,
     )
     const jupiterRoute = fetchJupiterRoutes(
       inputMint,
@@ -134,7 +137,7 @@ export const handleGetRoutes = async (
       amount,
       slippage,
       swapMode,
-      feeBps
+      feeBps,
     )
 
     const routes = []
@@ -163,7 +166,7 @@ export const handleGetRoutes = async (
     ).sort((a, b) =>
       swapMode === 'ExactIn'
         ? Number(b.bestRoute.outAmount) - Number(a.bestRoute.outAmount)
-        : Number(a.bestRoute.inAmount) - Number(b.bestRoute.inAmount)
+        : Number(a.bestRoute.inAmount) - Number(b.bestRoute.inAmount),
     )
     return {
       routes: sortedByBiggestOutAmount[0].routes,
@@ -185,24 +188,36 @@ const useQuoteRoutes = ({
   swapMode,
   wallet,
   mode = 'ALL',
+  enabled,
 }: useQuoteRoutesPropTypes) => {
+  const [debouncedAmount] = useDebounce(amount, 250)
   const { inputTokenInfo, outputTokenInfo } = useJupiterSwapData()
 
-  const decimals =
-    swapMode === 'ExactIn'
+  const decimals = useMemo(() => {
+    return swapMode === 'ExactIn'
       ? inputTokenInfo?.decimals || 6
       : outputTokenInfo?.decimals || 6
+  }, [swapMode, inputTokenInfo?.decimals, outputTokenInfo?.decimals])
 
-  const nativeAmount =
-    amount && !Number.isNaN(+amount)
-      ? new Decimal(amount).mul(10 ** decimals)
+  const nativeAmount = useMemo(() => {
+    return debouncedAmount && !Number.isNaN(+debouncedAmount)
+      ? new Decimal(debouncedAmount).mul(10 ** decimals)
       : new Decimal(0)
+  }, [debouncedAmount, decimals])
 
   const res = useQuery<
     { routes: RouteInfo[]; bestRoute: RouteInfo | null },
     Error
   >(
-    ['swap-routes', inputMint, outputMint, amount, slippage, swapMode, wallet],
+    [
+      'swap-routes',
+      inputMint,
+      outputMint,
+      debouncedAmount,
+      slippage,
+      swapMode,
+      wallet,
+    ],
     async () =>
       handleGetRoutes(
         inputMint,
@@ -212,14 +227,15 @@ const useQuoteRoutes = ({
         swapMode,
         0,
         wallet,
-        mode
+        mode,
       ),
     {
       cacheTime: 1000 * 60,
-      staleTime: 1000 * 30,
-      enabled: amount ? true : false,
+      staleTime: 1000 * 3,
+      enabled: enabled ? enabled() : amount ? true : false,
+      refetchInterval: 20000,
       retry: 3,
-    }
+    },
   )
 
   return amount

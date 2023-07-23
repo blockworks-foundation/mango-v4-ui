@@ -110,7 +110,7 @@ export const calcPricePrecision = (num: number | string) => {
 export const formatPrice = (
   num: number,
   precision?: number,
-  gr0 = true
+  gr0 = true,
 ): string => {
   if (!num) {
     return num.toString()
@@ -132,7 +132,7 @@ export const formatPrice = (
     const matchString: string = match[0].slice(1)
     formated = formated.replace(
       /\.0{4,15}/g,
-      `.0${SUBSCRIPT_NUMBER_MAP[matchString.length]}`
+      `.0${SUBSCRIPT_NUMBER_MAP[matchString.length]}`,
     )
   }
 

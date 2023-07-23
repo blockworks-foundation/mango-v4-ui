@@ -4,7 +4,7 @@ import { Token } from 'types/jupiter'
 import useJupiterMints from './useJupiterMints'
 
 const fetchCoingecko = async (
-  mangoTokens: Token[]
+  mangoTokens: Token[],
 ): Promise<{ prices: any[]; symbol: string }[]> => {
   const coingeckoIds = mangoTokens.map((token) => ({
     id: token.extensions?.coingeckoId,
@@ -16,10 +16,10 @@ const fetchCoingecko = async (
     if (token.id) {
       promises.push(
         fetch(
-          `https://api.coingecko.com/api/v3/coins/${token.id}/market_chart?vs_currency=usd&days=1`
+          `https://api.coingecko.com/api/v3/coins/${token.id}/market_chart?vs_currency=usd&days=1`,
         ).then((res) =>
-          res.json().then((r) => ({ ...r, symbol: token.symbol }))
-        )
+          res.json().then((r) => ({ ...r, symbol: token.symbol })),
+        ),
       )
     }
   }
@@ -40,7 +40,7 @@ export const useCoingecko = () => {
       retry: 3,
       enabled: !!mangoTokens?.length,
       refetchOnWindowFocus: false,
-    }
+    },
   )
 
   return {

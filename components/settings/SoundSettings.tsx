@@ -14,7 +14,7 @@ const SoundSettings = () => {
   const { t } = useTranslation(['common', 'settings'])
   const [soundSettings, setSoundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,
-    INITIAL_SOUND_SETTINGS
+    INITIAL_SOUND_SETTINGS,
   )
 
   const handleToggleSoundSetting = (settingName: string) => {

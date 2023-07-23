@@ -70,11 +70,11 @@ export const emptyPk = '11111111111111111111111111111111'
 export const getRegistrarPDA = async (
   realmPk: PublicKey,
   mint: PublicKey,
-  clientProgramId: PublicKey
+  clientProgramId: PublicKey,
 ) => {
   const [registrar, registrarBump] = await PublicKey.findProgramAddress(
     [realmPk.toBuffer(), Buffer.from('registrar'), mint.toBuffer()],
-    clientProgramId
+    clientProgramId,
   )
   return {
     registrar,
@@ -85,11 +85,11 @@ export const getRegistrarPDA = async (
 export const getVoterPDA = async (
   registrar: PublicKey,
   walletPk: PublicKey,
-  clientProgramId: PublicKey
+  clientProgramId: PublicKey,
 ) => {
   const [voter, voterBump] = await PublicKey.findProgramAddress(
     [registrar.toBuffer(), Buffer.from('voter'), walletPk.toBuffer()],
-    clientProgramId
+    clientProgramId,
   )
 
   return {
@@ -101,7 +101,7 @@ export const getVoterPDA = async (
 export const getVoterWeightPDA = async (
   registrar: PublicKey,
   walletPk: PublicKey,
-  clientProgramId: PublicKey
+  clientProgramId: PublicKey,
 ) => {
   const [voterWeightPk, voterWeightBump] = await PublicKey.findProgramAddress(
     [
@@ -109,7 +109,7 @@ export const getVoterWeightPDA = async (
       Buffer.from('voter-weight-record'),
       walletPk.toBuffer(),
     ],
-    clientProgramId
+    clientProgramId,
   )
 
   return {
@@ -128,11 +128,11 @@ export const tryGetVoter = async (voterPk: PublicKey, client: VsrClient) => {
 }
 export const tryGetRegistrar = async (
   registrarPk: PublicKey,
-  client: VsrClient
+  client: VsrClient,
 ) => {
   try {
     const existingRegistrar = await client.program.account.registrar.fetch(
-      registrarPk
+      registrarPk,
     )
     return existingRegistrar as unknown as Registrar
   } catch (e) {

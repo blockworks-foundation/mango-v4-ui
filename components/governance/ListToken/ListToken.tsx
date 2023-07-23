@@ -32,7 +32,6 @@ import Loading from '@components/shared/Loading'
 import ListingSuccess from '../ListingSuccess'
 import InlineNotification from '@components/shared/InlineNotification'
 import { Disclosure } from '@headlessui/react'
-import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
 import { abbreviateAddress } from 'utils/formatting'
 import { formatNumericValue } from 'utils/numbers'
 import useMangoGroup from 'hooks/useMangoGroup'
@@ -86,12 +85,12 @@ const defaultTokenListFormValues: TokenListForm = {
 const TWENTY_K_USDC_BASE = '20000000000'
 
 const ListToken = ({ goBack }: { goBack: () => void }) => {
+  //do not deconstruct wallet is used for anchor to sign
   const wallet = useWallet()
   const { jupiterTokens } = useJupiterMints()
   const connection = mangoStore((s) => s.connection)
   const client = mangoStore((s) => s.client)
   const { group } = useMangoGroup()
-  const { handleConnect } = useEnhancedWallet()
   const voter = GovernanceStore((s) => s.voter)
   const vsrClient = GovernanceStore((s) => s.vsrClient)
   const governances = GovernanceStore((s) => s.governances)
@@ -129,7 +128,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         ? governances[MANGO_DAO_WALLET_GOVERNANCE.toBase58()].account.config
             .minCommunityTokensToCreateProposal
         : new BN(0),
-    [governances]
+    [governances],
   ) as BN
   const mintVoterWeightNumber = governances
     ? fmtTokenAmount(minVoterWeight, MANGO_MINT_DECIMALS)
@@ -140,7 +139,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         baseTokenPrice,
         quoteBank.uiPrice,
         currentTokenInfo.decimals,
-        quoteBank.mintDecimals
+        quoteBank.mintDecimals,
       )
     }
     return {
@@ -191,7 +190,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           new BN(index).toArrayLike(Buffer, 'le', 2),
           new BN(bankNum).toArrayLike(Buffer, 'le', 4),
         ],
-        client.programId
+        client.programId,
       )
       setAdvForm({
         ...advForm,
@@ -211,7 +210,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       })
       setLoadingListingParams(false)
     },
-    [advForm, client.programId, connection, group, mint, proposals]
+    [advForm, client.programId, connection, group, mint, proposals],
   )
 
   const handleGetRoutesWithFixedArgs = useCallback(
@@ -230,10 +229,10 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         mode,
         FEE,
         walletForCheck,
-        'JUPITER'
+        'JUPITER',
       )
     },
-    [wallet.publicKey]
+    [wallet.publicKey],
   )
 
   const handleLiqudityCheck = useCallback(
@@ -257,7 +256,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           (acc: { amount: string; priceImpactPct: number }[], val) => {
             if (val.swapMode === 'ExactIn') {
               const exactOutRoute = bestRoutesSwaps.find(
-                (x) => x.amount === val.amount && x.swapMode === 'ExactOut'
+                (x) => x.amount === val.amount && x.swapMode === 'ExactOut',
               )
               acc.push({
                 amount: val.amount.toString(),
@@ -268,14 +267,14 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
             }
             return acc
           },
-          []
+          [],
         )
 
         const midTierCheck = averageSwaps.find(
-          (x) => x.amount === TWENTY_K_USDC_BASE
+          (x) => x.amount === TWENTY_K_USDC_BASE,
         )
         const indexForTierFromSwaps = averageSwaps.findIndex(
-          (x) => x?.priceImpactPct && x?.priceImpactPct * 100 < 1
+          (x) => x?.priceImpactPct && x?.priceImpactPct * 100 < 1,
         )
         const tier =
           indexForTierFromSwaps > -1
@@ -286,8 +285,8 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
 
         handleGetPoolParams(
           swaps.find(
-            (x) => x.bestRoute!.amount.toString() === TWENTY_K_USDC_BASE
-          )!.routes
+            (x) => x.bestRoute!.amount.toString() === TWENTY_K_USDC_BASE,
+          )!.routes,
         )
         return tier
       } catch (e) {
@@ -298,7 +297,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         })
       }
     },
-    [t, wallet.publicKey]
+    [t, handleGetRoutesWithFixedArgs],
   )
 
   const handleGetPoolParams = (routes: never[] | RouteInfo[]) => {
@@ -379,7 +378,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       }
       return invalidFields
     },
-    [t]
+    [t],
   )
 
   const propose = useCallback(async () => {
@@ -387,7 +386,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     if (Object.keys(invalidFields).length) {
       return
     }
-    if (!wallet?.publicKey || !vsrClient || !connectionContext) return
+    if (!wallet.publicKey || !vsrClient || !connectionContext) return
     await getCurrentVotingPower(wallet.publicKey, vsrClient, connectionContext)
 
     if (voter.voteWeight.cmp(minVoterWeight) === -1) {
@@ -406,7 +405,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         group!.publicKey.toBuffer(),
         new PublicKey(advForm.mintPk).toBuffer(),
       ],
-      client.programId
+      client.programId,
     )
 
     const proposalTx = []
@@ -437,7 +436,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           Number(tierPreset.liquidationFee),
           Number(tierPreset.minVaultToDepositsRatio),
           new BN(tierPreset.netBorrowLimitWindowSizeTs),
-          new BN(tierPreset.netBorrowLimitPerWindowQuote)
+          new BN(tierPreset.netBorrowLimitPerWindowQuote),
         )
         .accounts({
           admin: MANGO_DAO_WALLET,
@@ -475,7 +474,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           false,
           null,
           null,
-          null
+          null,
         )
         .accounts({
           oracle: new PublicKey(advForm.oraclePk),
@@ -493,7 +492,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         .instruction()
       proposalTx.push(editIx)
     } else {
-      await client!.program.methods
+      const trustlessIx = await client!.program.methods
         .tokenRegisterTrustless(Number(advForm.tokenIndex), advForm.name)
         .accounts({
           mint: new PublicKey(advForm.mintPk),
@@ -504,6 +503,8 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           group: group!.publicKey,
         })
         .instruction()
+
+      proposalTx.push(trustlessIx)
     }
 
     const registerMarketix = await client!.program.methods
@@ -532,7 +533,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         advForm.proposalDescription,
         advForm.tokenIndex,
         proposalTx,
-        vsrClient
+        vsrClient,
       )
       setProposalPk(proposalAddress.toBase58())
     } catch (e) {
@@ -649,7 +650,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                   <p>{t('mint')}</p>
                   <p className="flex items-center">
                     {abbreviateAddress(
-                      new PublicKey(currentTokenInfo?.address)
+                      new PublicKey(currentTokenInfo?.address),
                     )}
                   </p>
                 </div>
@@ -740,7 +741,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                                 handleSetAdvForm(
                                   'openBookMarketExternalPk',
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                             />
@@ -802,7 +803,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                                 handleSetAdvForm(
                                   'openBookProgram',
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                             />
@@ -843,7 +844,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                                 handleSetAdvForm(
                                   'proposalTitle',
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                             />
@@ -867,7 +868,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                                 handleSetAdvForm(
                                   'proposalDescription',
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                             />
@@ -982,7 +983,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                     )}
                   </Button>
                 ) : (
-                  <Button onClick={handleConnect} size="large">
+                  <Button onClick={wallet.connect} size="large">
                     {t('connect-wallet')}
                   </Button>
                 )}

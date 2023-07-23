@@ -69,7 +69,7 @@ export const getPythOracle = async ({
     const product = pythAccounts.products.find(
       (x) =>
         x.base === baseSymbol.toUpperCase() &&
-        x.quote_currency === quoteSymbol.toUpperCase()
+        x.quote_currency === quoteSymbol.toUpperCase(),
     )
     return product?.price_account || ''
   } catch (e) {
@@ -98,23 +98,25 @@ export const getSwitchBoardOracle = async ({
     const provider = new AnchorProvider(
       connection,
       new EmptyWallet(Keypair.generate()),
-      options
+      options,
     )
     const idl = await Program.fetchIdl(
       new PublicKey(SWITCHBOARD_PROGRAM_ID),
-      provider
+      provider,
     )
     const switchboardProgram = new Program(
       idl!,
       new PublicKey(SWITCHBOARD_PROGRAM_ID),
-      provider
+      provider,
     )
 
     const allFeeds =
       await switchboardProgram.account.aggregatorAccountData.all()
 
     const feedNames = allFeeds.map((x) =>
-      String.fromCharCode(...[...(x.account.name as number[])].filter((x) => x))
+      String.fromCharCode(
+        ...[...(x.account.name as number[])].filter((x) => x),
+      ),
     )
 
     const possibleFeedIndexes = feedNames.reduce(function (r, v, i) {
@@ -122,12 +124,12 @@ export const getSwitchBoardOracle = async ({
         v.toLowerCase().includes(baseSymbol.toLowerCase()) &&
           v.toLowerCase().includes(quoteSymbol.toLowerCase())
           ? i
-          : []
+          : [],
       )
     }, [] as number[])
 
     const possibleFeeds = allFeeds.filter(
-      (x, i) => possibleFeedIndexes.includes(i) && x.account.isLocked
+      (x, i) => possibleFeedIndexes.includes(i) && x.account.isLocked,
     )
     return possibleFeeds.length ? possibleFeeds[0].publicKey.toBase58() : ''
   } catch (e) {
@@ -158,7 +160,7 @@ export const getBestMarket = async ({
       connection,
       new PublicKey(baseMint),
       new PublicKey(quoteMint),
-      dexProgramPk
+      dexProgramPk,
     )
 
     if (!markets.length) {
@@ -169,7 +171,7 @@ export const getBestMarket = async ({
     }
     const marketsDataJsons = await Promise.all([
       ...markets.map((x) =>
-        fetch(`/openSerumApi/market/${x.publicKey.toBase58()}`)
+        fetch(`/openSerumApi/market/${x.publicKey.toBase58()}`),
       ),
     ])
     const marketsData = await Promise.all([
@@ -216,7 +218,7 @@ export function calculateTradingParameters(
   basePrice: number,
   quotePrice: number,
   baseDecimals: number,
-  quoteDecimals: number
+  quoteDecimals: number,
 ) {
   const MAX_MIN_ORDER_VALUE = 0.05
   const MIN_PRICE_INCREMENT_RELATIVE = 0.000025
@@ -245,7 +247,7 @@ export function calculateTradingParameters(
   do {
     priceIncrement = Math.pow(
       10,
-      quoteLotExponent + baseDecimals - baseLotExponent - quoteDecimals
+      quoteLotExponent + baseDecimals - baseLotExponent - quoteDecimals,
     )
     priceIncrementRelative = (priceIncrement * quotePrice) / basePrice
     if (priceIncrementRelative > MIN_PRICE_INCREMENT_RELATIVE) {
@@ -266,7 +268,7 @@ export function calculateTradingParameters(
     minOrderValue = basePrice * minOrderSize
     priceIncrement = Math.pow(
       10,
-      quoteLotExponent + baseDecimals - baseLotExponent - quoteDecimals
+      quoteLotExponent + baseDecimals - baseLotExponent - quoteDecimals,
     )
     priceIncrementRelative = (priceIncrement * quotePrice) / basePrice
   }
@@ -407,7 +409,7 @@ export const formatSuggestedValues = (
     | Omit<
         typeof listingBase,
         'name' | 'netBorrowLimitWindowSizeTs' | 'insuranceFound'
-      >
+      >,
 ) => {
   return {
     maxStalenessSlots: suggestedParams.maxStalenessSlots,
@@ -430,7 +432,7 @@ export const formatSuggestedValues = (
     minVaultToDepositsRatio: suggestedParams.minVaultToDepositsRatio * 100,
     netBorrowLimitPerWindowQuote: toUiDecimals(
       suggestedParams.netBorrowLimitPerWindowQuote,
-      6
+      6,
     ),
     borrowWeightScale: toUiDecimals(suggestedParams.borrowWeightScale, 6),
     depositWeightScale: toUiDecimals(suggestedParams.depositWeightScale, 6),
@@ -445,11 +447,11 @@ export const getFormattedBankValues = (group: Group, bank: Bank) => {
     oracle: bank.oracle.toBase58(),
     stablePrice: group.toUiPrice(
       I80F48.fromNumber(bank.stablePriceModel.stablePrice),
-      bank.mintDecimals
+      bank.mintDecimals,
     ),
     maxStalenessSlots: bank.oracleConfig.maxStalenessSlots.toNumber(),
     lastStablePriceUpdated: new Date(
-      1000 * bank.stablePriceModel.lastUpdateTimestamp.toNumber()
+      1000 * bank.stablePriceModel.lastUpdateTimestamp.toNumber(),
     ).toUTCString(),
     stablePriceGrowthLimitsDelay: (
       100 * bank.stablePriceModel.delayGrowthLimit
@@ -463,7 +465,7 @@ export const getFormattedBankValues = (group: Group, bank: Bank) => {
     ).toFixed(2),
     collectedFeesNative: toUiDecimals(
       bank.collectedFeesNative.toNumber(),
-      bank.mintDecimals
+      bank.mintDecimals,
     ).toFixed(2),
     collectedFeesNativePrice: (
       toUiDecimals(bank.collectedFeesNative.toNumber(), bank.mintDecimals) *
@@ -472,22 +474,22 @@ export const getFormattedBankValues = (group: Group, bank: Bank) => {
     dust: bank.dust.toNumber(),
     deposits: toUiDecimals(
       bank.indexedDeposits.mul(bank.depositIndex).toNumber(),
-      bank.mintDecimals
+      bank.mintDecimals,
     ),
     depositsPrice: (
       toUiDecimals(
         bank.indexedDeposits.mul(bank.depositIndex).toNumber(),
-        bank.mintDecimals
+        bank.mintDecimals,
       ) * bank.uiPrice
     ).toFixed(2),
     borrows: toUiDecimals(
       bank.indexedBorrows.mul(bank.borrowIndex).toNumber(),
-      bank.mintDecimals
+      bank.mintDecimals,
     ),
     borrowsPrice: (
       toUiDecimals(
         bank.indexedBorrows.mul(bank.borrowIndex).toNumber(),
-        bank.mintDecimals
+        bank.mintDecimals,
       ) * bank.uiPrice
     ).toFixed(2),
     avgUtilization: bank.avgUtilization.toNumber() * 100,
@@ -508,21 +510,21 @@ export const getFormattedBankValues = (group: Group, bank: Bank) => {
     depositRate: bank.getDepositRateUi(),
     borrowRate: bank.getBorrowRateUi(),
     lastIndexUpdate: new Date(
-      1000 * bank.indexLastUpdated.toNumber()
+      1000 * bank.indexLastUpdated.toNumber(),
     ).toUTCString(),
     lastRatesUpdate: new Date(
-      1000 * bank.bankRateLastUpdated.toNumber()
+      1000 * bank.bankRateLastUpdated.toNumber(),
     ).toUTCString(),
     oracleConfFilter: (100 * bank.oracleConfig.confFilter.toNumber()).toFixed(
-      2
+      2,
     ),
     minVaultToDepositsRatio: bank.minVaultToDepositsRatio * 100,
     netBorrowsInWindow: toUiDecimalsForQuote(
-      I80F48.fromI64(bank.netBorrowsInWindow).mul(bank.price)
+      I80F48.fromI64(bank.netBorrowsInWindow).mul(bank.price),
     ).toFixed(2),
     netBorrowLimitPerWindowQuote: toUiDecimals(
       bank.netBorrowLimitPerWindowQuote,
-      6
+      6,
     ),
     liquidationFee: (bank.liquidationFee.toNumber() * 100).toFixed(2),
   }

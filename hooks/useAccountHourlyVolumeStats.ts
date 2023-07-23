@@ -18,7 +18,7 @@ export default function useAccountHourlyVolumeStats() {
       retry: 3,
       refetchOnWindowFocus: false,
       enabled: !!mangoAccountAddress,
-    }
+    },
   )
 
   const loadingHourlyVolume =

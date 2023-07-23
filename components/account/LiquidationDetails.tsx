@@ -22,7 +22,7 @@ const LiquidationDetails = ({
   const { t } = useTranslation(['common', 'activity', 'settings'])
   const [preferredExplorer] = useLocalStorageState(
     PREFERRED_EXPLORER_KEY,
-    EXPLORERS[0]
+    EXPLORERS[0],
   )
 
   const getAssetLiquidatedReturned = (details: SpotOrPerpLiquidationItem) => {
@@ -209,7 +209,7 @@ const LiquidationDetails = ({
         >
           <span className="mr-1.5">
             {abbreviateAddress(
-              new PublicKey(activity.activity_details.counterparty)
+              new PublicKey(activity.activity_details.counterparty),
             )}
           </span>
           <ArrowTopRightOnSquareIcon className="h-3 w-3" />

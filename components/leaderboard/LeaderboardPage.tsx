@@ -23,7 +23,7 @@ export interface LeaderboardRes {
 type DaysToShow = '1DAY' | '1WEEK' | 'ALLTIME'
 
 const isLeaderboard = (
-  response: null | EmptyObject | LeaderboardRes[]
+  response: null | EmptyObject | LeaderboardRes[],
 ): response is LeaderboardRes[] => {
   if (response && Array.isArray(response)) {
     return true
@@ -33,10 +33,10 @@ const isLeaderboard = (
 
 const fetchLeaderboard = async (
   daysToShow: DaysToShow,
-  offset = 0
+  offset = 0,
 ): Promise<Array<LeaderboardRes>> => {
   const data = await fetch(
-    `${MANGO_DATA_API_URL}/leaderboard-pnl?over_period=${daysToShow}&offset=${offset}`
+    `${MANGO_DATA_API_URL}/leaderboard-pnl?over_period=${daysToShow}&offset=${offset}`,
   )
   const parsedData: null | EmptyObject | LeaderboardRes[] = await data.json()
 
@@ -63,7 +63,7 @@ const LeaderboardPage = () => {
         refetchOnWindowFocus: false,
         keepPreviousData: true,
         getNextPageParam: (_lastPage, pages) => pages.length * 20,
-      }
+      },
     )
 
   const leaderboardData = useMemo(() => {

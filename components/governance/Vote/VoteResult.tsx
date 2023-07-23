@@ -15,11 +15,11 @@ const VoteResults = ({ proposal, communityMint }: VoteResultsProps) => {
 
   const yesVoteCount = fmtTokenAmount(
     proposal.getYesVoteCount() as BN,
-    communityMint.decimals
+    communityMint.decimals,
   )
   const noVoteCount = fmtTokenAmount(
     proposal.getNoVoteCount() as BN,
-    communityMint.decimals
+    communityMint.decimals,
   )
   const totalVoteCount = yesVoteCount + noVoteCount
   const getRelativeVoteCount = (voteCount: number) =>
