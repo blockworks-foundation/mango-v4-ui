@@ -671,15 +671,17 @@ const mangoStore = create<MangoStore>()(
             const nfts = await getNFTsByOwner(ownerPk, connection)
             set((state) => {
               state.wallet.nfts.data = nfts
-              state.wallet.nfts.loading = false
             })
           } catch (error) {
             notify({
               type: 'error',
               title: 'Unable to fetch nfts',
             })
+          } finally {
+            set((state) => {
+              state.wallet.nfts.loading = false
+            })
           }
-          return []
         },
         fetchOpenOrders: async (refetchMangoAccount = false) => {
           const set = get().set

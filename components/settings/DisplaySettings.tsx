@@ -24,7 +24,6 @@ import {
   TRADE_LAYOUT_KEY,
 } from 'utils/constants'
 import mangoStore from '@store/mangoStore'
-import { useWallet } from '@solana/wallet-adapter-react'
 import Switch from '@components/forms/Switch'
 import { CUSTOM_SKINS } from 'utils/theme'
 
@@ -68,10 +67,6 @@ const DisplaySettings = () => {
   const { theme, setTheme } = useTheme()
   const [themes, setThemes] = useState(DEFAULT_THEMES)
   const nfts = mangoStore((s) => s.wallet.nfts.data)
-  // const nftsLoading = mangoStore((s) => s.wallet.nfts.loading)
-  const connection = mangoStore((s) => s.connection)
-  const actions = mangoStore.getState().actions
-  const { publicKey } = useWallet()
 
   const [savedLanguage, setSavedLanguage] = useLocalStorageState(
     'language',
@@ -97,24 +92,21 @@ const DisplaySettings = () => {
     true,
   )
 
+  // add nft skins to theme selection list
   useEffect(() => {
-    if (connection && publicKey) {
-      actions.fetchNfts(connection, publicKey)
-    }
-  }, [connection, publicKey])
-
-  useEffect(() => {
-    if (nfts && nfts.length) {
-      const walletCustomSkins = []
+    if (nfts.length) {
+      const customThemes = []
       for (const nft of nfts) {
         const collectionAddress = nft?.collectionAddress
         for (const themeKey in CUSTOM_SKINS) {
           if (CUSTOM_SKINS[themeKey] === collectionAddress) {
-            walletCustomSkins.push(themeKey)
+            customThemes.push(themeKey)
           }
         }
       }
-      setThemes([...walletCustomSkins, ...DEFAULT_THEMES])
+      if (customThemes.length) {
+        setThemes([...customThemes, ...DEFAULT_THEMES])
+      }
     }
   }, [nfts])
 

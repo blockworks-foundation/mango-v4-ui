@@ -20,7 +20,7 @@ import {
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
-import { Fragment, ReactNode } from 'react'
+import { Fragment, ReactNode, useEffect, useMemo } from 'react'
 import { Disclosure, Popover, Transition } from '@headlessui/react'
 import MangoAccountSummary from './account/MangoAccountSummary'
 import Tooltip from './shared/Tooltip'
@@ -32,12 +32,16 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import { useTheme } from 'next-themes'
 import LeaderboardIcon from './icons/LeaderboardIcon'
 import { sideBarAnimationDuration } from './Layout'
+import { CUSTOM_SKINS } from 'utils/theme'
+import { NFT } from 'types'
 
 const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation(['common', 'search'])
-  const { connected } = useWallet()
+  const { connected, publicKey } = useWallet()
+  const { theme } = useTheme()
   const group = mangoStore.getState().group
   const themeData = mangoStore((s) => s.themeData)
+  const nfts = mangoStore((s) => s.wallet.nfts.data)
   const { mangoAccount } = useMangoAccount()
   const router = useRouter()
   const { pathname } = router
@@ -49,6 +53,43 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
     })
   }
 
+  // fetch nfts when pk changes
+  useEffect(() => {
+    if (publicKey) {
+      const actions = mangoStore.getState().actions
+      const connection = mangoStore.getState().connection
+      actions.fetchNfts(connection, publicKey)
+    }
+  }, [publicKey])
+
+  // find all mango skin nfts
+  const mangoNfts = useMemo(() => {
+    if (!nfts.length) return []
+    const mangoNfts: NFT[] = []
+    for (const nft of nfts) {
+      const collectionAddress = nft?.collectionAddress
+      for (const themeKey in CUSTOM_SKINS) {
+        if (CUSTOM_SKINS[themeKey] === collectionAddress) {
+          mangoNfts.push(nft)
+        }
+      }
+    }
+    return mangoNfts
+  }, [nfts])
+
+  // find sidebar image url from skin nft for theme
+  const sidebarImageUrl = useMemo(() => {
+    if (!theme) return themeData.sideImagePath
+    const collectionAddress = CUSTOM_SKINS[theme.toLowerCase()]
+    if (collectionAddress && mangoNfts.length) {
+      const sidebarImageUrl =
+        mangoNfts.find((nft) => nft.collectionAddress === collectionAddress)
+          ?.image || themeData.sideImagePath
+      return sidebarImageUrl
+    }
+    return themeData.sideImagePath
+  }, [mangoNfts, theme, themeData])
+
   return (
     <div
       className={`transition-all duration-${sideBarAnimationDuration} ${
@@ -56,11 +97,11 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
       } border-r border-th-bkg-3 bg-th-bkg-1 bg-repeat`}
       style={{ backgroundImage: `url(${themeData.sideTilePath})` }}
     >
-      {themeData.sideImagePath && !collapsed ? (
+      {sidebarImageUrl && !collapsed ? (
         <img
           className={`absolute bottom-16 h-auto w-full flex-shrink-0`}
           onClick={() => playAnimation()}
-          src={themeData.sideImagePath}
+          src={sidebarImageUrl}
           alt="next"
         />
       ) : null}

@@ -29,16 +29,9 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
   const { publicKey, signMessage } = useWallet()
   const nfts = mangoStore((s) => s.wallet.nfts.data)
   const nftsLoading = mangoStore((s) => s.wallet.nfts.loading)
-  const connection = mangoStore((s) => s.connection)
   const [selectedProfile, setSelectedProfile] = useState<string>('')
   const actions = mangoStore.getState().actions
   const profile = mangoStore((s) => s.profile.details)
-
-  useEffect(() => {
-    if (connection && publicKey) {
-      actions.fetchNfts(connection, publicKey)
-    }
-  }, [connection, publicKey])
 
   useEffect(() => {
     if (profile?.profile_image_url) {
