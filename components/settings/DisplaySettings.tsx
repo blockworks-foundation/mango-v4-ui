@@ -7,7 +7,7 @@ import ChartOnRight from '@components/icons/ChartOnRight'
 import Tooltip from '@components/shared/Tooltip'
 import { TradeLayout } from '@components/trade/TradeAdvancedPage'
 // import dayjs from 'dayjs'
-import { ReactNode, useEffect } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 // import { useRouter } from 'next/router'
 // import { useCallback } from 'react'
 import dayjs from 'dayjs'
@@ -26,6 +26,7 @@ import {
 import mangoStore from '@store/mangoStore'
 import { useWallet } from '@solana/wallet-adapter-react'
 import Switch from '@components/forms/Switch'
+import { CUSTOM_SKINS } from 'utils/theme'
 
 const NOTIFICATION_POSITIONS = [
   'bottom-left',
@@ -49,8 +50,7 @@ const LANGS = [
   // { locale: 'zh', name: 'chinese', description: 'simplified chinese' },
 ]
 
-export const THEMES = [
-  'bonk',
+const DEFAULT_THEMES = [
   'light',
   'medium',
   'dark',
@@ -66,6 +66,7 @@ export const THEMES = [
 const DisplaySettings = () => {
   const { t } = useTranslation(['common', 'settings'])
   const { theme, setTheme } = useTheme()
+  const [themes, setThemes] = useState(DEFAULT_THEMES)
   const nfts = mangoStore((s) => s.wallet.nfts.data)
   // const nftsLoading = mangoStore((s) => s.wallet.nfts.loading)
   const connection = mangoStore((s) => s.connection)
@@ -102,8 +103,20 @@ const DisplaySettings = () => {
     }
   }, [connection, publicKey])
 
-  // use collectionAddress to enable nft skins? push theme name (theme name should come from the nft) to THEMES
-  console.log(nfts)
+  useEffect(() => {
+    if (nfts && nfts.length) {
+      const walletCustomSkins = []
+      for (const nft of nfts) {
+        const collectionAddress = nft?.collectionAddress
+        for (const themeKey in CUSTOM_SKINS) {
+          if (CUSTOM_SKINS[themeKey] === collectionAddress) {
+            walletCustomSkins.push(themeKey)
+          }
+        }
+      }
+      setThemes([...walletCustomSkins, ...DEFAULT_THEMES])
+    }
+  }, [nfts])
 
   const handleLangChange = useCallback(
     (l: string) => {
@@ -125,7 +138,7 @@ const DisplaySettings = () => {
             onChange={(t) => setTheme(t)}
             className="w-full"
           >
-            {THEMES.map((theme) => (
+            {themes.map((theme) => (
               <Select.Option key={theme} value={t(`settings:${theme}`)}>
                 {t(`settings:${theme}`)}
               </Select.Option>

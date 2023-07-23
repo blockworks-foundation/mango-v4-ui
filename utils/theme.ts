@@ -59,3 +59,7 @@ export const nftThemeMeta: NftThemeMeta = {
     useGradientBg: true,
   },
 }
+
+export const CUSTOM_SKINS: { [key: string]: string } = {
+  bonk: '6FUYsgvSPiLsMpKZqLWswkw7j4juudZyVopU6RYKLkQ3',
+}

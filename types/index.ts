@@ -300,6 +300,7 @@ export interface SwapHistoryItem {
 
 export interface NFT {
   address: string
+  collectionAddress?: string
   image: string
   name: string
 }
