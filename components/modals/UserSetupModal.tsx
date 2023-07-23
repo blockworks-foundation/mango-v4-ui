@@ -55,7 +55,7 @@ const UserSetupModal = ({
   onClose: () => void
 }) => {
   const { t } = useTranslation(['common', 'onboarding', 'swap'])
-  const { connected, select, wallet, wallets, publicKey } = useWallet()
+  const { connected, select, wallet, wallets, publicKey, connect } = useWallet()
   const { mangoAccount } = useMangoAccount()
   const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
   const [accountName, setAccountName] = useState('')
@@ -306,6 +306,9 @@ const UserSetupModal = ({
                           : 'border-th-bkg-4 text-th-fgd-2'
                       }`}
                       onClick={() => {
+                        if (wallet) {
+                          connect()
+                        }
                         select(w.adapter.name)
                       }}
                       key={w.adapter.name}
