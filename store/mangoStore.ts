@@ -99,7 +99,7 @@ export const emptyWallet = new EmptyWallet(Keypair.generate())
 
 const initMangoClient = (
   provider: AnchorProvider,
-  opts = { prioritizationFee: DEFAULT_PRIORITY_FEE.value }
+  opts = { prioritizationFee: DEFAULT_PRIORITY_FEE.value },
 ): MangoClient => {
   return MangoClient.connect(provider, CLUSTER, MANGO_V4_ID[CLUSTER], {
     prioritizationFee: opts.prioritizationFee,
@@ -138,6 +138,7 @@ export type MangoStore = {
   group: Group | undefined
   groupLoaded: boolean
   client: MangoClient
+  showUserSetup: boolean
   mangoAccount: {
     current: MangoAccount | undefined
     initialLoad: boolean
@@ -236,7 +237,7 @@ export type MangoStore = {
       mangoAccountPk: string,
       offset?: number,
       params?: string,
-      limit?: number
+      limit?: number,
     ) => Promise<void>
     fetchGroup: () => Promise<void>
     reloadMangoAccount: () => Promise<void>
@@ -250,7 +251,7 @@ export type MangoStore = {
       mangoAccountPk: string,
       timeout?: number,
       offset?: number,
-      limit?: number
+      limit?: number,
     ) => Promise<void>
     fetchTokenStats: () => void
     fetchTourSettings: (walletPk: string) => void
@@ -293,6 +294,7 @@ const mangoStore = create<MangoStore>()(
       group: undefined,
       groupLoaded: false,
       client,
+      showUserSetup: false,
       mangoAccount: {
         current: undefined,
         initialLoad: true,
@@ -394,7 +396,7 @@ const mangoStore = create<MangoStore>()(
           })
           try {
             const response = await fetch(
-              `${MANGO_DATA_API_URL}/stats/interest-account-total?mango-account=${mangoAccountPk}`
+              `${MANGO_DATA_API_URL}/stats/interest-account-total?mango-account=${mangoAccountPk}`,
             )
             const parsedResponse:
               | Omit<TotalInterestDataItem, 'symbol'>[]
@@ -402,7 +404,7 @@ const mangoStore = create<MangoStore>()(
             if (parsedResponse) {
               const entries: [string, Omit<TotalInterestDataItem, 'symbol'>][] =
                 Object.entries(parsedResponse).sort((a, b) =>
-                  b[0].localeCompare(a[0])
+                  b[0].localeCompare(a[0]),
                 )
 
               const stats: TotalInterestDataItem[] = entries
@@ -430,7 +432,7 @@ const mangoStore = create<MangoStore>()(
           mangoAccountPk: string,
           offset = 0,
           params = '',
-          limit = PAGINATION_PAGE_LENGTH
+          limit = PAGINATION_PAGE_LENGTH,
         ) => {
           const set = get().set
           const loadedFeed = mangoStore.getState().activityFeed.feed
@@ -439,14 +441,14 @@ const mangoStore = create<MangoStore>()(
             const response = await fetch(
               `${MANGO_DATA_API_URL}/stats/activity-feed?mango-account=${mangoAccountPk}&offset=${offset}&limit=${limit}${
                 params ? params : ''
-              }`
+              }`,
             )
             const parsedResponse: null | EmptyObject | Array<ActivityFeed> =
               await response.json()
 
             if (Array.isArray(parsedResponse)) {
               const entries = Object.entries(parsedResponse).sort((a, b) =>
-                b[0].localeCompare(a[0])
+                b[0].localeCompare(a[0]),
               )
 
               const latestFeed = entries
@@ -464,7 +466,7 @@ const mangoStore = create<MangoStore>()(
                 .sort(
                   (a, b) =>
                     dayjs(b.block_datetime).unix() -
-                    dayjs(a.block_datetime).unix()
+                    dayjs(a.block_datetime).unix(),
                 )
 
               // only add to current feed if data request is offset and the mango account hasn't changed
@@ -499,7 +501,7 @@ const mangoStore = create<MangoStore>()(
             const outputBank =
               group?.banksMapByName.get(OUTPUT_TOKEN_DEFAULT)?.[0]
             const serumMarkets = Array.from(
-              group.serum3MarketsMapByExternal.values()
+              group.serum3MarketsMapByExternal.values(),
             ).map((m) => {
               // remove this when market name is updated
               if (m.name === 'MSOL/SOL') {
@@ -512,7 +514,7 @@ const mangoStore = create<MangoStore>()(
               .filter(
                 (p) =>
                   p.publicKey.toString() !==
-                  '9Y8paZ5wUpzLFfQuHz8j2RtPrKsDtHx9sbgFmWb5abCw'
+                  '9Y8paZ5wUpzLFfQuHz8j2RtPrKsDtHx9sbgFmWb5abCw',
               )
               .sort((a, b) => a.name.localeCompare(b.name))
 
@@ -532,10 +534,10 @@ const mangoStore = create<MangoStore>()(
                 state.swap.outputBank = outputBank
               } else {
                 state.swap.inputBank = group.getFirstBankByMint(
-                  state.swap.inputBank!.mint
+                  state.swap.inputBank!.mint,
                 )
                 state.swap.outputBank = group.getFirstBankByMint(
-                  state.swap.outputBank!.mint
+                  state.swap.outputBank!.mint,
                 )
               }
             })
@@ -566,7 +568,7 @@ const mangoStore = create<MangoStore>()(
               await mangoAccount.reloadWithSlot(client)
             if (slot > lastSlot) {
               const ma = get().mangoAccounts.find((ma) =>
-                ma.publicKey.equals(reloadedMangoAccount.publicKey)
+                ma.publicKey.equals(reloadedMangoAccount.publicKey),
               )
               if (ma) {
                 Object.assign(ma, reloadedMangoAccount)
@@ -603,7 +605,7 @@ const mangoStore = create<MangoStore>()(
             const selectedAccountIsNotInAccountsList = mangoAccounts.find(
               (x) =>
                 x.publicKey.toBase58() ===
-                selectedMangoAccount?.publicKey.toBase58()
+                selectedMangoAccount?.publicKey.toBase58(),
             )
             if (!mangoAccounts?.length) {
               set((state) => {
@@ -621,7 +623,7 @@ const mangoStore = create<MangoStore>()(
               if (typeof lastAccount === 'string') {
                 try {
                   lastViewedAccount = mangoAccounts.find(
-                    (m) => m.publicKey.toString() === JSON.parse(lastAccount)
+                    (m) => m.publicKey.toString() === JSON.parse(lastAccount),
                   )
                 } catch (e) {
                   console.error('Error parsing last account', e)
@@ -640,7 +642,7 @@ const mangoStore = create<MangoStore>()(
             }
 
             await Promise.all(
-              mangoAccounts.map((ma) => ma.reloadSerum3OpenOrders(client))
+              mangoAccounts.map((ma) => ma.reloadSerum3OpenOrders(client)),
             )
 
             set((state) => {
@@ -700,24 +702,24 @@ const mangoStore = create<MangoStore>()(
                       await mangoAccount.loadSerum3OpenOrdersForMarket(
                         client,
                         group,
-                        market.serumMarketExternal
+                        market.serumMarketExternal,
                       )
                     openOrders[market.serumMarketExternal.toString()] = orders
                   }
-                })
+                }),
               )
             }
 
             if (mangoAccount.serum3Active().length) {
               serumOpenOrderAccounts = Array.from(
-                mangoAccount.serum3OosMapByMarketIndex.values()
+                mangoAccount.serum3OosMapByMarketIndex.values(),
               )
               await mangoAccount.loadSerum3OpenOrdersAccounts(client)
             }
 
             const activePerpMarketIndices = [
               ...new Set(
-                mangoAccount.perpOrdersActive().map((p) => p.orderMarket)
+                mangoAccount.perpOrdersActive().map((p) => p.orderMarket),
               ),
             ]
             await Promise.all(
@@ -727,10 +729,10 @@ const mangoStore = create<MangoStore>()(
                   client,
                   group,
                   perpMktIndex,
-                  market._bids ? false : true
+                  market._bids ? false : true,
                 )
                 openOrders[market.publicKey.toString()] = orders
-              })
+              }),
             )
 
             set((s) => {
@@ -750,7 +752,7 @@ const mangoStore = create<MangoStore>()(
           })
           try {
             const response = await fetch(
-              `${MANGO_DATA_API_URL}/perp-historical-stats?mango-group=${group?.publicKey.toString()}`
+              `${MANGO_DATA_API_URL}/perp-historical-stats?mango-group=${group?.publicKey.toString()}`,
             )
             const data = await response.json()
 
@@ -776,18 +778,18 @@ const mangoStore = create<MangoStore>()(
           try {
             const allMangoAccounts = await client.getAllMangoAccounts(
               group,
-              true
+              true,
             )
             if (allMangoAccounts && allMangoAccounts.length) {
               const [largestPositions, closestToLiq]: [
                 PositionStat[],
-                PositionStat[]
+                PositionStat[],
               ] = await Promise.all([
                 getLargestPerpPositions(client, group, allMangoAccounts),
                 getClosestToLiquidationPerpPositions(
                   client,
                   group,
-                  allMangoAccounts
+                  allMangoAccounts,
                 ),
               ])
               set((state) => {
@@ -795,7 +797,7 @@ const mangoStore = create<MangoStore>()(
                   const positionsToShow = largestPositions.slice(0, 5)
                   for (const position of positionsToShow) {
                     const ma = allMangoAccounts.find(
-                      (acc) => acc.publicKey === position.mangoAccount
+                      (acc) => acc.publicKey === position.mangoAccount,
                     )
                     position.account = ma
                   }
@@ -805,7 +807,7 @@ const mangoStore = create<MangoStore>()(
                   const positionsToShow = closestToLiq.slice(0, 5)
                   for (const position of positionsToShow) {
                     const ma = allMangoAccounts.find(
-                      (acc) => acc.publicKey === position.mangoAccount
+                      (acc) => acc.publicKey === position.mangoAccount,
                     )
                     position.account = ma
                   }
@@ -830,7 +832,7 @@ const mangoStore = create<MangoStore>()(
           mangoAccountPk: string,
           timeout = 0,
           offset = 0,
-          limit = PAGINATION_PAGE_LENGTH
+          limit = PAGINATION_PAGE_LENGTH,
         ) => {
           const set = get().set
           const loadedSwapHistory =
@@ -839,7 +841,7 @@ const mangoStore = create<MangoStore>()(
           setTimeout(async () => {
             try {
               const history = await fetch(
-                `${MANGO_DATA_API_URL}/stats/swap-history?mango-account=${mangoAccountPk}&offset=${offset}&limit=${limit}`
+                `${MANGO_DATA_API_URL}/stats/swap-history?mango-account=${mangoAccountPk}&offset=${offset}&limit=${limit}`,
               )
               const parsedHistory = await history.json()
               const sortedHistory =
@@ -847,7 +849,7 @@ const mangoStore = create<MangoStore>()(
                   ? parsedHistory.sort(
                       (a: SwapHistoryItem, b: SwapHistoryItem) =>
                         dayjs(b.block_datetime).unix() -
-                        dayjs(a.block_datetime).unix()
+                        dayjs(a.block_datetime).unix(),
                     )
                   : []
 
@@ -882,7 +884,7 @@ const mangoStore = create<MangoStore>()(
           })
           try {
             const response = await fetch(
-              `${MANGO_DATA_API_URL}/token-historical-stats?mango-group=${group?.publicKey.toString()}`
+              `${MANGO_DATA_API_URL}/token-historical-stats?mango-group=${group?.publicKey.toString()}`,
             )
             const data = await response.json()
             let mangoStats: MangoTokenStatsItem[] = []
@@ -893,10 +895,10 @@ const mangoStore = create<MangoStore>()(
                     .map(([_mintAddress, banks]) => banks)
                     .map((b) => b[0])
                   const bank: Bank | undefined = banks.find(
-                    (b) => b.tokenIndex === c.token_index
+                    (b) => b.tokenIndex === c.token_index,
                   )
                   const hasDate = a.find(
-                    (d: MangoTokenStatsItem) => d.date === c.date_hour
+                    (d: MangoTokenStatsItem) => d.date === c.date_hour,
                   )
                   if (!hasDate) {
                     a.push({
@@ -917,10 +919,10 @@ const mangoStore = create<MangoStore>()(
                   }
                   return a.sort(
                     (a, b) =>
-                      new Date(a.date).getTime() - new Date(b.date).getTime()
+                      new Date(a.date).getTime() - new Date(b.date).getTime(),
                   )
                 },
-                []
+                [],
               )
             }
             set((state) => {
@@ -947,7 +949,7 @@ const mangoStore = create<MangoStore>()(
             try {
               const token = await getTokenAccountsByOwnerWithWrappedSol(
                 connection,
-                walletPk
+                walletPk,
               )
 
               set((state) => {
@@ -971,12 +973,12 @@ const mangoStore = create<MangoStore>()(
             const provider = new AnchorProvider(
               connection,
               wallet.adapter as unknown as Wallet,
-              options
+              options,
             )
             provider.opts.skipPreflight = true
             const prioritizationFee = Number(
               localStorage.getItem(PRIORITY_FEE_KEY) ??
-                DEFAULT_PRIORITY_FEE.value
+                DEFAULT_PRIORITY_FEE.value,
             )
             const client = initMangoClient(provider, { prioritizationFee })
 
@@ -1000,7 +1002,7 @@ const mangoStore = create<MangoStore>()(
           })
           try {
             const response = await fetch(
-              `${MANGO_DATA_API_URL}/user-data/profile-details?wallet-pk=${walletPk}`
+              `${MANGO_DATA_API_URL}/user-data/profile-details?wallet-pk=${walletPk}`,
             )
             const data = await response.json()
             set((state) => {
@@ -1021,7 +1023,7 @@ const mangoStore = create<MangoStore>()(
           })
           try {
             const response = await fetch(
-              `${MANGO_DATA_API_URL}/user-data/settings-unsigned?wallet-pk=${walletPk}`
+              `${MANGO_DATA_API_URL}/user-data/settings-unsigned?wallet-pk=${walletPk}`,
             )
             const data = await response.json()
             set((state) => {
@@ -1048,7 +1050,7 @@ const mangoStore = create<MangoStore>()(
 
             if (selectedMarket instanceof Serum3Market) {
               serumMarket = group.getSerum3ExternalMarket(
-                selectedMarket.serumMarketExternal
+                selectedMarket.serumMarketExternal,
               )
             } else {
               perpMarket = selectedMarket
@@ -1058,12 +1060,12 @@ const mangoStore = create<MangoStore>()(
             if (serumMarket) {
               const serumFills = (await serumMarket.loadFills(
                 connection,
-                10000
+                10000,
               )) as SerumEvent[]
               loadedFills = serumFills.filter((f) => !f?.eventFlags?.maker)
             } else if (perpMarket) {
               const perpFills = (await perpMarket.loadFills(
-                client
+                client,
               )) as unknown as ParsedFillEvent[]
               loadedFills = perpFills.reverse()
             }
@@ -1079,13 +1081,13 @@ const mangoStore = create<MangoStore>()(
           const client = mangoStore.getState().client
           const newConnection = new web3.Connection(
             endpointUrl,
-            CONNECTION_COMMITMENT
+            CONNECTION_COMMITMENT,
           )
           const oldProvider = client.program.provider as AnchorProvider
           const newProvider = new AnchorProvider(
             newConnection,
             oldProvider.wallet,
-            options
+            options,
           )
           newProvider.opts.skipPreflight = true
           const newClient = initMangoClient(newProvider)
@@ -1096,17 +1098,17 @@ const mangoStore = create<MangoStore>()(
         },
       },
     }
-  })
+  }),
 )
 
 mangoStore.subscribe((state) => state.mangoAccount.current, spotBalancesUpdater)
 mangoStore.subscribe(
   (state) => state.mangoAccount.openOrderAccounts,
-  spotBalancesUpdater
+  spotBalancesUpdater,
 )
 mangoStore.subscribe(
   (state) => state.mangoAccount.current,
-  perpPositionsUpdater
+  perpPositionsUpdater,
 )
 
 export default mangoStore

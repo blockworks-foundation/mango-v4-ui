@@ -1,4 +1,4 @@
-import { useTheme } from 'next-themes'
+import useThemeWrapper from 'hooks/useThemeWrapper'
 import { COLORS } from 'styles/colors'
 
 const OrderbookIcon = ({
@@ -8,7 +8,7 @@ const OrderbookIcon = ({
   side: 'buy' | 'sell'
   className?: string
 }) => {
-  const { theme } = useTheme()
+  const { theme } = useThemeWrapper()
   const buyColor = side === 'buy' ? COLORS.UP[theme] : COLORS.FGD4[theme]
   const sellColor = side === 'sell' ? COLORS.DOWN[theme] : COLORS.FGD4[theme]
   return (

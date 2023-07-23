@@ -63,7 +63,7 @@ const BalancesTable = () => {
               <div className="flex justify-end">
                 <Tooltip content={t('account:tooltip-collateral-value')}>
                   <span className="tooltip-underline">
-                    {t('account:collateral-value')}
+                    {t('collateral-value')}
                   </span>
                 </Tooltip>
               </div>
@@ -202,7 +202,7 @@ const BalancesTable = () => {
                             content={t('account:tooltip-collateral-value')}
                           >
                             <p className="tooltip-underline text-xs text-th-fgd-3">
-                              {t('account:collateral-value')}
+                              {t('collateral-value')}
                             </p>
                           </Tooltip>
                           <p className="font-mono text-th-fgd-2">
@@ -293,7 +293,7 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
       let tickDecimals: number
       if (selectedMarket instanceof Serum3Market) {
         const market = group.getSerum3ExternalMarket(
-          selectedMarket.serumMarketExternal
+          selectedMarket.serumMarketExternal,
         )
         minOrderDecimals = getDecimalCount(market.minOrderSize)
         tickDecimals = getDecimalCount(market.tickSize)
@@ -306,7 +306,7 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
         const floorBalance = floorToDecimal(balance, tickDecimals).toNumber()
         const baseSize = floorToDecimal(
           floorBalance / price,
-          minOrderDecimals
+          minOrderDecimals,
         ).toNumber()
         const quoteSize = floorToDecimal(baseSize * price, tickDecimals)
         set((s) => {
@@ -322,7 +322,7 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
         })
       }
     },
-    [selectedMarket]
+    [selectedMarket],
   )
 
   const handleSwapFormBalanceClick = useCallback(
@@ -356,7 +356,7 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
         })
       }
     },
-    [bank]
+    [bank],
   )
 
   const balance = bank.balance
@@ -393,7 +393,7 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
             className="font-normal underline underline-offset-2 md:underline-offset-4 md:hover:no-underline"
             onClick={() =>
               handleSwapFormBalanceClick(
-                Number(floorToDecimal(balance, tokenBank.mintDecimals))
+                Number(floorToDecimal(balance, tokenBank.mintDecimals)),
               )
             }
           >

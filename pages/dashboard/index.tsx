@@ -52,6 +52,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
 const Dashboard: NextPage = () => {
   const { group } = useMangoGroup()
   const client = mangoStore((s) => s.client)
+  //do not deconstruct wallet is used for anchor to sign
   const wallet = useWallet()
   const connection = mangoStore((s) => s.connection)
   const voter = GovernanceStore((s) => s.voter)
@@ -72,7 +73,7 @@ const Dashboard: NextPage = () => {
     }
     type PriceImpactRespWithoutSide = Omit<PriceImpactResp, 'side'>
     const resp = await fetch(
-      'https://api.mngo.cloud/data/v4/risk/listed-tokens-one-week-price-impacts'
+      'https://api.mngo.cloud/data/v4/risk/listed-tokens-one-week-price-impacts',
     )
     const jsonReps = (await resp.json()) as PriceImpactResp[]
     const filteredResp = jsonReps
@@ -82,7 +83,7 @@ const Dashboard: NextPage = () => {
             (x) =>
               x.symbol === val.symbol &&
               x.target_amount === val.target_amount &&
-              x.side === 'bid'
+              x.side === 'bid',
           )
           acc.push({
             target_amount: val.target_amount,
@@ -100,7 +101,7 @@ const Dashboard: NextPage = () => {
       .reduce(
         (
           acc: { [key: string]: PriceImpactRespWithoutSide },
-          val: PriceImpactRespWithoutSide
+          val: PriceImpactRespWithoutSide,
         ) => {
           if (
             !acc[val.symbol] ||
@@ -110,16 +111,16 @@ const Dashboard: NextPage = () => {
           }
           return acc
         },
-        {}
+        {},
       )
     const suggestedTiers = Object.keys(filteredResp).reduce(
       (acc: { [key: string]: string | undefined }, key: string) => {
         acc[key] = Object.values(LISTING_PRESETS).find(
-          (x) => x.target_amount === filteredResp[key].target_amount
+          (x) => x.target_amount === filteredResp[key].target_amount,
         )?.preset_key
         return acc
       },
-      {}
+      {},
     )
 
     setSuggestedTiers(suggestedTiers)
@@ -129,14 +130,14 @@ const Dashboard: NextPage = () => {
     async (
       bank: Bank,
       invalidFieldsKeys: string[],
-      tokenTier: LISTING_PRESETS_KEYS
+      tokenTier: LISTING_PRESETS_KEYS,
     ) => {
       const proposalTx = []
       const mintInfo = group!.mintInfosMapByTokenIndex.get(bank.tokenIndex)!
       const preset = LISTING_PRESETS[tokenTier]
       const fieldsToChange = invalidFieldsKeys.reduce(
         (obj, key) => ({ ...obj, [key]: preset[key as keyof typeof preset] }),
-        {}
+        {},
       ) as Partial<typeof preset>
 
       const isThereNeedOfSendingOracleConfig =
@@ -193,7 +194,7 @@ const Dashboard: NextPage = () => {
           false,
           bank.reduceOnly ? 0 : null,
           null,
-          null
+          null,
         )
         .accounts({
           group: group!.publicKey,
@@ -223,11 +224,11 @@ const Dashboard: NextPage = () => {
           'Adjust settings to current liquidity',
           index,
           proposalTx,
-          vsrClient!
+          vsrClient!,
         )
         window.open(
           `https://dao.mango.markets/dao/MNGO/proposal/${proposalAddress.toBase58()}`,
-          '_blank'
+          '_blank',
         )
       } catch (e) {
         notify({
@@ -245,14 +246,14 @@ const Dashboard: NextPage = () => {
       voter.tokenOwnerRecord,
       vsrClient,
       wallet,
-    ]
+    ],
   )
 
   const extractTokenTierForName = (
     suggestedTokenObj: Partial<{
       [key: string]: string
     }>,
-    tier: string
+    tier: string,
   ) => {
     if (tier === 'ETH (Portal)') {
       return suggestedTokenObj['ETH']
@@ -284,7 +285,7 @@ const Dashboard: NextPage = () => {
                     onClick={() => {
                       const panels = [
                         ...document.querySelectorAll(
-                          '[aria-expanded=false][aria-label=panel]'
+                          '[aria-expanded=false][aria-label=panel]',
                         ),
                       ]
                       panels.map((panel) => (panel as HTMLElement).click())
@@ -298,7 +299,7 @@ const Dashboard: NextPage = () => {
                     onClick={() => {
                       const panels = [
                         ...document.querySelectorAll(
-                          '[aria-expanded=true][aria-label=panel]'
+                          '[aria-expanded=true][aria-label=panel]',
                         ),
                       ]
                       panels.map((panel) => (panel as HTMLElement).click())
@@ -314,17 +315,17 @@ const Dashboard: NextPage = () => {
                     .map(([mintAddress, banks]) =>
                       banks.map((bank) => {
                         const mintInfo = group.mintInfosMapByMint.get(
-                          bank.mint.toString()
+                          bank.mint.toString(),
                         )
 
                         const formattedBankValues = getFormattedBankValues(
                           group,
-                          bank
+                          bank,
                         )
 
                         const suggestedTier = extractTokenTierForName(
                           suggestedTiers,
-                          bank.name
+                          bank.name,
                         )
                           ? extractTokenTierForName(suggestedTiers, bank.name)!
                           : 'SHIT'
@@ -341,12 +342,12 @@ const Dashboard: NextPage = () => {
                           Object.keys(suggestedVaules).length
                             ? compareObjectsAndGetDifferentKeys<SuggestedFormattedPreset>(
                                 formattedBankValues,
-                                suggestedFormattedPreset
+                                suggestedFormattedPreset,
                               ).filter(
                                 (x: string) =>
                                   suggestedFormattedPreset[
                                     x as keyof SuggestedFormattedPreset
-                                  ]
+                                  ],
                               )
                             : []
 
@@ -667,7 +668,7 @@ const Dashboard: NextPage = () => {
                                           proposeNewSuggestedValues(
                                             bank,
                                             invalidKeys,
-                                            suggestedTier as LISTING_PRESETS_KEYS
+                                            suggestedTier as LISTING_PRESETS_KEYS,
                                           )
                                         }
                                         disabled={!wallet.connected}
@@ -681,7 +682,7 @@ const Dashboard: NextPage = () => {
                             )}
                           </Disclosure>
                         )
-                      })
+                      }),
                     )}
                 </div>
 
@@ -691,7 +692,7 @@ const Dashboard: NextPage = () => {
                 <div className="border-b border-th-bkg-3">
                   {Array.from(group.perpMarketsMapByOracle)
                     .filter(
-                      ([_, perpMarket]) => !perpMarket.name.includes('OLD')
+                      ([_, perpMarket]) => !perpMarket.name.includes('OLD'),
                     )
                     .map(([oracle, perpMarket]) => {
                       return (
@@ -783,16 +784,16 @@ const Dashboard: NextPage = () => {
                                   label="Stable Price"
                                   value={`$${group.toUiPrice(
                                     I80F48.fromNumber(
-                                      perpMarket.stablePriceModel.stablePrice
+                                      perpMarket.stablePriceModel.stablePrice,
                                     ),
-                                    perpMarket.baseDecimals
+                                    perpMarket.baseDecimals,
                                   )}`}
                                 />
                                 <KeyValuePair
                                   label="Last stable price updated"
                                   value={new Date(
                                     1000 *
-                                      perpMarket.stablePriceModel.lastUpdateTimestamp.toNumber()
+                                      perpMarket.stablePriceModel.lastUpdateTimestamp.toNumber(),
                                   ).toUTCString()}
                                 />
                                 <KeyValuePair
@@ -814,7 +815,7 @@ const Dashboard: NextPage = () => {
                                   label="Open Interest"
                                   value={`${perpMarket.openInterest} lots ($${(
                                     perpMarket.baseLotsToUi(
-                                      perpMarket.openInterest
+                                      perpMarket.openInterest,
                                     ) * perpMarket.uiPrice
                                   ).toFixed(2)})`}
                                 />
@@ -824,33 +825,31 @@ const Dashboard: NextPage = () => {
                           ${
                             perpMarket.quoteLotSize
                           } quote (tick size: $${perpMarket.priceLotsToUi(
-                                    new BN(1)
-                                  )}, 1 base lot: $${(
-                                    perpMarket.baseLotsToUi(new BN(1)) *
-                                    perpMarket.uiPrice
-                                  ).toFixed(3)})`}
+                            new BN(1),
+                          )}, 1 base lot: $${(
+                            perpMarket.baseLotsToUi(new BN(1)) *
+                            perpMarket.uiPrice
+                          ).toFixed(3)})`}
                                 />
                                 <KeyValuePair
                                   label="Maint Asset/Liab Weight"
                                   value={`${perpMarket.maintBaseAssetWeight.toFixed(
-                                    4
+                                    4,
                                   )}/
                           ${perpMarket.maintBaseLiabWeight.toFixed(
-                            4
+                            4,
                           )} (maint leverage: ${(
-                                    1 /
-                                    (perpMarket.maintBaseLiabWeight.toNumber() -
-                                      1)
-                                  ).toFixed(2)}x, init leverage: ${(
-                                    1 /
-                                    (perpMarket.initBaseLiabWeight.toNumber() -
-                                      1)
-                                  ).toFixed(2)}x)`}
+                            1 /
+                            (perpMarket.maintBaseLiabWeight.toNumber() - 1)
+                          ).toFixed(2)}x, init leverage: ${(
+                            1 /
+                            (perpMarket.initBaseLiabWeight.toNumber() - 1)
+                          ).toFixed(2)}x)`}
                                 />
                                 <KeyValuePair
                                   label="Init Asset/Liab Weight"
                                   value={`${perpMarket.initBaseAssetWeight.toFixed(
-                                    4
+                                    4,
                                   )}/
                           ${perpMarket.initBaseLiabWeight.toFixed(4)}`}
                                 />
@@ -881,7 +880,7 @@ const Dashboard: NextPage = () => {
                                   label="Funding impacty quantity"
                                   value={`${perpMarket.impactQuantity.toNumber()} ($${(
                                     perpMarket.baseLotsToUi(
-                                      perpMarket.impactQuantity
+                                      perpMarket.impactQuantity,
                                     ) * perpMarket.uiPrice
                                   ).toFixed(2)})`}
                                 />
@@ -889,14 +888,14 @@ const Dashboard: NextPage = () => {
                                   label="Fees Accrued"
                                   value={`$${toUiDecimals(
                                     perpMarket.feesAccrued,
-                                    6
+                                    6,
                                   ).toFixed(2)}`}
                                 />
                                 <KeyValuePair
                                   label="Fees Settled"
                                   value={`$${toUiDecimals(
                                     perpMarket.feesSettled,
-                                    6
+                                    6,
                                   )}`}
                                 />
                                 <KeyValuePair
@@ -918,27 +917,27 @@ const Dashboard: NextPage = () => {
                                   label="Fee penalty"
                                   value={`$${toUiDecimals(
                                     perpMarket.feePenalty,
-                                    6
+                                    6,
                                   )}`}
                                 />
                                 <KeyValuePair
                                   label="Settle fee flat"
                                   value={`$${toUiDecimals(
                                     perpMarket.settleFeeFlat,
-                                    6
+                                    6,
                                   )}`}
                                 />
                                 <KeyValuePair
                                   label="Settle fee amount threshold"
                                   value={`$${toUiDecimals(
                                     perpMarket.settleFeeAmountThreshold,
-                                    6
+                                    6,
                                   )}`}
                                 />
                                 <KeyValuePair
                                   label="Settle fee fraction low health"
                                   value={`${perpMarket.settleFeeFractionLowHealth.toFixed(
-                                    4
+                                    4,
                                   )}`}
                                 />
                                 <KeyValuePair
@@ -963,7 +962,7 @@ const Dashboard: NextPage = () => {
                                     10000 *
                                     perpMarket.positivePnlLiquidationFee.toNumber()
                                   ).toFixed(
-                                    2
+                                    2,
                                   )} bps (${perpMarket.positivePnlLiquidationFee
                                     .div(perpMarket.baseLiquidationFee)
                                     .toNumber()
@@ -983,7 +982,7 @@ const Dashboard: NextPage = () => {
                   {Array.from(group.serum3MarketsMapByExternal.values()).map(
                     (market) => {
                       const externalMarket = group.getSerum3ExternalMarket(
-                        market.serumMarketExternal
+                        market.serumMarketExternal,
                       )
                       return (
                         <Disclosure key={market.marketIndex}>
@@ -1078,7 +1077,7 @@ const Dashboard: NextPage = () => {
                                 <KeyValuePair
                                   label="Maker/Taker Fees"
                                   value={`${market.getFeeRates(
-                                    false
+                                    false,
                                   )}/${market.getFeeRates(true)}`}
                                 />
                               </Disclosure.Panel>
@@ -1086,7 +1085,7 @@ const Dashboard: NextPage = () => {
                           )}
                         </Disclosure>
                       )
-                    }
+                    },
                   )}
                 </div>
               </div>
@@ -1144,7 +1143,7 @@ const VaultData = ({ bank }: { bank: Bank }) => {
 
   const getVaultData = useCallback(async () => {
     const res = await client.program.provider.connection.getAccountInfo(
-      bank.vault
+      bank.vault,
     )
     const v = res?.data ? coder().accounts.decode('token', res.data) : undefined
 

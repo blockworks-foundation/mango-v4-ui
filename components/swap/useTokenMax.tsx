@@ -11,13 +11,13 @@ export const getMaxWithdrawForBank = (
   group: Group,
   bank: Bank,
   mangoAccount: MangoAccount,
-  allowBorrow = false
+  allowBorrow = false,
 ): Decimal => {
   const accountBalance = mangoAccount.getTokenBalanceUi(bank)
   const vaultBalance = group.getTokenVaultBalanceByMintUi(bank.mint)
   const maxBorrow = mangoAccount.getMaxWithdrawWithBorrowForTokenUi(
     group,
-    bank.mint
+    bank.mint,
   )
   const maxWithdraw = allowBorrow
     ? Decimal.min(vaultBalance, maxBorrow)
@@ -32,7 +32,7 @@ export const getTokenInMax = (
   inputMint: PublicKey,
   outputMint: PublicKey,
   group: Group,
-  useMargin: boolean
+  useMargin: boolean,
 ) => {
   const inputBank = group.getFirstBankByMint(inputMint)
   const outputBank = group.getFirstBankByMint(outputMint)
@@ -49,11 +49,11 @@ export const getTokenInMax = (
   const outputReduceOnly = outputBank.areDepositsReduceOnly()
 
   const inputTokenBalance = new Decimal(
-    mangoAccount.getTokenBalanceUi(inputBank)
+    mangoAccount.getTokenBalanceUi(inputBank),
   )
 
   const outputTokenBalance = new Decimal(
-    mangoAccount.getTokenBalanceUi(outputBank)
+    mangoAccount.getTokenBalanceUi(outputBank),
   )
 
   const maxAmountWithoutMargin =
@@ -65,7 +65,7 @@ export const getTokenInMax = (
   const rawMaxUiAmountWithBorrow = mangoAccount.getMaxSourceUiForTokenSwap(
     group,
     inputBank.mint,
-    outputBank.mint
+    outputBank.mint,
   )
 
   const maxUiAmountWithBorrow =
@@ -79,19 +79,19 @@ export const getTokenInMax = (
     group
       .getTokenVaultBalanceByMintUi(inputBank.mint)
       .toFixed(inputBank.mintDecimals),
-    inputBank.mintDecimals
+    inputBank.mintDecimals,
   )
 
   const maxAmount = useMargin
     ? Decimal.min(
         maxAmountWithoutMargin,
         inputBankVaultBalance,
-        maxUiAmountWithBorrow
+        maxUiAmountWithBorrow,
       )
     : Decimal.min(
         maxAmountWithoutMargin,
         inputBankVaultBalance,
-        maxUiAmountWithBorrow
+        maxUiAmountWithBorrow,
       )
 
   const maxAmountWithBorrow = inputReduceOnly
@@ -125,7 +125,7 @@ export const useTokenMax = (useMargin = true): TokenMaxResults => {
           inputBank.mint,
           outputBank.mint,
           group,
-          useMargin
+          useMargin,
         )
       }
     } catch (e) {

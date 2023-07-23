@@ -23,7 +23,7 @@ const OnBoarding = ({ minVotes }: { minVotes?: BN }) => {
     ? new BN(
         governances[
           MANGO_DAO_WALLET_GOVERNANCE.toBase58()
-        ].account.config.minCommunityTokensToCreateProposal.toString()
+        ].account.config.minCommunityTokensToCreateProposal.toString(),
       )
     : new BN(0)
   const mintVoterWeightNumber = governances
@@ -50,7 +50,7 @@ const OnBoarding = ({ minVotes }: { minVotes?: BN }) => {
           </>
         }
         desc={`${t('on-boarding-deposit-info')} ${t(
-          'on-boarding-description-1'
+          'on-boarding-description-1',
         )}`}
       />
     </div>

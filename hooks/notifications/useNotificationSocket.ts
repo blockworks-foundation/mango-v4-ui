@@ -27,7 +27,7 @@ export function useNotificationSocket() {
     if (isAuth && publicKey && token) {
       const notificationWs = new NotificationsWebSocket(
         token,
-        publicKey.toBase58()
+        publicKey.toBase58(),
       ).connect()
       ws = notificationWs.ws!
 
@@ -50,7 +50,7 @@ export function useNotificationSocket() {
               }
               // Modify prevData with newData and return the updated data
               return [newNotification, ...prevData]
-            }
+            },
           )
         }
       })

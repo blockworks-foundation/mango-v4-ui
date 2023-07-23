@@ -11,11 +11,11 @@ export default function useHealthContributions() {
     if (!mangoAccount || !group) return [[], []]
     const init = mangoAccount.getHealthContributionPerAssetUi(
       group,
-      HealthType.init
+      HealthType.init,
     )
     const maint = mangoAccount.getHealthContributionPerAssetUi(
       group,
-      HealthType.maint
+      HealthType.maint,
     )
     return [init, maint]
   }, [mangoAccount])

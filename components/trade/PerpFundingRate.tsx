@@ -12,7 +12,7 @@ import Link from 'next/link'
 
 const fetchFundingRate = async (groupPk: string | undefined) => {
   const res = await fetch(
-    `${MANGO_DATA_API_URL}/one-hour-funding-rate?mango-group=${groupPk}`
+    `${MANGO_DATA_API_URL}/one-hour-funding-rate?mango-group=${groupPk}`,
   )
   return await res.json()
 }
@@ -41,7 +41,7 @@ export const formatFunding = Intl.NumberFormat('en', {
 
 function getImpactPriceL2(
   bookside: number[][],
-  baseDepth: number
+  baseDepth: number,
 ): number | undefined {
   let total = 0
   for (const level of bookside) {
@@ -55,18 +55,18 @@ function getImpactPriceL2(
 
 function getInstantaneousFundingRateL2(
   market: PerpMarket,
-  orderbook: OrderbookL2
+  orderbook: OrderbookL2,
 ) {
   const MIN_FUNDING = market.minFunding.toNumber()
   const MAX_FUNDING = market.maxFunding.toNumber()
 
   const bid = getImpactPriceL2(
     orderbook.bids,
-    market.baseLotsToUi(market.impactQuantity)
+    market.baseLotsToUi(market.impactQuantity),
   )
   const ask = getImpactPriceL2(
     orderbook.asks,
-    market.baseLotsToUi(market.impactQuantity)
+    market.baseLotsToUi(market.impactQuantity),
   )
   const indexPrice = market._uiPrice
 
@@ -75,7 +75,7 @@ function getInstantaneousFundingRateL2(
     const bookPrice = (bid + ask) / 2
     funding = Math.min(
       Math.max(bookPrice / indexPrice - 1, MIN_FUNDING),
-      MAX_FUNDING
+      MAX_FUNDING,
     )
   } else if (bid !== undefined) {
     funding = MAX_FUNDING
@@ -100,7 +100,7 @@ const PerpFundingRate = () => {
   const fundingRate = useMemo(() => {
     if (rate.isSuccess && selectedMarket instanceof PerpMarket) {
       const marketRate = rate?.data?.find(
-        (r) => r.market_index === selectedMarket.perpMarketIndex
+        (r) => r.market_index === selectedMarket.perpMarketIndex,
       )
       const funding = marketRate?.funding_rate_hourly
       return typeof funding === 'number' ? funding : undefined

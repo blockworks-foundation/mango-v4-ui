@@ -10,7 +10,7 @@ const tpsWarningThreshold = 1300
 
 const getRecentPerformance = async (
   connection: Connection,
-  setTps: (x: number) => void
+  setTps: (x: number) => void,
 ) => {
   try {
     const samples = 2

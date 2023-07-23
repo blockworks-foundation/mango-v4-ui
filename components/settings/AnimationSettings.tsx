@@ -13,7 +13,7 @@ const AnimationSettings = () => {
   const { t } = useTranslation(['common', 'settings'])
   const [animationSettings, setAnimationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
-    INITIAL_ANIMATION_SETTINGS
+    INITIAL_ANIMATION_SETTINGS,
   )
 
   const handleToggleAnimationSetting = (settingName: string) => {

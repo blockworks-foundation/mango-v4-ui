@@ -59,17 +59,17 @@ type JupiterRouteInfoProps = {
 
 const deserializeJupiterIxAndAlt = async (
   connection: Connection,
-  swapTransaction: string
+  swapTransaction: string,
 ): Promise<[TransactionInstruction[], AddressLookupTableAccount[]]> => {
   const parsedSwapTransaction = VersionedTransaction.deserialize(
-    Buffer.from(swapTransaction, 'base64')
+    Buffer.from(swapTransaction, 'base64'),
   )
   const message = parsedSwapTransaction.message
   // const lookups = message.addressTableLookups
   const addressLookupTablesResponses = await Promise.all(
     message.addressTableLookups.map((alt) =>
-      connection.getAddressLookupTable(alt.accountKey)
-    )
+      connection.getAddressLookupTable(alt.accountKey),
+    ),
   )
   const addressLookupTables: AddressLookupTableAccount[] =
     addressLookupTablesResponses
@@ -87,7 +87,7 @@ const prepareMangoRouterInstructions = async (
   selectedRoute: RouteInfo,
   inputMint: PublicKey,
   outputMint: PublicKey,
-  userPublicKey: PublicKey
+  userPublicKey: PublicKey,
 ): Promise<[TransactionInstruction[], AddressLookupTableAccount[]]> => {
   if (!selectedRoute || !selectedRoute.mints || !selectedRoute.instructions) {
     return [[], []]
@@ -97,8 +97,8 @@ const prepareMangoRouterInstructions = async (
     ...selectedRoute.mints.filter(
       (routeMint) =>
         !mintsToFilterOut.find((filterOutMint) =>
-          filterOutMint.equals(routeMint)
-        )
+          filterOutMint.equals(routeMint),
+        ),
     ),
   ]
   const additionalInstructions = []
@@ -106,7 +106,7 @@ const prepareMangoRouterInstructions = async (
     const ix = await createAssociatedTokenAccountIdempotentInstruction(
       userPublicKey,
       userPublicKey,
-      mint
+      mint,
     )
     additionalInstructions.push(ix)
   }
@@ -123,7 +123,7 @@ export const fetchJupiterTransaction = async (
   userPublicKey: PublicKey,
   slippage: number,
   inputMint: PublicKey,
-  outputMint: PublicKey
+  outputMint: PublicKey,
 ): Promise<[TransactionInstruction[], AddressLookupTableAccount[]]> => {
   const transactions = await (
     await fetch('https://quote-api.jup.ag/v4/swap', {
@@ -148,7 +148,7 @@ export const fetchJupiterTransaction = async (
 
   const [ixs, alts] = await deserializeJupiterIxAndAlt(
     connection,
-    swapTransaction
+    swapTransaction,
   )
 
   const isSetupIx = (pk: PublicKey): boolean =>
@@ -202,14 +202,14 @@ const SwapReviewRouteInfo = ({
   const outputBank = mangoStore((s) => s.swap.outputBank)
   const [soundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,
-    INITIAL_SOUND_SETTINGS
+    INITIAL_SOUND_SETTINGS,
   )
   const focusRef = useRef<HTMLButtonElement>(null)
 
   const amountOut = useMemo(() => {
     if (!selectedRoute || !outputTokenInfo) return
     return new Decimal(selectedRoute.outAmount.toString()).div(
-      10 ** outputTokenInfo.decimals
+      10 ** outputTokenInfo.decimals,
     )
   }, [selectedRoute, outputTokenInfo])
 
@@ -228,7 +228,7 @@ const SwapReviewRouteInfo = ({
       if (inputId && outputId) {
         try {
           const results = await fetch(
-            `https://api.coingecko.com/api/v3/simple/price?ids=${inputId},${outputId}&vs_currencies=usd`
+            `https://api.coingecko.com/api/v3/simple/price?ids=${inputId},${outputId}&vs_currencies=usd`,
           )
           const json = await results.json()
           if (json[inputId]?.usd && json[outputId]?.usd) {
@@ -275,7 +275,7 @@ const SwapReviewRouteInfo = ({
               selectedRoute,
               inputBank.mint,
               outputBank.mint,
-              mangoAccount.owner
+              mangoAccount.owner,
             )
           : await fetchJupiterTransaction(
               connection,
@@ -283,7 +283,7 @@ const SwapReviewRouteInfo = ({
               wallet.publicKey,
               slippage,
               inputBank.mint,
-              outputBank.mint
+              outputBank.mint,
             )
 
       try {
@@ -358,8 +358,8 @@ const SwapReviewRouteInfo = ({
           .div(amountOut)
           .minus(
             new Decimal(coingeckoPrices?.outputCoingeckoPrice).div(
-              coingeckoPrices?.inputCoingeckoPrice
-            )
+              coingeckoPrices?.inputCoingeckoPrice,
+            ),
           )
           .div(amountIn.div(amountOut))
           .mul(100)
@@ -540,7 +540,7 @@ const SwapReviewRouteInfo = ({
                           token: inputTokenInfo?.symbol,
                           rate: formatNumericValue(
                             inputBank!.getBorrowRateUi(),
-                            2
+                            2,
                           ),
                         })
                       : t('swap:tooltip-borrow-no-balance', {
@@ -548,7 +548,7 @@ const SwapReviewRouteInfo = ({
                           token: inputTokenInfo?.symbol,
                           rate: formatNumericValue(
                             inputBank!.getBorrowRateUi(),
-                            2
+                            2,
                           ),
                         })
                   }
@@ -667,7 +667,7 @@ const SwapReviewRouteInfo = ({
                   ) : (
                     selectedRoute?.marketInfos.map((info, index) => {
                       const feeToken = jupiterTokens.find(
-                        (item) => item?.address === info.lpFee?.mint
+                        (item) => item?.address === info.lpFee?.mint,
                       )
                       return (
                         <div className="flex justify-between" key={index}>
@@ -690,7 +690,7 @@ const SwapReviewRouteInfo = ({
                                 undefined,
                                 {
                                   maximumSignificantDigits: 2,
-                                }
+                                },
                               )}
                               %)
                             </p>

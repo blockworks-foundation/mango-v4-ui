@@ -60,7 +60,7 @@ const parseSerumEvent = (event: SerumEvent) => {
 
 export const parseApiTradeHistory = (
   mangoAccountAddress: string,
-  trade: SpotTradeHistory | PerpTradeHistory
+  trade: SpotTradeHistory | PerpTradeHistory,
 ) => {
   let side: 'buy' | 'sell'
   let size
@@ -98,7 +98,7 @@ export const formatTradeHistory = (
   group: Group,
   selectedMarket: Serum3Market | PerpMarket,
   mangoAccountAddress: string,
-  tradeHistory: Array<CombinedTradeHistoryTypes>
+  tradeHistory: Array<CombinedTradeHistoryTypes>,
 ) => {
   return tradeHistory.flat().map((event) => {
     let trade
@@ -116,7 +116,7 @@ export const formatTradeHistory = (
       time = trade.block_datetime
       if ('market' in trade) {
         market = group.getSerum3MarketByExternalMarket(
-          new PublicKey(trade.market)
+          new PublicKey(trade.market),
         )
       } else if ('perp_market' in trade) {
         market = group.getPerpMarketByMarketIndex(trade.market_index)
@@ -133,7 +133,7 @@ export const formatTradeHistory = (
 
 const filterNewFills = (
   eventQueueFills: (SerumEvent | PerpFillEvent)[],
-  apiTradeHistory: (SpotTradeHistory | PerpTradeHistory)[]
+  apiTradeHistory: (SpotTradeHistory | PerpTradeHistory)[],
 ): (SerumEvent | PerpFillEvent)[] => {
   return eventQueueFills.filter((fill) => {
     return !apiTradeHistory.find((trade) => {
@@ -141,10 +141,10 @@ const filterNewFills = (
         return trade.order_id === fill.orderId.toString()
       } else if ('seq_num' in trade && isPerpFillEvent(fill)) {
         const fillTimestamp = new Date(
-          fill.timestamp.toNumber() * 1000
+          fill.timestamp.toNumber() * 1000,
         ).getTime()
         const lastApiTradeTimestamp = new Date(
-          apiTradeHistory[apiTradeHistory.length - 1].block_datetime
+          apiTradeHistory[apiTradeHistory.length - 1].block_datetime,
         ).getTime()
         if (fillTimestamp < lastApiTradeTimestamp) return true
         return trade.seq_num === fill.seqNum.toNumber()
@@ -154,7 +154,7 @@ const filterNewFills = (
 }
 
 const isTradeHistory = (
-  response: null | EmptyObject | TradeHistoryApiResponseType[]
+  response: null | EmptyObject | TradeHistoryApiResponseType[],
 ): response is TradeHistoryApiResponseType[] => {
   if (
     response &&
@@ -169,11 +169,11 @@ const isTradeHistory = (
 export const fetchTradeHistory = async (
   mangoAccountAddress: string,
   offset = 0,
-  limit?: number
+  limit?: number,
 ): Promise<Array<PerpTradeHistory | SpotTradeHistory>> => {
   const tradesLimit = limit ? limit : PAGINATION_PAGE_LENGTH
   const response = await fetch(
-    `${MANGO_DATA_API_URL}/stats/trade-history?mango-account=${mangoAccountAddress}&limit=${tradesLimit}&offset=${offset}`
+    `${MANGO_DATA_API_URL}/stats/trade-history?mango-account=${mangoAccountAddress}&limit=${tradesLimit}&offset=${offset}`,
   )
   const jsonResponse: null | EmptyObject | TradeHistoryApiResponseType[] =
     await response.json()
@@ -202,7 +202,7 @@ export default function useTradeHistory() {
       } catch {
         console.warn(
           'Unable to find OO account for mkt index',
-          selectedMarket.marketIndex
+          selectedMarket.marketIndex,
         )
       }
     }
@@ -236,7 +236,7 @@ export default function useTradeHistory() {
       refetchInterval: 1000 * 60 * 5,
       getNextPageParam: (_lastPage, pages) =>
         pages.length * PAGINATION_PAGE_LENGTH,
-    }
+    },
   )
 
   const combinedTradeHistory = useMemo(() => {
@@ -255,7 +255,7 @@ export default function useTradeHistory() {
       group,
       selectedMarket,
       mangoAccountAddress,
-      combinedHistory
+      combinedHistory,
     )
   }, [eventQueueFillsForOwner, mangoAccountAddress, response, selectedMarket])
 

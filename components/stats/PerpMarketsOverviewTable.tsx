@@ -1,6 +1,5 @@
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
-import { useTheme } from 'next-themes'
 import { useViewport } from '../../hooks/useViewport'
 import mangoStore from '@store/mangoStore'
 import { COLORS } from '../../styles/colors'
@@ -25,10 +24,11 @@ import SoonBadge from '@components/shared/SoonBadge'
 import useMarketsData from 'hooks/useMarketsData'
 import { useMemo } from 'react'
 import MarketChange from '@components/shared/MarketChange'
+import useThemeWrapper from 'hooks/useThemeWrapper'
 
 export const goToPerpMarketDetails = (
   market: PerpMarket,
-  router: NextRouter
+  router: NextRouter,
 ) => {
   const query = { ...router.query, ['market']: market.name }
   router.push({ pathname: router.pathname, query })
@@ -37,7 +37,7 @@ export const goToPerpMarketDetails = (
 const PerpMarketsOverviewTable = () => {
   const { t } = useTranslation(['common', 'trade'])
   const perpMarkets = mangoStore((s) => s.perpMarkets)
-  const { theme } = useTheme()
+  const { theme } = useThemeWrapper()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const rate = usePerpFundingRate()
@@ -72,7 +72,7 @@ const PerpMarketsOverviewTable = () => {
               const symbol = market.name.split('-')[0]
 
               const perpDataEntries = Object.entries(perpData).find(
-                (e) => e[0].toLowerCase() === market.name.toLowerCase()
+                (e) => e[0].toLowerCase() === market.name.toLowerCase(),
               )
               const marketData = perpDataEntries
                 ? perpDataEntries[1][0]
@@ -88,14 +88,14 @@ const PerpMarketsOverviewTable = () => {
               let fundingRateApr
               if (rate.isSuccess) {
                 const marketRate = rate?.data?.find(
-                  (r) => r.market_index === market.perpMarketIndex
+                  (r) => r.market_index === market.perpMarketIndex,
                 )
                 if (marketRate) {
                   fundingRate = formatFunding.format(
-                    marketRate.funding_rate_hourly
+                    marketRate.funding_rate_hourly,
                   )
                   fundingRateApr = formatFunding.format(
-                    marketRate.funding_rate_hourly * 8760
+                    marketRate.funding_rate_hourly * 8760,
                   )
                 } else {
                   fundingRate = '–'
@@ -221,7 +221,7 @@ const PerpMarketsOverviewTable = () => {
                           <p className="text-th-fgd-4">
                             $
                             {numberCompacter.format(
-                              openInterest * market.uiPrice
+                              openInterest * market.uiPrice,
                             )}
                           </p>
                         </>
@@ -263,7 +263,7 @@ export default PerpMarketsOverviewTable
 
 const MobilePerpMarketItem = ({ market }: { market: PerpMarket }) => {
   const { t } = useTranslation('common')
-  const { theme } = useTheme()
+  const { theme } = useThemeWrapper()
   const router = useRouter()
   const rate = usePerpFundingRate()
   const { data: marketsData, isLoading, isFetching } = useMarketsData()
@@ -274,7 +274,7 @@ const MobilePerpMarketItem = ({ market }: { market: PerpMarket }) => {
   }, [marketsData])
 
   const perpDataEntries = Object.entries(perpData).find(
-    (e) => e[0].toLowerCase() === market.name.toLowerCase()
+    (e) => e[0].toLowerCase() === market.name.toLowerCase(),
   )
   const marketData = perpDataEntries ? perpDataEntries[1][0] : undefined
 
@@ -297,12 +297,12 @@ const MobilePerpMarketItem = ({ market }: { market: PerpMarket }) => {
   let fundingRateApr: string
   if (rate.isSuccess) {
     const marketRate = rate?.data?.find(
-      (r) => r.market_index === market.perpMarketIndex
+      (r) => r.market_index === market.perpMarketIndex,
     )
     if (marketRate) {
       fundingRate = formatFunding.format(marketRate.funding_rate_hourly)
       fundingRateApr = formatFunding.format(
-        marketRate.funding_rate_hourly * 8760
+        marketRate.funding_rate_hourly * 8760,
       )
     } else {
       fundingRate = '–'

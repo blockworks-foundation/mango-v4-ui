@@ -29,7 +29,7 @@ import { breakpoints } from 'utils/theme'
 
 export const handleCopyAddress = (
   mangoAccount: MangoAccount,
-  successMessage: string
+  successMessage: string,
 ) => {
   copyToClipboard(mangoAccount.publicKey.toString())
   notify({
@@ -121,7 +121,7 @@ const AccountActions = () => {
                           mangoAccount!,
                           t('copy-address-success', {
                             pk: abbreviateAddress(mangoAccount!.publicKey),
-                          })
+                          }),
                         )
                       }
                     >

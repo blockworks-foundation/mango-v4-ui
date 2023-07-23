@@ -28,7 +28,7 @@ const ActionPanel = ({ bank }: { bank: Bank }) => {
   const handleTrade = () => {
     const set = mangoStore.getState().set
     const market = serumMarkets.find(
-      (m) => m.baseTokenIndex === bank?.tokenIndex
+      (m) => m.baseTokenIndex === bank?.tokenIndex,
     )
     if (market) {
       set((state) => {

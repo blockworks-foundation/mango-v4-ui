@@ -41,7 +41,7 @@ const PerpPositionsStatsTable = ({
         <tbody>
           {positions.map(({ account, perpPosition, mangoAccount }, i) => {
             const market = group.getPerpMarketByMarketIndex(
-              perpPosition.marketIndex
+              perpPosition.marketIndex,
             )
             const basePosition = perpPosition.getBasePositionUi(market)
 
@@ -49,7 +49,7 @@ const PerpPositionsStatsTable = ({
 
             const floorBasePosition = floorToDecimal(
               basePosition,
-              getDecimalCount(market.minOrderSize)
+              getDecimalCount(market.minOrderSize),
             ).toNumber()
 
             const isLong = basePosition > 0
@@ -179,7 +179,7 @@ const PerpPositionsStatsTable = ({
     <div className="border-b border-th-bkg-3">
       {positions.map(({ account, perpPosition, mangoAccount }) => {
         const market = group.getPerpMarketByMarketIndex(
-          perpPosition.marketIndex
+          perpPosition.marketIndex,
         )
         const basePosition = perpPosition.getBasePositionUi(market)
 
@@ -187,7 +187,7 @@ const PerpPositionsStatsTable = ({
 
         const floorBasePosition = floorToDecimal(
           basePosition,
-          getDecimalCount(market.minOrderSize)
+          getDecimalCount(market.minOrderSize),
         ).toNumber()
 
         const isLong = basePosition > 0

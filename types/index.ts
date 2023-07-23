@@ -64,7 +64,7 @@ export interface PerpTradeHistory {
 }
 
 export const isApiSpotTradeHistory = (
-  t: SpotTradeHistory | PerpTradeHistory
+  t: SpotTradeHistory | PerpTradeHistory,
 ): t is SpotTradeHistory => {
   if ('open_orders' in t) return true
   else return false
@@ -81,14 +81,14 @@ export type CombinedTradeHistoryTypes =
   | SerumEvent
 
 export const isSerumFillEvent = (
-  t: CombinedTradeHistoryTypes
+  t: CombinedTradeHistoryTypes,
 ): t is SerumEvent => {
   if ('eventFlags' in t) return true
   else return false
 }
 
 export const isPerpFillEvent = (
-  t: CombinedTradeHistoryTypes
+  t: CombinedTradeHistoryTypes,
 ): t is PerpFillEvent => {
   if ('takerSide' in t) return true
   else return false
@@ -131,7 +131,7 @@ export type TotalAccountFundingItem = {
 
 export type HourlyFundingData = [
   string,
-  { [key: string]: { long_funding: number; short_funding: number } }
+  { [key: string]: { long_funding: number; short_funding: number } },
 ]
 
 export type HourlyFundingStatsData = {
@@ -256,7 +256,7 @@ export interface PerpTradeActivity {
 }
 
 export function isLiquidationFeedItem(
-  item: ActivityFeed
+  item: ActivityFeed,
 ): item is LiquidationActivity {
   if (item.activity_type.includes('liquidate')) {
     return true
@@ -265,7 +265,7 @@ export function isLiquidationFeedItem(
 }
 
 export function isPerpTradeFeedItem(
-  item: ActivityFeed
+  item: ActivityFeed,
 ): item is PerpTradeActivity {
   if (item.activity_type === 'perp_trade') {
     return true
@@ -274,7 +274,7 @@ export function isPerpTradeFeedItem(
 }
 
 export function isPerpLiquidation(
-  activityDetails: SpotOrPerpLiquidationItem
+  activityDetails: SpotOrPerpLiquidationItem,
 ): activityDetails is PerpLiquidationFeedItem {
   if ((activityDetails as PerpLiquidationFeedItem).base_transfer) {
     return true
@@ -416,6 +416,23 @@ export type MarketsDataItem = {
   price_history: { price: number; time: string }[]
   quote_volume_1h: number
   quote_volume_24h: number
+}
+
+export type cumOrderbookSide = {
+  price: number
+  size: number
+  cumulativeSize: number
+  sizePercent: number
+  maxSizePercent: number
+  cumulativeSizePercent: number
+  isUsersOrder: boolean
+}
+
+export type OrderbookData = {
+  bids: cumOrderbookSide[]
+  asks: cumOrderbookSide[]
+  spread: number
+  spreadPercentage: number
 }
 
 export interface HealthContribution {

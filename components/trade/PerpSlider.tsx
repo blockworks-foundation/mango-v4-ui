@@ -35,12 +35,12 @@ const PerpSlider = ({
       if (side === 'buy') {
         return mangoAccount.getMaxQuoteForPerpBidUi(
           group,
-          selectedMarket.perpMarketIndex
+          selectedMarket.perpMarketIndex,
         )
       } else {
         return mangoAccount.getMaxBaseForPerpAskUi(
           group,
-          selectedMarket.perpMarketIndex
+          selectedMarket.perpMarketIndex,
         )
       }
     } catch (e) {
@@ -63,7 +63,7 @@ const PerpSlider = ({
           if (Number(price)) {
             const baseSize = floorToDecimal(
               parseFloat(val) / price,
-              minOrderDecimals
+              minOrderDecimals,
             )
             const quoteSize = floorToDecimal(baseSize.mul(price), tickDecimals)
             s.tradeForm.baseSize = baseSize.toFixed()
@@ -77,13 +77,13 @@ const PerpSlider = ({
           if (Number(price)) {
             s.tradeForm.quoteSize = floorToDecimal(
               parseFloat(val) * price,
-              tickDecimals
+              tickDecimals,
             ).toFixed()
           }
         }
       })
     },
-    [marketPrice, minOrderDecimals, tickDecimals]
+    [marketPrice, minOrderDecimals, tickDecimals],
   )
 
   return (

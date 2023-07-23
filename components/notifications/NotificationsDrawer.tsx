@@ -22,7 +22,7 @@ import { notify } from 'utils/notifications'
 
 export const createSolanaMessage = (
   wallet: WalletContextState,
-  setCookie: (wallet: string, token: string) => void
+  setCookie: (wallet: string, token: string) => void,
 ) => {
   const payload = new Payload()
   payload.domain = window.location.host
@@ -121,7 +121,7 @@ const NotificationsDrawer = ({
         })
       }
     },
-    [NOTIFICATION_API, headers]
+    [NOTIFICATION_API, headers],
   )
 
   const remove = useCallback(
@@ -136,7 +136,7 @@ const NotificationsDrawer = ({
             body: JSON.stringify({
               ids: ids,
             }),
-          }
+          },
         )
         const body = await resp.json()
         const error = body.error
@@ -158,7 +158,7 @@ const NotificationsDrawer = ({
       }
       setIsRemoving(false)
     },
-    [NOTIFICATION_API, headers]
+    [NOTIFICATION_API, headers],
   )
 
   // Mark all notifications as seen when the inbox is opened
@@ -241,7 +241,7 @@ const NotificationsDrawer = ({
                               <CalendarIcon className="mr-1 h-3.5 w-3.5" />
                               <p className="text-xs">
                                 {dayjs(notification.createdAt).format(
-                                  'DD MMM YYYY, h:mma'
+                                  'DD MMM YYYY, h:mma',
                                 )}
                               </p>
                             </div>

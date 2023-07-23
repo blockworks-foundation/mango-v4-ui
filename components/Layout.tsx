@@ -36,14 +36,14 @@ const termsLastUpdated = 1679441610978
 const Layout = ({ children }: { children: ReactNode }) => {
   const [isCollapsed, setIsCollapsed] = useLocalStorageState(
     SIDEBAR_COLLAPSE_KEY,
-    false
+    false,
   )
 
   const { width } = useViewport()
   const { asPath } = useRouter()
 
   useEffect(() => {
-    if (width < breakpoints.xl) {
+    if (width < breakpoints['2xl']) {
       setIsCollapsed(true)
     }
   }, [width])
@@ -52,9 +52,12 @@ const Layout = ({ children }: { children: ReactNode }) => {
     const animationFrames = 15
 
     for (let x = 1; x <= animationFrames; x++) {
-      setTimeout(() => {
-        window.dispatchEvent(new Event('resize'))
-      }, (sideBarAnimationDuration / animationFrames) * x)
+      setTimeout(
+        () => {
+          window.dispatchEvent(new Event('resize'))
+        },
+        (sideBarAnimationDuration / animationFrames) * x,
+      )
     }
   }, [isCollapsed])
 
@@ -84,7 +87,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
         <div className="fixed z-20 hidden h-screen md:block">
           <button
-            className="absolute right-0 top-1/2 z-20 hidden h-8 w-3 -translate-y-1/2 rounded-none rounded-l bg-th-bkg-3 hover:bg-th-bkg-4 focus:outline-none focus-visible:bg-th-bkg-4 xl:block"
+            className="absolute right-0 top-1/2 z-20 hidden h-8 w-3 -translate-y-1/2 rounded-none rounded-l bg-th-bkg-3 hover:bg-th-bkg-4 focus:outline-none focus-visible:bg-th-bkg-4 2xl:block"
             onClick={handleToggleSidebar}
           >
             <ChevronRightIcon
@@ -124,7 +127,7 @@ const TermsOfUse = () => {
   const { connected } = useWallet()
   const [acceptTerms, setAcceptTerms] = useLocalStorageState(
     ACCEPT_TERMS_KEY,
-    ''
+    '',
   )
 
   const showTermsOfUse = useMemo(() => {

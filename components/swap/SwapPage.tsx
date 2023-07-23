@@ -19,7 +19,7 @@ const SwapPage = () => {
   const actions = mangoStore((s) => s.actions)
   const [showSwapIntro, setShowSwapIntro] = useLocalStorage(
     SHOW_SWAP_INTRO_MODAL,
-    true
+    true,
   )
 
   useEffect(() => {

@@ -50,7 +50,7 @@ const UnsettledTrades = ({
       const txid = await client.serum3SettleFunds(
         group,
         mangoAccount,
-        new PublicKey(mktAddress)
+        new PublicKey(mktAddress),
       )
       actions.fetchOpenOrders()
       notify({
@@ -98,7 +98,7 @@ const UnsettledTrades = ({
         group,
         allMangoAccounts,
         mangoAccountPnl < 0 ? 'positive' : 'negative',
-        2
+        2,
       )
       console.log('settleCandidates', settleCandidates)
 
@@ -113,7 +113,7 @@ const UnsettledTrades = ({
         unprofitableAccount,
         mangoAccount,
         mangoAccount,
-        market.perpMarketIndex
+        market.perpMarketIndex,
       )
       actions.reloadMangoAccount()
       notify({
@@ -155,7 +155,7 @@ const UnsettledTrades = ({
         <tbody>
           {Object.entries(unsettledSpotBalances).map(([mktAddress]) => {
             const market = group.getSerum3MarketByExternalMarket(
-              new PublicKey(mktAddress)
+              new PublicKey(mktAddress),
             )
             const base = market?.name.split('/')[0]
             const quote = market?.name.split('/')[1]
@@ -208,7 +208,7 @@ const UnsettledTrades = ({
           })}
           {unsettledPerpPositions.map((position) => {
             const market = group.getPerpMarketByMarketIndex(
-              position.marketIndex
+              position.marketIndex,
             )
             return (
               <TrBody key={position.marketIndex} className="text-sm">
@@ -282,7 +282,7 @@ const UnsettledTrades = ({
         })}
         {Object.entries(unsettledSpotBalances).map(([mktAddress]) => {
           const market = group.getSerum3MarketByExternalMarket(
-            new PublicKey(mktAddress)
+            new PublicKey(mktAddress),
           )
           const base = market?.name.split('/')[0]
           const quote = market?.name.split('/')[1]

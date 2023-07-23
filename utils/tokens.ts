@@ -30,7 +30,7 @@ export class TokenAccount {
       amount: number
       decimals: number
       uiAmount: number
-    }
+    },
   ) {
     this.publicKey = publicKey
     this.uiAmount = 0
@@ -50,7 +50,7 @@ function exists<T>(item: T | null | undefined): item is T {
 
 export async function getTokenAccountsByOwnerWithWrappedSol(
   connection: Connection,
-  owner: PublicKey
+  owner: PublicKey,
 ): Promise<TokenAccount[]> {
   const solReq = connection.getAccountInfo(owner)
   const tokenReq = connection.getParsedTokenAccountsByOwner(owner, {
@@ -95,7 +95,7 @@ const enhanceNFT = (nft: NftWithATA) => {
 
 function loadNft(
   nft: Metadata<JsonMetadata<string>> | Nft | Sft,
-  connection: Connection
+  connection: Connection,
 ) {
   const metaplex = new Metaplex(connection)
 
@@ -119,7 +119,7 @@ export async function getNFTsByOwner(owner: PublicKey, connection: Connection) {
   })
 
   const nfts = await Promise.all(
-    rawNfts.map((nft) => loadNft(nft, connection))
+    rawNfts.map((nft) => loadNft(nft, connection)),
   ).then((nfts) =>
     Promise.all(
       nfts.filter(exists).map(async (nft) => ({
@@ -128,13 +128,13 @@ export async function getNFTsByOwner(owner: PublicKey, connection: Connection) {
         tokenAccountAddress: await getAssociatedTokenAddress(
           nft.mint.address,
           owner,
-          true
+          true,
         ).catch((e) => {
           console.error(e)
           return null
         }),
-      }))
-    )
+      })),
+    ),
   )
 
   return nfts.map(enhanceNFT)

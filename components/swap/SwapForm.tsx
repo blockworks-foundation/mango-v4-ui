@@ -121,14 +121,14 @@ const SwapForm = () => {
         }
       })
     },
-    []
+    [],
   )
 
   const setAmountFromSlider = useCallback(
     (amount: string) => {
       setAmountInFormValue(amount, true)
     },
-    [setAmountInFormValue]
+    [setAmountInFormValue],
   )
 
   const setAmountOutFormValue = useCallback((amountOut: string) => {
@@ -149,7 +149,7 @@ const SwapForm = () => {
       }
       setAmountOutFormValue(borrowAmount.toString())
     },
-    [setAmountOutFormValue]
+    [setAmountOutFormValue],
   )
 
   /* 
@@ -192,7 +192,7 @@ const SwapForm = () => {
       }
       setAmountInFormValue(e.value)
     },
-    [swapMode, setAmountInFormValue]
+    [swapMode, setAmountInFormValue],
   )
 
   const handleAmountOutChange = useCallback(
@@ -205,7 +205,7 @@ const SwapForm = () => {
       }
       setAmountOutFormValue(e.value)
     },
-    [swapMode, setAmountOutFormValue]
+    [swapMode, setAmountOutFormValue],
   )
 
   const handleTokenInSelect = useCallback((mintAddress: string) => {
@@ -242,10 +242,10 @@ const SwapForm = () => {
         s.swap.outputBank = inputBank
       })
       setAnimateSwitchArrow(
-        (prevanimateSwitchArrow) => prevanimateSwitchArrow + 1
+        (prevanimateSwitchArrow) => prevanimateSwitchArrow + 1,
       )
     },
-    [setAmountInFormValue]
+    [setAmountInFormValue],
   )
 
   const maintProjectedHealth = useMemo(() => {
@@ -272,7 +272,7 @@ const SwapForm = () => {
             uiTokenAmount: amountOutAsDecimal.toNumber(),
           },
         ],
-        HealthType.maint
+        HealthType.maint,
       )
     return simulatedHealthRatio > 100
       ? 100
@@ -401,7 +401,7 @@ const SwapForm = () => {
               <span className="absolute right-3 bottom-1.5 text-xxs text-th-fgd-4">
                 {inputBank
                   ? formatCurrencyValue(
-                      inputBank.uiPrice * Number(amountInFormValue)
+                      inputBank.uiPrice * Number(amountInFormValue),
                     )
                   : '–'}
               </span>
@@ -434,8 +434,8 @@ const SwapForm = () => {
                 onClick={() =>
                   setBorrowAmountOut(
                     outputTokenBalanceBorrow.toFixed(
-                      outputBank?.mintDecimals || 9
-                    )
+                      outputBank?.mintDecimals || 9,
+                    ),
                   )
                 }
                 value={outputTokenBalanceBorrow}
@@ -476,7 +476,7 @@ const SwapForm = () => {
                   <span className="absolute right-3 bottom-1.5 text-xxs text-th-fgd-4">
                     {outputBank
                       ? formatCurrencyValue(
-                          outputBank.uiPrice * Number(amountOutFormValue)
+                          outputBank.uiPrice * Number(amountOutFormValue),
                         )
                       : '–'}
                   </span>
@@ -562,6 +562,7 @@ const SwapForm = () => {
                 className="text-th-fgd-3"
                 checked={useMargin}
                 onChange={handleSetMargin}
+                small
               />
             </div>
             <div className="flex items-center justify-between">

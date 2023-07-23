@@ -1,8 +1,8 @@
-import { useTheme } from 'next-themes'
 import { COLORS } from 'styles/colors'
+import useThemeWrapper from './useThemeWrapper'
 
 export function useKlineChart() {
-  const { theme } = useTheme()
+  const { theme } = useThemeWrapper()
   const styles = {
     grid: {
       show: false,

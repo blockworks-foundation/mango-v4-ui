@@ -11,7 +11,7 @@ const FavoriteMarketButton = ({
 }) => {
   const [favoriteMarkets, setFavoriteMarkets] = useLocalStorageState<string[]>(
     FAVORITE_MARKETS_KEY,
-    []
+    [],
   )
 
   const addToFavorites = (marketName: string) => {
@@ -24,7 +24,7 @@ const FavoriteMarketButton = ({
   }
 
   return favoriteMarkets.find(
-    (marketName: string) => marketName === market.name
+    (marketName: string) => marketName === market.name,
   ) ? (
     <button
       className="flex items-center justify-center text-th-active focus-visible:text-th-fgd-4 md:hover:text-th-fgd-3"

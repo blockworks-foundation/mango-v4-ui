@@ -11,10 +11,10 @@ export interface BirdeyePriceResponse {
 }
 
 const fetchBirdeyePrices = async (
-  spotMarkets: Serum3Market[]
+  spotMarkets: Serum3Market[],
 ): Promise<{ data: BirdeyePriceResponse[]; mint: string }[]> => {
   const mints = spotMarkets.map((market) =>
-    market.serumMarketExternal.toString()
+    market.serumMarketExternal.toString(),
   )
 
   const promises = []
@@ -47,7 +47,7 @@ export const useBirdeyeMarketPrices = () => {
       retry: 3,
       enabled: !!spotMarkets?.length,
       refetchOnWindowFocus: false,
-    }
+    },
   )
 
   return {

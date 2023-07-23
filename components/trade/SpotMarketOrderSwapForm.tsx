@@ -82,7 +82,7 @@ export default function SpotMarketOrderSwapForm() {
         }
       })
     },
-    [oraclePrice]
+    [oraclePrice],
   )
 
   const handleQuoteSizeChange = useCallback(
@@ -102,7 +102,7 @@ export default function SpotMarketOrderSwapForm() {
         }
       })
     },
-    [oraclePrice]
+    [oraclePrice],
   )
 
   const setAmountFromSlider = useCallback(
@@ -110,16 +110,16 @@ export default function SpotMarketOrderSwapForm() {
       if (side === 'buy') {
         handleQuoteSizeChange(
           { value: amount } as NumberFormatValues,
-          { source: 'event' } as SourceInfo
+          { source: 'event' } as SourceInfo,
         )
       } else {
         handleBaseSizeChange(
           { value: amount } as NumberFormatValues,
-          { source: 'event' } as SourceInfo
+          { source: 'event' } as SourceInfo,
         )
       }
     },
-    [side, handleBaseSizeChange, handleQuoteSizeChange]
+    [side, handleBaseSizeChange, handleQuoteSizeChange],
   )
 
   const [inputBank, outputBank] = useMemo(() => {
@@ -127,10 +127,10 @@ export default function SpotMarketOrderSwapForm() {
     if (!group || !(selectedMarket instanceof Serum3Market)) return []
 
     const quoteBank = group?.getFirstBankByTokenIndex(
-      selectedMarket.quoteTokenIndex
+      selectedMarket.quoteTokenIndex,
     )
     const baseBank = group.getFirstBankByTokenIndex(
-      selectedMarket.baseTokenIndex
+      selectedMarket.baseTokenIndex,
     )
 
     if (side === 'buy') {
@@ -184,7 +184,7 @@ export default function SpotMarketOrderSwapForm() {
       publicKey,
       slippage,
       inputBank.mint,
-      outputBank.mint
+      outputBank.mint,
     )
 
     try {
@@ -265,7 +265,7 @@ export default function SpotMarketOrderSwapForm() {
                 : stringToNumberOrZero(quoteSize),
           },
         ],
-        HealthType.maint
+        HealthType.maint,
       )
     return simulatedHealthRatio > 100
       ? 100

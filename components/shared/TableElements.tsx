@@ -62,7 +62,7 @@ export const TrBody = forwardRef<HTMLTableRowElement, TrBodyProps>(
         {children}
       </tr>
     )
-  }
+  },
 )
 
 TrBody.displayName = 'TrBody'

@@ -31,10 +31,10 @@ const MarketLogos = ({
       const hasCustomQuoteIcon = CUSTOM_TOKEN_ICONS[quoteSymbol]
 
       const jupiterBaseToken = mangoTokens.find(
-        (t) => t.address === baseBank.mint.toString()
+        (t) => t.address === baseBank.mint.toString(),
       )
       const jupiterQuoteToken = mangoTokens.find(
-        (t) => t.address === quoteBank.mint.toString()
+        (t) => t.address === quoteBank.mint.toString(),
       )
 
       baseLogoURI = hasCustomBaseIcon

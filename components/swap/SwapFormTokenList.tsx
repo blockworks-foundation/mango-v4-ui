@@ -166,7 +166,7 @@ const SwapFormTokenList = ({
             new PublicKey(token.address),
             outputBank.mint,
             group,
-            useMargin
+            useMargin,
           )
           return { ...token, ...max }
         })
@@ -174,7 +174,7 @@ const SwapFormTokenList = ({
         .sort((a, b) =>
           useMargin
             ? Number(b.amountWithBorrow) - Number(a.amountWithBorrow)
-            : Number(b.amount) - Number(a.amount)
+            : Number(b.amount) - Number(a.amount),
         )
 
       return filteredSortedTokens

@@ -27,11 +27,11 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
   const mangoAccount = mangoStore((s) => s.mangoAccount)
   const perpPositions = mangoStore((s) => s.mangoAccount.perpPositions)
   const openPerpPositions = Object.values(perpPositions).filter((p) =>
-    p.basePositionLots.toNumber()
+    p.basePositionLots.toNumber(),
   )
   const group = mangoStore.getState().group
   const unsettledBalances = Object.values(mangoAccount.spotBalances).filter(
-    (x) => x.unsettled && x.unsettled > 0
+    (x) => x.unsettled && x.unsettled > 0,
   )
   const unsettledPerpPositions = useUnsettledPerpPositions()
   const [hasBorrows, setHasBorrows] = useState(false)
@@ -49,7 +49,7 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
       const tx = await client.emptyAndCloseMangoAccount(group, mangoAccount)
       if (tx) {
         const newMangoAccounts = mangoAccounts.filter(
-          (ma) => !ma.publicKey.equals(mangoAccount.publicKey)
+          (ma) => !ma.publicKey.equals(mangoAccount.publicKey),
         )
         let newCurrentAccount: MangoAccount
         if (newMangoAccounts[0]) {
@@ -99,7 +99,7 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
           .filter((token: TokenPosition) =>
             token
               .balance(group.getFirstBankByTokenIndex(token.tokenIndex))
-              .isNeg()
+              .isNeg(),
           ).length
       ) {
         setHasBorrows(true)
@@ -137,8 +137,8 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
                           mangoAccount && group
                             ? formatCurrencyValue(
                                 toUiDecimalsForQuote(
-                                  mangoAccount!.current!.getEquity(group)
-                                )
+                                  mangoAccount!.current!.getEquity(group),
+                                ),
                               )
                             : 0,
                       })}

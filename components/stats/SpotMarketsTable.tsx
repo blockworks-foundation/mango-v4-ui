@@ -1,6 +1,5 @@
 import { Serum3Market } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
-import { useTheme } from 'next-themes'
 import { useMemo } from 'react'
 import { useViewport } from '../../hooks/useViewport'
 import mangoStore from '@store/mangoStore'
@@ -18,12 +17,13 @@ import { Disclosure, Transition } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import MarketChange from '@components/shared/MarketChange'
 import useMarketsData from 'hooks/useMarketsData'
+import useThemeWrapper from 'hooks/useThemeWrapper'
 
 const SpotMarketsTable = () => {
   const { t } = useTranslation('common')
   const { group } = useMangoGroup()
   const serumMarkets = mangoStore((s) => s.serumMarkets)
-  const { theme } = useTheme()
+  const { theme } = useThemeWrapper()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const { data: marketsData, isLoading, isFetching } = useMarketsData()
@@ -54,24 +54,24 @@ const SpotMarketsTable = () => {
               .sort((a, b) => a.name.localeCompare(b.name))
               .map((mkt) => {
                 const baseBank = group?.getFirstBankByTokenIndex(
-                  mkt.baseTokenIndex
+                  mkt.baseTokenIndex,
                 )
                 const quoteBank = group?.getFirstBankByTokenIndex(
-                  mkt.quoteTokenIndex
+                  mkt.quoteTokenIndex,
                 )
                 const market = group?.getSerum3ExternalMarket(
-                  mkt.serumMarketExternal
+                  mkt.serumMarketExternal,
                 )
                 let price
                 if (baseBank && market && quoteBank) {
                   price = floorToDecimal(
                     baseBank.uiPrice / quoteBank.uiPrice,
-                    getDecimalCount(market.tickSize)
+                    getDecimalCount(market.tickSize),
                   ).toNumber()
                 }
 
                 const spotDataEntries = Object.entries(spotData).find(
-                  (e) => e[0].toLowerCase() === mkt.name.toLowerCase()
+                  (e) => e[0].toLowerCase() === mkt.name.toLowerCase(),
                 )
                 const marketData = spotDataEntries
                   ? spotDataEntries[1][0]
@@ -196,7 +196,7 @@ export default SpotMarketsTable
 const MobileSpotMarketItem = ({ market }: { market: Serum3Market }) => {
   const { t } = useTranslation('common')
   const { group } = useMangoGroup()
-  const { theme } = useTheme()
+  const { theme } = useThemeWrapper()
   const baseBank = group?.getFirstBankByTokenIndex(market.baseTokenIndex)
   const quoteBank = group?.getFirstBankByTokenIndex(market.quoteTokenIndex)
   const serumMarket = group?.getSerum3ExternalMarket(market.serumMarketExternal)
@@ -213,12 +213,12 @@ const MobileSpotMarketItem = ({ market }: { market: Serum3Market }) => {
     if (!baseBank || !quoteBank || !serumMarket) return 0
     return floorToDecimal(
       baseBank.uiPrice / quoteBank.uiPrice,
-      getDecimalCount(serumMarket.tickSize)
+      getDecimalCount(serumMarket.tickSize),
     ).toNumber()
   }, [baseBank, quoteBank, serumMarket])
 
   const spotDataEntries = Object.entries(spotData).find(
-    (e) => e[0].toLowerCase() === market.name.toLowerCase()
+    (e) => e[0].toLowerCase() === market.name.toLowerCase(),
   )
   const marketData = spotDataEntries ? spotDataEntries[1][0] : undefined
 

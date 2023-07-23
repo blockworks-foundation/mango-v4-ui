@@ -42,7 +42,7 @@ const AccountPage = () => {
   const isMobile = width ? width < breakpoints.md : false
   const [activeTab, setActiveTab] = useLocalStorageState(
     'accountHeroKey-0.1',
-    'account-value'
+    'account-value',
   )
   const { performanceData, rollingDailyData } = useAccountPerformanceData()
   const router = useRouter()
@@ -53,7 +53,7 @@ const AccountPage = () => {
       const query = { ...router.query, ['view']: view }
       router.push({ pathname: router.pathname, query })
     },
-    [router]
+    [router],
   )
 
   const handleCloseDailyPnlModal = () => {

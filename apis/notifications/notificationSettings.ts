@@ -6,7 +6,7 @@ export type NotificationSettings = {
 
 export const fetchNotificationSettings = async (
   wallet: string,
-  token: string
+  token: string,
 ) => {
   const data = await fetch(
     `${NOTIFICATION_API}notifications/user/getSettings`,
@@ -15,7 +15,7 @@ export const fetchNotificationSettings = async (
         authorization: token,
         publickey: wallet,
       },
-    }
+    },
   )
   const body = await data.json()
 

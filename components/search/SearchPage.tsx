@@ -41,7 +41,7 @@ const SearchPage = () => {
     try {
       setLoading(true)
       const response = await fetch(
-        `${MANGO_DATA_API_URL}/user-data/profile-search?search-string=${searchString}&search-method=${searchType}`
+        `${MANGO_DATA_API_URL}/user-data/profile-search?search-string=${searchString}&search-method=${searchType}`,
       )
       const data = await response.json()
       setSearchResults(data)
@@ -115,7 +115,7 @@ const SearchPage = () => {
                 <MangoAccountItem item={r} type={searchType} />
               ) : (
                 <WalletItem item={r} />
-              )
+              ),
             )
           ) : showNoResults ? (
             <div className="flex flex-col items-center rounded-md border border-th-bkg-3 p-4">

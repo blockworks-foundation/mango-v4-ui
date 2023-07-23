@@ -12,19 +12,19 @@ import dayjs from 'dayjs'
 
 export const fetchAccountPerformance = async (
   mangoAccountPk: string,
-  range: number
+  range: number,
 ) => {
   try {
     const response = await fetch(
       `${MANGO_DATA_API_URL}/stats/performance_account?mango-account=${mangoAccountPk}&start-date=${dayjs()
         .subtract(range, 'day')
-        .format('YYYY-MM-DD')}`
+        .format('YYYY-MM-DD')}`,
     )
     const parsedResponse: null | EmptyObject | AccountPerformanceData[] =
       await response.json()
     if (parsedResponse && Object.keys(parsedResponse)?.length) {
       const entries = Object.entries(parsedResponse).sort((a, b) =>
-        b[0].localeCompare(a[0])
+        b[0].localeCompare(a[0]),
       )
       const stats = entries.map(([key, value]) => {
         return { ...value, time: key } as PerformanceDataItem
@@ -41,7 +41,7 @@ export const fetchAccountPerformance = async (
 export const fetchFundingTotals = async (mangoAccountPk: string) => {
   try {
     const data = await fetch(
-      `${MANGO_DATA_API_URL}/stats/funding-account-total?mango-account=${mangoAccountPk}`
+      `${MANGO_DATA_API_URL}/stats/funding-account-total?mango-account=${mangoAccountPk}`,
     )
     const res = await data.json()
     if (res) {
@@ -69,10 +69,10 @@ export const fetchVolumeTotals = async (mangoAccountPk: string) => {
   try {
     const [perpTotal, spotTotal] = await Promise.all([
       fetch(
-        `${MANGO_DATA_API_URL}/stats/perp-volume-total?mango-account=${mangoAccountPk}`
+        `${MANGO_DATA_API_URL}/stats/perp-volume-total?mango-account=${mangoAccountPk}`,
       ),
       fetch(
-        `${MANGO_DATA_API_URL}/stats/spot-volume-total?mango-account=${mangoAccountPk}`
+        `${MANGO_DATA_API_URL}/stats/spot-volume-total?mango-account=${mangoAccountPk}`,
       ),
     ])
 
@@ -133,10 +133,10 @@ export const fetchHourlyVolume = async (mangoAccountPk: string) => {
   try {
     const [perpHourly, spotHourly] = await Promise.all([
       fetch(
-        `${MANGO_DATA_API_URL}/stats/perp-volume-hourly?mango-account=${mangoAccountPk}`
+        `${MANGO_DATA_API_URL}/stats/perp-volume-hourly?mango-account=${mangoAccountPk}`,
       ),
       fetch(
-        `${MANGO_DATA_API_URL}/stats/spot-volume-hourly?mango-account=${mangoAccountPk}`
+        `${MANGO_DATA_API_URL}/stats/spot-volume-hourly?mango-account=${mangoAccountPk}`,
       ),
     ])
 

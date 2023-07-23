@@ -57,7 +57,8 @@ const defaultFormValues: ListMarketForm = {
 }
 
 const ListMarket = ({ goBack }: { goBack: () => void }) => {
-  const { connected, wallet, connect } = useWallet()
+  //do not deconstruct wallet is used for anchor to sign
+  const wallet = useWallet()
   const { t } = useTranslation(['governance', 'trade'])
   const { group } = useMangoGroup()
   const connection = mangoStore((s) => s.connection)
@@ -89,7 +90,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
   const [baseTokens, quoteTokens] = useMemo(() => {
     if (!group) return [[], []]
     const allTokens = [...group.banksMapByName.keys()].sort((a, b) =>
-      a.localeCompare(b)
+      a.localeCompare(b),
     )
     return [
       allTokens.filter((t) => t !== quoteToken),
@@ -151,7 +152,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
       }
       return invalidFields
     },
-    [t]
+    [t],
   )
   const handlePropose = useCallback(async () => {
     const invalidFields = isFormValid(advForm)
@@ -188,7 +189,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
         advForm.proposalDescription,
         index,
         proposalTx,
-        vsrClient!
+        vsrClient!,
       )
       setProposalPk(proposalAddress.toBase58())
       setCurrentView(VIEWS.SUCCESS)
@@ -254,7 +255,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
         baseBank.uiPrice,
         quoteBank.uiPrice,
         baseBank.mintDecimals,
-        quoteBank.mintDecimals
+        quoteBank.mintDecimals,
       )
     }
     return {
@@ -288,7 +289,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
               {t('market-pair')}{' '}
               {baseToken && quoteToken
                 ? `- ${formatTokenSymbol(baseToken)}/${formatTokenSymbol(
-                    quoteToken
+                    quoteToken,
                   )}`
                 : null}
             </h2>
@@ -505,7 +506,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
                           onChange={(e: ChangeEvent<HTMLInputElement>) =>
                             handleSetAdvForm(
                               'openBookMarketExternalPk',
-                              e.target.value
+                              e.target.value,
                             )
                           }
                         />
@@ -548,7 +549,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
                           onChange={(e: ChangeEvent<HTMLInputElement>) =>
                             handleSetAdvForm(
                               'proposalDescription',
-                              e.target.value
+                              e.target.value,
                             )
                           }
                         />
@@ -577,7 +578,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
             >
               {t('cancel')}
             </Button>
-            {connected ? (
+            {wallet.connected ? (
               <Button
                 onClick={handlePropose}
                 disabled={proposing || !marketPk}
@@ -590,7 +591,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
                 )}
               </Button>
             ) : (
-              <Button onClick={connect} size="large">
+              <Button onClick={wallet.connect} size="large">
                 {t('connect-wallet')}
               </Button>
             )}

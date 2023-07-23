@@ -115,20 +115,20 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
             <p className="font-mono text-th-fgd-2">
               {bank.name === 'USDC'
                 ? `$${toUiDecimalsForQuote(
-                    bank.depositWeightScaleStartQuote
+                    bank.depositWeightScaleStartQuote,
                   ).toExponential(1)}`
                 : formatCurrencyValue(
-                    toUiDecimalsForQuote(bank.depositWeightScaleStartQuote)
+                    toUiDecimalsForQuote(bank.depositWeightScaleStartQuote),
                   )}
             </p>
             <span className="text-th-fgd-4">|</span>
             <p className="font-mono text-th-fgd-2">
               {bank.name === 'USDC'
                 ? `$${toUiDecimalsForQuote(
-                    bank.depositWeightScaleStartQuote
+                    bank.depositWeightScaleStartQuote,
                   ).toExponential(1)}`
                 : formatCurrencyValue(
-                    toUiDecimalsForQuote(bank.borrowWeightScaleStartQuote)
+                    toUiDecimalsForQuote(bank.borrowWeightScaleStartQuote),
                   )}
             </p>
           </div>
@@ -152,8 +152,8 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
           <p className="font-mono text-th-fgd-2">
             {formatCurrencyValue(
               toUiDecimalsForQuote(
-                I80F48.fromI64(bank.netBorrowsInWindow).mul(bank.price)
-              )
+                I80F48.fromI64(bank.netBorrowsInWindow).mul(bank.price),
+              ),
             )}
           </p>
         </div>
@@ -165,7 +165,7 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
           </Tooltip>
           <p className="font-mono text-th-fgd-2">
             {formatCurrencyValue(
-              toUiDecimals(bank.netBorrowLimitPerWindowQuote, 6)
+              toUiDecimals(bank.netBorrowLimitPerWindowQuote, 6),
             )}
           </p>
         </div>

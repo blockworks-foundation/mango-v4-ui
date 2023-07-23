@@ -17,11 +17,13 @@ import { useTheme } from 'next-themes'
 import { useCallback } from 'react'
 import { useRouter } from 'next/router'
 import {
+  AUTO_CONNECT_WALLET,
   NOTIFICATION_POSITION_KEY,
   SIZE_INPUT_UI_KEY,
   TRADE_CHART_UI_KEY,
   TRADE_LAYOUT_KEY,
 } from 'utils/constants'
+import Switch from '@components/forms/Switch'
 
 const NOTIFICATION_POSITIONS = [
   'bottom-left',
@@ -63,23 +65,27 @@ const DisplaySettings = () => {
   const { theme, setTheme } = useTheme()
   const [savedLanguage, setSavedLanguage] = useLocalStorageState(
     'language',
-    'en'
+    'en',
   )
   const router = useRouter()
   const { pathname, asPath, query } = router
   const [notificationPosition, setNotificationPosition] = useLocalStorageState(
     NOTIFICATION_POSITION_KEY,
-    'bottom-left'
+    'bottom-left',
   )
   const [tradeFormUi, setTradeFormUi] = useLocalStorageState(
     SIZE_INPUT_UI_KEY,
-    'slider'
+    'slider',
   )
   const [tradeChartUi, setTradeChartUi] = useLocalStorageState(
     TRADE_CHART_UI_KEY,
-    'trading-view'
+    'trading-view',
   )
   const [, setTradeLayout] = useLocalStorageState(TRADE_LAYOUT_KEY, 'chartLeft')
+  const [autoConnect, setAutoConnect] = useLocalStorageState(
+    AUTO_CONNECT_WALLET,
+    true,
+  )
 
   const handleLangChange = useCallback(
     (l: string) => {
@@ -87,7 +93,7 @@ const DisplaySettings = () => {
       router.push({ pathname, query }, asPath, { locale: l })
       dayjs.locale(l == 'zh_tw' ? 'zh-tw' : l)
     },
-    [router, pathname, query, asPath, setSavedLanguage]
+    [router, pathname, query, asPath, setSavedLanguage],
   )
 
   return (
@@ -190,6 +196,13 @@ const DisplaySettings = () => {
             names={TRADING_CHARTS.map((val) => t(`settings:${val}`))}
           />
         </div>
+      </div>
+      <div className="flex items-center justify-between border-t border-th-bkg-3 p-4">
+        <p className="">Auto Connect Wallet</p>
+        <Switch
+          checked={autoConnect}
+          onChange={() => setAutoConnect(!autoConnect)}
+        />
       </div>
     </>
   )

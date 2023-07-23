@@ -31,13 +31,13 @@ const MarketChange = ({
     if (market instanceof PerpMarket) {
       const perpData: MarketData = marketsData?.perpData
       const perpEntries = Object.entries(perpData).find(
-        (e) => e[0].toLowerCase() === market.name.toLowerCase()
+        (e) => e[0].toLowerCase() === market.name.toLowerCase(),
       )
       return perpEntries ? perpEntries[1][0]?.price_history[0]?.price : 0
     } else {
       const spotData: MarketData = marketsData?.spotData
       const spotEntries = Object.entries(spotData).find(
-        (e) => e[0].toLowerCase() === market.name.toLowerCase()
+        (e) => e[0].toLowerCase() === market.name.toLowerCase(),
       )
       return spotEntries ? spotEntries[1][0]?.price_history[0]?.price : 0
     }
@@ -48,7 +48,7 @@ const MarketChange = ({
     if (market instanceof PerpMarket) {
       const perpData: MarketData = marketsData?.perpData
       const perpEntries = Object.entries(perpData).find(
-        (e) => e[0].toLowerCase() === market.name.toLowerCase()
+        (e) => e[0].toLowerCase() === market.name.toLowerCase(),
       )
       const price = perpEntries ? perpEntries[1][0]?.last_price : 0
       const change = perpEntries ? perpEntries[1][0]?.change_24h : 0
@@ -56,7 +56,7 @@ const MarketChange = ({
     } else {
       const spotData: MarketData = marketsData?.spotData
       const spotEntries = Object.entries(spotData).find(
-        (e) => e[0].toLowerCase() === market.name.toLowerCase()
+        (e) => e[0].toLowerCase() === market.name.toLowerCase(),
       )
       const price = spotEntries ? spotEntries[1][0]?.last_price : 0
       const change = spotEntries ? spotEntries[1][0]?.change_24h : 0

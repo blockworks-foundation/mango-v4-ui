@@ -89,7 +89,7 @@ const Vote = () => {
                       proposal={x}
                       mangoMint={mangoMint}
                     ></ProposalCard>
-                  )
+                  ),
               )
             ) : (
               <div className="flex h-56 items-center justify-center rounded-lg border border-th-bkg-3 p-6">

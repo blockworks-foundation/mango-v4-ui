@@ -17,7 +17,7 @@ export async function relinquishVote(
   proposal: ProgramAccount<Proposal>,
   tokenOwnerRecord: ProgramAccount<TokenOwnerRecord>,
   mangoClient: MangoClient,
-  voteRecord: PublicKey
+  voteRecord: PublicKey,
 ) {
   const instructions: TransactionInstruction[] = []
   const governanceAuthority = wallet.publicKey!
@@ -25,7 +25,7 @@ export async function relinquishVote(
 
   const programVersion = await getGovernanceProgramVersion(
     connection,
-    MANGO_GOVERNANCE_PROGRAM
+    MANGO_GOVERNANCE_PROGRAM,
   )
 
   await withRelinquishVote(
@@ -39,7 +39,7 @@ export async function relinquishVote(
     proposal.account.governingTokenMint,
     voteRecord,
     governanceAuthority,
-    beneficiary
+    beneficiary,
   )
 
   const tx = await mangoClient.sendAndConfirmTransaction(instructions)

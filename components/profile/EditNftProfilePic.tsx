@@ -73,7 +73,7 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
       }
       const response = await fetch(
         `${MANGO_DATA_API_URL}/user-data/profile-details`,
-        requestOptions
+        requestOptions,
       )
       if (response.status === 200) {
         await actions.fetchProfileDetails(publicKey.toString())
@@ -119,7 +119,7 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
       }
       const response = await fetch(
         `${MANGO_DATA_API_URL}/user-data/profile-details`,
-        requestOptions
+        requestOptions,
       )
       if (response.status === 200) {
         await actions.fetchProfileDetails(publicKey.toString())

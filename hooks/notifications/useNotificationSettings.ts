@@ -20,6 +20,6 @@ export function useNotificationSettings() {
       enabled: !!isAuth,
       retry: 1,
       staleTime: DAILY_MILLISECONDS,
-    }
+    },
   )
 }

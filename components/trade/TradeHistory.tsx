@@ -116,7 +116,7 @@ const TradeHistory = () => {
                             content={`View Counterparty ${abbreviateAddress(
                               trade.liquidity === 'Taker'
                                 ? new PublicKey(trade.maker)
-                                : new PublicKey(trade.taker)
+                                : new PublicKey(trade.taker),
                             )}`}
                             delay={0}
                           >
@@ -156,7 +156,7 @@ const TradeHistory = () => {
                 <div>
                   <p className="text-sm text-th-fgd-1">
                     {dayjs(trade?.time ? trade.time : Date.now()).format(
-                      'ddd D MMM'
+                      'ddd D MMM',
                     )}
                   </p>
                   <p className="text-xs text-th-fgd-3">

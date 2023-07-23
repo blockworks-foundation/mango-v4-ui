@@ -17,7 +17,7 @@ const GovernanceDelegate = () => {
   const getCurrentVotingPower = GovernanceStore((s) => s.getCurrentVotingPower)
 
   const [selectedDelegatePk, setSelectedDelegatePk] = useLocalStorageState(
-    `${publicKey?.toBase58()}${GOVERNANCE_DELEGATE_KEY}`
+    `${publicKey?.toBase58()}${GOVERNANCE_DELEGATE_KEY}`,
   )
   const currentDelegate = delegates
     .find((x) => x.pubkey.toBase58() === selectedDelegatePk)

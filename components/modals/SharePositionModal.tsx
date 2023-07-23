@@ -129,7 +129,7 @@ const SharePositionModal = ({
                   <p className="ml-2 font-mono text-base text-white">
                     {formatNumericValue(
                       entryPrice,
-                      getDecimalCount(market.tickSize)
+                      getDecimalCount(market.tickSize),
                     )}
                   </p>
                 </div>
@@ -140,7 +140,7 @@ const SharePositionModal = ({
                   <p className="ml-2 font-mono text-base text-white">
                     {formatNumericValue(
                       market.uiPrice,
-                      getDecimalCount(market.tickSize)
+                      getDecimalCount(market.tickSize),
                     )}
                   </p>
                 </div>

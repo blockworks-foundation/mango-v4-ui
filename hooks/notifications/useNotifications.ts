@@ -20,6 +20,6 @@ export function useNotifications() {
       staleTime: refetchMs,
       retry: 1,
       refetchInterval: refetchMs,
-    }
+    },
   )
 }

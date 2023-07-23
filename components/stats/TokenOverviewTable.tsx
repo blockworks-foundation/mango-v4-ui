@@ -84,11 +84,11 @@ const TokenOverviewTable = () => {
                   deposits * bank.minVaultToDepositsRatio
                 const available = Decimal.max(
                   0,
-                  availableVaultBalance.toFixed(bank.mintDecimals)
+                  availableVaultBalance.toFixed(bank.mintDecimals),
                 )
                 const feesEarned = toUiDecimals(
                   bank.collectedFeesNative,
-                  bank.mintDecimals
+                  bank.mintDecimals,
                 )
 
                 return (
@@ -201,11 +201,11 @@ const TokenOverviewTable = () => {
               deposits * bank.minVaultToDepositsRatio
             const available = Decimal.max(
               0,
-              availableVaultBalance.toFixed(bank.mintDecimals)
+              availableVaultBalance.toFixed(bank.mintDecimals),
             )
             const feesEarned = toUiDecimals(
               bank.collectedFeesNative,
-              bank.mintDecimals
+              bank.mintDecimals,
             )
             return (
               <Disclosure key={bank.name}>

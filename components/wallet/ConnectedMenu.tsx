@@ -17,6 +17,7 @@ import EditProfileModal from '@components/modals/EditProfileModal'
 import MangoAccountsListModal from '@components/modals/MangoAccountsListModal'
 import { TV_USER_ID_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
+import Loading from '@components/shared/Loading'
 
 const set = mangoStore.getState().set
 const actions = mangoStore.getState().actions
@@ -32,6 +33,7 @@ const ConnectedMenu = () => {
   // const profileDetails = mangoStore((s) => s.profile.details)
   const loadProfileDetails = mangoStore((s) => s.profile.loadDetails)
   const groupLoaded = mangoStore((s) => s.groupLoaded)
+  const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
   const isMobile = width ? width < breakpoints.md : false
 
   const handleDisconnect = useCallback(() => {
@@ -76,11 +78,15 @@ const ConnectedMenu = () => {
               className="flex items-center justify-center md:justify-start"
               id="account-step-one"
             >
-              <ProfileImage
-                imageSize="40"
-                placeholderSize="24"
-                isOwnerProfile
-              />
+              {!mangoAccountLoading ? (
+                <ProfileImage
+                  imageSize="40"
+                  placeholderSize="24"
+                  isOwnerProfile
+                />
+              ) : (
+                <Loading className="h-6 w-6" />
+              )}
               {!loadProfileDetails && !isMobile ? (
                 <div className="ml-2.5 overflow-hidden text-left">
                   <p className="text-xs text-th-fgd-3">

@@ -59,7 +59,7 @@ export const makeCreateOpenBookMarketInstructionSimple = async ({
             market.publicKey.toBuffer(),
             vaultSignerNonce.toArrayLike(Buffer, 'le', 8),
           ],
-          dexProgramId
+          dexProgramId,
         )
         return { vaultOwner, vaultSignerNonce }
       } catch (e) {
@@ -73,7 +73,7 @@ export const makeCreateOpenBookMarketInstructionSimple = async ({
 
   const baseLotSize = new BN(Math.round(10 ** baseInfo.decimals * lotSize))
   const quoteLotSize = new BN(
-    Math.round(lotSize * 10 ** quoteInfo.decimals * tickSize)
+    Math.round(lotSize * 10 ** quoteInfo.decimals * tickSize),
   )
 
   if (baseLotSize.eq(ZERO)) throw Error('lot size is too small')
@@ -135,7 +135,7 @@ const makeCreateMarketInstruction = async ({
 }) => {
   const ins1: TransactionInstruction[] = []
   const accountLamports = await connection.getMinimumBalanceForRentExemption(
-    165
+    165,
   )
   ins1.push(
     SystemProgram.createAccount({
@@ -155,13 +155,13 @@ const makeCreateMarketInstruction = async ({
     createInitializeAccountInstruction(
       marketInfo.baseVault.publicKey,
       marketInfo.baseMint,
-      marketInfo.vaultOwner
+      marketInfo.vaultOwner,
     ),
     createInitializeAccountInstruction(
       marketInfo.quoteVault.publicKey,
       marketInfo.quoteMint,
-      marketInfo.vaultOwner
-    )
+      marketInfo.vaultOwner,
+    ),
   )
 
   const ins2: TransactionInstruction[] = []
@@ -170,7 +170,7 @@ const makeCreateMarketInstruction = async ({
       fromPubkey: wallet,
       newAccountPubkey: marketInfo.id.publicKey,
       lamports: await connection.getMinimumBalanceForRentExemption(
-        MARKET_STATE_LAYOUT_V2.span
+        MARKET_STATE_LAYOUT_V2.span,
       ),
       space: MARKET_STATE_LAYOUT_V2.span,
       programId: marketInfo.programId,
@@ -222,7 +222,7 @@ const makeCreateMarketInstruction = async ({
         vaultSignerNonce: marketInfo.vaultSignerNonce,
         quoteDustThreshold: marketInfo.quoteDustThreshold,
       },
-    })
+    }),
   )
 
   return {
@@ -301,7 +301,7 @@ const initializeMarketInstruction = ({
     .concat(
       marketInfo.authority
         ? { pubkey: marketInfo.authority, isSigner: false, isWritable: false }
-        : []
+        : [],
     )
     .concat(
       marketInfo.authority && marketInfo.pruneAuthority
@@ -310,7 +310,7 @@ const initializeMarketInstruction = ({
             isSigner: false,
             isWritable: false,
           }
-        : []
+        : [],
     )
 
   const data = encodeInstruction({

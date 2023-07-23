@@ -33,7 +33,7 @@ export const createProposal = async (
   descriptionLink: string,
   proposalIndex: number,
   proposalInstructions: TransactionInstruction[],
-  client: VsrClient
+  client: VsrClient,
 ) => {
   const instructions: TransactionInstruction[] = []
   const walletPk = wallet.publicKey!
@@ -44,7 +44,7 @@ export const createProposal = async (
   // Changed this because it is misbehaving on my local validator setup.
   const programVersion = await getGovernanceProgramVersion(
     connection,
-    MANGO_GOVERNANCE_PROGRAM
+    MANGO_GOVERNANCE_PROGRAM,
   )
 
   // V2 Approve/Deny configuration
@@ -55,7 +55,7 @@ export const createProposal = async (
   const { updateVoterWeightRecordIx, voterWeightPk } =
     await updateVoterWeightRecord(
       client,
-      tokenOwnerRecord.account.governingTokenOwner
+      tokenOwnerRecord.account.governingTokenOwner,
     )
   instructions.push(updateVoterWeightRecordIx)
 
@@ -75,7 +75,7 @@ export const createProposal = async (
     options,
     useDenyOption,
     payer,
-    voterWeightPk
+    voterWeightPk,
   )
 
   await withAddSignatory(
@@ -86,18 +86,18 @@ export const createProposal = async (
     tokenOwnerRecord.pubkey,
     governanceAuthority,
     signatory,
-    payer
+    payer,
   )
 
   const signatoryRecordAddress = await getSignatoryRecordAddress(
     MANGO_GOVERNANCE_PROGRAM,
     proposalAddress,
-    signatory
+    signatory,
   )
   const insertInstructions: TransactionInstruction[] = []
   for (const i in proposalInstructions) {
     const instruction = getInstructionDataFromBase64(
-      serializeInstructionToBase64(proposalInstructions[i])
+      serializeInstructionToBase64(proposalInstructions[i]),
     )
     await withInsertTransaction(
       insertInstructions,
@@ -111,7 +111,7 @@ export const createProposal = async (
       0,
       0,
       [instruction],
-      payer
+      payer,
     )
   }
   withSignOffProposal(
@@ -123,7 +123,7 @@ export const createProposal = async (
     proposalAddress,
     signatory,
     signatoryRecordAddress,
-    undefined
+    undefined,
   )
 
   const txChunks = chunk([...instructions, ...insertInstructions], 2)

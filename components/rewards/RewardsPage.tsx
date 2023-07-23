@@ -66,7 +66,7 @@ export const tiers = ['seed', 'mango', 'whale', 'bot']
 const fetchRewardsPoints = async (walletPk: string | undefined) => {
   try {
     const data = await fetch(
-      `${MANGO_DATA_API_URL}/user-data/campaign-total-points-wallet?wallet-pk=${walletPk}`
+      `${MANGO_DATA_API_URL}/user-data/campaign-total-points-wallet?wallet-pk=${walletPk}`,
     )
     const res = await data.json()
     return res
@@ -78,7 +78,7 @@ const fetchRewardsPoints = async (walletPk: string | undefined) => {
 export const fetchLeaderboard = async (tier: string | undefined) => {
   try {
     const data = await fetch(
-      `${MANGO_DATA_API_URL}/user-data/campaign-leaderboard?tier=${tier}`
+      `${MANGO_DATA_API_URL}/user-data/campaign-leaderboard?tier=${tier}`,
     )
     const res = await data.json()
     return res
@@ -195,7 +195,7 @@ const Season = ({
       retry: 3,
       refetchOnWindowFocus: false,
       enabled: !!wallet?.adapter,
-    }
+    },
   )
 
   const {
@@ -210,7 +210,7 @@ const Season = ({
       staleTime: 1000 * 60,
       retry: 3,
       refetchOnWindowFocus: false,
-    }
+    },
   )
 
   useEffect(() => {

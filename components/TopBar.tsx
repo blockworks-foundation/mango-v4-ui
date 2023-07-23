@@ -30,6 +30,9 @@ import { copyToClipboard } from 'utils'
 import UserSetupModal from './modals/UserSetupModal'
 import { IS_ONBOARDED_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
+import mangoStore from '@store/mangoStore'
+
+const set = mangoStore.getState().set
 
 const TopBar = () => {
   const { t } = useTranslation('common')
@@ -50,16 +53,20 @@ const TopBar = () => {
   const isMobile = width ? width < breakpoints.sm : false
 
   const { isUnownedAccount } = useUnownedAccount()
-  const [showUserSetup, setShowUserSetup] = useState(false)
+  const showUserSetup = mangoStore((s) => s.showUserSetup)
   const [, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
 
   const handleCloseSetup = useCallback(() => {
-    setShowUserSetup(false)
+    set((s) => {
+      s.showUserSetup = false
+    })
     setIsOnboarded(true)
-  }, [setShowUserSetup, setIsOnboarded])
+  }, [setIsOnboarded])
 
   const handleShowSetup = useCallback(() => {
-    setShowUserSetup(true)
+    set((s) => {
+      s.showUserSetup = true
+    })
   }, [])
 
   const handleDepositWithdrawModal = (action: 'deposit' | 'withdraw') => {

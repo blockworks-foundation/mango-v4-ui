@@ -10,7 +10,7 @@ export default function useSolBalance() {
   const solBalance: number = useMemo(() => {
     return connected
       ? walletTokens.find((t) =>
-          t.mint.equals(TokenInstructions.WRAPPED_SOL_MINT)
+          t.mint.equals(TokenInstructions.WRAPPED_SOL_MINT),
         )?.uiAmount || 0
       : 100
   }, [walletTokens])

@@ -38,38 +38,38 @@ const TokenList = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
   const [showZeroBalances, setShowZeroBalances] = useLocalStorageState(
     SHOW_ZERO_BALANCES_KEY,
-    true
+    true,
   )
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const { initContributions } = useHealthContributions()
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const totalInterestData = mangoStore(
-    (s) => s.mangoAccount.interestTotals.data
+    (s) => s.mangoAccount.interestTotals.data,
   )
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const banks = useBanksWithBalances('balance')
 
-  // const filteredBanks = useMemo(() => {
-  //   if (banks.length) {
-  //     return showZeroBalances || !mangoAccountAddress
-  //       ? banks
-  //       : banks.filter((b) => Math.abs(b.balance) > 0)
-  //   }
-  //   return []
-  // }, [banks, mangoAccountAddress, showZeroBalances])
-
   const filteredBanks = useMemo(() => {
-    if (!banks.length) return []
-    if (showZeroBalances || !mangoAccountAddress) return banks
-    const filtered = banks.filter((b) => {
-      const contribution =
-        initContributions.find((cont) => cont.asset === b.bank.name)
-          ?.contribution || 0
-      return Math.abs(contribution) > 0
-    })
-    return filtered
-  }, [banks, mangoAccountAddress, showZeroBalances, initContributions])
+    if (banks.length) {
+      return showZeroBalances || !mangoAccountAddress
+        ? banks
+        : banks.filter((b) => Math.abs(b.balance) > 0)
+    }
+    return []
+  }, [banks, mangoAccountAddress, showZeroBalances])
+
+  // const filteredBanks = useMemo(() => {
+  //   if (!banks.length) return []
+  //   if (showZeroBalances || !mangoAccountAddress) return banks
+  //   const filtered = banks.filter((b) => {
+  //     const contribution =
+  //       initContributions.find((cont) => cont.asset === b.bank.name)
+  //         ?.contribution || 0
+  //     return Math.abs(contribution) > 0
+  //   })
+  //   return filtered
+  // }, [banks, mangoAccountAddress, showZeroBalances, initContributions])
 
   return (
     <ContentBox hideBorder hidePadding>
@@ -80,12 +80,12 @@ const TokenList = () => {
             disabled={!mangoAccount}
             onChange={() => setShowZeroBalances(!showZeroBalances)}
           >
-            {t('account:zero-collateral')}
+            {t('account:zero-balances')}
           </Switch>
         </div>
       ) : null}
       {showTableView ? (
-        <div className="thin-scroll overflow-x-auto">
+        <>
           <Table>
             <thead>
               <TrHead>
@@ -99,9 +99,9 @@ const TokenList = () => {
                 </Th>
                 <Th>
                   <div className="flex justify-end">
-                    <Tooltip content={t('account:tooltip-collateral-value')}>
+                    <Tooltip content={t('tooltip-collateral-value')}>
                       <span className="tooltip-underline">
-                        {t('account:collateral-value')}
+                        {t('collateral-value')}
                       </span>
                     </Tooltip>
                   </div>
@@ -137,7 +137,7 @@ const TokenList = () => {
                 const hasInterestEarned = totalInterestData.find(
                   (d) =>
                     d.symbol.toLowerCase() === symbol.toLowerCase() ||
-                    (symbol === 'ETH (Portal)' && d.symbol === 'ETH')
+                    (symbol === 'ETH (Portal)' && d.symbol === 'ETH'),
                 )
 
                 const interestAmount = hasInterestEarned
@@ -254,7 +254,7 @@ const TokenList = () => {
               })}
             </tbody>
           </Table>
-        </div>
+        </>
       ) : (
         <div className="border-b border-th-bkg-3">
           {filteredBanks.map((b) => {
@@ -274,7 +274,7 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
   const { mangoAccount } = useMangoAccount()
   const { initContributions } = useHealthContributions()
   const totalInterestData = mangoStore(
-    (s) => s.mangoAccount.interestTotals.data
+    (s) => s.mangoAccount.interestTotals.data,
   )
   const tokenBank = bank.bank
   const mint = tokenBank.mint
@@ -283,7 +283,7 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
   const hasInterestEarned = totalInterestData.find(
     (d) =>
       d.symbol.toLowerCase() === symbol.toLowerCase() ||
-      (symbol === 'ETH (Portal)' && d.symbol === 'ETH')
+      (symbol === 'ETH (Portal)' && d.symbol === 'ETH'),
   )
 
   const interestAmount = hasInterestEarned
@@ -297,10 +297,8 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
     : 0
 
   const tokenBalance = bank.balance
-
-  const inOrders = spotBalances[mint.toString()]?.inOrders || 0
-
   const unsettled = spotBalances[mint.toString()]?.unsettled || 0
+  const inOrders = spotBalances[mint.toString()]?.inOrders || 0
 
   const collateralValue =
     initContributions.find((val) => val.asset === tokenBank.name)
@@ -361,9 +359,9 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
             <Disclosure.Panel>
               <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4 pb-4">
                 <div className="col-span-1">
-                  <Tooltip content={t('account:tooltip-collateral-value')}>
+                  <Tooltip content={t('tooltip-collateral-value')}>
                     <p className="tooltip-underline text-xs text-th-fgd-3">
-                      {t('account:collateral-value')}
+                      {t('collateral-value')}
                     </p>
                   </Tooltip>
                   <p className="font-mono text-th-fgd-2">
@@ -474,7 +472,7 @@ const ActionsMenu = ({
         ? setShowWithdrawModal(true)
         : setShowRepayModal(true)
     },
-    []
+    [],
   )
 
   const balance = useMemo(() => {
@@ -484,7 +482,7 @@ const ActionsMenu = ({
 
   const handleSwap = useCallback(() => {
     const tokenInfo = mangoTokens.find(
-      (t) => t.address === bank.mint.toString()
+      (t) => t.address === bank.mint.toString(),
     )
     const group = mangoStore.getState().group
     if (balance && balance > 0) {
@@ -503,7 +501,7 @@ const ActionsMenu = ({
     } else {
       if (tokenInfo?.symbol === 'USDC') {
         const solTokenInfo = mangoTokens.find(
-          (t) => t.address === WRAPPED_SOL_MINT.toString()
+          (t) => t.address === WRAPPED_SOL_MINT.toString(),
         )
         const solBank = group?.getFirstBankByMint(WRAPPED_SOL_MINT)
         set((s) => {
@@ -553,7 +551,7 @@ const ActionsMenu = ({
                 leaveTo="opacity-0"
               >
                 <Popover.Panel
-                  className={`thin-scroll absolute bottom-12 left-0 z-40 max-h-60 w-32 space-y-2 overflow-auto rounded-md bg-th-bkg-2 p-4 pt-2 md:bottom-0 md:right-12 md:left-auto md:pt-4`}
+                  className={`thin-scroll absolute bottom-12 left-0 z-20 max-h-60 w-32 space-y-2 overflow-auto rounded-md bg-th-bkg-2 p-4 pt-2 md:bottom-0 md:right-12 md:left-auto md:pt-4`}
                 >
                   <div className="hidden items-center justify-center border-b border-th-bkg-3 pb-2 md:flex">
                     <div className="mr-2 flex flex-shrink-0 items-center">

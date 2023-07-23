@@ -81,7 +81,7 @@ const RoutesModal = ({
                               {
                                 jupiterTokens.find(
                                   (item) =>
-                                    item?.address === r?.outputMint?.toString()
+                                    item?.address === r?.outputMint?.toString(),
                                 )?.symbol
                               }
                             </span>

@@ -38,13 +38,13 @@ const MangoAccountSummary = () => {
   const [accountPnl, accountValue, freeCollateral, health] = useMemo(() => {
     if (!group || !mangoAccount) return [0, 0, 0, 0]
     const accountPnl = toUiDecimalsForQuote(
-      mangoAccount.getPnl(group).toNumber()
+      mangoAccount.getPnl(group).toNumber(),
     )
     const accountValue = toUiDecimalsForQuote(
-      mangoAccount.getEquity(group).toNumber()
+      mangoAccount.getEquity(group).toNumber(),
     )
     const freeCollateral = toUiDecimalsForQuote(
-      mangoAccount.getCollateralValue(group).toNumber()
+      mangoAccount.getCollateralValue(group).toNumber(),
     )
     const health = mangoAccount.getHealthRatioUi(group, HealthType.maint)
     return [accountPnl, accountValue, freeCollateral, health]
@@ -53,7 +53,7 @@ const MangoAccountSummary = () => {
   const leverage = useMemo(() => {
     if (!group || !mangoAccount) return 0
     const assetsValue = toUiDecimalsForQuote(
-      mangoAccount.getAssetsValue(group).toNumber()
+      mangoAccount.getAssetsValue(group).toNumber(),
     )
 
     if (isNaN(assetsValue / accountValue)) {

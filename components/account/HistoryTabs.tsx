@@ -109,7 +109,7 @@ const HistoryTabs = () => {
         paid: `${formatNumericValue(swap_in_amount, inDecimals)} ${inSymbol}`,
         received: `${formatNumericValue(
           swap_out_amount,
-          outDecimals
+          outDecimals,
         )} ${outSymbol}`,
         value: formatCurrencyValue(swap_out_price_usd * swap_out_amount),
         borrow: `${borrowAmount} ${inSymbol}`,
@@ -135,7 +135,7 @@ const HistoryTabs = () => {
       let market
       if ('market' in trade) {
         market = group.getSerum3MarketByExternalMarket(
-          new PublicKey(trade.market)
+          new PublicKey(trade.market),
         )
       } else if ('perp_market' in trade) {
         market = group.getPerpMarketByMarketIndex(trade.market_index)

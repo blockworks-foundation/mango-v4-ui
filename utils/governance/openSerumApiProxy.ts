@@ -7,6 +7,6 @@ module.exports = function (app: any) {
     createProxyMiddleware({
       target: 'https://openserum.io/api/serum/',
       changeOrigin: true,
-    })
+    }),
   )
 }

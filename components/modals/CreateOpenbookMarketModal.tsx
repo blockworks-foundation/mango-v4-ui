@@ -157,11 +157,11 @@ const CreateOpenbookMarketModal = ({
     const getMinLamportsToCreateMarket = async () => {
       const accountsSpace = 84522 + MARKET_STATE_LAYOUT_V2.span
       const minLamports = await connection.getMinimumBalanceForRentExemption(
-        accountsSpace
+        accountsSpace,
       )
       setSolNeededToCreateMarket(
         Math.round((minLamports / LAMPORTS_PER_SOL + Number.EPSILON) * 100) /
-          100
+          100,
       )
     }
     getMinLamportsToCreateMarket()

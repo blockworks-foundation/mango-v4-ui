@@ -39,13 +39,13 @@ const AdvancedMarketHeader = ({
     if (serumOrPerpMarket instanceof PerpMarket) {
       const perpData: MarketData = marketsData?.perpData
       const perpEntries = Object.entries(perpData).find(
-        (e) => e[0].toLowerCase() === selectedMarketName.toLowerCase()
+        (e) => e[0].toLowerCase() === selectedMarketName.toLowerCase(),
       )
       return perpEntries ? perpEntries[1][0]?.quote_volume_24h : 0
     } else {
       const spotData: MarketData = marketsData?.spotData
       const spotEntries = Object.entries(spotData).find(
-        (e) => e[0].toLowerCase() === selectedMarketName.toLowerCase()
+        (e) => e[0].toLowerCase() === selectedMarketName.toLowerCase(),
       )
       return spotEntries ? spotEntries[1][0]?.quote_volume_24h : 0
     }
@@ -97,14 +97,14 @@ const AdvancedMarketHeader = ({
                     $
                     {numberCompacter.format(
                       serumOrPerpMarket.baseLotsToUi(
-                        serumOrPerpMarket.openInterest
-                      ) * serumOrPerpMarket.uiPrice
+                        serumOrPerpMarket.openInterest,
+                      ) * serumOrPerpMarket.uiPrice,
                     )}
                     <span className="mx-1">|</span>
                     {numberCompacter.format(
                       serumOrPerpMarket.baseLotsToUi(
-                        serumOrPerpMarket.openInterest
-                      )
+                        serumOrPerpMarket.openInterest,
+                      ),
                     )}{' '}
                     <span className="font-body text-th-fgd-3">
                       {serumOrPerpMarket.name.split('-')[0]}

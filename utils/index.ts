@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const retryFn = async (
   fn: (...x: any) => Promise<any>,
-  opts = { maxRetries: 3 }
+  opts = { maxRetries: 3 },
 ) => {
   for (let attempt = 1; attempt <= opts?.maxRetries; attempt++) {
     try {
