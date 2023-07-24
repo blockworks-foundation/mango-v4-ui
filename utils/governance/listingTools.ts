@@ -71,7 +71,11 @@ export const getPythOracle = async ({
         x.base === baseSymbol.toUpperCase() &&
         x.quote_currency === quoteSymbol.toUpperCase(),
     )
-    return product?.price_account || ''
+    const isLive =
+      product &&
+      pythAccounts.productPrice.get(product.symbol)?.price !== undefined
+
+    return isLive && product?.price_account ? product.price_account : ''
   } catch (e) {
     notify({
       title: 'Pyth oracle fetch error',
