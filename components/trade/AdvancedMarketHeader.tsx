@@ -1,36 +1,23 @@
-import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
+import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { IconButton, LinkButton } from '@components/shared/Button'
-import { getOneDayPerpStats } from '@components/stats/PerpMarketsOverviewTable'
 import { ChartBarIcon, InformationCircleIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { numberCompacter } from 'utils/numbers'
 import MarketSelectDropdown from './MarketSelectDropdown'
 import PerpFundingRate from './PerpFundingRate'
 import SheenLoader from '@components/shared/SheenLoader'
 import PerpMarketDetailsModal from '@components/modals/PerpMarketDetailsModal'
-import useMangoGroup from 'hooks/useMangoGroup'
 import OraclePrice from './OraclePrice'
 import SpotMarketDetailsModal from '@components/modals/SpotMarketDetailsModal'
-import { useQuery } from '@tanstack/react-query'
-import { MANGO_DATA_OPENBOOK_URL } from 'utils/constants'
-import { TickerData } from 'types'
+import { MarketData } from 'types'
 import ManualRefresh from '@components/shared/ManualRefresh'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import MarketChange from '@components/shared/MarketChange'
-
-export const fetchSpotVolume = async () => {
-  try {
-    const data = await fetch(`${MANGO_DATA_OPENBOOK_URL}/coingecko/tickers`)
-    const res = await data.json()
-    return res
-  } catch (e) {
-    console.log('Failed to fetch spot volume data', e)
-  }
-}
+import useMarketsData from 'hooks/useMarketsData'
 
 const AdvancedMarketHeader = ({
   showChart,
@@ -40,58 +27,31 @@ const AdvancedMarketHeader = ({
   setShowChart?: (x: boolean) => void
 }) => {
   const { t } = useTranslation(['common', 'trade'])
-  const perpStats = mangoStore((s) => s.perpStats.data)
   const { serumOrPerpMarket, selectedMarket } = useSelectedMarket()
   const selectedMarketName = mangoStore((s) => s.selectedMarket.name)
   const [showMarketDetails, setShowMarketDetails] = useState(false)
-  const { group } = useMangoGroup()
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.md : false
+  const { data: marketsData, isLoading, isFetching } = useMarketsData()
 
-  const {
-    data: spotVolumeData,
-    isLoading: loadingSpotVolume,
-    isFetching: fetchingSpotVolume,
-  } = useQuery(['spot-volume', selectedMarketName], () => fetchSpotVolume(), {
-    cacheTime: 1000 * 60 * 10,
-    staleTime: 1000 * 60,
-    retry: 3,
-    refetchOnWindowFocus: false,
-    enabled: selectedMarket instanceof Serum3Market,
-  })
-
-  const spotMarketVolume = useMemo(() => {
-    if (!spotVolumeData || !spotVolumeData.length) return
-    return spotVolumeData.find(
-      (mkt: TickerData) => mkt.ticker_id === selectedMarketName,
-    )
-  }, [selectedMarketName, spotVolumeData])
-
-  useEffect(() => {
-    if (group) {
-      const actions = mangoStore.getState().actions
-      actions.fetchPerpStats()
+  const volume = useMemo(() => {
+    if (!selectedMarketName || !serumOrPerpMarket || !marketsData) return 0
+    if (serumOrPerpMarket instanceof PerpMarket) {
+      const perpData: MarketData = marketsData?.perpData
+      const perpEntries = Object.entries(perpData).find(
+        (e) => e[0].toLowerCase() === selectedMarketName.toLowerCase(),
+      )
+      return perpEntries ? perpEntries[1][0]?.quote_volume_24h : 0
+    } else {
+      const spotData: MarketData = marketsData?.spotData
+      const spotEntries = Object.entries(spotData).find(
+        (e) => e[0].toLowerCase() === selectedMarketName.toLowerCase(),
+      )
+      return spotEntries ? spotEntries[1][0]?.quote_volume_24h : 0
     }
-  }, [group])
+  }, [marketsData, selectedMarketName, serumOrPerpMarket])
 
-  const oneDayPerpStats = useMemo(() => {
-    if (
-      !perpStats ||
-      !perpStats.length ||
-      !selectedMarketName ||
-      !selectedMarketName.includes('PERP')
-    )
-      return []
-    return getOneDayPerpStats(perpStats, selectedMarketName)
-  }, [perpStats, selectedMarketName])
-
-  const perpVolume = useMemo(() => {
-    if (!oneDayPerpStats.length) return
-    return (
-      oneDayPerpStats[oneDayPerpStats.length - 1].cumulative_quote_volume -
-      oneDayPerpStats[0].cumulative_quote_volume
-    )
-  }, [oneDayPerpStats])
+  const loadingVolume = isLoading || isFetching
 
   return (
     <>
@@ -116,12 +76,16 @@ const AdvancedMarketHeader = ({
                   <div className="mb-0.5 text-th-fgd-4 ">
                     {t('trade:24h-volume')}
                   </div>
-                  {perpVolume ? (
+                  {loadingVolume ? (
+                    <SheenLoader className="mt-0.5">
+                      <div className="h-3.5 w-12 bg-th-bkg-2" />
+                    </SheenLoader>
+                  ) : volume ? (
                     <span className="font-mono">
-                      ${numberCompacter.format(perpVolume)}{' '}
+                      ${numberCompacter.format(volume)}
                     </span>
                   ) : (
-                    '-'
+                    <span className="font-mono">$0</span>
                   )}
                 </div>
                 <PerpFundingRate />
@@ -153,21 +117,24 @@ const AdvancedMarketHeader = ({
                 <div className="mb-0.5 text-th-fgd-4 ">
                   {t('trade:24h-volume')}
                 </div>
-                {!loadingSpotVolume && !fetchingSpotVolume ? (
-                  spotMarketVolume ? (
-                    <span className="font-mono">
-                      {numberCompacter.format(spotMarketVolume.target_volume)}{' '}
-                      <span className="font-body text-th-fgd-3">
-                        {selectedMarketName?.split('/')[1]}
-                      </span>
-                    </span>
-                  ) : (
-                    '-'
-                  )
-                ) : (
+                {loadingVolume ? (
                   <SheenLoader className="mt-0.5">
                     <div className="h-3.5 w-12 bg-th-bkg-2" />
                   </SheenLoader>
+                ) : volume ? (
+                  <span className="font-mono">
+                    {numberCompacter.format(volume)}{' '}
+                    <span className="font-body text-th-fgd-3">
+                      {selectedMarketName?.split('/')[1]}
+                    </span>
+                  </span>
+                ) : (
+                  <span className="font-mono">
+                    0{' '}
+                    <span className="font-body text-th-fgd-3">
+                      {selectedMarketName?.split('/')[1]}
+                    </span>
+                  </span>
                 )}
               </div>
             )}

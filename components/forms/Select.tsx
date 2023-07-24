@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Listbox } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import { ReactNode } from 'react'
 
 interface SelectProps {
   value: string | ReactNode
-  onChange: (x: string) => void
+  onChange: (x: any) => void
   children: ReactNode
   className?: string
   dropdownPanelClassName?: string
