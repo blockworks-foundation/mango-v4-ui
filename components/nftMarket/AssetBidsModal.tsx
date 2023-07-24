@@ -23,7 +23,7 @@ const AssetBidsModal = ({
   const { data: lazyBids, refetch: reftechBids } = useBids()
   const { refetch: refetchLazyListings } = useLazyListings()
   const assetBids = lazyBids?.filter((x) =>
-    x.metadataAddress.equals(listing.asset.metadataAddress)
+    x.metadataAddress.equals(listing.asset.metadataAddress),
   )
 
   const acceptBid = async (lazyBid: LazyBid) => {

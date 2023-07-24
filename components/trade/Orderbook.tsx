@@ -10,7 +10,6 @@ import {
 } from 'utils/numbers'
 import {
   ANIMATION_SETTINGS_KEY,
-  DEPTH_CHART_KEY,
   // USE_ORDERBOOK_FEED_KEY,
 } from 'utils/constants'
 import { useTranslation } from 'next-i18next'
@@ -22,7 +21,6 @@ import { BookSide, Serum3Market } from '@blockworks-foundation/mango-v4'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import { OrderbookFeed } from '@blockworks-foundation/mango-feeds'
-import Switch from '@components/forms/Switch'
 import { breakpoints } from 'utils/theme'
 import {
   decodeBook,
@@ -55,12 +53,7 @@ const Orderbook = () => {
   //     ? localStorage.getItem(USE_ORDERBOOK_FEED_KEY) === 'true'
   //     : true
   // )
-  const [showDepthChart, setShowDepthChart] = useLocalStorageState<boolean>(
-    DEPTH_CHART_KEY,
-    false,
-  )
   const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.lg : false
   const [orderbookData, setOrderbookData] = useState<OrderbookData | null>(null)
   const currentOrderbookData = useRef<OrderbookL2>()
 
@@ -430,19 +423,10 @@ const Orderbook = () => {
 
   return (
     <div>
-      <div className="flex h-10 items-center justify-between border-b border-th-bkg-3 px-4">
-        {!isMobile ? (
-          <Switch
-            checked={showDepthChart}
-            onChange={() => setShowDepthChart(!showDepthChart)}
-            small
-          >
-            <span className="text-xxs">{t('trade:depth')}</span>
-          </Switch>
-        ) : null}
+      <div className="h-10 flex items-center justify-between border-b border-th-bkg-3 px-4">
         {market ? (
           <>
-            <p className="text-xs lg:hidden">{t('trade:grouping')}:</p>
+            <p className="text-xs">{t('trade:grouping')}:</p>
             <div id="trade-step-four">
               <Tooltip
                 className="hidden md:block"

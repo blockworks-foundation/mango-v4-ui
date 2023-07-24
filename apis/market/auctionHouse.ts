@@ -19,7 +19,7 @@ export const fetchFilteredListing = async (
   auctionHouse: AuctionHouse,
   filter: string,
   page: number,
-  perPage: number
+  perPage: number,
 ) => {
   const listings = (
     await metaplex.auctionHouse().findListings({
@@ -29,12 +29,12 @@ export const fetchFilteredListing = async (
     .filter((x) =>
       filter === ALL_FILTER
         ? true
-        : x.sellerAddress.equals(metaplex.identity().publicKey)
+        : x.sellerAddress.equals(metaplex.identity().publicKey),
     )
     .filter((x) => !x.canceledAt && !x.purchaseReceiptAddress)
   const filteredListings = listings.slice(
     (page - 1) * perPage,
-    page * perPage
+    page * perPage,
   ) as LazyListing[]
 
   return {
@@ -45,12 +45,12 @@ export const fetchFilteredListing = async (
 
 export const fetchFilteredBids = async (
   metaplex: Metaplex,
-  auctionHouse: AuctionHouse
+  auctionHouse: AuctionHouse,
 ) => {
   const bids = await metaplex.auctionHouse().findBids({
     auctionHouse,
   })
   return bids.filter(
-    (x) => !x.canceledAt && !x.purchaseReceiptAddress
+    (x) => !x.canceledAt && !x.purchaseReceiptAddress,
   ) as LazyBid[]
 }

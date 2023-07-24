@@ -64,7 +64,7 @@ const BidNftModal = ({ isOpen, onClose, listing }: ListingModalProps) => {
                 <span className="font-display">
                   {toUiDecimals(
                     listing.price.basisPoints.toNumber(),
-                    MANGO_MINT_DECIMALS
+                    MANGO_MINT_DECIMALS,
                   )}{' '}
                   <span className="font-bold">MNGO</span>
                 </span>

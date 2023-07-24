@@ -23,7 +23,7 @@ export function useAuctionHouse() {
       staleTime: refetchMs,
       retry: 1,
       refetchInterval: refetchMs,
-    }
+    },
   )
 }
 
@@ -45,7 +45,7 @@ export function useLazyListings(filter = ALL_FILTER, page = 1, perPage = 9) {
       staleTime: refetchMs,
       retry: 1,
       refetchInterval: refetchMs,
-    }
+    },
   )
 }
 
@@ -58,7 +58,7 @@ export function useListings(filter = ALL_FILTER, page = 1) {
 
   const loadMetadatas = async (
     lazyListings: LazyListing[],
-    totalPages: number
+    totalPages: number,
   ) => {
     const listingsWithMeta = []
     for (const listing of lazyListings) {
@@ -83,7 +83,7 @@ export function useListings(filter = ALL_FILTER, page = 1) {
       staleTime: refetchMs,
       retry: 1,
       refetchInterval: refetchMs,
-    }
+    },
   )
 }
 
@@ -100,7 +100,7 @@ export function useBids() {
       staleTime: refetchMs,
       retry: 1,
       refetchInterval: refetchMs,
-    }
+    },
   )
 }
 

@@ -104,13 +104,13 @@ const ListingsView = () => {
         {listings?.results?.map((x, idx) => {
           const imgSource = x.asset.json?.image
           const nftBids = bids?.filter((bid) =>
-            bid.metadataAddress.equals(x.asset.metadataAddress)
+            bid.metadataAddress.equals(x.asset.metadataAddress),
           )
           const bestBid = nftBids
             ? nftBids.reduce((a, c) => {
                 const price = toUiDecimals(
                   c.price.basisPoints.toNumber(),
-                  MANGO_MINT_DECIMALS
+                  MANGO_MINT_DECIMALS,
                 )
                 if (price > a) {
                   a = price
@@ -141,7 +141,7 @@ const ListingsView = () => {
                       <span className="font-display text-base">
                         {toUiDecimals(
                           x.price.basisPoints.toNumber(),
-                          MANGO_MINT_DECIMALS
+                          MANGO_MINT_DECIMALS,
                         )}{' '}
                         <span className="font-body font-bold">MNGO</span>
                       </span>

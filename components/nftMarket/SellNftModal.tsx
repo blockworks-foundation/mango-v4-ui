@@ -41,9 +41,8 @@ const SellNftModal = ({ isOpen, onClose }: ModalProps) => {
       seller: publicKey!,
       mint: new PublicKey(mint),
     })
-    const isCurrentlyListed = currentListings?.filter(
-      (x) => !x.canceledAt
-    ).length
+    const isCurrentlyListed = currentListings?.filter((x) => !x.canceledAt)
+      .length
     if (isCurrentlyListed) {
       throw 'Item is currently listed by you'
     }

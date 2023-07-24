@@ -103,7 +103,7 @@ const AllBidsView = () => {
                 .map((x, idx) => {
                   const listing = listings?.results?.find(
                     (nft: Listing) =>
-                      nft.asset.mint.toString() === x.asset.mint.toString()
+                      nft.asset.mint.toString() === x.asset.mint.toString(),
                   )
                   return (
                     <TrBody key={idx}>
@@ -126,7 +126,7 @@ const AllBidsView = () => {
                         <p className="text-right">
                           {toUiDecimals(
                             x.price.basisPoints.toNumber(),
-                            MANGO_MINT_DECIMALS
+                            MANGO_MINT_DECIMALS,
                           )}
                           <span className="font-body">{' MNGO'}</span>
                         </p>
@@ -138,7 +138,7 @@ const AllBidsView = () => {
                               <>
                                 {toUiDecimals(
                                   listing.price.basisPoints.toNumber(),
-                                  MANGO_MINT_DECIMALS
+                                  MANGO_MINT_DECIMALS,
                                 )}
                                 <span className="font-body">{' MNGO'}</span>
                               </>
@@ -159,7 +159,7 @@ const AllBidsView = () => {
                           !x.buyerAddress.equals(publicKey) &&
                           nfts.find(
                             (ownNft) =>
-                              ownNft.mint === x.asset.address.toBase58()
+                              ownNft.mint === x.asset.address.toBase58(),
                           ) ? (
                             <NftMarketButton
                               onClick={() =>
@@ -167,8 +167,9 @@ const AllBidsView = () => {
                                   x,
                                   nfts.find(
                                     (ownNft) =>
-                                      ownNft.mint === x.asset.address.toBase58()
-                                  )!.tokenAccount
+                                      ownNft.mint ===
+                                      x.asset.address.toBase58(),
+                                  )!.tokenAccount,
                                 )
                               }
                               colorClass="fgd-3"
