@@ -1,3 +1,5 @@
+import { PublicKey } from '@metaplex-foundation/js'
+
 export const LAST_ACCOUNT_KEY = 'mangoAccount-0.4'
 
 export const CLIENT_TX_TIMEOUT = 90000
@@ -112,6 +114,9 @@ export const NOTIFICATION_API_WEBSOCKET =
 export const SWITCHBOARD_PROGRAM_ID =
   'SW1TCH7qEPTdLsDHRgPuMQjbQxKdH2aBStViMFnt64f'
 
+export const AUCTION_HOUSE_ID = new PublicKey(
+  'BGBBt6G9bp36i5qt7PWjBWg3VNef1zPozAN9RFsEPDkh'
+)
 export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   bonk: true,
   btc: true,

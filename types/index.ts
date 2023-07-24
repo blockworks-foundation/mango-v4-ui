@@ -302,6 +302,8 @@ export interface NFT {
   address: string
   image: string
   name: string
+  mint: string
+  tokenAccount: string
 }
 
 export interface PerpStatsItem {
