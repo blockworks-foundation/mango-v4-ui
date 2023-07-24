@@ -1,8 +1,6 @@
-import { Serum3Market } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
 import { useMemo } from 'react'
 import { useViewport } from '../../hooks/useViewport'
-import mangoStore from '@store/mangoStore'
 import { COLORS } from '../../styles/colors'
 import { breakpoints } from '../../utils/theme'
 import ContentBox from '../shared/ContentBox'
@@ -12,26 +10,23 @@ import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { floorToDecimal, getDecimalCount, numberCompacter } from 'utils/numbers'
 import SimpleAreaChart from '@components/shared/SimpleAreaChart'
-import { MarketData } from 'types'
 import { Disclosure, Transition } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import MarketChange from '@components/shared/MarketChange'
-import useMarketsData from 'hooks/useMarketsData'
 import useThemeWrapper from 'hooks/useThemeWrapper'
+import useListedMarketsWithMarketData, {
+  SerumMarketWithMarketData,
+} from 'hooks/useListedMarketsWithMarketData'
+import { sortSpotMarkets } from 'utils/markets'
 
 const SpotMarketsTable = () => {
   const { t } = useTranslation('common')
   const { group } = useMangoGroup()
-  const serumMarkets = mangoStore((s) => s.serumMarkets)
   const { theme } = useThemeWrapper()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
-  const { data: marketsData, isLoading, isFetching } = useMarketsData()
-
-  const spotData: MarketData = useMemo(() => {
-    if (!marketsData) return []
-    return marketsData?.spotData || []
-  }, [marketsData])
+  const { serumMarketsWithData, isLoading, isFetching } =
+    useListedMarketsWithMarketData()
 
   const loadingMarketData = isLoading || isFetching
 
@@ -49,10 +44,8 @@ const SpotMarketsTable = () => {
             </TrHead>
           </thead>
           <tbody>
-            {serumMarkets
-              .slice()
-              .sort((a, b) => a.name.localeCompare(b.name))
-              .map((mkt) => {
+            {sortSpotMarkets(serumMarketsWithData, 'quote_volume_24h').map(
+              (mkt) => {
                 const baseBank = group?.getFirstBankByTokenIndex(
                   mkt.baseTokenIndex,
                 )
@@ -70,18 +63,11 @@ const SpotMarketsTable = () => {
                   ).toNumber()
                 }
 
-                const spotDataEntries = Object.entries(spotData).find(
-                  (e) => e[0].toLowerCase() === mkt.name.toLowerCase(),
-                )
-                const marketData = spotDataEntries
-                  ? spotDataEntries[1][0]
-                  : undefined
+                const priceHistory = mkt?.marketData?.price_history
 
-                const priceHistory = marketData?.price_history
+                const volumeData = mkt?.marketData?.quote_volume_24h
 
-                const volume = marketData?.quote_volume_24h
-                  ? marketData.quote_volume_24h
-                  : 0
+                const volume = volumeData ? volumeData : 0
 
                 const isUp =
                   price && priceHistory && priceHistory.length
@@ -169,22 +155,23 @@ const SpotMarketsTable = () => {
                     </Td>
                   </TrBody>
                 )
-              })}
+              },
+            )}
           </tbody>
         </Table>
       ) : (
         <div className="border-b border-th-bkg-3">
-          {serumMarkets
-            .slice()
-            .sort((a, b) => a.name.localeCompare(b.name))
-            .map((market) => {
+          {sortSpotMarkets(serumMarketsWithData, 'quote_volume_24h').map(
+            (market) => {
               return (
                 <MobileSpotMarketItem
                   key={market.publicKey.toString()}
+                  loadingMarketData={loadingMarketData}
                   market={market}
                 />
               )
-            })}
+            },
+          )}
         </div>
       )}
     </ContentBox>
@@ -193,21 +180,19 @@ const SpotMarketsTable = () => {
 
 export default SpotMarketsTable
 
-const MobileSpotMarketItem = ({ market }: { market: Serum3Market }) => {
+const MobileSpotMarketItem = ({
+  market,
+  loadingMarketData,
+}: {
+  market: SerumMarketWithMarketData
+  loadingMarketData: boolean
+}) => {
   const { t } = useTranslation('common')
   const { group } = useMangoGroup()
   const { theme } = useThemeWrapper()
   const baseBank = group?.getFirstBankByTokenIndex(market.baseTokenIndex)
   const quoteBank = group?.getFirstBankByTokenIndex(market.quoteTokenIndex)
   const serumMarket = group?.getSerum3ExternalMarket(market.serumMarketExternal)
-  const { data: marketsData, isLoading, isFetching } = useMarketsData()
-
-  const spotData: MarketData = useMemo(() => {
-    if (!marketsData) return []
-    return marketsData?.spotData || []
-  }, [marketsData])
-
-  const loadingMarketData = isLoading || isFetching
 
   const price = useMemo(() => {
     if (!baseBank || !quoteBank || !serumMarket) return 0
@@ -217,14 +202,11 @@ const MobileSpotMarketItem = ({ market }: { market: Serum3Market }) => {
     ).toNumber()
   }, [baseBank, quoteBank, serumMarket])
 
-  const spotDataEntries = Object.entries(spotData).find(
-    (e) => e[0].toLowerCase() === market.name.toLowerCase(),
-  )
-  const marketData = spotDataEntries ? spotDataEntries[1][0] : undefined
+  const priceHistory = market?.marketData?.price_history
 
-  const priceHistory = marketData?.price_history
+  const volueData = market?.marketData?.quote_volume_24h
 
-  const volume = marketData?.quote_volume_24h ? marketData.quote_volume_24h : 0
+  const volume = volueData ? volueData : 0
 
   const isUp =
     price && priceHistory && priceHistory.length

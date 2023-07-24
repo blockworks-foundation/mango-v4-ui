@@ -17,12 +17,11 @@ const fetchMarketData = async () => {
   }
 }
 
-export default function useMarketData() {
+export default function useMarketsData() {
   return useQuery(['market-data'], () => fetchMarketData(), {
     cacheTime: 1000 * 60 * 10,
     staleTime: 1000 * 60,
     retry: 3,
     refetchOnWindowFocus: false,
-    // enabled: market && market instanceof Serum3Market,
   })
 }
