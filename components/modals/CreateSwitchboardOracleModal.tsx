@@ -55,6 +55,7 @@ const CreateSwitchboardOracleModal = ({
   const connection = mangoStore((s) => s.connection)
   const wallet = useWallet()
   const quoteTokenName = 'USDC'
+  const pythUsdOracle = 'Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD'
 
   const [creatingOracle, setCreatingOracle] = useState(false)
 
@@ -134,6 +135,20 @@ const CreateSwitchboardOracleModal = ({
                         ],
                       },
                     },
+                    {
+                      multiplyTask: {
+                        job: {
+                          tasks: [
+                            {
+                              oracleTask: {
+                                pythAddress: pythUsdOracle,
+                                pythAllowedConfidenceInterval: 0.1,
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    },
                   ],
                 }),
               ).finish(),
@@ -150,26 +165,14 @@ const CreateSwitchboardOracleModal = ({
                             cacheTask: {
                               cacheItems: [
                                 {
-                                  variableName: 'IN_TOKEN_QTY',
+                                  variableName: 'QTY',
                                   job: {
                                     tasks: [
                                       {
-                                        valueTask: {
-                                          big: '100',
-                                        },
-                                      },
-                                      {
-                                        divideTask: {
-                                          job: {
-                                            tasks: [
-                                              {
-                                                serumSwapTask: {
-                                                  serumPoolAddress:
-                                                    openbookMarketPk,
-                                                },
-                                              },
-                                            ],
-                                          },
+                                        jupiterSwapTask: {
+                                          inTokenAddress: USDC_MINT,
+                                          outTokenAddress: baseTokenPk,
+                                          baseAmountString: '100',
                                         },
                                       },
                                     ],
@@ -182,12 +185,12 @@ const CreateSwitchboardOracleModal = ({
                             jupiterSwapTask: {
                               inTokenAddress: baseTokenPk,
                               outTokenAddress: USDC_MINT,
-                              baseAmountString: '${IN_TOKEN_QTY}',
+                              baseAmountString: '${QTY}',
                             },
                           },
                           {
                             divideTask: {
-                              big: '${IN_TOKEN_QTY}',
+                              big: '${QTY}',
                             },
                           },
                         ],
@@ -198,6 +201,20 @@ const CreateSwitchboardOracleModal = ({
                             },
                           },
                         ],
+                      },
+                    },
+                    {
+                      multiplyTask: {
+                        job: {
+                          tasks: [
+                            {
+                              oracleTask: {
+                                pythAddress: pythUsdOracle,
+                                pythAllowedConfidenceInterval: 0.1,
+                              },
+                            },
+                          ],
+                        },
                       },
                     },
                   ],
