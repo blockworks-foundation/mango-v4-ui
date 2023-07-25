@@ -423,16 +423,18 @@ export default function SpotMarketOrderSwapForm() {
             </div>
           </div>
           {swapFormSizeUi === 'slider' ? (
-            <SwapSlider
-              useMargin={savedCheckboxSettings.margin}
-              amount={
-                side === 'buy'
-                  ? stringToNumberOrZero(quoteSize)
-                  : stringToNumberOrZero(baseSize)
-              }
-              onChange={setAmountFromSlider}
-              step={1 / 10 ** (inputBank?.mintDecimals || 6)}
-            />
+            <div className="mt-2">
+              <SwapSlider
+                useMargin={savedCheckboxSettings.margin}
+                amount={
+                  side === 'buy'
+                    ? stringToNumberOrZero(quoteSize)
+                    : stringToNumberOrZero(baseSize)
+                }
+                onChange={setAmountFromSlider}
+                step={1 / 10 ** (inputBank?.mintDecimals || 6)}
+              />
+            </div>
           ) : (
             <PercentageSelectButtons
               amountIn={side === 'buy' ? quoteSize : baseSize}
