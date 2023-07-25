@@ -40,6 +40,7 @@ import MaxMarketSwapAmount from './MaxMarketSwapAmount'
 import { floorToDecimal, formatNumericValue } from 'utils/numbers'
 import { formatTokenSymbol } from 'utils/tokens'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
+import { useTokenMax } from '@components/swap/useTokenMax'
 
 const set = mangoStore.getState().set
 const slippage = 100
@@ -54,7 +55,7 @@ function stringToNumberOrZero(s: string): number {
 
 export default function SpotMarketOrderSwapForm() {
   const { t } = useTranslation()
-  const { baseSize, price, quoteSize, side } = mangoStore((s) => s.tradeForm)
+  const { baseSize, quoteSize, side } = mangoStore((s) => s.tradeForm)
   const { isUnownedAccount } = useUnownedAccount()
   const [placingOrder, setPlacingOrder] = useState(false)
   const { ipAllowed, ipCountry } = useIpAddress()
@@ -71,6 +72,9 @@ export default function SpotMarketOrderSwapForm() {
     quoteSymbol,
     serumOrPerpMarket,
   } = useSelectedMarket()
+  const { amount: tokenMax, amountWithBorrow } = useTokenMax(
+    savedCheckboxSettings.margin,
+  )
 
   const handleBaseSizeChange = useCallback(
     (e: NumberFormatValues, info: SourceInfo) => {
@@ -299,22 +303,47 @@ export default function SpotMarketOrderSwapForm() {
   }, [baseSize, inputBank, quoteSize])
 
   const orderValue = useMemo(() => {
-    if (!outputBank || !oraclePrice || !baseSize || isNaN(parseFloat(baseSize)))
+    if (
+      !inputBank ||
+      !outputBank ||
+      !oraclePrice ||
+      !baseSize ||
+      isNaN(parseFloat(baseSize))
+    )
       return 0
+
+    const quotePriceDecimal =
+      side === 'buy'
+        ? new Decimal(inputBank.uiPrice)
+        : new Decimal(outputBank.uiPrice)
     const basePriceDecimal = new Decimal(oraclePrice)
-    const quotePriceDecimal = new Decimal(outputBank.uiPrice)
     const sizeDecimal = new Decimal(baseSize)
     return floorToDecimal(
       basePriceDecimal.mul(quotePriceDecimal).mul(sizeDecimal),
       2,
     )
-  }, [baseSize, outputBank, oraclePrice])
+  }, [baseSize, inputBank, outputBank, oraclePrice, side])
+
+  const tooMuchSize = useMemo(() => {
+    if (!baseSize || !quoteSize || !amountWithBorrow || !tokenMax) return false
+    const size = side === 'buy' ? new Decimal(quoteSize) : new Decimal(baseSize)
+    const useMargin = savedCheckboxSettings.margin
+    return useMargin ? size.gt(amountWithBorrow) : size.gt(tokenMax)
+  }, [
+    amountWithBorrow,
+    baseSize,
+    quoteSize,
+    side,
+    tokenMax,
+    savedCheckboxSettings.margin,
+  ])
 
   const disabled =
-    (connected && (!baseSize || !price)) ||
+    (connected && (!baseSize || !oraclePrice)) ||
     !serumOrPerpMarket ||
     parseFloat(baseSize) < serumOrPerpMarket.minOrderSize ||
-    isLoading
+    isLoading ||
+    tooMuchSize
 
   return (
     <>
@@ -458,6 +487,12 @@ export default function SpotMarketOrderSwapForm() {
                     <LinkIcon className="mr-2 h-5 w-5" />
                     {t('connect')}
                   </div>
+                ) : tooMuchSize ? (
+                  <span>
+                    {t('swap:insufficient-balance', {
+                      symbol: '',
+                    })}
+                  </span>
                 ) : !placingOrder ? (
                   <span>
                     {t('trade:place-order', {
