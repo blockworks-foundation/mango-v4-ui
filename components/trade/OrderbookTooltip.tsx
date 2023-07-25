@@ -26,11 +26,11 @@ const OrderbookTooltip = () => {
   const isPerp = serumOrPerpMarket instanceof PerpMarket
   return (
     <div
-      className={`absolute top-4 left-1/2 -translate-x-1/2 p-3 rounded-md bg-th-bkg-1 border text-center ${
+      className={`absolute max-w-[75%] w-full top-4 left-1/2 -translate-x-1/2 p-3 rounded-md bg-th-bkg-1 border text-center ${
         isBid ? 'border-th-up' : 'border-th-down'
       }`}
     >
-      <p className="whitespace-nowrap">
+      <p>
         <span className={isBid ? 'text-th-up' : 'text-th-down'}>{t(side)}</span>
         {` ${formatNumericValue(cumulativeSize, minOrderDecimals)} ${
           isPerp ? '' : baseSymbol
