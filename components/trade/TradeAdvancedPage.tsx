@@ -22,6 +22,7 @@ import FavoriteMarketsBar from './FavoriteMarketsBar'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { SIDEBAR_COLLAPSE_KEY, TRADE_LAYOUT_KEY } from 'utils/constants'
 import TradeHotKeys from './TradeHotKeys'
+import OrderbookTooltip from './OrderbookTooltip'
 
 export type TradeLayout =
   | 'chartLeft'
@@ -304,6 +305,7 @@ const TradeAdvancedPage = () => {
           className="h-full border border-x-0 border-th-bkg-3"
         >
           <div className={`relative h-full overflow-auto`}>
+            <OrderbookTooltip />
             <TradingChartContainer />
           </div>
         </div>

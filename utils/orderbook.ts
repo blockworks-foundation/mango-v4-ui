@@ -94,11 +94,15 @@ export const getCumulativeOrderbookSide = (
   isGrouped: boolean,
 ): cumOrderbookSide[] => {
   let cumulativeSize = 0
+  let cumulativeValue = 0
   return orders.slice(0, depth).map(([price, size]) => {
     cumulativeSize += size
+    cumulativeValue += price * size
     return {
       price: Number(price),
       size,
+      averagePrice: cumulativeValue / cumulativeSize,
+      cumulativeValue: cumulativeValue,
       cumulativeSize,
       sizePercent: Math.round((cumulativeSize / (totalSize || 1)) * 100),
       cumulativeSizePercent: Math.round((size / (cumulativeSize || 1)) * 100),
