@@ -59,6 +59,7 @@ import {
   ProfileDetails,
   MangoTokenStatsItem,
   PositionStat,
+  OrderbookTooltip,
 } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
@@ -174,6 +175,7 @@ export type MangoStore = {
       closestToLiq: PositionStat[]
     }
   }
+  orderbookTooltip: OrderbookTooltip | undefined
   profile: {
     details: ProfileDetails | null
     loadDetails: boolean
@@ -323,6 +325,7 @@ const mangoStore = create<MangoStore>()(
           closestToLiq: [],
         },
       },
+      orderbookTooltip: undefined,
       profile: {
         loadDetails: false,
         details: { profile_name: '', trader_category: '', wallet_pk: '' },

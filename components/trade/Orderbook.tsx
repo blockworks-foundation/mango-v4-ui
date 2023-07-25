@@ -469,6 +469,9 @@ const Orderbook = () => {
                   size={orderbookData?.asks[index].size}
                   side="sell"
                   sizePercent={orderbookData?.asks[index].sizePercent}
+                  averagePrice={orderbookData?.asks[index].averagePrice}
+                  cumulativeValue={orderbookData?.asks[index].cumulativeValue}
+                  cumulativeSize={orderbookData?.asks[index].cumulativeSize}
                   cumulativeSizePercent={
                     orderbookData?.asks[index].cumulativeSizePercent
                   }
@@ -510,6 +513,9 @@ const Orderbook = () => {
                 size={orderbookData?.bids[index].size}
                 side="buy"
                 sizePercent={orderbookData?.bids[index].sizePercent}
+                averagePrice={orderbookData?.bids[index].averagePrice}
+                cumulativeValue={orderbookData?.bids[index].cumulativeValue}
+                cumulativeSize={orderbookData?.bids[index].cumulativeSize}
                 cumulativeSizePercent={
                   orderbookData?.bids[index].cumulativeSizePercent
                 }
@@ -531,6 +537,9 @@ const OrderbookRow = ({
   // invert,
   hasOpenOrder,
   minOrderSize,
+  averagePrice,
+  cumulativeValue,
+  cumulativeSize,
   cumulativeSizePercent,
   tickSize,
   grouping,
@@ -539,6 +548,9 @@ const OrderbookRow = ({
   price: number
   size: number
   sizePercent: number
+  averagePrice: number
+  cumulativeValue: number
+  cumulativeSize: number
   cumulativeSizePercent: number
   hasOpenOrder: boolean
   // invert: boolean
@@ -616,12 +628,35 @@ const OrderbookRow = ({
     [minOrderSize],
   )
 
+  const handleMouseOver = useCallback(() => {
+    const { set } = mangoStore.getState()
+    if (averagePrice && cumulativeSize && cumulativeValue) {
+      set((state) => {
+        state.orderbookTooltip = {
+          averagePrice,
+          cumulativeSize,
+          cumulativeValue,
+          side,
+        }
+      })
+    }
+  }, [averagePrice, cumulativeSize, cumulativeValue])
+
+  const handleMouseLeave = useCallback(() => {
+    const { set } = mangoStore.getState()
+    set((state) => {
+      state.orderbookTooltip = undefined
+    })
+  }, [])
+
   if (!minOrderSize) return null
 
   return (
     <div
       className={`relative flex h-[20px] cursor-pointer justify-between border-b border-b-th-bkg-1 text-sm`}
       ref={element}
+      onMouseOver={handleMouseOver}
+      onMouseLeave={handleMouseLeave}
     >
       <>
         <div className="flex h-full w-full items-center justify-between text-th-fgd-3 hover:bg-th-bkg-2">

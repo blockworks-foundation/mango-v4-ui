@@ -425,7 +425,9 @@ export type MarketsDataItem = {
 export type cumOrderbookSide = {
   price: number
   size: number
+  averagePrice: number
   cumulativeSize: number
+  cumulativeValue: number
   sizePercent: number
   maxSizePercent: number
   cumulativeSizePercent: number
@@ -437,6 +439,13 @@ export type OrderbookData = {
   asks: cumOrderbookSide[]
   spread: number
   spreadPercentage: number
+}
+
+export type OrderbookTooltip = {
+  averagePrice: number
+  cumulativeSize: number
+  cumulativeValue: number
+  side: 'buy' | 'sell'
 }
 
 export interface HealthContribution {
