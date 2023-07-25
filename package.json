@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@blockworks-foundation/mango-feeds": "0.1.7",
-    "@blockworks-foundation/mango-v4": "^0.17.26",
+    "@blockworks-foundation/mango-v4": "^0.17.27",
     "@headlessui/react": "1.6.6",
     "@heroicons/react": "2.0.10",
     "@metaplex-foundation/js": "0.19.4",
