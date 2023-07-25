@@ -4,14 +4,18 @@ import { useEffect, useMemo, useState } from 'react'
 import { floorToDecimal } from 'utils/numbers'
 import { useTokenMax } from './useTokenMax'
 
+const DEFAULT_VALUES = ['10', '25', '50', '75', '100']
+
 const PercentageSelectButtons = ({
   amountIn,
   setAmountIn,
   useMargin,
+  values,
 }: {
   amountIn: string
   setAmountIn: (x: string) => void
   useMargin: boolean
+  values?: string[]
 }) => {
   const [sizePercentage, setSizePercentage] = useState('')
   const {
@@ -49,7 +53,7 @@ const PercentageSelectButtons = ({
       <ButtonGroup
         activeValue={sizePercentage}
         onChange={(p) => handleSizePercentage(p)}
-        values={['10', '25', '50', '75', '100']}
+        values={values || DEFAULT_VALUES}
         unit="%"
       />
     </div>

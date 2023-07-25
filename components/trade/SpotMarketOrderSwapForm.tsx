@@ -4,6 +4,7 @@ import NumberFormat, {
   SourceInfo,
 } from 'react-number-format'
 import {
+  DEFAULT_CHECKBOX_SETTINGS,
   INPUT_PREFIX_CLASSNAMES,
   INPUT_SUFFIX_CLASSNAMES,
 } from './AdvancedTradeForm'
@@ -29,12 +30,18 @@ import * as sentry from '@sentry/nextjs'
 import { isMangoError } from 'types'
 import SwapSlider from '@components/swap/SwapSlider'
 import PercentageSelectButtons from '@components/swap/PercentageSelectButtons'
-import { SIZE_INPUT_UI_KEY } from 'utils/constants'
+import { SIZE_INPUT_UI_KEY, TRADE_CHECKBOXES_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import MaxSwapAmount from '@components/swap/MaxSwapAmount'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import HealthImpact from '@components/shared/HealthImpact'
 import Tooltip from '@components/shared/Tooltip'
+import Checkbox from '@components/forms/Checkbox'
+import MaxMarketSwapAmount from './MaxMarketSwapAmount'
+import { floorToDecimal, formatNumericValue } from 'utils/numbers'
+import { formatTokenSymbol } from 'utils/tokens'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
+import { useTokenMax } from '@components/swap/useTokenMax'
+import SheenLoader from '@components/shared/SheenLoader'
 
 const set = mangoStore.getState().set
 const slippage = 100
@@ -49,12 +56,14 @@ function stringToNumberOrZero(s: string): number {
 
 export default function SpotMarketOrderSwapForm() {
   const { t } = useTranslation()
-  const { baseSize, price, quoteSize, side } = mangoStore((s) => s.tradeForm)
+  const { baseSize, quoteSize, side } = mangoStore((s) => s.tradeForm)
   const { isUnownedAccount } = useUnownedAccount()
   const [placingOrder, setPlacingOrder] = useState(false)
   const { ipAllowed, ipCountry } = useIpAddress()
   const { connected, publicKey, connect } = useWallet()
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
+  const [savedCheckboxSettings, setSavedCheckboxSettings] =
+    useLocalStorageState(TRADE_CHECKBOXES_KEY, DEFAULT_CHECKBOX_SETTINGS)
   const {
     selectedMarket,
     price: oraclePrice,
@@ -64,6 +73,9 @@ export default function SpotMarketOrderSwapForm() {
     quoteSymbol,
     serumOrPerpMarket,
   } = useSelectedMarket()
+  const { amount: tokenMax, amountWithBorrow } = useTokenMax(
+    savedCheckboxSettings.margin,
+  )
 
   const handleBaseSizeChange = useCallback(
     (e: NumberFormatValues, info: SourceInfo) => {
@@ -274,28 +286,76 @@ export default function SpotMarketOrderSwapForm() {
       : Math.trunc(simulatedHealthRatio)
   }, [inputBank, outputBank, baseSize, quoteSize, side])
 
+  const [balance, borrowAmount] = useMemo(() => {
+    if (!inputBank) return [0, 0]
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+    if (!mangoAccount) return [0, 0]
+    let borrowAmount
+    const balance = mangoAccount.getTokenDepositsUi(inputBank)
+    if (side === 'buy') {
+      const remainingBalance = balance - parseFloat(quoteSize)
+      borrowAmount = remainingBalance < 0 ? Math.abs(remainingBalance) : 0
+    } else {
+      const remainingBalance = balance - parseFloat(baseSize)
+      borrowAmount = remainingBalance < 0 ? Math.abs(remainingBalance) : 0
+    }
+
+    return [balance, borrowAmount]
+  }, [baseSize, inputBank, quoteSize])
+
+  const orderValue = useMemo(() => {
+    if (
+      !inputBank ||
+      !outputBank ||
+      !oraclePrice ||
+      !baseSize ||
+      isNaN(parseFloat(baseSize))
+    )
+      return 0
+
+    const quotePriceDecimal =
+      side === 'buy'
+        ? new Decimal(inputBank.uiPrice)
+        : new Decimal(outputBank.uiPrice)
+    const basePriceDecimal = new Decimal(oraclePrice)
+    const sizeDecimal = new Decimal(baseSize)
+    return floorToDecimal(
+      basePriceDecimal.mul(quotePriceDecimal).mul(sizeDecimal),
+      2,
+    )
+  }, [baseSize, inputBank, outputBank, oraclePrice, side])
+
+  const tooMuchSize = useMemo(() => {
+    if (!baseSize || !quoteSize || !amountWithBorrow || !tokenMax) return false
+    const size = side === 'buy' ? new Decimal(quoteSize) : new Decimal(baseSize)
+    const useMargin = savedCheckboxSettings.margin
+    return useMargin ? size.gt(amountWithBorrow) : size.gt(tokenMax)
+  }, [
+    amountWithBorrow,
+    baseSize,
+    quoteSize,
+    side,
+    tokenMax,
+    savedCheckboxSettings.margin,
+  ])
+
   const disabled =
-    (connected && (!baseSize || !price)) ||
+    (connected && (!baseSize || !oraclePrice)) ||
     !serumOrPerpMarket ||
     parseFloat(baseSize) < serumOrPerpMarket.minOrderSize ||
-    isLoading
-
-  const useMargin = true
+    isLoading ||
+    tooMuchSize
 
   return (
     <>
       <form onSubmit={(e) => handleSubmit(e)}>
         <div className="mt-3 px-3 md:px-4">
-          <div className="mb-2 flex items-end justify-end">
-            {!isUnownedAccount ? (
-              <>
-                <MaxSwapAmount
-                  useMargin={useMargin}
-                  setAmountIn={setAmountFromSlider}
-                />
-              </>
-            ) : null}
-          </div>
+          {!isUnownedAccount ? (
+            <MaxMarketSwapAmount
+              useMargin={savedCheckboxSettings.margin}
+              setAmountIn={setAmountFromSlider}
+            />
+          ) : null}
           <div className="flex flex-col">
             <div className="relative">
               <NumberFormat
@@ -363,124 +423,255 @@ export default function SpotMarketOrderSwapForm() {
               <div className={INPUT_SUFFIX_CLASSNAMES}>{quoteSymbol}</div>
             </div>
           </div>
-        </div>
-        <div className="mt-6 mb-4 flex px-3 md:px-4">
           {swapFormSizeUi === 'slider' ? (
-            <SwapSlider
-              useMargin={useMargin}
-              amount={
-                side === 'buy'
-                  ? stringToNumberOrZero(quoteSize)
-                  : stringToNumberOrZero(baseSize)
-              }
-              onChange={setAmountFromSlider}
-              step={1 / 10 ** (inputBank?.mintDecimals || 6)}
-            />
+            <div className="mt-2">
+              <SwapSlider
+                useMargin={savedCheckboxSettings.margin}
+                amount={
+                  side === 'buy'
+                    ? stringToNumberOrZero(quoteSize)
+                    : stringToNumberOrZero(baseSize)
+                }
+                onChange={setAmountFromSlider}
+                step={1 / 10 ** (inputBank?.mintDecimals || 6)}
+              />
+            </div>
           ) : (
             <PercentageSelectButtons
               amountIn={side === 'buy' ? quoteSize : baseSize}
               setAmountIn={setAmountFromSlider}
-              useMargin={useMargin}
+              useMargin={savedCheckboxSettings.margin}
+              values={['25', '50', '75', '100']}
             />
           )}
-        </div>
-        <div className="mt-6 mb-4 flex px-3 md:px-4">
-          {ipAllowed ? (
-            <Button
-              className={`flex w-full items-center justify-center ${
-                !connected
-                  ? ''
-                  : side === 'buy'
-                  ? 'bg-th-up-dark text-white md:hover:bg-th-up-dark md:hover:brightness-90'
-                  : 'bg-th-down-dark text-white md:hover:bg-th-down-dark md:hover:brightness-90'
-              }`}
-              disabled={disabled}
-              size="large"
-              type="submit"
+          <div className="mt-4">
+            <Tooltip
+              className="hidden md:block"
+              delay={100}
+              placement="left"
+              content={t('trade:tooltip-enable-margin')}
             >
+              <Checkbox
+                checked={savedCheckboxSettings.margin}
+                onChange={(e) =>
+                  setSavedCheckboxSettings({
+                    ...savedCheckboxSettings,
+                    margin: e.target.checked,
+                  })
+                }
+              >
+                {t('trade:margin')}
+              </Checkbox>
+            </Tooltip>
+          </div>
+          <div className="mt-6 mb-4 flex">
+            {ipAllowed ? (
+              <Button
+                className={`flex w-full items-center justify-center ${
+                  !connected
+                    ? ''
+                    : side === 'buy'
+                    ? 'bg-th-up-dark text-white md:hover:bg-th-up-dark md:hover:brightness-90'
+                    : 'bg-th-down-dark text-white md:hover:bg-th-down-dark md:hover:brightness-90'
+                }`}
+                disabled={disabled}
+                size="large"
+                type="submit"
+              >
+                {isLoading ? (
+                  <div className="flex items-center space-x-2">
+                    <Loading />
+                    <span className="hidden sm:block">
+                      {t('common:fetching-route')}
+                    </span>
+                  </div>
+                ) : !connected ? (
+                  <div className="flex items-center">
+                    <LinkIcon className="mr-2 h-5 w-5" />
+                    {t('connect')}
+                  </div>
+                ) : tooMuchSize ? (
+                  <span>
+                    {t('swap:insufficient-balance', {
+                      symbol: '',
+                    })}
+                  </span>
+                ) : !placingOrder ? (
+                  <span>
+                    {t('trade:place-order', {
+                      side: side === 'buy' ? t('buy') : t('sell'),
+                    })}
+                  </span>
+                ) : (
+                  <div className="flex items-center space-x-2">
+                    <Loading />
+                    <span className="hidden sm:block">
+                      {t('trade:placing-order')}
+                    </span>
+                  </div>
+                )}
+              </Button>
+            ) : (
+              <Button disabled className="w-full leading-tight" size="large">
+                {t('country-not-allowed', {
+                  country: ipCountry ? `(${ipCountry})` : '',
+                })}
+              </Button>
+            )}
+          </div>
+          <div className="space-y-2">
+            <div className="flex justify-between text-xs">
+              <p>{t('trade:order-value')}</p>
+              <p className="font-mono text-th-fgd-2">
+                {orderValue ? (
+                  <FormatNumericValue value={orderValue} isUsd />
+                ) : (
+                  '–'
+                )}
+              </p>
+            </div>
+            <HealthImpact maintProjectedHealth={maintProjectedHealth} small />
+            <div className="flex justify-between text-xs">
+              <Tooltip
+                content={
+                  <>
+                    <p>
+                      The price impact is the difference observed between the
+                      total value of the entry tokens swapped and the
+                      destination tokens obtained.
+                    </p>
+                    <p className="mt-1">
+                      The bigger the trade is, the bigger the price impact can
+                      be.
+                    </p>
+                  </>
+                }
+              >
+                <p className="tooltip-underline">{t('swap:price-impact')}</p>
+              </Tooltip>
               {isLoading ? (
-                <div className="flex items-center space-x-2">
-                  <Loading />
-                  <span className="hidden sm:block">
-                    {t('common:fetching-route')}
-                  </span>
-                </div>
-              ) : !connected ? (
-                <div className="flex items-center">
-                  <LinkIcon className="mr-2 h-5 w-5" />
-                  {t('connect')}
-                </div>
-              ) : !placingOrder ? (
-                <span>
-                  {t('trade:place-order', {
-                    side: side === 'buy' ? t('buy') : t('sell'),
-                  })}
-                </span>
+                <SheenLoader>
+                  <div className="h-3.5 w-12 bg-th-bkg-2" />
+                </SheenLoader>
               ) : (
-                <div className="flex items-center space-x-2">
-                  <Loading />
-                  <span className="hidden sm:block">
-                    {t('trade:placing-order')}
-                  </span>
+                <p className="text-right font-mono text-th-fgd-2">
+                  {selectedRoute
+                    ? selectedRoute?.priceImpactPct * 100 < 0.1
+                      ? '<0.1%'
+                      : `${(selectedRoute?.priceImpactPct * 100).toFixed(2)}%`
+                    : '-'}
+                </p>
+              )}
+            </div>
+            {borrowAmount && inputBank ? (
+              <>
+                <div className="flex justify-between text-xs">
+                  <Tooltip
+                    content={
+                      balance
+                        ? t('trade:tooltip-borrow-balance', {
+                            balance: formatNumericValue(balance),
+                            borrowAmount: formatNumericValue(borrowAmount),
+                            token: formatTokenSymbol(inputBank.name),
+                            rate: formatNumericValue(
+                              inputBank.getBorrowRateUi(),
+                              2,
+                            ),
+                          })
+                        : t('trade:tooltip-borrow-no-balance', {
+                            borrowAmount: formatNumericValue(borrowAmount),
+                            token: formatTokenSymbol(inputBank.name),
+                            rate: formatNumericValue(
+                              inputBank.getBorrowRateUi(),
+                              2,
+                            ),
+                          })
+                    }
+                    delay={100}
+                  >
+                    <p className="tooltip-underline">{t('borrow-amount')}</p>
+                  </Tooltip>
+                  <p className="text-right font-mono text-th-fgd-2">
+                    <FormatNumericValue
+                      value={borrowAmount}
+                      decimals={inputBank.mintDecimals}
+                    />{' '}
+                    <span className="font-body text-th-fgd-4">
+                      {formatTokenSymbol(inputBank.name)}
+                    </span>
+                  </p>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <Tooltip
+                    content={t('loan-origination-fee-tooltip', {
+                      fee: `${(
+                        inputBank.loanOriginationFeeRate.toNumber() * 100
+                      ).toFixed(3)}%`,
+                    })}
+                    delay={100}
+                  >
+                    <p className="tooltip-underline">
+                      {t('loan-origination-fee')}
+                    </p>
+                  </Tooltip>
+                  <p className="text-right font-mono text-th-fgd-2">
+                    <FormatNumericValue
+                      value={
+                        borrowAmount *
+                        inputBank.loanOriginationFeeRate.toNumber()
+                      }
+                      decimals={inputBank.mintDecimals}
+                    />{' '}
+                    <span className="font-body text-th-fgd-4">
+                      {formatTokenSymbol(inputBank.name)}
+                    </span>
+                  </p>
+                </div>
+              </>
+            ) : null}
+            <div className="flex items-center justify-between text-xs">
+              <p className="pr-2 text-th-fgd-3">{t('common:route')}</p>
+              {isLoading ? (
+                <SheenLoader>
+                  <div className="h-3.5 w-20 bg-th-bkg-2" />
+                </SheenLoader>
+              ) : (
+                <div className="flex items-center overflow-hidden text-th-fgd-2">
+                  <Tooltip
+                    content={selectedRoute?.marketInfos.map((info, index) => {
+                      let includeSeparator = false
+                      if (
+                        selectedRoute?.marketInfos.length > 1 &&
+                        index !== selectedRoute?.marketInfos.length - 1
+                      ) {
+                        includeSeparator = true
+                      }
+                      return (
+                        <span key={index}>{`${info?.label} ${
+                          includeSeparator ? 'x ' : ''
+                        }`}</span>
+                      )
+                    })}
+                  >
+                    <div className="tooltip-underline truncate whitespace-nowrap max-w-[140px]">
+                      {selectedRoute?.marketInfos.map((info, index) => {
+                        let includeSeparator = false
+                        if (
+                          selectedRoute?.marketInfos.length > 1 &&
+                          index !== selectedRoute?.marketInfos.length - 1
+                        ) {
+                          includeSeparator = true
+                        }
+                        return (
+                          <span key={index}>{`${info?.label} ${
+                            includeSeparator ? 'x ' : ''
+                          }`}</span>
+                        )
+                      })}
+                    </div>
+                  </Tooltip>
                 </div>
               )}
-            </Button>
-          ) : (
-            <Button disabled className="w-full leading-tight" size="large">
-              {t('country-not-allowed', {
-                country: ipCountry ? `(${ipCountry})` : '',
-              })}
-            </Button>
-          )}
-        </div>
-        <div className="space-y-2 px-3 md:px-4">
-          <div className="">
-            <HealthImpact maintProjectedHealth={maintProjectedHealth} small />
-          </div>
-          <div className="flex justify-between text-xs">
-            <Tooltip
-              content={
-                <>
-                  <p>
-                    The price impact is the difference observed between the
-                    total value of the entry tokens swapped and the destination
-                    tokens obtained.
-                  </p>
-                  <p className="mt-1">
-                    The bigger the trade is, the bigger the price impact can be.
-                  </p>
-                </>
-              }
-            >
-              <p className="tooltip-underline">{t('swap:price-impact')}</p>
-            </Tooltip>
-            <p className="text-right font-mono text-th-fgd-2">
-              {selectedRoute
-                ? selectedRoute?.priceImpactPct * 100 < 0.1
-                  ? '<0.1%'
-                  : `${(selectedRoute?.priceImpactPct * 100).toFixed(2)}%`
-                : '-'}
-            </p>
-          </div>
-          <div className="flex items-center justify-between text-xs">
-            <p className="pr-2 text-th-fgd-3">{t('common:route')}</p>
-            <div className="flex items-center overflow-hidden text-th-fgd-3">
-              <div className="truncate whitespace-nowrap">
-                {selectedRoute?.marketInfos.map((info, index) => {
-                  let includeSeparator = false
-                  if (
-                    selectedRoute?.marketInfos.length > 1 &&
-                    index !== selectedRoute?.marketInfos.length - 1
-                  ) {
-                    includeSeparator = true
-                  }
-                  return (
-                    <span key={index}>{`${info?.label} ${
-                      includeSeparator ? 'x ' : ''
-                    }`}</span>
-                  )
-                })}
-              </div>
             </div>
           </div>
         </div>
