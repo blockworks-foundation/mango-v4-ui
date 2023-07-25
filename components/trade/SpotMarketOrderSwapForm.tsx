@@ -41,6 +41,7 @@ import { floorToDecimal, formatNumericValue } from 'utils/numbers'
 import { formatTokenSymbol } from 'utils/tokens'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { useTokenMax } from '@components/swap/useTokenMax'
+import SheenLoader from '@components/shared/SheenLoader'
 
 const set = mangoStore.getState().set
 const slippage = 100
@@ -548,13 +549,19 @@ export default function SpotMarketOrderSwapForm() {
               >
                 <p className="tooltip-underline">{t('swap:price-impact')}</p>
               </Tooltip>
-              <p className="text-right font-mono text-th-fgd-2">
-                {selectedRoute
-                  ? selectedRoute?.priceImpactPct * 100 < 0.1
-                    ? '<0.1%'
-                    : `${(selectedRoute?.priceImpactPct * 100).toFixed(2)}%`
-                  : '-'}
-              </p>
+              {isLoading ? (
+                <SheenLoader>
+                  <div className="h-3.5 w-12 bg-th-bkg-2" />
+                </SheenLoader>
+              ) : (
+                <p className="text-right font-mono text-th-fgd-2">
+                  {selectedRoute
+                    ? selectedRoute?.priceImpactPct * 100 < 0.1
+                      ? '<0.1%'
+                      : `${(selectedRoute?.priceImpactPct * 100).toFixed(2)}%`
+                    : '-'}
+                </p>
+              )}
             </div>
             {borrowAmount && inputBank ? (
               <>
@@ -624,25 +631,14 @@ export default function SpotMarketOrderSwapForm() {
             ) : null}
             <div className="flex items-center justify-between text-xs">
               <p className="pr-2 text-th-fgd-3">{t('common:route')}</p>
-              <div className="flex items-center overflow-hidden text-th-fgd-2">
-                <Tooltip
-                  content={selectedRoute?.marketInfos.map((info, index) => {
-                    let includeSeparator = false
-                    if (
-                      selectedRoute?.marketInfos.length > 1 &&
-                      index !== selectedRoute?.marketInfos.length - 1
-                    ) {
-                      includeSeparator = true
-                    }
-                    return (
-                      <span key={index}>{`${info?.label} ${
-                        includeSeparator ? 'x ' : ''
-                      }`}</span>
-                    )
-                  })}
-                >
-                  <div className="tooltip-underline truncate whitespace-nowrap max-w-[140px]">
-                    {selectedRoute?.marketInfos.map((info, index) => {
+              {isLoading ? (
+                <SheenLoader>
+                  <div className="h-3.5 w-20 bg-th-bkg-2" />
+                </SheenLoader>
+              ) : (
+                <div className="flex items-center overflow-hidden text-th-fgd-2">
+                  <Tooltip
+                    content={selectedRoute?.marketInfos.map((info, index) => {
                       let includeSeparator = false
                       if (
                         selectedRoute?.marketInfos.length > 1 &&
@@ -656,9 +652,26 @@ export default function SpotMarketOrderSwapForm() {
                         }`}</span>
                       )
                     })}
-                  </div>
-                </Tooltip>
-              </div>
+                  >
+                    <div className="tooltip-underline truncate whitespace-nowrap max-w-[140px]">
+                      {selectedRoute?.marketInfos.map((info, index) => {
+                        let includeSeparator = false
+                        if (
+                          selectedRoute?.marketInfos.length > 1 &&
+                          index !== selectedRoute?.marketInfos.length - 1
+                        ) {
+                          includeSeparator = true
+                        }
+                        return (
+                          <span key={index}>{`${info?.label} ${
+                            includeSeparator ? 'x ' : ''
+                          }`}</span>
+                        )
+                      })}
+                    </div>
+                  </Tooltip>
+                </div>
+              )}
             </div>
           </div>
         </div>
