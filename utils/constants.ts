@@ -1,3 +1,5 @@
+import { PublicKey } from '@metaplex-foundation/js'
+
 export const LAST_ACCOUNT_KEY = 'mangoAccount-0.4'
 
 export const CLIENT_TX_TIMEOUT = 90000
@@ -57,8 +59,6 @@ export const ACCEPT_TERMS_KEY = 'termsOfUseAccepted-0.1'
 
 export const TRADE_LAYOUT_KEY = 'tradeLayoutKey-0.1'
 
-export const DEPTH_CHART_KEY = 'showDepthChart-0.1'
-
 export const STATS_TAB_KEY = 'activeStatsTab-0.1'
 
 export const USE_ORDERBOOK_FEED_KEY = 'useOrderbookFeed-0.1'
@@ -112,6 +112,9 @@ export const NOTIFICATION_API_WEBSOCKET =
 export const SWITCHBOARD_PROGRAM_ID =
   'SW1TCH7qEPTdLsDHRgPuMQjbQxKdH2aBStViMFnt64f'
 
+export const AUCTION_HOUSE_ID = new PublicKey(
+  'BGBBt6G9bp36i5qt7PWjBWg3VNef1zPozAN9RFsEPDkh',
+)
 export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   bonk: true,
   btc: true,

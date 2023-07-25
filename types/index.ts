@@ -303,6 +303,8 @@ export interface NFT {
   collectionAddress?: string
   image: string
   name: string
+  mint: string
+  tokenAccount: string
 }
 
 export interface PerpStatsItem {
@@ -422,21 +424,29 @@ export function isMangoError(error: unknown): error is MangoError {
   )
 }
 
-export type TickerData = {
-  base_currency: string
-  base_volume: string
-  high: string
-  last_price: string
-  low: string
-  target_currency: string
-  target_volume: string
-  ticker_id: string
+export type MarketData = { [key: string]: MarketsDataItem[] }
+
+export type MarketsDataItem = {
+  base_volume_1h: number
+  base_volume_24h: number
+  change_1h: number
+  change_7d: number
+  change_24h: number
+  change_30d: number
+  last_price: number
+  price_1h: number
+  price_24h: number
+  price_history: { price: number; time: string }[]
+  quote_volume_1h: number
+  quote_volume_24h: number
 }
 
 export type cumOrderbookSide = {
   price: number
   size: number
+  averagePrice: number
   cumulativeSize: number
+  cumulativeValue: number
   sizePercent: number
   maxSizePercent: number
   cumulativeSizePercent: number
@@ -448,6 +458,13 @@ export type OrderbookData = {
   asks: cumOrderbookSide[]
   spread: number
   spreadPercentage: number
+}
+
+export type OrderbookTooltip = {
+  averagePrice: number
+  cumulativeSize: number
+  cumulativeValue: number
+  side: 'buy' | 'sell'
 }
 
 export interface HealthContribution {

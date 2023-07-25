@@ -8,6 +8,7 @@ interface TabUnderlineProps<T extends Values> {
   values: T[]
   names?: Array<string>
   small?: boolean
+  fillWidth?: boolean
 }
 
 const TabUnderline = <T extends Values>({
@@ -16,6 +17,7 @@ const TabUnderline = <T extends Values>({
   names,
   onChange,
   small,
+  fillWidth = true,
 }: TabUnderlineProps<T>) => {
   const { t } = useTranslation('common')
 
@@ -36,7 +38,7 @@ const TabUnderline = <T extends Values>({
             : 'bg-th-active'
         }`}
         style={{
-          // maxWidth: '176px',
+          maxWidth: !fillWidth ? '176px' : '',
           transform: `translateX(${
             values.findIndex((v) => v === activeValue) * 100
           }%)`,
@@ -47,7 +49,9 @@ const TabUnderline = <T extends Values>({
         {values.map((value, i) => (
           <button
             onClick={() => onChange(value)}
-            className={`relative flex h-10 w-1/2 
+            className={`relative flex h-10 w-1/2 ${
+              fillWidth ? '' : 'max-w-[176px]'
+            }
             cursor-pointer items-center justify-center whitespace-nowrap rounded py-1 focus-visible:text-th-fgd-2  md:h-auto md:rounded-none md:hover:opacity-100 ${
               small ? 'text-sm' : 'text-sm lg:text-base'
             }

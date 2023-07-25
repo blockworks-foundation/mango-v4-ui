@@ -7,7 +7,6 @@
   "modify-order-details": "Edit your {{marketName}} order from {{orderSide}} {{orderSize}} at {{currentOrderPrice}} to {{orderSide}} {{orderSize}} at {{updatedOrderPrice}}",
   "order-details": " ({{orderType}} {{orderSide}}) if price is {{triggerCondition}} {{triggerPrice}}",
   "outside-range": "Order Price Outside Range",
-  "toggle-stable-price": "Toggle stable price line",
   "slippage-accept": "Use the trade order form if you wish to accept the potential slippage.",
   "slippage-warning": "{{updatedOrderPrice}} is greater than 5% {{aboveBelow}} the current market price of {{selectedMarketPrice}}. Executing this trade could incur significant slippage.",
   "toggle-order-line": "Toggle order line visibility",

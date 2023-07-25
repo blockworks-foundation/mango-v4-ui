@@ -510,9 +510,7 @@ const AdvancedTradeForm = () => {
       </div>
       {tradeForm.tradeType === 'Market' &&
       selectedMarket instanceof Serum3Market ? (
-        <>
-          <SpotMarketOrderSwapForm />
-        </>
+        <SpotMarketOrderSwapForm />
       ) : (
         <>
           <form onSubmit={(e) => handleSubmit(e)}>

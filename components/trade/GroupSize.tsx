@@ -28,6 +28,8 @@ const GroupSize = ({
       formatSize(10),
       formatSize(50),
       formatSize(100),
+      formatSize(500),
+      formatSize(1000),
     ],
     [tickSize],
   )
