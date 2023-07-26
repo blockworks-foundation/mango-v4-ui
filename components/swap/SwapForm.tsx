@@ -27,22 +27,15 @@ import { RouteInfo } from 'types/jupiter'
 import useMangoGroup from 'hooks/useMangoGroup'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import useIpAddress from 'hooks/useIpAddress'
-import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
 import SwapSettings from './SwapSettings'
 import InlineNotification from '@components/shared/InlineNotification'
-import useUnownedAccount from 'hooks/useUnownedAccount'
 import Tooltip from '@components/shared/Tooltip'
 import TabUnderline from '@components/shared/TabUnderline'
 import MarketSwapForm from './MarketSwapForm'
 import LimitSwapForm from './LimitSwapForm'
+import Switch from '@components/forms/Switch'
 
 const set = mangoStore.getState().set
-
-export const ORDER_TYPES = [
-  'trade:limit',
-  'trade:stop-market',
-  'trade:stop-limit',
-]
 
 const SwapForm = () => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
@@ -67,7 +60,6 @@ const SwapForm = () => {
   const [debouncedAmountIn] = useDebounce(amountInFormValue, 300)
   const [debouncedAmountOut] = useDebounce(amountOutFormValue, 300)
   const { mangoAccount } = useMangoAccount()
-  const { isDelegatedAccount } = useUnownedAccount()
   const { connected, publicKey } = useWallet()
 
   const amountInAsDecimal: Decimal | null = useMemo(() => {
@@ -137,7 +129,7 @@ const SwapForm = () => {
             uiTokenAmount: amountOutAsDecimal.toNumber(),
           },
         ],
-        HealthType.maint
+        HealthType.maint,
       )
     return simulatedHealthRatio > 100
       ? 100
@@ -176,11 +168,17 @@ const SwapForm = () => {
         })
       }
     },
-    [outputBank, set, setSwapOrLimit]
+    [outputBank, set, setSwapOrLimit],
   )
 
   const handlePlaceOrder = () => {
     console.log('place swap limit order')
+  }
+
+  const handleSetMargin = () => {
+    set((s) => {
+      s.swap.margin = !s.swap.margin
+    })
   }
 
   const limitOrderDisabled =
@@ -271,7 +269,6 @@ const SwapForm = () => {
                 amountOut={
                   selectedRoute ? amountOutAsDecimal.toNumber() : undefined
                 }
-                isDelegatedAccount={isDelegatedAccount}
               />
             ) : (
               <Button
@@ -331,12 +328,12 @@ const SwapForm = () => {
                   {t('swap:margin')}
                 </p>
               </Tooltip>
-              <LinkButton
-                className="text-right text-sm font-normal text-th-fgd-2 underline underline-offset-2 md:hover:no-underline"
-                onClick={() => setShowSettings(true)}
-              >
-                {useMargin ? t('swap:enabled') : t('swap:disabled')}
-              </LinkButton>
+              <Switch
+                className="text-th-fgd-3"
+                checked={useMargin}
+                onChange={handleSetMargin}
+                small
+              />
             </div>
             <div className="flex items-center justify-between">
               <p className="text-sm text-th-fgd-3">{t('swap:max-slippage')}</p>
@@ -364,7 +361,6 @@ const SwapFormSubmitButton = ({
   selectedRoute,
   setShowConfirm,
   useMargin,
-  isDelegatedAccount,
 }: {
   amountIn: Decimal
   amountOut: number | undefined
@@ -373,12 +369,10 @@ const SwapFormSubmitButton = ({
   selectedRoute: RouteInfo | undefined | null
   setShowConfirm: (x: boolean) => void
   useMargin: boolean
-  isDelegatedAccount: boolean
 }) => {
   const { t } = useTranslation('common')
-  const { connected } = useWallet()
+  const { connected, connect } = useWallet()
   const { amount: tokenMax, amountWithBorrow } = useTokenMax(useMargin)
-  const { handleConnect } = useEnhancedWallet()
 
   const showInsufficientBalance = useMargin
     ? amountWithBorrow.lt(amountIn)
@@ -389,10 +383,9 @@ const SwapFormSubmitButton = ({
     (!amountIn.toNumber() ||
       showInsufficientBalance ||
       !amountOut ||
-      !selectedRoute ||
-      isDelegatedAccount)
+      !selectedRoute)
 
-  const onClick = connected ? () => setShowConfirm(true) : handleConnect
+  const onClick = connected ? () => setShowConfirm(true) : connect
 
   return (
     <>
@@ -402,9 +395,7 @@ const SwapFormSubmitButton = ({
         disabled={disabled}
         size="large"
       >
-        {isDelegatedAccount ? (
-          <div>Swap Unavailable for Delegates</div>
-        ) : connected ? (
+        {connected ? (
           showInsufficientBalance ? (
             <div className="flex items-center">
               <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />

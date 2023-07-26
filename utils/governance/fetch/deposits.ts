@@ -58,7 +58,7 @@ export const getDeposits = async ({
   const { registrar } = await getRegistrarPDA(
     realmPk,
     communityMintPk,
-    clientProgramId
+    clientProgramId,
   )
   const { voter } = await getVoterPDA(registrar, walletPk, clientProgramId)
   const [existingVoter, existingRegistrar] = await Promise.all([
@@ -85,7 +85,7 @@ export const getDeposits = async ({
             ...x,
             mint: mints[mintCfgs![x.votingMintConfigIdx].mint.toBase58()],
             index: idx,
-          } as unknown as DepositWithMintAccount)
+          }) as unknown as DepositWithMintAccount,
       )
       .filter((x) => typeof isUsed === 'undefined' || x.isUsed === isUsed)
     const usedDeposits = deposits.filter((x) => x.isUsed)
@@ -96,15 +96,15 @@ export const getDeposits = async ({
         usedDeposits,
         connection,
         registrar,
-        voter
+        voter,
       )
       const depositsInfo = events.filter((x) => x.name === DEPOSIT_EVENT_NAME)
       const votingPowerEntry = events.find(
-        (x) => x.name === VOTER_INFO_EVENT_NAME
+        (x) => x.name === VOTER_INFO_EVENT_NAME,
       )
       deposits = deposits.map((x) => {
         const additionalInfoData = depositsInfo.find(
-          (info) => info.data.depositEntryIndex === x.index
+          (info) => info.data.depositEntryIndex === x.index,
         )?.data
 
         x.currentlyLocked = additionalInfoData?.locking?.amount || new BN(0)
@@ -137,7 +137,7 @@ const getDepositsAdditionalInfoEvents = async (
   usedDeposits: DepositWithMintAccount[],
   connection: Connection,
   registrar: PublicKey,
-  voter: PublicKey
+  voter: PublicKey,
 ) => {
   //because we switch wallet in here we can't use rpc from npm module
   //anchor dont allow to switch wallets inside existing client
@@ -159,7 +159,7 @@ const getDepositsAdditionalInfoEvents = async (
     transaction.add(logVoterInfoIx)
     const batchOfDeposits = await connection.simulateTransaction(transaction)
     const logEvents = parser.parseLogs(
-      batchOfDeposits.value.logs!
+      batchOfDeposits.value.logs!,
     ) as unknown as EventData[]
     events.push(...[...logEvents])
   }

@@ -56,7 +56,7 @@ const fetchTokenInfo = async (tokenId: string | undefined) => {
   if (!tokenId) return
   const response = await fetch(
     `https://api.coingecko.com/api/v3/coins/${tokenId}?localization=false&tickers=false&developer_data=false&sparkline=false&community_data=false
-    `
+    `,
   )
   const data = await response.json()
   return data
@@ -71,12 +71,12 @@ const TokenPage = () => {
   const { mangoTokens } = useJupiterMints()
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
-    INITIAL_ANIMATION_SETTINGS
+    INITIAL_ANIMATION_SETTINGS,
   )
 
   const bankName = useMemo(() => {
     if (!token) return
-    return token === 'WBTC'
+    return token === 'wBTC'
       ? 'wBTC (Portal)'
       : token === 'ETH'
       ? 'ETH (Portal)'
@@ -118,7 +118,7 @@ const TokenPage = () => {
         retry: 3,
         refetchOnWindowFocus: false,
         enabled: !!coingeckoId,
-      }
+      },
     )
 
   const { high_24h, low_24h, price_change_percentage_24h } =

@@ -22,7 +22,7 @@ const DelegateModal = ({ isOpen, onClose }: ModalProps) => {
   const [delegateAddress, setDelegateAddress] = useState(
     mangoAccount?.delegate?.toString() !== DEFAULT_DELEGATE
       ? mangoAccount!.delegate.toString()
-      : ''
+      : '',
   )
 
   const handleDelegateAccount = async (address: string) => {
@@ -44,14 +44,14 @@ const DelegateModal = ({ isOpen, onClose }: ModalProps) => {
         group,
         mangoAccount,
         undefined,
-        delegateAddress ? new PublicKey(address) : undefined
+        delegateAddress ? new PublicKey(address) : undefined,
       )
       onClose()
       notify({
         title:
           address !== DEFAULT_DELEGATE
             ? t('delegate-account-info', {
-                address: abbreviateAddress(new PublicKey(address)),
+                delegate: abbreviateAddress(new PublicKey(address)),
               })
             : 'Account delegation removed',
         type: 'success',
@@ -82,7 +82,7 @@ const DelegateModal = ({ isOpen, onClose }: ModalProps) => {
                 <InlineNotification
                   type="info"
                   desc={`Account is delegated to ${abbreviateAddress(
-                    mangoAccount.delegate
+                    mangoAccount.delegate,
                   )}`}
                 />
               </div>

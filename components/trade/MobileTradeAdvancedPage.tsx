@@ -8,6 +8,7 @@ import { TABS } from './OrderbookAndTrades'
 import RecentTrades from './RecentTrades'
 import TradingChartContainer from './TradingChartContainer'
 import FavoriteMarketsBar from './FavoriteMarketsBar'
+import DepthChart from './DepthChart'
 
 const MobileTradeAdvancedPage = () => {
   const [activeTab, setActiveTab] = useState('trade:book')
@@ -32,16 +33,24 @@ const MobileTradeAdvancedPage = () => {
         <AdvancedTradeForm />
       </div>
       <div className="col-span-1 border-l border-th-bkg-3">
-        <div className="border-b border-th-bkg-3">
+        <div className="hide-scroll overflow-x-auto border-b border-th-bkg-3">
           <TabButtons
             activeValue={activeTab}
             onChange={(tab: string) => setActiveTab(tab)}
             values={TABS}
             fillWidth
+            showBorders
           />
         </div>
         <div className={activeTab === 'trade:book' ? 'visible' : 'hidden'}>
           <Orderbook />
+        </div>
+        <div
+          className={`h-full ${
+            activeTab === 'trade:depth' ? 'visible' : 'hidden'
+          }`}
+        >
+          <DepthChart />
         </div>
         <div className={activeTab === 'trade:trades' ? 'visible' : 'hidden'}>
           <RecentTrades />

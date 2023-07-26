@@ -22,7 +22,7 @@ export default function useBanksWithBalances(
     | 'borrowedAmount'
     | 'maxBorrow'
     | 'maxWithdraw'
-    | 'walletBalance'
+    | 'walletBalance',
 ) {
   const { group } = useMangoGroup()
   const { mangoAccount } = useMangoAccount()
@@ -35,7 +35,7 @@ export default function useBanksWithBalances(
         ([key, value]) => ({
           key,
           value,
-        })
+        }),
       ).map((b) => {
         const bank = b.value[0]
         const rawBalance = mangoAccount
@@ -50,13 +50,16 @@ export default function useBanksWithBalances(
         const maxBorrow = mangoAccount
           ? getMaxWithdrawForBank(group, bank, mangoAccount, true).toNumber()
           : 0
-        const maxWithdraw = mangoAccount
+        let maxWithdraw = mangoAccount
           ? getMaxWithdrawForBank(group, bank, mangoAccount).toNumber()
           : 0
+        if (maxWithdraw < balance) {
+          maxWithdraw = maxWithdraw * 0.998
+        }
         const borrowedAmount = mangoAccount
           ? floorToDecimal(
               mangoAccount.getTokenBorrowsUi(bank),
-              bank.mintDecimals
+              bank.mintDecimals,
             ).toNumber()
           : 0
         const walletBalance =

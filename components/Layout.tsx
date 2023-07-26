@@ -10,12 +10,14 @@ import {
 import { ArrowPathIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useViewport } from '../hooks/useViewport'
 import { breakpoints } from '../utils/theme'
-import mangoStore from '@store/mangoStore'
 import BottomBar from './mobile/BottomBar'
-import BounceLoader from './shared/BounceLoader'
 import TopBar from './TopBar'
 import useLocalStorageState from '../hooks/useLocalStorageState'
-import { ACCEPT_TERMS_KEY, SIDEBAR_COLLAPSE_KEY } from '../utils/constants'
+import {
+  ACCEPT_TERMS_KEY,
+  SECONDS,
+  SIDEBAR_COLLAPSE_KEY,
+} from '../utils/constants'
 import { useWallet } from '@solana/wallet-adapter-react'
 import SuccessParticles from './shared/SuccessParticles'
 import { tsParticles } from 'tsparticles-engine'
@@ -25,25 +27,23 @@ import { Transition } from '@headlessui/react'
 import { useTranslation } from 'next-i18next'
 import TermsOfUseModal from './modals/TermsOfUseModal'
 import { ttCommons, ttCommonsExpanded, ttCommonsMono } from 'utils/fonts'
+import PromoBanner from './rewards/PromoBanner'
+import { useRouter } from 'next/router'
 
 export const sideBarAnimationDuration = 300
 const termsLastUpdated = 1679441610978
 
 const Layout = ({ children }: { children: ReactNode }) => {
-  const { connected } = useWallet()
-  const loadingMangoAccount = mangoStore((s) => s.mangoAccount.initialLoad)
   const [isCollapsed, setIsCollapsed] = useLocalStorageState(
     SIDEBAR_COLLAPSE_KEY,
-    false
+    false,
   )
-  const [acceptTerms, setAcceptTerms] = useLocalStorageState(
-    ACCEPT_TERMS_KEY,
-    ''
-  )
+
   const { width } = useViewport()
+  const { asPath } = useRouter()
 
   useEffect(() => {
-    if (width < breakpoints.xl) {
+    if (width < breakpoints['2xl']) {
       setIsCollapsed(true)
     }
   }, [width])
@@ -52,9 +52,12 @@ const Layout = ({ children }: { children: ReactNode }) => {
     const animationFrames = 15
 
     for (let x = 1; x <= animationFrames; x++) {
-      setTimeout(() => {
-        window.dispatchEvent(new Event('resize'))
-      }, (sideBarAnimationDuration / animationFrames) * x)
+      setTimeout(
+        () => {
+          window.dispatchEvent(new Event('resize'))
+        },
+        (sideBarAnimationDuration / animationFrames) * x,
+      )
     }
   }, [isCollapsed])
 
@@ -70,10 +73,6 @@ const Layout = ({ children }: { children: ReactNode }) => {
     particlesInit()
   }, [])
 
-  const showTermsOfUse = useMemo(() => {
-    return (!acceptTerms || acceptTerms < termsLastUpdated) && connected
-  }, [acceptTerms, connected])
-
   return (
     <main
       className={`${ttCommons.variable} ${ttCommonsExpanded.variable} ${ttCommonsMono.variable} font-sans`}
@@ -81,11 +80,6 @@ const Layout = ({ children }: { children: ReactNode }) => {
       <div className="fixed z-30">
         <SuccessParticles />
       </div>
-      {connected && loadingMangoAccount ? (
-        <div className="fixed z-30 flex h-screen w-full items-center justify-center bg-[rgba(0,0,0,0.7)]">
-          <BounceLoader />
-        </div>
-      ) : null}
       <div className="flex-grow bg-th-bkg-1 text-th-fgd-2 transition-all">
         <div className="fixed bottom-0 left-0 z-20 w-full md:hidden">
           <BottomBar />
@@ -93,7 +87,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
         <div className="fixed z-20 hidden h-screen md:block">
           <button
-            className="absolute right-0 top-1/2 z-20 hidden h-8 w-3 -translate-y-1/2 rounded-none rounded-l bg-th-bkg-3 hover:bg-th-bkg-4 focus:outline-none focus-visible:bg-th-bkg-4 xl:block"
+            className="absolute right-0 top-1/2 z-20 hidden h-8 w-3 -translate-y-1/2 rounded-none rounded-l bg-th-bkg-3 hover:bg-th-bkg-4 focus:outline-none focus-visible:bg-th-bkg-4 2xl:block"
             onClick={handleToggleSidebar}
           >
             <ChevronRightIcon
@@ -117,25 +111,45 @@ const Layout = ({ children }: { children: ReactNode }) => {
           }`}
         >
           <TopBar />
+          {asPath !== '/rewards' ? <PromoBanner /> : null}
           {children}
         </div>
         <DeployRefreshManager />
+        <TermsOfUse />
       </div>
-      {showTermsOfUse ? (
-        <TermsOfUseModal
-          isOpen={showTermsOfUse}
-          onClose={() => setAcceptTerms(Date.now())}
-        />
-      ) : null}
     </main>
   )
 }
 
 export default Layout
 
+const TermsOfUse = () => {
+  const { connected } = useWallet()
+  const [acceptTerms, setAcceptTerms] = useLocalStorageState(
+    ACCEPT_TERMS_KEY,
+    '',
+  )
+
+  const showTermsOfUse = useMemo(() => {
+    return (!acceptTerms || acceptTerms < termsLastUpdated) && connected
+  }, [acceptTerms, connected])
+
+  return (
+    <>
+      {showTermsOfUse ? (
+        <TermsOfUseModal
+          isOpen={showTermsOfUse}
+          onClose={() => setAcceptTerms(Date.now())}
+        />
+      ) : null}
+    </>
+  )
+}
+
 function DeployRefreshManager(): JSX.Element | null {
   const { t } = useTranslation('common')
   const [newBuildAvailable, setNewBuildAvailable] = useState(false)
+
   useInterval(async () => {
     const response = await fetch('/api/build-id')
     const { buildId } = await response.json()
@@ -144,7 +158,7 @@ function DeployRefreshManager(): JSX.Element | null {
       // There's a new version deployed that we need to load
       setNewBuildAvailable(true)
     }
-  }, 30000)
+  }, 300 * SECONDS)
 
   return (
     <Transition

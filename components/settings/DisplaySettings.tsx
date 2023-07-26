@@ -17,11 +17,13 @@ import { useTheme } from 'next-themes'
 import { useCallback } from 'react'
 import { useRouter } from 'next/router'
 import {
+  AUTO_CONNECT_WALLET,
   NOTIFICATION_POSITION_KEY,
   SIZE_INPUT_UI_KEY,
   TRADE_CHART_UI_KEY,
   TRADE_LAYOUT_KEY,
 } from 'utils/constants'
+import Switch from '@components/forms/Switch'
 
 const NOTIFICATION_POSITIONS = [
   'bottom-left',
@@ -63,23 +65,27 @@ const DisplaySettings = () => {
   const { theme, setTheme } = useTheme()
   const [savedLanguage, setSavedLanguage] = useLocalStorageState(
     'language',
-    'en'
+    'en',
   )
   const router = useRouter()
   const { pathname, asPath, query } = router
   const [notificationPosition, setNotificationPosition] = useLocalStorageState(
     NOTIFICATION_POSITION_KEY,
-    'bottom-left'
+    'bottom-left',
   )
   const [tradeFormUi, setTradeFormUi] = useLocalStorageState(
     SIZE_INPUT_UI_KEY,
-    'slider'
+    'slider',
   )
   const [tradeChartUi, setTradeChartUi] = useLocalStorageState(
     TRADE_CHART_UI_KEY,
-    'trading-view'
+    'trading-view',
   )
   const [, setTradeLayout] = useLocalStorageState(TRADE_LAYOUT_KEY, 'chartLeft')
+  const [autoConnect, setAutoConnect] = useLocalStorageState(
+    AUTO_CONNECT_WALLET,
+    true,
+  )
 
   const handleLangChange = useCallback(
     (l: string) => {
@@ -87,28 +93,30 @@ const DisplaySettings = () => {
       router.push({ pathname, query }, asPath, { locale: l })
       dayjs.locale(l == 'zh_tw' ? 'zh-tw' : l)
     },
-    [router, pathname, query, asPath, setSavedLanguage]
+    [router, pathname, query, asPath, setSavedLanguage],
   )
 
   return (
     <>
       <h2 className="mb-4 text-base">{t('settings:display')}</h2>
-      <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
-        <p className="mb-2 md:mb-0">{t('settings:theme')}</p>
-        <div className="w-full min-w-[140px] md:w-auto">
-          <Select
-            value={theme}
-            onChange={(t) => setTheme(t)}
-            className="w-full"
-          >
-            {THEMES.map((theme) => (
-              <Select.Option key={theme} value={t(`settings:${theme}`)}>
-                {t(`settings:${theme}`)}
-              </Select.Option>
-            ))}
-          </Select>
+      {theme ? (
+        <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
+          <p className="mb-2 md:mb-0">{t('settings:theme')}</p>
+          <div className="w-full min-w-[140px] md:w-auto">
+            <Select
+              value={theme}
+              onChange={(t: string) => setTheme(t)}
+              className="w-full"
+            >
+              {THEMES.map((theme) => (
+                <Select.Option key={theme} value={t(`settings:${theme}`)}>
+                  {t(`settings:${theme}`)}
+                </Select.Option>
+              ))}
+            </Select>
+          </div>
         </div>
-      </div>
+      ) : null}
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
         <p className="mb-2 md:mb-0">{t('settings:language')}</p>
         <div className="w-full min-w-[220px] md:w-auto md:pl-4">
@@ -190,6 +198,13 @@ const DisplaySettings = () => {
             names={TRADING_CHARTS.map((val) => t(`settings:${val}`))}
           />
         </div>
+      </div>
+      <div className="flex items-center justify-between border-t border-th-bkg-3 p-4">
+        <p className="">Auto Connect Wallet</p>
+        <Switch
+          checked={autoConnect}
+          onChange={() => setAutoConnect(!autoConnect)}
+        />
       </div>
     </>
   )

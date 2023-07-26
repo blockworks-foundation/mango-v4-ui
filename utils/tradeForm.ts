@@ -3,7 +3,7 @@ import { OrderbookL2 } from 'types'
 export const calculateLimitPriceForMarketOrder = (
   orderBook: OrderbookL2,
   size: number,
-  side: 'buy' | 'sell'
+  side: 'buy' | 'sell',
 ): number => {
   const orders = side === 'buy' ? orderBook.asks : orderBook.bids
   let acc = 0
@@ -19,7 +19,7 @@ export const calculateLimitPriceForMarketOrder = (
 
   if (!selectedOrder) {
     throw new Error(
-      'Unable to place market order for this order size. Please retry.'
+      'Unable to place market order for this order size. Please retry.',
     )
   }
 
@@ -33,7 +33,7 @@ export const calculateLimitPriceForMarketOrder = (
 export const calculateEstPriceForBaseSize = (
   orderBook: OrderbookL2,
   size: number,
-  side: 'buy' | 'sell'
+  side: 'buy' | 'sell',
 ): number => {
   const orders = side === 'buy' ? orderBook.asks : orderBook.bids
   let acc = 0
@@ -62,7 +62,7 @@ export const calculateSlippage = (
   orderBook: OrderbookL2,
   size: number,
   side: 'buy' | 'sell',
-  markPrice: number
+  markPrice: number,
 ): number => {
   const bb = orderBook?.bids?.length > 0 && Number(orderBook.bids[0][0])
   const ba = orderBook?.asks?.length > 0 && Number(orderBook.asks[0][0])
@@ -72,7 +72,7 @@ export const calculateSlippage = (
     const estimatedPrice = calculateEstPriceForBaseSize(
       orderBook,
       Number(size),
-      side
+      side,
     )
 
     const slippageAbs =

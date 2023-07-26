@@ -29,6 +29,7 @@ import { DEFAULT_DELEGATE } from './DelegateModal'
 import Tooltip from '@components/shared/Tooltip'
 import { abbreviateAddress } from 'utils/formatting'
 import { handleCopyAddress } from '@components/account/AccountActions'
+import useUnownedAccount from 'hooks/useUnownedAccount'
 
 const MangoAccountsListModal = ({
   isOpen,
@@ -38,6 +39,7 @@ const MangoAccountsListModal = ({
   onClose: () => void
 }) => {
   const { t } = useTranslation('common')
+  const { isDelegatedAccount } = useUnownedAccount()
   const { mangoAccount, initialLoad: loading } = useMangoAccount()
   const mangoAccounts = mangoStore((s) => s.mangoAccounts)
   const actions = mangoStore.getState().actions
@@ -115,11 +117,11 @@ const MangoAccountsListModal = ({
                     acc = mangoAccount
                   }
                   const accountValue = toUiDecimalsForQuote(
-                    Number(acc.getEquity(group!))
+                    Number(acc.getEquity(group!)),
                   ).toFixed(2)
                   const maintHealth = acc.getHealthRatioUi(
                     group!,
-                    HealthType.maint
+                    HealthType.maint,
                   )
                   return (
                     <div
@@ -147,7 +149,9 @@ const MangoAccountsListModal = ({
                                 <div className="mr-2">
                                   <Tooltip
                                     content={t('delegate-account-info', {
-                                      address: abbreviateAddress(acc.delegate),
+                                      delegate: isDelegatedAccount
+                                        ? t('you')
+                                        : abbreviateAddress(acc.delegate),
                                     })}
                                   >
                                     <UserPlusIcon className="ml-1.5 h-4 w-4 text-th-fgd-3" />
@@ -203,7 +207,7 @@ const MangoAccountsListModal = ({
                                 acc,
                                 t('copy-address-success', {
                                   pk: abbreviateAddress(acc.publicKey),
-                                })
+                                }),
                               )
                             }
                             hideBg

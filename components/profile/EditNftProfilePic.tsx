@@ -1,28 +1,13 @@
 import { useState, useEffect } from 'react'
 import mangoStore from '@store/mangoStore'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { ArrowLeftIcon, PhotoIcon } from '@heroicons/react/20/solid'
+import { ArrowLeftIcon } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import Button, { LinkButton } from '../shared/Button'
 import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes'
 import { notify } from 'utils/notifications'
 import { MANGO_DATA_API_URL } from 'utils/constants'
-
-const ImgWithLoader = (props: {
-  className: string
-  src: string
-  alt: string
-}) => {
-  const [isLoading, setIsLoading] = useState(true)
-  return (
-    <div className="relative">
-      {isLoading && (
-        <PhotoIcon className="absolute left-1/2 top-1/2 z-10 h-1/4 w-1/4 -translate-x-1/2 -translate-y-1/2 animate-pulse text-th-fgd-4" />
-      )}
-      <img {...props} onLoad={() => setIsLoading(false)} alt={props.alt} />
-    </div>
-  )
-}
+import { ImgWithLoader } from '@components/ImgWithLoader'
 
 const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
   const { t } = useTranslation(['common', 'profile'])
@@ -73,7 +58,7 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
       }
       const response = await fetch(
         `${MANGO_DATA_API_URL}/user-data/profile-details`,
-        requestOptions
+        requestOptions,
       )
       if (response.status === 200) {
         await actions.fetchProfileDetails(publicKey.toString())
@@ -119,7 +104,7 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
       }
       const response = await fetch(
         `${MANGO_DATA_API_URL}/user-data/profile-details`,
-        requestOptions
+        requestOptions,
       )
       if (response.status === 200) {
         await actions.fetchProfileDetails(publicKey.toString())

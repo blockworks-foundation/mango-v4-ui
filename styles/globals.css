@@ -610,7 +610,7 @@ input[type='range']::-webkit-slider-runnable-track {
 }
 
 .tooltip-underline {
-  @apply default-transition w-max border-b border-dashed border-th-fgd-4 leading-tight hover:cursor-help hover:border-transparent;
+  @apply default-transition w-max border-b border-dashed border-current hover:cursor-help hover:border-transparent;
 }
 
 .radial-gradient-bg {
@@ -624,4 +624,31 @@ input[type='range']::-webkit-slider-runnable-track {
 
 #tsparticles {
   @apply absolute h-screen w-full;
+}
+
+.pagination {
+  margin-top: 15px;
+  margin-bottom: 15px;
+  justify-content: center;
+  display: flex;
+  padding-left: 0;
+  list-style: none;
+}
+
+.page-link {
+  display: block;
+  border: 1px solid #cccccc;
+  border-radius: 5px;
+  padding: 5px 10px;
+  margin: 0 2px;
+  text-decoration: none;
+}
+
+a.page-link:hover {
+  background-color: #cccccc;
+}
+
+.page-item.active .page-link {
+  color: #ffffff;
+  background-color: #007bff;
 }

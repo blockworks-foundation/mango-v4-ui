@@ -16,6 +16,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
         'search',
         'settings',
         'swap',
+        'stats',
         'token',
         'trade',
         'close-account',
@@ -26,7 +27,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
 
 const Index: NextPage = () => {
   return (
-    <div className="min-h-[calc(100vh-64px)] pb-20 md:pb-0">
+    <div className="min-h-[calc(100vh-64px)] pb-32 md:pb-20 lg:pb-0">
       <AccountPage />
     </div>
   )

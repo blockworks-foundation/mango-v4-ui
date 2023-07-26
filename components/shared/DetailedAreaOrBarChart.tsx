@@ -18,14 +18,13 @@ import FlipNumbers from 'react-flip-numbers'
 import ContentBox from './ContentBox'
 import SheenLoader from './SheenLoader'
 import { COLORS } from '../../styles/colors'
-import { useTheme } from 'next-themes'
 import { IconButton } from './Button'
 import { ArrowLeftIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 import { FadeInFadeOut } from './Transitions'
 import ChartRangeButtons from './ChartRangeButtons'
 import Change from './Change'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
+import { ANIMATION_SETTINGS_KEY, DAILY_MILLISECONDS } from 'utils/constants'
 import { formatNumericValue } from 'utils/numbers'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import { AxisDomain } from 'recharts/types/util/types'
@@ -33,6 +32,7 @@ import { useTranslation } from 'next-i18next'
 import FormatNumericValue from './FormatNumericValue'
 import { ContentType } from 'recharts/types/component/Tooltip'
 import Tooltip from './Tooltip'
+import useThemeWrapper from 'hooks/useThemeWrapper'
 
 dayjs.extend(relativeTime)
 
@@ -97,10 +97,10 @@ const DetailedAreaOrBarChart: FunctionComponent<
 }) => {
   const { t } = useTranslation('common')
   const [mouseData, setMouseData] = useState<any>(null)
-  const { theme } = useTheme()
+  const { theme } = useThemeWrapper()
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
-    INITIAL_ANIMATION_SETTINGS
+    INITIAL_ANIMATION_SETTINGS,
   )
 
   const handleMouseMove = (coords: any) => {
@@ -120,7 +120,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
 
   const filteredData = useMemo(() => {
     if (!data.length) return []
-    const start = Number(daysToShow) * 86400000
+    const start = Number(daysToShow) * DAILY_MILLISECONDS
     const filtered = data.filter((d: any) => {
       const dataTime = new Date(d[xKey]).getTime()
       const now = new Date().getTime()
@@ -134,7 +134,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
     if (filteredData.length) {
       if (mouseData) {
         const index = filteredData.findIndex(
-          (d: any) => d[xKey] === mouseData[xKey]
+          (d: any) => d[xKey] === mouseData[xKey],
         )
         const change =
           index >= 0 ? filteredData[index][yKey] - filteredData[0][yKey] : 0
@@ -216,7 +216,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
                               mouseData[yKey] < 0 ? '-' : ''
                             }${prefix}${formatNumericValue(
                               Math.abs(mouseData[yKey]),
-                              yDecimals
+                              yDecimals,
                             )}${suffix}`}
                           />
                         ) : (
@@ -249,7 +249,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
                         {dayjs(mouseData[xKey]).format(
                           tooltipDateFormat
                             ? tooltipDateFormat
-                            : 'DD MMM YY, h:mma'
+                            : 'DD MMM YY, h:mma',
                         )}
                       </p>
                     </div>
@@ -273,9 +273,9 @@ const DetailedAreaOrBarChart: FunctionComponent<
                                 : ''
                             }${prefix}${formatNumericValue(
                               Math.abs(
-                                filteredData[filteredData.length - 1][yKey]
+                                filteredData[filteredData.length - 1][yKey],
                               ),
-                              yDecimals
+                              yDecimals,
                             )}${suffix}`}
                           />
                         ) : (
@@ -308,11 +308,11 @@ const DetailedAreaOrBarChart: FunctionComponent<
                         } text-th-fgd-4`}
                       >
                         {dayjs(
-                          filteredData[filteredData.length - 1][xKey]
+                          filteredData[filteredData.length - 1][xKey],
                         ).format(
                           tooltipDateFormat
                             ? tooltipDateFormat
-                            : 'DD MMM YY, h:mma'
+                            : 'DD MMM YY, h:mma',
                         )}
                       </p>
                     </div>
@@ -341,7 +341,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
                         <linearGradient
                           id={`gradientArea-${title?.replace(
                             /[^a-zA-Z]/g,
-                            ''
+                            '',
                           )}`}
                           x1="0"
                           y1={flipGradientCoords ? '1' : '0'}
@@ -380,7 +380,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
                         strokeWidth={1.5}
                         fill={`url(#gradientArea-${title?.replace(
                           /[^a-zA-Z]/g,
-                          ''
+                          '',
                         )})`}
                       />
                       <XAxis

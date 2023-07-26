@@ -1,5 +1,5 @@
 import InlineNotification from '@components/shared/InlineNotification'
-import { BN } from '@project-serum/anchor'
+import { BN } from '@coral-xyz/anchor'
 import { useWallet } from '@solana/wallet-adapter-react'
 import GovernanceStore from '@store/governanceStore'
 import { useTranslation } from 'next-i18next'
@@ -23,7 +23,7 @@ const OnBoarding = ({ minVotes }: { minVotes?: BN }) => {
     ? new BN(
         governances[
           MANGO_DAO_WALLET_GOVERNANCE.toBase58()
-        ].account.config.minCommunityTokensToCreateProposal.toString()
+        ].account.config.minCommunityTokensToCreateProposal.toString(),
       )
     : new BN(0)
   const mintVoterWeightNumber = governances
@@ -49,7 +49,9 @@ const OnBoarding = ({ minVotes }: { minVotes?: BN }) => {
             </a>
           </>
         }
-        desc={t('on-boarding-deposit-info')}
+        desc={`${t('on-boarding-deposit-info')} ${t(
+          'on-boarding-description-1',
+        )}`}
       />
     </div>
   ) : null

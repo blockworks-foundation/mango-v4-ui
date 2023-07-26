@@ -15,6 +15,8 @@ import {
   NewspaperIcon,
   PlusCircleIcon,
   ArchiveBoxArrowDownIcon,
+  ExclamationTriangleIcon,
+  // ClipboardDocumentIcon,
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
@@ -43,7 +45,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
     <div
       className={`transition-all duration-${sideBarAnimationDuration} ${
         collapsed ? 'w-[64px]' : 'w-44 lg:w-48 xl:w-52'
-      } border-r border-th-bkg-3 bg-th-bkg-1`}
+      } box-border border-r border-th-bkg-3 bg-th-bkg-1`}
     >
       <div className="flex min-h-screen flex-col justify-between">
         <div className="my-2">
@@ -113,6 +115,13 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               pagePath="/stats"
             />
             <MenuItem
+              active={pathname === '/leaderboard'}
+              collapsed={collapsed}
+              icon={<LeaderboardIcon className="h-5 w-5" />}
+              title={t('leaderboard')}
+              pagePath="/leaderboard"
+            />
+            <MenuItem
               active={pathname === '/settings'}
               collapsed={collapsed}
               icon={<Cog8ToothIcon className="h-5 w-5" />}
@@ -124,15 +133,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               icon={<EllipsisHorizontalIcon className="h-5 w-5" />}
               title={t('more')}
             >
-              <MenuItem
-                active={pathname === '/leaderboard'}
-                collapsed={false}
-                icon={<LeaderboardIcon className="h-5 w-5" />}
-                title={t('leaderboard')}
-                pagePath="/leaderboard"
-                hideIconBg
-                showTooltip={false}
-              />
               <MenuItem
                 active={pathname === '/search'}
                 collapsed={false}
@@ -178,11 +178,29 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 isExternal
                 showTooltip={false}
               />
+              {/* <MenuItem
+                collapsed={false}
+                icon={<ClipboardDocumentIcon className="h-5 w-5" />}
+                title={t('feedback-survey')}
+                pagePath="https://forms.gle/JgV4w7SJ2kPH89mq7"
+                hideIconBg
+                isExternal
+                showTooltip={false}
+              /> */}
               <MenuItem
                 collapsed={false}
                 icon={<NewspaperIcon className="h-5 w-5" />}
                 title={t('terms-of-use')}
                 pagePath="https://docs.mango.markets/legal"
+                hideIconBg
+                isExternal
+                showTooltip={false}
+              />
+              <MenuItem
+                collapsed={false}
+                icon={<ExclamationTriangleIcon className="h-5 w-5" />}
+                title={t('risks')}
+                pagePath="https://docs.mango.markets/mango-markets/risks"
                 hideIconBg
                 isExternal
                 showTooltip={false}

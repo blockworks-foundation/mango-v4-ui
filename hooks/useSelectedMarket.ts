@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import useJupiterMints from './useJupiterMints'
 import useMangoGroup from './useMangoGroup'
+import { CUSTOM_TOKEN_ICONS } from 'utils/constants'
 
 export default function useSelectedMarket() {
   const { group } = useMangoGroup()
@@ -18,18 +19,18 @@ export default function useSelectedMarket() {
     if (!group) return 0
     if (selectedMarket instanceof Serum3Market) {
       const baseBank = group.getFirstBankByTokenIndex(
-        selectedMarket.baseTokenIndex
+        selectedMarket.baseTokenIndex,
       )
       const quoteBank = group.getFirstBankByTokenIndex(
-        selectedMarket.quoteTokenIndex
+        selectedMarket.quoteTokenIndex,
       )
       const market = group.getSerum3ExternalMarket(
-        selectedMarket.serumMarketExternal
+        selectedMarket.serumMarketExternal,
       )
 
       return floorToDecimal(
         baseBank.uiPrice / quoteBank.uiPrice,
-        getDecimalCount(market.tickSize)
+        getDecimalCount(market.tickSize),
       ).toNumber()
     } else if (selectedMarket) {
       return selectedMarket._uiPrice
@@ -53,13 +54,22 @@ export default function useSelectedMarket() {
 
   const baseLogoURI = useMemo(() => {
     if (!baseSymbol || !mangoTokens.length) return ''
-    const token =
-      mangoTokens.find((t) => t.symbol.toUpperCase() === baseSymbol) ||
-      mangoTokens.find((t) => t.symbol.toUpperCase()?.includes(baseSymbol))
-    if (token) {
-      return token.logoURI
+    const lowerCaseBaseSymbol = baseSymbol.toLowerCase()
+    const hasCustomIcon = CUSTOM_TOKEN_ICONS[lowerCaseBaseSymbol]
+    if (hasCustomIcon) {
+      return `/icons/${lowerCaseBaseSymbol}.svg`
+    } else {
+      const token =
+        mangoTokens.find(
+          (t) => t.symbol.toLowerCase() === lowerCaseBaseSymbol,
+        ) ||
+        mangoTokens.find(
+          (t) => t.symbol.toLowerCase()?.includes(lowerCaseBaseSymbol),
+        )
+      if (token) {
+        return token.logoURI
+      }
     }
-    return ''
   }, [baseSymbol, mangoTokens])
 
   const quoteBank = useMemo(() => {
@@ -78,13 +88,18 @@ export default function useSelectedMarket() {
 
   const quoteLogoURI = useMemo(() => {
     if (!quoteSymbol || !mangoTokens.length) return ''
-    const token = mangoTokens.find(
-      (t) => t.symbol.toUpperCase() === quoteSymbol
-    )
-    if (token) {
-      return token.logoURI
+    const lowerCaseQuoteSymbol = quoteSymbol.toLowerCase()
+    const hasCustomIcon = CUSTOM_TOKEN_ICONS[lowerCaseQuoteSymbol]
+    if (hasCustomIcon) {
+      return `/icons/${lowerCaseQuoteSymbol}.svg`
+    } else {
+      const token = mangoTokens.find(
+        (t) => t.symbol.toLowerCase() === lowerCaseQuoteSymbol,
+      )
+      if (token) {
+        return token.logoURI
+      }
     }
-    return ''
   }, [quoteSymbol, mangoTokens])
 
   return {

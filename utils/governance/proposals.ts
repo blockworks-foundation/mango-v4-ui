@@ -1,4 +1,4 @@
-import { BN } from '@project-serum/anchor'
+import { BN } from '@coral-xyz/anchor'
 import {
   Governance,
   MintMaxVoteWeightSource,
@@ -12,7 +12,7 @@ import { RawMint } from '@solana/spl-token'
 
 export const isInCoolOffTime = (
   proposal: Proposal | undefined,
-  governance: Governance | undefined
+  governance: Governance | undefined,
 ) => {
   const mainVotingEndedAt = proposal?.signingOffAt
     ?.addn(governance?.config.baseVotingTime || 0)
@@ -39,7 +39,7 @@ export const isInCoolOffTime = (
 /** Returns max VoteWeight for given mint and max source */
 export function getMintMaxVoteWeight(
   mint: RawMint,
-  maxVoteWeightSource: MintMaxVoteWeightSource
+  maxVoteWeightSource: MintMaxVoteWeightSource,
 ) {
   if (maxVoteWeightSource.type === MintMaxVoteWeightSourceType.SupplyFraction) {
     const supplyFraction = maxVoteWeightSource.getSupplyFraction()

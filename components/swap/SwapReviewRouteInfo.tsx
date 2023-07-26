@@ -16,6 +16,7 @@ import {
   AddressLookupTableAccount,
 } from '@solana/web3.js'
 import Decimal from 'decimal.js'
+import * as sentry from '@sentry/nextjs'
 
 import mangoStore from '@store/mangoStore'
 import Button, { IconButton } from '../shared/Button'
@@ -28,7 +29,6 @@ import {
   ChevronDownIcon,
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
-import Image from 'next/legacy/image'
 import { formatNumericValue } from '../../utils/numbers'
 import { notify } from '../../utils/notifications'
 import useJupiterMints from '../../hooks/useJupiterMints'
@@ -45,6 +45,8 @@ import RoutesModal from './RoutesModal'
 import { createAssociatedTokenAccountIdempotentInstruction } from '@blockworks-foundation/mango-v4'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { isMangoError } from 'types'
+import { useWallet } from '@solana/wallet-adapter-react'
+import TokenLogo from '@components/shared/TokenLogo'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
@@ -57,17 +59,17 @@ type JupiterRouteInfoProps = {
 
 const deserializeJupiterIxAndAlt = async (
   connection: Connection,
-  swapTransaction: string
+  swapTransaction: string,
 ): Promise<[TransactionInstruction[], AddressLookupTableAccount[]]> => {
   const parsedSwapTransaction = VersionedTransaction.deserialize(
-    Buffer.from(swapTransaction, 'base64')
+    Buffer.from(swapTransaction, 'base64'),
   )
   const message = parsedSwapTransaction.message
   // const lookups = message.addressTableLookups
   const addressLookupTablesResponses = await Promise.all(
     message.addressTableLookups.map((alt) =>
-      connection.getAddressLookupTable(alt.accountKey)
-    )
+      connection.getAddressLookupTable(alt.accountKey),
+    ),
   )
   const addressLookupTables: AddressLookupTableAccount[] =
     addressLookupTablesResponses
@@ -85,7 +87,7 @@ const prepareMangoRouterInstructions = async (
   selectedRoute: RouteInfo,
   inputMint: PublicKey,
   outputMint: PublicKey,
-  userPublicKey: PublicKey
+  userPublicKey: PublicKey,
 ): Promise<[TransactionInstruction[], AddressLookupTableAccount[]]> => {
   if (!selectedRoute || !selectedRoute.mints || !selectedRoute.instructions) {
     return [[], []]
@@ -95,8 +97,8 @@ const prepareMangoRouterInstructions = async (
     ...selectedRoute.mints.filter(
       (routeMint) =>
         !mintsToFilterOut.find((filterOutMint) =>
-          filterOutMint.equals(routeMint)
-        )
+          filterOutMint.equals(routeMint),
+        ),
     ),
   ]
   const additionalInstructions = []
@@ -104,7 +106,7 @@ const prepareMangoRouterInstructions = async (
     const ix = await createAssociatedTokenAccountIdempotentInstruction(
       userPublicKey,
       userPublicKey,
-      mint
+      mint,
     )
     additionalInstructions.push(ix)
   }
@@ -115,13 +117,13 @@ const prepareMangoRouterInstructions = async (
   return [instructions, []]
 }
 
-const fetchJupiterTransaction = async (
+export const fetchJupiterTransaction = async (
   connection: Connection,
   selectedRoute: RouteInfo,
   userPublicKey: PublicKey,
   slippage: number,
   inputMint: PublicKey,
-  outputMint: PublicKey
+  outputMint: PublicKey,
 ): Promise<[TransactionInstruction[], AddressLookupTableAccount[]]> => {
   const transactions = await (
     await fetch('https://quote-api.jup.ag/v4/swap', {
@@ -146,7 +148,7 @@ const fetchJupiterTransaction = async (
 
   const [ixs, alts] = await deserializeJupiterIxAndAlt(
     connection,
-    swapTransaction
+    swapTransaction,
   )
 
   const isSetupIx = (pk: PublicKey): boolean =>
@@ -188,6 +190,7 @@ const SwapReviewRouteInfo = ({
 }: JupiterRouteInfoProps) => {
   const { t } = useTranslation(['common', 'trade'])
   const slippage = mangoStore((s) => s.swap.slippage)
+  const wallet = useWallet()
   const [showRoutesModal, setShowRoutesModal] = useState<boolean>(false)
   const [swapRate, setSwapRate] = useState<boolean>(false)
   const [feeValue] = useState<number | null>(null)
@@ -196,20 +199,17 @@ const SwapReviewRouteInfo = ({
   const { jupiterTokens } = useJupiterMints()
   const { inputTokenInfo, outputTokenInfo } = useJupiterSwapData()
   const inputBank = mangoStore((s) => s.swap.inputBank)
+  const outputBank = mangoStore((s) => s.swap.outputBank)
   const [soundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,
-    INITIAL_SOUND_SETTINGS
+    INITIAL_SOUND_SETTINGS,
   )
   const focusRef = useRef<HTMLButtonElement>(null)
-
-  const inputTokenIconUri = useMemo(() => {
-    return inputTokenInfo ? inputTokenInfo.logoURI : ''
-  }, [inputTokenInfo])
 
   const amountOut = useMemo(() => {
     if (!selectedRoute || !outputTokenInfo) return
     return new Decimal(selectedRoute.outAmount.toString()).div(
-      10 ** outputTokenInfo.decimals
+      10 ** outputTokenInfo.decimals,
     )
   }, [selectedRoute, outputTokenInfo])
 
@@ -228,7 +228,7 @@ const SwapReviewRouteInfo = ({
       if (inputId && outputId) {
         try {
           const results = await fetch(
-            `https://api.coingecko.com/api/v3/simple/price?ids=${inputId},${outputId}&vs_currencies=usd`
+            `https://api.coingecko.com/api/v3/simple/price?ids=${inputId},${outputId}&vs_currencies=usd`,
           )
           const json = await results.json()
           if (json[inputId]?.usd && json[outputId]?.usd) {
@@ -260,7 +260,14 @@ const SwapReviewRouteInfo = ({
       const set = mangoStore.getState().set
       const connection = mangoStore.getState().connection
 
-      if (!mangoAccount || !group || !inputBank || !outputBank) return
+      if (
+        !mangoAccount ||
+        !group ||
+        !inputBank ||
+        !outputBank ||
+        !wallet.publicKey
+      )
+        return
       setSubmitting(true)
       const [ixs, alts] =
         selectedRoute.routerName === 'Mango'
@@ -268,15 +275,15 @@ const SwapReviewRouteInfo = ({
               selectedRoute,
               inputBank.mint,
               outputBank.mint,
-              mangoAccount.owner
+              mangoAccount.owner,
             )
           : await fetchJupiterTransaction(
               connection,
               selectedRoute,
-              mangoAccount.owner,
+              wallet.publicKey,
               slippage,
               inputBank.mint,
-              outputBank.mint
+              outputBank.mint,
             )
 
       try {
@@ -307,6 +314,7 @@ const SwapReviewRouteInfo = ({
         await actions.reloadMangoAccount()
       } catch (e) {
         console.error('onSwap error: ', e)
+        sentry.captureException(e)
         if (isMangoError(e)) {
           notify({
             title: 'Transaction failed',
@@ -323,7 +331,14 @@ const SwapReviewRouteInfo = ({
     } finally {
       onClose()
     }
-  }, [amountIn, onClose, selectedRoute, soundSettings])
+  }, [
+    amountIn,
+    onClose,
+    selectedRoute,
+    slippage,
+    soundSettings,
+    wallet.publicKey,
+  ])
 
   const [balance, borrowAmount] = useMemo(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
@@ -343,8 +358,8 @@ const SwapReviewRouteInfo = ({
           .div(amountOut)
           .minus(
             new Decimal(coingeckoPrices?.outputCoingeckoPrice).div(
-              coingeckoPrices?.inputCoingeckoPrice
-            )
+              coingeckoPrices?.inputCoingeckoPrice,
+            ),
           )
           .div(amountIn.div(amountOut))
           .mul(100)
@@ -369,15 +384,9 @@ const SwapReviewRouteInfo = ({
         <div className="flex justify-center bg-gradient-to-t from-th-bkg-1 to-th-bkg-2 p-6 pb-0">
           <div className="mb-3 flex w-full flex-col items-center border-b border-th-bkg-3 pb-4">
             <div className="relative mb-2 w-[72px]">
-              <Image alt="" width="40" height="40" src={inputTokenIconUri} />
+              <TokenLogo bank={inputBank} size={40} />
               <div className="absolute right-0 top-0">
-                <Image
-                  className="drop-shadow-md"
-                  alt=""
-                  width="40"
-                  height="40"
-                  src={outputTokenInfo?.logoURI}
-                />
+                <TokenLogo bank={outputBank} size={40} />
               </div>
             </div>
             <p className="mb-0.5 flex items-center text-center text-lg">
@@ -531,7 +540,7 @@ const SwapReviewRouteInfo = ({
                           token: inputTokenInfo?.symbol,
                           rate: formatNumericValue(
                             inputBank!.getBorrowRateUi(),
-                            2
+                            2,
                           ),
                         })
                       : t('swap:tooltip-borrow-no-balance', {
@@ -539,7 +548,7 @@ const SwapReviewRouteInfo = ({
                           token: inputTokenInfo?.symbol,
                           rate: formatNumericValue(
                             inputBank!.getBorrowRateUi(),
-                            2
+                            2,
                           ),
                         })
                   }
@@ -658,7 +667,7 @@ const SwapReviewRouteInfo = ({
                   ) : (
                     selectedRoute?.marketInfos.map((info, index) => {
                       const feeToken = jupiterTokens.find(
-                        (item) => item?.address === info.lpFee?.mint
+                        (item) => item?.address === info.lpFee?.mint,
                       )
                       return (
                         <div className="flex justify-between" key={index}>
@@ -681,7 +690,7 @@ const SwapReviewRouteInfo = ({
                                 undefined,
                                 {
                                   maximumSignificantDigits: 2,
-                                }
+                                },
                               )}
                               %)
                             </p>

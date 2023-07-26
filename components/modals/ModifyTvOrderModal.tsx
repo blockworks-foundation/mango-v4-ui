@@ -51,12 +51,12 @@ const ModifyTvOrderModal = ({
   const { t } = useTranslation(['common', 'trade'])
   const [modifiedOrderPrice, setModifiedOrderPrice] = useState(price)
   const [modifiedOrderSize, setModifiedOrderSize] = useState(
-    order.size.toString()
+    order.size.toString(),
   )
   const { baseSymbol, selectedMarket, serumOrPerpMarket } = useSelectedMarket()
   const [savedCheckboxSettings] = useLocalStorageState(
     TRADE_CHECKBOXES_KEY,
-    DEFAULT_CHECKBOX_SETTINGS
+    DEFAULT_CHECKBOX_SETTINGS,
   )
 
   const tickDecimals = useMemo(() => {
@@ -99,13 +99,13 @@ const ModifyTvOrderModal = ({
             Date.now(),
             PerpOrderType.limit,
             undefined,
-            undefined
+            undefined,
           )
         } else {
           const marketPk = findSerum3MarketPkInOpenOrders(o)
           if (!marketPk) return
           const market = group.getSerum3MarketByExternalMarket(
-            new PublicKey(marketPk)
+            new PublicKey(marketPk),
           )
           tx = await client.modifySerum3Order(
             group,
@@ -118,7 +118,7 @@ const ModifyTvOrderModal = ({
             Serum3SelfTradeBehavior.decrementTake,
             Serum3OrderType.limit,
             Date.now(),
-            10
+            10,
           )
         }
         actions.fetchOpenOrders()
@@ -139,7 +139,7 @@ const ModifyTvOrderModal = ({
         })
       }
     },
-    [findSerum3MarketPkInOpenOrders, modifiedOrderPrice, modifiedOrderSize]
+    [findSerum3MarketPkInOpenOrders, modifiedOrderPrice, modifiedOrderSize],
   )
 
   return selectedMarket ? (

@@ -1,0 +1,152 @@
+import {
+  AccountPerformanceData,
+  AccountVolumeTotalData,
+  EmptyObject,
+  FormattedHourlyAccountVolumeData,
+  HourlyAccountVolumeData,
+  PerformanceDataItem,
+  TotalAccountFundingItem,
+} from 'types'
+import { MANGO_DATA_API_URL } from './constants'
+import dayjs from 'dayjs'
+
+export const fetchAccountPerformance = async (
+  mangoAccountPk: string,
+  range: number,
+) => {
+  try {
+    const response = await fetch(
+      `${MANGO_DATA_API_URL}/stats/performance_account?mango-account=${mangoAccountPk}&start-date=${dayjs()
+        .subtract(range, 'day')
+        .format('YYYY-MM-DD')}`,
+    )
+    const parsedResponse: null | EmptyObject | AccountPerformanceData[] =
+      await response.json()
+    if (parsedResponse && Object.keys(parsedResponse)?.length) {
+      const entries = Object.entries(parsedResponse).sort((a, b) =>
+        b[0].localeCompare(a[0]),
+      )
+      const stats = entries.map(([key, value]) => {
+        return { ...value, time: key } as PerformanceDataItem
+      })
+
+      return stats.reverse()
+    } else return []
+  } catch (e) {
+    console.error('Failed to load account performance data', e)
+    return []
+  }
+}
+
+export const fetchFundingTotals = async (mangoAccountPk: string) => {
+  try {
+    const data = await fetch(
+      `${MANGO_DATA_API_URL}/stats/funding-account-total?mango-account=${mangoAccountPk}`,
+    )
+    const res = await data.json()
+    if (res) {
+      const entries: [string, Omit<TotalAccountFundingItem, 'market'>][] =
+        Object.entries(res)
+
+      const stats: TotalAccountFundingItem[] = entries
+        .map(([key, value]) => {
+          return {
+            long_funding: value.long_funding * -1,
+            short_funding: value.short_funding * -1,
+            market: key,
+          }
+        })
+        .filter((x) => x)
+
+      return stats
+    }
+  } catch (e) {
+    console.log('Failed to fetch account funding', e)
+  }
+}
+
+export const fetchVolumeTotals = async (mangoAccountPk: string) => {
+  try {
+    const [perpTotal, spotTotal] = await Promise.all([
+      fetch(
+        `${MANGO_DATA_API_URL}/stats/perp-volume-total?mango-account=${mangoAccountPk}`,
+      ),
+      fetch(
+        `${MANGO_DATA_API_URL}/stats/spot-volume-total?mango-account=${mangoAccountPk}`,
+      ),
+    ])
+
+    const [perpTotalData, spotTotalData] = await Promise.all([
+      perpTotal.json(),
+      spotTotal.json(),
+    ])
+
+    const combinedData = [perpTotalData, spotTotalData]
+    if (combinedData.length) {
+      return combinedData.reduce((a, c) => {
+        const entries: AccountVolumeTotalData[] = Object.entries(c)
+        const marketVol = entries.reduce((a, c) => {
+          return a + c[1].volume_usd
+        }, 0)
+        return a + marketVol
+      }, 0)
+    }
+    return 0
+  } catch (e) {
+    console.log('Failed to fetch spot volume', e)
+    return 0
+  }
+}
+
+const formatHourlyVolumeData = (data: HourlyAccountVolumeData[]) => {
+  if (!data || !data.length) return []
+  const formattedData: FormattedHourlyAccountVolumeData[] = []
+
+  // Loop through each object in the original data array
+  for (const obj of data) {
+    // Loop through the keys (markets) in each object
+    for (const market in obj) {
+      // Loop through the timestamps in each market
+      for (const timestamp in obj[market]) {
+        // Find the corresponding entry in the formatted data array based on the timestamp
+        let entry = formattedData.find((item) => item.time === timestamp)
+
+        // If the entry doesn't exist, create a new entry
+        if (!entry) {
+          entry = { time: timestamp, total_volume_usd: 0, markets: {} }
+          formattedData.push(entry)
+        }
+
+        // Increment the total_volume_usd by the volume_usd value
+        entry.total_volume_usd += obj[market][timestamp].volume_usd
+
+        // Add or update the market entry in the markets object
+        entry.markets[market] = obj[market][timestamp].volume_usd
+      }
+    }
+  }
+
+  return formattedData
+}
+
+export const fetchHourlyVolume = async (mangoAccountPk: string) => {
+  try {
+    const [perpHourly, spotHourly] = await Promise.all([
+      fetch(
+        `${MANGO_DATA_API_URL}/stats/perp-volume-hourly?mango-account=${mangoAccountPk}`,
+      ),
+      fetch(
+        `${MANGO_DATA_API_URL}/stats/spot-volume-hourly?mango-account=${mangoAccountPk}`,
+      ),
+    ])
+
+    const [perpHourlyData, spotHourlyData] = await Promise.all([
+      perpHourly.json(),
+      spotHourly.json(),
+    ])
+    const hourlyVolume = [perpHourlyData, spotHourlyData]
+    return formatHourlyVolumeData(hourlyVolume)
+  } catch (e) {
+    console.log('Failed to fetch spot volume', e)
+  }
+}

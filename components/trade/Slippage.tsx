@@ -21,7 +21,7 @@ const Slippage = () => {
           orderbook,
           Number(tradeForm.baseSize),
           tradeForm.side,
-          markPrice
+          markPrice,
         )
       }
     } catch (e) {
@@ -37,7 +37,7 @@ const Slippage = () => {
         <p className="tooltip-underline mr-4">{t('trade:est-slippage')}</p>
       </Tooltip>
       <p
-        className={`${
+        className={`font-mono ${
           slippage <= 1
             ? 'text-th-success'
             : slippage <= 3

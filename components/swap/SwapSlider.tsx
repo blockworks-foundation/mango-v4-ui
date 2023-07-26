@@ -1,5 +1,4 @@
 import useMangoAccount from 'hooks/useMangoAccount'
-import { useCallback } from 'react'
 import LeverageSlider from '../shared/LeverageSlider'
 import { useTokenMax } from './useTokenMax'
 
@@ -17,13 +16,6 @@ const SwapSlider = ({
   const { mangoAccount } = useMangoAccount()
   const { amount: tokenMax, amountWithBorrow } = useTokenMax(useMargin)
 
-  const handleChange = useCallback(
-    (x: string) => {
-      onChange(x)
-    },
-    [onChange]
-  )
-
   return (
     <>
       {!mangoAccount ? (
@@ -39,7 +31,7 @@ const SwapSlider = ({
           leverageMax={
             useMargin ? amountWithBorrow.toNumber() : tokenMax.toNumber()
           }
-          onChange={handleChange}
+          onChange={onChange}
           step={step}
         />
       )}

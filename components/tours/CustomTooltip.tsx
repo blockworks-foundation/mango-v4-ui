@@ -39,7 +39,7 @@ const CustomTooltip = ({
         }
         const response = await fetch(
           `${MANGO_DATA_API_URL}/user-data/settings-unsigned`,
-          requestOptions
+          requestOptions,
         )
         if (response.status === 200) {
           await actions.fetchTourSettings(publicKey.toString())

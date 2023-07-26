@@ -32,17 +32,16 @@ import MaxAmountButton from '@components/shared/MaxAmountButton'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
 import Tooltip from '@components/shared/Tooltip'
 import useMangoAccount from 'hooks/useMangoAccount'
-import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
 import FormatNumericValue from './shared/FormatNumericValue'
 import { floorToDecimal } from 'utils/numbers'
 import BankAmountWithValue from './shared/BankAmountWithValue'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
 import { isMangoError } from 'types'
 import TokenListButton from './shared/TokenListButton'
+import TokenLogo from './shared/TokenLogo'
 
 interface BorrowFormProps {
   onSuccess: () => void
@@ -58,30 +57,18 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [selectedToken, setSelectedToken] = useState(
-    token || INPUT_TOKEN_DEFAULT
+    token || INPUT_TOKEN_DEFAULT,
   )
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
-  const { mangoTokens } = useJupiterMints()
   const { mangoAccount } = useMangoAccount()
-  const { connected, publicKey } = useWallet()
-  const { handleConnect } = useEnhancedWallet()
+  const { connected, publicKey, connect } = useWallet()
   const banks = useBanksWithBalances('maxBorrow')
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
     return group?.banksMapByName.get(selectedToken)?.[0]
   }, [selectedToken])
-
-  const logoUri = useMemo(() => {
-    let logoURI
-    if (mangoTokens?.length) {
-      logoURI = mangoTokens.find(
-        (t) => t.address === bank?.mint.toString()
-      )?.logoURI
-    }
-    return logoURI
-  }, [mangoTokens, bank])
 
   const tokenMax = useMemo(() => {
     const group = mangoStore.getState().group
@@ -104,11 +91,11 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
       setSizePercentage(percentage)
       const amount = floorToDecimal(
         new Decimal(percentage).div(100).mul(tokenMax),
-        bank.mintDecimals
+        bank.mintDecimals,
       )
       setInputAmount(amount.toFixed())
     },
-    [tokenMax, bank]
+    [tokenMax, bank],
   )
 
   const setMax = useCallback(() => {
@@ -136,7 +123,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
         mangoAccount,
         bank!.mint,
         Number(inputAmount),
-        true
+        true,
       )
       notify({
         title: 'Transaction confirmed',
@@ -234,7 +221,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
               <div className="col-span-1">
                 <TokenListButton
                   token={selectedToken}
-                  logoUri={logoUri}
+                  logo={<TokenLogo bank={bank} />}
                   setShowList={setShowTokenList}
                 />
               </div>
@@ -340,7 +327,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
             ) : null}
           </div>
           <Button
-            onClick={connected ? handleBorrow : handleConnect}
+            onClick={connected ? handleBorrow : connect}
             className="flex w-full items-center justify-center"
             disabled={connected && (!inputAmount || showInsufficientBalance)}
             size="large"

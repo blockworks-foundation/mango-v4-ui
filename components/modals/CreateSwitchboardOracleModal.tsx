@@ -12,7 +12,7 @@ import Button from '@components/shared/Button'
 import { MANGO_DAO_WALLET } from 'utils/governance/constants'
 import { USDC_MINT } from 'utils/constants'
 import { Transaction } from '@solana/web3.js'
-import { chunk } from 'lodash'
+import chunk from 'lodash/chunk'
 import { useTranslation } from 'next-i18next'
 import { notify } from 'utils/notifications'
 import { isMangoError } from 'types'
@@ -135,7 +135,7 @@ const CreateSwitchboardOracleModal = ({
                       },
                     },
                   ],
-                })
+                }),
               ).finish(),
             },
             {
@@ -201,7 +201,7 @@ const CreateSwitchboardOracleModal = ({
                       },
                     },
                   ],
-                })
+                }),
               ).finish(),
             },
           ],
@@ -214,7 +214,7 @@ const CreateSwitchboardOracleModal = ({
 
       const txChunks = chunk([...txArray1, lockTx, transferAuthIx], 1)
       const transactions: Transaction[] = []
-      const latestBlockhash = await connection.getLatestBlockhash('finalized')
+      const latestBlockhash = await connection.getLatestBlockhash('confirmed')
       for (const chunk of txChunks) {
         const tx = new Transaction()
         const singers = [...chunk.flatMap((x) => x.signers)]

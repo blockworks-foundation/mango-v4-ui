@@ -6,6 +6,7 @@ interface SwitchProps {
   onChange: (x: boolean) => void
   children?: ReactNode
   disabled?: boolean
+  small?: boolean
 }
 
 const Switch: FunctionComponent<SwitchProps> = ({
@@ -14,6 +15,7 @@ const Switch: FunctionComponent<SwitchProps> = ({
   children,
   onChange,
   disabled,
+  small,
 }) => {
   const handleClick = () => {
     onChange(!checked)
@@ -26,7 +28,9 @@ const Switch: FunctionComponent<SwitchProps> = ({
         type="button"
         className={`${
           checked ? 'bg-th-success' : 'bg-th-bkg-4'
-        } relative inline-flex h-5 w-10 flex-shrink-0 cursor-pointer rounded-full 
+        } relative inline-flex ${
+          small ? 'h-4 w-8' : 'h-5 w-10'
+        } flex-shrink-0 cursor-pointer rounded-full 
         border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-th-fgd-4 ${
           disabled ? 'opacity-60' : ''
         }`}
@@ -39,8 +43,14 @@ const Switch: FunctionComponent<SwitchProps> = ({
         <span
           aria-hidden="true"
           className={`${
-            checked ? 'translate-x-5' : 'translate-x-0'
-          } pointer-events-none inline-block h-4 w-4 rounded-full 
+            checked
+              ? small
+                ? 'translate-x-4'
+                : 'translate-x-5'
+              : 'translate-x-0'
+          } pointer-events-none inline-block ${
+            small ? 'h-3 w-3' : 'h-4 w-4'
+          } rounded-full 
           bg-white shadow ring-0 transition duration-200 ease-in-out`}
         ></span>
       </button>

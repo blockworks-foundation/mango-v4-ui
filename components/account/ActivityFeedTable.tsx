@@ -48,7 +48,7 @@ export const getFee = (activity: any, mangoAccountAddress: string) => {
     const value = price * quantity
     fee = {
       value: formatFee(
-        mangoAccountAddress === maker ? maker_fee * value : taker_fee * value
+        mangoAccountAddress === maker ? maker_fee * value : taker_fee * value,
       ),
       symbol: 'USDC',
     }
@@ -63,14 +63,14 @@ export const getFee = (activity: any, mangoAccountAddress: string) => {
     if (side === 'liqee') {
       fee = {
         value: formatNumericValue(
-          Math.abs(liab_amount) - Math.abs(asset_amount * asset_price)
+          Math.abs(liab_amount) - Math.abs(asset_amount * asset_price),
         ),
         symbol: liab_symbol,
       }
     } else {
       fee = {
         value: formatNumericValue(
-          Math.abs(asset_amount * asset_price) - Math.abs(liab_amount)
+          Math.abs(asset_amount * asset_price) - Math.abs(liab_amount),
         ),
         symbol: liab_symbol,
       }
@@ -81,14 +81,14 @@ export const getFee = (activity: any, mangoAccountAddress: string) => {
     if (base_transfer > 0) {
       fee = {
         value: formatNumericValue(
-          Math.abs(base_transfer * price) - Math.abs(quote_transfer)
+          Math.abs(base_transfer * price) - Math.abs(quote_transfer),
         ),
         symbol: 'USDC',
       }
     } else {
       fee = {
         value: formatNumericValue(
-          Math.abs(quote_transfer) - Math.abs(base_transfer * price)
+          Math.abs(quote_transfer) - Math.abs(base_transfer * price),
         ),
         symbol: 'USDC',
       }
@@ -99,7 +99,7 @@ export const getFee = (activity: any, mangoAccountAddress: string) => {
 
 export const getCreditAndDebit = (
   activity: any,
-  mangoAccountAddress: string
+  mangoAccountAddress: string,
 ) => {
   const { activity_type } = activity
   let credit = { value: '0', symbol: '' }
@@ -270,7 +270,7 @@ const ActivityFeedTable = () => {
   const { connected } = useWallet()
   const [preferredExplorer] = useLocalStorageState(
     PREFERRED_EXPLORER_KEY,
-    EXPLORERS[0]
+    EXPLORERS[0],
   )
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
@@ -285,7 +285,7 @@ const ActivityFeedTable = () => {
     actions.fetchActivityFeed(
       mangoAccountAddress,
       offset + PAGINATION_PAGE_LENGTH,
-      queryParams
+      queryParams,
     )
   }, [actions, offset, queryParams, mangoAccountAddress])
 
@@ -376,7 +376,7 @@ const ActivityFeedTable = () => {
                     <div className="flex items-center justify-end">
                       <Tooltip
                         content={`View on ${t(
-                          `settings:${preferredExplorer.name}`
+                          `settings:${preferredExplorer.name}`,
                         )}`}
                         placement="top-end"
                       >
@@ -515,7 +515,7 @@ const MobileActivityFeedItem = ({
   const { t } = useTranslation(['common', 'activity'])
   const [preferredExplorer] = useLocalStorageState(
     PREFERRED_EXPLORER_KEY,
-    EXPLORERS[0]
+    EXPLORERS[0],
   )
   const { mangoAccountAddress } = useMangoAccount()
   const { activity_type, block_datetime } = activity

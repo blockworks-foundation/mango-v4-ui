@@ -58,7 +58,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
     baseQuery: BASE_CHART_QUERY,
     from: number,
     to?: number,
-    firstDataRequest?: boolean
+    firstDataRequest?: boolean,
   ) => {
     try {
       setIsLoading(true)
@@ -87,7 +87,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
         (e) => {
           console.log(e)
           return null
-        }
+        },
       )
       const dataSize = response?.length || 0
       const dataList = []
@@ -109,7 +109,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
 
   async function setupSocket(
     kLineChart: klinecharts.Chart,
-    baseQuery: BASE_CHART_QUERY
+    baseQuery: BASE_CHART_QUERY,
   ) {
     await sleep(1500)
     setSocketConnected(true)
@@ -128,7 +128,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
       '',
       () => {
         return null
-      }
+      },
     )
   }
   const fetchFreshData = async (daysToSubtractFromToday: number) => {
@@ -213,7 +213,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
       if (DEFAULT_SUB_INDICATOR) {
         const subId = chart.createTechnicalIndicator(
           DEFAULT_SUB_INDICATOR,
-          true
+          true,
         )
         setSubTechnicalIndicators({ [DEFAULT_SUB_INDICATOR]: subId })
       }
@@ -252,7 +252,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
         'h-full w-full',
         isFullView
           ? 'fixed left-0 top-0 right-0 bottom-0 z-40 bg-th-bkg-1 text-th-fgd-1'
-          : ''
+          : '',
       )}
     >
       <div className="mb-1 flex w-full items-center justify-between border-b border-th-bkg-3 p-1 text-th-fgd-2">
@@ -261,7 +261,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
             <button
               className={clsx(
                 'px-2 md:hover:text-th-fgd-2',
-                resolution === RES_NAME_TO_RES_VAL[key] && 'text-th-active'
+                resolution === RES_NAME_TO_RES_VAL[key] && 'text-th-active',
               )}
               key={key}
               onClick={() => setResolution(RES_NAME_TO_RES_VAL[key])}
@@ -349,7 +349,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
                   } else {
                     chart?.removeTechnicalIndicator(
                       subTechnicalIndicators[type],
-                      type
+                      type,
                     )
                     const newItems = { ...subTechnicalIndicators }
                     delete newItems[type] // or whichever key you want

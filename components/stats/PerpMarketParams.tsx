@@ -39,7 +39,7 @@ const PerpMarketParams = ({ market }: { market: PerpMarket }) => {
       <div className="col-span-1 border-b border-th-bkg-3 px-6 py-4 md:col-span-2">
         <h2 className="text-base">{`${name} ${t('token:parameters')}`}</h2>
       </div>
-      <div className="col-span-1 px-6 py-4  md:border-r md:border-th-bkg-3">
+      <div className="col-span-1 px-6 pt-4  md:border-r md:border-th-bkg-3">
         <div className="flex justify-between pb-4">
           <p>{t('trade:min-order-size')}</p>
           <p className="font-mono text-th-fgd-2">{minOrderSize}</p>

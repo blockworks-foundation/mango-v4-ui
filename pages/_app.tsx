@@ -17,6 +17,15 @@ import {
   PhantomWalletAdapter,
   SolflareWalletAdapter,
   GlowWalletAdapter,
+  BackpackWalletAdapter,
+  BraveWalletAdapter,
+  CoinbaseWalletAdapter,
+  MathWalletAdapter,
+  Coin98WalletAdapter,
+  CloverWalletAdapter,
+  LedgerWalletAdapter,
+  ExodusWalletAdapter,
+  WalletConnectWalletAdapter,
 } from '@solana/wallet-adapter-wallets'
 import { clusterApiUrl } from '@solana/web3.js'
 import TransactionNotification from '@components/notifications/TransactionNotification'
@@ -26,7 +35,6 @@ import Layout from '../components/Layout'
 import { ViewportProvider } from '../hooks/useViewport'
 import MangoProvider from '@components/MangoProvider'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import EnhancedWalletProvider from '@components/wallet/EnhancedWalletProvider'
 import { notify } from 'utils/notifications'
 import { useRouter } from 'next/router'
 import useSelectedMarket from 'hooks/useSelectedMarket'
@@ -34,25 +42,38 @@ import Head from 'next/head'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { getDecimalCount } from 'utils/numbers'
-import { THEME_KEY } from 'utils/constants'
+import { AUTO_CONNECT_WALLET, THEME_KEY } from 'utils/constants'
+import useLocalStorageState from 'hooks/useLocalStorageState'
 
-// Do not add hooks to this component that will cause unnecessary rerenders
-// Top level state hydrating/updating should go in MangoProvider
-
-// Create a client
+// init react-query
 export const queryClient = new QueryClient()
 
+const metaTitle = 'Mango Markets – Safer. Smarter. Faster.'
+const metaDescription =
+  'A magical new way to interact with DeFi. Groundbreaking safety features designed to keep your funds secure. The easiest way to margin trade any token pair. All powered by flashloans.'
+
+// Do not add hooks to this component, that will cause unnecessary rerenders
+// Top level state hydrating/updating should go in MangoProvider
 function MyApp({ Component, pageProps }: AppProps) {
   const network = WalletAdapterNetwork.Mainnet
   const endpoint = useMemo(() => clusterApiUrl(network), [network])
-  const wallets = useMemo(
-    () => [
+  const router = useRouter()
+  const wallets = useMemo(() => {
+    return [
       new PhantomWalletAdapter(),
       new SolflareWalletAdapter(),
+      new BackpackWalletAdapter(),
       new GlowWalletAdapter(),
-    ],
-    []
-  )
+      new BraveWalletAdapter(),
+      new CoinbaseWalletAdapter(),
+      new MathWalletAdapter(),
+      new Coin98WalletAdapter(),
+      new CloverWalletAdapter(),
+      new LedgerWalletAdapter(),
+      new ExodusWalletAdapter(),
+      new WalletConnectWalletAdapter({ network, options: {} }),
+    ]
+  }, [network])
 
   const onError = useCallback((error: WalletError, adapter?: Adapter) => {
     console.error(error, adapter)
@@ -65,24 +86,28 @@ function MyApp({ Component, pageProps }: AppProps) {
       if (typeof window !== 'undefined') {
         window.open(adapter.url, '_blank')
       }
+    } else {
+      notify({
+        title: `${adapter?.name} ${error.error?.message || 'Error'}`,
+        type: 'info',
+      })
     }
   }, [])
+
+  const [autoConnectSetting] = useLocalStorageState(AUTO_CONNECT_WALLET, true)
+  const autoConnect =
+    autoConnectSetting === false || router.asPath.includes('?address')
+      ? false
+      : true
 
   return (
     <>
       <Head>
         <title>Mango Markets</title>
         <link rel="icon" href="/favicon.ico" />
-        <meta property="og:title" content="Mango Markets" />
+        <meta property="og:title" content={metaTitle} />
+        <meta name="description" content={metaDescription} />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta
-          name="keywords"
-          content="Mango Markets, Serum, SRM, Serum DEX, DEFI, Decentralized Finance, Decentralised Finance, Crypto, ERC20, Ethereum, Decentralize, Solana, SOL, SPL, Cross-Chain, Trading, Fastest, Fast, SerumBTC, SerumUSD, SRM Tokens, SPL Tokens"
-        />
-        <meta
-          name="description"
-          content="A magical new way to interact with DeFi. Groundbreaking safety features designed to keep your funds secure."
-        />
         <link
           rel="apple-touch-icon"
           sizes="192x192"
@@ -91,11 +116,8 @@ function MyApp({ Component, pageProps }: AppProps) {
         <meta name="msapplication-TileColor" content="#da532c" />
         <meta name="theme-color" content="#ffffff" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Mango Markets" />
-        <meta
-          name="twitter:description"
-          content="A magical new way to interact with DeFi. Groundbreaking safety features designed to keep your funds secure."
-        />
+        <meta name="twitter:title" content={metaTitle} />
+        <meta name="twitter:description" content={metaDescription} />
         <meta
           name="twitter:image"
           content="https://app.mango.markets/images/1200x600-share.png?34567879"
@@ -103,24 +125,23 @@ function MyApp({ Component, pageProps }: AppProps) {
         <meta name="google" content="notranslate" />
         <link rel="manifest" href="/manifest.json"></link>
       </Head>
-      <MangoProvider />
       <QueryClientProvider client={queryClient}>
         <ConnectionProvider endpoint={endpoint}>
-          <WalletProvider wallets={wallets} onError={onError}>
-            <EnhancedWalletProvider>
-              <ThemeProvider
-                defaultTheme="Mango Classic"
-                storageKey={THEME_KEY}
-              >
-                <ViewportProvider>
-                  <PageTitle />
-                  <Layout>
-                    <Component {...pageProps} />
-                  </Layout>
-                </ViewportProvider>
-                <TransactionNotification />
-              </ThemeProvider>
-            </EnhancedWalletProvider>
+          <WalletProvider
+            wallets={wallets}
+            onError={onError}
+            autoConnect={autoConnect}
+          >
+            <MangoProvider />
+            <ThemeProvider defaultTheme="Mango Classic" storageKey={THEME_KEY}>
+              <ViewportProvider>
+                <PageTitle />
+                <Layout>
+                  <Component {...pageProps} />
+                </Layout>
+              </ViewportProvider>
+              <TransactionNotification />
+            </ThemeProvider>
           </WalletProvider>
         </ConnectionProvider>
       </QueryClientProvider>
@@ -141,13 +162,13 @@ const PageTitle = () => {
       return [selectedMarket, selectedMarket.uiPrice]
     } else {
       const baseBank = group.getFirstBankByTokenIndex(
-        selectedMarket.baseTokenIndex
+        selectedMarket.baseTokenIndex,
       )
       const quoteBank = group.getFirstBankByTokenIndex(
-        selectedMarket.quoteTokenIndex
+        selectedMarket.quoteTokenIndex,
       )
       const market = group.getSerum3ExternalMarket(
-        selectedMarket.serumMarketExternal
+        selectedMarket.serumMarketExternal,
       )
       const price = baseBank.uiPrice / quoteBank.uiPrice
       return [market, price]

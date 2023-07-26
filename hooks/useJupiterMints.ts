@@ -1,5 +1,4 @@
 import { Group } from '@blockworks-foundation/mango-v4'
-import { WRAPPED_SOL_MINT } from '@project-serum/serum/lib/token-instructions'
 import { CLUSTER } from '@store/mangoStore'
 import { useQuery } from '@tanstack/react-query'
 import useMangoGroup from 'hooks/useMangoGroup'
@@ -12,7 +11,7 @@ const fetchJupiterTokens = async (group: Group) => {
   const data: Token[] = await response.json()
 
   const bankMints = Array.from(group.banksMapByName.values()).map((b) =>
-    b[0].mint.toString()
+    b[0].mint.toString(),
   )
   const mangoTokens = data.filter((t) => bankMints.includes(t.address))
 
@@ -38,19 +37,8 @@ const useJupiterMints = (): {
       retry: 3,
       enabled: !!group,
       refetchOnWindowFocus: false,
-    }
+    },
   )
-
-  if (res?.data?.mangoTokens.length) {
-    const findSol = res.data.mangoTokens.find(
-      (t) => t.address === WRAPPED_SOL_MINT.toString()
-    )
-    if (findSol) {
-      if (findSol.logoURI !== '/icons/sol.svg') {
-        findSol.logoURI = '/icons/sol.svg'
-      }
-    }
-  }
 
   return {
     mangoTokens: res?.data?.mangoTokens || [],

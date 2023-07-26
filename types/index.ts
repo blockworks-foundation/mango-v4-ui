@@ -1,11 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
+  MangoAccount,
   ParsedFillEvent,
   PerpMarket,
+  PerpPosition,
   Serum3Market,
 } from '@blockworks-foundation/mango-v4'
 import { Modify } from '@blockworks-foundation/mango-v4'
 import { Event } from '@project-serum/serum/lib/queue'
+import { PublicKey } from '@solana/web3.js'
 import { formatTradeHistory } from 'hooks/useTradeHistory'
 
 export type EmptyObject = { [K in keyof never]?: never }
@@ -61,7 +64,7 @@ export interface PerpTradeHistory {
 }
 
 export const isApiSpotTradeHistory = (
-  t: SpotTradeHistory | PerpTradeHistory
+  t: SpotTradeHistory | PerpTradeHistory,
 ): t is SpotTradeHistory => {
   if ('open_orders' in t) return true
   else return false
@@ -78,14 +81,14 @@ export type CombinedTradeHistoryTypes =
   | SerumEvent
 
 export const isSerumFillEvent = (
-  t: CombinedTradeHistoryTypes
+  t: CombinedTradeHistoryTypes,
 ): t is SerumEvent => {
   if ('eventFlags' in t) return true
   else return false
 }
 
 export const isPerpFillEvent = (
-  t: CombinedTradeHistoryTypes
+  t: CombinedTradeHistoryTypes,
 ): t is PerpFillEvent => {
   if ('takerSide' in t) return true
   else return false
@@ -128,7 +131,7 @@ export type TotalAccountFundingItem = {
 
 export type HourlyFundingData = [
   string,
-  { [key: string]: { long_funding: number; short_funding: number } }
+  { [key: string]: { long_funding: number; short_funding: number } },
 ]
 
 export type HourlyFundingStatsData = {
@@ -138,6 +141,22 @@ export type HourlyFundingStatsData = {
 
 export interface HourlyFundingChartData extends Record<string, any> {
   time: string
+}
+
+export type AccountVolumeTotalData = [string, { volume_usd: number }]
+
+export type HourlyAccountVolumeData = {
+  [market: string]: {
+    [timestamp: string]: {
+      volume_usd: number
+    }
+  }
+}
+
+export type FormattedHourlyAccountVolumeData = {
+  time: string
+  total_volume_usd: number
+  markets: Record<string, number>
 }
 
 export interface TotalInterestDataItem {
@@ -237,7 +256,7 @@ export interface PerpTradeActivity {
 }
 
 export function isLiquidationFeedItem(
-  item: ActivityFeed
+  item: ActivityFeed,
 ): item is LiquidationActivity {
   if (item.activity_type.includes('liquidate')) {
     return true
@@ -246,7 +265,7 @@ export function isLiquidationFeedItem(
 }
 
 export function isPerpTradeFeedItem(
-  item: ActivityFeed
+  item: ActivityFeed,
 ): item is PerpTradeActivity {
   if (item.activity_type === 'perp_trade') {
     return true
@@ -255,7 +274,7 @@ export function isPerpTradeFeedItem(
 }
 
 export function isPerpLiquidation(
-  activityDetails: SpotOrPerpLiquidationItem
+  activityDetails: SpotOrPerpLiquidationItem,
 ): activityDetails is PerpLiquidationFeedItem {
   if ((activityDetails as PerpLiquidationFeedItem).base_transfer) {
     return true
@@ -283,6 +302,8 @@ export interface NFT {
   address: string
   image: string
   name: string
+  mint: string
+  tokenAccount: string
 }
 
 export interface PerpStatsItem {
@@ -300,6 +321,12 @@ export interface PerpStatsItem {
   price: number
   stable_price: number
   total_fees: number
+}
+
+export type PositionStat = {
+  account?: MangoAccount
+  mangoAccount: PublicKey
+  perpPosition: PerpPosition
 }
 
 export type GroupedDataItem = PerpStatsItem & Record<string, any>
@@ -379,13 +406,63 @@ export function isMangoError(error: unknown): error is MangoError {
   )
 }
 
-export type TickerData = {
-  base_currency: string
-  base_volume: string
-  high: string
-  last_price: string
-  low: string
-  target_currency: string
-  target_volume: string
-  ticker_id: string
+export type MarketData = { [key: string]: MarketsDataItem[] }
+
+export type MarketsDataItem = {
+  base_volume_1h: number
+  base_volume_24h: number
+  change_1h: number
+  change_7d: number
+  change_24h: number
+  change_30d: number
+  last_price: number
+  price_1h: number
+  price_24h: number
+  price_history: { price: number; time: string }[]
+  quote_volume_1h: number
+  quote_volume_24h: number
+}
+
+export type cumOrderbookSide = {
+  price: number
+  size: number
+  averagePrice: number
+  cumulativeSize: number
+  cumulativeValue: number
+  sizePercent: number
+  maxSizePercent: number
+  cumulativeSizePercent: number
+  isUsersOrder: boolean
+}
+
+export type OrderbookData = {
+  bids: cumOrderbookSide[]
+  asks: cumOrderbookSide[]
+  spread: number
+  spreadPercentage: number
+}
+
+export type OrderbookTooltip = {
+  averagePrice: number
+  cumulativeSize: number
+  cumulativeValue: number
+  side: 'buy' | 'sell'
+}
+
+export interface HealthContribution {
+  asset: string
+  contribution: number
+  contributionDetails?: ContributionDetails
+  hasPerp?: boolean
+  isAsset: boolean
+}
+
+export interface PerpMarketContribution {
+  market: string
+  contributionUi: number
+}
+
+export interface ContributionDetails {
+  perpMarketContributions: PerpMarketContribution[]
+  spotUi: number
 }

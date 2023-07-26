@@ -39,7 +39,7 @@ const TokenStatsCharts = () => {
             a +
             c.bank.uiPrice *
               toUiDecimals(c.bank.collectedFeesNative, c.bank.mintDecimals),
-          0
+          0,
         ),
       ]
     }

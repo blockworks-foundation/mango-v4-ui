@@ -1,6 +1,6 @@
 import Tooltip from '@components/shared/Tooltip'
 import { CheckCircleIcon } from '@heroicons/react/20/solid'
-import { BN } from '@project-serum/anchor'
+import { BN } from '@coral-xyz/anchor'
 import { Governance, ProgramAccount, Proposal } from '@solana/spl-governance'
 import { RawMint } from '@solana/spl-token'
 import GovernanceStore from '@store/governanceStore'
@@ -26,7 +26,7 @@ const QuorumProgress = ({ governance, proposal, communityMint }: Props) => {
     realm &&
     getMintMaxVoteWeight(
       communityMint,
-      realm.account.config.communityMintMaxVoteWeightSource
+      realm.account.config.communityMintMaxVoteWeightSource,
     )
 
   const minimumYesVotes =
@@ -35,7 +35,7 @@ const QuorumProgress = ({ governance, proposal, communityMint }: Props) => {
 
   const yesVoteCount = fmtTokenAmount(
     new BN(proposal.account.getYesVoteCount().toString()),
-    communityMint.decimals
+    communityMint.decimals,
   )
 
   const rawYesVotesRequired = minimumYesVotes - yesVoteCount

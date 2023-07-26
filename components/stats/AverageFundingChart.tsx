@@ -20,7 +20,7 @@ const AverageFundingChart = ({
 
   const groupByHourlyInterval = (
     data: PerpStatsItem[],
-    intervalDurationHours: number
+    intervalDurationHours: number,
   ) => {
     const intervalMillis = intervalDurationHours * 60 * 60 * 1000
     const groupedData = []

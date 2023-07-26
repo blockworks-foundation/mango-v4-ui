@@ -3,7 +3,7 @@ import VoteResultsBar from './VoteResultBar'
 import { fmtTokenAmount } from 'utils/governance/tools'
 import { RawMint } from '@solana/spl-token'
 import { useTranslation } from 'next-i18next'
-import { BN } from '@project-serum/anchor'
+import { BN } from '@coral-xyz/anchor'
 
 type VoteResultsProps = {
   proposal: Proposal
@@ -15,11 +15,11 @@ const VoteResults = ({ proposal, communityMint }: VoteResultsProps) => {
 
   const yesVoteCount = fmtTokenAmount(
     proposal.getYesVoteCount() as BN,
-    communityMint.decimals
+    communityMint.decimals,
   )
   const noVoteCount = fmtTokenAmount(
     proposal.getNoVoteCount() as BN,
-    communityMint.decimals
+    communityMint.decimals,
   )
   const totalVoteCount = yesVoteCount + noVoteCount
   const getRelativeVoteCount = (voteCount: number) =>

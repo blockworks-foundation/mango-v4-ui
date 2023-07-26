@@ -33,7 +33,7 @@ const MangoAccountDashboard: NextPage = () => {
   console.log('router.query', router.query)
 
   const [searchString, setSearchString] = useState<string>(
-    router.query['address'] as string
+    router.query['address'] as string,
   )
 
   const loadOpenOrders = useCallback(async () => {
@@ -45,7 +45,7 @@ const MangoAccountDashboard: NextPage = () => {
         client,
         group,
         perpOrder.orderMarket,
-        true
+        true,
       )
       openOrders[market.publicKey.toString()] = orders
     }
@@ -65,7 +65,7 @@ const MangoAccountDashboard: NextPage = () => {
           <h1>Dashboard</h1>
           <DashboardNavbar />
           <div className="">
-            <div className="flex space-x-2">
+            <div className="mt-4 flex space-x-2">
               <Input
                 type="text"
                 name="search"
@@ -120,25 +120,25 @@ const MangoAccountDashboard: NextPage = () => {
               <KeyValuePair
                 label="Init Health"
                 value={`$${toUiDecimalsForQuote(
-                  mangoAccount.getHealth(group, HealthType.init)
+                  mangoAccount.getHealth(group, HealthType.init),
                 ).toFixed(4)}`}
               />
               <KeyValuePair
                 label="Maint Health"
                 value={`$${toUiDecimalsForQuote(
-                  mangoAccount.getHealth(group, HealthType.maint)
+                  mangoAccount.getHealth(group, HealthType.maint),
                 ).toFixed(4)}`}
               />
-              <KeyValuePair
+              {/* <KeyValuePair
                 label="Perp Settle Health"
                 value={`$${toUiDecimalsForQuote(
                   mangoAccount.getPerpSettleHealth(group)
                 ).toFixed(4)}`}
-              />
+              /> */}
               <KeyValuePair
                 label="Net Deposits"
                 value={`$${toUiDecimalsForQuote(
-                  mangoAccount.netDeposits
+                  mangoAccount.netDeposits,
                 ).toFixed(4)}`}
               />
               <KeyValuePair
@@ -195,10 +195,10 @@ const MangoAccountDashboard: NextPage = () => {
               <h3 className="mt-4">Serum3 Active Positions</h3>
               {mangoAccount.serum3Active().map((serum) => {
                 const market = group.getSerum3MarketByMarketIndex(
-                  serum.marketIndex
+                  serum.marketIndex,
                 )
                 const extMarket = group.getSerum3ExternalMarket(
-                  market.serumMarketExternal
+                  market.serumMarketExternal,
                 )
                 return (
                   <div key={serum.marketIndex} className="mt-6">
@@ -228,7 +228,7 @@ const MangoAccountDashboard: NextPage = () => {
               <h3 className="mt-4">Perp Active Positions</h3>
               {mangoAccount.perpActive().map((perp) => {
                 const market = group.getPerpMarketByMarketIndex(
-                  perp.marketIndex
+                  perp.marketIndex,
                 )
                 return (
                   <div key={perp.marketIndex} className="mt-6">
@@ -254,7 +254,7 @@ const MangoAccountDashboard: NextPage = () => {
                     <KeyValuePair
                       label="Quote Position"
                       value={`$${toUiDecimalsForQuote(
-                        perp.quotePositionNative
+                        perp.quotePositionNative,
                       ).toFixed(4)}`}
                     />
                     <KeyValuePair
@@ -264,7 +264,7 @@ const MangoAccountDashboard: NextPage = () => {
                     <KeyValuePair
                       label="Unsettled Funding"
                       value={`$${toUiDecimalsForQuote(
-                        perp.getUnsettledFunding(market)
+                        perp.getUnsettledFunding(market),
                       ).toFixed(6)}`}
                     />
                     <KeyValuePair
@@ -278,20 +278,29 @@ const MangoAccountDashboard: NextPage = () => {
                       value={`$${perp.getBreakEvenPriceUi(market).toFixed(6)}`}
                     />
                     <KeyValuePair
+                      label="Max Settle"
+                      value={`$${toUiDecimalsForQuote(
+                        mangoAccount.perpMaxSettle(
+                          group,
+                          market.settleTokenIndex,
+                        ),
+                      ).toFixed(6)}`}
+                    />
+                    <KeyValuePair
                       label="Quote Running"
                       value={`$${toUiDecimalsForQuote(
-                        perp.quoteRunningNative
+                        perp.quoteRunningNative,
                       ).toFixed(6)}`}
                     />
                     <KeyValuePair
                       label="Cumulative Funding"
                       value={`$${toUiDecimalsForQuote(
-                        -perp.cumulativeLongFunding
+                        -perp.cumulativeLongFunding,
                       ).toFixed(6)} long / $${toUiDecimalsForQuote(
-                        perp.cumulativeShortFunding
+                        perp.cumulativeShortFunding,
                       ).toFixed(6)} short / $${toUiDecimalsForQuote(
                         -perp.cumulativeLongFunding +
-                          perp.cumulativeShortFunding
+                          perp.cumulativeShortFunding,
                       ).toFixed(6)} total`}
                     />
                     <KeyValuePair
@@ -309,23 +318,23 @@ const MangoAccountDashboard: NextPage = () => {
                     <KeyValuePair
                       label="Volume"
                       value={`$${toUiDecimalsForQuote(perp.makerVolume).toFixed(
-                        6
+                        6,
                       )} maker / $${toUiDecimalsForQuote(
-                        perp.takerVolume
+                        perp.takerVolume,
                       ).toFixed(6)} taker`}
                     />
                     <KeyValuePair
                       label="Perp-Spot Transfers"
                       value={`$${toUiDecimalsForQuote(
-                        perp.perpSpotTransfers
+                        perp.perpSpotTransfers,
                       ).toFixed(6)}`}
                     />
                     <KeyValuePair
                       label="Position Lifetime PnL"
                       value={`$${toUiDecimalsForQuote(
-                        perp.realizedPnlForPositionNative
+                        perp.realizedPnlForPositionNative,
                       ).toFixed(6)} realized / $${toUiDecimalsForQuote(
-                        perp.cumulativePnlOverPositionLifetimeUi(market)
+                        perp.cumulativePnlOverPositionLifetimeUi(market),
                       ).toFixed(6)} total`}
                     />
                   </div>
@@ -371,7 +380,7 @@ const MangoAccountDashboard: NextPage = () => {
                           })}
                         </div>
                       )
-                    }
+                    },
                   )
                 : null}
             </div>

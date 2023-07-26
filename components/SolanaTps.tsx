@@ -10,7 +10,7 @@ const tpsWarningThreshold = 1300
 
 const getRecentPerformance = async (
   connection: Connection,
-  setTps: (x: number) => void
+  setTps: (x: number) => void,
 ) => {
   try {
     const samples = 2
@@ -36,7 +36,7 @@ const SolanaTps = () => {
 
   useInterval(() => {
     getRecentPerformance(connection, setTps)
-  }, 45 * 1000)
+  }, 60 * 1000)
 
   if (CLUSTER == 'mainnet-beta') {
     return (

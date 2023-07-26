@@ -8,11 +8,7 @@ import { handleGetRoutes } from '@components/swap/useQuoteRoutes'
 import { JUPITER_PRICE_API_MAINNET, USDC_MINT } from 'utils/constants'
 import { AccountMeta, PublicKey, SYSVAR_RENT_PUBKEY } from '@solana/web3.js'
 import { useWallet } from '@solana/wallet-adapter-react'
-import {
-  OPENBOOK_PROGRAM_ID,
-  RouteInfo,
-  toNative,
-} from '@blockworks-foundation/mango-v4'
+import { OPENBOOK_PROGRAM_ID, toNative } from '@blockworks-foundation/mango-v4'
 import {
   MANGO_DAO_WALLET,
   MANGO_DAO_WALLET_GOVERNANCE,
@@ -32,7 +28,6 @@ import Loading from '@components/shared/Loading'
 import ListingSuccess from '../ListingSuccess'
 import InlineNotification from '@components/shared/InlineNotification'
 import { Disclosure } from '@headlessui/react'
-import { useEnhancedWallet } from '@components/wallet/EnhancedWalletProvider'
 import { abbreviateAddress } from 'utils/formatting'
 import { formatNumericValue } from 'utils/numbers'
 import useMangoGroup from 'hooks/useMangoGroup'
@@ -49,7 +44,7 @@ import CreateOpenbookMarketModal from '@components/modals/CreateOpenbookMarketMo
 import { calculateTradingParameters } from 'utils/governance/listingTools'
 import useJupiterMints from 'hooks/useJupiterMints'
 import CreateSwitchboardOracleModal from '@components/modals/CreateSwitchboardOracleModal'
-import { BN } from '@project-serum/anchor'
+import { BN } from '@coral-xyz/anchor'
 
 type FormErrors = Partial<Record<keyof TokenListForm, string>>
 
@@ -83,13 +78,15 @@ const defaultTokenListFormValues: TokenListForm = {
   proposalDescription: '',
 }
 
+const TWENTY_K_USDC_BASE = '20000000000'
+
 const ListToken = ({ goBack }: { goBack: () => void }) => {
+  //do not deconstruct wallet is used for anchor to sign
   const wallet = useWallet()
   const { jupiterTokens } = useJupiterMints()
   const connection = mangoStore((s) => s.connection)
   const client = mangoStore((s) => s.client)
   const { group } = useMangoGroup()
-  const { handleConnect } = useEnhancedWallet()
   const voter = GovernanceStore((s) => s.voter)
   const vsrClient = GovernanceStore((s) => s.vsrClient)
   const governances = GovernanceStore((s) => s.governances)
@@ -127,7 +124,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         ? governances[MANGO_DAO_WALLET_GOVERNANCE.toBase58()].account.config
             .minCommunityTokensToCreateProposal
         : new BN(0),
-    [governances]
+    [governances],
   ) as BN
   const mintVoterWeightNumber = governances
     ? fmtTokenAmount(minVoterWeight, MANGO_MINT_DECIMALS)
@@ -138,7 +135,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         baseTokenPrice,
         quoteBank.uiPrice,
         currentTokenInfo.decimals,
-        quoteBank.mintDecimals
+        quoteBank.mintDecimals,
       )
     }
     return {
@@ -189,7 +186,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           new BN(index).toArrayLike(Buffer, 'le', 2),
           new BN(bankNum).toArrayLike(Buffer, 'le', 4),
         ],
-        client.programId
+        client.programId,
       )
       setAdvForm({
         ...advForm,
@@ -209,13 +206,17 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       })
       setLoadingListingParams(false)
     },
-    [advForm, client.programId, connection, group, mint, proposals]
+    [advForm, client.programId, connection, group, mint, proposals],
   )
 
   const handleGetRoutesWithFixedArgs = useCallback(
-    (amount: number, tokenMint: PublicKey) => {
+    (
+      amount: number,
+      tokenMint: PublicKey,
+      mode: 'ExactIn' | 'ExactOut',
+      onlyDirect = false,
+    ) => {
       const SLIPPAGE_BPS = 50
-      const MODE = 'ExactIn'
       const FEE = 0
       const walletForCheck = wallet.publicKey
         ? wallet.publicKey?.toBase58()
@@ -226,13 +227,14 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         tokenMint.toBase58(),
         toNative(amount, 6).toNumber(),
         SLIPPAGE_BPS,
-        MODE,
+        mode,
         FEE,
         walletForCheck,
-        'JUPITER'
+        'JUPITER',
+        onlyDirect,
       )
     },
-    [wallet.publicKey]
+    [wallet.publicKey],
   )
 
   const handleLiqudityCheck = useCallback(
@@ -240,27 +242,49 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       try {
         const TIERS: LISTING_PRESETS_KEYS[] = ['PREMIUM', 'MID', 'MEME', 'SHIT']
         const swaps = await Promise.all([
-          handleGetRoutesWithFixedArgs(100000, tokenMint),
-          handleGetRoutesWithFixedArgs(20000, tokenMint),
-          handleGetRoutesWithFixedArgs(5000, tokenMint),
-          handleGetRoutesWithFixedArgs(1000, tokenMint),
+          handleGetRoutesWithFixedArgs(100000, tokenMint, 'ExactIn'),
+          handleGetRoutesWithFixedArgs(20000, tokenMint, 'ExactIn'),
+          handleGetRoutesWithFixedArgs(5000, tokenMint, 'ExactIn'),
+          handleGetRoutesWithFixedArgs(1000, tokenMint, 'ExactIn'),
+          handleGetRoutesWithFixedArgs(100000, tokenMint, 'ExactOut'),
+          handleGetRoutesWithFixedArgs(20000, tokenMint, 'ExactOut'),
+          handleGetRoutesWithFixedArgs(5000, tokenMint, 'ExactOut'),
+          handleGetRoutesWithFixedArgs(1000, tokenMint, 'ExactOut'),
         ])
-        const midTierCheck = swaps[1]
-        const indexForTierFromSwaps = swaps.findIndex(
-          (x) =>
-            x.bestRoute?.priceImpactPct && x.bestRoute?.priceImpactPct * 100 < 1
+        const bestRoutesSwaps = swaps
+          .filter((x) => x.bestRoute)
+          .map((x) => x.bestRoute!)
+        const averageSwaps = bestRoutesSwaps.reduce(
+          (acc: { amount: string; priceImpactPct: number }[], val) => {
+            if (val.swapMode === 'ExactIn') {
+              const exactOutRoute = bestRoutesSwaps.find(
+                (x) => x.amount === val.amount && x.swapMode === 'ExactOut',
+              )
+              acc.push({
+                amount: val.amount.toString(),
+                priceImpactPct: exactOutRoute?.priceImpactPct
+                  ? (val.priceImpactPct + exactOutRoute.priceImpactPct) / 2
+                  : val.priceImpactPct,
+              })
+            }
+            return acc
+          },
+          [],
+        )
+
+        const midTierCheck = averageSwaps.find(
+          (x) => x.amount === TWENTY_K_USDC_BASE,
+        )
+        const indexForTierFromSwaps = averageSwaps.findIndex(
+          (x) => x?.priceImpactPct && x?.priceImpactPct * 100 < 1,
         )
         const tier =
           indexForTierFromSwaps > -1
             ? TIERS[indexForTierFromSwaps]
             : 'UNTRUSTED'
         setCoinTier(tier)
-        setPriceImpact(
-          midTierCheck.bestRoute
-            ? midTierCheck.bestRoute.priceImpactPct * 100
-            : 100
-        )
-        handleGetPoolParams(midTierCheck.routes)
+        setPriceImpact(midTierCheck ? midTierCheck.priceImpactPct * 100 : 100)
+        handleGetPoolParams(tier, tokenMint)
         return tier
       } catch (e) {
         notify({
@@ -270,11 +294,27 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         })
       }
     },
-    [t, wallet.publicKey]
+    [t, handleGetRoutesWithFixedArgs],
   )
 
-  const handleGetPoolParams = (routes: never[] | RouteInfo[]) => {
-    const marketInfos = routes.flatMap((x) => x.marketInfos)
+  const handleGetPoolParams = async (
+    tier: LISTING_PRESETS_KEYS,
+    tokenMint: PublicKey,
+  ) => {
+    const tierToSwapValue: { [key: string]: number } = {
+      PREMIUM: 100000,
+      MID: 20000,
+      MEME: 5000,
+      SHIT: 1000,
+      UNTRUSTED: 100,
+    }
+    const swaps = await handleGetRoutesWithFixedArgs(
+      tierToSwapValue[tier],
+      tokenMint,
+      'ExactIn',
+      true,
+    )
+    const marketInfos = swaps.routes.flatMap((x) => x.marketInfos)
     const orcaPool = marketInfos.find((x) => x.label === 'Orca')
     const raydiumPool = marketInfos.find((x) => x.label === 'Raydium')
     setOrcaPoolAddress(orcaPool?.id || '')
@@ -351,7 +391,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       }
       return invalidFields
     },
-    [t]
+    [t],
   )
 
   const propose = useCallback(async () => {
@@ -359,7 +399,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     if (Object.keys(invalidFields).length) {
       return
     }
-    if (!wallet?.publicKey || !vsrClient || !connectionContext) return
+    if (!wallet.publicKey || !vsrClient || !connectionContext) return
     await getCurrentVotingPower(wallet.publicKey, vsrClient, connectionContext)
 
     if (voter.voteWeight.cmp(minVoterWeight) === -1) {
@@ -378,7 +418,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         group!.publicKey.toBuffer(),
         new PublicKey(advForm.mintPk).toBuffer(),
       ],
-      client.programId
+      client.programId,
     )
 
     const proposalTx = []
@@ -409,7 +449,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           Number(tierPreset.liquidationFee),
           Number(tierPreset.minVaultToDepositsRatio),
           new BN(tierPreset.netBorrowLimitWindowSizeTs),
-          new BN(tierPreset.netBorrowLimitPerWindowQuote)
+          new BN(tierPreset.netBorrowLimitPerWindowQuote),
         )
         .accounts({
           admin: MANGO_DAO_WALLET,
@@ -447,7 +487,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           false,
           null,
           null,
-          null
+          null,
         )
         .accounts({
           oracle: new PublicKey(advForm.oraclePk),
@@ -465,7 +505,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         .instruction()
       proposalTx.push(editIx)
     } else {
-      await client!.program.methods
+      const trustlessIx = await client!.program.methods
         .tokenRegisterTrustless(Number(advForm.tokenIndex), advForm.name)
         .accounts({
           mint: new PublicKey(advForm.mintPk),
@@ -476,6 +516,8 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           group: group!.publicKey,
         })
         .instruction()
+
+      proposalTx.push(trustlessIx)
     }
 
     const registerMarketix = await client!.program.methods
@@ -504,7 +546,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         advForm.proposalDescription,
         advForm.tokenIndex,
         proposalTx,
-        vsrClient
+        vsrClient,
       )
       setProposalPk(proposalAddress.toBase58())
     } catch (e) {
@@ -621,7 +663,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                   <p>{t('mint')}</p>
                   <p className="flex items-center">
                     {abbreviateAddress(
-                      new PublicKey(currentTokenInfo?.address)
+                      new PublicKey(currentTokenInfo?.address),
                     )}
                   </p>
                 </div>
@@ -712,7 +754,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                                 handleSetAdvForm(
                                   'openBookMarketExternalPk',
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                             />
@@ -774,7 +816,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                                 handleSetAdvForm(
                                   'openBookProgram',
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                             />
@@ -815,7 +857,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                                 handleSetAdvForm(
                                   'proposalTitle',
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                             />
@@ -839,7 +881,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                                 handleSetAdvForm(
                                   'proposalDescription',
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                             />
@@ -954,7 +996,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                     )}
                   </Button>
                 ) : (
-                  <Button onClick={handleConnect} size="large">
+                  <Button onClick={wallet.connect} size="large">
                     {t('connect-wallet')}
                   </Button>
                 )}

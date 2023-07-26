@@ -15,10 +15,9 @@ const GovernanceDelegate = () => {
   const connectionContext = GovernanceStore((s) => s.connectionContext)
   const vsrClient = GovernanceStore((s) => s.vsrClient)
   const getCurrentVotingPower = GovernanceStore((s) => s.getCurrentVotingPower)
-  const voter = GovernanceStore((s) => s.voter.tokenOwnerRecord)
 
   const [selectedDelegatePk, setSelectedDelegatePk] = useLocalStorageState(
-    `${publicKey?.toBase58()}${GOVERNANCE_DELEGATE_KEY}`
+    `${publicKey?.toBase58()}${GOVERNANCE_DELEGATE_KEY}`,
   )
   const currentDelegate = delegates
     .find((x) => x.pubkey.toBase58() === selectedDelegatePk)
@@ -28,8 +27,7 @@ const GovernanceDelegate = () => {
     if (
       publicKey?.toBase58() &&
       connectionContext?.endpoint &&
-      vsrClient?.program.programId.toBase58() &&
-      voter
+      vsrClient?.program.programId.toBase58()
     ) {
       getCurrentVotingPower(publicKey, vsrClient, connectionContext)
     }

@@ -1,16 +1,13 @@
 import { Bank, Group } from '@blockworks-foundation/mango-v4'
-import useJupiterMints from 'hooks/useJupiterMints'
 import {
   ArrowDownRightIcon,
   ArrowUpLeftIcon,
   ChevronDownIcon,
   NoSymbolIcon,
-  QuestionMarkCircleIcon,
 } from '@heroicons/react/20/solid'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
-import Image from 'next/legacy/image'
 import { formatNumericValue } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 import { Table, Td, Th, TrBody, TrHead } from '../shared/TableElements'
@@ -25,10 +22,11 @@ import Tooltip from '@components/shared/Tooltip'
 import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 import { BankWithBalance } from 'hooks/useBanksWithBalances'
 import { Disclosure, Transition } from '@headlessui/react'
+import TokenLogo from '@components/shared/TokenLogo'
 
 export const getAvailableToBorrow = (
   bankWithBal: BankWithBalance,
-  group: Group
+  group: Group,
 ) => {
   const { balance, bank, maxBorrow } = bankWithBal
   const { mint, mintDecimals, minVaultToDepositsRatio } = bankWithBal.bank
@@ -42,7 +40,7 @@ export const getAvailableToBorrow = (
 
   const available = Decimal.min(
     availableAccountBorrow.toFixed(bank.mintDecimals),
-    Decimal.max(0, availableVaultBalance.toFixed(mintDecimals))
+    Decimal.max(0, availableVaultBalance.toFixed(mintDecimals)),
   )
   return available
 }
@@ -54,7 +52,6 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
   const [selectedToken, setSelectedToken] = useState('')
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const { group } = useMangoGroup()
-  const { mangoTokens } = useJupiterMints()
   const { width } = useViewport()
   const { connected } = useWallet()
   const showTableView = width ? width > breakpoints.md : false
@@ -64,7 +61,7 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
       setSelectedToken(token)
       action === 'borrow' ? setShowBorrowModal(true) : setShowRepayModal(true)
     },
-    []
+    [],
   )
 
   return (
@@ -93,13 +90,6 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
               {banks.map((b) => {
                 const bank: Bank = b.bank
 
-                let logoURI
-                if (mangoTokens.length) {
-                  logoURI = mangoTokens.find(
-                    (t) => t.address === bank.mint.toString()
-                  )?.logoURI
-                }
-
                 const available = group
                   ? getAvailableToBorrow(b, group)
                   : new Decimal(0)
@@ -111,16 +101,7 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
                     <Td>
                       <div className="flex items-center">
                         <div className="mr-2.5 flex flex-shrink-0 items-center">
-                          {logoURI ? (
-                            <Image
-                              alt=""
-                              width="20"
-                              height="20"
-                              src={logoURI}
-                            />
-                          ) : (
-                            <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
-                          )}
+                          <TokenLogo bank={bank} />
                         </div>
                         <span>{bank.name}</span>
                       </div>
@@ -177,13 +158,6 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
             {banks.map((b) => {
               const bank: Bank = b.bank
 
-              let logoURI: string | undefined
-              if (mangoTokens.length) {
-                logoURI = mangoTokens.find(
-                  (t) => t.address === bank.mint.toString()
-                )?.logoURI
-              }
-
               const available = group
                 ? getAvailableToBorrow(b, group)
                 : new Decimal(0)
@@ -202,16 +176,7 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center">
                             <div className="mr-2.5 flex flex-shrink-0 items-center">
-                              {logoURI ? (
-                                <Image
-                                  alt=""
-                                  width="24"
-                                  height="24"
-                                  src={logoURI}
-                                />
-                              ) : (
-                                <QuestionMarkCircleIcon className="h-7 w-7 text-th-fgd-3" />
-                              )}
+                              <TokenLogo bank={bank} />
                             </div>
                             <p className="text-th-fgd-1">{bank.name}</p>
                           </div>

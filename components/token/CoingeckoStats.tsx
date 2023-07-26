@@ -13,6 +13,7 @@ import parse from 'html-react-parser'
 import { useTranslation } from 'next-i18next'
 import { useMemo, useState } from 'react'
 import PriceChart from '@components/token/PriceChart'
+import { DAILY_SECONDS } from 'utils/constants'
 dayjs.extend(relativeTime)
 
 const DEFAULT_COINGECKO_VALUES = {
@@ -40,11 +41,11 @@ interface BirdeyeResponse {
 
 const fetchBirdeyePrices = async (
   daysToShow: string,
-  mint: string
+  mint: string,
 ): Promise<BirdeyePriceResponse[] | []> => {
   const interval = daysToShow === '1' ? '30m' : daysToShow === '7' ? '1H' : '4H'
   const queryEnd = Math.floor(Date.now() / 1000)
-  const queryStart = queryEnd - parseInt(daysToShow) * 86400
+  const queryStart = queryEnd - parseInt(daysToShow) * DAILY_SECONDS
   const query = `defi/history_price?address=${mint}&address_type=token&type=${interval}&time_from=${queryStart}&time_to=${queryEnd}`
   const response: BirdeyeResponse = await makeApiRequest(query)
 
@@ -80,7 +81,7 @@ const CoingeckoStats = ({
       retry: 3,
       enabled: !!bank,
       refetchOnWindowFocus: false,
-    }
+    },
   )
 
   const {

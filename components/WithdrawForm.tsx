@@ -27,17 +27,16 @@ import { getMaxWithdrawForBank } from './swap/useTokenMax'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
 import useMangoAccount from 'hooks/useMangoAccount'
-import useJupiterMints from 'hooks/useJupiterMints'
 import useMangoGroup from 'hooks/useMangoGroup'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { useEnhancedWallet } from './wallet/EnhancedWalletProvider'
 import { floorToDecimal } from 'utils/numbers'
 import BankAmountWithValue from './shared/BankAmountWithValue'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
 import { isMangoError } from 'types'
 import TokenListButton from './shared/TokenListButton'
 import { ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES, BackButton } from './BorrowForm'
+import TokenLogo from './shared/TokenLogo'
 
 interface WithdrawFormProps {
   onSuccess: () => void
@@ -50,14 +49,12 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [selectedToken, setSelectedToken] = useState(
-    token || INPUT_TOKEN_DEFAULT
+    token || INPUT_TOKEN_DEFAULT,
   )
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
-  const { mangoTokens } = useJupiterMints()
   const { mangoAccount } = useMangoAccount()
-  const { connected } = useWallet()
-  const { handleConnect } = useEnhancedWallet()
+  const { connect, connected } = useWallet()
   const banks = useBanksWithBalances('maxWithdraw')
 
   const bank = useMemo(() => {
@@ -65,48 +62,52 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
     return group?.banksMapByName.get(selectedToken)?.[0]
   }, [selectedToken])
 
-  const logoUri = useMemo(() => {
-    let logoURI
-    if (mangoTokens?.length) {
-      logoURI = mangoTokens.find(
-        (t) => t.address === bank?.mint.toString()
-      )?.logoURI
+  const [adjustedTokenMax, tokenMax] = useMemo(() => {
+    if (!bank || !mangoAccount || !group)
+      return [new Decimal(0), new Decimal(0)]
+    const tokenMax = getMaxWithdrawForBank(group, bank, mangoAccount).toNumber()
+    let adjustedTokenMax = tokenMax
+    const balance = mangoAccount.getTokenBalanceUi(bank)
+    if (tokenMax < balance) {
+      adjustedTokenMax = tokenMax * 0.998
     }
-    return logoURI
-  }, [bank?.mint, mangoTokens])
-
-  const tokenMax = useMemo(() => {
-    if (!bank || !mangoAccount || !group) return new Decimal(0)
-    const amount = getMaxWithdrawForBank(group, bank, mangoAccount)
-
-    return amount
+    return [new Decimal(adjustedTokenMax), new Decimal(tokenMax)]
   }, [mangoAccount, bank, group])
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {
       if (!bank) return
       setSizePercentage(percentage)
-      const amount = floorToDecimal(
-        new Decimal(tokenMax).mul(percentage).div(100),
-        bank.mintDecimals
-      )
-      setInputAmount(amount.toFixed())
+      let amount: Decimal
+      if (percentage !== '100') {
+        amount = floorToDecimal(
+          new Decimal(adjustedTokenMax).mul(percentage).div(100),
+          bank.mintDecimals,
+        )
+      } else {
+        amount = floorToDecimal(
+          new Decimal(adjustedTokenMax),
+          bank.mintDecimals,
+        )
+      }
+      setInputAmount(amount.toString())
     },
-    [bank, tokenMax]
+    [bank, adjustedTokenMax],
   )
 
   const setMax = useCallback(() => {
     if (!bank) return
-    const max = floorToDecimal(tokenMax, bank.mintDecimals)
-    setInputAmount(max.toFixed())
+    const max = floorToDecimal(adjustedTokenMax, bank.mintDecimals)
+    setInputAmount(max.toString())
     setSizePercentage('100')
-  }, [bank, tokenMax])
+  }, [bank, adjustedTokenMax])
 
   const handleWithdraw = useCallback(async () => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     const mangoAccount = mangoStore.getState().mangoAccount.current
     const actions = mangoStore.getState().actions
+    const withdrawAmount = parseFloat(inputAmount)
     if (!mangoAccount || !group || !bank) return
     setSubmitting(true)
     try {
@@ -114,8 +115,8 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
         group,
         mangoAccount,
         bank.mint,
-        parseFloat(inputAmount),
-        false
+        withdrawAmount,
+        false,
       )
       notify({
         title: 'Transaction confirmed',
@@ -201,14 +202,14 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
                     decimals={bank.mintDecimals}
                     label={t('max')}
                     onClick={setMax}
-                    value={tokenMax}
+                    value={adjustedTokenMax}
                   />
                 ) : null}
               </div>
               <div className="col-span-1">
                 <TokenListButton
                   token={selectedToken}
-                  logoUri={logoUri}
+                  logo={<TokenLogo bank={bank} />}
                   setShowList={setShowTokenList}
                 />
               </div>
@@ -226,7 +227,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
                   value={inputAmount}
                   onValueChange={(e: NumberFormatValues) =>
                     setInputAmount(
-                      !Number.isNaN(Number(e.value)) ? e.value : ''
+                      !Number.isNaN(Number(e.value)) ? e.value : '',
                     )
                   }
                   isAllowed={withValueLimit}
@@ -256,7 +257,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
             ) : null}
           </div>
           <Button
-            onClick={connected ? handleWithdraw : handleConnect}
+            onClick={connected ? handleWithdraw : connect}
             className="flex w-full items-center justify-center"
             size="large"
             disabled={

@@ -8,10 +8,12 @@ import { DEFAULT_DELEGATE } from './modals/DelegateModal'
 import MangoAccountsListModal from './modals/MangoAccountsListModal'
 import SheenLoader from './shared/SheenLoader'
 import Tooltip from './shared/Tooltip'
+import useUnownedAccount from 'hooks/useUnownedAccount'
 
 const AccountsButton = () => {
   const { t } = useTranslation('common')
   const { mangoAccount, initialLoad } = useMangoAccount()
+  const { isDelegatedAccount } = useUnownedAccount()
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
   const [showMangoAccountsModal, setShowMangoAccountsModal] = useState(false)
 
@@ -37,7 +39,9 @@ const AccountsButton = () => {
               {mangoAccount.delegate.toString() !== DEFAULT_DELEGATE ? (
                 <Tooltip
                   content={t('delegate-account-info', {
-                    address: abbreviateAddress(mangoAccount.delegate),
+                    delegate: isDelegatedAccount
+                      ? t('you')
+                      : abbreviateAddress(mangoAccount.delegate),
                   })}
                 >
                   <UserPlusIcon className="ml-1.5 h-4 w-4 text-th-fgd-3" />

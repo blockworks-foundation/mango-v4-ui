@@ -43,7 +43,7 @@ import PerpSideBadge from './PerpSideBadge'
 import TableMarketName from './TableMarketName'
 
 export const findSerum3MarketPkInOpenOrders = (
-  o: Order
+  o: Order,
 ): string | undefined => {
   const openOrders = mangoStore.getState().mangoAccount.openOrders
   let foundedMarketPk: string | undefined = undefined
@@ -66,7 +66,7 @@ const OpenOrders = () => {
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
   const [cancelId, setCancelId] = useState<string>('')
   const [modifyOrderId, setModifyOrderId] = useState<string | undefined>(
-    undefined
+    undefined,
   )
   const [loadingModifyOrder, setLoadingModifyOrder] = useState(false)
   const [modifiedOrderSize, setModifiedOrderSize] = useState('')
@@ -88,7 +88,7 @@ const OpenOrders = () => {
       const marketPk = findSerum3MarketPkInOpenOrders(o)
       if (!marketPk) return
       const market = group.getSerum3MarketByExternalMarket(
-        new PublicKey(marketPk)
+        new PublicKey(marketPk),
       )
 
       setCancelId(o.orderId.toString())
@@ -98,7 +98,7 @@ const OpenOrders = () => {
           mangoAccount,
           market!.serumMarketExternal,
           o.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
-          o.orderId
+          o.orderId,
         )
 
         actions.fetchOpenOrders()
@@ -121,7 +121,7 @@ const OpenOrders = () => {
         setCancelId('')
       }
     },
-    [t]
+    [t],
   )
 
   const modifyOrder = useCallback(
@@ -149,13 +149,13 @@ const OpenOrders = () => {
             Date.now(),
             PerpOrderType.limit,
             undefined,
-            undefined
+            undefined,
           )
         } else {
           const marketPk = findSerum3MarketPkInOpenOrders(o)
           if (!marketPk) return
           const market = group.getSerum3MarketByExternalMarket(
-            new PublicKey(marketPk)
+            new PublicKey(marketPk),
           )
           tx = await client.modifySerum3Order(
             group,
@@ -168,7 +168,7 @@ const OpenOrders = () => {
             Serum3SelfTradeBehavior.decrementTake,
             Serum3OrderType.limit,
             Date.now(),
-            10
+            10,
           )
         }
         actions.fetchOpenOrders()
@@ -191,7 +191,7 @@ const OpenOrders = () => {
         cancelEditOrderForm()
       }
     },
-    [t, modifiedOrderSize, modifiedOrderPrice]
+    [t, modifiedOrderSize, modifiedOrderPrice],
   )
 
   const handleCancelPerpOrder = useCallback(
@@ -207,7 +207,7 @@ const OpenOrders = () => {
           group,
           mangoAccount,
           o.perpMarketIndex,
-          o.orderId
+          o.orderId,
         )
         actions.fetchOpenOrders()
         notify({
@@ -229,7 +229,7 @@ const OpenOrders = () => {
         setCancelId('')
       }
     },
-    [t]
+    [t],
   )
 
   const showEditOrderForm = (order: Order | PerpOrder, tickSize: number) => {
@@ -250,7 +250,6 @@ const OpenOrders = () => {
         <thead>
           <TrHead>
             <Th className="w-[16.67%] text-left">{t('market')}</Th>
-            <Th className="w-[16.67%] text-right">{t('trade:side')}</Th>
             <Th className="w-[16.67%] text-right">{t('trade:size')}</Th>
             <Th className="w-[16.67%] text-right">{t('price')}</Th>
             <Th className="w-[16.67%] text-right">{t('value')}</Th>
@@ -281,34 +280,31 @@ const OpenOrders = () => {
                   value = o.size * o.price
                 } else {
                   market = group.getSerum3MarketByExternalMarket(
-                    new PublicKey(marketPk)
+                    new PublicKey(marketPk),
                   )
                   const serumMarket = group.getSerum3ExternalMarket(
-                    market.serumMarketExternal
+                    market.serumMarketExternal,
                   )
                   const quoteBank = group.getFirstBankByTokenIndex(
-                    market.quoteTokenIndex
+                    market.quoteTokenIndex,
                   )
                   tickSize = serumMarket.tickSize
                   minOrderSize = serumMarket.minOrderSize
                   value = o.size * o.price * quoteBank.uiPrice
                 }
+                const side =
+                  o instanceof PerpOrder
+                    ? 'bid' in o.side
+                      ? 'long'
+                      : 'short'
+                    : o.side
                 return (
                   <TrBody
                     key={`${o.side}${o.size}${o.price}${o.orderId.toString()}`}
                     className="my-1 p-2"
                   >
                     <Td className="w-[16.67%]">
-                      <TableMarketName market={market} />
-                    </Td>
-                    <Td className="w-[16.67%] text-right">
-                      {o instanceof PerpOrder ? (
-                        <PerpSideBadge
-                          basePosition={'bid' in o.side ? 1 : -1}
-                        />
-                      ) : (
-                        <SideBadge side={o.side} />
-                      )}
+                      <TableMarketName market={market} side={side} />
                     </Td>
                     {modifyOrderId !== o.orderId.toString() ? (
                       <>
@@ -354,7 +350,7 @@ const OpenOrders = () => {
                       <FormatNumericValue value={value} isUsd />
                       {expiryTimestamp ? (
                         <div className="h-min text-xxs leading-tight text-th-fgd-4">{`Expires ${new Date(
-                          expiryTimestamp * 1000
+                          expiryTimestamp * 1000,
                         ).toLocaleTimeString()}`}</div>
                       ) : null}
                     </Td>
@@ -432,10 +428,10 @@ const OpenOrders = () => {
               minOrderSize = market.minOrderSize
             } else {
               market = group.getSerum3MarketByExternalMarket(
-                new PublicKey(marketPk)
+                new PublicKey(marketPk),
               )
               const serumMarket = group.getSerum3ExternalMarket(
-                market.serumMarketExternal
+                market.serumMarketExternal,
               )
 
               quoteBank = group.getFirstBankByTokenIndex(market.quoteTokenIndex)
@@ -449,23 +445,19 @@ const OpenOrders = () => {
               >
                 <div>
                   {modifyOrderId !== o.orderId.toString() ? (
-                    <div className="flex items-start">
-                      <div className="mt-0.5">
-                        <MarketLogos market={market} size="large" />
-                      </div>
+                    <div className="flex items-center">
+                      <MarketLogos market={market} size="large" />
                       <div>
-                        <div className="mb-1 flex space-x-1 leading-none text-th-fgd-2">
+                        <div className="flex space-x-1 text-th-fgd-2">
                           {selectedMarket?.name === market.name ? (
                             <span className="whitespace-nowrap">
                               {market.name}
                             </span>
                           ) : (
                             <Link href={`/trade?name=${market.name}`}>
-                              <div className="flex items-center underline underline-offset-2 md:hover:text-th-fgd-3 md:hover:no-underline">
-                                <span className="whitespace-nowrap">
-                                  {market.name}
-                                </span>
-                              </div>
+                              <span className="whitespace-nowrap">
+                                {market.name}
+                              </span>
                             </Link>
                           )}
                           {o instanceof PerpOrder ? (
@@ -476,19 +468,22 @@ const OpenOrders = () => {
                             <SideBadge side={o.side} />
                           )}
                         </div>
-                        <p className="leading-none text-th-fgd-4">
-                          <span className="font-mono text-th-fgd-3">
+                        <p className="text-th-fgd-4">
+                          <span className="font-mono text-th-fgd-2">
                             <FormatNumericValue
                               value={o.size}
                               decimals={getDecimalCount(minOrderSize)}
                             />
                           </span>
                           {' at '}
-                          <span className="font-mono text-th-fgd-3">
+                          <span className="font-mono text-th-fgd-2">
                             <FormatNumericValue
                               value={o.price}
                               decimals={getDecimalCount(tickSize)}
-                              isUsd={quoteBank?.name === 'USDC'}
+                              isUsd={
+                                quoteBank?.name === 'USDC' ||
+                                o instanceof PerpOrder
+                              }
                             />{' '}
                             {quoteBank && quoteBank.name !== 'USDC' ? (
                               <span className="font-body text-th-fgd-3">
@@ -497,6 +492,9 @@ const OpenOrders = () => {
                             ) : null}
                           </span>
                         </p>
+                        <span className="font-mono text-xs text-th-fgd-3">
+                          <FormatNumericValue value={o.price * o.size} isUsd />
+                        </span>
                       </div>
                     </div>
                   ) : (

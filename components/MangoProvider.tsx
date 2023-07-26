@@ -5,6 +5,10 @@ import { useRouter } from 'next/router'
 import { MangoAccount } from '@blockworks-foundation/mango-v4'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useInterval from './shared/useInterval'
+import { SECONDS } from 'utils/constants'
+import useNetworkSpeed from 'hooks/useNetworkSpeed'
+import { useWallet } from '@solana/wallet-adapter-react'
+import useLocalStorageState from 'hooks/useLocalStorageState'
 
 const set = mangoStore.getState().set
 const actions = mangoStore.getState().actions
@@ -14,6 +18,16 @@ const HydrateStore = () => {
   const { name: marketName } = router.query
   const { mangoAccountPk, mangoAccountAddress } = useMangoAccount()
   const connection = mangoStore((s) => s.connection)
+  const slowNetwork = useNetworkSpeed()
+  const { wallet } = useWallet()
+
+  const [, setLastWalletName] = useLocalStorageState('lastWalletName', '')
+
+  useEffect(() => {
+    if (wallet?.adapter) {
+      setLastWalletName(wallet?.adapter.name)
+    }
+  }, [wallet, setLastWalletName])
 
   useEffect(() => {
     if (marketName && typeof marketName === 'string') {
@@ -24,17 +38,23 @@ const HydrateStore = () => {
     actions.fetchGroup()
   }, [marketName])
 
-  useInterval(() => {
-    actions.fetchGroup()
-  }, 25000)
+  useInterval(
+    () => {
+      actions.fetchGroup()
+    },
+    (slowNetwork ? 40 : 20) * SECONDS,
+  )
 
   // refetches open orders every 30 seconds
   // only the selected market's open orders are updated via websocket
-  useInterval(() => {
-    if (mangoAccountAddress) {
-      actions.fetchOpenOrders()
-    }
-  }, 30000)
+  useInterval(
+    () => {
+      if (mangoAccountAddress) {
+        actions.fetchOpenOrders()
+      }
+    },
+    (slowNetwork ? 60 : 30) * SECONDS,
+  )
 
   // refetch trade history and activity feed when switching accounts
   useEffect(() => {
@@ -45,10 +65,13 @@ const HydrateStore = () => {
   }, [mangoAccountAddress])
 
   // reload and parse market fills from the event queue
-  useInterval(async () => {
-    const actions = mangoStore.getState().actions
-    actions.loadMarketFills()
-  }, 6000)
+  useInterval(
+    async () => {
+      const actions = mangoStore.getState().actions
+      actions.loadMarketFills()
+    },
+    (slowNetwork ? 60 : 20) * SECONDS,
+  )
 
   // The websocket library solana/web3.js uses closes its websocket connection when the subscription list
   // is empty after opening its first time, preventing subsequent subscriptions from receiving responses.
@@ -78,11 +101,11 @@ const HydrateStore = () => {
         if (context.slot > lastSeenSlot) {
           const decodedMangoAccount = client.program.coder.accounts.decode(
             'mangoAccount',
-            info?.data
+            info?.data,
           )
           const newMangoAccount = MangoAccount.from(
             mangoAccount.publicKey,
-            decodedMangoAccount
+            decodedMangoAccount,
           )
           if (newMangoAccount.serum3Active().length > 0) {
             await newMangoAccount.reloadSerum3OpenOrders(client)
@@ -93,7 +116,7 @@ const HydrateStore = () => {
           })
           actions.fetchOpenOrders()
         }
-      }
+      },
     )
 
     return () => {

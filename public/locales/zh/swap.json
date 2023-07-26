@@ -41,5 +41,7 @@
     "tooltip-borrow-no-balance": "您将借入 {{borrowAmount}} {{token}} 来执行此交换。当前的 {{token}} 可变借贷利率为 {{rate}}%",
     "tooltip-margin": "When margin is enabled you can add leverage to your swaps. Borrows are opened automatically if a swap exceeds your balance.",
     "tooltip-max-slippage": "如果价格下滑超过您的最大滑点，换币交易将不会被执行",
-    "use-margin": "允许杠杆"
+    "use-margin": "允许杠杆",
+    "you-buy": "You're buying",
+    "you-sell": "You're selling"
 }

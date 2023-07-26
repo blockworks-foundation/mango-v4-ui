@@ -22,7 +22,6 @@ import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
 import { walletBalanceForToken } from './DepositForm'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useMangoAccount from 'hooks/useMangoAccount'
-import useJupiterMints from 'hooks/useJupiterMints'
 import {
   ACCOUNT_ACTION_MODAL_INNER_HEIGHT,
   INPUT_TOKEN_DEFAULT,
@@ -33,6 +32,7 @@ import useBanksWithBalances from 'hooks/useBanksWithBalances'
 import { isMangoError } from 'types'
 import TokenListButton from './shared/TokenListButton'
 import { ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES, BackButton } from './BorrowForm'
+import TokenLogo from './shared/TokenLogo'
 
 interface RepayFormProps {
   onSuccess: () => void
@@ -45,11 +45,10 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [selectedToken, setSelectedToken] = useState(
-    token || INPUT_TOKEN_DEFAULT
+    token || INPUT_TOKEN_DEFAULT,
   )
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
-  const { mangoTokens } = useJupiterMints()
   const banks = useBanksWithBalances('borrowedAmount')
   // const { maxSolDeposit } = useSolBalance()
 
@@ -57,16 +56,6 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
     const group = mangoStore.getState().group
     return group?.banksMapByName.get(selectedToken)?.[0]
   }, [selectedToken])
-
-  const logoUri = useMemo(() => {
-    let logoURI
-    if (mangoTokens.length && bank) {
-      logoURI = mangoTokens.find(
-        (t) => t.address === bank?.mint.toString()
-      )?.logoURI
-    }
-    return logoURI
-  }, [bank, mangoTokens])
 
   const { connected, publicKey } = useWallet()
   const walletTokens = mangoStore((s) => s.wallet.tokens)
@@ -80,7 +69,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
   const borrowAmount = useMemo(() => {
     if (!mangoAccount || !bank) return new Decimal(0)
     const amount = new Decimal(
-      mangoAccount.getTokenBorrowsUi(bank)
+      mangoAccount.getTokenBorrowsUi(bank),
     ).toDecimalPlaces(bank.mintDecimals, Decimal.ROUND_UP)
     return amount
   }, [bank, mangoAccount])
@@ -89,7 +78,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
     if (!bank) return
     const amount = new Decimal(borrowAmount).toDecimalPlaces(
       bank.mintDecimals,
-      Decimal.ROUND_UP
+      Decimal.ROUND_UP,
     )
     setInputAmount(amount.toFixed())
     setSizePercentage('100')
@@ -106,7 +95,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
 
       setInputAmount(amount.toFixed())
     },
-    [bank, borrowAmount]
+    [bank, borrowAmount],
   )
 
   const handleSelectToken = (token: string) => {
@@ -141,7 +130,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
           mangoAccount,
           bank.mint,
           actualAmount,
-          true
+          true,
         )
         notify({
           title: 'Transaction confirmed',
@@ -165,7 +154,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
         })
       }
     },
-    [bank, publicKey?.toBase58(), sizePercentage]
+    [bank, publicKey?.toBase58(), sizePercentage],
   )
 
   useEffect(() => {
@@ -229,7 +218,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
               <div className="col-span-1">
                 <TokenListButton
                   token={selectedToken}
-                  logoUri={logoUri}
+                  logo={<TokenLogo bank={bank} />}
                   setShowList={setShowTokenList}
                 />
               </div>
@@ -247,7 +236,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
                   value={inputAmount}
                   onValueChange={(e: NumberFormatValues) => {
                     setInputAmount(
-                      !Number.isNaN(Number(e.value)) ? e.value : ''
+                      !Number.isNaN(Number(e.value)) ? e.value : '',
                     )
                   }}
                   isAllowed={withValueLimit}

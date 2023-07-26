@@ -1,8 +1,11 @@
 {
     "base-liquidation-fee": "Base Liquidation Fee",
+    "closest-to-liquidation": "Positions Closest to Liquidation",
     "daily": "Daily",
     "hourly": "Hourly",
+    "largest-perp-positions": "Largest Positions",
     "perp-details": "{{market}}统计",
+    "perp-volume": "Perp Volume",
     "pnl-liquidation-fee": "Positive PnL Liquidation Fee",
     "settle-pnl-factor": "Settle PnL Factor",
     "six-hourly": "6-Hourly",

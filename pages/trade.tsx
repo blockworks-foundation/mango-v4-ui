@@ -19,12 +19,10 @@ export async function getStaticProps({ locale }: { locale: string }) {
         'notifications',
         'onboarding',
         'onboarding-tours',
-        'profile',
-        'search',
-        'settings',
         'trade',
         'close-account',
         'tv-chart',
+        'swap',
       ])),
     },
   }
@@ -32,7 +30,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
 
 const getOraclePriceForMarket = (
   group: Group,
-  mkt: Serum3Market | PerpMarket
+  mkt: Serum3Market | PerpMarket,
 ): number => {
   let price: number
   if (mkt instanceof Serum3Market) {
@@ -41,7 +39,7 @@ const getOraclePriceForMarket = (
     const market = group.getSerum3ExternalMarket(mkt.serumMarketExternal)
     price = floorToDecimal(
       baseBank.uiPrice / quoteBank.uiPrice,
-      getDecimalCount(market.tickSize)
+      getDecimalCount(market.tickSize),
     ).toNumber()
   } else if (mkt) {
     price = mkt._uiPrice
@@ -80,7 +78,7 @@ const Trade: NextPage = () => {
           s.tradeForm = {
             ...DEFAULT_TRADE_FORM,
             price: getOraclePriceForMarket(group, mkt).toFixed(
-              getDecimalCount(tickSize)
+              getDecimalCount(tickSize),
             ),
           }
         })

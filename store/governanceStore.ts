@@ -1,4 +1,4 @@
-import { AnchorProvider, BN } from '@project-serum/anchor'
+import { AnchorProvider, BN } from '@coral-xyz/anchor'
 import {
   getAllProposals,
   getGovernanceAccounts,
@@ -55,14 +55,14 @@ type IGovernanceStore = {
   getCurrentVotingPower: (
     wallet: PublicKey,
     vsrClient: VsrClient,
-    connectionContext: ConnectionContext
+    connectionContext: ConnectionContext,
   ) => void
   resetVoter: () => void
   updateProposals: (proposalPk: PublicKey) => void
   fetchDelegatedAccounts: (
     wallet: PublicKey,
     connectionContext: ConnectionContext,
-    programId: PublicKey
+    programId: PublicKey,
   ) => Promise<ProgramAccount<TokenOwnerRecord>[]>
 }
 
@@ -84,7 +84,7 @@ const GovernanceStore = create<IGovernanceStore>((set, get) => ({
   getCurrentVotingPower: async (
     wallet: PublicKey,
     vsrClient: VsrClient,
-    connectionContext: ConnectionContext
+    connectionContext: ConnectionContext,
   ) => {
     const set = get().set
     const fetchDelegatedAccounts = get().fetchDelegatedAccounts
@@ -97,18 +97,18 @@ const GovernanceStore = create<IGovernanceStore>((set, get) => ({
     const delegatedAccounts = await fetchDelegatedAccounts(
       selectedWallet,
       connectionContext,
-      MANGO_GOVERNANCE_PROGRAM
+      MANGO_GOVERNANCE_PROGRAM,
     )
 
     const unparsedSelectedDelegatePk = localStorage.getItem(
-      `${wallet.toBase58()}${GOVERNANCE_DELEGATE_KEY}`
+      `${wallet.toBase58()}${GOVERNANCE_DELEGATE_KEY}`,
     )
     const selectedDelegatePk: string = unparsedSelectedDelegatePk
       ? tryParse(unparsedSelectedDelegatePk)
       : ''
 
     const selectedDelegate = delegatedAccounts.find(
-      (x) => x.pubkey.toBase58() === selectedDelegatePk
+      (x) => x.pubkey.toBase58() === selectedDelegatePk,
     )
 
     if (selectedDelegatePk && selectedDelegate) {
@@ -119,14 +119,14 @@ const GovernanceStore = create<IGovernanceStore>((set, get) => ({
       MANGO_GOVERNANCE_PROGRAM,
       MANGO_REALM_PK,
       MANGO_MINT,
-      selectedWallet
+      selectedWallet,
     )
     let tokenOwnerRecord: ProgramAccount<TokenOwnerRecord> | undefined | null =
       undefined
     try {
       tokenOwnerRecord = await getTokenOwnerRecord(
         connectionContext.current,
-        tokenOwnerRecordPk
+        tokenOwnerRecordPk,
       )
       // eslint-disable-next-line no-empty
     } catch (e) {}
@@ -151,11 +151,11 @@ const GovernanceStore = create<IGovernanceStore>((set, get) => ({
       connectionContext.current,
       programId,
       TokenOwnerRecord,
-      [pubkeyFilter(governanceDelegateOffset, wallet)!]
+      [pubkeyFilter(governanceDelegateOffset, wallet)!],
     )
     set((state) => {
       state.delegates = accounts.filter((x) =>
-        x.account.realm.equals(MANGO_REALM_PK)
+        x.account.realm.equals(MANGO_REALM_PK),
       )
     })
     return accounts
@@ -180,7 +180,7 @@ const GovernanceStore = create<IGovernanceStore>((set, get) => ({
     const provider = new AnchorProvider(
       connection,
       new EmptyWallet(Keypair.generate()),
-      options
+      options,
     )
     const vsrClient = await VsrClient.connect(provider, DEFAULT_VSR_ID)
     set((state) => {
@@ -210,7 +210,7 @@ const GovernanceStore = create<IGovernanceStore>((set, get) => ({
     const proposals = await getAllProposals(
       connectionContext.current,
       MANGO_GOVERNANCE_PROGRAM,
-      MANGO_REALM_PK
+      MANGO_REALM_PK,
     )
     const proposalsObj = accountsToPubkeyMap(proposals.flatMap((p) => p))
     set((state) => {
@@ -229,7 +229,7 @@ const GovernanceStore = create<IGovernanceStore>((set, get) => ({
     })
     const proposal = await getProposal(
       state.connectionContext!.current!,
-      proposalPk
+      proposalPk,
     )
     const newProposals = { ...state.proposals }
     newProposals[proposal.pubkey.toBase58()] = proposal

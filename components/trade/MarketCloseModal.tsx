@@ -1,4 +1,10 @@
-import { FunctionComponent, useCallback, useEffect, useState } from 'react'
+import {
+  FunctionComponent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
 import {
@@ -16,7 +22,8 @@ import { SOUND_SETTINGS_KEY } from 'utils/constants'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 import { Howl } from 'howler'
 import { isMangoError } from 'types'
-import { decodeBook, decodeBookL2 } from './Orderbook'
+import { decodeBook, decodeBookL2 } from 'utils/orderbook'
+import InlineNotification from '@components/shared/InlineNotification'
 
 interface MarketCloseModalProps {
   onClose: () => void
@@ -42,13 +49,16 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
   const [submitting, setSubmitting] = useState(false)
   const connection = mangoStore((s) => s.connection)
   const group = mangoStore((s) => s.group)
-  const perpMarket = group?.getPerpMarketByMarketIndex(position.marketIndex)
   const [soundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,
-    INITIAL_SOUND_SETTINGS
+    INITIAL_SOUND_SETTINGS,
   )
   const [asks, setAsks] = useState<BidsAndAsks>(null)
   const [bids, setBids] = useState<BidsAndAsks>(null)
+
+  const perpMarket = useMemo(() => {
+    return group?.getPerpMarketByMarketIndex(position.marketIndex)
+  }, [group, position?.marketIndex])
 
   // subscribe to the bids and asks orderbook accounts
   useEffect(() => {
@@ -78,7 +88,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
             setBids(decodeBookL2(decodedBook))
           }
         },
-        'processed'
+        'processed',
       )
     }
 
@@ -100,7 +110,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
             setAsks(decodeBookL2(decodedBook))
           }
         },
-        'processed'
+        'processed',
       )
     }
     return () => {
@@ -112,6 +122,21 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
       }
     }
   }, [connection, perpMarket, group])
+
+  const insufficientLiquidity = useMemo(() => {
+    if (!perpMarket) return true
+    const baseSize = position.getBasePositionUi(perpMarket)
+    const isBids = baseSize < 0
+    if (isBids) {
+      if (!bids || !bids.length) return true
+      const liquidityMax = bids.reduce((a, c) => a + c[1], 0)
+      return liquidityMax < baseSize
+    } else {
+      if (!asks || !asks.length) return true
+      const liquidityMax = asks.reduce((a, c) => a + c[1], 0)
+      return liquidityMax < baseSize
+    }
+  }, [perpMarket, position, bids, asks])
 
   const handleMarketClose = useCallback(
     async (bids: BidsAndAsks, asks: BidsAndAsks) => {
@@ -134,18 +159,10 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
         const price = calculateEstPriceForBaseSize(
           orderbook,
           baseSize,
-          sideToClose
+          sideToClose,
         )
 
         const maxSlippage = 0.025
-        // const perpOrderType =
-        //   tradeForm.tradeType === 'market'
-        //     ? PerpOrderType.market
-        //     : tradeForm.ioc
-        //     ? PerpOrderType.immediateOrCancel
-        //     : tradeForm.postOnly
-        //     ? PerpOrderType.postOnly
-        //     : PerpOrderType.limit
         const tx = await client.perpPlaceOrder(
           group,
           mangoAccount,
@@ -158,7 +175,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
           PerpOrderType.immediateOrCancel,
           true, // reduce only
           undefined,
-          undefined
+          undefined,
         )
         actions.fetchOpenOrders()
         set((s) => {
@@ -187,7 +204,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
         onClose()
       }
     },
-    [perpMarket, position, group, onClose, soundSettings]
+    [perpMarket, position, group, onClose, soundSettings],
   )
 
   return (
@@ -196,8 +213,17 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
         {t('trade:close-confirm', { config_name: perpMarket?.name })}
       </h3>
       <div className="pb-6 text-th-fgd-3">{t('trade:price-expect')}</div>
+      {insufficientLiquidity ? (
+        <div className="mb-3">
+          <InlineNotification
+            type="error"
+            desc={t('trade:insufficient-perp-liquidity')}
+          />
+        </div>
+      ) : null}
       <Button
         className="mb-4 flex w-full items-center justify-center"
+        disabled={insufficientLiquidity}
         onClick={() => handleMarketClose(bids, asks)}
         size="large"
       >

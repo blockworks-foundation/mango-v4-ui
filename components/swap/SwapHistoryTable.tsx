@@ -14,19 +14,20 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { PAGINATION_PAGE_LENGTH, PREFERRED_EXPLORER_KEY } from 'utils/constants'
 import Tooltip from '@components/shared/Tooltip'
 import { formatTokenSymbol } from 'utils/tokens'
-import useJupiterMints from 'hooks/useJupiterMints'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
 import useMangoAccount from 'hooks/useMangoAccount'
 import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import { useWallet } from '@solana/wallet-adapter-react'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
+import useMangoGroup from 'hooks/useMangoGroup'
+import TokenLogo from '@components/shared/TokenLogo'
 
 const SwapHistoryTable = () => {
   const { t } = useTranslation(['common', 'settings', 'swap'])
   const swapHistory = mangoStore((s) => s.mangoAccount.swapHistory.data)
   const loadSwapHistory = mangoStore((s) => s.mangoAccount.swapHistory.loading)
-  const { mangoTokens } = useJupiterMints()
+  const { group } = useMangoGroup()
   const [offset, setOffset] = useState(0)
   const actions = mangoStore.getState().actions
   const { mangoAccountAddress } = useMangoAccount()
@@ -35,7 +36,7 @@ const SwapHistoryTable = () => {
   const showTableView = width ? width > breakpoints.md : false
   const [preferredExplorer] = useLocalStorageState(
     PREFERRED_EXPLORER_KEY,
-    EXPLORERS[0]
+    EXPLORERS[0],
   )
 
   useEffect(() => {
@@ -55,11 +56,13 @@ const SwapHistoryTable = () => {
     actions.fetchSwapHistory(
       mangoAccountAddress,
       0,
-      offset + PAGINATION_PAGE_LENGTH
+      offset + PAGINATION_PAGE_LENGTH,
     )
   }, [actions, offset, mangoAccountAddress])
 
-  return mangoAccountAddress && (swapHistory.length || loadSwapHistory) ? (
+  return group &&
+    mangoAccountAddress &&
+    (swapHistory.length || loadSwapHistory) ? (
     <>
       {showTableView ? (
         <Table>
@@ -105,20 +108,16 @@ const SwapHistoryTable = () => {
                   ? loan_origination_fee.toFixed(4)
                   : 0
 
-              let baseLogoURI
-              let quoteLogoURI
+              const bankInSymbol =
+                swap_in_symbol === 'ETH' ? 'ETH (Portal)' : swap_in_symbol
+              const bankOutSymbol =
+                swap_out_symbol === 'ETH' ? 'ETH (Portal)' : swap_out_symbol
+
+              const inBank = group.banksMapByName.get(bankInSymbol)?.[0]
+              const outBank = group.banksMapByName.get(bankOutSymbol)?.[0]
 
               const inSymbol = formatTokenSymbol(swap_in_symbol)
               const outSymbol = formatTokenSymbol(swap_out_symbol)
-
-              if (mangoTokens.length) {
-                baseLogoURI = mangoTokens.find(
-                  (t) => t.symbol.toUpperCase() === inSymbol.toUpperCase()
-                )?.logoURI
-                quoteLogoURI = mangoTokens.find(
-                  (t) => t.symbol.toUpperCase() === outSymbol.toUpperCase()
-                )?.logoURI
-              }
 
               const inDecimals = countLeadingZeros(swap_in_amount) + 2
               const outDecimals = countLeadingZeros(swap_out_amount) + 2
@@ -135,12 +134,7 @@ const SwapHistoryTable = () => {
                   <Td>
                     <div className="flex items-center">
                       <div className="mr-2.5 flex flex-shrink-0 items-center">
-                        <Image
-                          alt=""
-                          width="24"
-                          height="24"
-                          src={baseLogoURI || ''}
-                        />
+                        <TokenLogo bank={inBank} />
                       </div>
                       <p className="whitespace-nowrap">
                         <FormatNumericValue
@@ -156,12 +150,7 @@ const SwapHistoryTable = () => {
                   <Td>
                     <div className="flex items-center">
                       <div className="mr-2.5 flex flex-shrink-0 items-center">
-                        <Image
-                          alt=""
-                          width="24"
-                          height="24"
-                          src={quoteLogoURI || ''}
-                        />
+                        <TokenLogo bank={outBank} />
                       </div>
                       <p className="whitespace-nowrap">
                         <FormatNumericValue
@@ -207,7 +196,7 @@ const SwapHistoryTable = () => {
                     <div className="flex items-center justify-end">
                       <Tooltip
                         content={`View on ${t(
-                          `settings:${preferredExplorer.name}`
+                          `settings:${preferredExplorer.name}`,
                         )}`}
                         placement="top-end"
                       >

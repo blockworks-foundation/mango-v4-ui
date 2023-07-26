@@ -66,12 +66,12 @@ const configurationData = {
 
 export const queryBars = async (
   tokenAddress: string,
-  resolution: typeof SUPPORTED_RESOLUTIONS[number],
+  resolution: (typeof SUPPORTED_RESOLUTIONS)[number],
   periodParams: {
     firstDataRequest: boolean
     from: number
     to: number
-  }
+  },
 ): Promise<Bar[]> => {
   const { from, to } = periodParams
   const urlParameters = {
@@ -121,14 +121,14 @@ export default {
     _userInput: string,
     _exchange: string,
     _symbolType: string,
-    _onResultReadyCallback: (items: SearchSymbolResultItem[]) => void
+    _onResultReadyCallback: (items: SearchSymbolResultItem[]) => void,
   ) => {
     return
   },
 
   resolveSymbol: async (
     symbolAddress: string,
-    onSymbolResolvedCallback: (symbolInfo: SymbolInfo) => void
+    onSymbolResolvedCallback: (symbolInfo: SymbolInfo) => void,
     // _onResolveErrorCallback: any,
     // _extension: any
   ) => {
@@ -187,16 +187,16 @@ export default {
       bars: Bar[],
       t: {
         noData: boolean
-      }
+      },
     ) => void,
-    onErrorCallback: (e: any) => void
+    onErrorCallback: (e: any) => void,
   ) => {
     try {
       const { firstDataRequest } = periodParams
       const bars = await queryBars(
         symbolInfo.address,
         resolution as any,
-        periodParams
+        periodParams,
       )
       if (!bars || bars.length === 0) {
         // "noData" should be set if there is no data in the requested period.
@@ -226,7 +226,7 @@ export default {
     resolution: string,
     onRealtimeCallback: (data: any) => void,
     subscriberUID: string,
-    onResetCacheNeededCallback: () => void
+    onResetCacheNeededCallback: () => void,
   ) => {
     subscribeOnStream(
       symbolInfo,
@@ -234,7 +234,7 @@ export default {
       onRealtimeCallback,
       subscriberUID,
       onResetCacheNeededCallback,
-      lastBarsCache.get(symbolInfo.address)
+      lastBarsCache.get(symbolInfo.address),
     )
   },
 

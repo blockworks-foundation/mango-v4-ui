@@ -55,7 +55,6 @@ const TradeHistory = () => {
             <thead>
               <TrHead>
                 <Th className="text-left">{t('market')}</Th>
-                <Th className="text-right">{t('trade:side')}</Th>
                 <Th className="text-right">{t('trade:size')}</Th>
                 <Th className="text-right">{t('price')}</Th>
                 <Th className="text-right">{t('value')}</Th>
@@ -72,15 +71,17 @@ const TradeHistory = () => {
                     key={`${side}${size}${price}${index}`}
                     className="my-1 p-2"
                   >
-                    <Td className="">
-                      <TableMarketName market={market} />
-                    </Td>
-                    <Td className="text-right">
-                      {market instanceof PerpMarket ? (
-                        <PerpSideBadge basePosition={side === 'buy' ? 1 : -1} />
-                      ) : (
-                        <SideBadge side={side} />
-                      )}
+                    <Td>
+                      <TableMarketName
+                        market={market}
+                        side={
+                          market instanceof PerpMarket
+                            ? side === 'buy'
+                              ? 'long'
+                              : 'short'
+                            : side
+                        }
+                      />
                     </Td>
                     <Td className="text-right font-mono">{size}</Td>
                     <Td className="text-right font-mono">
@@ -115,7 +116,7 @@ const TradeHistory = () => {
                             content={`View Counterparty ${abbreviateAddress(
                               trade.liquidity === 'Taker'
                                 ? new PublicKey(trade.maker)
-                                : new PublicKey(trade.taker)
+                                : new PublicKey(trade.taker),
                             )}`}
                             delay={0}
                           >
@@ -155,7 +156,7 @@ const TradeHistory = () => {
                 <div>
                   <p className="text-sm text-th-fgd-1">
                     {dayjs(trade?.time ? trade.time : Date.now()).format(
-                      'ddd D MMM'
+                      'ddd D MMM',
                     )}
                   </p>
                   <p className="text-xs text-th-fgd-3">

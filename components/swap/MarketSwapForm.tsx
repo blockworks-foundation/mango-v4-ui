@@ -7,30 +7,18 @@ import {
   SetStateAction,
 } from 'react'
 import { ArrowDownIcon } from '@heroicons/react/20/solid'
-import NumberFormat, {
-  NumberFormatValues,
-  SourceInfo,
-} from 'react-number-format'
+import { NumberFormatValues, SourceInfo } from 'react-number-format'
 import Decimal from 'decimal.js'
 import mangoStore from '@store/mangoStore'
-import TokenSelect from './TokenSelect'
 import useDebounce from '../shared/useDebounce'
-import { useTranslation } from 'next-i18next'
-import Loading from '../shared/Loading'
-import {
-  INPUT_TOKEN_DEFAULT,
-  OUTPUT_TOKEN_DEFAULT,
-  SIZE_INPUT_UI_KEY,
-} from '../../utils/constants'
+import { SIZE_INPUT_UI_KEY } from '../../utils/constants'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { RouteInfo } from 'types/jupiter'
-import useMangoGroup from 'hooks/useMangoGroup'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import SwapSlider from './SwapSlider'
-import MaxSwapAmount from './MaxSwapAmount'
 import PercentageSelectButtons from './PercentageSelectButtons'
-import useUnownedAccount from 'hooks/useUnownedAccount'
-import { formatCurrencyValue } from 'utils/numbers'
+import BuyTokenInput from './BuyTokenInput'
+import SellTokenInput from './SellTokenInput'
 
 type MarketSwapFormProps = {
   bestRoute: RouteInfo | undefined | null
@@ -51,23 +39,14 @@ export const NUMBER_FORMAT_CLASSNAMES =
 
 const set = mangoStore.getState().set
 
-export const ORDER_TYPES = [
-  'trade:limit',
-  'trade:stop-market',
-  'trade:stop-limit',
-]
-
 const MarketSwapForm = ({
   bestRoute,
   selectedRoute,
   setSelectedRoute,
   setShowTokenSelect,
 }: MarketSwapFormProps) => {
-  const { t } = useTranslation(['common', 'swap', 'trade'])
   const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
-  const { group } = useMangoGroup()
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
-  const { isUnownedAccount } = useUnownedAccount()
 
   const {
     margin: useMargin,
@@ -105,7 +84,7 @@ const MarketSwapForm = ({
         }
       })
     },
-    []
+    [],
   )
 
   const setAmountOutFormValue = useCallback((amountOut: string) => {
@@ -116,6 +95,32 @@ const MarketSwapForm = ({
       }
     })
   }, [])
+
+  const handleAmountInChange = useCallback(
+    (e: NumberFormatValues, info: SourceInfo) => {
+      if (info.source !== 'event') return
+      setAmountInFormValue(e.value)
+      if (swapMode === 'ExactOut') {
+        set((s) => {
+          s.swap.swapMode = 'ExactIn'
+        })
+      }
+    },
+    [outputBank, setAmountInFormValue, swapMode],
+  )
+
+  const handleAmountOutChange = useCallback(
+    (e: NumberFormatValues, info: SourceInfo) => {
+      if (info.source !== 'event') return
+      if (swapMode === 'ExactIn') {
+        set((s) => {
+          s.swap.swapMode = 'ExactOut'
+        })
+      }
+      setAmountOutFormValue(e.value)
+    },
+    [swapMode, setAmountOutFormValue],
+  )
 
   /* 
     Once a route is returned from the Jupiter API, use the inAmount or outAmount
@@ -147,32 +152,6 @@ const MarketSwapForm = ({
     setAmountOutFormValue('')
   }, [useMargin, setAmountInFormValue, setAmountOutFormValue])
 
-  const handleAmountInChange = useCallback(
-    (e: NumberFormatValues, info: SourceInfo) => {
-      if (info.source !== 'event') return
-      setAmountInFormValue(e.value)
-      if (swapMode === 'ExactOut') {
-        set((s) => {
-          s.swap.swapMode = 'ExactIn'
-        })
-      }
-    },
-    [outputBank, setAmountInFormValue, swapMode]
-  )
-
-  const handleAmountOutChange = useCallback(
-    (e: NumberFormatValues, info: SourceInfo) => {
-      if (info.source !== 'event') return
-      if (swapMode === 'ExactIn') {
-        set((s) => {
-          s.swap.swapMode = 'ExactOut'
-        })
-      }
-      setAmountOutFormValue(e.value)
-    },
-    [swapMode, setAmountOutFormValue]
-  )
-
   const handleSwitchTokens = useCallback(() => {
     if (amountInAsDecimal?.gt(0) && amountOutAsDecimal.gte(0)) {
       setAmountInFormValue(amountOutAsDecimal.toString())
@@ -184,7 +163,7 @@ const MarketSwapForm = ({
       s.swap.outputBank = inputBank
     })
     setAnimateSwitchArrow(
-      (prevanimateSwitchArrow) => prevanimateSwitchArrow + 1
+      (prevanimateSwitchArrow) => prevanimateSwitchArrow + 1,
     )
   }, [setAmountInFormValue, amountOutAsDecimal, amountInAsDecimal])
 
@@ -198,52 +177,11 @@ const MarketSwapForm = ({
 
   return (
     <>
-      <div
-        className={`grid grid-cols-2 rounded-xl bg-th-bkg-2 p-3`}
-        id="swap-step-two"
-      >
-        <div className="col-span-2 mb-2 flex items-center justify-between">
-          <p className="text-th-fgd-2">{t('sell')}</p>
-          {!isUnownedAccount ? (
-            <MaxSwapAmount
-              useMargin={useMargin}
-              setAmountIn={(v) => setAmountInFormValue(v, true)}
-            />
-          ) : null}
-        </div>
-        <div className="col-span-1">
-          <TokenSelect
-            bank={
-              inputBank || group?.banksMapByName.get(INPUT_TOKEN_DEFAULT)?.[0]
-            }
-            showTokenList={setShowTokenSelect}
-            type="input"
-          />
-        </div>
-        <div className="relative col-span-1">
-          <NumberFormat
-            inputMode="decimal"
-            thousandSeparator=","
-            allowNegative={false}
-            isNumericString={true}
-            decimalScale={inputBank?.mintDecimals || 6}
-            name="amountIn"
-            id="amountIn"
-            className={NUMBER_FORMAT_CLASSNAMES}
-            placeholder="0.00"
-            value={amountInFormValue}
-            onValueChange={handleAmountInChange}
-            isAllowed={withValueLimit}
-          />
-          <span className="absolute right-3 bottom-1.5 text-xxs text-th-fgd-4">
-            {inputBank
-              ? formatCurrencyValue(
-                  inputBank.uiPrice * Number(amountInFormValue)
-                )
-              : '–'}
-          </span>
-        </div>
-      </div>
+      <SellTokenInput
+        handleAmountInChange={handleAmountInChange}
+        setShowTokenSelect={setShowTokenSelect}
+        setAmountInFormValue={setAmountInFormValue}
+      />
       <div className="my-2 flex justify-center">
         <button
           className="rounded-full border border-th-fgd-4 p-1.5 text-th-fgd-3 focus-visible:border-th-active md:hover:border-th-active md:hover:text-th-active"
@@ -259,51 +197,12 @@ const MarketSwapForm = ({
           />
         </button>
       </div>
-      <div
-        id="swap-step-three"
-        className="mb-2 grid grid-cols-2 rounded-xl bg-th-bkg-2 p-3"
-      >
-        <p className="col-span-2 mb-2 text-th-fgd-2">{t('buy')}</p>
-        <div className="col-span-1">
-          <TokenSelect
-            bank={
-              outputBank || group?.banksMapByName.get(OUTPUT_TOKEN_DEFAULT)?.[0]
-            }
-            showTokenList={setShowTokenSelect}
-            type="output"
-          />
-        </div>
-        <div className="relative col-span-1">
-          {loadingSwapDetails ? (
-            <div className="flex h-[56px] w-full items-center justify-center rounded-l-none rounded-r-lg bg-th-input-bkg">
-              <Loading />
-            </div>
-          ) : (
-            <>
-              <NumberFormat
-                inputMode="decimal"
-                thousandSeparator=","
-                allowNegative={false}
-                isNumericString={true}
-                decimalScale={outputBank?.mintDecimals || 6}
-                name="amountOut"
-                id="amountOut"
-                className={NUMBER_FORMAT_CLASSNAMES}
-                placeholder="0.00"
-                value={amountOutFormValue}
-                onValueChange={handleAmountOutChange}
-              />
-              <span className="absolute right-3 bottom-1.5 text-xxs text-th-fgd-4">
-                {outputBank
-                  ? formatCurrencyValue(
-                      outputBank.uiPrice * Number(amountOutFormValue)
-                    )
-                  : '–'}
-              </span>
-            </>
-          )}
-        </div>
-      </div>
+      <BuyTokenInput
+        handleAmountOutChange={handleAmountOutChange}
+        loading={loadingSwapDetails}
+        setShowTokenSelect={setShowTokenSelect}
+        setAmountOutFormValue={setAmountOutFormValue}
+      />
       {swapFormSizeUi === 'slider' ? (
         <SwapSlider
           useMargin={useMargin}

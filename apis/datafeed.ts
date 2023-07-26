@@ -72,11 +72,11 @@ const configurationData = {
 
 const getTickerFromMktAddress = (
   group: Group,
-  symbolAddress: string
+  symbolAddress: string,
 ): string | null => {
   try {
     const serumMkt = group.getSerum3MarketByExternalMarket(
-      new PublicKey(symbolAddress)
+      new PublicKey(symbolAddress),
     )
 
     if (serumMkt) {
@@ -88,7 +88,7 @@ const getTickerFromMktAddress = (
 
   const perpMarkets = Array.from(group.perpMarketsMapByMarketIndex.values())
   const perpMkt = perpMarkets.find(
-    (perpMarket) => perpMarket.publicKey.toString() === symbolAddress
+    (perpMarket) => perpMarket.publicKey.toString() === symbolAddress,
   )
 
   if (perpMkt) {
@@ -102,12 +102,12 @@ let marketType: 'spot' | 'perp'
 
 export const queryPerpBars = async (
   tokenAddress: string,
-  resolution: typeof SUPPORTED_RESOLUTIONS[number],
+  resolution: (typeof SUPPORTED_RESOLUTIONS)[number],
   periodParams: {
     firstDataRequest: boolean
     from: number
     to: number
-  }
+  },
 ): Promise<Bar[]> => {
   const { from, to } = periodParams
 
@@ -150,12 +150,12 @@ export const queryPerpBars = async (
 
 export const queryBirdeyeBars = async (
   tokenAddress: string,
-  resolution: typeof SUPPORTED_RESOLUTIONS[number],
+  resolution: (typeof SUPPORTED_RESOLUTIONS)[number],
   periodParams: {
     firstDataRequest: boolean
     from: number
     to: number
-  }
+  },
 ): Promise<Bar[]> => {
   const { from, to } = periodParams
   const urlParameters = {
@@ -167,7 +167,7 @@ export const queryBirdeyeBars = async (
   const query = Object.keys(urlParameters)
     .map(
       (name: string) =>
-        `${name}=${encodeURIComponent((urlParameters as any)[name])}`
+        `${name}=${encodeURIComponent((urlParameters as any)[name])}`,
     )
     .join('&')
 
@@ -207,14 +207,14 @@ export default {
     _userInput: string,
     _exchange: string,
     _symbolType: string,
-    _onResultReadyCallback: (items: SearchSymbolResultItem[]) => void
+    _onResultReadyCallback: (items: SearchSymbolResultItem[]) => void,
   ) => {
     return
   },
 
   resolveSymbol: async (
     symbolAddress: string,
-    onSymbolResolvedCallback: (symbolInfo: SymbolInfo) => void
+    onSymbolResolvedCallback: (symbolInfo: SymbolInfo) => void,
     // _onResolveErrorCallback: any,
     // _extension: any
   ) => {
@@ -283,9 +283,9 @@ export default {
       bars: Bar[],
       t: {
         noData: boolean
-      }
+      },
     ) => void,
-    onErrorCallback: (e: any) => void
+    onErrorCallback: (e: any) => void,
   ) => {
     try {
       const { firstDataRequest } = periodParams
@@ -298,14 +298,14 @@ export default {
         bars = await queryPerpBars(
           symbolInfo.address,
           resolution as any,
-          periodParams
+          periodParams,
         )
       } else {
         marketType = 'spot'
         bars = await queryBirdeyeBars(
           symbolInfo.address,
           resolution as any,
-          periodParams
+          periodParams,
         )
       }
       if (!bars || bars.length === 0) {
@@ -335,7 +335,7 @@ export default {
     resolution: string,
     onRealtimeCallback: (data: any) => void,
     subscriberUID: string,
-    onResetCacheNeededCallback: () => void
+    onResetCacheNeededCallback: () => void,
   ) => {
     subscriptionIds.set(subscriberUID, symbolInfo.address)
     if (symbolInfo.description?.includes('PERP')) {
@@ -345,7 +345,7 @@ export default {
         onRealtimeCallback,
         subscriberUID,
         onResetCacheNeededCallback,
-        lastBarsCache.get(symbolInfo.address)
+        lastBarsCache.get(symbolInfo.address),
       )
     } else {
       subscribeOnSpotStream(
@@ -354,7 +354,7 @@ export default {
         onRealtimeCallback,
         subscriberUID,
         onResetCacheNeededCallback,
-        lastBarsCache.get(symbolInfo.address)
+        lastBarsCache.get(symbolInfo.address),
       )
     }
   },

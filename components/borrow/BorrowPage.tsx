@@ -1,5 +1,4 @@
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
-import Tooltip from '@components/shared/Tooltip'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
@@ -45,7 +44,7 @@ const BorrowPage = () => {
   }
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
-    INITIAL_ANIMATION_SETTINGS
+    INITIAL_ANIMATION_SETTINGS,
   )
 
   const filteredBanks = useMemo(() => {
@@ -59,7 +58,7 @@ const BorrowPage = () => {
     if (!filteredBanks.length) return 0
     return filteredBanks.reduce(
       (a, c) => a + Math.abs(c.borrowedAmount) * c.bank.uiPrice,
-      0
+      0,
     )
   }, [filteredBanks])
 
@@ -76,7 +75,7 @@ const BorrowPage = () => {
         group,
         usdcBank,
         mangoAccount,
-        true
+        true,
       ).toNumber()
 
       if (borrowValue) {
@@ -94,16 +93,9 @@ const BorrowPage = () => {
       <div className="flex flex-col border-b border-th-bkg-3 px-4 py-4 md:px-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-col md:flex-row">
           <div className="pb-4 md:pr-6 md:pb-0">
-            <Tooltip
-              maxWidth="20rem"
-              placement="bottom-start"
-              content="The value of your assets (deposits) minus the value of your liabilities (borrows)."
-              delay={100}
-            >
-              <p className="mb-0.5 text-base">
-                {t('borrow:current-borrow-value')}
-              </p>
-            </Tooltip>
+            <p className="mb-0.5 text-base">
+              {t('borrow:current-borrow-value')}
+            </p>
             <div className="flex items-center font-display text-5xl text-th-fgd-1">
               {animationSettings['number-scroll'] ? (
                 group && mangoAccount ? (

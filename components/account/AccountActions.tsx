@@ -29,7 +29,7 @@ import { breakpoints } from 'utils/theme'
 
 export const handleCopyAddress = (
   mangoAccount: MangoAccount,
-  successMessage: string
+  successMessage: string,
 ) => {
   copyToClipboard(mangoAccount.publicKey.toString())
   notify({
@@ -48,7 +48,7 @@ const AccountActions = () => {
   const [showDelegateModal, setShowDelegateModal] = useState(false)
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
   const { connected } = useWallet()
-  const { isUnownedAccount } = useUnownedAccount()
+  const { isDelegatedAccount, isUnownedAccount } = useUnownedAccount()
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.sm : false
 
@@ -121,7 +121,7 @@ const AccountActions = () => {
                           mangoAccount!,
                           t('copy-address-success', {
                             pk: abbreviateAddress(mangoAccount!.publicKey),
-                          })
+                          }),
                         )
                       }
                     >
@@ -129,6 +129,7 @@ const AccountActions = () => {
                       <span className="ml-2">{t('copy-address')}</span>
                     </ActionsLinkButton>
                     <ActionsLinkButton
+                      disabled={isDelegatedAccount}
                       mangoAccount={mangoAccount!}
                       onClick={() => setShowEditAccountModal(true)}
                     >
@@ -136,6 +137,7 @@ const AccountActions = () => {
                       <span className="ml-2">{t('edit-account')}</span>
                     </ActionsLinkButton>
                     <ActionsLinkButton
+                      disabled={isDelegatedAccount}
                       mangoAccount={mangoAccount!}
                       onClick={() => setShowDelegateModal(true)}
                     >
@@ -143,6 +145,7 @@ const AccountActions = () => {
                       <span className="ml-2">{t('delegate-account')}</span>
                     </ActionsLinkButton>
                     <ActionsLinkButton
+                      disabled={isDelegatedAccount}
                       mangoAccount={mangoAccount!}
                       onClick={() => setShowCloseAccountModal(true)}
                     >

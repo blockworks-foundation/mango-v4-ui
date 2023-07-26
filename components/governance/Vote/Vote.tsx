@@ -8,7 +8,7 @@ import { MANGO_MINT } from 'utils/constants'
 import { PublicKey } from '@solana/web3.js'
 import dynamic from 'next/dynamic'
 import { tryGetMint } from 'utils/governance/tools'
-import { BN } from '@project-serum/anchor'
+import { BN } from '@coral-xyz/anchor'
 import { useTranslation } from 'next-i18next'
 import SheenLoader from '@components/shared/SheenLoader'
 import { NoSymbolIcon } from '@heroicons/react/20/solid'
@@ -89,7 +89,7 @@ const Vote = () => {
                       proposal={x}
                       mangoMint={mangoMint}
                     ></ProposalCard>
-                  )
+                  ),
               )
             ) : (
               <div className="flex h-56 items-center justify-center rounded-lg border border-th-bkg-3 p-6">

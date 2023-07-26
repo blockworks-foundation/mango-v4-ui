@@ -30,7 +30,7 @@ const MaxSizeButton = ({
     mangoAccount,
     selectedMarket,
     side,
-    useMargin
+    useMargin,
   )
   const { isUnownedAccount } = useUnownedAccount()
   const { connected } = useWallet()
@@ -43,12 +43,12 @@ const MaxSizeButton = ({
         if (side === 'buy') {
           return mangoAccount.getMaxQuoteForPerpBidUi(
             group,
-            selectedMarket.perpMarketIndex
+            selectedMarket.perpMarketIndex,
           )
         } else {
           return mangoAccount.getMaxBaseForPerpAskUi(
             group,
-            selectedMarket.perpMarketIndex
+            selectedMarket.perpMarketIndex,
           )
         }
       } catch (e) {
@@ -71,7 +71,7 @@ const MaxSizeButton = ({
         } else {
           const baseSize = floorToDecimal(
             max / parseFloat(price),
-            minOrderDecimals
+            minOrderDecimals,
           )
           const quoteSize = floorToDecimal(baseSize.mul(price), tickDecimals)
           state.tradeForm.baseSize = baseSize.toFixed()
@@ -82,7 +82,7 @@ const MaxSizeButton = ({
         if (tradeType === 'market' || !price) {
           const quoteSize = floorToDecimal(
             baseSize.mul(oraclePrice),
-            tickDecimals
+            tickDecimals,
           )
           state.tradeForm.baseSize = baseSize.toFixed()
           state.tradeForm.quoteSize = quoteSize.toFixed()

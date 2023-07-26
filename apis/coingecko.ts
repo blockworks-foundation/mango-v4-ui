@@ -3,7 +3,7 @@ type CoingeckoOhlcv = [
   open: number,
   high: number,
   low: number,
-  close: number
+  close: number,
 ][]
 
 export type ChartDataItem = {
@@ -16,16 +16,16 @@ export type ChartDataItem = {
 export const fetchChartData = async (
   baseTokenId: string | undefined,
   quoteTokenId: string | undefined,
-  daysToShow: string
+  daysToShow: string,
 ): Promise<ChartDataItem[]> => {
   if (!baseTokenId || !quoteTokenId) return []
   try {
     const [inputResponse, outputResponse] = await Promise.all([
       fetch(
-        `https://api.coingecko.com/api/v3/coins/${baseTokenId}/ohlc?vs_currency=usd&days=${daysToShow}`
+        `https://api.coingecko.com/api/v3/coins/${baseTokenId}/ohlc?vs_currency=usd&days=${daysToShow}`,
       ),
       fetch(
-        `https://api.coingecko.com/api/v3/coins/${quoteTokenId}/ohlc?vs_currency=usd&days=${daysToShow}`
+        `https://api.coingecko.com/api/v3/coins/${quoteTokenId}/ohlc?vs_currency=usd&days=${daysToShow}`,
       ),
     ])
 
@@ -36,7 +36,7 @@ export const fetchChartData = async (
       const parsedData: ChartDataItem[] = []
       for (const inputTokenCandle of inputTokenData) {
         const outputTokenCandle = outputTokenData.find(
-          (outputTokenCandle) => outputTokenCandle[0] === inputTokenCandle[0]
+          (outputTokenCandle) => outputTokenCandle[0] === inputTokenCandle[0],
         )
         if (outputTokenCandle) {
           if (['usd-coin', 'tether'].includes(quoteTokenId)) {

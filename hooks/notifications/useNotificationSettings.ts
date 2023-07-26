@@ -3,6 +3,7 @@ import NotificationCookieStore from '@store/notificationCookieStore'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { fetchNotificationSettings } from 'apis/notifications/notificationSettings'
 import { useIsAuthorized } from './useIsAuthorized'
+import { DAILY_MILLISECONDS } from 'utils/constants'
 
 export function useNotificationSettings() {
   const { publicKey } = useWallet()
@@ -18,7 +19,7 @@ export function useNotificationSettings() {
     {
       enabled: !!isAuth,
       retry: 1,
-      staleTime: 86400000,
-    }
+      staleTime: DAILY_MILLISECONDS,
+    },
   )
 }
