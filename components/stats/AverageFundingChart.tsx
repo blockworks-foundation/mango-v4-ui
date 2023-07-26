@@ -8,6 +8,35 @@ interface GroupedDataItem extends PerpStatsItem {
   intervalStartMillis: number
 }
 
+const groupByHourlyInterval = (
+  data: PerpStatsItem[],
+  intervalDurationHours: number,
+) => {
+  const intervalMillis = intervalDurationHours * 60 * 60 * 1000
+  const groupedData = []
+  let currentGroup: GroupedDataItem | null = null
+  for (let i = 0; i < data.length; i++) {
+    const obj = data[i]
+    const date = new Date(obj.date_hour)
+    const intervalStartMillis =
+      Math.floor(date.getTime() / intervalMillis) * intervalMillis
+    if (
+      !currentGroup ||
+      currentGroup.intervalStartMillis !== intervalStartMillis
+    ) {
+      currentGroup = {
+        ...obj,
+        intervalStartMillis: intervalStartMillis,
+      }
+      currentGroup.funding_rate_hourly = obj.funding_rate_hourly * 100
+      groupedData.push(currentGroup)
+    } else {
+      currentGroup.funding_rate_hourly += obj.funding_rate_hourly * 100
+    }
+  }
+  return groupedData
+}
+
 const AverageFundingChart = ({
   loading,
   marketStats,
@@ -17,35 +46,6 @@ const AverageFundingChart = ({
 }) => {
   const { t } = useTranslation(['common', 'stats', 'trade'])
   const [daysToShow, setDaysToShow] = useState('30')
-
-  const groupByHourlyInterval = (
-    data: PerpStatsItem[],
-    intervalDurationHours: number,
-  ) => {
-    const intervalMillis = intervalDurationHours * 60 * 60 * 1000
-    const groupedData = []
-    let currentGroup: GroupedDataItem | null = null
-    for (let i = 0; i < data.length; i++) {
-      const obj = data[i]
-      const date = new Date(obj.date_hour)
-      const intervalStartMillis =
-        Math.floor(date.getTime() / intervalMillis) * intervalMillis
-      if (
-        !currentGroup ||
-        currentGroup.intervalStartMillis !== intervalStartMillis
-      ) {
-        currentGroup = {
-          ...obj,
-          intervalStartMillis: intervalStartMillis,
-        }
-        currentGroup.funding_rate_hourly = obj.funding_rate_hourly * 100
-        groupedData.push(currentGroup)
-      } else {
-        currentGroup.funding_rate_hourly += obj.funding_rate_hourly * 100
-      }
-    }
-    return groupedData
-  }
 
   const [interval, intervalString] = useMemo(() => {
     if (daysToShow === '30') {
