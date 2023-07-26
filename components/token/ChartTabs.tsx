@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { TokenStatsItem } from 'types'
 import { formatYAxis } from 'utils/formatting'
 import DetailedAreaOrBarChart from '@components/shared/DetailedAreaOrBarChart'
+import TokenRatesChart from './TokenRatesChart'
 
 const ChartTabs = ({ bank }: { bank: Bank }) => {
   const { t } = useTranslation('token')
@@ -33,8 +34,6 @@ const ChartTabs = ({ bank }: { bank: Bank }) => {
     return tokenStats.reduce((a: TokenStatsItem[], c: TokenStatsItem) => {
       if (c.token_index === bank.tokenIndex) {
         const copy = { ...c }
-        copy.deposit_apr = copy.deposit_apr * 100
-        copy.borrow_apr = copy.borrow_apr * 100
         a.push(copy)
       }
       return a.sort(
@@ -69,25 +68,18 @@ const ChartTabs = ({ bank }: { bank: Bank }) => {
                 loading={loadingTokenStats}
                 small
                 tickFormat={(x) => formatYAxis(x)}
-                title={`${bank?.name} ${t('token:deposits')}`}
+                title={`${t('token:deposits')}`}
                 xKey="date_hour"
                 yKey={'total_deposits'}
               />
             ) : (
-              <DetailedAreaOrBarChart
+              <TokenRatesChart
                 data={statsHistory}
+                dataKey="deposit_apr"
                 daysToShow={depositRateDaysToShow}
-                setDaysToShow={setDepositRateDaysToShow}
-                heightClass="h-64"
-                loaderHeightClass="h-[334px]"
                 loading={loadingTokenStats}
-                hideChange
-                small
-                suffix="%"
-                tickFormat={(x) => `${x.toFixed(2)}%`}
-                title={`${bank?.name} ${t('token:deposit-rates')} APR`}
-                xKey="date_hour"
-                yKey={'deposit_apr'}
+                setDaysToShow={setDepositRateDaysToShow}
+                title={`${t('token:average-deposit-rate')} (APR)`}
               />
             )}
           </div>
@@ -116,25 +108,18 @@ const ChartTabs = ({ bank }: { bank: Bank }) => {
                 loading={loadingTokenStats}
                 small
                 tickFormat={(x) => formatYAxis(x)}
-                title={`${bank?.name} ${t('token:borrows')}`}
+                title={`${t('token:borrows')}`}
                 xKey="date_hour"
                 yKey={'total_borrows'}
               />
             ) : (
-              <DetailedAreaOrBarChart
+              <TokenRatesChart
                 data={statsHistory}
+                dataKey="borrow_apr"
                 daysToShow={borrowRateDaysToShow}
-                setDaysToShow={setBorrowRateDaysToShow}
-                heightClass="h-64"
-                loaderHeightClass="h-[334px]"
                 loading={loadingTokenStats}
-                small
-                hideChange
-                suffix="%"
-                tickFormat={(x) => `${x.toFixed(2)}%`}
-                title={`${bank?.name} ${t('token:borrow-rates')} APR`}
-                xKey="date_hour"
-                yKey={'borrow_apr'}
+                setDaysToShow={setBorrowRateDaysToShow}
+                title={`${t('token:average-borrow-rate')} (APR)`}
               />
             )}
           </div>

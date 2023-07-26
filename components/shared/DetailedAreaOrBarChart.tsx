@@ -163,7 +163,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
         ) : filteredData.length ? (
           <div className="relative">
             {setDaysToShow ? (
-              <div className="mb-4 sm:absolute sm:-top-1 sm:right-0 sm:mb-0 sm:-mb-2 sm:flex sm:justify-end">
+              <div className="mb-4 sm:absolute sm:-top-1 sm:right-0 sm:mb-0 sm:flex sm:justify-end">
                 <ChartRangeButtons
                   activeValue={daysToShow}
                   names={['24H', '7D', '30D']}
