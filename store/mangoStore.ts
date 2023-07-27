@@ -40,6 +40,7 @@ import {
   PAGINATION_PAGE_LENGTH,
   PRIORITY_FEE_KEY,
   RPC_PROVIDER_KEY,
+  SWAP_MARGIN_KEY,
 } from '../utils/constants'
 import {
   ActivityFeed,
@@ -268,12 +269,17 @@ export type MangoStore = {
 const mangoStore = create<MangoStore>()(
   subscribeWithSelector((_set, get) => {
     let rpcUrl = ENDPOINT.url
+    let swapMargin = true
 
     if (typeof window !== 'undefined' && CLUSTER === 'mainnet-beta') {
       const urlFromLocalStorage = localStorage.getItem(RPC_PROVIDER_KEY)
+      const swapMarginFromLocalStorage = localStorage.getItem(SWAP_MARGIN_KEY)
       rpcUrl = urlFromLocalStorage
         ? JSON.parse(urlFromLocalStorage)
         : ENDPOINT.url
+      swapMargin = swapMarginFromLocalStorage
+        ? JSON.parse(swapMarginFromLocalStorage)
+        : true
     }
 
     let connection: Connection
@@ -368,7 +374,7 @@ const mangoStore = create<MangoStore>()(
         outputBank: undefined,
         inputTokenInfo: undefined,
         outputTokenInfo: undefined,
-        margin: true,
+        margin: swapMargin,
         slippage: 0.5,
         swapMode: 'ExactIn',
         amountIn: '',
