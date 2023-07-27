@@ -73,61 +73,64 @@ const TokenList = () => {
   const showTableView = width ? width > breakpoints.md : false
   const banks = useBanksWithBalances('balance')
 
-  const formatedTableData = (banks: BankWithBalance[]) => {
-    const formatted = []
-    for (const b of banks) {
-      const bank = b.bank
-      const balance = b.balance
-      const symbol = bank.name === 'MSOL' ? 'mSOL' : bank.name
+  const formatedTableData = useCallback(
+    (banks: BankWithBalance[]) => {
+      const formatted = []
+      for (const b of banks) {
+        const bank = b.bank
+        const balance = b.balance
+        const symbol = bank.name === 'MSOL' ? 'mSOL' : bank.name
 
-      const hasInterestEarned = totalInterestData.find(
-        (d) =>
-          d.symbol.toLowerCase() === symbol.toLowerCase() ||
-          (symbol === 'ETH (Portal)' && d.symbol === 'ETH'),
-      )
+        const hasInterestEarned = totalInterestData.find(
+          (d) =>
+            d.symbol.toLowerCase() === symbol.toLowerCase() ||
+            (symbol === 'ETH (Portal)' && d.symbol === 'ETH'),
+        )
 
-      const interestAmount = hasInterestEarned
-        ? hasInterestEarned.borrow_interest * -1 +
-          hasInterestEarned.deposit_interest
-        : 0
+        const interestAmount = hasInterestEarned
+          ? hasInterestEarned.borrow_interest * -1 +
+            hasInterestEarned.deposit_interest
+          : 0
 
-      const interestValue = hasInterestEarned
-        ? hasInterestEarned.borrow_interest_usd * -1 +
-          hasInterestEarned.deposit_interest_usd
-        : 0.0
+        const interestValue = hasInterestEarned
+          ? hasInterestEarned.borrow_interest_usd * -1 +
+            hasInterestEarned.deposit_interest_usd
+          : 0.0
 
-      const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0
+        const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0
 
-      const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
+        const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
 
-      const collateralValue =
-        initContributions.find((val) => val.asset === bank.name)
-          ?.contribution || 0
+        const collateralValue =
+          initContributions.find((val) => val.asset === bank.name)
+            ?.contribution || 0
 
-      const assetWeight = bank.scaledInitAssetWeight(bank.price).toFixed(2)
-      const liabWeight = bank.scaledInitLiabWeight(bank.price).toFixed(2)
+        const assetWeight = bank.scaledInitAssetWeight(bank.price).toFixed(2)
+        const liabWeight = bank.scaledInitLiabWeight(bank.price).toFixed(2)
 
-      const depositRate = bank.getDepositRateUi()
-      const borrowRate = bank.getBorrowRateUi()
+        const depositRate = bank.getDepositRateUi()
+        const borrowRate = bank.getBorrowRateUi()
 
-      const data = {
-        balance,
-        bank: bank,
-        symbol,
-        interestAmount,
-        interestValue,
-        inOrders,
-        unsettled,
-        collateralValue,
-        assetWeight,
-        liabWeight,
-        depositRate,
-        borrowRate,
+        const data = {
+          balance,
+          bank,
+          symbol,
+          interestAmount,
+          interestValue,
+          inOrders,
+          unsettled,
+          collateralValue,
+          assetWeight,
+          liabWeight,
+          depositRate,
+          borrowRate,
+        }
+        formatted.push(data)
       }
-      formatted.push(data)
-    }
-    return formatted
-  }
+      return formatted
+    },
+    [initContributions, spotBalances, totalInterestData],
+  )
 
   const unsortedTableData = useMemo(() => {
     if (!banks.length) return []
@@ -233,7 +236,14 @@ const TokenList = () => {
                 <Th>
                   <div className="flex justify-end">
                     <Tooltip content="The interest rates for depositing (green/left) and borrowing (red/right)">
-                      <span className="tooltip-underline">{t('rates')}</span>
+                      <SortableColumnHeader
+                        sortKey="depositRate"
+                        sort={() => requestSort('depositRate')}
+                        sortConfig={sortConfig}
+                        title={t('rates')}
+                        titleClass="tooltip-underline"
+                      />
+                      {/* <span className="tooltip-underline">{t('rates')}</span> */}
                     </Tooltip>
                   </div>
                 </Th>
