@@ -7,6 +7,7 @@ export type NotificationSettings = {
 export const fetchNotificationSettings = async (
   wallet: string,
   token: string,
+  mangoAccount: string,
 ) => {
   const data = await fetch(
     `${NOTIFICATION_API}notifications/user/getSettings`,
@@ -14,6 +15,7 @@ export const fetchNotificationSettings = async (
       headers: {
         authorization: token,
         publickey: wallet,
+        mangoAccount: mangoAccount,
       },
     },
   )

@@ -4,20 +4,22 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { fetchNotificationSettings } from 'apis/notifications/notificationSettings'
 import { useIsAuthorized } from './useIsAuthorized'
 import { DAILY_MILLISECONDS } from 'utils/constants'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 export function useNotificationSettings() {
   const { publicKey } = useWallet()
+  const { mangoAccountAddress } = useMangoAccount()
   const walletPubKey = publicKey?.toBase58()
   const token = NotificationCookieStore((s) => s.currentToken)
   const isAuth = useIsAuthorized()
 
-  const criteria = walletPubKey && token && isAuth
+  const criteria = [walletPubKey, token, isAuth, mangoAccountAddress]
 
   return useQuery(
     ['notificationSettings', criteria],
-    () => fetchNotificationSettings(walletPubKey!, token!),
+    () => fetchNotificationSettings(walletPubKey!, token!, mangoAccountAddress),
     {
-      enabled: !!isAuth,
+      enabled: !!isAuth && !!mangoAccountAddress,
       retry: 1,
       staleTime: DAILY_MILLISECONDS,
     },

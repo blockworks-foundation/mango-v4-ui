@@ -3,14 +3,16 @@ import { NOTIFICATION_API_WEBSOCKET } from 'utils/constants'
 export class NotificationsWebSocket {
   ws: WebSocket | null = null
   token: string
+  mangoAccount: string
   publicKey: string
   pingInterval: NodeJS.Timer | null
   retryCount = 0
   maxRetries = 2
 
-  constructor(token: string, publicKey: string) {
+  constructor(token: string, publicKey: string, mangoAccount: string) {
     this.token = token
     this.publicKey = publicKey
+    this.mangoAccount = mangoAccount
     this.pingInterval = null
   }
 
@@ -18,6 +20,7 @@ export class NotificationsWebSocket {
     const wsUrl = new URL(NOTIFICATION_API_WEBSOCKET)
     wsUrl.searchParams.append('authorization', this.token)
     wsUrl.searchParams.append('publickey', this.publicKey)
+    wsUrl.searchParams.append('mangoAccount', this.publicKey)
     this.ws = new WebSocket(wsUrl)
 
     this.ws.addEventListener('open', () => {
