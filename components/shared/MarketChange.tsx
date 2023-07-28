@@ -28,23 +28,29 @@ const MarketChange = ({
 
   const change = useMemo(() => {
     if (!market || !marketsData) return
+    const isPerp = market instanceof PerpMarket
     let pastPrice = 0
-    if (market instanceof PerpMarket) {
+    let dailyVolume = 0
+    if (isPerp) {
       const perpData: MarketData = marketsData?.perpData
       const perpEntries = Object.entries(perpData).find(
         (e) => e[0].toLowerCase() === market.name.toLowerCase(),
       )
       pastPrice = perpEntries ? perpEntries[1][0]?.price_24h : 0
+      dailyVolume = perpEntries ? perpEntries[1][0]?.quote_volume_24h : 0
     } else {
       const spotData: MarketData = marketsData?.spotData
       const spotEntries = Object.entries(spotData).find(
         (e) => e[0].toLowerCase() === market.name.toLowerCase(),
       )
       pastPrice = spotEntries ? spotEntries[1][0]?.price_24h : 0
+      dailyVolume = spotEntries ? spotEntries[1][0]?.quote_volume_24h : 0
     }
-    const currentPrice =
-      market instanceof PerpMarket ? market.uiPrice : currentSpotPrice
-    const change = ((currentPrice - pastPrice) / pastPrice) * 100
+    const currentPrice = isPerp ? market.uiPrice : currentSpotPrice
+    const change =
+      dailyVolume > 0 || isPerp
+        ? ((currentPrice - pastPrice) / pastPrice) * 100
+        : 0
     return change
   }, [marketsData, currentSpotPrice])
 
