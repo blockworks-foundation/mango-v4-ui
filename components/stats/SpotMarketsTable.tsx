@@ -54,7 +54,7 @@ const SpotMarketsTable = () => {
   const { serumMarketsWithData, isLoading, isFetching } =
     useListedMarketsWithMarketData()
 
-  const formatedTableData = useCallback(
+  const formattedTableData = useCallback(
     (markets: SerumMarketWithMarketData[]) => {
       const formatted = []
       for (const m of markets) {
@@ -107,7 +107,7 @@ const SpotMarketsTable = () => {
     requestSort,
     sortConfig,
   } = useSortableData(
-    formatedTableData(
+    formattedTableData(
       sortSpotMarkets(serumMarketsWithData, 'quote_volume_24h'),
     ),
   )

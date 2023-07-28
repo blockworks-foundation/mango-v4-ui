@@ -60,46 +60,43 @@ const BalancesTable = () => {
     return []
   }, [banks])
 
-  const formatedTableData = useCallback(
-    (banks: BankWithBalance[]) => {
-      const formatted = []
-      for (const b of banks) {
-        const bank = b.bank
-        const balance = b.balance
-        const symbol = bank.name === 'MSOL' ? 'mSOL' : bank.name
+  const formattedTableData = useCallback(() => {
+    const formatted = []
+    for (const b of filteredBanks) {
+      const bank = b.bank
+      const balance = b.balance
+      const symbol = bank.name === 'MSOL' ? 'mSOL' : bank.name
 
-        const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0
-        const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
+      const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0
+      const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
 
-        const collateralValue =
-          initContributions.find((val) => val.asset === bank.name)
-            ?.contribution || 0
+      const collateralValue =
+        initContributions.find((val) => val.asset === bank.name)
+          ?.contribution || 0
 
-        const assetWeight = bank.scaledInitAssetWeight(bank.price)
-        const liabWeight = bank.scaledInitLiabWeight(bank.price)
+      const assetWeight = bank.scaledInitAssetWeight(bank.price)
+      const liabWeight = bank.scaledInitLiabWeight(bank.price)
 
-        const data = {
-          assetWeight,
-          balance,
-          bankWithBalance: b,
-          collateralValue,
-          inOrders,
-          liabWeight,
-          symbol,
-          unsettled,
-        }
-        formatted.push(data)
+      const data = {
+        assetWeight,
+        balance,
+        bankWithBalance: b,
+        collateralValue,
+        inOrders,
+        liabWeight,
+        symbol,
+        unsettled,
       }
-      return formatted
-    },
-    [filteredBanks],
-  )
+      formatted.push(data)
+    }
+    return formatted
+  }, [filteredBanks])
 
   const {
     items: tableData,
     requestSort,
     sortConfig,
-  } = useSortableData(formatedTableData(filteredBanks))
+  } = useSortableData(formattedTableData())
 
   return filteredBanks.length ? (
     showTableView ? (

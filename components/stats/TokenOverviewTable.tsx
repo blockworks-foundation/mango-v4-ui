@@ -19,9 +19,7 @@ import {
 import useMangoGroup from 'hooks/useMangoGroup'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import BankAmountWithValue from '@components/shared/BankAmountWithValue'
-import useBanksWithBalances, {
-  BankWithBalance,
-} from 'hooks/useBanksWithBalances'
+import useBanksWithBalances from 'hooks/useBanksWithBalances'
 import Decimal from 'decimal.js'
 import TokenLogo from '@components/shared/TokenLogo'
 import { useCallback } from 'react'
@@ -40,57 +38,52 @@ const TokenOverviewTable = () => {
   const router = useRouter()
   const banks = useBanksWithBalances()
 
-  const formatedTableData = useCallback(
-    (banks: BankWithBalance[]) => {
-      const formatted = []
-      for (const b of banks) {
-        const bank: Bank = b.bank
-        const deposits = bank.uiDeposits()
-        const borrows = bank.uiBorrows()
-        const availableVaultBalance = group
-          ? group.getTokenVaultBalanceByMintUi(bank.mint) -
-            deposits * bank.minVaultToDepositsRatio
-          : 0
-        const available = Decimal.max(
-          0,
-          availableVaultBalance.toFixed(bank.mintDecimals),
-        )
-        const feesEarned = toUiDecimals(
-          bank.collectedFeesNative,
-          bank.mintDecimals,
-        )
-        const utilization =
-          bank.uiDeposits() > 0
-            ? (bank.uiBorrows() / bank.uiDeposits()) * 100
-            : 0
+  const formattedTableData = useCallback(() => {
+    const formatted = []
+    for (const b of banks) {
+      const bank: Bank = b.bank
+      const deposits = bank.uiDeposits()
+      const borrows = bank.uiBorrows()
+      const availableVaultBalance = group
+        ? group.getTokenVaultBalanceByMintUi(bank.mint) -
+          deposits * bank.minVaultToDepositsRatio
+        : 0
+      const available = Decimal.max(
+        0,
+        availableVaultBalance.toFixed(bank.mintDecimals),
+      )
+      const feesEarned = toUiDecimals(
+        bank.collectedFeesNative,
+        bank.mintDecimals,
+      )
+      const utilization =
+        bank.uiDeposits() > 0 ? (bank.uiBorrows() / bank.uiDeposits()) * 100 : 0
 
-        const depositRate = bank.getDepositRateUi()
-        const borrowRate = bank.getBorrowRateUi()
-        const symbol = bank.name
+      const depositRate = bank.getDepositRateUi()
+      const borrowRate = bank.getBorrowRateUi()
+      const symbol = bank.name
 
-        const data = {
-          available,
-          bank,
-          borrows,
-          borrowRate,
-          deposits,
-          depositRate,
-          feesEarned,
-          symbol,
-          utilization,
-        }
-        formatted.push(data)
+      const data = {
+        available,
+        bank,
+        borrows,
+        borrowRate,
+        deposits,
+        depositRate,
+        feesEarned,
+        symbol,
+        utilization,
       }
-      return formatted
-    },
-    [group],
-  )
+      formatted.push(data)
+    }
+    return formatted
+  }, [banks, group])
 
   const {
     items: tableData,
     requestSort,
     sortConfig,
-  } = useSortableData(formatedTableData(banks))
+  } = useSortableData(formattedTableData())
 
   return (
     <ContentBox hideBorder hidePadding>

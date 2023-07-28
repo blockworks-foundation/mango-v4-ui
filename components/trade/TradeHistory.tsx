@@ -5,6 +5,7 @@ import FormatNumericValue from '@components/shared/FormatNumericValue'
 import SheenLoader from '@components/shared/SheenLoader'
 import SideBadge from '@components/shared/SideBadge'
 import {
+  SortableColumnHeader,
   Table,
   TableDateDisplay,
   Td,
@@ -29,6 +30,8 @@ import { breakpoints } from 'utils/theme'
 import MarketLogos from './MarketLogos'
 import PerpSideBadge from './PerpSideBadge'
 import TableMarketName from './TableMarketName'
+import { useSortableData } from 'hooks/useSortableData'
+import { useCallback } from 'react'
 
 const TradeHistory = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -44,6 +47,26 @@ const TradeHistory = () => {
   const { connected } = useWallet()
   const showTableView = width ? width > breakpoints.md : false
 
+  const formattedTableData = useCallback(() => {
+    const formatted = []
+    for (const trade of combinedTradeHistory) {
+      const marketName = trade.market.name
+      const value = trade.price * trade.size
+      const sortTime = trade?.time
+        ? trade.time
+        : dayjs().format('YYYY-MM-DDTHH:mm:ss')
+      const data = { ...trade, marketName, value, sortTime }
+      formatted.push(data)
+    }
+    return formatted
+  }, [combinedTradeHistory])
+
+  const {
+    items: tableData,
+    requestSort,
+    sortConfig,
+  } = useSortableData(formattedTableData())
+
   if (!selectedMarket || !group) return null
 
   return mangoAccountAddress &&
@@ -54,18 +77,71 @@ const TradeHistory = () => {
           <Table>
             <thead>
               <TrHead>
-                <Th className="text-left">{t('market')}</Th>
-                <Th className="text-right">{t('trade:size')}</Th>
-                <Th className="text-right">{t('price')}</Th>
-                <Th className="text-right">{t('value')}</Th>
-                <Th className="text-right">{t('fee')}</Th>
-                <Th className="text-right">{t('date')}</Th>
+                <Th className="text-left">
+                  <SortableColumnHeader
+                    sortKey="marketName"
+                    sort={() => requestSort('marketName')}
+                    sortConfig={sortConfig}
+                    title={t('market')}
+                  />
+                </Th>
+                <Th>
+                  <div className="flex justify-end">
+                    <SortableColumnHeader
+                      sortKey="size"
+                      sort={() => requestSort('size')}
+                      sortConfig={sortConfig}
+                      title={t('trade:size')}
+                    />
+                  </div>
+                </Th>
+                <Th>
+                  <div className="flex justify-end">
+                    <SortableColumnHeader
+                      sortKey="price"
+                      sort={() => requestSort('price')}
+                      sortConfig={sortConfig}
+                      title={t('price')}
+                    />
+                  </div>
+                </Th>
+                <Th>
+                  <div className="flex justify-end">
+                    <SortableColumnHeader
+                      sortKey="value"
+                      sort={() => requestSort('value')}
+                      sortConfig={sortConfig}
+                      title={t('value')}
+                    />
+                  </div>
+                </Th>
+                <Th>
+                  <div className="flex justify-end">
+                    <SortableColumnHeader
+                      sortKey="feeCost"
+                      sort={() => requestSort('feeCost')}
+                      sortConfig={sortConfig}
+                      title={t('fee')}
+                    />
+                  </div>
+                </Th>
+                <Th>
+                  <div className="flex justify-end">
+                    <SortableColumnHeader
+                      sortKey="sortTime"
+                      sort={() => requestSort('sortTime')}
+                      sortConfig={sortConfig}
+                      title={t('date')}
+                    />
+                  </div>
+                </Th>
                 <Th />
               </TrHead>
             </thead>
             <tbody>
-              {combinedTradeHistory.map((trade, index: number) => {
-                const { side, price, market, size, feeCost, liquidity } = trade
+              {tableData.map((trade, index: number) => {
+                const { side, price, market, size, feeCost, liquidity, value } =
+                  trade
                 return (
                   <TrBody
                     key={`${side}${size}${price}${index}`}
@@ -88,11 +164,7 @@ const TradeHistory = () => {
                       <FormatNumericValue value={price} />
                     </Td>
                     <Td className="text-right font-mono">
-                      <FormatNumericValue
-                        value={price * size}
-                        decimals={2}
-                        isUsd
-                      />
+                      <FormatNumericValue value={value} decimals={2} isUsd />
                     </Td>
                     <Td className="text-right">
                       <span className="font-mono">
