@@ -10,8 +10,7 @@ export function useHeaders() {
   return {
     headers: {
       authorization: token,
-      //headers are lowercase
-      mangoaccount: mangoAccountAddress,
+      'mango-account': mangoAccountAddress,
       publickey: publicKey?.toBase58() || '',
       'Content-Type': 'application/json',
     },

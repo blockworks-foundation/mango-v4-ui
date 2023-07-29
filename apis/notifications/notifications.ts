@@ -17,7 +17,7 @@ export const fetchNotifications = async (
     headers: {
       authorization: token,
       publickey: wallet,
-      mangoAccount: mangoAccount,
+      'mango-account': mangoAccount,
     },
   })
   const body = await data.json()

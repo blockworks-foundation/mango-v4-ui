@@ -15,7 +15,7 @@ export const fetchNotificationSettings = async (
       headers: {
         authorization: token,
         publickey: wallet,
-        mangoAccount: mangoAccount,
+        'mango-account': mangoAccount,
       },
     },
   )
