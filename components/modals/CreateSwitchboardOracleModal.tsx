@@ -30,6 +30,7 @@ type BaseProps = ModalProps & {
   openbookMarketPk: string
   baseTokenPk: string
   baseTokenName: string
+  tier: string
 }
 
 type RaydiumProps = BaseProps & {
@@ -45,22 +46,30 @@ type OrcaProps = BaseProps & {
 const CreateSwitchboardOracleModal = ({
   isOpen,
   onClose,
-  openbookMarketPk,
   baseTokenPk,
   baseTokenName,
   raydiumPoolAddress,
   orcaPoolAddress,
+  tier,
 }: RaydiumProps | OrcaProps) => {
   const { t } = useTranslation(['governance'])
   const connection = mangoStore((s) => s.connection)
   const wallet = useWallet()
   const quoteTokenName = 'USDC'
   const pythUsdOracle = 'Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD'
+  const tierToSwapValue: { [key: string]: string } = {
+    PREMIUM: '10000',
+    MID: '2000',
+    MEME: '500',
+    SHIT: '100',
+    UNTRUSTED: '100',
+  }
 
   const [creatingOracle, setCreatingOracle] = useState(false)
 
   const create = useCallback(async () => {
     try {
+      const swapValue = tierToSwapValue[tier]
       setCreatingOracle(true)
       const payer = wallet!.publicKey!
       if (!orcaPoolAddress && !raydiumPoolAddress) {
@@ -107,7 +116,7 @@ const CreateSwitchboardOracleModal = ({
                         attempt: [
                           {
                             valueTask: {
-                              big: '100',
+                              big: swapValue,
                             },
                           },
                           {
@@ -118,7 +127,7 @@ const CreateSwitchboardOracleModal = ({
                                     jupiterSwapTask: {
                                       inTokenAddress: USDC_MINT,
                                       outTokenAddress: baseTokenPk,
-                                      baseAmountString: '100',
+                                      baseAmountString: swapValue,
                                     },
                                   },
                                 ],
@@ -172,7 +181,7 @@ const CreateSwitchboardOracleModal = ({
                                         jupiterSwapTask: {
                                           inTokenAddress: USDC_MINT,
                                           outTokenAddress: baseTokenPk,
-                                          baseAmountString: '100',
+                                          baseAmountString: swapValue,
                                         },
                                       },
                                     ],
@@ -281,7 +290,6 @@ const CreateSwitchboardOracleModal = ({
     baseTokenPk,
     connection,
     onClose,
-    openbookMarketPk,
     orcaPoolAddress,
     raydiumPoolAddress,
     wallet,
