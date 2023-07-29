@@ -73,7 +73,7 @@ const TokenList = () => {
   const showTableView = width ? width > breakpoints.md : false
   const banks = useBanksWithBalances('balance')
 
-  const formatedTableData = useCallback(
+  const formattedTableData = useCallback(
     (banks: BankWithBalance[]) => {
       const formatted = []
       for (const b of banks) {
@@ -135,10 +135,10 @@ const TokenList = () => {
   const unsortedTableData = useMemo(() => {
     if (!banks.length) return []
     if (showZeroBalances || !mangoAccountAddress) {
-      return formatedTableData(banks)
+      return formattedTableData(banks)
     } else {
       const filtered = banks.filter((b) => Math.abs(b.balance) > 0)
-      return formatedTableData(filtered)
+      return formattedTableData(filtered)
     }
   }, [banks, mangoAccountAddress, showZeroBalances, totalInterestData])
 
