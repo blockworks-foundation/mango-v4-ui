@@ -20,7 +20,7 @@ export class NotificationsWebSocket {
     const wsUrl = new URL(NOTIFICATION_API_WEBSOCKET)
     wsUrl.searchParams.append('authorization', this.token)
     wsUrl.searchParams.append('publickey', this.publicKey)
-    wsUrl.searchParams.append('mangoAccount', this.publicKey)
+    wsUrl.searchParams.append('mangoAccount', this.mangoAccount)
     this.ws = new WebSocket(wsUrl)
 
     this.ws.addEventListener('open', () => {
