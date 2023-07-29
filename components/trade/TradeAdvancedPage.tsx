@@ -20,12 +20,9 @@ import OrderbookAndTrades from './OrderbookAndTrades'
 // import TradeOnboardingTour from '@components/tours/TradeOnboardingTour'
 import FavoriteMarketsBar from './FavoriteMarketsBar'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import {
-  DEPTH_CHART_KEY,
-  SIDEBAR_COLLAPSE_KEY,
-  TRADE_LAYOUT_KEY,
-} from 'utils/constants'
+import { SIDEBAR_COLLAPSE_KEY, TRADE_LAYOUT_KEY } from 'utils/constants'
 import TradeHotKeys from './TradeHotKeys'
+import OrderbookTooltip from './OrderbookTooltip'
 
 export type TradeLayout =
   | 'chartLeft'
@@ -59,7 +56,6 @@ const TradeAdvancedPage = () => {
     'chartLeft',
   )
   const [isCollapsed] = useLocalStorageState(SIDEBAR_COLLAPSE_KEY, false)
-  const [showDepthChart] = useLocalStorageState<boolean>(DEPTH_CHART_KEY, false)
 
   const totalCols = 24
   const gridBreakpoints = useMemo(() => {
@@ -89,31 +85,31 @@ const TradeAdvancedPage = () => {
       chartLeft: { xxxl: 0, xxl: 0, xl: 0, lg: 0 },
       chartMiddleOBRight: { xxxl: 4, xxl: 5, xl: 5, lg: 5 },
       chartMiddleOBLeft: {
-        xxxl: showDepthChart ? 7 : 4,
-        xxl: showDepthChart ? 7 : 4,
-        xl: showDepthChart ? 7 : 4,
-        lg: showDepthChart ? 8 : 5,
+        xxxl: 4,
+        xxl: 4,
+        xl: 5,
+        lg: 5,
       },
       chartRight: {
-        xxxl: showDepthChart ? 12 : 9,
-        xxl: showDepthChart ? 12 : 9,
-        xl: showDepthChart ? 12 : 9,
-        lg: showDepthChart ? 14 : 11,
+        xxxl: 9,
+        xxl: 9,
+        xl: 10,
+        lg: 11,
       },
     }
 
     const bookXPos = {
       chartLeft: {
-        xxxl: showDepthChart ? 13 : 16,
-        xxl: showDepthChart ? 12 : 15,
-        xl: showDepthChart ? 12 : 15,
-        lg: showDepthChart ? 11 : 14,
+        xxxl: 16,
+        xxl: 15,
+        xl: 14,
+        lg: 14,
       },
       chartMiddleOBRight: {
-        xxxl: showDepthChart ? 17 : 20,
-        xxl: showDepthChart ? 17 : 20,
-        xl: showDepthChart ? 17 : 20,
-        lg: showDepthChart ? 16 : 19,
+        xxxl: 20,
+        xxl: 20,
+        xl: 20,
+        lg: 19,
       },
       chartMiddleOBLeft: { xxxl: 0, xxl: 0, xl: 0, lg: 0 },
       chartRight: { xxxl: 4, xxl: 5, xl: 5, lg: 5 },
@@ -133,14 +129,14 @@ const TradeAdvancedPage = () => {
           i: 'tv-chart',
           x: chartXPos[tradeLayout].xxxl,
           y: 1,
-          w: showDepthChart ? 13 : 16,
+          w: 16,
           h: 640,
         },
         {
           i: 'orderbook',
           x: bookXPos[tradeLayout].xxxl,
           y: 1,
-          w: showDepthChart ? 7 : 4,
+          w: 4,
           h: 640,
         },
         {
@@ -164,14 +160,14 @@ const TradeAdvancedPage = () => {
           i: 'tv-chart',
           x: chartXPos[tradeLayout].xxl,
           y: 1,
-          w: showDepthChart ? 12 : 15,
+          w: 15,
           h: 552,
         },
         {
           i: 'orderbook',
           x: bookXPos[tradeLayout].xxl,
           y: 1,
-          w: showDepthChart ? 7 : 4,
+          w: 4,
           h: 552,
         },
         {
@@ -195,14 +191,14 @@ const TradeAdvancedPage = () => {
           i: 'tv-chart',
           x: chartXPos[tradeLayout].xl,
           y: 1,
-          w: showDepthChart ? 12 : 15,
+          w: 14,
           h: 552,
         },
         {
           i: 'orderbook',
           x: bookXPos[tradeLayout].xl,
           y: 1,
-          w: showDepthChart ? 7 : 4,
+          w: 5,
           h: 552,
         },
         {
@@ -226,14 +222,14 @@ const TradeAdvancedPage = () => {
           i: 'tv-chart',
           x: chartXPos[tradeLayout].lg,
           y: 1,
-          w: showDepthChart ? 11 : 14,
+          w: 14,
           h: 552,
         },
         {
           i: 'orderbook',
           x: bookXPos[tradeLayout].lg,
           y: 1,
-          w: showDepthChart ? 8 : 5,
+          w: 5,
           h: 552,
         },
         {
@@ -259,7 +255,7 @@ const TradeAdvancedPage = () => {
         { i: 'balances', x: 0, y: 2, w: 17, h: 428 + marketHeaderHeight },
       ],
     }
-  }, [height, showDepthChart, tradeLayout])
+  }, [height, tradeLayout])
 
   const [layouts, setLayouts] = useState<Layouts>(defaultLayouts)
   const [breakpoint, setBreakpoint] = useState('')
@@ -273,7 +269,7 @@ const TradeAdvancedPage = () => {
 
   useLayoutEffect(() => {
     handleLayoutChange(undefined, defaultLayouts)
-  }, [breakpoint, showDepthChart, tradeLayout])
+  }, [breakpoint, tradeLayout])
 
   return showMobileView ? (
     <MobileTradeAdvancedPage />
@@ -309,6 +305,7 @@ const TradeAdvancedPage = () => {
           className="h-full border border-x-0 border-th-bkg-3"
         >
           <div className={`relative h-full overflow-auto`}>
+            <OrderbookTooltip />
             <TradingChartContainer />
           </div>
         </div>

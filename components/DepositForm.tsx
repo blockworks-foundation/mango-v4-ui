@@ -1,5 +1,6 @@
 import {
   ArrowDownTrayIcon,
+  ArrowPathIcon,
   ExclamationCircleIcon,
   LinkIcon,
 } from '@heroicons/react/20/solid'
@@ -17,7 +18,7 @@ import { TokenAccount } from './../utils/tokens'
 import ActionTokenList from './account/ActionTokenList'
 import ButtonGroup from './forms/ButtonGroup'
 import Label from './forms/Label'
-import Button from './shared/Button'
+import Button, { IconButton } from './shared/Button'
 import Loading from './shared/Loading'
 import { EnterBottomExitBottom, FadeInFadeOut } from './shared/Transitions'
 import { withValueLimit } from './swap/SwapForm'
@@ -63,7 +64,7 @@ export const walletBalanceForToken = (
 }
 
 function DepositForm({ onSuccess, token }: DepositFormProps) {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'account'])
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [selectedToken, setSelectedToken] = useState(
@@ -71,6 +72,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
   )
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
+  const [refreshingWalletTokens, setRefreshingWalletTokens] = useState(false)
   const { connect } = useWallet()
   const { maxSolDeposit } = useSolBalance()
   const banks = useBanksWithBalances('walletBalance')
@@ -109,6 +111,14 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
     setSelectedToken(token)
     setShowTokenList(false)
   }
+
+  const handleRefreshWalletBalances = useCallback(async () => {
+    if (!publicKey) return
+    const actions = mangoStore.getState().actions
+    setRefreshingWalletTokens(true)
+    await actions.fetchWalletTokens(publicKey)
+    setRefreshingWalletTokens(false)
+  }, [publicKey])
 
   const handleDeposit = useCallback(async () => {
     const client = mangoStore.getState().client
@@ -196,13 +206,23 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
             <div className="grid grid-cols-2">
               <div className="col-span-2 flex justify-between">
                 <Label text={`${t('deposit')} ${t('token')}`} />
-                <MaxAmountButton
-                  className="mb-2"
-                  decimals={tokenMax.maxDecimals}
-                  label={t('wallet-balance')}
-                  onClick={setMax}
-                  value={tokenMax.maxAmount}
-                />
+                <div className="mb-2 flex items-center space-x-2">
+                  <MaxAmountButton
+                    decimals={tokenMax.maxDecimals}
+                    label={t('wallet-balance')}
+                    onClick={setMax}
+                    value={tokenMax.maxAmount}
+                  />
+                  <Tooltip content={t('account:refresh-balance')}>
+                    <IconButton
+                      className={refreshingWalletTokens ? 'animate-spin' : ''}
+                      onClick={handleRefreshWalletBalances}
+                      hideBg
+                    >
+                      <ArrowPathIcon className="h-4 w-4" />
+                    </IconButton>
+                  </Tooltip>
+                </div>
               </div>
               <div className="col-span-1">
                 <TokenListButton

@@ -40,6 +40,7 @@ import {
   PAGINATION_PAGE_LENGTH,
   PRIORITY_FEE_KEY,
   RPC_PROVIDER_KEY,
+  SWAP_MARGIN_KEY,
 } from '../utils/constants'
 import {
   ActivityFeed,
@@ -59,6 +60,7 @@ import {
   ProfileDetails,
   MangoTokenStatsItem,
   PositionStat,
+  OrderbookTooltip,
 } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
@@ -83,8 +85,9 @@ const ENDPOINTS = [
   },
   {
     name: 'devnet',
-    url: 'https://mango.devnet.rpcpool.com',
-    websocket: 'https://mango.devnet.rpcpool.com',
+    url: 'https://realms-develope-935c.devnet.rpcpool.com/67f608dc-a353-4191-9c34-293a5061b536',
+    websocket:
+      'https://realms-develope-935c.devnet.rpcpool.com/67f608dc-a353-4191-9c34-293a5061b536',
     custom: false,
   },
 ]
@@ -173,6 +176,7 @@ export type MangoStore = {
       closestToLiq: PositionStat[]
     }
   }
+  orderbookTooltip: OrderbookTooltip | undefined
   profile: {
     details: ProfileDetails | null
     loadDetails: boolean
@@ -265,12 +269,17 @@ export type MangoStore = {
 const mangoStore = create<MangoStore>()(
   subscribeWithSelector((_set, get) => {
     let rpcUrl = ENDPOINT.url
+    let swapMargin = true
 
     if (typeof window !== 'undefined' && CLUSTER === 'mainnet-beta') {
       const urlFromLocalStorage = localStorage.getItem(RPC_PROVIDER_KEY)
+      const swapMarginFromLocalStorage = localStorage.getItem(SWAP_MARGIN_KEY)
       rpcUrl = urlFromLocalStorage
         ? JSON.parse(urlFromLocalStorage)
         : ENDPOINT.url
+      swapMargin = swapMarginFromLocalStorage
+        ? JSON.parse(swapMarginFromLocalStorage)
+        : true
     }
 
     let connection: Connection
@@ -322,6 +331,7 @@ const mangoStore = create<MangoStore>()(
           closestToLiq: [],
         },
       },
+      orderbookTooltip: undefined,
       profile: {
         loadDetails: false,
         details: { profile_name: '', trader_category: '', wallet_pk: '' },
@@ -364,7 +374,7 @@ const mangoStore = create<MangoStore>()(
         outputBank: undefined,
         inputTokenInfo: undefined,
         outputTokenInfo: undefined,
-        margin: true,
+        margin: swapMargin,
         slippage: 0.5,
         swapMode: 'ExactIn',
         amountIn: '',

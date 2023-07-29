@@ -10,7 +10,6 @@ import {
 } from 'utils/numbers'
 import {
   ANIMATION_SETTINGS_KEY,
-  DEPTH_CHART_KEY,
   // USE_ORDERBOOK_FEED_KEY,
 } from 'utils/constants'
 import { useTranslation } from 'next-i18next'
@@ -22,7 +21,6 @@ import { BookSide, Serum3Market } from '@blockworks-foundation/mango-v4'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import { OrderbookFeed } from '@blockworks-foundation/mango-feeds'
-import Switch from '@components/forms/Switch'
 import { breakpoints } from 'utils/theme'
 import {
   decodeBook,
@@ -55,12 +53,7 @@ const Orderbook = () => {
   //     ? localStorage.getItem(USE_ORDERBOOK_FEED_KEY) === 'true'
   //     : true
   // )
-  const [showDepthChart, setShowDepthChart] = useLocalStorageState<boolean>(
-    DEPTH_CHART_KEY,
-    false,
-  )
   const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.lg : false
   const [orderbookData, setOrderbookData] = useState<OrderbookData | null>(null)
   const currentOrderbookData = useRef<OrderbookL2>()
 
@@ -430,19 +423,10 @@ const Orderbook = () => {
 
   return (
     <div>
-      <div className="flex h-10 items-center justify-between border-b border-th-bkg-3 px-4">
-        {!isMobile ? (
-          <Switch
-            checked={showDepthChart}
-            onChange={() => setShowDepthChart(!showDepthChart)}
-            small
-          >
-            <span className="text-xxs">{t('trade:depth')}</span>
-          </Switch>
-        ) : null}
+      <div className="h-10 flex items-center justify-between border-b border-th-bkg-3 px-4">
         {market ? (
           <>
-            <p className="text-xs lg:hidden">{t('trade:grouping')}:</p>
+            <p className="text-xs">{t('trade:grouping')}:</p>
             <div id="trade-step-four">
               <Tooltip
                 className="hidden md:block"
@@ -485,6 +469,9 @@ const Orderbook = () => {
                   size={orderbookData?.asks[index].size}
                   side="sell"
                   sizePercent={orderbookData?.asks[index].sizePercent}
+                  averagePrice={orderbookData?.asks[index].averagePrice}
+                  cumulativeValue={orderbookData?.asks[index].cumulativeValue}
+                  cumulativeSize={orderbookData?.asks[index].cumulativeSize}
                   cumulativeSizePercent={
                     orderbookData?.asks[index].cumulativeSizePercent
                   }
@@ -526,6 +513,9 @@ const Orderbook = () => {
                 size={orderbookData?.bids[index].size}
                 side="buy"
                 sizePercent={orderbookData?.bids[index].sizePercent}
+                averagePrice={orderbookData?.bids[index].averagePrice}
+                cumulativeValue={orderbookData?.bids[index].cumulativeValue}
+                cumulativeSize={orderbookData?.bids[index].cumulativeSize}
                 cumulativeSizePercent={
                   orderbookData?.bids[index].cumulativeSizePercent
                 }
@@ -547,6 +537,9 @@ const OrderbookRow = ({
   // invert,
   hasOpenOrder,
   minOrderSize,
+  averagePrice,
+  cumulativeValue,
+  cumulativeSize,
   cumulativeSizePercent,
   tickSize,
   grouping,
@@ -555,6 +548,9 @@ const OrderbookRow = ({
   price: number
   size: number
   sizePercent: number
+  averagePrice: number
+  cumulativeValue: number
+  cumulativeSize: number
   cumulativeSizePercent: number
   hasOpenOrder: boolean
   // invert: boolean
@@ -632,12 +628,35 @@ const OrderbookRow = ({
     [minOrderSize],
   )
 
+  const handleMouseOver = useCallback(() => {
+    const { set } = mangoStore.getState()
+    if (averagePrice && cumulativeSize && cumulativeValue) {
+      set((state) => {
+        state.orderbookTooltip = {
+          averagePrice,
+          cumulativeSize,
+          cumulativeValue,
+          side,
+        }
+      })
+    }
+  }, [averagePrice, cumulativeSize, cumulativeValue])
+
+  const handleMouseLeave = useCallback(() => {
+    const { set } = mangoStore.getState()
+    set((state) => {
+      state.orderbookTooltip = undefined
+    })
+  }, [])
+
   if (!minOrderSize) return null
 
   return (
     <div
       className={`relative flex h-[20px] cursor-pointer justify-between border-b border-b-th-bkg-1 text-sm`}
       ref={element}
+      onMouseOver={handleMouseOver}
+      onMouseLeave={handleMouseLeave}
     >
       <>
         <div className="flex h-full w-full items-center justify-between text-th-fgd-3 hover:bg-th-bkg-2">

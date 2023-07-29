@@ -8,13 +8,22 @@ import ContentBox from '../shared/ContentBox'
 import Tooltip from '@components/shared/Tooltip'
 import { Bank, toUiDecimals } from '@blockworks-foundation/mango-v4'
 import { NextRouter, useRouter } from 'next/router'
-import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
+import {
+  SortableColumnHeader,
+  Table,
+  Td,
+  Th,
+  TrBody,
+  TrHead,
+} from '@components/shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
 import Decimal from 'decimal.js'
 import TokenLogo from '@components/shared/TokenLogo'
+import { useCallback } from 'react'
+import { useSortableData } from 'hooks/useSortableData'
 
 export const goToTokenPage = (token: string, router: NextRouter) => {
   const query = { ...router.query, ['token']: token }
@@ -29,45 +38,137 @@ const TokenOverviewTable = () => {
   const router = useRouter()
   const banks = useBanksWithBalances()
 
-  return group ? (
+  const formattedTableData = useCallback(() => {
+    const formatted = []
+    for (const b of banks) {
+      const bank: Bank = b.bank
+      const deposits = bank.uiDeposits()
+      const borrows = bank.uiBorrows()
+      const availableVaultBalance = group
+        ? group.getTokenVaultBalanceByMintUi(bank.mint) -
+          deposits * bank.minVaultToDepositsRatio
+        : 0
+      const available = Decimal.max(
+        0,
+        availableVaultBalance.toFixed(bank.mintDecimals),
+      )
+      const feesEarned = toUiDecimals(
+        bank.collectedFeesNative,
+        bank.mintDecimals,
+      )
+      const utilization =
+        bank.uiDeposits() > 0 ? (bank.uiBorrows() / bank.uiDeposits()) * 100 : 0
+
+      const depositRate = bank.getDepositRateUi()
+      const borrowRate = bank.getBorrowRateUi()
+      const symbol = bank.name
+
+      const data = {
+        available,
+        bank,
+        borrows,
+        borrowRate,
+        deposits,
+        depositRate,
+        feesEarned,
+        symbol,
+        utilization,
+      }
+      formatted.push(data)
+    }
+    return formatted
+  }, [banks, group])
+
+  const {
+    items: tableData,
+    requestSort,
+    sortConfig,
+  } = useSortableData(formattedTableData())
+
+  return (
     <ContentBox hideBorder hidePadding>
       {showTableView ? (
         <div className="thin-scroll overflow-x-auto">
           <Table>
             <thead>
               <TrHead>
-                <Th className="text-left">{t('token')}</Th>
-                <Th className="text-right">{t('total-deposits')}</Th>
-                <Th className="text-right">{t('total-borrows')}</Th>
+                <Th className="text-left">
+                  <SortableColumnHeader
+                    sortKey="symbol"
+                    sort={() => requestSort('symbol')}
+                    sortConfig={sortConfig}
+                    title={t('token')}
+                  />
+                </Th>
+                <Th>
+                  <div className="flex justify-end">
+                    <SortableColumnHeader
+                      sortKey="deposits"
+                      sort={() => requestSort('deposits')}
+                      sortConfig={sortConfig}
+                      title={t('total-deposits')}
+                    />
+                  </div>
+                </Th>
+                <Th>
+                  <div className="flex justify-end">
+                    <SortableColumnHeader
+                      sortKey="borrows"
+                      sort={() => requestSort('borrows')}
+                      sortConfig={sortConfig}
+                      title={t('total-borrows')}
+                    />
+                  </div>
+                </Th>
                 <Th className="text-right">
                   <div className="flex justify-end">
                     <Tooltip content="The amount available to borrow">
-                      <span className="tooltip-underline">
-                        {t('available')}
-                      </span>
+                      <SortableColumnHeader
+                        sortKey="available"
+                        sort={() => requestSort('available')}
+                        sortConfig={sortConfig}
+                        title={t('available')}
+                        titleClass="tooltip-underline"
+                      />
                     </Tooltip>
                   </div>
                 </Th>
                 <Th>
                   <div className="flex justify-end">
                     <Tooltip content={t('token:fees-tooltip')}>
-                      <span className="tooltip-underline">{t('fees')}</span>
+                      <SortableColumnHeader
+                        sortKey="feesEarned"
+                        sort={() => requestSort('feesEarned')}
+                        sortConfig={sortConfig}
+                        title={t('fees')}
+                        titleClass="tooltip-underline"
+                      />
                     </Tooltip>
                   </div>
                 </Th>
                 <Th>
                   <div className="flex justify-end">
                     <Tooltip content="The deposit rate (green) will automatically be paid on positive balances and the borrow rate (red) will automatically be charged on negative balances.">
-                      <span className="tooltip-underline">{t('rates')}</span>
+                      <SortableColumnHeader
+                        sortKey="depositRate"
+                        sort={() => requestSort('depositRate')}
+                        sortConfig={sortConfig}
+                        title={t('rates')}
+                        titleClass="tooltip-underline"
+                      />
                     </Tooltip>
                   </div>
                 </Th>
                 <Th>
                   <div className="flex justify-end">
                     <Tooltip content="The percentage of deposits that have been lent out">
-                      <span className="tooltip-underline">
-                        {t('utilization')}
-                      </span>
+                      <SortableColumnHeader
+                        sortKey="utilization"
+                        sort={() => requestSort('utilization')}
+                        sortConfig={sortConfig}
+                        title={t('utilization')}
+                        titleClass="tooltip-underline"
+                      />
                     </Tooltip>
                   </div>
                 </Th>
@@ -75,26 +176,23 @@ const TokenOverviewTable = () => {
               </TrHead>
             </thead>
             <tbody>
-              {banks.map((b) => {
-                const bank: Bank = b.bank
-                const deposits = bank.uiDeposits()
-                const borrows = bank.uiBorrows()
-                const availableVaultBalance =
-                  group.getTokenVaultBalanceByMintUi(bank.mint) -
-                  deposits * bank.minVaultToDepositsRatio
-                const available = Decimal.max(
-                  0,
-                  availableVaultBalance.toFixed(bank.mintDecimals),
-                )
-                const feesEarned = toUiDecimals(
-                  bank.collectedFeesNative,
-                  bank.mintDecimals,
-                )
+              {tableData.map((data) => {
+                const {
+                  available,
+                  bank,
+                  borrows,
+                  borrowRate,
+                  deposits,
+                  depositRate,
+                  feesEarned,
+                  symbol,
+                  utilization,
+                } = data
 
                 return (
                   <TrBody
                     className="default-transition md:hover:cursor-pointer md:hover:bg-th-bkg-2"
-                    key={bank.name}
+                    key={symbol}
                     onClick={() =>
                       goToTokenPage(bank.name.split(' ')[0], router)
                     }
@@ -104,7 +202,7 @@ const TokenOverviewTable = () => {
                         <div className="mr-2.5 flex flex-shrink-0 items-center">
                           <TokenLogo bank={bank} />
                         </div>
-                        <p className="font-body">{bank.name}</p>
+                        <p className="font-body">{symbol}</p>
                       </div>
                     </Td>
                     <Td>
@@ -151,32 +249,21 @@ const TokenOverviewTable = () => {
                       <div className="flex justify-end space-x-1.5">
                         <p className="text-th-up">
                           <FormatNumericValue
-                            value={bank.getDepositRateUi()}
+                            value={depositRate}
                             decimals={2}
                           />
                           %
                         </p>
                         <span className="text-th-fgd-4">|</span>
                         <p className="text-th-down">
-                          <FormatNumericValue
-                            value={bank.getBorrowRateUi()}
-                            decimals={2}
-                          />
+                          <FormatNumericValue value={borrowRate} decimals={2} />
                           %
                         </p>
                       </div>
                     </Td>
                     <Td>
                       <div className="flex flex-col text-right">
-                        <p>
-                          {bank.uiDeposits() > 0
-                            ? (
-                                (bank.uiBorrows() / bank.uiDeposits()) *
-                                100
-                              ).toFixed(1)
-                            : '0.0'}
-                          %
-                        </p>
+                        <p>{utilization.toFixed(1)}%</p>
                       </div>
                     </Td>
                     <Td>
@@ -192,23 +279,21 @@ const TokenOverviewTable = () => {
         </div>
       ) : (
         <div className="border-b border-th-bkg-3">
-          {banks.map((b, i) => {
-            const bank = b.bank
-            const deposits = bank.uiDeposits()
-            const borrows = bank.uiBorrows()
-            const availableVaultBalance =
-              group.getTokenVaultBalanceByMintUi(bank.mint) -
-              deposits * bank.minVaultToDepositsRatio
-            const available = Decimal.max(
-              0,
-              availableVaultBalance.toFixed(bank.mintDecimals),
-            )
-            const feesEarned = toUiDecimals(
-              bank.collectedFeesNative,
-              bank.mintDecimals,
-            )
+          {tableData.map((data, i) => {
+            const {
+              available,
+              bank,
+              borrows,
+              borrowRate,
+              deposits,
+              depositRate,
+              feesEarned,
+              symbol,
+              utilization,
+            } = data
+
             return (
-              <Disclosure key={bank.name}>
+              <Disclosure key={symbol}>
                 {({ open }) => (
                   <>
                     <Disclosure.Button
@@ -221,7 +306,7 @@ const TokenOverviewTable = () => {
                           <div className="mr-2.5 flex flex-shrink-0 items-center">
                             <TokenLogo bank={bank} />
                           </div>
-                          <p className="text-th-fgd-1">{bank.name}</p>
+                          <p className="text-th-fgd-1">{symbol}</p>
                         </div>
                         <ChevronDownIcon
                           className={`${
@@ -286,7 +371,7 @@ const TokenOverviewTable = () => {
                             <p className="space-x-2">
                               <span className="font-mono text-th-up">
                                 <FormatNumericValue
-                                  value={bank.getDepositRateUi()}
+                                  value={depositRate}
                                   decimals={2}
                                 />
                                 %
@@ -296,7 +381,7 @@ const TokenOverviewTable = () => {
                               </span>
                               <span className="font-mono text-th-down">
                                 <FormatNumericValue
-                                  value={bank.getBorrowRateUi()}
+                                  value={borrowRate}
                                   decimals={2}
                                 />
                                 %
@@ -306,13 +391,7 @@ const TokenOverviewTable = () => {
                           <div className="col-span-1">
                             <p className="text-xs">{t('utilization')}</p>
                             <p className="font-mono text-th-fgd-1">
-                              {bank.uiDeposits() > 0
-                                ? (
-                                    (bank.uiBorrows() / bank.uiDeposits()) *
-                                    100
-                                  ).toFixed(1)
-                                : '0.0'}
-                              %
+                              {utilization}%
                             </p>
                           </div>
                           <div className="col-span-1">
@@ -337,7 +416,7 @@ const TokenOverviewTable = () => {
         </div>
       )}
     </ContentBox>
-  ) : null
+  )
 }
 
 export default TokenOverviewTable

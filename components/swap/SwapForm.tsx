@@ -28,6 +28,7 @@ import {
   MANGO_MINT,
   OUTPUT_TOKEN_DEFAULT,
   SIZE_INPUT_UI_KEY,
+  SWAP_MARGIN_KEY,
   USDC_MINT,
 } from '../../utils/constants'
 import { useTokenMax } from './useTokenMax'
@@ -72,6 +73,10 @@ const SwapForm = () => {
   const [showConfirm, setShowConfirm] = useState(false)
   const { group } = useMangoGroup()
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
+  const [, setSavedSwapMargin] = useLocalStorageState<boolean>(
+    SWAP_MARGIN_KEY,
+    true,
+  )
   const { ipAllowed, ipCountry } = useIpAddress()
   const { isUnownedAccount, isDelegatedAccount } = useUnownedAccount()
 
@@ -306,6 +311,10 @@ const SwapForm = () => {
       s.swap.margin = !s.swap.margin
     })
   }
+
+  useEffect(() => {
+    setSavedSwapMargin(useMargin)
+  }, [useMargin])
 
   return (
     <ContentBox

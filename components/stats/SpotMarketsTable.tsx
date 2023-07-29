@@ -1,47 +1,118 @@
-import { Serum3Market } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
-import { useMemo } from 'react'
+import { useCallback } from 'react'
 import { useViewport } from '../../hooks/useViewport'
-import mangoStore from '@store/mangoStore'
 import { COLORS } from '../../styles/colors'
 import { breakpoints } from '../../utils/theme'
 import ContentBox from '../shared/ContentBox'
-import Change from '../shared/Change'
 import MarketLogos from '@components/trade/MarketLogos'
 import useMangoGroup from 'hooks/useMangoGroup'
-import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
+import {
+  SortableColumnHeader,
+  Table,
+  Td,
+  Th,
+  TrBody,
+  TrHead,
+} from '@components/shared/TableElements'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
-import { useBirdeyeMarketPrices } from 'hooks/useBirdeyeMarketPrices'
 import { floorToDecimal, getDecimalCount, numberCompacter } from 'utils/numbers'
 import SimpleAreaChart from '@components/shared/SimpleAreaChart'
-import { useQuery } from '@tanstack/react-query'
-import { fetchSpotVolume } from '@components/trade/AdvancedMarketHeader'
-import { TickerData } from 'types'
 import { Disclosure, Transition } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
-import MarketChange from '@components/shared/MarketChange'
 import useThemeWrapper from 'hooks/useThemeWrapper'
+import useListedMarketsWithMarketData, {
+  SerumMarketWithMarketData,
+} from 'hooks/useListedMarketsWithMarketData'
+import { sortSpotMarkets } from 'utils/markets'
+import { useSortableData } from 'hooks/useSortableData'
+import Change from '@components/shared/Change'
+import { Bank } from '@blockworks-foundation/mango-v4'
+
+type TableData = {
+  baseBank: Bank | undefined
+  change: number
+  market: SerumMarketWithMarketData
+  marketName: string
+  price: number
+  priceHistory:
+    | {
+        price: number
+        time: string
+      }[]
+    | undefined
+  quoteBank: Bank | undefined
+  volume: number
+  isUp: boolean
+}
 
 const SpotMarketsTable = () => {
   const { t } = useTranslation('common')
   const { group } = useMangoGroup()
-  const serumMarkets = mangoStore((s) => s.serumMarkets)
   const { theme } = useThemeWrapper()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
-  const { data: birdeyePrices, isLoading: loadingPrices } =
-    useBirdeyeMarketPrices()
+  const { serumMarketsWithData, isLoading, isFetching } =
+    useListedMarketsWithMarketData()
 
-  const { data: spotVolumeData } = useQuery(
-    ['spot-market-volume'],
-    () => fetchSpotVolume(),
-    {
-      cacheTime: 1000 * 60 * 10,
-      staleTime: 1000 * 60,
-      retry: 3,
-      refetchOnWindowFocus: false,
+  const formattedTableData = useCallback(
+    (markets: SerumMarketWithMarketData[]) => {
+      const formatted = []
+      for (const m of markets) {
+        const baseBank = group?.getFirstBankByTokenIndex(m.baseTokenIndex)
+        const quoteBank = group?.getFirstBankByTokenIndex(m.quoteTokenIndex)
+        const market = group?.getSerum3ExternalMarket(m.serumMarketExternal)
+        let price = 0
+        if (baseBank && market && quoteBank) {
+          price = floorToDecimal(
+            baseBank.uiPrice / quoteBank.uiPrice,
+            getDecimalCount(market.tickSize),
+          ).toNumber()
+        }
+
+        const pastPrice = m?.marketData?.price_24h || 0
+
+        const priceHistory = m?.marketData?.price_history
+
+        const volume = m?.marketData?.quote_volume_24h || 0
+
+        const change = volume > 0 ? ((price - pastPrice) / pastPrice) * 100 : 0
+
+        const marketName = m.name
+
+        const isUp =
+          price && priceHistory && priceHistory.length
+            ? price >= priceHistory[0].price
+            : false
+
+        const data = {
+          baseBank,
+          change,
+          market: m,
+          marketName,
+          price,
+          priceHistory,
+          quoteBank,
+          volume,
+          isUp,
+        }
+        formatted.push(data)
+      }
+      return formatted
     },
+    [group],
   )
+
+  const {
+    items: tableData,
+    requestSort,
+    sortConfig,
+  } = useSortableData(
+    formattedTableData(
+      sortSpotMarkets(serumMarketsWithData, 'quote_volume_24h'),
+    ),
+  )
+
+  const loadingMarketData = isLoading || isFetching
 
   return (
     <ContentBox hideBorder hidePadding>
@@ -49,151 +120,152 @@ const SpotMarketsTable = () => {
         <Table>
           <thead>
             <TrHead>
-              <Th className="text-left">{t('market')}</Th>
-              <Th className="text-right">{t('price')}</Th>
+              <Th className="text-left">
+                <SortableColumnHeader
+                  sortKey="marketName"
+                  sort={() => requestSort('marketName')}
+                  sortConfig={sortConfig}
+                  title={t('market')}
+                />
+              </Th>
+              <Th>
+                <div className="flex justify-end">
+                  <SortableColumnHeader
+                    sortKey="price"
+                    sort={() => requestSort('price')}
+                    sortConfig={sortConfig}
+                    title={t('price')}
+                  />
+                </div>
+              </Th>
+              <Th>
+                <div className="flex justify-end">
+                  <SortableColumnHeader
+                    sortKey="change"
+                    sort={() => requestSort('change')}
+                    sortConfig={sortConfig}
+                    title={t('rolling-change')}
+                  />
+                </div>
+              </Th>
               <Th className="hidden text-right md:block"></Th>
-              <Th className="text-right">{t('rolling-change')}</Th>
-              <Th className="text-right">{t('trade:24h-volume')}</Th>
+              <Th>
+                <div className="flex justify-end">
+                  <SortableColumnHeader
+                    sortKey="volume"
+                    sort={() => requestSort('volume')}
+                    sortConfig={sortConfig}
+                    title={t('trade:24h-volume')}
+                  />
+                </div>
+              </Th>
             </TrHead>
           </thead>
           <tbody>
-            {serumMarkets
-              .slice()
-              .sort((a, b) => a.name.localeCompare(b.name))
-              .map((mkt) => {
-                const baseBank = group?.getFirstBankByTokenIndex(
-                  mkt.baseTokenIndex,
-                )
-                const quoteBank = group?.getFirstBankByTokenIndex(
-                  mkt.quoteTokenIndex,
-                )
-                const market = group?.getSerum3ExternalMarket(
-                  mkt.serumMarketExternal,
-                )
-                let price
-                if (baseBank && market && quoteBank) {
-                  price = floorToDecimal(
-                    baseBank.uiPrice / quoteBank.uiPrice,
-                    getDecimalCount(market.tickSize),
-                  ).toNumber()
-                }
-                let tickerData: TickerData | undefined
-                if (spotVolumeData && spotVolumeData.length) {
-                  tickerData = spotVolumeData.find(
-                    (m: TickerData) => m.ticker_id === mkt.name,
-                  )
-                }
+            {tableData.map((data) => {
+              const {
+                baseBank,
+                change,
+                market,
+                marketName,
+                price,
+                priceHistory,
+                quoteBank,
+                volume,
+                isUp,
+              } = data
 
-                const birdeyeData = birdeyePrices.find(
-                  (m) => m.mint === mkt.serumMarketExternal.toString(),
-                )
-
-                const birdeyeChange =
-                  birdeyeData && price
-                    ? ((price - birdeyeData.data[0].value) /
-                        birdeyeData.data[0].value) *
-                      100
-                    : 0
-
-                const chartData = birdeyeData ? birdeyeData.data : undefined
-
-                return (
-                  <TrBody key={mkt.publicKey.toString()}>
-                    <Td>
-                      <div className="flex items-center">
-                        <MarketLogos market={mkt} size="large" />
-                        <p className="font-body">{mkt.name}</p>
-                      </div>
-                    </Td>
-                    <Td>
-                      <div className="flex flex-col text-right">
-                        <p>
-                          {price ? (
-                            <>
-                              <FormatNumericValue
-                                value={price}
-                                isUsd={quoteBank?.name === 'USDC'}
-                              />{' '}
-                              {quoteBank?.name !== 'USDC' ? (
-                                <span className="font-body text-th-fgd-4">
-                                  {quoteBank?.name}
-                                </span>
-                              ) : null}
-                            </>
-                          ) : (
-                            '–'
-                          )}
-                        </p>
-                      </div>
-                    </Td>
-                    <Td>
-                      {!loadingPrices ? (
-                        chartData !== undefined ? (
-                          <div className="h-10 w-24">
-                            <SimpleAreaChart
-                              color={
-                                birdeyeChange >= 0
-                                  ? COLORS.UP[theme]
-                                  : COLORS.DOWN[theme]
-                              }
-                              data={chartData}
-                              name={baseBank!.name + quoteBank!.name}
-                              xKey="unixTime"
-                              yKey="value"
-                            />
-                          </div>
-                        ) : baseBank?.name === 'USDC' ||
-                          baseBank?.name === 'USDT' ? null : (
-                          <p className="mb-0 text-th-fgd-4">
-                            {t('unavailable')}
-                          </p>
-                        )
-                      ) : (
-                        <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
-                      )}
-                    </Td>
-                    <Td>
-                      <div className="flex flex-col items-end">
-                        <MarketChange market={mkt} />
-                      </div>
-                    </Td>
-                    <Td>
-                      <div className="flex flex-col text-right">
-                        <p>
-                          {tickerData ? (
-                            <span>
-                              {numberCompacter.format(
-                                parseFloat(tickerData.target_volume),
-                              )}{' '}
+              return (
+                <TrBody key={market.publicKey.toString()}>
+                  <Td>
+                    <div className="flex items-center">
+                      <MarketLogos market={market} size="large" />
+                      <p className="font-body">{marketName}</p>
+                    </div>
+                  </Td>
+                  <Td>
+                    <div className="flex flex-col text-right">
+                      <p>
+                        {price ? (
+                          <>
+                            <FormatNumericValue
+                              value={price}
+                              isUsd={quoteBank?.name === 'USDC'}
+                            />{' '}
+                            {quoteBank?.name !== 'USDC' ? (
                               <span className="font-body text-th-fgd-4">
                                 {quoteBank?.name}
                               </span>
+                            ) : null}
+                          </>
+                        ) : (
+                          '–'
+                        )}
+                      </p>
+                    </div>
+                  </Td>
+                  <Td>
+                    <div className="flex flex-col items-end">
+                      <Change change={change} suffix="%" />
+                    </div>
+                  </Td>
+                  <Td>
+                    {!loadingMarketData ? (
+                      priceHistory && priceHistory.length ? (
+                        <div className="h-10 w-24">
+                          <SimpleAreaChart
+                            color={isUp ? COLORS.UP[theme] : COLORS.DOWN[theme]}
+                            data={priceHistory}
+                            name={baseBank!.name + quoteBank!.name}
+                            xKey="time"
+                            yKey="price"
+                          />
+                        </div>
+                      ) : baseBank?.name === 'USDC' ||
+                        baseBank?.name === 'USDT' ? null : (
+                        <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
+                      )
+                    ) : (
+                      <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
+                    )}
+                  </Td>
+                  <Td>
+                    <div className="flex flex-col text-right">
+                      <p>
+                        {volume ? (
+                          <span>
+                            {numberCompacter.format(volume)}{' '}
+                            <span className="font-body text-th-fgd-4">
+                              {quoteBank?.name}
                             </span>
-                          ) : (
-                            '–'
-                          )}
-                        </p>
-                      </div>
-                    </Td>
-                  </TrBody>
-                )
-              })}
+                          </span>
+                        ) : (
+                          <span>
+                            0{' '}
+                            <span className="font-body text-th-fgd-4">
+                              {quoteBank?.name}
+                            </span>
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  </Td>
+                </TrBody>
+              )
+            })}
           </tbody>
         </Table>
       ) : (
         <div className="border-b border-th-bkg-3">
-          {serumMarkets
-            .slice()
-            .sort((a, b) => a.name.localeCompare(b.name))
-            .map((market) => {
-              return (
-                <MobileSpotMarketItem
-                  key={market.publicKey.toString()}
-                  market={market}
-                  spotVolumeData={spotVolumeData}
-                />
-              )
-            })}
+          {tableData.map((data) => {
+            return (
+              <MobileSpotMarketItem
+                key={data.market.publicKey.toString()}
+                loadingMarketData={loadingMarketData}
+                data={data}
+              />
+            )
+          })}
         </div>
       )}
     </ContentBox>
@@ -203,60 +275,26 @@ const SpotMarketsTable = () => {
 export default SpotMarketsTable
 
 const MobileSpotMarketItem = ({
-  market,
-  spotVolumeData,
+  data,
+  loadingMarketData,
 }: {
-  market: Serum3Market
-  spotVolumeData: TickerData[] | undefined
+  data: TableData
+  loadingMarketData: boolean
 }) => {
   const { t } = useTranslation('common')
-  const { data: birdeyePrices, isLoading: loadingPrices } =
-    useBirdeyeMarketPrices()
-  const { group } = useMangoGroup()
   const { theme } = useThemeWrapper()
-  const baseBank = group?.getFirstBankByTokenIndex(market.baseTokenIndex)
-  const quoteBank = group?.getFirstBankByTokenIndex(market.quoteTokenIndex)
-  const serumMarket = group?.getSerum3ExternalMarket(market.serumMarketExternal)
 
-  const price = useMemo(() => {
-    if (!baseBank || !quoteBank || !serumMarket) return 0
-    return floorToDecimal(
-      baseBank.uiPrice / quoteBank.uiPrice,
-      getDecimalCount(serumMarket.tickSize),
-    ).toNumber()
-  }, [baseBank, quoteBank, serumMarket])
-
-  const birdeyeData = useMemo(() => {
-    if (!loadingPrices) {
-      return birdeyePrices.find(
-        (m) => m.mint === market.serumMarketExternal.toString(),
-      )
-    }
-    return null
-  }, [loadingPrices])
-
-  const change = useMemo(() => {
-    if (birdeyeData && price) {
-      return (
-        ((price - birdeyeData.data[0].value) / birdeyeData.data[0].value) * 100
-      )
-    }
-    return 0
-  }, [birdeyeData, price])
-
-  const chartData = useMemo(() => {
-    if (birdeyeData) {
-      return birdeyeData.data
-    }
-    return undefined
-  }, [birdeyeData])
-
-  let tickerData: TickerData | undefined
-  if (spotVolumeData && spotVolumeData.length) {
-    tickerData = spotVolumeData.find(
-      (m: TickerData) => m.ticker_id === market.name,
-    )
-  }
+  const {
+    baseBank,
+    change,
+    market,
+    marketName,
+    price,
+    priceHistory,
+    quoteBank,
+    volume,
+    isUp,
+  } = data
 
   return (
     <Disclosure>
@@ -270,20 +308,18 @@ const MobileSpotMarketItem = ({
                 <div className="flex flex-shrink-0 items-center">
                   <MarketLogos market={market} />
                 </div>
-                <p className="leading-none text-th-fgd-1">{market.name}</p>
+                <p className="leading-none text-th-fgd-1">{marketName}</p>
               </div>
               <div className="flex items-center space-x-3">
-                {!loadingPrices ? (
-                  chartData !== undefined ? (
+                {!loadingMarketData ? (
+                  priceHistory && priceHistory.length ? (
                     <div className="h-10 w-20">
                       <SimpleAreaChart
-                        color={
-                          change >= 0 ? COLORS.UP[theme] : COLORS.DOWN[theme]
-                        }
-                        data={chartData}
+                        color={isUp ? COLORS.UP[theme] : COLORS.DOWN[theme]}
+                        data={priceHistory}
                         name={baseBank!.name + quoteBank!.name}
-                        xKey="unixTime"
-                        yKey="value"
+                        xKey="time"
+                        yKey="price"
                       />
                     </div>
                   ) : (
@@ -333,17 +369,20 @@ const MobileSpotMarketItem = ({
                     {t('trade:24h-volume')}
                   </p>
                   <p className="font-mono text-th-fgd-2">
-                    {tickerData ? (
+                    {volume ? (
                       <span>
-                        {numberCompacter.format(
-                          parseFloat(tickerData.target_volume),
-                        )}{' '}
+                        {numberCompacter.format(volume)}{' '}
                         <span className="font-body text-th-fgd-4">
                           {quoteBank?.name}
                         </span>
                       </span>
                     ) : (
-                      '–'
+                      <span>
+                        0{' '}
+                        <span className="font-body text-th-fgd-4">
+                          {quoteBank?.name}
+                        </span>
+                      </span>
                     )}
                   </p>
                 </div>
