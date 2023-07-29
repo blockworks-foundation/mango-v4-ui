@@ -36,7 +36,7 @@
     "@solana/wallet-adapter-react": "0.15.32",
     "@solana/wallet-adapter-wallets": "0.19.18",
     "@solflare-wallet/pfp": "0.0.6",
-    "@switchboard-xyz/solana.js": "2.2.0",
+    "@switchboard-xyz/solana.js": "2.4.7",
     "@tanstack/react-query": "4.10.1",
     "@tippyjs/react": "4.2.6",
     "@types/howler": "2.2.7",
