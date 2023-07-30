@@ -10,7 +10,14 @@ import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 import { calculateLimitPriceForMarketOrder } from 'utils/tradeForm'
 import { LinkButton } from './Button'
-import { Table, Td, Th, TrBody, TrHead } from './TableElements'
+import {
+  SortableColumnHeader,
+  Table,
+  Td,
+  Th,
+  TrBody,
+  TrHead,
+} from './TableElements'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import ConnectEmptyState from './ConnectEmptyState'
 import { useWallet } from '@solana/wallet-adapter-react'
@@ -27,6 +34,7 @@ import Tooltip from './Tooltip'
 import { PublicKey } from '@solana/web3.js'
 import { USDC_MINT } from 'utils/constants'
 import { WRAPPED_SOL_MINT } from '@project-serum/serum/lib/token-instructions'
+import { useSortableData } from 'hooks/useSortableData'
 
 const BalancesTable = () => {
   const { t } = useTranslation(['common', 'account', 'trade'])
@@ -52,44 +60,115 @@ const BalancesTable = () => {
     return []
   }, [banks])
 
+  const formattedTableData = useCallback(() => {
+    const formatted = []
+    for (const b of filteredBanks) {
+      const bank = b.bank
+      const balance = b.balance
+      const symbol = bank.name === 'MSOL' ? 'mSOL' : bank.name
+
+      const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0
+      const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
+
+      const collateralValue =
+        initContributions.find((val) => val.asset === bank.name)
+          ?.contribution || 0
+
+      const assetWeight = bank.scaledInitAssetWeight(bank.price)
+      const liabWeight = bank.scaledInitLiabWeight(bank.price)
+
+      const data = {
+        assetWeight,
+        balance,
+        bankWithBalance: b,
+        collateralValue,
+        inOrders,
+        liabWeight,
+        symbol,
+        unsettled,
+      }
+      formatted.push(data)
+    }
+    return formatted
+  }, [filteredBanks])
+
+  const {
+    items: tableData,
+    requestSort,
+    sortConfig,
+  } = useSortableData(formattedTableData())
+
   return filteredBanks.length ? (
     showTableView ? (
       <Table>
         <thead>
           <TrHead>
-            <Th className="bg-th-bkg-1 text-left">{t('token')}</Th>
-            <Th className="bg-th-bkg-1 text-right">{t('balance')}</Th>
+            <Th className="text-left">
+              <SortableColumnHeader
+                sortKey="symbol"
+                sort={() => requestSort('symbol')}
+                sortConfig={sortConfig}
+                title={t('token')}
+              />
+            </Th>
+            <Th>
+              <div className="flex justify-end">
+                <SortableColumnHeader
+                  sortKey="balance"
+                  sort={() => requestSort('balance')}
+                  sortConfig={sortConfig}
+                  title={t('balance')}
+                />
+              </div>
+            </Th>
             <Th>
               <div className="flex justify-end">
                 <Tooltip content={t('account:tooltip-collateral-value')}>
-                  <span className="tooltip-underline">
-                    {t('collateral-value')}
-                  </span>
+                  <SortableColumnHeader
+                    sortKey="collateralValue"
+                    sort={() => requestSort('collateralValue')}
+                    sortConfig={sortConfig}
+                    title={t('collateral-value')}
+                    titleClass="tooltip-underline"
+                  />
                 </Tooltip>
               </div>
             </Th>
-            <Th className="bg-th-bkg-1 text-right">{t('trade:in-orders')}</Th>
-            <Th className="bg-th-bkg-1 text-right" id="trade-step-ten">
-              {t('trade:unsettled')}
+            <Th>
+              <div className="flex justify-end">
+                <SortableColumnHeader
+                  sortKey="inOrders"
+                  sort={() => requestSort('inOrders')}
+                  sortConfig={sortConfig}
+                  title={t('trade:in-orders')}
+                />
+              </div>
+            </Th>
+            <Th>
+              <div className="flex justify-end">
+                <SortableColumnHeader
+                  sortKey="unsettled"
+                  sort={() => requestSort('unsettled')}
+                  sortConfig={sortConfig}
+                  title={t('trade:unsettled')}
+                />
+              </div>
             </Th>
           </TrHead>
         </thead>
         <tbody>
-          {filteredBanks.map((b) => {
-            const bank = b.bank
-            const symbol = bank.name === 'MSOL' ? 'mSOL' : bank.name
-
-            const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0
-            const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
-
-            const collateralValue =
-              initContributions.find((val) => val.asset === bank.name)
-                ?.contribution || 0
-
-            const assetWeight = bank
-              .scaledInitAssetWeight(bank.price)
-              .toFixed(2)
-            const liabWeight = bank.scaledInitLiabWeight(bank.price).toFixed(2)
+          {tableData.map((data) => {
+            const {
+              assetWeight,
+              balance,
+              bankWithBalance,
+              collateralValue,
+              inOrders,
+              liabWeight,
+              symbol,
+              unsettled,
+            } = data
+            const bank = bankWithBalance.bank
 
             return (
               <TrBody key={bank.name} className="text-sm">
@@ -102,10 +181,10 @@ const BalancesTable = () => {
                   </div>
                 </Td>
                 <Td className="text-right">
-                  <Balance bank={b} />
+                  <Balance bank={bankWithBalance} />
                   <p className="text-sm text-th-fgd-4">
                     <FormatNumericValue
-                      value={mangoAccount ? b.balance * bank.uiPrice : 0}
+                      value={mangoAccount ? balance * bank.uiPrice : 0}
                       isUsd
                     />
                   </p>
@@ -121,7 +200,9 @@ const BalancesTable = () => {
                   <p className="text-sm text-th-fgd-4">
                     <FormatNumericValue
                       value={
-                        collateralValue <= -0.01 ? liabWeight : assetWeight
+                        collateralValue <= -0.01
+                          ? liabWeight.toFixed(2)
+                          : assetWeight.toFixed(2)
                       }
                     />
                     x
@@ -140,19 +221,18 @@ const BalancesTable = () => {
       </Table>
     ) : (
       <div className="border-b border-th-bkg-3">
-        {filteredBanks.map((b, i) => {
-          const bank = b.bank
-          const symbol = bank.name === 'MSOL' ? 'mSOL' : bank.name
-
-          const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0
-          const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
-
-          const collateralValue =
-            initContributions.find((val) => val.asset === bank.name)
-              ?.contribution || 0
-
-          const assetWeight = bank.scaledInitAssetWeight(bank.price).toFixed(2)
-          const liabWeight = bank.scaledInitLiabWeight(bank.price).toFixed(2)
+        {tableData.map((data, i) => {
+          const {
+            assetWeight,
+            balance,
+            bankWithBalance,
+            collateralValue,
+            inOrders,
+            liabWeight,
+            symbol,
+            unsettled,
+          } = data
+          const bank = bankWithBalance.bank
 
           return (
             <Disclosure key={bank.name}>
@@ -172,12 +252,10 @@ const BalancesTable = () => {
                       </div>
                       <div className="flex items-center space-x-2">
                         <div className="text-right">
-                          <Balance bank={b} />
+                          <Balance bank={bankWithBalance} />
                           <span className="font-mono text-xs text-th-fgd-3">
                             <FormatNumericValue
-                              value={
-                                mangoAccount ? b.balance * bank.uiPrice : 0
-                              }
+                              value={mangoAccount ? balance * bank.uiPrice : 0}
                               isUsd
                             />
                           </span>
@@ -216,8 +294,8 @@ const BalancesTable = () => {
                               <FormatNumericValue
                                 value={
                                   collateralValue <= -0.01
-                                    ? liabWeight
-                                    : assetWeight
+                                    ? liabWeight.toFixed(2)
+                                    : assetWeight.toFixed(2)
                                 }
                               />
                               x

@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import { PublicKey } from '@solana/web3.js'
 import {
   Cog8ToothIcon,
@@ -18,7 +18,7 @@ import Loading from '../shared/Loading'
 import { EnterBottomExitBottom } from '../shared/Transitions'
 import useQuoteRoutes from './useQuoteRoutes'
 import { HealthType } from '@blockworks-foundation/mango-v4'
-import { MANGO_MINT, USDC_MINT } from '../../utils/constants'
+import { MANGO_MINT, SWAP_MARGIN_KEY, USDC_MINT } from '../../utils/constants'
 import { useTokenMax } from './useTokenMax'
 import HealthImpact from '@components/shared/HealthImpact'
 import { useWallet } from '@solana/wallet-adapter-react'
@@ -34,6 +34,7 @@ import TabUnderline from '@components/shared/TabUnderline'
 import MarketSwapForm from './MarketSwapForm'
 import LimitSwapForm from './LimitSwapForm'
 import Switch from '@components/forms/Switch'
+import useLocalStorageState from 'hooks/useLocalStorageState'
 
 const set = mangoStore.getState().set
 
@@ -46,6 +47,10 @@ const SwapForm = () => {
   const [showConfirm, setShowConfirm] = useState(false)
   const [swapOrLimit, setSwapOrLimit] = useState('swap')
   const { group } = useMangoGroup()
+  const [, setSavedSwapMargin] = useLocalStorageState<boolean>(
+    SWAP_MARGIN_KEY,
+    true,
+  )
   const { ipAllowed, ipCountry } = useIpAddress()
 
   const {
@@ -180,6 +185,10 @@ const SwapForm = () => {
       s.swap.margin = !s.swap.margin
     })
   }
+
+  useEffect(() => {
+    setSavedSwapMargin(useMargin)
+  }, [useMargin])
 
   const limitOrderDisabled =
     !connected || !amountInFormValue || !amountOutFormValue
