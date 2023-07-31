@@ -94,6 +94,7 @@ const SwapForm = () => {
       const bank = group.getFirstBankByMint(new PublicKey(mintAddress))
       set((s) => {
         s.swap.inputBank = bank
+        s.swap.limitPrice = ''
       })
     }
     setShowTokenSelect(undefined)
@@ -105,6 +106,7 @@ const SwapForm = () => {
       const bank = group.getFirstBankByMint(new PublicKey(mintAddress))
       set((s) => {
         s.swap.outputBank = bank
+        s.swap.limitPrice = ''
       })
     }
     setShowTokenSelect(undefined)
@@ -167,18 +169,9 @@ const SwapForm = () => {
   const handleSwapOrLimit = useCallback(
     (orderType: string) => {
       setSwapOrLimit(orderType)
-      if (orderType === 'trade:limit' && outputBank) {
-        set((s) => {
-          s.swap.limitPrice = outputBank.uiPrice.toString()
-        })
-      }
     },
     [outputBank, set, setSwapOrLimit],
   )
-
-  const handlePlaceOrder = () => {
-    console.log('place swap limit order')
-  }
 
   const handleSetMargin = () => {
     set((s) => {
@@ -189,9 +182,6 @@ const SwapForm = () => {
   useEffect(() => {
     setSavedSwapMargin(useMargin)
   }, [useMargin])
-
-  const limitOrderDisabled =
-    !connected || !amountInFormValue || !amountOutFormValue
 
   return (
     <ContentBox
@@ -279,16 +269,7 @@ const SwapForm = () => {
                   selectedRoute ? amountOutAsDecimal.toNumber() : undefined
                 }
               />
-            ) : (
-              <Button
-                onClick={handlePlaceOrder}
-                className="mt-6 mb-4 flex w-full items-center justify-center text-base"
-                disabled={limitOrderDisabled}
-                size="large"
-              >
-                {t('swap:place-limit-order')}
-              </Button>
-            )
+            ) : null
           ) : (
             <Button
               disabled

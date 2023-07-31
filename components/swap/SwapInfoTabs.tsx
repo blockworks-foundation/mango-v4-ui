@@ -7,6 +7,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import ManualRefresh from '@components/shared/ManualRefresh'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
+import SwapOrders from './SwapOrders'
 
 const SwapInfoTabs = () => {
   const [selectedTab, setSelectedTab] = useState('balances')
@@ -18,6 +19,7 @@ const SwapInfoTabs = () => {
   const tabsWithCount: [string, number][] = useMemo(() => {
     return [
       ['balances', 0],
+      ['orders', 0],
       ['swap:swap-history', 0],
     ]
   }, [openOrders, mangoAccount])
@@ -38,6 +40,7 @@ const SwapInfoTabs = () => {
         />
       </div>
       {selectedTab === 'balances' ? <SwapTradeBalances /> : null}
+      {selectedTab === 'orders' ? <SwapOrders /> : null}
       {selectedTab === 'swap:swap-history' ? <SwapHistoryTable /> : null}
     </div>
   )

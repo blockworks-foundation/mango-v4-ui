@@ -13,7 +13,6 @@ import NumberFormat, {
 } from 'react-number-format'
 import Decimal from 'decimal.js'
 import mangoStore from '@store/mangoStore'
-import useDebounce from '../shared/useDebounce'
 import { useTranslation } from 'next-i18next'
 import { SIZE_INPUT_UI_KEY } from '../../utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
@@ -24,6 +23,12 @@ import { floorToDecimal } from 'utils/numbers'
 import { withValueLimit } from './MarketSwapForm'
 import SellTokenInput from './SellTokenInput'
 import BuyTokenInput from './BuyTokenInput'
+import { notify } from 'utils/notifications'
+import * as sentry from '@sentry/nextjs'
+import { isMangoError } from 'types'
+import Button from '@components/shared/Button'
+import { useWallet } from '@solana/wallet-adapter-react'
+import Loading from '@components/shared/Loading'
 
 type LimitSwapFormProps = {
   setShowTokenSelect: Dispatch<SetStateAction<'input' | 'output' | undefined>>
@@ -35,9 +40,11 @@ const set = mangoStore.getState().set
 
 const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
+  const { connected } = useWallet()
   const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
   const [orderType, setOrderType] = useState(ORDER_TYPES[0])
   const [triggerPrice, setTriggerPrice] = useState('')
+  const [submitting, setSubmitting] = useState(false)
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
 
   const {
@@ -48,20 +55,28 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
     amountOut: amountOutFormValue,
     limitPrice,
   } = mangoStore((s) => s.swap)
-  const [debouncedAmountIn] = useDebounce(amountInFormValue, 300)
-  const [debouncedAmountOut] = useDebounce(amountOutFormValue, 300)
 
   const amountInAsDecimal: Decimal | null = useMemo(() => {
-    return Number(debouncedAmountIn)
-      ? new Decimal(debouncedAmountIn)
+    return Number(amountInFormValue)
+      ? new Decimal(amountInFormValue)
       : new Decimal(0)
-  }, [debouncedAmountIn])
+  }, [amountInFormValue])
 
   const amountOutAsDecimal: Decimal | null = useMemo(() => {
-    return Number(debouncedAmountOut)
-      ? new Decimal(debouncedAmountOut)
+    return Number(amountOutFormValue)
+      ? new Decimal(amountOutFormValue)
       : new Decimal(0)
-  }, [debouncedAmountOut])
+  }, [amountOutFormValue])
+
+  const [baseBank, quoteBank] = useMemo(() => {
+    if (inputBank && inputBank.name === 'USDC') {
+      return [outputBank, inputBank]
+    } else if (outputBank && outputBank.name === 'USDC') {
+      return [inputBank, outputBank]
+    } else if (inputBank && inputBank.name === 'SOL') {
+      return [outputBank, inputBank]
+    } else return [inputBank, outputBank]
+  }, [inputBank, outputBank])
 
   const setAmountInFormValue = useCallback((amountIn: string) => {
     set((s) => {
@@ -87,6 +102,16 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
     })
   }, [])
 
+  useEffect(() => {
+    if (!baseBank || !quoteBank) return
+    const initialLimitPrice = baseBank.uiPrice / quoteBank.uiPrice
+    if (!limitPrice) {
+      set((s) => {
+        s.swap.limitPrice = initialLimitPrice.toString()
+      })
+    }
+  }, [baseBank, limitPrice, quoteBank])
+
   /* 
     If the use margin setting is toggled, clear the form values
   */
@@ -100,14 +125,26 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
       if (info.source !== 'event') return
       setAmountInFormValue(e.value)
       if (parseFloat(e.value) > 0 && limitPrice && outputBank) {
-        const amount = floorToDecimal(
-          parseFloat(e.value) / parseFloat(limitPrice),
-          outputBank.mintDecimals,
-        )
+        const amount =
+          outputBank.name === quoteBank?.name
+            ? floorToDecimal(
+                parseFloat(e.value) * parseFloat(limitPrice),
+                outputBank.mintDecimals,
+              )
+            : floorToDecimal(
+                parseFloat(e.value) / parseFloat(limitPrice),
+                outputBank.mintDecimals,
+              )
         setAmountOutFormValue(amount.toString())
       }
     },
-    [limitPrice, outputBank, setAmountInFormValue, setAmountOutFormValue],
+    [
+      limitPrice,
+      outputBank,
+      quoteBank,
+      setAmountInFormValue,
+      setAmountOutFormValue,
+    ],
   )
 
   const handleAmountOutChange = useCallback(
@@ -115,14 +152,26 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
       if (info.source !== 'event') return
       setAmountOutFormValue(e.value)
       if (parseFloat(e.value) > 0 && limitPrice && inputBank) {
-        const amount = floorToDecimal(
-          parseFloat(e.value) * parseFloat(limitPrice),
-          inputBank.mintDecimals,
-        )
+        const amount =
+          outputBank?.name === quoteBank?.name
+            ? floorToDecimal(
+                parseFloat(e.value) / parseFloat(limitPrice),
+                inputBank.mintDecimals,
+              )
+            : floorToDecimal(
+                parseFloat(e.value) * parseFloat(limitPrice),
+                inputBank.mintDecimals,
+              )
         setAmountInFormValue(amount.toString())
       }
     },
-    [inputBank, limitPrice, setAmountInFormValue, setAmountOutFormValue],
+    [
+      inputBank,
+      outputBank,
+      limitPrice,
+      setAmountInFormValue,
+      setAmountOutFormValue,
+    ],
   )
 
   const handleAmountInUi = useCallback(
@@ -149,7 +198,7 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
         outputBank
       ) {
         const amount = floorToDecimal(
-          parseFloat(amountInFormValue) / parseFloat(e.value),
+          parseFloat(amountInFormValue) * parseFloat(e.value),
           outputBank.mintDecimals,
         )
         setAmountOutFormValue(amount.toString())
@@ -166,20 +215,101 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
     [setTriggerPrice],
   )
 
-  const handleSwitchTokens = useCallback(() => {
-    if (amountInAsDecimal?.gt(0) && amountOutAsDecimal.gte(0)) {
-      setAmountInFormValue(amountOutAsDecimal.toString())
+  const handleLimitSwap = useCallback(async () => {
+    try {
+      const client = mangoStore.getState().client
+      const group = mangoStore.getState().group
+      const actions = mangoStore.getState().actions
+      const mangoAccount = mangoStore.getState().mangoAccount.current
+      const inputBank = mangoStore.getState().swap.inputBank
+      const outputBank = mangoStore.getState().swap.outputBank
+
+      if (
+        !mangoAccount ||
+        !group ||
+        !inputBank ||
+        !outputBank ||
+        (!triggerPrice && orderType !== 'trade:limit') ||
+        (!limitPrice && orderType !== 'trade:stop-market')
+      )
+        return
+      setSubmitting(true)
+
+      const orderPrice =
+        orderType === 'trade:limit'
+          ? parseFloat(limitPrice!)
+          : parseFloat(triggerPrice)
+
+      const stopLimitPrice =
+        orderType !== 'trade:stop-market' ? parseFloat(limitPrice!) : 0
+
+      try {
+        const tx = await client.tokenConditionalSwapStopLoss(
+          group,
+          mangoAccount,
+          inputBank.mint,
+          orderPrice,
+          outputBank.mint,
+          stopLimitPrice,
+          amountInAsDecimal.toNumber(),
+          null,
+          null,
+        )
+        notify({
+          title: 'Transaction confirmed',
+          type: 'success',
+          txid: tx,
+          noSound: true,
+        })
+        actions.fetchGroup()
+        await actions.reloadMangoAccount()
+      } catch (e) {
+        console.error('onSwap error: ', e)
+        sentry.captureException(e)
+        if (isMangoError(e)) {
+          notify({
+            title: 'Transaction failed',
+            description: e.message,
+            txid: e?.txid,
+            type: 'error',
+          })
+        }
+      }
+    } catch (e) {
+      console.error('Swap error:', e)
+    } finally {
+      setSubmitting(false)
     }
-    const inputBank = mangoStore.getState().swap.inputBank
-    const outputBank = mangoStore.getState().swap.outputBank
+  }, [orderType, limitPrice, triggerPrice, amountInAsDecimal])
+
+  const handleSwitchTokens = useCallback(() => {
+    if (amountInAsDecimal?.gt(0) && limitPrice) {
+      const amountOut =
+        outputBank?.name !== quoteBank?.name
+          ? amountInAsDecimal.mul(limitPrice)
+          : amountInAsDecimal.div(limitPrice)
+      setAmountOutFormValue(amountOut.toString())
+    }
     set((s) => {
       s.swap.inputBank = outputBank
       s.swap.outputBank = inputBank
+      // s.swap.limitPrice = ''
     })
     setAnimateSwitchArrow(
       (prevanimateSwitchArrow) => prevanimateSwitchArrow + 1,
     )
-  }, [setAmountInFormValue, amountOutAsDecimal, amountInAsDecimal])
+  }, [
+    setAmountInFormValue,
+    amountOutAsDecimal,
+    amountInAsDecimal,
+    limitPrice,
+    inputBank,
+    outputBank,
+    quoteBank,
+  ])
+
+  const limitOrderDisabled =
+    !connected || !amountInFormValue || !amountOutFormValue
 
   return (
     <>
@@ -231,7 +361,13 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
         ) : null}
         {orderType !== 'trade:stop-market' ? (
           <div className="col-span-1">
-            <p className="mb-2 text-th-fgd-2">{t('trade:limit-price')}</p>
+            <p className="mb-2 text-th-fgd-2">
+              {t('trade:limit-price')}
+              <span className="text-xs text-th-fgd-3">
+                {' '}
+                ({quoteBank?.name})
+              </span>
+            </p>
             <NumberFormat
               inputMode="decimal"
               thousandSeparator=","
@@ -283,6 +419,14 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
           useMargin={useMargin}
         />
       )}
+      <Button
+        onClick={handleLimitSwap}
+        className="mt-6 mb-4 flex w-full items-center justify-center text-base"
+        disabled={limitOrderDisabled}
+        size="large"
+      >
+        {submitting ? <Loading /> : t('swap:place-limit-order')}
+      </Button>
     </>
   )
 }
