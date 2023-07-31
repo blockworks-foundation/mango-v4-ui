@@ -13,7 +13,7 @@ export function useNotificationSettings() {
   const token = NotificationCookieStore((s) => s.currentToken)
   const isAuth = useIsAuthorized()
 
-  const criteria = [walletPubKey, token, isAuth, mangoAccountAddress]
+  const criteria = [token, isAuth, mangoAccountAddress]
 
   return useQuery(
     ['notificationSettings', criteria],

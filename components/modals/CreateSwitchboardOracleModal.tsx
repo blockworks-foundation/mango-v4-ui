@@ -292,6 +292,8 @@ const CreateSwitchboardOracleModal = ({
     onClose,
     orcaPoolAddress,
     raydiumPoolAddress,
+    tier,
+    tierToSwapValue,
     wallet,
   ])
 

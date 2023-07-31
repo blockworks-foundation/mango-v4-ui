@@ -16,7 +16,7 @@ export function useNotificationSocket() {
   const token = NotificationCookieStore((s) => s.currentToken)
 
   const queryClient = useQueryClient()
-  const criteria = publicKey?.toBase58() && token
+  const criteria = [publicKey?.toBase58(), token, mangoAccountAddress]
 
   const [socket, setSocket] = useState<WebSocket | null>(null)
 
