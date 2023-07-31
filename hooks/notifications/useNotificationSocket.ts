@@ -16,7 +16,7 @@ export function useNotificationSocket() {
   const token = NotificationCookieStore((s) => s.currentToken)
 
   const queryClient = useQueryClient()
-  const criteria = [publicKey?.toBase58(), token, mangoAccountAddress]
+  const criteria = [token, mangoAccountAddress]
 
   const [socket, setSocket] = useState<WebSocket | null>(null)
 
@@ -46,7 +46,7 @@ export function useNotificationSocket() {
           })
           //we push new data to our notifications data
           queryClient.setQueryData<Notification[]>(
-            ['notifications', criteria],
+            ['notifications', ...criteria],
             (prevData) => {
               if (!prevData) {
                 return []

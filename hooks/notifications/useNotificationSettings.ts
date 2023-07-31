@@ -16,7 +16,7 @@ export function useNotificationSettings() {
   const criteria = [token, isAuth, mangoAccountAddress]
 
   return useQuery(
-    ['notificationSettings', criteria],
+    ['notificationSettings', ...criteria],
     () => fetchNotificationSettings(walletPubKey!, token!, mangoAccountAddress),
     {
       enabled: !!isAuth && !!mangoAccountAddress,
