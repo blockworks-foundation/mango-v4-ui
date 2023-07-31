@@ -20,6 +20,7 @@
     "no-swap-found": "查不到换币",
     "output-reduce-only-warning": "{{symbol}}处于仅减少模式。换币限于归还借贷",
     "paid": "付出",
+    "pair": "Pair",
     "pay": "你将付出",
     "place-limit-order": "Place Limit Order",
     "preset": "预设",

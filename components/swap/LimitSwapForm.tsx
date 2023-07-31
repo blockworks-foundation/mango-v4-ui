@@ -29,12 +29,17 @@ import { isMangoError } from 'types'
 import Button from '@components/shared/Button'
 import { useWallet } from '@solana/wallet-adapter-react'
 import Loading from '@components/shared/Loading'
+import TokenLogo from '@components/shared/TokenLogo'
 
 type LimitSwapFormProps = {
   setShowTokenSelect: Dispatch<SetStateAction<'input' | 'output' | undefined>>
 }
 
-const ORDER_TYPES = ['trade:limit', 'trade:stop-market', 'trade:stop-limit']
+const ORDER_TYPES = [
+  // 'trade:limit',
+  'trade:stop-market',
+  'trade:stop-limit',
+]
 
 const set = mangoStore.getState().set
 
@@ -102,15 +107,19 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
     })
   }, [])
 
+  // set default limit and trigger price
   useEffect(() => {
     if (!baseBank || !quoteBank) return
-    const initialLimitPrice = baseBank.uiPrice / quoteBank.uiPrice
+    const initialPrice = baseBank.uiPrice / quoteBank.uiPrice
+    if (!triggerPrice) {
+      setTriggerPrice((initialPrice * 0.9).toString())
+    }
     if (!limitPrice) {
       set((s) => {
-        s.swap.limitPrice = initialLimitPrice.toString()
+        s.swap.limitPrice = (initialPrice * 0.8).toString()
       })
     }
-  }, [baseBank, limitPrice, quoteBank])
+  }, [baseBank, limitPrice, quoteBank, triggerPrice])
 
   /* 
     If the use margin setting is toggled, clear the form values
@@ -331,7 +340,7 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
             value={t(orderType)}
             onChange={(type) => setOrderType(type)}
             className="w-full"
-            buttonClassName="ring-transparent rounded-t-lg rounded-b-lg focus:outline-none md:hover:bg-th-bkg-1 md:hover:ring-transparent focus-visible:bg-th-bkg-3"
+            buttonClassName="ring-transparent rounded-t-lg rounded-b-lg focus:outline-none md:hover:bg-th-bkg-1 md:hover:ring-transparent focus-visible:bg-th-bkg-3 whitespace-nowrap"
           >
             {ORDER_TYPES.map((type) => (
               <Select.Option key={type} value={type}>
@@ -343,45 +352,49 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
         {orderType !== 'trade:limit' ? (
           <div className="col-span-1">
             <p className="mb-2 text-th-fgd-2">{t('trade:trigger-price')}</p>
-            <NumberFormat
-              inputMode="decimal"
-              thousandSeparator=","
-              allowNegative={false}
-              isNumericString={true}
-              decimalScale={outputBank?.mintDecimals || 6}
-              name="triggerPrice"
-              id="triggerPrice"
-              className="h-10 w-full rounded-lg bg-th-input-bkg p-3 text-right font-mono text-sm text-th-fgd-1 focus:outline-none md:hover:bg-th-bkg-1"
-              placeholder="0.00"
-              value={triggerPrice}
-              onValueChange={handleTriggerPrice}
-              isAllowed={withValueLimit}
-            />
+            <div className="relative">
+              <NumberFormat
+                inputMode="decimal"
+                thousandSeparator=","
+                allowNegative={false}
+                isNumericString={true}
+                decimalScale={outputBank?.mintDecimals || 6}
+                name="triggerPrice"
+                id="triggerPrice"
+                className="h-10 w-full rounded-lg bg-th-input-bkg p-3 pl-8 font-mono text-sm text-th-fgd-1 focus:outline-none md:hover:bg-th-bkg-1"
+                placeholder="0.00"
+                value={triggerPrice}
+                onValueChange={handleTriggerPrice}
+                isAllowed={withValueLimit}
+              />
+              <div className="absolute top-1/2 -translate-y-1/2 left-2">
+                <TokenLogo bank={quoteBank} size={16} />
+              </div>
+            </div>
           </div>
         ) : null}
         {orderType !== 'trade:stop-market' ? (
           <div className="col-span-1">
-            <p className="mb-2 text-th-fgd-2">
-              {t('trade:limit-price')}
-              <span className="text-xs text-th-fgd-3">
-                {' '}
-                ({quoteBank?.name})
-              </span>
-            </p>
-            <NumberFormat
-              inputMode="decimal"
-              thousandSeparator=","
-              allowNegative={false}
-              isNumericString={true}
-              decimalScale={outputBank?.mintDecimals || 6}
-              name="limitPrice"
-              id="limitPrice"
-              className="h-10 w-full rounded-lg bg-th-input-bkg p-3 text-right font-mono text-sm text-th-fgd-1 focus:outline-none md:hover:bg-th-bkg-1"
-              placeholder="0.00"
-              value={limitPrice}
-              onValueChange={handleLimitPrice}
-              isAllowed={withValueLimit}
-            />
+            <p className="mb-2 text-th-fgd-2">{t('trade:limit-price')}</p>
+            <div className="relative">
+              <NumberFormat
+                inputMode="decimal"
+                thousandSeparator=","
+                allowNegative={false}
+                isNumericString={true}
+                decimalScale={outputBank?.mintDecimals || 6}
+                name="limitPrice"
+                id="limitPrice"
+                className="h-10 w-full rounded-lg bg-th-input-bkg p-3 pl-8 font-mono text-sm text-th-fgd-1 focus:outline-none md:hover:bg-th-bkg-1"
+                placeholder="0.00"
+                value={limitPrice}
+                onValueChange={handleLimitPrice}
+                isAllowed={withValueLimit}
+              />
+              <div className="absolute top-1/2 -translate-y-1/2 left-2">
+                <TokenLogo bank={quoteBank} size={16} />
+              </div>
+            </div>
           </div>
         ) : null}
       </div>

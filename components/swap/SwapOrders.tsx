@@ -45,7 +45,7 @@ const SwapOrders = () => {
     for (const order of orders) {
       const buyBank = group.getFirstBankByTokenIndex(order.buyTokenIndex)
       const sellBank = group.getFirstBankByTokenIndex(order.sellTokenIndex)
-      const market = `${sellBank.name}/${buyBank.name}`
+      const pair = `${sellBank.name}/${buyBank.name}`
       const size = floorToDecimal(
         order.getMaxSellUi(group),
         sellBank.mintDecimals,
@@ -53,20 +53,18 @@ const SwapOrders = () => {
       const triggerPrice = order.getPriceLowerLimitUi(group)
       const limitPrice = order.getPriceUpperLimitUi(group)
       const pricePremium = order.getPricePremium()
+      const filled = order.getSoldUi(group)
 
       const orderType =
-        limitPrice === 0
-          ? 'trade:stop-market'
-          : triggerPrice === limitPrice
-          ? 'trade:limit'
-          : 'trade:stop-limit'
+        limitPrice === 0 ? 'trade:stop-market' : 'trade:stop-limit'
 
       const data = {
         ...order,
         buyBank,
         sellBank,
-        market,
+        pair,
         size,
+        filled,
         triggerPrice,
         limitPrice,
         orderType,
@@ -132,10 +130,10 @@ const SwapOrders = () => {
         <TrHead>
           <Th className="text-left">
             <SortableColumnHeader
-              sortKey="market"
-              sort={() => requestSort('market')}
+              sortKey="pair"
+              sort={() => requestSort('pair')}
               sortConfig={sortConfig}
-              title={t('market')}
+              title={t('swap:pair')}
             />
           </Th>
           <Th>
@@ -144,7 +142,7 @@ const SwapOrders = () => {
                 sortKey="orderType"
                 sort={() => requestSort('orderType')}
                 sortConfig={sortConfig}
-                title={t('order-type')}
+                title={t('trade:order-type')}
               />
             </div>
           </Th>
@@ -154,7 +152,17 @@ const SwapOrders = () => {
                 sortKey="size"
                 sort={() => requestSort('size')}
                 sortConfig={sortConfig}
-                title={t('size')}
+                title={t('trade:size')}
+              />
+            </div>
+          </Th>
+          <Th>
+            <div className="flex justify-end">
+              <SortableColumnHeader
+                sortKey="filled"
+                sort={() => requestSort('filled')}
+                sortConfig={sortConfig}
+                title={t('trade:filled')}
               />
             </div>
           </Th>
@@ -164,7 +172,7 @@ const SwapOrders = () => {
                 sortKey="triggerPrice"
                 sort={() => requestSort('triggerPrice')}
                 sortConfig={sortConfig}
-                title={t('trigger-price')}
+                title={t('trade:trigger-price')}
               />
             </div>
           </Th>
@@ -174,7 +182,7 @@ const SwapOrders = () => {
                 sortKey="limitPrice"
                 sort={() => requestSort('limitPrice')}
                 sortConfig={sortConfig}
-                title={t('limit-price')}
+                title={t('trade:limit-price')}
               />
             </div>
           </Th>
@@ -196,16 +204,17 @@ const SwapOrders = () => {
           const {
             buyBank,
             fee,
-            market,
+            pair,
             orderType,
             limitPrice,
             sellBank,
             size,
+            filled,
             triggerPrice,
           } = data
           return (
             <TrBody key={i} className="text-sm">
-              <Td>{market}</Td>
+              <Td>{pair}</Td>
               <Td>
                 <p className="text-right font-body">{t(orderType)}</p>
               </Td>
@@ -219,7 +228,16 @@ const SwapOrders = () => {
                 </p>
               </Td>
               <Td>
-                {triggerPrice !== limitPrice ? (
+                <p className="text-right">
+                  {filled}/{size}
+                  <span className="text-th-fgd-3 font-body">
+                    {' '}
+                    {sellBank.name}
+                  </span>
+                </p>
+              </Td>
+              <Td>
+                {triggerPrice ? (
                   <p className="text-right">
                     {triggerPrice}
                     <span className="text-th-fgd-3 font-body">

@@ -19,7 +19,7 @@ const SwapInfoTabs = () => {
   const tabsWithCount: [string, number][] = useMemo(() => {
     return [
       ['balances', 0],
-      ['orders', 0],
+      ['trade:orders', 0],
       ['swap:swap-history', 0],
     ]
   }, [openOrders, mangoAccount])
@@ -40,7 +40,7 @@ const SwapInfoTabs = () => {
         />
       </div>
       {selectedTab === 'balances' ? <SwapTradeBalances /> : null}
-      {selectedTab === 'orders' ? <SwapOrders /> : null}
+      {selectedTab === 'trade:orders' ? <SwapOrders /> : null}
       {selectedTab === 'swap:swap-history' ? <SwapHistoryTable /> : null}
     </div>
   )

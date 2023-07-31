@@ -20,6 +20,7 @@
     "no-swap-found": "查不到換幣",
     "output-reduce-only-warning": "{{symbol}}處於僅減少模式。換幣限於歸還借貸",
     "paid": "付出",
+    "pair": "Pair",
     "pay": "你將付出",
     "place-limit-order": "Place Limit Order",
     "preset": "預設",

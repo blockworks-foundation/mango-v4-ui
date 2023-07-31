@@ -34,10 +34,10 @@ const SwapPage = () => {
   return (
     <>
       <div className="grid grid-cols-12">
-        <div className="col-span-12 border-th-bkg-3 md:col-span-6 md:border-b lg:col-span-7 xl:col-span-8">
+        <div className="col-span-12 border-th-bkg-3 md:col-span-6 md:border-b lg:col-span-7 2xl:col-span-8">
           <SwapTokenChart />
         </div>
-        <div className="col-span-12 mt-2 space-y-6 border-th-bkg-3 md:col-span-6 md:mt-0 md:border-b lg:col-span-5 xl:col-span-4">
+        <div className="col-span-12 mt-2 space-y-6 border-th-bkg-3 md:col-span-6 md:mt-0 md:border-b lg:col-span-5 2xl:col-span-4">
           <SwapForm />
         </div>
         <div className="col-span-12">
