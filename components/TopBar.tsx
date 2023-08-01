@@ -24,6 +24,7 @@ import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import AccountsButton from './AccountsButton'
 import useUnownedAccount from 'hooks/useUnownedAccount'
+import NotificationsButton from './notifications/NotificationsButton'
 import Tooltip from './shared/Tooltip'
 import { copyToClipboard } from 'utils'
 import UserSetupModal from './modals/UserSetupModal'
@@ -35,7 +36,7 @@ const set = mangoStore.getState().set
 
 const TopBar = () => {
   const { t } = useTranslation('common')
-  const { mangoAccount } = useMangoAccount()
+  const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const { connected } = useWallet()
 
   const [action, setAction] = useState<'deposit' | 'withdraw'>('deposit')
@@ -199,6 +200,7 @@ const TopBar = () => {
           )}
           {connected ? (
             <div className="flex items-center">
+              {mangoAccountAddress && <NotificationsButton />}
               <AccountsButton />
               <ConnectedMenu />
             </div>
