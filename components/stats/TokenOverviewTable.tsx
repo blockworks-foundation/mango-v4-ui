@@ -43,7 +43,9 @@ const TokenOverviewTable = () => {
     for (const b of banks) {
       const bank: Bank = b.bank
       const deposits = bank.uiDeposits()
+      const depositsValue = deposits * bank.uiPrice
       const borrows = bank.uiBorrows()
+      const borrowsValue = borrows * bank.uiPrice
       const availableVaultBalance = group
         ? group.getTokenVaultBalanceByMintUi(bank.mint) -
           deposits * bank.minVaultToDepositsRatio
@@ -52,10 +54,12 @@ const TokenOverviewTable = () => {
         0,
         availableVaultBalance.toFixed(bank.mintDecimals),
       )
+      const availableValue = available.toNumber() * bank.uiPrice
       const feesEarned = toUiDecimals(
         bank.collectedFeesNative,
         bank.mintDecimals,
       )
+      const feeValue = feesEarned * bank.uiPrice
       const utilization =
         bank.uiDeposits() > 0 ? (bank.uiBorrows() / bank.uiDeposits()) * 100 : 0
 
@@ -65,12 +69,16 @@ const TokenOverviewTable = () => {
 
       const data = {
         available,
+        availableValue,
         bank,
-        borrows,
         borrowRate,
-        deposits,
+        borrows,
+        borrowsValue,
         depositRate,
+        deposits,
+        depositsValue,
         feesEarned,
+        feeValue,
         symbol,
         utilization,
       }
@@ -103,8 +111,8 @@ const TokenOverviewTable = () => {
                 <Th>
                   <div className="flex justify-end">
                     <SortableColumnHeader
-                      sortKey="deposits"
-                      sort={() => requestSort('deposits')}
+                      sortKey="depositsValue"
+                      sort={() => requestSort('depositsValue')}
                       sortConfig={sortConfig}
                       title={t('total-deposits')}
                     />
@@ -113,8 +121,8 @@ const TokenOverviewTable = () => {
                 <Th>
                   <div className="flex justify-end">
                     <SortableColumnHeader
-                      sortKey="borrows"
-                      sort={() => requestSort('borrows')}
+                      sortKey="borrowsValue"
+                      sort={() => requestSort('borrowsValue')}
                       sortConfig={sortConfig}
                       title={t('total-borrows')}
                     />
@@ -124,8 +132,8 @@ const TokenOverviewTable = () => {
                   <div className="flex justify-end">
                     <Tooltip content="The amount available to borrow">
                       <SortableColumnHeader
-                        sortKey="available"
-                        sort={() => requestSort('available')}
+                        sortKey="availableValue"
+                        sort={() => requestSort('availableValue')}
                         sortConfig={sortConfig}
                         title={t('available')}
                         titleClass="tooltip-underline"
@@ -137,8 +145,8 @@ const TokenOverviewTable = () => {
                   <div className="flex justify-end">
                     <Tooltip content={t('token:fees-tooltip')}>
                       <SortableColumnHeader
-                        sortKey="feesEarned"
-                        sort={() => requestSort('feesEarned')}
+                        sortKey="feeValue"
+                        sort={() => requestSort('feeValue')}
                         sortConfig={sortConfig}
                         title={t('fees')}
                         titleClass="tooltip-underline"

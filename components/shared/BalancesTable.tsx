@@ -65,6 +65,7 @@ const BalancesTable = () => {
     for (const b of filteredBanks) {
       const bank = b.bank
       const balance = b.balance
+      const balanceValue = balance * bank.uiPrice
       const symbol = bank.name === 'MSOL' ? 'mSOL' : bank.name
 
       const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0
@@ -80,6 +81,7 @@ const BalancesTable = () => {
       const data = {
         assetWeight,
         balance,
+        balanceValue,
         bankWithBalance: b,
         collateralValue,
         inOrders,
@@ -114,8 +116,8 @@ const BalancesTable = () => {
             <Th>
               <div className="flex justify-end">
                 <SortableColumnHeader
-                  sortKey="balance"
-                  sort={() => requestSort('balance')}
+                  sortKey="balanceValue"
+                  sort={() => requestSort('balanceValue')}
                   sortConfig={sortConfig}
                   title={t('balance')}
                 />
