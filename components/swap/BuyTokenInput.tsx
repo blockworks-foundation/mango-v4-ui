@@ -7,32 +7,28 @@ import NumberFormat, {
 } from 'react-number-format'
 import { formatCurrencyValue } from 'utils/numbers'
 import { useTranslation } from 'react-i18next'
-import { Dispatch, SetStateAction, useCallback, useMemo } from 'react'
+import { Dispatch, SetStateAction, useMemo } from 'react'
 import mangoStore from '@store/mangoStore'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { OUTPUT_TOKEN_DEFAULT } from 'utils/constants'
 import { NUMBER_FORMAT_CLASSNAMES } from './MarketSwapForm'
 
-const set = mangoStore.getState().set
-
 const BuyTokenInput = ({
   handleAmountOutChange,
   loading,
   setShowTokenSelect,
-  setAmountOutFormValue,
+  handleRepay,
 }: {
   handleAmountOutChange: (e: NumberFormatValues, info: SourceInfo) => void
   loading?: boolean
   setShowTokenSelect: Dispatch<SetStateAction<'input' | 'output' | undefined>>
-  setAmountOutFormValue: (amountOut: string) => void
+  handleRepay: (amountOut: string) => void
 }) => {
   const { t } = useTranslation('common')
   const { group } = useMangoGroup()
-  const {
-    outputBank,
-    amountOut: amountOutFormValue,
-    swapMode,
-  } = mangoStore((s) => s.swap)
+  const { outputBank, amountOut: amountOutFormValue } = mangoStore(
+    (s) => s.swap,
+  )
 
   const outputTokenBalanceBorrow = useMemo(() => {
     if (!outputBank) return 0
@@ -40,18 +36,6 @@ const BuyTokenInput = ({
     const balance = mangoAccount?.getTokenBalanceUi(outputBank)
     return balance && balance < 0 ? Math.abs(balance) : 0
   }, [outputBank])
-
-  const setBorrowAmountOut = useCallback(
-    (borrowAmount: string) => {
-      if (swapMode === 'ExactIn') {
-        set((s) => {
-          s.swap.swapMode = 'ExactOut'
-        })
-      }
-      setAmountOutFormValue(borrowAmount.toString())
-    },
-    [setAmountOutFormValue],
-  )
 
   return (
     <div className="mb-2 grid grid-cols-2 rounded-xl bg-th-bkg-2 p-3">
@@ -63,7 +47,7 @@ const BuyTokenInput = ({
             decimals={outputBank?.mintDecimals || 9}
             label={t('repay')}
             onClick={() =>
-              setBorrowAmountOut(
+              handleRepay(
                 outputTokenBalanceBorrow.toFixed(outputBank?.mintDecimals || 9),
               )
             }

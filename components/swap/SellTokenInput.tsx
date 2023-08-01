@@ -16,12 +16,12 @@ import useUnownedAccount from 'hooks/useUnownedAccount'
 const SellTokenInput = ({
   handleAmountInChange,
   setShowTokenSelect,
-  setAmountInFormValue,
+  handleMax,
   className,
 }: {
   handleAmountInChange: (e: NumberFormatValues, info: SourceInfo) => void
   setShowTokenSelect: Dispatch<SetStateAction<'input' | 'output' | undefined>>
-  setAmountInFormValue: (amountIn: string, setSwapMode?: boolean) => void
+  handleMax: (amountIn: string) => void
   className?: string
 }) => {
   const { t } = useTranslation('common')
@@ -40,7 +40,7 @@ const SellTokenInput = ({
         {!isUnownedAccount ? (
           <MaxSwapAmount
             useMargin={useMargin}
-            setAmountIn={(v) => setAmountInFormValue(v, true)}
+            setAmountIn={(v) => handleMax(v)}
           />
         ) : null}
       </div>

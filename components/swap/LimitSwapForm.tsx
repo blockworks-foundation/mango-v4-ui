@@ -194,6 +194,11 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
     setAmountOutFormValue('')
   }, [useMargin, setAmountInFormValue, setAmountOutFormValue])
 
+  // the price to use for calculating the opposing side's size
+  const sizePrice = useMemo(() => {
+    return orderType === 'trade:stop-market' ? triggerPrice : limitPrice
+  }, [limitPrice, orderType, triggerPrice])
+
   // get the out amount from the in amount and trigger or limit price
   const getAmountOut = useCallback(
     (amountIn: string, price: string) => {
@@ -230,63 +235,61 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
     [inputBank, outputBank, quoteBank],
   )
 
+  const handleMax = useCallback(
+    (amountIn: string) => {
+      setAmountInFormValue(amountIn)
+      if (parseFloat(amountIn) > 0 && sizePrice) {
+        const amountOut = getAmountOut(amountIn, sizePrice)
+        setAmountOutFormValue(amountOut.toString())
+      }
+    },
+    [getAmountOut, setAmountInFormValue, setAmountOutFormValue, sizePrice],
+  )
+
+  const handleRepay = useCallback(
+    (amountOut: string) => {
+      setAmountOutFormValue(amountOut)
+      if (parseFloat(amountOut) > 0 && sizePrice) {
+        const amountIn = getAmountIn(amountOut, sizePrice)
+        setAmountInFormValue(amountIn.toString())
+      }
+    },
+    [getAmountIn, setAmountInFormValue, setAmountOutFormValue, sizePrice],
+  )
+
   const handleAmountInChange = useCallback(
     (e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
       setAmountInFormValue(e.value)
-      const price =
-        orderType === 'trade:stop-market' ? triggerPrice : limitPrice
-      if (parseFloat(e.value) > 0 && price) {
-        const amountOut = getAmountOut(e.value, price)
+      if (parseFloat(e.value) > 0 && sizePrice) {
+        const amountOut = getAmountOut(e.value, sizePrice)
         setAmountOutFormValue(amountOut.toString())
       }
     },
-    [
-      limitPrice,
-      orderType,
-      setAmountInFormValue,
-      setAmountOutFormValue,
-      triggerPrice,
-    ],
+    [getAmountOut, setAmountInFormValue, setAmountOutFormValue, sizePrice],
   )
 
   const handleAmountOutChange = useCallback(
     (e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
       setAmountOutFormValue(e.value)
-      const price =
-        orderType === 'trade:stop-market' ? triggerPrice : limitPrice
-      if (parseFloat(e.value) > 0 && price) {
-        const amountIn = getAmountIn(e.value, price)
+      if (parseFloat(e.value) > 0 && sizePrice) {
+        const amountIn = getAmountIn(e.value, sizePrice)
         setAmountInFormValue(amountIn.toString())
       }
     },
-    [
-      orderType,
-      limitPrice,
-      setAmountInFormValue,
-      setAmountOutFormValue,
-      triggerPrice,
-    ],
+    [getAmountIn, setAmountInFormValue, setAmountOutFormValue, sizePrice],
   )
 
   const handleAmountInUi = useCallback(
     (amountIn: string) => {
       setAmountInFormValue(amountIn)
-      const price =
-        orderType === 'trade:stop-market' ? triggerPrice : limitPrice
-      if (price) {
-        const amountOut = getAmountOut(amountIn, price)
+      if (sizePrice) {
+        const amountOut = getAmountOut(amountIn, sizePrice)
         setAmountOutFormValue(amountOut.toString())
       }
     },
-    [
-      limitPrice,
-      orderType,
-      setAmountInFormValue,
-      setAmountOutFormValue,
-      triggerPrice,
-    ],
+    [getAmountOut, setAmountInFormValue, setAmountOutFormValue, sizePrice],
   )
 
   const handleLimitPrice = useCallback(
@@ -320,12 +323,11 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
   )
 
   const handleSwitchTokens = useCallback(() => {
-    const price = orderType === 'trade:stop-market' ? triggerPrice : limitPrice
-    if (amountInAsDecimal?.gt(0) && price) {
+    if (amountInAsDecimal?.gt(0) && sizePrice) {
       const amountOut =
         outputBank?.name !== quoteBank?.name
-          ? amountInAsDecimal.mul(price)
-          : amountInAsDecimal.div(price)
+          ? amountInAsDecimal.mul(sizePrice)
+          : amountInAsDecimal.div(sizePrice)
       setAmountOutFormValue(amountOut.toString())
     }
     set((s) => {
@@ -339,12 +341,11 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
   }, [
     setAmountInFormValue,
     amountInAsDecimal,
-    limitPrice,
     inputBank,
     orderType,
     outputBank,
     quoteBank,
-    triggerPrice,
+    sizePrice,
   ])
 
   const handlePlaceStopLoss = useCallback(async () => {
@@ -427,7 +428,7 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
         className="rounded-b-none"
         handleAmountInChange={handleAmountInChange}
         setShowTokenSelect={setShowTokenSelect}
-        setAmountInFormValue={setAmountInFormValue}
+        handleMax={handleMax}
       />
       <div
         className={`grid ${
@@ -551,7 +552,7 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
       <BuyTokenInput
         handleAmountOutChange={handleAmountOutChange}
         setShowTokenSelect={setShowTokenSelect}
-        setAmountOutFormValue={setAmountOutFormValue}
+        handleRepay={handleRepay}
       />
       {swapFormSizeUi === 'slider' ? (
         <SwapSlider

@@ -87,14 +87,20 @@ const MarketSwapForm = ({
     [],
   )
 
-  const setAmountOutFormValue = useCallback((amountOut: string) => {
-    set((s) => {
-      s.swap.amountOut = amountOut
-      if (!parseFloat(amountOut)) {
-        s.swap.amountIn = ''
-      }
-    })
-  }, [])
+  const setAmountOutFormValue = useCallback(
+    (amountOut: string, setSwapMode?: boolean) => {
+      set((s) => {
+        s.swap.amountOut = amountOut
+        if (!parseFloat(amountOut)) {
+          s.swap.amountIn = ''
+        }
+        if (setSwapMode) {
+          s.swap.swapMode = 'ExactOut'
+        }
+      })
+    },
+    [],
+  )
 
   const handleAmountInChange = useCallback(
     (e: NumberFormatValues, info: SourceInfo) => {
@@ -120,6 +126,20 @@ const MarketSwapForm = ({
       setAmountOutFormValue(e.value)
     },
     [swapMode, setAmountOutFormValue],
+  )
+
+  const handleMax = useCallback(
+    (amountIn: string) => {
+      setAmountInFormValue(amountIn, true)
+    },
+    [setAmountInFormValue],
+  )
+
+  const handleRepay = useCallback(
+    (amountOut: string) => {
+      setAmountOutFormValue(amountOut, true)
+    },
+    [setAmountInFormValue],
   )
 
   /* 
@@ -180,7 +200,7 @@ const MarketSwapForm = ({
       <SellTokenInput
         handleAmountInChange={handleAmountInChange}
         setShowTokenSelect={setShowTokenSelect}
-        setAmountInFormValue={setAmountInFormValue}
+        handleMax={handleMax}
       />
       <div className="my-2 flex justify-center">
         <button
@@ -201,7 +221,7 @@ const MarketSwapForm = ({
         handleAmountOutChange={handleAmountOutChange}
         loading={loadingSwapDetails}
         setShowTokenSelect={setShowTokenSelect}
-        setAmountOutFormValue={setAmountOutFormValue}
+        handleRepay={handleRepay}
       />
       {swapFormSizeUi === 'slider' ? (
         <SwapSlider
