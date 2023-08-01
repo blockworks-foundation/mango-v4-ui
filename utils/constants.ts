@@ -126,6 +126,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   'eth (portal)': true,
   hnt: true,
   jitosol: true,
+  kin: true,
   ldo: true,
   mngo: true,
   msol: true,

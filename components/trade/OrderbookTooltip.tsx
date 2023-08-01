@@ -22,16 +22,19 @@ const OrderbookTooltip = () => {
 
   const { averagePrice, cumulativeSize, cumulativeValue, side } =
     orderbookTooltip
-  const isBid = side === 'buy'
+  const isBuy = side === 'sell'
+  const oppositeSide = side === 'buy' ? 'sell' : 'buy'
   const isPerp = serumOrPerpMarket instanceof PerpMarket
   return (
     <div
       className={`absolute max-w-[75%] w-full top-4 left-1/2 -translate-x-1/2 p-3 rounded-md bg-th-bkg-1 border text-center ${
-        isBid ? 'border-th-up' : 'border-th-down'
+        isBuy ? 'border-th-up' : 'border-th-down'
       }`}
     >
       <p>
-        <span className={isBid ? 'text-th-up' : 'text-th-down'}>{t(side)}</span>
+        <span className={isBuy ? 'text-th-up' : 'text-th-down'}>
+          {t(oppositeSide)}
+        </span>
         {` ${formatNumericValue(cumulativeSize, minOrderDecimals)} ${
           isPerp ? '' : baseSymbol
         } ${t('trade:for')} ${isPerp ? '$' : ''}${formatNumericValue(
