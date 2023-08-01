@@ -233,7 +233,7 @@ const SwapForm = () => {
           <div className="mb-6">
             <TabUnderline
               activeValue={swapOrLimit}
-              values={['swap', 'trade:limit']}
+              values={['swap', 'trade:stop-loss']}
               onChange={(v) => handleSwapOrLimit(v)}
             />
           </div>

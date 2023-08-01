@@ -21,7 +21,7 @@
     "output-reduce-only-warning": "{{symbol}} is in reduce only mode. You can swap to close borrows only",
     "paid": "Paid",
     "pair": "Pair",
-    "place-limit-order": "Place Limit Order",
+    "place-limit-order": "Place Order",
     "preset": "Preset",
     "price-impact": "Price Impact",
     "rate": "Rate",

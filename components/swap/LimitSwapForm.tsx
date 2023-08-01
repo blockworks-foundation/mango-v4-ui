@@ -30,10 +30,17 @@ import Button from '@components/shared/Button'
 import { useWallet } from '@solana/wallet-adapter-react'
 import Loading from '@components/shared/Loading'
 import TokenLogo from '@components/shared/TokenLogo'
+import InlineNotification from '@components/shared/InlineNotification'
 
 type LimitSwapFormProps = {
   setShowTokenSelect: Dispatch<SetStateAction<'input' | 'output' | undefined>>
 }
+
+type LimitSwapForm = {
+  limitPrice: string | undefined
+  triggerPrice: string
+}
+type FormErrors = Partial<Record<keyof LimitSwapForm, string>>
 
 const ORDER_TYPES = [
   // 'trade:limit',
@@ -51,6 +58,7 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
   const [triggerPrice, setTriggerPrice] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
+  const [formErrors, setFormErrors] = useState<FormErrors>({})
 
   const {
     margin: useMargin,
@@ -107,19 +115,75 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
     })
   }, [])
 
+  const initialQuotePrice = useMemo(() => {
+    if (!baseBank || !quoteBank) return
+    return baseBank.uiPrice / quoteBank.uiPrice
+  }, [baseBank, quoteBank])
+
   // set default limit and trigger price
   useEffect(() => {
-    if (!baseBank || !quoteBank) return
-    const initialPrice = baseBank.uiPrice / quoteBank.uiPrice
+    if (!initialQuotePrice) return
     if (!triggerPrice) {
-      setTriggerPrice((initialPrice * 0.9).toString())
+      setTriggerPrice((initialQuotePrice * 0.9).toString())
     }
     if (!limitPrice) {
       set((s) => {
-        s.swap.limitPrice = (initialPrice * 0.8).toString()
+        s.swap.limitPrice = (initialQuotePrice * 0.8).toString()
       })
     }
-  }, [baseBank, limitPrice, quoteBank, triggerPrice])
+  }, [initialQuotePrice, limitPrice, triggerPrice])
+
+  const [limitPriceDifference, triggerPriceDifference] = useMemo(() => {
+    if (!initialQuotePrice) return [0, 0]
+    const limitDifference = limitPrice
+      ? ((parseFloat(limitPrice) - initialQuotePrice) / initialQuotePrice) * 100
+      : 0
+    const triggerDifference = triggerPrice
+      ? ((parseFloat(triggerPrice) - initialQuotePrice) / initialQuotePrice) *
+        100
+      : 0
+    return [limitDifference, triggerDifference]
+  }, [initialQuotePrice, limitPrice, triggerPrice])
+
+  const isFormValid = useCallback(
+    (form: LimitSwapForm) => {
+      const invalidFields: FormErrors = {}
+      setFormErrors({})
+      const triggerPriceNumber = parseFloat(form.triggerPrice)
+      const requiredFields: (keyof LimitSwapForm)[] = [
+        'limitPrice',
+        'triggerPrice',
+      ]
+      for (const key of requiredFields) {
+        const value = form[key] as string
+        if (!value) {
+          if (orderType === 'trade:stop-market') {
+            if (key !== 'limitPrice') {
+              invalidFields[key] = t('settings:error-required-field')
+            }
+          } else {
+            invalidFields[key] = t('settings:error-required-field')
+          }
+        }
+      }
+      if (
+        orderType.includes('stop') &&
+        initialQuotePrice &&
+        triggerPriceNumber > initialQuotePrice
+      ) {
+        invalidFields.triggerPrice =
+          'Trigger price must be less than current price'
+      }
+      if (form.limitPrice && form.limitPrice > form.triggerPrice) {
+        invalidFields.limitPrice = 'Limit price must be less than trigger price'
+      }
+      if (Object.keys(invalidFields).length) {
+        setFormErrors(invalidFields)
+      }
+      return invalidFields
+    },
+    [initialQuotePrice, orderType],
+  )
 
   /* 
     If the use margin setting is toggled, clear the form values
@@ -133,15 +197,17 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
     (e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
       setAmountInFormValue(e.value)
-      if (parseFloat(e.value) > 0 && limitPrice && outputBank) {
+      const price =
+        orderType === 'trade:stop-market' ? triggerPrice : limitPrice
+      if (parseFloat(e.value) > 0 && price && outputBank) {
         const amount =
           outputBank.name === quoteBank?.name
             ? floorToDecimal(
-                parseFloat(e.value) * parseFloat(limitPrice),
+                parseFloat(e.value) * parseFloat(price),
                 outputBank.mintDecimals,
               )
             : floorToDecimal(
-                parseFloat(e.value) / parseFloat(limitPrice),
+                parseFloat(e.value) / parseFloat(price),
                 outputBank.mintDecimals,
               )
         setAmountOutFormValue(amount.toString())
@@ -149,10 +215,12 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
     },
     [
       limitPrice,
+      orderType,
       outputBank,
       quoteBank,
       setAmountInFormValue,
       setAmountOutFormValue,
+      triggerPrice,
     ],
   )
 
@@ -160,15 +228,17 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
     (e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
       setAmountOutFormValue(e.value)
-      if (parseFloat(e.value) > 0 && limitPrice && inputBank) {
+      const price =
+        orderType === 'trade:stop-market' ? triggerPrice : limitPrice
+      if (parseFloat(e.value) > 0 && price && inputBank) {
         const amount =
           outputBank?.name === quoteBank?.name
             ? floorToDecimal(
-                parseFloat(e.value) / parseFloat(limitPrice),
+                parseFloat(e.value) / parseFloat(price),
                 inputBank.mintDecimals,
               )
             : floorToDecimal(
-                parseFloat(e.value) * parseFloat(limitPrice),
+                parseFloat(e.value) * parseFloat(price),
                 inputBank.mintDecimals,
               )
         setAmountInFormValue(amount.toString())
@@ -176,10 +246,12 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
     },
     [
       inputBank,
+      orderType,
       outputBank,
       limitPrice,
       setAmountInFormValue,
       setAmountOutFormValue,
+      triggerPrice,
     ],
   )
 
@@ -200,31 +272,90 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
   const handleLimitPrice = useCallback(
     (e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
+      setFormErrors({})
       setLimitPrice(e.value)
-      if (
-        parseFloat(e.value) > 0 &&
-        parseFloat(amountInFormValue) > 0 &&
-        outputBank
-      ) {
-        const amount = floorToDecimal(
-          parseFloat(amountInFormValue) * parseFloat(e.value),
-          outputBank.mintDecimals,
-        )
+      const triggerPriceNumber = parseFloat(e.value)
+      const amountInNumber = parseFloat(amountInFormValue)
+      if (triggerPriceNumber > 0 && amountInNumber > 0 && outputBank) {
+        const amount =
+          outputBank?.name === quoteBank?.name
+            ? floorToDecimal(
+                amountInNumber * triggerPriceNumber,
+                outputBank.mintDecimals,
+              )
+            : floorToDecimal(
+                amountInNumber / triggerPriceNumber,
+                outputBank.mintDecimals,
+              )
         setAmountOutFormValue(amount.toString())
       }
     },
-    [amountInFormValue, outputBank, setLimitPrice],
+    [amountInFormValue, outputBank, quoteBank, setLimitPrice],
   )
 
   const handleTriggerPrice = useCallback(
     (e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
+      setFormErrors({})
       setTriggerPrice(e.value)
+      const triggerPriceNumber = parseFloat(e.value)
+      const amountInNumber = parseFloat(amountInFormValue)
+      if (
+        triggerPriceNumber > 0 &&
+        amountInNumber > 0 &&
+        outputBank &&
+        orderType === 'trade:stop-market'
+      ) {
+        const amount =
+          outputBank?.name === quoteBank?.name
+            ? floorToDecimal(
+                amountInNumber * triggerPriceNumber,
+                outputBank.mintDecimals,
+              )
+            : floorToDecimal(
+                amountInNumber / triggerPriceNumber,
+                outputBank.mintDecimals,
+              )
+        setAmountOutFormValue(amount.toString())
+      }
     },
-    [setTriggerPrice],
+    [amountInFormValue, orderType, outputBank, quoteBank, setTriggerPrice],
   )
 
-  const handleLimitSwap = useCallback(async () => {
+  const handleSwitchTokens = useCallback(() => {
+    const price = orderType === 'trade:stop-market' ? triggerPrice : limitPrice
+    if (amountInAsDecimal?.gt(0) && price) {
+      const amountOut =
+        outputBank?.name !== quoteBank?.name
+          ? amountInAsDecimal.mul(price)
+          : amountInAsDecimal.div(price)
+      setAmountOutFormValue(amountOut.toString())
+    }
+    set((s) => {
+      s.swap.inputBank = outputBank
+      s.swap.outputBank = inputBank
+      // s.swap.limitPrice = ''
+    })
+    setAnimateSwitchArrow(
+      (prevanimateSwitchArrow) => prevanimateSwitchArrow + 1,
+    )
+  }, [
+    setAmountInFormValue,
+    amountOutAsDecimal,
+    amountInAsDecimal,
+    limitPrice,
+    inputBank,
+    orderType,
+    outputBank,
+    quoteBank,
+    triggerPrice,
+  ])
+
+  const handlePlaceStopLoss = useCallback(async () => {
+    const invalidFields = isFormValid({ limitPrice, triggerPrice })
+    if (Object.keys(invalidFields).length) {
+      return
+    }
     try {
       const client = mangoStore.getState().client
       const group = mangoStore.getState().group
@@ -291,32 +422,6 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
     }
   }, [orderType, limitPrice, triggerPrice, amountInAsDecimal])
 
-  const handleSwitchTokens = useCallback(() => {
-    if (amountInAsDecimal?.gt(0) && limitPrice) {
-      const amountOut =
-        outputBank?.name !== quoteBank?.name
-          ? amountInAsDecimal.mul(limitPrice)
-          : amountInAsDecimal.div(limitPrice)
-      setAmountOutFormValue(amountOut.toString())
-    }
-    set((s) => {
-      s.swap.inputBank = outputBank
-      s.swap.outputBank = inputBank
-      // s.swap.limitPrice = ''
-    })
-    setAnimateSwitchArrow(
-      (prevanimateSwitchArrow) => prevanimateSwitchArrow + 1,
-    )
-  }, [
-    setAmountInFormValue,
-    amountOutAsDecimal,
-    amountInAsDecimal,
-    limitPrice,
-    inputBank,
-    outputBank,
-    quoteBank,
-  ])
-
   const limitOrderDisabled =
     !connected || !amountInFormValue || !amountOutFormValue
 
@@ -351,7 +456,14 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
         </div>
         {orderType !== 'trade:limit' ? (
           <div className="col-span-1">
-            <p className="mb-2 text-th-fgd-2">{t('trade:trigger-price')}</p>
+            <p className="mb-2 text-th-fgd-2">
+              {t('trade:trigger-price')}{' '}
+              <span className="text-xs text-th-fgd-3">
+                {triggerPriceDifference
+                  ? `(${triggerPriceDifference.toFixed(2)}%)`
+                  : ''}
+              </span>
+            </p>
             <div className="relative">
               <NumberFormat
                 inputMode="decimal"
@@ -371,11 +483,28 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
                 <TokenLogo bank={quoteBank} size={16} />
               </div>
             </div>
+            {formErrors.triggerPrice ? (
+              <div className="mt-1">
+                <InlineNotification
+                  type="error"
+                  desc={formErrors.triggerPrice}
+                  hideBorder
+                  hidePadding
+                />
+              </div>
+            ) : null}
           </div>
         ) : null}
         {orderType !== 'trade:stop-market' ? (
           <div className="col-span-1">
-            <p className="mb-2 text-th-fgd-2">{t('trade:limit-price')}</p>
+            <p className="mb-2 text-th-fgd-2">
+              {t('trade:limit-price')}{' '}
+              <span className="text-xs text-th-fgd-3">
+                {limitPriceDifference
+                  ? `(${limitPriceDifference.toFixed(2)}%)`
+                  : ''}
+              </span>
+            </p>
             <div className="relative">
               <NumberFormat
                 inputMode="decimal"
@@ -395,6 +524,16 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
                 <TokenLogo bank={quoteBank} size={16} />
               </div>
             </div>
+            {formErrors.limitPrice ? (
+              <div className="mt-1">
+                <InlineNotification
+                  type="error"
+                  desc={formErrors.limitPrice}
+                  hideBorder
+                  hidePadding
+                />
+              </div>
+            ) : null}
           </div>
         ) : null}
       </div>
@@ -433,7 +572,7 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
         />
       )}
       <Button
-        onClick={handleLimitSwap}
+        onClick={handlePlaceStopLoss}
         className="mt-6 mb-4 flex w-full items-center justify-center text-base"
         disabled={limitOrderDisabled}
         size="large"
