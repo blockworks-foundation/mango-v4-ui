@@ -10,6 +10,7 @@ export default function useMangoAccount(): {
   mangoAccountAddress: string
 } {
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
+
   const initialLoad = mangoStore((s) => s.mangoAccount.initialLoad)
 
   const mangoAccountPk = useMemo(() => {

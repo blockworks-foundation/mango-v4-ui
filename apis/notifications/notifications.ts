@@ -8,11 +8,16 @@ export type Notification = {
   id: number
 }
 
-export const fetchNotifications = async (wallet: string, token: string) => {
+export const fetchNotifications = async (
+  wallet: string,
+  token: string,
+  mangoAccount: string,
+) => {
   const data = await fetch(`${NOTIFICATION_API}notifications`, {
     headers: {
       authorization: token,
       publickey: wallet,
+      'mango-account': mangoAccount,
     },
   })
   const body = await data.json()
