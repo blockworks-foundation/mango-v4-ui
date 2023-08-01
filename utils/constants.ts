@@ -106,9 +106,10 @@ export const JUPITER_API_DEVNET = 'https://api.jup.ag/api/tokens/devnet'
 
 export const JUPITER_PRICE_API_MAINNET = 'https://price.jup.ag/v4/'
 
-export const NOTIFICATION_API = 'http://localhost:3001/'
+export const NOTIFICATION_API = 'https://notifications-api.herokuapp.com/'
 
-export const NOTIFICATION_API_WEBSOCKET = 'ws://localhost:3001/ws'
+export const NOTIFICATION_API_WEBSOCKET =
+  'wss://notifications-api.herokuapp.com/ws'
 
 export const SWITCHBOARD_PROGRAM_ID =
   'SW1TCH7qEPTdLsDHRgPuMQjbQxKdH2aBStViMFnt64f'
