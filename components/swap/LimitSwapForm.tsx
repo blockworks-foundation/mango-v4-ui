@@ -75,12 +75,6 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
       : new Decimal(0)
   }, [amountInFormValue])
 
-  const amountOutAsDecimal: Decimal | null = useMemo(() => {
-    return Number(amountOutFormValue)
-      ? new Decimal(amountOutFormValue)
-      : new Decimal(0)
-  }, [amountOutFormValue])
-
   const [baseBank, quoteBank] = useMemo(() => {
     if (inputBank && inputBank.name === 'USDC') {
       return [outputBank, inputBank]
@@ -152,45 +146,45 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
     return [limitDifference, triggerDifference]
   }, [initialQuotePrice, limitPrice, triggerPrice])
 
-  const isFormValid = useCallback(
-    (form: LimitSwapForm) => {
-      const invalidFields: FormErrors = {}
-      setFormErrors({})
-      const triggerPriceNumber = parseFloat(form.triggerPrice)
-      const requiredFields: (keyof LimitSwapForm)[] = [
-        'limitPrice',
-        'triggerPrice',
-      ]
-      for (const key of requiredFields) {
-        const value = form[key] as string
-        if (!value) {
-          if (orderType === 'trade:stop-market') {
-            if (key !== 'limitPrice') {
-              invalidFields[key] = t('settings:error-required-field')
-            }
-          } else {
-            invalidFields[key] = t('settings:error-required-field')
-          }
-        }
-      }
-      if (
-        orderType.includes('stop') &&
-        initialQuotePrice &&
-        triggerPriceNumber > initialQuotePrice.toNumber()
-      ) {
-        invalidFields.triggerPrice =
-          'Trigger price must be less than current price'
-      }
-      if (form.limitPrice && form.limitPrice > form.triggerPrice) {
-        invalidFields.limitPrice = 'Limit price must be less than trigger price'
-      }
-      if (Object.keys(invalidFields).length) {
-        setFormErrors(invalidFields)
-      }
-      return invalidFields
-    },
-    [initialQuotePrice, orderType],
-  )
+  // const isFormValid = useCallback(
+  //   (form: LimitSwapForm) => {
+  //     const invalidFields: FormErrors = {}
+  //     setFormErrors({})
+  //     const triggerPriceNumber = parseFloat(form.triggerPrice)
+  //     const requiredFields: (keyof LimitSwapForm)[] = [
+  //       'limitPrice',
+  //       'triggerPrice',
+  //     ]
+  //     for (const key of requiredFields) {
+  //       const value = form[key] as string
+  //       if (!value) {
+  //         if (orderType === 'trade:stop-market') {
+  //           if (key !== 'limitPrice') {
+  //             invalidFields[key] = t('settings:error-required-field')
+  //           }
+  //         } else {
+  //           invalidFields[key] = t('settings:error-required-field')
+  //         }
+  //       }
+  //     }
+  //     if (
+  //       orderType.includes('stop') &&
+  //       initialQuotePrice &&
+  //       triggerPriceNumber > initialQuotePrice.toNumber()
+  //     ) {
+  //       invalidFields.triggerPrice =
+  //         'Trigger price must be less than current price'
+  //     }
+  //     if (form.limitPrice && form.limitPrice > form.triggerPrice) {
+  //       invalidFields.limitPrice = 'Limit price must be less than trigger price'
+  //     }
+  //     if (Object.keys(invalidFields).length) {
+  //       setFormErrors(invalidFields)
+  //     }
+  //     return invalidFields
+  //   },
+  //   [initialQuotePrice, orderType],
+  // )
 
   /* 
     If the use margin setting is toggled, clear the form values
@@ -200,31 +194,56 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
     setAmountOutFormValue('')
   }, [useMargin, setAmountInFormValue, setAmountOutFormValue])
 
+  // get the out amount from the in amount and trigger or limit price
+  const getAmountOut = useCallback(
+    (amountIn: string, price: string) => {
+      const amountOut =
+        outputBank?.name === quoteBank?.name
+          ? floorToDecimal(
+              parseFloat(amountIn) * parseFloat(price),
+              outputBank?.mintDecimals || 0,
+            )
+          : floorToDecimal(
+              parseFloat(amountIn) / parseFloat(price),
+              outputBank?.mintDecimals || 0,
+            )
+      return amountOut
+    },
+    [outputBank, quoteBank],
+  )
+
+  // get the in amount from the out amount and trigger or limit price
+  const getAmountIn = useCallback(
+    (amountOut: string, price: string) => {
+      const amountIn =
+        outputBank?.name === quoteBank?.name
+          ? floorToDecimal(
+              parseFloat(amountOut) / parseFloat(price),
+              inputBank?.mintDecimals || 0,
+            )
+          : floorToDecimal(
+              parseFloat(amountOut) * parseFloat(price),
+              inputBank?.mintDecimals || 0,
+            )
+      return amountIn
+    },
+    [inputBank, outputBank, quoteBank],
+  )
+
   const handleAmountInChange = useCallback(
     (e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
       setAmountInFormValue(e.value)
       const price =
         orderType === 'trade:stop-market' ? triggerPrice : limitPrice
-      if (parseFloat(e.value) > 0 && price && outputBank) {
-        const amount =
-          outputBank.name === quoteBank?.name
-            ? floorToDecimal(
-                parseFloat(e.value) * parseFloat(price),
-                outputBank.mintDecimals,
-              )
-            : floorToDecimal(
-                parseFloat(e.value) / parseFloat(price),
-                outputBank.mintDecimals,
-              )
-        setAmountOutFormValue(amount.toString())
+      if (parseFloat(e.value) > 0 && price) {
+        const amountOut = getAmountOut(e.value, price)
+        setAmountOutFormValue(amountOut.toString())
       }
     },
     [
       limitPrice,
       orderType,
-      outputBank,
-      quoteBank,
       setAmountInFormValue,
       setAmountOutFormValue,
       triggerPrice,
@@ -237,24 +256,13 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
       setAmountOutFormValue(e.value)
       const price =
         orderType === 'trade:stop-market' ? triggerPrice : limitPrice
-      if (parseFloat(e.value) > 0 && price && inputBank) {
-        const amount =
-          outputBank?.name === quoteBank?.name
-            ? floorToDecimal(
-                parseFloat(e.value) / parseFloat(price),
-                inputBank.mintDecimals,
-              )
-            : floorToDecimal(
-                parseFloat(e.value) * parseFloat(price),
-                inputBank.mintDecimals,
-              )
-        setAmountInFormValue(amount.toString())
+      if (parseFloat(e.value) > 0 && price) {
+        const amountIn = getAmountIn(e.value, price)
+        setAmountInFormValue(amountIn.toString())
       }
     },
     [
-      inputBank,
       orderType,
-      outputBank,
       limitPrice,
       setAmountInFormValue,
       setAmountOutFormValue,
@@ -265,15 +273,20 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
   const handleAmountInUi = useCallback(
     (amountIn: string) => {
       setAmountInFormValue(amountIn)
-      if (limitPrice && outputBank) {
-        const amount = floorToDecimal(
-          parseFloat(amountIn) / parseFloat(limitPrice),
-          outputBank.mintDecimals,
-        )
-        setAmountOutFormValue(amount.toString())
+      const price =
+        orderType === 'trade:stop-market' ? triggerPrice : limitPrice
+      if (price) {
+        const amountOut = getAmountOut(amountIn, price)
+        setAmountOutFormValue(amountOut.toString())
       }
     },
-    [limitPrice, outputBank, setAmountInFormValue, setAmountOutFormValue],
+    [
+      limitPrice,
+      orderType,
+      setAmountInFormValue,
+      setAmountOutFormValue,
+      triggerPrice,
+    ],
   )
 
   const handleLimitPrice = useCallback(
@@ -281,23 +294,12 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
       if (info.source !== 'event') return
       setFormErrors({})
       setLimitPrice(e.value)
-      const triggerPriceNumber = parseFloat(e.value)
-      const amountInNumber = parseFloat(amountInFormValue)
-      if (triggerPriceNumber > 0 && amountInNumber > 0 && outputBank) {
-        const amount =
-          outputBank?.name === quoteBank?.name
-            ? floorToDecimal(
-                amountInNumber * triggerPriceNumber,
-                outputBank.mintDecimals,
-              )
-            : floorToDecimal(
-                amountInNumber / triggerPriceNumber,
-                outputBank.mintDecimals,
-              )
-        setAmountOutFormValue(amount.toString())
+      if (parseFloat(e.value) > 0 && parseFloat(amountInFormValue) > 0) {
+        const amountOut = getAmountOut(amountInFormValue, e.value)
+        setAmountOutFormValue(amountOut.toString())
       }
     },
-    [amountInFormValue, outputBank, quoteBank, setLimitPrice],
+    [amountInFormValue, setLimitPrice],
   )
 
   const handleTriggerPrice = useCallback(
@@ -305,28 +307,16 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
       if (info.source !== 'event') return
       setFormErrors({})
       setTriggerPrice(e.value)
-      const triggerPriceNumber = parseFloat(e.value)
-      const amountInNumber = parseFloat(amountInFormValue)
       if (
-        triggerPriceNumber > 0 &&
-        amountInNumber > 0 &&
-        outputBank &&
+        parseFloat(e.value) > 0 &&
+        parseFloat(amountInFormValue) > 0 &&
         orderType === 'trade:stop-market'
       ) {
-        const amount =
-          outputBank?.name === quoteBank?.name
-            ? floorToDecimal(
-                amountInNumber * triggerPriceNumber,
-                outputBank.mintDecimals,
-              )
-            : floorToDecimal(
-                amountInNumber / triggerPriceNumber,
-                outputBank.mintDecimals,
-              )
-        setAmountOutFormValue(amount.toString())
+        const amountOut = getAmountOut(amountInFormValue, e.value)
+        setAmountOutFormValue(amountOut.toString())
       }
     },
-    [amountInFormValue, orderType, outputBank, quoteBank, setTriggerPrice],
+    [amountInFormValue, orderType, setTriggerPrice],
   )
 
   const handleSwitchTokens = useCallback(() => {
@@ -348,7 +338,6 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
     )
   }, [
     setAmountInFormValue,
-    amountOutAsDecimal,
     amountInAsDecimal,
     limitPrice,
     inputBank,
@@ -359,10 +348,10 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
   ])
 
   const handlePlaceStopLoss = useCallback(async () => {
-    const invalidFields = isFormValid({ limitPrice, triggerPrice })
-    if (Object.keys(invalidFields).length) {
-      return
-    }
+    // const invalidFields = isFormValid({ limitPrice, triggerPrice })
+    // if (Object.keys(invalidFields).length) {
+    //   return
+    // }
     try {
       const client = mangoStore.getState().client
       const group = mangoStore.getState().group

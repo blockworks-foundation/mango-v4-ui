@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import TabButtons from '@components/shared/TabButtons'
 import SwapTradeBalances from '../shared/BalancesTable'
-import mangoStore from '@store/mangoStore'
 import SwapHistoryTable from './SwapHistoryTable'
 import useMangoAccount from 'hooks/useMangoAccount'
 import ManualRefresh from '@components/shared/ManualRefresh'
@@ -11,18 +10,20 @@ import SwapOrders from './SwapOrders'
 
 const SwapInfoTabs = () => {
   const [selectedTab, setSelectedTab] = useState('balances')
-  const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
   const { mangoAccount } = useMangoAccount()
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.lg : false
 
   const tabsWithCount: [string, number][] = useMemo(() => {
+    const stopOrdersCount =
+      mangoAccount?.tokenConditionalSwaps.filter((tcs) => tcs.hasData)
+        ?.length || 0
     return [
       ['balances', 0],
-      ['trade:stop-orders', 0],
+      ['trade:stop-orders', stopOrdersCount],
       ['swap:swap-history', 0],
     ]
-  }, [openOrders, mangoAccount])
+  }, [mangoAccount])
 
   return (
     <div className="hide-scroll h-full overflow-y-scroll">
