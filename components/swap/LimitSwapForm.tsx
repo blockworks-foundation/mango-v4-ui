@@ -117,30 +117,37 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
 
   const initialQuotePrice = useMemo(() => {
     if (!baseBank || !quoteBank) return
-    return baseBank.uiPrice / quoteBank.uiPrice
+    return floorToDecimal(
+      baseBank.uiPrice / quoteBank.uiPrice,
+      quoteBank.mintDecimals,
+    )
   }, [baseBank, quoteBank])
 
   // set default limit and trigger price
   useEffect(() => {
     if (!initialQuotePrice) return
     if (!triggerPrice) {
-      setTriggerPrice((initialQuotePrice * 0.9).toString())
+      setTriggerPrice(
+        initialQuotePrice.mul(0.9).toFixed(quoteBank?.mintDecimals),
+      )
     }
     if (!limitPrice) {
       set((s) => {
-        s.swap.limitPrice = (initialQuotePrice * 0.8).toString()
+        s.swap.limitPrice = initialQuotePrice
+          .mul(0.8)
+          .toFixed(quoteBank?.mintDecimals)
       })
     }
-  }, [initialQuotePrice, limitPrice, triggerPrice])
+  }, [initialQuotePrice, limitPrice, quoteBank, triggerPrice])
 
   const [limitPriceDifference, triggerPriceDifference] = useMemo(() => {
     if (!initialQuotePrice) return [0, 0]
+    const initialPrice = initialQuotePrice.toNumber()
     const limitDifference = limitPrice
-      ? ((parseFloat(limitPrice) - initialQuotePrice) / initialQuotePrice) * 100
+      ? ((parseFloat(limitPrice) - initialPrice) / initialPrice) * 100
       : 0
     const triggerDifference = triggerPrice
-      ? ((parseFloat(triggerPrice) - initialQuotePrice) / initialQuotePrice) *
-        100
+      ? ((parseFloat(triggerPrice) - initialPrice) / initialPrice) * 100
       : 0
     return [limitDifference, triggerDifference]
   }, [initialQuotePrice, limitPrice, triggerPrice])
@@ -169,7 +176,7 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
       if (
         orderType.includes('stop') &&
         initialQuotePrice &&
-        triggerPriceNumber > initialQuotePrice
+        triggerPriceNumber > initialQuotePrice.toNumber()
       ) {
         invalidFields.triggerPrice =
           'Trigger price must be less than current price'
