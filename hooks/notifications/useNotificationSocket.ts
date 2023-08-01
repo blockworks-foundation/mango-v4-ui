@@ -7,14 +7,16 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Notification } from 'apis/notifications/notifications'
 import { tryParse } from 'utils/formatting'
 import { NotificationsWebSocket } from 'apis/notifications/websocket'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 export function useNotificationSocket() {
   const isAuth = useIsAuthorized()
   const { publicKey } = useWallet()
+  const { mangoAccountAddress } = useMangoAccount()
   const token = NotificationCookieStore((s) => s.currentToken)
 
   const queryClient = useQueryClient()
-  const criteria = publicKey?.toBase58() && token
+  const criteria = [token, mangoAccountAddress]
 
   const [socket, setSocket] = useState<WebSocket | null>(null)
 
@@ -24,10 +26,11 @@ export function useNotificationSocket() {
     }
 
     let ws: WebSocket | null = null
-    if (isAuth && publicKey && token) {
+    if (isAuth && publicKey && token && mangoAccountAddress) {
       const notificationWs = new NotificationsWebSocket(
         token,
         publicKey.toBase58(),
+        mangoAccountAddress,
       ).connect()
       ws = notificationWs.ws!
 
@@ -43,7 +46,7 @@ export function useNotificationSocket() {
           })
           //we push new data to our notifications data
           queryClient.setQueryData<Notification[]>(
-            ['notifications', criteria],
+            ['notifications', ...criteria],
             (prevData) => {
               if (!prevData) {
                 return []
@@ -68,5 +71,5 @@ export function useNotificationSocket() {
         socket?.close(1000, 'hook')
       }
     }
-  }, [isAuth, token])
+  }, [isAuth, token, mangoAccountAddress])
 }

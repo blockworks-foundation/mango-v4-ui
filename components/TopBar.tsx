@@ -36,7 +36,7 @@ const set = mangoStore.getState().set
 
 const TopBar = () => {
   const { t } = useTranslation('common')
-  const { mangoAccount } = useMangoAccount()
+  const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const { connected } = useWallet()
 
   const [action, setAction] = useState<'deposit' | 'withdraw'>('deposit')
@@ -200,7 +200,7 @@ const TopBar = () => {
           )}
           {connected ? (
             <div className="flex items-center">
-              <NotificationsButton />
+              {mangoAccountAddress && <NotificationsButton />}
               <AccountsButton />
               <ConnectedMenu />
             </div>

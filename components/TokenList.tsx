@@ -79,6 +79,7 @@ const TokenList = () => {
       for (const b of banks) {
         const bank = b.bank
         const balance = b.balance
+        const balanceValue = balance * bank.uiPrice
         const symbol = bank.name === 'MSOL' ? 'mSOL' : bank.name
 
         const hasInterestEarned = totalInterestData.find(
@@ -113,6 +114,7 @@ const TokenList = () => {
 
         const data = {
           balance,
+          balanceValue,
           bank,
           symbol,
           interestAmount,
@@ -178,8 +180,8 @@ const TokenList = () => {
                   <div className="flex justify-end">
                     <Tooltip content="A negative balance represents a borrow">
                       <SortableColumnHeader
-                        sortKey="balance"
-                        sort={() => requestSort('balance')}
+                        sortKey="balanceValue"
+                        sort={() => requestSort('balanceValue')}
                         sortConfig={sortConfig}
                         title={t('balance')}
                         titleClass="tooltip-underline"
