@@ -104,7 +104,7 @@
     "trades": "交易",
     "trigger-price": "Trigger Price",
     "trigger-order": "Trigger Order",
-    "trigger-order-rate": "Trigger {{side}} {{symbol}} price",
+    "trigger-order-desc": "{{amount}} {{symbol}} if the oracle price is {{triggerPrice}} {{priceUnit}}",
     "trigger-orders": "Trigger Orders",
     "tweet-position": "分享至Twitter",
     "unrealized-pnl": "未實現盈虧",

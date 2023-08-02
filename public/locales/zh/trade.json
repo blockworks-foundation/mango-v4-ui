@@ -102,7 +102,7 @@
     "tweet-position": "分享至Twitter",
     "trigger-price": "Trigger Price",
     "trigger-order": "Trigger Order",
-    "trigger-order-rate": "Trigger {{side}} {{symbol}} price",
+    "trigger-order-desc": "{{amount}} {{symbol}} if the oracle price is {{triggerPrice}} {{priceUnit}}",
     "trigger-orders": "Trigger Orders",
     "unsettled": "未結清",
     "volume-alert": "交易量警報",

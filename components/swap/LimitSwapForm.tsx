@@ -117,7 +117,7 @@ const LimitSwapForm = ({
       ? ((parseFloat(triggerPrice) - oraclePrice) / oraclePrice) * 100
       : 0
     return triggerDifference
-  }, [flippedQuotePrice, quotePrice, triggerPrice])
+  }, [flipPrices, flippedQuotePrice, quotePrice, triggerPrice])
 
   const handleTokenSelect = (type: 'input' | 'output') => {
     setShowTokenSelect(type)
@@ -255,17 +255,18 @@ const LimitSwapForm = ({
   )
 
   const handleSwitchTokens = useCallback(() => {
-    if (amountInAsDecimal?.gt(0) && triggerPrice) {
-      const amountOut = amountInAsDecimal.div(triggerPrice)
-      setAmountOutFormValue(amountOut.toString())
-    }
     set((s) => {
       s.swap.inputBank = outputBank
       s.swap.outputBank = inputBank
     })
 
     if (flippedQuotePrice) {
-      setTriggerPrice(flippedQuotePrice.toFixed(inputBank?.mintDecimals))
+      const price = flipPrices ? quotePrice : flippedQuotePrice
+      setTriggerPrice(price.toFixed(inputBank?.mintDecimals))
+      if (amountInAsDecimal?.gt(0)) {
+        const amountOut = amountInAsDecimal.mul(flippedQuotePrice)
+        setAmountOutFormValue(amountOut.toString())
+      }
     }
     setAnimateSwitchArrow(
       (prevanimateSwitchArrow) => prevanimateSwitchArrow + 1,
@@ -351,20 +352,50 @@ const LimitSwapForm = ({
     amountOutFormValue,
   ])
 
-  const triggerPriceLabel = useMemo(() => {
-    if (!inputBank || !outputBank) return t('trade:trigger-price')
+  const orderDescription = useMemo(() => {
+    if (
+      !amountInFormValue ||
+      !amountOutFormValue ||
+      !inputBank ||
+      !outputBank ||
+      !triggerPrice
+    )
+      return
+    const quoteString = !flipPrices
+      ? `${outputBank.name} per ${inputBank.name}`
+      : `${inputBank.name} per ${outputBank.name}`
     if (inputBank.name === 'USDC') {
-      return t('trade:trigger-order-rate', {
-        side: t('buy').toLowerCase(),
+      return t('trade:trigger-order-desc', {
+        amount: floorToDecimal(amountOutFormValue, outputBank.mintDecimals),
         symbol: outputBank.name,
+        triggerPrice: triggerPrice,
+        priceUnit: quoteString,
       })
     } else {
-      return t('trade:trigger-order-rate', {
-        side: t('sell').toLowerCase(),
+      return t('trade:trigger-order-desc', {
+        amount: floorToDecimal(amountInFormValue, inputBank.mintDecimals),
         symbol: inputBank.name,
+        triggerPrice: triggerPrice,
+        priceUnit: quoteString,
       })
     }
-  }, [inputBank, outputBank])
+  }, [
+    amountInFormValue,
+    amountOutFormValue,
+    flipPrices,
+    inputBank,
+    outputBank,
+    triggerPrice,
+  ])
+
+  const triggerPriceSuffix = useMemo(() => {
+    if (!inputBank || !outputBank) return
+    if (!flipPrices) {
+      return `${outputBank.name} per ${inputBank.name}`
+    } else {
+      return `${inputBank.name} per ${outputBank.name}`
+    }
+  }, [flipPrices, inputBank, outputBank])
 
   const handleFlipPrices = useCallback(
     (flip: boolean) => {
@@ -392,36 +423,46 @@ const LimitSwapForm = ({
         id="swap-step-two"
       >
         <div className="col-span-2">
-          <p className="mb-2 text-th-fgd-2">
-            {triggerPriceLabel}{' '}
-            <span className="text-xs text-th-fgd-3">
-              {triggerPriceDifference
-                ? `(${triggerPriceDifference.toFixed(2)}%)`
-                : ''}
-            </span>
-          </p>
-          <div className="relative">
-            <NumberFormat
-              inputMode="decimal"
-              thousandSeparator=","
-              allowNegative={false}
-              isNumericString={true}
-              decimalScale={outputBank?.mintDecimals || 6}
-              name="triggerPrice"
-              id="triggerPrice"
-              className="h-10 w-full rounded-lg bg-th-input-bkg p-3 pl-8 font-mono text-sm text-th-fgd-1 focus:outline-none md:hover:bg-th-bkg-1"
-              placeholder="0.00"
-              value={triggerPrice}
-              onValueChange={handleTriggerPrice}
-              isAllowed={withValueLimit}
-            />
-            <div className="absolute top-1/2 -translate-y-1/2 left-2">
-              <TokenLogo bank={flipPrices ? inputBank : outputBank} size={16} />
+          <div className="flex items-center justify-between">
+            <p className="mb-2 text-th-fgd-2">
+              {t('trade:trigger-price')}{' '}
+              <span className="text-xs text-th-fgd-3">
+                {triggerPriceDifference
+                  ? `(${triggerPriceDifference.toFixed(2)}%)`
+                  : ''}
+              </span>
+            </p>
+            <IconButton hideBg onClick={() => handleFlipPrices(!flipPrices)}>
+              <ArrowsRightLeftIcon className="h-4 w-4" />
+            </IconButton>
+          </div>
+          <div className="flex items-center">
+            <div className="relative w-full">
+              <NumberFormat
+                inputMode="decimal"
+                thousandSeparator=","
+                allowNegative={false}
+                isNumericString={true}
+                decimalScale={outputBank?.mintDecimals || 6}
+                name="triggerPrice"
+                id="triggerPrice"
+                className="h-10 w-full rounded-l-lg bg-th-input-bkg p-3 pl-8 font-mono text-sm text-th-fgd-1 focus:outline-none md:hover:bg-th-bkg-1"
+                placeholder="0.00"
+                value={triggerPrice}
+                onValueChange={handleTriggerPrice}
+                isAllowed={withValueLimit}
+              />
+              <div className="absolute top-1/2 -translate-y-1/2 left-2">
+                <TokenLogo
+                  bank={flipPrices ? inputBank : outputBank}
+                  size={16}
+                />
+              </div>
             </div>
-            <div className="absolute top-1/2 -translate-y-1/2 right-2">
-              <IconButton hideBg onClick={() => handleFlipPrices(!flipPrices)}>
-                <ArrowsRightLeftIcon className="h-4 w-4" />
-              </IconButton>
+            <div className="h-10 flex items-center bg-th-input-bkg rounded-r-lg px-2">
+              <span className="text-xs text-th-fgd-4 whitespace-nowrap">
+                {triggerPriceSuffix}
+              </span>
             </div>
           </div>
           {formErrors.triggerPrice ? (
@@ -470,6 +511,23 @@ const LimitSwapForm = ({
           useMargin={useMargin}
         />
       )}
+      {orderDescription ? (
+        <div className="mt-4">
+          <InlineNotification
+            desc={
+              <>
+                {inputBank?.name === 'USDC' ? (
+                  <span className="text-th-up">{t('buy')}</span>
+                ) : (
+                  <span className="text-th-down">{t('sell')}</span>
+                )}{' '}
+                {orderDescription}
+              </>
+            }
+            type="info"
+          />
+        </div>
+      ) : null}
       <Button
         onClick={handlePlaceStopLoss}
         className="mt-6 mb-4 flex w-full items-center justify-center text-base"
