@@ -33,7 +33,7 @@ const SuccessParticles = () => {
         return mangoTokens.find((t) => t.address === tokenMint)?.logoURI
       }
     }
-    if (showForTrade && tradeType === 'market') {
+    if (showForTrade && tradeType === 'Market') {
       const market = mangoStore.getState().selectedMarket.current
       const side = mangoStore.getState().tradeForm.side
       if (market instanceof Serum3Market) {

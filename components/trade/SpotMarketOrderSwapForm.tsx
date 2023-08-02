@@ -82,7 +82,7 @@ export default function SpotMarketOrderSwapForm() {
       if (info.source !== 'event') return
       set((s) => {
         const price =
-          s.tradeForm.tradeType === 'market'
+          s.tradeForm.tradeType === 'Market'
             ? oraclePrice
             : Number(s.tradeForm.price)
 
@@ -102,7 +102,7 @@ export default function SpotMarketOrderSwapForm() {
       if (info.source !== 'event') return
       set((s) => {
         const price =
-          s.tradeForm.tradeType === 'market'
+          s.tradeForm.tradeType === 'Market'
             ? oraclePrice
             : Number(s.tradeForm.price)
 

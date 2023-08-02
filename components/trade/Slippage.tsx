@@ -15,7 +15,7 @@ const Slippage = () => {
 
   const slippage = useMemo(() => {
     try {
-      if (tradeForm.tradeType === 'market' && markPrice && selectedMarket) {
+      if (tradeForm.tradeType === 'Market' && markPrice && selectedMarket) {
         const orderbook = mangoStore.getState().selectedMarket.orderbook
         return calculateSlippage(
           orderbook,

@@ -48,16 +48,16 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import LogoWithFallback from '@components/shared/LogoWithFallback'
 import useIpAddress from 'hooks/useIpAddress'
+import ButtonGroup from '@components/forms/ButtonGroup'
 import TradeSummary from './TradeSummary'
 import useMangoAccount from 'hooks/useMangoAccount'
 import MaxSizeButton from './MaxSizeButton'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 import { Howl } from 'howler'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { TradeForm, isMangoError } from 'types'
+import { isMangoError } from 'types'
 import InlineNotification from '@components/shared/InlineNotification'
 import SpotMarketOrderSwapForm from './SpotMarketOrderSwapForm'
-import Select from '@components/forms/Select'
 
 const set = mangoStore.getState().set
 
@@ -77,13 +77,6 @@ export const DEFAULT_CHECKBOX_SETTINGS = {
   post: false,
   margin: false,
 }
-
-const ORDER_TYPES = [
-  'trade:limit',
-  'market',
-  'trade:stop-market',
-  'trade:stop-limit',
-]
 
 const AdvancedTradeForm = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -109,7 +102,7 @@ const AdvancedTradeForm = () => {
     serumOrPerpMarket,
   } = useSelectedMarket()
 
-  const setTradeType = useCallback((tradeType: TradeForm['tradeType']) => {
+  const setTradeType = useCallback((tradeType: 'Limit' | 'Market') => {
     set((s) => {
       s.tradeForm.tradeType = tradeType
     })
@@ -130,22 +123,12 @@ const AdvancedTradeForm = () => {
     [],
   )
 
-  const handleTriggerPriceChange = useCallback(
-    (e: NumberFormatValues, info: SourceInfo) => {
-      if (info.source !== 'event') return
-      set((s) => {
-        s.tradeForm.triggerPrice = e.value
-      })
-    },
-    [],
-  )
-
   const handleBaseSizeChange = useCallback(
     (e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
       set((s) => {
         const price =
-          s.tradeForm.tradeType === 'market'
+          s.tradeForm.tradeType === 'Market'
             ? oraclePrice
             : Number(s.tradeForm.price)
 
@@ -165,7 +148,7 @@ const AdvancedTradeForm = () => {
       if (info.source !== 'event') return
       set((s) => {
         const price =
-          s.tradeForm.tradeType === 'market'
+          s.tradeForm.tradeType === 'Market'
             ? oraclePrice
             : Number(s.tradeForm.price)
 
@@ -247,7 +230,7 @@ const AdvancedTradeForm = () => {
 
       const { group } = mangoStore.getState()
       const { tradeType, side, price, baseSize, quoteSize } = tradeForm
-      const tradePrice = tradeType === 'market' ? oraclePrice : price
+      const tradePrice = tradeType === 'Market' ? oraclePrice : price
 
       if (
         !group ||
@@ -360,7 +343,7 @@ const AdvancedTradeForm = () => {
   useEffect(() => {
     const group = mangoStore.getState().group
     if (
-      tradeForm.tradeType === 'market' &&
+      tradeForm.tradeType === 'Market' &&
       oraclePrice &&
       selectedMarket &&
       group
@@ -393,7 +376,7 @@ const AdvancedTradeForm = () => {
     try {
       const baseSize = Number(tradeForm.baseSize)
       let price = Number(tradeForm.price)
-      if (tradeForm.tradeType === 'market') {
+      if (tradeForm.tradeType === 'Market') {
         const orderbook = mangoStore.getState().selectedMarket.orderbook
         price = calculateLimitPriceForMarketOrder(
           orderbook,
@@ -405,7 +388,7 @@ const AdvancedTradeForm = () => {
       if (selectedMarket instanceof Serum3Market) {
         const spotOrderType = tradeForm.ioc
           ? Serum3OrderType.immediateOrCancel
-          : tradeForm.postOnly && tradeForm.tradeType !== 'market'
+          : tradeForm.postOnly && tradeForm.tradeType !== 'Market'
           ? Serum3OrderType.postOnly
           : Serum3OrderType.limit
         const tx = await client.serum3PlaceOrder(
@@ -434,7 +417,7 @@ const AdvancedTradeForm = () => {
         })
       } else if (selectedMarket instanceof PerpMarket) {
         const perpOrderType =
-          tradeForm.tradeType === 'market'
+          tradeForm.tradeType === 'Market'
             ? PerpOrderType.market
             : tradeForm.ioc
             ? PerpOrderType.immediateOrCancel
@@ -496,12 +479,6 @@ const AdvancedTradeForm = () => {
     connected ? handlePlaceOrder() : connect()
   }
 
-  const tabsToShow = useMemo(() => {
-    if (!serumOrPerpMarket || serumOrPerpMarket instanceof PerpMarket) {
-      return ORDER_TYPES.filter((type) => !type.includes('stop'))
-    } else return ORDER_TYPES
-  }, [serumOrPerpMarket])
-
   const disabled =
     (connected && (!tradeForm.baseSize || !tradeForm.price)) ||
     !serumOrPerpMarket ||
@@ -524,65 +501,20 @@ const AdvancedTradeForm = () => {
       </div>
       <div className="mt-1 px-2 md:mt-3 md:px-4">
         <p className="mb-2 text-xs">{t('trade:order-type')}</p>
-        <Select
-          value={t(tradeForm.tradeType)}
-          onChange={(type: TradeForm['tradeType']) => setTradeType(type)}
-          className="w-full"
-        >
-          {tabsToShow.map((type) => (
-            <Select.Option key={type} value={type}>
-              {t(type)}
-            </Select.Option>
-          ))}
-        </Select>
+        <ButtonGroup
+          activeValue={tradeForm.tradeType}
+          onChange={(tab: 'Limit' | 'Market') => setTradeType(tab)}
+          values={['Limit', 'Market']}
+        />
       </div>
-      {tradeForm.tradeType === 'market' &&
+      {tradeForm.tradeType === 'Market' &&
       selectedMarket instanceof Serum3Market ? (
         <SpotMarketOrderSwapForm />
       ) : (
         <>
           <form onSubmit={(e) => handleSubmit(e)}>
             <div className="mt-3 px-3 md:px-4">
-              {tradeForm.tradeType.includes('stop') ? (
-                <>
-                  <div className="mb-2 mt-3 flex items-center justify-between">
-                    <p className="text-xs text-th-fgd-3">
-                      {t('trade:trigger-price')}
-                    </p>
-                  </div>
-                  <div className="relative">
-                    {quoteLogoURI ? (
-                      <div className={INPUT_PREFIX_CLASSNAMES}>
-                        <Image
-                          alt=""
-                          width="20"
-                          height="20"
-                          src={quoteLogoURI}
-                        />
-                      </div>
-                    ) : (
-                      <div className={INPUT_PREFIX_CLASSNAMES}>
-                        <QuestionMarkCircleIcon className="h-5 w-5 text-th-fgd-3" />
-                      </div>
-                    )}
-                    <NumberFormat
-                      inputMode="decimal"
-                      thousandSeparator=","
-                      allowNegative={false}
-                      isNumericString={true}
-                      decimalScale={tickDecimals}
-                      name="triggerPrice"
-                      id="triggerPrice"
-                      className="flex w-full items-center rounded-md border border-th-input-border bg-th-input-bkg p-2 pl-9 font-mono text-sm font-bold text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover md:hover:focus-visible:border-th-fgd-4 lg:text-base"
-                      placeholder="0.00"
-                      value={tradeForm.triggerPrice}
-                      onValueChange={handleTriggerPriceChange}
-                    />
-                    <div className={INPUT_SUFFIX_CLASSNAMES}>{quoteSymbol}</div>
-                  </div>
-                </>
-              ) : null}
-              {tradeForm.tradeType.includes('limit') ? (
+              {tradeForm.tradeType === 'Limit' ? (
                 <>
                   <div className="mb-2 mt-3 flex items-center justify-between">
                     <p className="text-xs text-th-fgd-3">
@@ -732,7 +664,7 @@ const AdvancedTradeForm = () => {
               )}
             </div>
             <div className="flex flex-wrap px-5 md:flex-nowrap">
-              {tradeForm.tradeType === 'trade:limit' ? (
+              {tradeForm.tradeType === 'Limit' ? (
                 <div className="flex">
                   <div className="mr-3 mt-4" id="trade-step-six">
                     <Tooltip

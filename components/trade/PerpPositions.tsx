@@ -51,7 +51,7 @@ const PerpPositions = () => {
     const set = mangoStore.getState().set
 
     let price = Number(tradeForm.price)
-    if (tradeForm.tradeType === 'market') {
+    if (tradeForm.tradeType === 'Market') {
       const orderbook = mangoStore.getState().selectedMarket.orderbook
       price = calculateLimitPriceForMarketOrder(
         orderbook,

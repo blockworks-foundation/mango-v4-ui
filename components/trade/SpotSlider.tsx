@@ -78,7 +78,7 @@ const SpotSlider = ({
 
       set((s) => {
         const price =
-          s.tradeForm.tradeType === 'market'
+          s.tradeForm.tradeType === 'Market'
             ? marketPrice
             : Number(s.tradeForm.price)
 

@@ -124,7 +124,7 @@ export const DEFAULT_TRADE_FORM: TradeForm = {
   price: undefined,
   baseSize: '',
   quoteSize: '',
-  tradeType: 'trade:limit',
+  tradeType: 'Limit',
   triggerPrice: '',
   postOnly: false,
   ioc: false,

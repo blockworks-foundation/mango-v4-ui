@@ -56,7 +56,7 @@ const TradeSummary = ({
     if (!openPosition || !price || !tradeForm.baseSize) return
 
     let orderPrice = parseFloat(price)
-    if (tradeType === 'market') {
+    if (tradeType === 'Market') {
       orderPrice = calculateEstPriceForBaseSize(
         orderbook,
         parseFloat(tradeForm.baseSize),
@@ -283,7 +283,7 @@ const TradeSummary = ({
         <div className="flex justify-between text-xs">
           <p>{t('trade:avg-entry-price')}</p>
           <p className="text-th-fgd-2">
-            {tradeForm.tradeType === 'market' ? '~' : null}
+            {tradeForm.tradeType === 'Market' ? '~' : null}
             <FormatNumericValue
               value={avgEntryPrice}
               decimals={getDecimalCount(selectedMarket.tickSize)}
