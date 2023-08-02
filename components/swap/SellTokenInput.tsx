@@ -12,17 +12,20 @@ import { INPUT_TOKEN_DEFAULT } from 'utils/constants'
 import { NUMBER_FORMAT_CLASSNAMES, withValueLimit } from './MarketSwapForm'
 import MaxSwapAmount from './MaxSwapAmount'
 import useUnownedAccount from 'hooks/useUnownedAccount'
+import InlineNotification from '@components/shared/InlineNotification'
 
 const SellTokenInput = ({
   handleAmountInChange,
   setShowTokenSelect,
   handleMax,
   className,
+  error,
 }: {
   handleAmountInChange: (e: NumberFormatValues, info: SourceInfo) => void
   setShowTokenSelect: Dispatch<SetStateAction<'input' | 'output' | undefined>>
   handleMax: (amountIn: string) => void
   className?: string
+  error?: string
 }) => {
   const { t } = useTranslation('common')
   const { group } = useMangoGroup()
@@ -74,6 +77,16 @@ const SellTokenInput = ({
             : '–'}
         </span>
       </div>
+      {error ? (
+        <div className="col-span-2 mt-1 flex justify-end">
+          <InlineNotification
+            type="error"
+            desc={error}
+            hideBorder
+            hidePadding
+          />
+        </div>
+      ) : null}
     </div>
   )
 }

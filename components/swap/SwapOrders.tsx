@@ -51,23 +51,21 @@ const SwapOrders = () => {
         sellBank.mintDecimals,
       ).toNumber()
       const triggerPrice = order.getPriceLowerLimitUi(group)
-      const limitPrice = order.getPriceUpperLimitUi(group)
       const pricePremium = order.getPricePremium()
       const filled = order.getSoldUi(group)
-
-      const orderType =
-        limitPrice === 0 ? 'trade:stop-market' : 'trade:stop-limit'
+      const currentPrice = (sellBank.uiPrice / buyBank.uiPrice).toFixed(
+        buyBank.mintDecimals,
+      )
 
       const data = {
         ...order,
         buyBank,
+        currentPrice,
         sellBank,
         pair,
         size,
         filled,
         triggerPrice,
-        limitPrice,
-        orderType,
         fee: pricePremium,
       }
       formatted.push(data)
@@ -139,16 +137,6 @@ const SwapOrders = () => {
           <Th>
             <div className="flex justify-end">
               <SortableColumnHeader
-                sortKey="orderType"
-                sort={() => requestSort('orderType')}
-                sortConfig={sortConfig}
-                title={t('trade:order-type')}
-              />
-            </div>
-          </Th>
-          <Th>
-            <div className="flex justify-end">
-              <SortableColumnHeader
                 sortKey="size"
                 sort={() => requestSort('size')}
                 sortConfig={sortConfig}
@@ -169,20 +157,20 @@ const SwapOrders = () => {
           <Th>
             <div className="flex justify-end">
               <SortableColumnHeader
-                sortKey="triggerPrice"
-                sort={() => requestSort('triggerPrice')}
+                sortKey="currentPrice"
+                sort={() => requestSort('currentPrice')}
                 sortConfig={sortConfig}
-                title={t('trade:trigger-price')}
+                title={t('trade:current-price')}
               />
             </div>
           </Th>
           <Th>
             <div className="flex justify-end">
               <SortableColumnHeader
-                sortKey="limitPrice"
-                sort={() => requestSort('limitPrice')}
+                sortKey="triggerPrice"
+                sort={() => requestSort('triggerPrice')}
                 sortConfig={sortConfig}
-                title={t('trade:limit-price')}
+                title={t('trade:trigger-price')}
               />
             </div>
           </Th>
@@ -203,10 +191,9 @@ const SwapOrders = () => {
         {tableData.map((data, i) => {
           const {
             buyBank,
+            currentPrice,
             fee,
             pair,
-            orderType,
-            limitPrice,
             sellBank,
             size,
             filled,
@@ -215,9 +202,6 @@ const SwapOrders = () => {
           return (
             <TrBody key={i} className="text-sm">
               <Td>{pair}</Td>
-              <Td>
-                <p className="text-right font-body">{t(orderType)}</p>
-              </Td>
               <Td>
                 <p className="text-right">
                   {size}
@@ -237,36 +221,32 @@ const SwapOrders = () => {
                 </p>
               </Td>
               <Td>
-                {triggerPrice ? (
-                  <p className="text-right">
-                    {triggerPrice}
-                    <span className="text-th-fgd-3 font-body">
-                      {' '}
-                      {buyBank.name}
-                    </span>
-                  </p>
-                ) : (
-                  <p className="text-right">–</p>
-                )}
+                <p className="text-right">
+                  {currentPrice}
+                  <span className="text-th-fgd-3 font-body">
+                    {' '}
+                    {buyBank.name}
+                  </span>
+                </p>
               </Td>
               <Td>
-                {limitPrice ? (
-                  <p className="text-right">
-                    {limitPrice}
-                    <span className="text-th-fgd-3 font-body">
-                      {' '}
-                      {buyBank.name}
-                    </span>
-                  </p>
-                ) : (
-                  <p className="text-right">–</p>
-                )}
+                <p className="text-right">
+                  {triggerPrice}
+                  <span className="text-th-fgd-3 font-body">
+                    {' '}
+                    {buyBank.name}
+                  </span>
+                </p>
               </Td>
               <Td>
                 <p className="text-right">{fee.toFixed(2)}%</p>
               </Td>
               <Td className="flex justify-end">
-                <IconButton onClick={() => handleCancel(data.id)} size="small">
+                <IconButton
+                  disabled={cancelId === data.id.toString()}
+                  onClick={() => handleCancel(data.id)}
+                  size="small"
+                >
                   {cancelId === data.id.toString() ? (
                     <Loading />
                   ) : (

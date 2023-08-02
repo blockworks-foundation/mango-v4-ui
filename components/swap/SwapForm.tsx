@@ -233,7 +233,7 @@ const SwapForm = () => {
           <div className="mb-6">
             <TabUnderline
               activeValue={swapOrLimit}
-              values={['swap', 'trade:stop-loss']}
+              values={['swap', 'trade:trigger-order']}
               onChange={(v) => handleSwapOrLimit(v)}
             />
           </div>
@@ -254,7 +254,10 @@ const SwapForm = () => {
               setShowTokenSelect={setShowTokenSelect}
             />
           ) : (
-            <LimitSwapForm setShowTokenSelect={setShowTokenSelect} />
+            <LimitSwapForm
+              showTokenSelect={showTokenSelect}
+              setShowTokenSelect={setShowTokenSelect}
+            />
           )}
           {ipAllowed ? (
             swapOrLimit === 'swap' ? (

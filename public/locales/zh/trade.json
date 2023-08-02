@@ -85,7 +85,6 @@
     "stop-limit": "Stop Limit",
     "stop-loss": "Stop-loss",
     "stop-market": "Stop Market",
-    "stop-orders": "Stop Orders",
     "taker": "吃單者",
     "tick-size": "波動單位",
     "taker-fee": "Taker Fee",
@@ -102,6 +101,9 @@
     "trades": "交易",
     "tweet-position": "分享至Twitter",
     "trigger-price": "Trigger Price",
+    "trigger-order": "Trigger Order",
+    "trigger-order-rate": "Trigger {{side}} {{symbol}} price",
+    "trigger-orders": "Trigger Orders",
     "unsettled": "未結清",
     "volume-alert": "交易量警報",
     "volume-alert-desc": "交易量超過警報設定時播放聲音"

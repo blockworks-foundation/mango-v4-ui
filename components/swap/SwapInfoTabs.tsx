@@ -20,7 +20,7 @@ const SwapInfoTabs = () => {
         ?.length || 0
     return [
       ['balances', 0],
-      ['trade:stop-orders', stopOrdersCount],
+      ['trade:trigger-orders', stopOrdersCount],
       ['swap:swap-history', 0],
     ]
   }, [mangoAccount])
@@ -41,7 +41,7 @@ const SwapInfoTabs = () => {
         />
       </div>
       {selectedTab === 'balances' ? <SwapTradeBalances /> : null}
-      {selectedTab === 'trade:stop-orders' ? <SwapOrders /> : null}
+      {selectedTab === 'trade:trigger-orders' ? <SwapOrders /> : null}
       {selectedTab === 'swap:swap-history' ? <SwapHistoryTable /> : null}
     </div>
   )
