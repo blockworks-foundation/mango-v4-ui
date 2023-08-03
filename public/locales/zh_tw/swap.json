@@ -4,6 +4,7 @@
     "disabled": "關閉",
     "enabled": "開啟",
     "est-liq-price": "預計清算價格",
+    "est-received": "Est. Received",
     "fees-paid-to": "繳給{{route}}的費用",
     "health-impact": "健康影響",
     "hide-fees": "隱藏費用",

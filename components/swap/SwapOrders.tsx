@@ -180,7 +180,7 @@ const SwapOrders = () => {
                 sortKey="fee"
                 sort={() => requestSort('fee')}
                 sortConfig={sortConfig}
-                title={t('fee')}
+                title={t('trade:est-slippage')}
               />
             </div>
           </Th>

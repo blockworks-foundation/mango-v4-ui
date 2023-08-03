@@ -4,6 +4,7 @@
     "disabled": "Disabled",
     "enabled": "Enabled",
     "est-liq-price": "预计清算价格",
+    "est-received": "Est. Received",
     "fees-paid-to": "缴给{{route}}的费用",
     "health-impact": "健康影响",
     "hide-fees": "隐藏费用",

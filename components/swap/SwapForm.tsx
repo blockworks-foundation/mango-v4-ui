@@ -35,6 +35,7 @@ import MarketSwapForm from './MarketSwapForm'
 import LimitSwapForm from './LimitSwapForm'
 import Switch from '@components/forms/Switch'
 import useLocalStorageState from 'hooks/useLocalStorageState'
+import { floorToDecimal } from 'utils/numbers'
 
 const set = mangoStore.getState().set
 
@@ -183,6 +184,18 @@ const SwapForm = () => {
     setSavedSwapMargin(useMargin)
   }, [useMargin])
 
+  const estSlippage = useMemo(() => {
+    const { group } = mangoStore.getState()
+    if (!group || !inputBank || !amountInAsDecimal.gt(0)) return 0
+    const amountIn = amountInAsDecimal.toNumber()
+    const value = amountIn * inputBank.uiPrice
+    const slippage = group.getPriceImpactByTokenIndex(
+      inputBank.tokenIndex,
+      value,
+    )
+    return slippage
+  }, [amountInAsDecimal, inputBank])
+
   return (
     <ContentBox
       hidePadding
@@ -328,15 +341,48 @@ const SwapForm = () => {
                 small
               />
             </div>
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-th-fgd-3">{t('swap:max-slippage')}</p>
-              <LinkButton
-                className="text-right font-mono text-sm font-normal text-th-fgd-2 underline underline-offset-2 md:hover:no-underline"
-                onClick={() => setShowSettings(true)}
-              >
-                {slippage}%
-              </LinkButton>
-            </div>
+            {estSlippage > 0 && swapOrLimit === 'trade:trigger-order' ? (
+              <>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-th-fgd-3">
+                    {t('trade:est-slippage')}
+                  </p>
+                  <span className="font-mono text-th-fgd-2">
+                    {estSlippage.toFixed(2)}%
+                  </span>
+                </div>
+                {outputBank ? (
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-th-fgd-3">
+                      {t('swap:est-received')}
+                    </p>
+                    <span className="font-mono text-th-fgd-2">
+                      {floorToDecimal(
+                        amountOutAsDecimal.div(1 + estSlippage / 100),
+                        outputBank.mintDecimals,
+                      ).toNumber()}
+                      <span className="font-body text-th-fgd-3">
+                        {' '}
+                        {outputBank?.name}
+                      </span>
+                    </span>
+                  </div>
+                ) : null}
+              </>
+            ) : null}
+            {swapOrLimit === 'swap' ? (
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-th-fgd-3">
+                  {t('swap:max-slippage')}
+                </p>
+                <LinkButton
+                  className="text-right font-mono text-sm font-normal text-th-fgd-2 underline underline-offset-2 md:hover:no-underline"
+                  onClick={() => setShowSettings(true)}
+                >
+                  {slippage}%
+                </LinkButton>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
