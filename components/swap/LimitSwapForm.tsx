@@ -33,6 +33,7 @@ import Loading from '@components/shared/Loading'
 import TokenLogo from '@components/shared/TokenLogo'
 import InlineNotification from '@components/shared/InlineNotification'
 import { handleFlipPrices } from './SwapTokenChart'
+import Select from '@components/forms/Select'
 
 type LimitSwapFormProps = {
   showTokenSelect: 'input' | 'output' | undefined
@@ -45,6 +46,18 @@ type LimitSwapForm = {
 }
 type FormErrors = Partial<Record<keyof LimitSwapForm, string>>
 
+enum OrderTypes {
+  STOP_LOSS = 'trade:stop-loss',
+  TAKE_PROFIT = 'trade:take-profit',
+  REPAY_BORROW = 'repay-borrow',
+}
+
+const ORDER_TYPES = [
+  OrderTypes.STOP_LOSS,
+  OrderTypes.TAKE_PROFIT,
+  OrderTypes.REPAY_BORROW,
+]
+
 const set = mangoStore.getState().set
 
 const LimitSwapForm = ({
@@ -54,6 +67,8 @@ const LimitSwapForm = ({
   const { t } = useTranslation(['common', 'swap', 'trade'])
   const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
   const [triggerPrice, setTriggerPrice] = useState('')
+  const [orderType, setOrderType] = useState(ORDER_TYPES[0])
+  const [orderTypeMultiplier, setOrderTypeMultiplier] = useState(0.9)
   const [submitting, setSubmitting] = useState(false)
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const [formErrors, setFormErrors] = useState<FormErrors>({})
@@ -121,11 +136,11 @@ const LimitSwapForm = ({
     return quote
   }, [flipPrices, inputBank, outputBank])
 
-  // set default limit and trigger price
+  // set default trigger price
   useEffect(() => {
     if (!quotePrice) return
     if (!triggerPrice && !showTokenSelect) {
-      setTriggerPrice(quotePrice.toFixed(inputBank?.mintDecimals))
+      setTriggerPrice((quotePrice * 0.9).toFixed(inputBank?.mintDecimals))
     }
   }, [inputBank, quotePrice, showTokenSelect, triggerPrice])
 
@@ -281,11 +296,11 @@ const LimitSwapForm = ({
 
     const price = !flipPrices
       ? floorToDecimal(
-          inputBank.uiPrice / outputBank.uiPrice,
+          (inputBank.uiPrice / outputBank.uiPrice) * orderTypeMultiplier,
           outputBank.mintDecimals,
         ).toString()
       : floorToDecimal(
-          outputBank.uiPrice / inputBank.uiPrice,
+          (outputBank.uiPrice / inputBank.uiPrice) * orderTypeMultiplier,
           inputBank.mintDecimals,
         ).toString()
     setTriggerPrice(price)
@@ -302,6 +317,7 @@ const LimitSwapForm = ({
     amountInAsDecimal,
     flipPrices,
     inputBank,
+    orderTypeMultiplier,
     outputBank,
     triggerPrice,
   ])
@@ -433,11 +449,11 @@ const LimitSwapForm = ({
       )
       const price = !flipPrices
         ? floorToDecimal(
-            inputBank.uiPrice / outputBank.uiPrice,
+            (inputBank.uiPrice / outputBank.uiPrice) * orderTypeMultiplier,
             outputBank.mintDecimals,
           ).toString()
         : floorToDecimal(
-            outputBank.uiPrice / inputBank.uiPrice,
+            (outputBank.uiPrice / inputBank.uiPrice) * orderTypeMultiplier,
             inputBank.mintDecimals,
           ).toString()
       setTriggerPrice(price)
@@ -445,11 +461,52 @@ const LimitSwapForm = ({
     [
       flipPrices,
       inputBank,
+      orderTypeMultiplier,
       outputBank,
       swapChartSettings,
       setSwapChartSettings,
     ],
   )
+
+  const hasBorrowToRepay = useMemo(() => {
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+    if (orderType !== OrderTypes.REPAY_BORROW || !outputBank || !mangoAccount)
+      return
+    const borrow = mangoAccount.getTokenBorrowsUi(outputBank)
+    return borrow
+  }, [orderType, outputBank])
+
+  const sellTokenBalance = useMemo(() => {
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+    if (!inputBank || !mangoAccount) return 0
+    const balance = mangoAccount.getTokenBalanceUi(inputBank)
+    return balance
+  }, [inputBank])
+
+  const handleOrderTypeChange = useCallback(
+    (type: string) => {
+      const newType = type as OrderTypes
+      setOrderType(newType)
+      const triggerMultiplier =
+        newType === OrderTypes.STOP_LOSS
+          ? 0.9
+          : newType === OrderTypes.TAKE_PROFIT
+          ? 1.1
+          : 1
+      setOrderTypeMultiplier(triggerMultiplier)
+      const trigger = (quotePrice * triggerMultiplier).toString()
+      setTriggerPrice(trigger)
+    },
+    [quotePrice, setOrderTypeMultiplier],
+  )
+
+  const disablePlaceOrder =
+    (orderType === OrderTypes.REPAY_BORROW && !hasBorrowToRepay) ||
+    (orderType === OrderTypes.STOP_LOSS &&
+      parseFloat(triggerPrice) > quotePrice) ||
+    (orderType === OrderTypes.TAKE_PROFIT &&
+      parseFloat(triggerPrice) < quotePrice) ||
+    amountInAsDecimal.gt(sellTokenBalance)
 
   return (
     <>
@@ -459,21 +516,30 @@ const LimitSwapForm = ({
         handleAmountInChange={handleAmountInChange}
         setShowTokenSelect={() => handleTokenSelect('input')}
         handleMax={handleMax}
+        isTriggerOrder
       />
       <div
         className={`grid grid-cols-2 gap-2 rounded-b-xl bg-th-bkg-2 p-3 pt-1`}
         id="swap-step-two"
       >
-        <div className="col-span-2">
+        <div className="col-span-1">
+          <p className="mb-2 text-th-fgd-2">{t('trade:order-type')}</p>
+          <Select
+            value={t(orderType)}
+            onChange={(type) => handleOrderTypeChange(type)}
+            className="w-full"
+            buttonClassName="ring-transparent rounded-t-lg rounded-b-lg focus:outline-none md:hover:bg-th-bkg-1 md:hover:ring-transparent focus-visible:bg-th-bkg-3 whitespace-nowrap"
+          >
+            {ORDER_TYPES.map((type) => (
+              <Select.Option key={type} value={type}>
+                {t(type)}
+              </Select.Option>
+            ))}
+          </Select>
+        </div>
+        <div className="col-span-1">
           <div className="flex items-center justify-between">
-            <p className="mb-2 text-th-fgd-2">
-              {t('trade:trigger-price')}{' '}
-              <span className="text-xs text-th-fgd-3">
-                {triggerPriceDifference
-                  ? `(${triggerPriceDifference.toFixed(2)}%)`
-                  : ''}
-              </span>
-            </p>
+            <p className="mb-2 text-th-fgd-2">{t('trade:trigger-price')}</p>
             <IconButton hideBg onClick={() => toggleFlipPrices(!flipPrices)}>
               <ArrowsRightLeftIcon className="h-4 w-4" />
             </IconButton>
@@ -492,7 +558,7 @@ const LimitSwapForm = ({
                 }
                 name="triggerPrice"
                 id="triggerPrice"
-                className="h-10 w-full rounded-l-lg bg-th-input-bkg p-3 pl-8 font-mono text-sm text-th-fgd-1 focus:outline-none md:hover:bg-th-bkg-1"
+                className="h-10 w-full rounded-lg bg-th-input-bkg p-3 pl-8 font-mono text-sm text-th-fgd-1 focus:outline-none md:hover:bg-th-bkg-1"
                 placeholder="0.00"
                 value={triggerPrice}
                 onValueChange={handleTriggerPrice}
@@ -505,11 +571,19 @@ const LimitSwapForm = ({
                 />
               </div>
             </div>
-            <div className="h-10 flex items-center bg-th-input-bkg rounded-r-lg px-2">
-              <span className="text-xs text-th-fgd-4 whitespace-nowrap">
-                {triggerPriceSuffix}
-              </span>
-            </div>
+          </div>
+          <div className="flex justify-between text-xxs text-th-fgd-4">
+            <span
+              className={
+                triggerPriceDifference >= 0 ? 'text-th-up' : 'text-th-down'
+              }
+            >
+              {triggerPriceDifference
+                ? triggerPriceDifference.toFixed(2)
+                : '0.00'}
+              %
+            </span>
+            <span>{triggerPriceSuffix}</span>
           </div>
           {formErrors.triggerPrice ? (
             <div className="mt-1">
@@ -574,8 +648,14 @@ const LimitSwapForm = ({
           />
         </div>
       ) : null}
+      {orderType === 'repay-borrow' && !hasBorrowToRepay ? (
+        <div className="mt-3">
+          <InlineNotification desc={t('swap:no-borrow')} type="error" />
+        </div>
+      ) : null}
       <Button
         onClick={handlePlaceStopLoss}
+        disabled={disablePlaceOrder}
         className="mt-6 mb-4 flex w-full items-center justify-center text-base"
         size="large"
       >

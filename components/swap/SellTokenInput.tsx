@@ -20,12 +20,14 @@ const SellTokenInput = ({
   handleMax,
   className,
   error,
+  isTriggerOrder,
 }: {
   handleAmountInChange: (e: NumberFormatValues, info: SourceInfo) => void
   setShowTokenSelect: Dispatch<SetStateAction<'input' | 'output' | undefined>>
   handleMax: (amountIn: string) => void
   className?: string
   error?: string
+  isTriggerOrder?: boolean
 }) => {
   const { t } = useTranslation('common')
   const { group } = useMangoGroup()
@@ -42,7 +44,7 @@ const SellTokenInput = ({
         <p className="text-th-fgd-2">{t('sell')}</p>
         {!isUnownedAccount ? (
           <MaxSwapAmount
-            useMargin={useMargin}
+            useMargin={isTriggerOrder ? false : useMargin}
             setAmountIn={(v) => handleMax(v)}
           />
         ) : null}

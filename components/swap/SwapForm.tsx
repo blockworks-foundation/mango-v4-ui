@@ -35,7 +35,6 @@ import MarketSwapForm from './MarketSwapForm'
 import LimitSwapForm from './LimitSwapForm'
 import Switch from '@components/forms/Switch'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { floorToDecimal } from 'utils/numbers'
 
 const set = mangoStore.getState().set
 
@@ -328,19 +327,34 @@ const SwapForm = () => {
             <div id="swap-step-four">
               <HealthImpact maintProjectedHealth={maintProjectedHealth} />
             </div>
-            <div className="flex items-center justify-between">
-              <Tooltip content={t('swap:tooltip-margin')}>
-                <p className="tooltip-underline text-sm text-th-fgd-3">
-                  {t('swap:margin')}
-                </p>
-              </Tooltip>
-              <Switch
-                className="text-th-fgd-3"
-                checked={useMargin}
-                onChange={handleSetMargin}
-                small
-              />
-            </div>
+            {swapOrLimit === 'swap' ? (
+              <>
+                <div className="flex items-center justify-between">
+                  <Tooltip content={t('swap:tooltip-margin')}>
+                    <p className="tooltip-underline text-sm text-th-fgd-3">
+                      {t('swap:margin')}
+                    </p>
+                  </Tooltip>
+                  <Switch
+                    className="text-th-fgd-3"
+                    checked={useMargin}
+                    onChange={handleSetMargin}
+                    small
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-th-fgd-3">
+                    {t('swap:max-slippage')}
+                  </p>
+                  <LinkButton
+                    className="text-right font-mono text-sm font-normal text-th-fgd-2 underline underline-offset-2 md:hover:no-underline"
+                    onClick={() => setShowSettings(true)}
+                  >
+                    {slippage}%
+                  </LinkButton>
+                </div>
+              </>
+            ) : null}
             {estSlippage > 0 && swapOrLimit === 'trade:trigger-order' ? (
               <>
                 <div className="flex items-center justify-between">
@@ -351,7 +365,7 @@ const SwapForm = () => {
                     {estSlippage.toFixed(2)}%
                   </span>
                 </div>
-                {outputBank ? (
+                {/* {outputBank ? (
                   <div className="flex items-center justify-between">
                     <p className="text-sm text-th-fgd-3">
                       {t('swap:est-received')}
@@ -367,21 +381,8 @@ const SwapForm = () => {
                       </span>
                     </span>
                   </div>
-                ) : null}
+                ) : null} */}
               </>
-            ) : null}
-            {swapOrLimit === 'swap' ? (
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-th-fgd-3">
-                  {t('swap:max-slippage')}
-                </p>
-                <LinkButton
-                  className="text-right font-mono text-sm font-normal text-th-fgd-2 underline underline-offset-2 md:hover:no-underline"
-                  onClick={() => setShowSettings(true)}
-                >
-                  {slippage}%
-                </LinkButton>
-              </div>
             ) : null}
           </div>
         </div>
