@@ -32,7 +32,10 @@ import { ChartDataItem, fetchChartData } from 'apis/coingecko'
 import mangoStore from '@store/mangoStore'
 import useJupiterSwapData from './useJupiterSwapData'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
+import {
+  ANIMATION_SETTINGS_KEY,
+  SWAP_CHART_SETTINGS_KEY,
+} from 'utils/constants'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import { useTranslation } from 'next-i18next'
 import {
@@ -46,10 +49,34 @@ import { CategoricalChartFunc } from 'recharts/types/chart/generateCategoricalCh
 import { interpolateNumber } from 'd3-interpolate'
 import { IconButton } from '@components/shared/Button'
 import Tooltip from '@components/shared/Tooltip'
-import { SwapHistoryItem } from 'types'
+import { SwapChartSettings, SwapHistoryItem } from 'types'
 import useThemeWrapper from 'hooks/useThemeWrapper'
 
 dayjs.extend(relativeTime)
+
+export const handleFlipPrices = (
+  flip: boolean,
+  flipPrices: boolean,
+  inputToken: string | undefined,
+  outputToken: string | undefined,
+  swapChartSettings: SwapChartSettings[],
+  setSwapChartSettings: (settings: SwapChartSettings[]) => void,
+) => {
+  if (!inputToken || !outputToken) return
+  if (!flipPrices && flip) {
+    setSwapChartSettings([
+      ...swapChartSettings,
+      { pair: `${inputToken}/${outputToken}`, flipPrices: true },
+    ])
+  } else {
+    setSwapChartSettings(
+      swapChartSettings.filter(
+        (chart: SwapChartSettings) =>
+          !chart.pair.includes(inputToken) && !chart.pair.includes(outputToken),
+      ),
+    )
+  }
+}
 
 const CustomizedLabel = ({
   chartData,
@@ -182,11 +209,15 @@ const SwapTokenChart = () => {
   const [quoteTokenId, setQuoteTokenId] = useState(outputCoingeckoId)
   const [mouseData, setMouseData] = useState<ChartDataItem>()
   const [daysToShow, setDaysToShow] = useState('1')
-  const [flipPrices, setFlipPrices] = useState(false)
+  // const [flipPrices, setFlipPrices] = useState(false)
   const { theme } = useThemeWrapper()
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
     INITIAL_ANIMATION_SETTINGS,
+  )
+  const [swapChartSettings, setSwapChartSettings] = useLocalStorageState(
+    SWAP_CHART_SETTINGS_KEY,
+    [],
   )
   const swapHistory = mangoStore((s) => s.mangoAccount.swapHistory.data)
   const loadSwapHistory = mangoStore((s) => s.mangoAccount.swapHistory.loading)
@@ -196,6 +227,47 @@ const SwapTokenChart = () => {
   const [swapTooltipCoingeckoPrice, setSwapTooltipCoingeckoPrice] = useState<
     string | number | undefined
   >(undefined)
+
+  const flipPrices = useMemo(() => {
+    if (!swapChartSettings.length || !inputBank || !outputBank) return false
+    const pairSettings = swapChartSettings.find(
+      (chart: SwapChartSettings) =>
+        chart.pair.includes(inputBank.name) &&
+        chart.pair.includes(outputBank.name),
+    )
+    if (pairSettings) {
+      return pairSettings.flipPrices
+    } else return false
+  }, [swapChartSettings, inputBank, outputBank])
+
+  const swapMarketName = useMemo(() => {
+    if (!inputBank || !outputBank) return ''
+    const inputSymbol = formatTokenSymbol(inputBank.name)
+    const outputSymbol = formatTokenSymbol(outputBank.name)
+    return !flipPrices
+      ? `${outputSymbol}/${inputSymbol}`
+      : `${inputSymbol}/${outputSymbol}`
+  }, [flipPrices, inputBank, inputCoingeckoId, outputBank])
+
+  // const handleFlipPrices = useCallback(
+  //   (flip: boolean) => {
+  //     if (!flipPrices && flip) {
+  //       setSwapChartSettings([
+  //         ...swapChartSettings,
+  //         { pair: swapMarketName, flipPrices: true },
+  //       ])
+  //     } else {
+  //       setSwapChartSettings(
+  //         swapChartSettings.filter(
+  //           (chart: SwapChartSettings) =>
+  //             !chart.pair.includes(inputBank!.name) &&
+  //             !chart.pair.includes(outputBank!.name),
+  //         ),
+  //       )
+  //     }
+  //   },
+  //   [flipPrices, inputBank, outputBank, swapChartSettings, swapMarketName],
+  // )
 
   const handleSwapMouseEnter = useCallback(
     (
@@ -215,19 +287,6 @@ const SwapTokenChart = () => {
   const handleSwapMouseLeave = useCallback(() => {
     setSwapTooltipData(null)
   }, [setSwapTooltipData])
-
-  const swapMarketName = useMemo(() => {
-    if (!inputBank || !outputBank) return ''
-    const inputSymbol = formatTokenSymbol(inputBank.name)
-    const outputSymbol = formatTokenSymbol(outputBank.name)
-    return ['usd-coin', 'tether'].includes(inputCoingeckoId || '')
-      ? !flipPrices
-        ? `${outputSymbol}/${inputSymbol}`
-        : `${inputSymbol}/${outputSymbol}`
-      : !flipPrices
-      ? `${inputSymbol}/${outputSymbol}`
-      : `${outputSymbol}/${inputSymbol}`
-  }, [flipPrices, inputBank, inputCoingeckoId, outputBank])
 
   const renderTooltipContent = useCallback(
     (swap: SwapHistoryItem) => {
@@ -429,14 +488,8 @@ const SwapTokenChart = () => {
 
   useEffect(() => {
     if (!inputCoingeckoId || !outputCoingeckoId) return
-
-    if (['usd-coin', 'tether'].includes(outputCoingeckoId)) {
-      setBaseTokenId(inputCoingeckoId)
-      setQuoteTokenId(outputCoingeckoId)
-    } else {
-      setBaseTokenId(outputCoingeckoId)
-      setQuoteTokenId(inputCoingeckoId)
-    }
+    setBaseTokenId(inputCoingeckoId)
+    setQuoteTokenId(outputCoingeckoId)
   }, [inputCoingeckoId, outputCoingeckoId])
 
   const calculateChartChange = useCallback(() => {
@@ -485,7 +538,16 @@ const SwapTokenChart = () => {
                   <p className="text-base text-th-fgd-3">{swapMarketName}</p>
                   <IconButton
                     className="px-2 text-th-fgd-3"
-                    onClick={() => setFlipPrices(!flipPrices)}
+                    onClick={() =>
+                      handleFlipPrices(
+                        !flipPrices,
+                        flipPrices,
+                        inputBank.name,
+                        outputBank.name,
+                        swapChartSettings,
+                        setSwapChartSettings,
+                      )
+                    }
                     hideBg
                   >
                     <ArrowsRightLeftIcon className="h-5 w-5" />

@@ -466,3 +466,8 @@ export interface ContributionDetails {
   perpMarketContributions: PerpMarketContribution[]
   spotUi: number
 }
+
+export type SwapChartSettings = {
+  flipPrices: boolean
+  pair: string
+}

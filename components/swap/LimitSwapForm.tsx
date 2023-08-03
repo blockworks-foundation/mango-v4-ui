@@ -14,7 +14,10 @@ import NumberFormat, {
 import Decimal from 'decimal.js'
 import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
-import { SIZE_INPUT_UI_KEY } from '../../utils/constants'
+import {
+  SIZE_INPUT_UI_KEY,
+  SWAP_CHART_SETTINGS_KEY,
+} from '../../utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import SwapSlider from './SwapSlider'
 import PercentageSelectButtons from './PercentageSelectButtons'
@@ -24,11 +27,12 @@ import SellTokenInput from './SellTokenInput'
 import BuyTokenInput from './BuyTokenInput'
 import { notify } from 'utils/notifications'
 import * as sentry from '@sentry/nextjs'
-import { isMangoError } from 'types'
+import { SwapChartSettings, isMangoError } from 'types'
 import Button, { IconButton } from '@components/shared/Button'
 import Loading from '@components/shared/Loading'
 import TokenLogo from '@components/shared/TokenLogo'
 import InlineNotification from '@components/shared/InlineNotification'
+import { handleFlipPrices } from './SwapTokenChart'
 
 type LimitSwapFormProps = {
   showTokenSelect: 'input' | 'output' | undefined
@@ -50,10 +54,13 @@ const LimitSwapForm = ({
   const { t } = useTranslation(['common', 'swap', 'trade'])
   const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
   const [triggerPrice, setTriggerPrice] = useState('')
-  const [flipPrices, setFlipPrices] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const [formErrors, setFormErrors] = useState<FormErrors>({})
+  const [swapChartSettings, setSwapChartSettings] = useLocalStorageState(
+    SWAP_CHART_SETTINGS_KEY,
+    [],
+  )
 
   const {
     margin: useMargin,
@@ -69,6 +76,18 @@ const LimitSwapForm = ({
       ? new Decimal(amountInFormValue)
       : new Decimal(0)
   }, [amountInFormValue])
+
+  const flipPrices = useMemo(() => {
+    if (!swapChartSettings.length || !inputBank || !outputBank) return false
+    const pairSettings = swapChartSettings.find(
+      (chart: SwapChartSettings) =>
+        chart.pair.includes(inputBank.name) &&
+        chart.pair.includes(outputBank.name),
+    )
+    if (pairSettings) {
+      return pairSettings.flipPrices
+    } else return false
+  }, [swapChartSettings, inputBank, outputBank])
 
   const setAmountInFormValue = useCallback((amountIn: string) => {
     set((s) => {
@@ -88,36 +107,35 @@ const LimitSwapForm = ({
     })
   }, [])
 
-  const [quotePrice, flippedQuotePrice] = useMemo(() => {
-    if (!inputBank || !outputBank) return [0, 0]
-    const quote = floorToDecimal(
-      inputBank.uiPrice / outputBank.uiPrice,
-      outputBank.mintDecimals,
-    ).toNumber()
-    const flipped = floorToDecimal(
-      outputBank.uiPrice / inputBank.uiPrice,
-      inputBank.mintDecimals,
-    ).toNumber()
-    return [quote, flipped]
-  }, [inputBank, outputBank])
+  const quotePrice = useMemo(() => {
+    if (!inputBank || !outputBank) return 0
+    const quote = !flipPrices
+      ? floorToDecimal(
+          outputBank.uiPrice / inputBank.uiPrice,
+          inputBank.mintDecimals,
+        ).toNumber()
+      : floorToDecimal(
+          inputBank.uiPrice / outputBank.uiPrice,
+          outputBank.mintDecimals,
+        ).toNumber()
+    return quote
+  }, [flipPrices, inputBank, outputBank])
 
   // set default limit and trigger price
   useEffect(() => {
     if (!quotePrice) return
     if (!triggerPrice && !showTokenSelect) {
-      setTriggerPrice(quotePrice.toFixed(outputBank?.mintDecimals))
+      setTriggerPrice(quotePrice.toFixed(inputBank?.mintDecimals))
     }
-  }, [quotePrice, outputBank, showTokenSelect, triggerPrice])
+  }, [inputBank, quotePrice, showTokenSelect, triggerPrice])
 
   const triggerPriceDifference = useMemo(() => {
-    if ((!flipPrices && !quotePrice) || (flipPrices && !flippedQuotePrice))
-      return 0
-    const oraclePrice = !flipPrices ? quotePrice : flippedQuotePrice
+    if (!quotePrice) return 0
     const triggerDifference = triggerPrice
-      ? ((parseFloat(triggerPrice) - oraclePrice) / oraclePrice) * 100
+      ? ((parseFloat(triggerPrice) - quotePrice) / quotePrice) * 100
       : 0
     return triggerDifference
-  }, [flipPrices, flippedQuotePrice, quotePrice, triggerPrice])
+  }, [flipPrices, quotePrice, triggerPrice])
 
   const handleTokenSelect = (type: 'input' | 'output') => {
     setShowTokenSelect(type)
@@ -153,11 +171,11 @@ const LimitSwapForm = ({
     (amountIn: string, price: string) => {
       const amountOut = !flipPrices
         ? floorToDecimal(
-            parseFloat(amountIn) * parseFloat(price),
+            parseFloat(amountIn) / parseFloat(price),
             outputBank?.mintDecimals || 0,
           )
         : floorToDecimal(
-            parseFloat(amountIn) / parseFloat(price),
+            parseFloat(amountIn) * parseFloat(price),
             outputBank?.mintDecimals || 0,
           )
       return amountOut
@@ -170,11 +188,11 @@ const LimitSwapForm = ({
     (amountOut: string, price: string) => {
       const amountIn = !flipPrices
         ? floorToDecimal(
-            parseFloat(amountOut) / parseFloat(price),
+            parseFloat(amountOut) * parseFloat(price),
             inputBank?.mintDecimals || 0,
           )
         : floorToDecimal(
-            parseFloat(amountOut) * parseFloat(price),
+            parseFloat(amountOut) / parseFloat(price),
             inputBank?.mintDecimals || 0,
           )
       return amountIn
@@ -255,18 +273,26 @@ const LimitSwapForm = ({
   )
 
   const handleSwitchTokens = useCallback(() => {
+    if (!inputBank || !outputBank) return
     set((s) => {
       s.swap.inputBank = outputBank
       s.swap.outputBank = inputBank
     })
 
-    if (flippedQuotePrice) {
-      const price = flipPrices ? quotePrice : flippedQuotePrice
-      setTriggerPrice(price.toFixed(inputBank?.mintDecimals))
-      if (amountInAsDecimal?.gt(0)) {
-        const amountOut = amountInAsDecimal.mul(flippedQuotePrice)
-        setAmountOutFormValue(amountOut.toString())
-      }
+    const price = !flipPrices
+      ? floorToDecimal(
+          inputBank.uiPrice / outputBank.uiPrice,
+          outputBank.mintDecimals,
+        ).toString()
+      : floorToDecimal(
+          outputBank.uiPrice / inputBank.uiPrice,
+          inputBank.mintDecimals,
+        ).toString()
+    setTriggerPrice(price)
+
+    if (amountInAsDecimal?.gt(0)) {
+      const amountOut = getAmountOut(amountInAsDecimal.toString(), price)
+      setAmountOutFormValue(amountOut.toString())
     }
     setAnimateSwitchArrow(
       (prevanimateSwitchArrow) => prevanimateSwitchArrow + 1,
@@ -275,7 +301,6 @@ const LimitSwapForm = ({
     setAmountInFormValue,
     amountInAsDecimal,
     flipPrices,
-    flippedQuotePrice,
     inputBank,
     outputBank,
     triggerPrice,
@@ -301,11 +326,9 @@ const LimitSwapForm = ({
         return
       setSubmitting(true)
 
-      const inputMint = !flipPrices ? inputBank.mint : outputBank.mint
-      const outputMint = !flipPrices ? outputBank.mint : inputBank.mint
-      const amountIn = !flipPrices
-        ? amountInAsDecimal.toNumber()
-        : parseFloat(amountOutFormValue)
+      const inputMint = inputBank.mint
+      const outputMint = outputBank.mint
+      const amountIn = amountInAsDecimal.toNumber()
 
       try {
         const tx = await client.tokenConditionalSwapStopLoss(
@@ -362,8 +385,8 @@ const LimitSwapForm = ({
     )
       return
     const quoteString = !flipPrices
-      ? `${outputBank.name} per ${inputBank.name}`
-      : `${inputBank.name} per ${outputBank.name}`
+      ? `${inputBank.name} per ${outputBank.name}`
+      : `${outputBank.name} per ${inputBank.name}`
     if (inputBank.name === 'USDC') {
       return t('trade:trigger-order-desc', {
         amount: floorToDecimal(amountOutFormValue, outputBank.mintDecimals),
@@ -391,22 +414,41 @@ const LimitSwapForm = ({
   const triggerPriceSuffix = useMemo(() => {
     if (!inputBank || !outputBank) return
     if (!flipPrices) {
-      return `${outputBank.name} per ${inputBank.name}`
-    } else {
       return `${inputBank.name} per ${outputBank.name}`
+    } else {
+      return `${outputBank.name} per ${inputBank.name}`
     }
   }, [flipPrices, inputBank, outputBank])
 
-  const handleFlipPrices = useCallback(
+  const toggleFlipPrices = useCallback(
     (flip: boolean) => {
-      setFlipPrices(flip)
-      if (flip) {
-        setTriggerPrice(flippedQuotePrice.toFixed(inputBank?.mintDecimals))
-      } else {
-        setTriggerPrice(quotePrice.toFixed(outputBank?.mintDecimals))
-      }
+      if (!inputBank || !outputBank) return
+      handleFlipPrices(
+        flip,
+        flipPrices,
+        inputBank.name,
+        outputBank.name,
+        swapChartSettings,
+        setSwapChartSettings,
+      )
+      const price = !flipPrices
+        ? floorToDecimal(
+            inputBank.uiPrice / outputBank.uiPrice,
+            outputBank.mintDecimals,
+          ).toString()
+        : floorToDecimal(
+            outputBank.uiPrice / inputBank.uiPrice,
+            inputBank.mintDecimals,
+          ).toString()
+      setTriggerPrice(price)
     },
-    [flippedQuotePrice, inputBank, outputBank, quotePrice],
+    [
+      flipPrices,
+      inputBank,
+      outputBank,
+      swapChartSettings,
+      setSwapChartSettings,
+    ],
   )
 
   return (
@@ -432,7 +474,7 @@ const LimitSwapForm = ({
                   : ''}
               </span>
             </p>
-            <IconButton hideBg onClick={() => handleFlipPrices(!flipPrices)}>
+            <IconButton hideBg onClick={() => toggleFlipPrices(!flipPrices)}>
               <ArrowsRightLeftIcon className="h-4 w-4" />
             </IconButton>
           </div>
@@ -443,7 +485,11 @@ const LimitSwapForm = ({
                 thousandSeparator=","
                 allowNegative={false}
                 isNumericString={true}
-                decimalScale={outputBank?.mintDecimals || 6}
+                decimalScale={
+                  !flipPrices
+                    ? inputBank?.mintDecimals
+                    : outputBank?.mintDecimals || 6
+                }
                 name="triggerPrice"
                 id="triggerPrice"
                 className="h-10 w-full rounded-l-lg bg-th-input-bkg p-3 pl-8 font-mono text-sm text-th-fgd-1 focus:outline-none md:hover:bg-th-bkg-1"
@@ -454,7 +500,7 @@ const LimitSwapForm = ({
               />
               <div className="absolute top-1/2 -translate-y-1/2 left-2">
                 <TokenLogo
-                  bank={flipPrices ? inputBank : outputBank}
+                  bank={flipPrices ? outputBank : inputBank}
                   size={16}
                 />
               </div>

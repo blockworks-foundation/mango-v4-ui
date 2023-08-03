@@ -122,6 +122,8 @@ const SwapOrders = () => {
     }
   }
 
+  console.log(orders)
+
   return orders.length ? (
     <Table>
       <thead>

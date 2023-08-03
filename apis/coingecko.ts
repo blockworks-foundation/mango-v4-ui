@@ -39,21 +39,12 @@ export const fetchChartData = async (
           (outputTokenCandle) => outputTokenCandle[0] === inputTokenCandle[0],
         )
         if (outputTokenCandle) {
-          if (['usd-coin', 'tether'].includes(quoteTokenId)) {
-            parsedData.push({
-              time: inputTokenCandle[0],
-              price: inputTokenCandle[4] / outputTokenCandle[4],
-              inputTokenPrice: inputTokenCandle[4],
-              outputTokenPrice: outputTokenCandle[4],
-            })
-          } else {
-            parsedData.push({
-              time: inputTokenCandle[0],
-              price: outputTokenCandle[4] / inputTokenCandle[4],
-              inputTokenPrice: inputTokenCandle[4],
-              outputTokenPrice: outputTokenCandle[4],
-            })
-          }
+          parsedData.push({
+            time: inputTokenCandle[0],
+            price: outputTokenCandle[4] / inputTokenCandle[4],
+            inputTokenPrice: inputTokenCandle[4],
+            outputTokenPrice: outputTokenCandle[4],
+          })
         }
       }
       return parsedData

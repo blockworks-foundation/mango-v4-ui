@@ -6,10 +6,10 @@ export const CLIENT_TX_TIMEOUT = 90000
 
 export const SECONDS = 1000
 
-export const INPUT_TOKEN_DEFAULT = 'USDC'
+export const INPUT_TOKEN_DEFAULT = 'SOL'
 export const MANGO_MINT = 'MangoCzJ36AjZyKwVj3VnYU4GTonjfVEnJmvvWaxLac'
 export const USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
-export const OUTPUT_TOKEN_DEFAULT = 'SOL'
+export const OUTPUT_TOKEN_DEFAULT = 'MNGO'
 
 export const JUPITER_V4_PROGRAM_ID =
   'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB'
@@ -56,6 +56,8 @@ export const SHOW_ORDER_LINES_KEY = 'showOrderLines-0.1'
 export const SWAP_MARGIN_KEY = 'swapMargin-0.1'
 
 export const SHOW_SWAP_INTRO_MODAL = 'showSwapModal-0.1'
+
+export const SWAP_CHART_SETTINGS_KEY = 'swapChartSettings-0.1'
 
 export const ACCEPT_TERMS_KEY = 'termsOfUseAccepted-0.1'
 
