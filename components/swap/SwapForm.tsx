@@ -50,6 +50,7 @@ import Tooltip from '@components/shared/Tooltip'
 import { formatCurrencyValue } from 'utils/numbers'
 import Switch from '@components/forms/Switch'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
+import { motion } from 'framer-motion'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -317,6 +318,15 @@ const SwapForm = () => {
   }, [useMargin])
 
   return (
+    <motion.div 
+    initial={{ opacity: 0, x: 10 }}
+    animate={{ opacity: 1, x: 0 }}
+    exit={{opacity: 0, x: 10}}
+    transition={{
+                type: "spring",
+                stiffness: 260,
+                damping: 22
+                }} >
     <ContentBox
       hidePadding
       className="relative overflow-hidden border-x-0 md:border-l md:border-r-0 md:border-t-0 md:border-b-0"
@@ -587,6 +597,7 @@ const SwapForm = () => {
         </div>
       </div>
     </ContentBox>
+    </motion.div>
   )
 }
 

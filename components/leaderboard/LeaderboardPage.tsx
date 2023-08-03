@@ -8,6 +8,7 @@ import { useMemo, useState } from 'react'
 import { EmptyObject } from 'types'
 import { MANGO_DATA_API_URL } from 'utils/constants'
 import LeaderboardTable from './LeaderboardTable'
+import { motion } from 'framer-motion'
 
 export interface LeaderboardRes {
   date_hour: string
@@ -79,55 +80,65 @@ const LeaderboardPage = () => {
 
   return (
     <div className="p-4 md:p-10 lg:px-0">
-      <div className="grid grid-cols-12">
-        <div className="col-span-12 lg:col-span-8 lg:col-start-3">
-          <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
-            <div>
-              <h1 className="mb-2">{t('leaderboard')}</h1>
-              <p className="mb-4 md:mb-0">
-                {t('leaderboard:leaderboard-desc')}
-              </p>
-            </div>
-            <div className="w-full md:w-48">
-              <ButtonGroup
-                activeValue={daysToShow}
-                disabled={isLoading}
-                onChange={(v) => handleDaysToShow(v)}
-                names={['24h', '7d', '30d', t('all')]}
-                values={['1DAY', '1WEEK', 'ALLTIME']}
-              />
+        <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{opacity: 0, y: 10}}
+            transition={{
+                        type: "spring",
+                        stiffness: 260,
+                        damping: 22
+                        }} >
+          <div className="grid grid-cols-12">
+            <div className="col-span-12 lg:col-span-8 lg:col-start-3">
+              <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
+                <div>
+                  <h1 className="mb-2">{t('leaderboard')}</h1>
+                  <p className="mb-4 md:mb-0">
+                    {t('leaderboard:leaderboard-desc')}
+                  </p>
+                </div>
+                <div className="w-full md:w-48">
+                  <ButtonGroup
+                    activeValue={daysToShow}
+                    disabled={isLoading}
+                    onChange={(v) => handleDaysToShow(v)}
+                    names={['24h', '7d', '30d', t('all')]}
+                    values={['1DAY', '1WEEK', 'ALLTIME']}
+                  />
+                </div>
+              </div>
+              {leaderboardData.length ? (
+                <LeaderboardTable
+                  data={leaderboardData}
+                  loading={isFetching && !isFetchingNextPage}
+                />
+              ) : !isFetching && !isLoading ? (
+                <div className="flex flex-col items-center rounded-md border border-th-bkg-3 p-4">
+                  <NoSymbolIcon className="mb-1 h-7 w-7 text-th-fgd-4" />
+                  <p>{t('leaderboard:leaderboard-unavailable')}</p>
+                </div>
+              ) : null}
+              {isLoading || isFetchingNextPage ? (
+                <div className="mt-2 space-y-2">
+                  {[...Array(20)].map((x, i) => (
+                    <SheenLoader className="flex flex-1" key={i}>
+                      <div className="h-16 w-full rounded-md bg-th-bkg-2" />
+                    </SheenLoader>
+                  ))}
+                </div>
+              ) : null}
+              {leaderboardData.length && leaderboardData.length < 100 ? (
+                <LinkButton
+                  className="mx-auto mt-6"
+                  onClick={() => fetchNextPage()}
+                >
+                  {t('show-more')}
+                </LinkButton>
+              ) : null}
             </div>
           </div>
-          {leaderboardData.length ? (
-            <LeaderboardTable
-              data={leaderboardData}
-              loading={isFetching && !isFetchingNextPage}
-            />
-          ) : !isFetching && !isLoading ? (
-            <div className="flex flex-col items-center rounded-md border border-th-bkg-3 p-4">
-              <NoSymbolIcon className="mb-1 h-7 w-7 text-th-fgd-4" />
-              <p>{t('leaderboard:leaderboard-unavailable')}</p>
-            </div>
-          ) : null}
-          {isLoading || isFetchingNextPage ? (
-            <div className="mt-2 space-y-2">
-              {[...Array(20)].map((x, i) => (
-                <SheenLoader className="flex flex-1" key={i}>
-                  <div className="h-16 w-full rounded-md bg-th-bkg-2" />
-                </SheenLoader>
-              ))}
-            </div>
-          ) : null}
-          {leaderboardData.length && leaderboardData.length < 100 ? (
-            <LinkButton
-              className="mx-auto mt-6"
-              onClick={() => fetchNextPage()}
-            >
-              {t('show-more')}
-            </LinkButton>
-          ) : null}
-        </div>
-      </div>
+        </motion.div>
     </div>
   )
 }

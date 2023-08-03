@@ -32,6 +32,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import { useTheme } from 'next-themes'
 import LeaderboardIcon from './icons/LeaderboardIcon'
 import { sideBarAnimationDuration } from './Layout'
+import { motion } from 'framer-motion'
 
 const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation(['common', 'search'])
@@ -42,6 +43,15 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { pathname } = router
 
   return (
+    <motion.div 
+    initial={{ opacity: 0, x: -10 }}
+    animate={{ opacity: 1, x: 0 }}
+    exit={{opacity: 0, x: -10}}
+    transition={{
+                type: "spring",
+                stiffness: 260,
+                damping: 22
+                }} >
     <div
       className={`transition-all duration-${sideBarAnimationDuration} ${
         collapsed ? 'w-[64px]' : 'w-44 lg:w-48 xl:w-52'
@@ -246,6 +256,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
         </div>
       </div>
     </div>
+    </motion.div>
   )
 }
 

@@ -26,6 +26,7 @@ import useUnownedAccount from 'hooks/useUnownedAccount'
 import SecondaryTabBar from '@components/shared/SecondaryTabBar'
 import ActivityFilters from './ActivityFilters'
 import { useTranslation } from 'react-i18next'
+//import { motion } from 'framer-motion'
 
 const TABS = ['activity:activity-feed', 'activity:swaps', 'activity:trades']
 
@@ -203,7 +204,17 @@ const HistoryTabs = () => {
           {activeTab === 'activity:activity-feed' ? <ActivityFilters /> : null}
         </div>
       </div>
-      <TabContent activeTab={activeTab} />
+      {/* <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{opacity: 0, y: 10}}
+        transition={{
+                    type: "spring",
+                    stiffness: 260,
+                    damping: 22
+                    }} > */}
+              <TabContent activeTab={activeTab} />
+      {/* </motion.div> */}
     </>
   )
 }

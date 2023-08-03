@@ -50,6 +50,7 @@
     "date-fns": "2.29.3",
     "dayjs": "1.11.3",
     "decimal.js": "10.4.0",
+    "framer-motion": "10.15.0",
     "howler": "2.2.3",
     "html-react-parser": "3.0.4",
     "html2canvas": "1.4.1",

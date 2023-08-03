@@ -21,7 +21,7 @@ import HealthContributions from './HealthContributions'
 import { PerformanceDataItem } from 'types'
 import { useRouter } from 'next/router'
 import { useWallet } from '@solana/wallet-adapter-react'
-
+import { motion } from 'framer-motion'
 const TABS = ['account-value', 'account:assets-liabilities']
 
 export type ViewToShow =
@@ -131,9 +131,19 @@ const AccountPage = () => {
             ) : null}
           </div>
         </div>
+        <motion.div 
+        initial={{ opacity: 0, x: 10 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{opacity: 0, x: 10}}
+        transition={{
+                    type: "spring",
+                    stiffness: 260,
+                    damping: 22
+                    }} >
         <div className="mt-6 mb-1 lg:mt-0">
           <AccountActions />
         </div>
+        </motion.div>
       </div>
       <AccountHeroStats
         accountPnl={accountPnl}

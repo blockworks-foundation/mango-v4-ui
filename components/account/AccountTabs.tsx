@@ -12,6 +12,7 @@ import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
 import OpenOrders from '@components/trade/OpenOrders'
 import HistoryTabs from './HistoryTabs'
 import ManualRefresh from '@components/shared/ManualRefresh'
+import { motion } from 'framer-motion'
 
 const AccountTabs = () => {
   const [activeTab, setActiveTab] = useState('balances')
@@ -57,7 +58,17 @@ const AccountTabs = () => {
           size={isMobile ? 'large' : 'small'}
         />
       </div>
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{opacity: 0, y: 10}}
+        transition={{
+                    type: "spring",
+                    stiffness: 260,
+                    damping: 22
+                    }} >
       <TabContent activeTab={activeTab} />
+      </motion.div>
     </>
   )
 }

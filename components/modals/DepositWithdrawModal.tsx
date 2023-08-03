@@ -8,6 +8,7 @@ import { ACCOUNT_ACTION_MODAL_HEIGHT } from 'utils/constants'
 import mangoStore from '@store/mangoStore'
 import { useWallet } from '@solana/wallet-adapter-react'
 import useUnownedAccount from 'hooks/useUnownedAccount'
+//import { motion } from 'framer-motion'
 
 interface DepositWithdrawModalProps {
   action: 'deposit' | 'withdraw'
