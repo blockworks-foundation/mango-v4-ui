@@ -104,7 +104,6 @@ const LimitSwapForm = ({
   )
 
   const {
-    margin: useMargin,
     inputBank,
     outputBank,
     amountIn: amountInFormValue,
@@ -164,11 +163,20 @@ const LimitSwapForm = ({
 
   // set default trigger price
   useEffect(() => {
-    if (!quotePrice) return
-    if (!triggerPrice && !showTokenSelect) {
-      setTriggerPrice((quotePrice * 1.1).toFixed(inputBank?.mintDecimals))
-    }
-  }, [inputBank, quotePrice, showTokenSelect, triggerPrice])
+    if (!quotePrice || triggerPrice || showTokenSelect) return
+    const multiplier = getOrderTypeMultiplier(OrderTypes.STOP_LOSS, flipPrices)
+    const decimals = !flipPrices
+      ? inputBank?.mintDecimals
+      : outputBank?.mintDecimals
+    setTriggerPrice((quotePrice * multiplier).toFixed(decimals))
+  }, [
+    flipPrices,
+    inputBank,
+    outputBank,
+    quotePrice,
+    showTokenSelect,
+    triggerPrice,
+  ])
 
   // flip trigger price and set amount out when chart direction is flipped
   useLayoutEffect(() => {
@@ -255,7 +263,14 @@ const LimitSwapForm = ({
       }
       return invalidFields
     },
-    [flipPrices, hasBorrowToRepay, inputBank, orderType, quotePrice],
+    [
+      flipPrices,
+      hasBorrowToRepay,
+      inputBank,
+      orderType,
+      quotePrice,
+      setFormErrors,
+    ],
   )
 
   // set order type multiplier on page load
@@ -265,12 +280,6 @@ const LimitSwapForm = ({
       setOrderTypeMultiplier(multiplier)
     }
   }, [flipPrices, orderType, orderTypeMultiplier])
-
-  // If the use margin setting is toggled, clear the form values
-  useEffect(() => {
-    setAmountInFormValue('')
-    setAmountOutFormValue('')
-  }, [useMargin, setAmountInFormValue, setAmountOutFormValue])
 
   // get the out amount from the in amount and trigger or limit price
   const getAmountOut = useCallback(
@@ -338,7 +347,13 @@ const LimitSwapForm = ({
         setAmountOutFormValue(amountOut.toString())
       }
     },
-    [getAmountOut, setAmountInFormValue, setAmountOutFormValue, triggerPrice],
+    [
+      getAmountOut,
+      setAmountInFormValue,
+      setAmountOutFormValue,
+      setFormErrors,
+      triggerPrice,
+    ],
   )
 
   const handleAmountOutChange = useCallback(
@@ -351,7 +366,13 @@ const LimitSwapForm = ({
         setAmountInFormValue(amountIn.toString())
       }
     },
-    [getAmountIn, setAmountInFormValue, setAmountOutFormValue, triggerPrice],
+    [
+      getAmountIn,
+      setAmountInFormValue,
+      setAmountOutFormValue,
+      setFormErrors,
+      triggerPrice,
+    ],
   )
 
   const handleAmountInUi = useCallback(
@@ -363,7 +384,13 @@ const LimitSwapForm = ({
         setAmountOutFormValue(amountOut.toString())
       }
     },
-    [getAmountOut, setAmountInFormValue, setAmountOutFormValue, triggerPrice],
+    [
+      getAmountOut,
+      setAmountInFormValue,
+      setAmountOutFormValue,
+      setFormErrors,
+      triggerPrice,
+    ],
   )
 
   const handleTriggerPrice = useCallback(
@@ -376,7 +403,7 @@ const LimitSwapForm = ({
         setAmountOutFormValue(amountOut.toString())
       }
     },
-    [amountInFormValue, flipPrices, setTriggerPrice],
+    [amountInFormValue, flipPrices, setFormErrors, setTriggerPrice],
   )
 
   const handleSwitchTokens = useCallback(() => {
@@ -406,12 +433,13 @@ const LimitSwapForm = ({
       (prevanimateSwitchArrow) => prevanimateSwitchArrow + 1,
     )
   }, [
-    setAmountInFormValue,
     amountInAsDecimal,
     flipPrices,
     inputBank,
     orderType,
     outputBank,
+    setAmountInFormValue,
+    setFormErrors,
     triggerPrice,
   ])
 
@@ -554,7 +582,6 @@ const LimitSwapForm = ({
       setFormErrors({})
       handleFlipPrices(
         flip,
-        flipPrices,
         inputBank.name,
         outputBank.name,
         swapChartSettings,
@@ -563,12 +590,12 @@ const LimitSwapForm = ({
     },
     [
       getOrderTypeMultiplier,
-      flipPrices,
       inputBank,
       orderType,
       outputBank,
-      swapChartSettings,
+      setFormErrors,
       setSwapChartSettings,
+      swapChartSettings,
     ],
   )
 
@@ -589,7 +616,7 @@ const LimitSwapForm = ({
         setAmountOutFormValue(amountOut)
       }
     },
-    [flipPrices, quotePrice, setOrderTypeMultiplier],
+    [flipPrices, quotePrice, setFormErrors, setOrderTypeMultiplier],
   )
 
   // const disablePlaceOrder =

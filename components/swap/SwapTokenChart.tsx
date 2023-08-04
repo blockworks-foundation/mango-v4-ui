@@ -56,14 +56,14 @@ dayjs.extend(relativeTime)
 
 export const handleFlipPrices = (
   flip: boolean,
-  flipPrices: boolean,
+  // flipPrices: boolean,
   inputToken: string | undefined,
   outputToken: string | undefined,
   swapChartSettings: SwapChartSettings[],
   setSwapChartSettings: (settings: SwapChartSettings[]) => void,
 ) => {
   if (!inputToken || !outputToken) return
-  if (!flipPrices && flip) {
+  if (flip) {
     setSwapChartSettings([
       ...swapChartSettings,
       { pair: `${inputToken}/${outputToken}`, flipPrices: true },
@@ -209,7 +209,6 @@ const SwapTokenChart = () => {
   const [quoteTokenId, setQuoteTokenId] = useState(outputCoingeckoId)
   const [mouseData, setMouseData] = useState<ChartDataItem>()
   const [daysToShow, setDaysToShow] = useState('1')
-  // const [flipPrices, setFlipPrices] = useState(false)
   const { theme } = useThemeWrapper()
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
@@ -541,7 +540,6 @@ const SwapTokenChart = () => {
                     onClick={() =>
                       handleFlipPrices(
                         !flipPrices,
-                        flipPrices,
                         inputBank.name,
                         outputBank.name,
                         swapChartSettings,
