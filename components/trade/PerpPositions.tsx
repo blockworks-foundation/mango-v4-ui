@@ -14,7 +14,7 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 import { calculateLimitPriceForMarketOrder } from 'utils/tradeForm'
@@ -45,6 +45,18 @@ const PerpPositions = () => {
   const { isUnownedAccount } = useUnownedAccount()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
+
+  const totalUnrealizedPnl = useMemo(() => {
+    if (openPerpPositions.length && group !== undefined) {
+      return openPerpPositions
+        .map((position) => {
+          const market = group.getPerpMarketByMarketIndex(position.marketIndex)
+          return position.getUnRealizedPnlUi(market)
+        })
+        .reduce((a, b) => a + b)
+    }
+    return 0.0
+  }, [openPerpPositions, group])
 
   const handlePositionClick = (positionSize: number, market: PerpMarket) => {
     const tradeForm = mangoStore.getState().tradeForm
@@ -288,6 +300,41 @@ const PerpPositions = () => {
                     </TrBody>
                   )
                 })}
+                {openPerpPositions.length > 0 ? (
+                  <TrBody key={`total-unrealized-pnl`} className="my-1 p-1">
+                    <Td className="text-right font-mono">
+                      <></>
+                    </Td>
+                    <Td className="text-right font-mono">
+                      <></>
+                    </Td>
+                    <Td className="text-right font-mono">
+                      <></>
+                    </Td>
+                    <Td className="text-right font-mono">
+                      <></>
+                    </Td>
+                    <Td className="text-right font-mono">
+                      <div>
+                        <span className="font-body text-s text-th-fgd-3">
+                          Total Unrealized PnL:
+                        </span>
+                        <span>
+                          <FormatNumericValue
+                            classNames={`ml-4 text-th-fgd-3 ${
+                              totalUnrealizedPnl >= 0
+                                ? 'text-th-up'
+                                : 'text-th-down'
+                            }`}
+                            value={totalUnrealizedPnl}
+                            isUsd
+                            decimals={2}
+                          />
+                        </span>
+                      </div>
+                    </Td>
+                  </TrBody>
+                ) : null}
               </tbody>
             </Table>
           </div>
@@ -552,6 +599,30 @@ const PerpPositions = () => {
                 </Disclosure>
               )
             })}
+            {openPerpPositions.length > 0 ? (
+              <div
+                className={`flex w-full items-center justify-between border-t border-th-bkg-3 p-4 text-left focus:outline-none`}
+              >
+                <div className="flex items-center"></div>
+                <div className="flex items-center space-x-2">
+                  <span className="font-body text-s text-th-fgd-3">
+                    Total Unrealized PnL:
+                  </span>
+                  <span
+                    className={`font-mono ${
+                      totalUnrealizedPnl > 0 ? 'text-th-up' : 'text-th-down'
+                    }`}
+                  >
+                    <FormatNumericValue
+                      value={totalUnrealizedPnl}
+                      isUsd
+                      decimals={2}
+                    />
+                  </span>
+                  <div className={`ml-3 h-6 w-6 flex-shrink-0 text-th-fgd-3`} />
+                </div>
+              </div>
+            ) : null}
           </div>
         )
       ) : mangoAccount || connected ? (
