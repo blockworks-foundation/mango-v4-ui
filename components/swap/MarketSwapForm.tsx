@@ -6,12 +6,16 @@ import {
   Dispatch,
   SetStateAction,
 } from 'react'
-import { ArrowDownIcon } from '@heroicons/react/20/solid'
+import {
+  ArrowDownIcon,
+  ExclamationCircleIcon,
+  LinkIcon,
+} from '@heroicons/react/20/solid'
 import { NumberFormatValues, SourceInfo } from 'react-number-format'
 import Decimal from 'decimal.js'
 import mangoStore from '@store/mangoStore'
 import useDebounce from '../shared/useDebounce'
-import { SIZE_INPUT_UI_KEY } from '../../utils/constants'
+import { MANGO_MINT, SIZE_INPUT_UI_KEY, USDC_MINT } from '../../utils/constants'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { RouteInfo } from 'types/jupiter'
 import useLocalStorageState from 'hooks/useLocalStorageState'
@@ -19,11 +23,17 @@ import SwapSlider from './SwapSlider'
 import PercentageSelectButtons from './PercentageSelectButtons'
 import BuyTokenInput from './BuyTokenInput'
 import SellTokenInput from './SellTokenInput'
+import Button from '@components/shared/Button'
+import { Transition } from '@headlessui/react'
+import SwapReviewRouteInfo from './SwapReviewRouteInfo'
+import useIpAddress from 'hooks/useIpAddress'
+import { useTranslation } from 'react-i18next'
+import useQuoteRoutes from './useQuoteRoutes'
+import { useTokenMax } from './useTokenMax'
+import Loading from '@components/shared/Loading'
+import InlineNotification from '@components/shared/InlineNotification'
 
 type MarketSwapFormProps = {
-  bestRoute: RouteInfo | undefined | null
-  selectedRoute: RouteInfo | undefined | null
-  setSelectedRoute: Dispatch<SetStateAction<RouteInfo | undefined | null>>
   setShowTokenSelect: Dispatch<SetStateAction<'input' | 'output' | undefined>>
 }
 
@@ -39,17 +49,16 @@ export const NUMBER_FORMAT_CLASSNAMES =
 
 const set = mangoStore.getState().set
 
-const MarketSwapForm = ({
-  bestRoute,
-  selectedRoute,
-  setSelectedRoute,
-  setShowTokenSelect,
-}: MarketSwapFormProps) => {
+const MarketSwapForm = ({ setShowTokenSelect }: MarketSwapFormProps) => {
+  const { t } = useTranslation(['common', 'swap', 'trade'])
+  //initial state is undefined null is returned on error
+  const [selectedRoute, setSelectedRoute] = useState<RouteInfo | null>()
   const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
+  const [showConfirm, setShowConfirm] = useState(false)
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
-
   const {
     margin: useMargin,
+    slippage,
     inputBank,
     outputBank,
     amountIn: amountInFormValue,
@@ -58,7 +67,16 @@ const MarketSwapForm = ({
   } = mangoStore((s) => s.swap)
   const [debouncedAmountIn] = useDebounce(amountInFormValue, 300)
   const [debouncedAmountOut] = useDebounce(amountOutFormValue, 300)
-  const { connected } = useWallet()
+  const { connected, publicKey } = useWallet()
+  const { bestRoute, routes } = useQuoteRoutes({
+    inputMint: inputBank?.mint.toString() || USDC_MINT,
+    outputMint: outputBank?.mint.toString() || MANGO_MINT,
+    amount: swapMode === 'ExactIn' ? debouncedAmountIn : debouncedAmountOut,
+    slippage,
+    swapMode,
+    wallet: publicKey?.toBase58(),
+  })
+  const { ipAllowed, ipCountry } = useIpAddress()
 
   const amountInAsDecimal: Decimal | null = useMemo(() => {
     return Number(debouncedAmountIn)
@@ -197,6 +215,27 @@ const MarketSwapForm = ({
 
   return (
     <>
+      <div>
+        <Transition
+          className="absolute top-0 right-0 z-10 h-full w-full bg-th-bkg-1 pb-0"
+          show={showConfirm}
+          enter="transition ease-in duration-300"
+          enterFrom="-translate-x-full"
+          enterTo="translate-x-0"
+          leave="transition ease-out duration-300"
+          leaveFrom="translate-x-0"
+          leaveTo="-translate-x-full"
+        >
+          <SwapReviewRouteInfo
+            onClose={() => setShowConfirm(false)}
+            amountIn={amountInAsDecimal}
+            slippage={slippage}
+            routes={routes}
+            selectedRoute={selectedRoute}
+            setSelectedRoute={setSelectedRoute}
+          />
+        </Transition>
+      </div>
       <SellTokenInput
         handleAmountInChange={handleAmountInChange}
         setShowTokenSelect={setShowTokenSelect}
@@ -237,8 +276,100 @@ const MarketSwapForm = ({
           useMargin={useMargin}
         />
       )}
+      {ipAllowed ? (
+        <SwapFormSubmitButton
+          loadingSwapDetails={loadingSwapDetails}
+          useMargin={useMargin}
+          selectedRoute={selectedRoute}
+          setShowConfirm={setShowConfirm}
+          amountIn={amountInAsDecimal}
+          inputSymbol={inputBank?.name}
+          amountOut={selectedRoute ? amountOutAsDecimal.toNumber() : undefined}
+        />
+      ) : (
+        <Button
+          disabled
+          className="mt-6 mb-4 w-full leading-tight"
+          size="large"
+        >
+          {t('country-not-allowed', {
+            country: ipCountry ? `(${ipCountry})` : '',
+          })}
+        </Button>
+      )}
     </>
   )
 }
 
 export default MarketSwapForm
+
+const SwapFormSubmitButton = ({
+  amountIn,
+  amountOut,
+  inputSymbol,
+  loadingSwapDetails,
+  selectedRoute,
+  setShowConfirm,
+  useMargin,
+}: {
+  amountIn: Decimal
+  amountOut: number | undefined
+  inputSymbol: string | undefined
+  loadingSwapDetails: boolean
+  selectedRoute: RouteInfo | undefined | null
+  setShowConfirm: (x: boolean) => void
+  useMargin: boolean
+}) => {
+  const { t } = useTranslation('common')
+  const { connected, connect } = useWallet()
+  const { amount: tokenMax, amountWithBorrow } = useTokenMax(useMargin)
+
+  const showInsufficientBalance = useMargin
+    ? amountWithBorrow.lt(amountIn)
+    : tokenMax.lt(amountIn)
+
+  const disabled =
+    connected &&
+    (!amountIn.toNumber() ||
+      showInsufficientBalance ||
+      !amountOut ||
+      !selectedRoute)
+
+  const onClick = connected ? () => setShowConfirm(true) : connect
+
+  return (
+    <>
+      <Button
+        onClick={onClick}
+        className="mt-6 mb-4 flex w-full items-center justify-center text-base"
+        disabled={disabled}
+        size="large"
+      >
+        {connected ? (
+          showInsufficientBalance ? (
+            <div className="flex items-center">
+              <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+              {t('swap:insufficient-balance', {
+                symbol: inputSymbol,
+              })}
+            </div>
+          ) : loadingSwapDetails ? (
+            <Loading />
+          ) : (
+            <span>{t('swap:review-swap')}</span>
+          )
+        ) : (
+          <div className="flex items-center">
+            <LinkIcon className="mr-2 h-5 w-5" />
+            {t('connect')}
+          </div>
+        )}
+      </Button>
+      {selectedRoute === null && amountIn.gt(0) ? (
+        <div className="mb-4">
+          <InlineNotification type="error" desc={t('swap:no-swap-found')} />
+        </div>
+      ) : null}
+    </>
+  )
+}

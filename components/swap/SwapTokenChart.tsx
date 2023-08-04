@@ -249,26 +249,6 @@ const SwapTokenChart = () => {
       : `${inputSymbol}/${outputSymbol}`
   }, [flipPrices, inputBank, inputCoingeckoId, outputBank])
 
-  // const handleFlipPrices = useCallback(
-  //   (flip: boolean) => {
-  //     if (!flipPrices && flip) {
-  //       setSwapChartSettings([
-  //         ...swapChartSettings,
-  //         { pair: swapMarketName, flipPrices: true },
-  //       ])
-  //     } else {
-  //       setSwapChartSettings(
-  //         swapChartSettings.filter(
-  //           (chart: SwapChartSettings) =>
-  //             !chart.pair.includes(inputBank!.name) &&
-  //             !chart.pair.includes(outputBank!.name),
-  //         ),
-  //       )
-  //     }
-  //   },
-  //   [flipPrices, inputBank, outputBank, swapChartSettings, swapMarketName],
-  // )
-
   const handleSwapMouseEnter = useCallback(
     (
       swap: SwapHistoryItem | undefined,
@@ -460,6 +440,22 @@ const SwapTokenChart = () => {
     })
   }, [coingeckoData, chartSwapTimes])
 
+  const latestChartDataItem = useMemo(() => {
+    if (!inputBank || !outputBank) return []
+    const price = !flipPrices
+      ? outputBank.uiPrice / inputBank.uiPrice
+      : inputBank.uiPrice / outputBank.uiPrice
+    const item: ChartDataItem[] = [
+      {
+        price,
+        time: Date.now(),
+        inputTokenPrice: inputBank.uiPrice,
+        outputTokenPrice: outputBank.uiPrice,
+      },
+    ]
+    return item
+  }, [flipPrices, inputBank, outputBank])
+
   const chartData = useMemo(() => {
     if (!coingeckoData || !coingeckoData.length || coingeckoData.length < 2)
       return []
@@ -469,7 +465,10 @@ const SwapTokenChart = () => {
       const swapPoints = swapHistoryPoints.filter(
         (point) => point.time >= minTime && point.time <= maxTime,
       )
-      return coingeckoData.concat(swapPoints).sort((a, b) => a.time - b.time)
+      return coingeckoData
+        .concat(swapPoints)
+        .sort((a, b) => a.time - b.time)
+        .concat(latestChartDataItem)
     } else return coingeckoData
   }, [coingeckoData, swapHistoryPoints, showSwaps])
 

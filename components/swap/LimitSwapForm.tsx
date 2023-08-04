@@ -5,6 +5,7 @@ import {
   useMemo,
   Dispatch,
   SetStateAction,
+  useLayoutEffect,
 } from 'react'
 import { ArrowDownIcon, ArrowsRightLeftIcon } from '@heroicons/react/20/solid'
 import NumberFormat, {
@@ -34,6 +35,7 @@ import TokenLogo from '@components/shared/TokenLogo'
 import InlineNotification from '@components/shared/InlineNotification'
 import { handleFlipPrices } from './SwapTokenChart'
 import Select from '@components/forms/Select'
+import useIpAddress from 'hooks/useIpAddress'
 
 type LimitSwapFormProps = {
   showTokenSelect: 'input' | 'output' | undefined
@@ -65,10 +67,11 @@ const LimitSwapForm = ({
   setShowTokenSelect,
 }: LimitSwapFormProps) => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
+  const { ipAllowed, ipCountry } = useIpAddress()
   const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
   const [triggerPrice, setTriggerPrice] = useState('')
   const [orderType, setOrderType] = useState(ORDER_TYPES[0])
-  const [orderTypeMultiplier, setOrderTypeMultiplier] = useState(0.9)
+  const [orderTypeMultiplier, setOrderTypeMultiplier] = useState(1.1)
   const [submitting, setSubmitting] = useState(false)
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const [formErrors, setFormErrors] = useState<FormErrors>({})
@@ -140,9 +143,17 @@ const LimitSwapForm = ({
   useEffect(() => {
     if (!quotePrice) return
     if (!triggerPrice && !showTokenSelect) {
-      setTriggerPrice((quotePrice * 0.9).toFixed(inputBank?.mintDecimals))
+      setTriggerPrice((quotePrice * 1.1).toFixed(inputBank?.mintDecimals))
     }
   }, [inputBank, quotePrice, showTokenSelect, triggerPrice])
+
+  // flip trigger price when chart direction is flipped
+  useLayoutEffect(() => {
+    if (!quotePrice) return
+    setTriggerPrice(
+      (quotePrice * orderTypeMultiplier).toFixed(inputBank?.mintDecimals),
+    )
+  }, [flipPrices, orderTypeMultiplier])
 
   const triggerPriceDifference = useMemo(() => {
     if (!quotePrice) return 0
@@ -173,9 +184,7 @@ const LimitSwapForm = ({
     return invalidFields
   }, [])
 
-  /* 
-    If the use margin setting is toggled, clear the form values
-  */
+  // If the use margin setting is toggled, clear the form values
   useEffect(() => {
     setAmountInFormValue('')
     setAmountOutFormValue('')
@@ -400,22 +409,38 @@ const LimitSwapForm = ({
       !triggerPrice
     )
       return
+
     const quoteString = !flipPrices
       ? `${inputBank.name} per ${outputBank.name}`
       : `${outputBank.name} per ${inputBank.name}`
-    if (inputBank.name === 'USDC') {
+
+    const orderTypeString =
+      orderType === OrderTypes.STOP_LOSS
+        ? t('trade:falls-to')
+        : t('trade:rises-to')
+
+    if (orderType === OrderTypes.REPAY_BORROW) {
+      return t('trade:repay-borrow-order-desc', {
+        amount: floorToDecimal(amountOutFormValue, outputBank.mintDecimals),
+        priceUnit: quoteString,
+        symbol: outputBank.name,
+        triggerPrice: floorToDecimal(triggerPrice, inputBank.mintDecimals),
+      })
+    } else if (inputBank.name === 'USDC') {
       return t('trade:trigger-order-desc', {
         amount: floorToDecimal(amountOutFormValue, outputBank.mintDecimals),
-        symbol: outputBank.name,
-        triggerPrice: triggerPrice,
+        orderType: orderTypeString,
         priceUnit: quoteString,
+        symbol: outputBank.name,
+        triggerPrice: floorToDecimal(triggerPrice, inputBank.mintDecimals),
       })
     } else {
       return t('trade:trigger-order-desc', {
         amount: floorToDecimal(amountInFormValue, inputBank.mintDecimals),
-        symbol: inputBank.name,
-        triggerPrice: triggerPrice,
+        orderType: orderTypeString,
         priceUnit: quoteString,
+        symbol: inputBank.name,
+        triggerPrice: floorToDecimal(triggerPrice, inputBank.mintDecimals),
       })
     }
   }, [
@@ -423,6 +448,7 @@ const LimitSwapForm = ({
     amountOutFormValue,
     flipPrices,
     inputBank,
+    orderType,
     outputBank,
     triggerPrice,
   ])
@@ -489,13 +515,20 @@ const LimitSwapForm = ({
       setOrderType(newType)
       const triggerMultiplier =
         newType === OrderTypes.STOP_LOSS
-          ? 0.9
-          : newType === OrderTypes.TAKE_PROFIT
           ? 1.1
+          : newType === OrderTypes.TAKE_PROFIT
+          ? 0.9
           : 1
       setOrderTypeMultiplier(triggerMultiplier)
       const trigger = (quotePrice * triggerMultiplier).toString()
       setTriggerPrice(trigger)
+      if (amountInAsDecimal.gt(0)) {
+        const amountOut = getAmountOut(
+          amountInAsDecimal.toString(),
+          trigger,
+        ).toString()
+        setAmountOutFormValue(amountOut)
+      }
     },
     [quotePrice, setOrderTypeMultiplier],
   )
@@ -619,7 +652,7 @@ const LimitSwapForm = ({
       />
       {swapFormSizeUi === 'slider' ? (
         <SwapSlider
-          useMargin={useMargin}
+          useMargin={false}
           amount={amountInAsDecimal.toNumber()}
           onChange={(v) => handleAmountInUi(v)}
           step={1 / 10 ** (inputBank?.mintDecimals || 6)}
@@ -628,7 +661,7 @@ const LimitSwapForm = ({
         <PercentageSelectButtons
           amountIn={amountInAsDecimal.toString()}
           setAmountIn={(v) => handleAmountInUi(v)}
-          useMargin={useMargin}
+          useMargin={false}
         />
       )}
       {orderDescription ? (
@@ -636,11 +669,13 @@ const LimitSwapForm = ({
           <InlineNotification
             desc={
               <>
-                {inputBank?.name === 'USDC' ? (
-                  <span className="text-th-up">{t('buy')}</span>
-                ) : (
-                  <span className="text-th-down">{t('sell')}</span>
-                )}{' '}
+                {orderType !== OrderTypes.REPAY_BORROW ? (
+                  inputBank?.name === 'USDC' ? (
+                    <span className="text-th-up">{t('buy')}</span>
+                  ) : (
+                    <span className="text-th-down">{t('sell')}</span>
+                  )
+                ) : null}{' '}
                 {orderDescription}
               </>
             }
@@ -648,19 +683,31 @@ const LimitSwapForm = ({
           />
         </div>
       ) : null}
-      {orderType === 'repay-borrow' && !hasBorrowToRepay ? (
+      {orderType === OrderTypes.REPAY_BORROW && !hasBorrowToRepay ? (
         <div className="mt-3">
           <InlineNotification desc={t('swap:no-borrow')} type="error" />
         </div>
       ) : null}
-      <Button
-        onClick={handlePlaceStopLoss}
-        disabled={disablePlaceOrder}
-        className="mt-6 mb-4 flex w-full items-center justify-center text-base"
-        size="large"
-      >
-        {submitting ? <Loading /> : t('swap:place-limit-order')}
-      </Button>
+      {ipAllowed ? (
+        <Button
+          onClick={handlePlaceStopLoss}
+          disabled={disablePlaceOrder}
+          className="mt-6 mb-4 flex w-full items-center justify-center text-base"
+          size="large"
+        >
+          {submitting ? <Loading /> : t('swap:place-limit-order')}
+        </Button>
+      ) : (
+        <Button
+          disabled
+          className="mt-6 mb-4 w-full leading-tight"
+          size="large"
+        >
+          {t('country-not-allowed', {
+            country: ipCountry ? `(${ipCountry})` : '',
+          })}
+        </Button>
+      )}
     </>
   )
 }
