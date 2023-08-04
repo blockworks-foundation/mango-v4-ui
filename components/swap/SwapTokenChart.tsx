@@ -469,7 +469,7 @@ const SwapTokenChart = () => {
         .concat(swapPoints)
         .sort((a, b) => a.time - b.time)
         .concat(latestChartDataItem)
-    } else return coingeckoData
+    } else return coingeckoData.concat(latestChartDataItem)
   }, [coingeckoData, latestChartDataItem, swapHistoryPoints, showSwaps])
 
   const handleMouseMove: CategoricalChartFunc = useCallback(

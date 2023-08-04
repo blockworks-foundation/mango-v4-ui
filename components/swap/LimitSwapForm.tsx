@@ -36,6 +36,7 @@ import InlineNotification from '@components/shared/InlineNotification'
 import { handleFlipPrices } from './SwapTokenChart'
 import Select from '@components/forms/Select'
 import useIpAddress from 'hooks/useIpAddress'
+import { Bank } from '@blockworks-foundation/mango-v4'
 
 type LimitSwapFormProps = {
   showTokenSelect: 'input' | 'output' | undefined
@@ -44,9 +45,13 @@ type LimitSwapFormProps = {
 
 type LimitSwapForm = {
   amountIn: number
+  hasBorrows: number | undefined
   triggerPrice: string
 }
+
 type FormErrors = Partial<Record<keyof LimitSwapForm, string>>
+
+type OrderTypeMultiplier = 0.9 | 1 | 1.1
 
 enum OrderTypes {
   STOP_LOSS = 'trade:stop-loss',
@@ -62,6 +67,23 @@ const ORDER_TYPES = [
 
 const set = mangoStore.getState().set
 
+const getSellTokenBalance = (inputBank: Bank | undefined) => {
+  const mangoAccount = mangoStore.getState().mangoAccount.current
+  if (!inputBank || !mangoAccount) return 0
+  const balance = mangoAccount.getTokenBalanceUi(inputBank)
+  return balance
+}
+
+const getOrderTypeMultiplier = (orderType: OrderTypes, flipPrices: boolean) => {
+  if (orderType === OrderTypes.STOP_LOSS) {
+    return flipPrices ? 0.9 : 1.1
+  } else if (orderType === OrderTypes.TAKE_PROFIT) {
+    return flipPrices ? 1.1 : 0.9
+  } else {
+    return 1
+  }
+}
+
 const LimitSwapForm = ({
   showTokenSelect,
   setShowTokenSelect,
@@ -71,7 +93,8 @@ const LimitSwapForm = ({
   const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
   const [triggerPrice, setTriggerPrice] = useState('')
   const [orderType, setOrderType] = useState(ORDER_TYPES[0])
-  const [orderTypeMultiplier, setOrderTypeMultiplier] = useState(1.1)
+  const [orderTypeMultiplier, setOrderTypeMultiplier] =
+    useState<OrderTypeMultiplier | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const [formErrors, setFormErrors] = useState<FormErrors>({})
@@ -147,13 +170,20 @@ const LimitSwapForm = ({
     }
   }, [inputBank, quotePrice, showTokenSelect, triggerPrice])
 
-  // flip trigger price when chart direction is flipped
+  // flip trigger price and set amount out when chart direction is flipped
   useLayoutEffect(() => {
     if (!quotePrice) return
-    setTriggerPrice(
-      (quotePrice * orderTypeMultiplier).toFixed(inputBank?.mintDecimals),
-    )
-  }, [flipPrices, orderTypeMultiplier])
+    const multiplier = getOrderTypeMultiplier(orderType, flipPrices)
+    const decimals = flipPrices
+      ? outputBank?.mintDecimals
+      : inputBank?.mintDecimals
+    const price = (quotePrice * multiplier).toFixed(decimals)
+    setTriggerPrice(price)
+    if (amountInAsDecimal?.gt(0)) {
+      const amountOut = getAmountOut(amountInAsDecimal.toString(), price)
+      setAmountOutFormValue(amountOut.toString())
+    }
+  }, [flipPrices])
 
   const triggerPriceDifference = useMemo(() => {
     if (!quotePrice) return 0
@@ -168,21 +198,73 @@ const LimitSwapForm = ({
     setTriggerPrice('')
   }
 
-  const isFormValid = useCallback((form: LimitSwapForm) => {
-    const invalidFields: FormErrors = {}
-    setFormErrors({})
-    const requiredFields: (keyof LimitSwapForm)[] = ['amountIn', 'triggerPrice']
-    for (const key of requiredFields) {
-      const value = form[key] as string
-      if (!value) {
-        invalidFields[key] = t('settings:error-required-field')
+  const hasBorrowToRepay = useMemo(() => {
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+    if (orderType !== OrderTypes.REPAY_BORROW || !outputBank || !mangoAccount)
+      return
+    const borrow = mangoAccount.getTokenBorrowsUi(outputBank)
+    return borrow
+  }, [orderType, outputBank])
+
+  const isFormValid = useCallback(
+    (form: LimitSwapForm) => {
+      const invalidFields: FormErrors = {}
+      setFormErrors({})
+      const requiredFields: (keyof LimitSwapForm)[] = [
+        'amountIn',
+        'triggerPrice',
+      ]
+      const triggerPriceNumber = parseFloat(form.triggerPrice)
+      const sellTokenBalance = getSellTokenBalance(inputBank)
+      for (const key of requiredFields) {
+        const value = form[key] as string
+        if (!value) {
+          invalidFields[key] = t('settings:error-required-field')
+        }
       }
+      if (orderType === OrderTypes.STOP_LOSS) {
+        if (!flipPrices && triggerPriceNumber <= quotePrice) {
+          invalidFields.triggerPrice =
+            'Trigger price must be above oracle price'
+        }
+        if (flipPrices && triggerPriceNumber >= quotePrice) {
+          invalidFields.triggerPrice =
+            'Trigger price must be below oracle price'
+        }
+      }
+      if (orderType === OrderTypes.TAKE_PROFIT) {
+        if (!flipPrices && triggerPriceNumber >= quotePrice) {
+          invalidFields.triggerPrice =
+            'Trigger price must be below oracle price'
+        }
+        if (flipPrices && triggerPriceNumber <= quotePrice) {
+          invalidFields.triggerPrice =
+            'Trigger price must be above oracle price'
+        }
+      }
+      if (orderType === OrderTypes.REPAY_BORROW && !hasBorrowToRepay) {
+        invalidFields.hasBorrows = t('swap:no-borrow')
+      }
+      if (form.amountIn > sellTokenBalance) {
+        invalidFields.amountIn = t('swap:insufficient-balance', {
+          symbol: inputBank?.name,
+        })
+      }
+      if (Object.keys(invalidFields).length) {
+        setFormErrors(invalidFields)
+      }
+      return invalidFields
+    },
+    [flipPrices, hasBorrowToRepay, inputBank, orderType, quotePrice],
+  )
+
+  // set order type multiplier on page load
+  useEffect(() => {
+    if (!orderTypeMultiplier) {
+      const multiplier = getOrderTypeMultiplier(orderType, flipPrices)
+      setOrderTypeMultiplier(multiplier)
     }
-    if (Object.keys(invalidFields).length) {
-      setFormErrors(invalidFields)
-    }
-    return invalidFields
-  }, [])
+  }, [flipPrices, orderType, orderTypeMultiplier])
 
   // If the use margin setting is toggled, clear the form values
   useEffect(() => {
@@ -262,6 +344,7 @@ const LimitSwapForm = ({
   const handleAmountOutChange = useCallback(
     (e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
+      setFormErrors({})
       setAmountOutFormValue(e.value)
       if (parseFloat(e.value) > 0 && triggerPrice) {
         const amountIn = getAmountIn(e.value, triggerPrice)
@@ -298,18 +381,19 @@ const LimitSwapForm = ({
 
   const handleSwitchTokens = useCallback(() => {
     if (!inputBank || !outputBank) return
+    setFormErrors({})
     set((s) => {
       s.swap.inputBank = outputBank
       s.swap.outputBank = inputBank
     })
-
+    const multiplier = getOrderTypeMultiplier(orderType, flipPrices)
     const price = !flipPrices
       ? floorToDecimal(
-          (inputBank.uiPrice / outputBank.uiPrice) * orderTypeMultiplier,
+          (inputBank.uiPrice / outputBank.uiPrice) * multiplier,
           outputBank.mintDecimals,
         ).toString()
       : floorToDecimal(
-          (outputBank.uiPrice / inputBank.uiPrice) * orderTypeMultiplier,
+          (outputBank.uiPrice / inputBank.uiPrice) * multiplier,
           inputBank.mintDecimals,
         ).toString()
     setTriggerPrice(price)
@@ -326,7 +410,7 @@ const LimitSwapForm = ({
     amountInAsDecimal,
     flipPrices,
     inputBank,
-    orderTypeMultiplier,
+    orderType,
     outputBank,
     triggerPrice,
   ])
@@ -334,6 +418,7 @@ const LimitSwapForm = ({
   const handlePlaceStopLoss = useCallback(async () => {
     const invalidFields = isFormValid({
       amountIn: amountInAsDecimal.toNumber(),
+      hasBorrows: hasBorrowToRepay,
       triggerPrice,
     })
     if (Object.keys(invalidFields).length) {
@@ -393,6 +478,7 @@ const LimitSwapForm = ({
       setSubmitting(false)
     }
   }, [
+    hasBorrowToRepay,
     flipPrices,
     limitPrice,
     triggerPrice,
@@ -465,6 +551,7 @@ const LimitSwapForm = ({
   const toggleFlipPrices = useCallback(
     (flip: boolean) => {
       if (!inputBank || !outputBank) return
+      setFormErrors({})
       handleFlipPrices(
         flip,
         flipPrices,
@@ -473,52 +560,24 @@ const LimitSwapForm = ({
         swapChartSettings,
         setSwapChartSettings,
       )
-      const price = !flipPrices
-        ? floorToDecimal(
-            (inputBank.uiPrice / outputBank.uiPrice) * orderTypeMultiplier,
-            outputBank.mintDecimals,
-          ).toString()
-        : floorToDecimal(
-            (outputBank.uiPrice / inputBank.uiPrice) * orderTypeMultiplier,
-            inputBank.mintDecimals,
-          ).toString()
-      setTriggerPrice(price)
     },
     [
+      getOrderTypeMultiplier,
       flipPrices,
       inputBank,
-      orderTypeMultiplier,
+      orderType,
       outputBank,
       swapChartSettings,
       setSwapChartSettings,
     ],
   )
 
-  const hasBorrowToRepay = useMemo(() => {
-    const mangoAccount = mangoStore.getState().mangoAccount.current
-    if (orderType !== OrderTypes.REPAY_BORROW || !outputBank || !mangoAccount)
-      return
-    const borrow = mangoAccount.getTokenBorrowsUi(outputBank)
-    return borrow
-  }, [orderType, outputBank])
-
-  const sellTokenBalance = useMemo(() => {
-    const mangoAccount = mangoStore.getState().mangoAccount.current
-    if (!inputBank || !mangoAccount) return 0
-    const balance = mangoAccount.getTokenBalanceUi(inputBank)
-    return balance
-  }, [inputBank])
-
   const handleOrderTypeChange = useCallback(
     (type: string) => {
+      setFormErrors({})
       const newType = type as OrderTypes
       setOrderType(newType)
-      const triggerMultiplier =
-        newType === OrderTypes.STOP_LOSS
-          ? 1.1
-          : newType === OrderTypes.TAKE_PROFIT
-          ? 0.9
-          : 1
+      const triggerMultiplier = getOrderTypeMultiplier(newType, flipPrices)
       setOrderTypeMultiplier(triggerMultiplier)
       const trigger = (quotePrice * triggerMultiplier).toString()
       setTriggerPrice(trigger)
@@ -530,16 +589,16 @@ const LimitSwapForm = ({
         setAmountOutFormValue(amountOut)
       }
     },
-    [quotePrice, setOrderTypeMultiplier],
+    [flipPrices, quotePrice, setOrderTypeMultiplier],
   )
 
-  const disablePlaceOrder =
-    (orderType === OrderTypes.REPAY_BORROW && !hasBorrowToRepay) ||
-    (orderType === OrderTypes.STOP_LOSS &&
-      parseFloat(triggerPrice) > quotePrice) ||
-    (orderType === OrderTypes.TAKE_PROFIT &&
-      parseFloat(triggerPrice) < quotePrice) ||
-    amountInAsDecimal.gt(sellTokenBalance)
+  // const disablePlaceOrder =
+  //   (orderType === OrderTypes.REPAY_BORROW && !hasBorrowToRepay) ||
+  //   (orderType === OrderTypes.STOP_LOSS &&
+  //     parseFloat(triggerPrice) > quotePrice) ||
+  //   (orderType === OrderTypes.TAKE_PROFIT &&
+  //     parseFloat(triggerPrice) < quotePrice) ||
+  //   amountInAsDecimal.gt(sellTokenBalance)
 
   return (
     <>
@@ -618,17 +677,17 @@ const LimitSwapForm = ({
             </span>
             <span>{triggerPriceSuffix}</span>
           </div>
-          {formErrors.triggerPrice ? (
-            <div className="mt-1">
-              <InlineNotification
-                type="error"
-                desc={formErrors.triggerPrice}
-                hideBorder
-                hidePadding
-              />
-            </div>
-          ) : null}
         </div>
+        {formErrors.triggerPrice ? (
+          <div className="col-span-2 flex justify-center">
+            <InlineNotification
+              type="error"
+              desc={formErrors.triggerPrice}
+              hideBorder
+              hidePadding
+            />
+          </div>
+        ) : null}
       </div>
       <div className="my-2 flex justify-center">
         <button
@@ -646,6 +705,7 @@ const LimitSwapForm = ({
         </button>
       </div>
       <BuyTokenInput
+        error={formErrors.hasBorrows}
         handleAmountOutChange={handleAmountOutChange}
         setShowTokenSelect={() => handleTokenSelect('output')}
         handleRepay={handleRepay}
@@ -664,7 +724,8 @@ const LimitSwapForm = ({
           useMargin={false}
         />
       )}
-      {orderDescription ? (
+      {orderType === OrderTypes.REPAY_BORROW &&
+      !hasBorrowToRepay ? null : orderDescription ? (
         <div className="mt-4">
           <InlineNotification
             desc={
@@ -683,15 +744,9 @@ const LimitSwapForm = ({
           />
         </div>
       ) : null}
-      {orderType === OrderTypes.REPAY_BORROW && !hasBorrowToRepay ? (
-        <div className="mt-3">
-          <InlineNotification desc={t('swap:no-borrow')} type="error" />
-        </div>
-      ) : null}
       {ipAllowed ? (
         <Button
           onClick={handlePlaceStopLoss}
-          disabled={disablePlaceOrder}
           className="mt-6 mb-4 flex w-full items-center justify-center text-base"
           size="large"
         >

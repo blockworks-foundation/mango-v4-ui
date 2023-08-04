@@ -12,13 +12,16 @@ import mangoStore from '@store/mangoStore'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { OUTPUT_TOKEN_DEFAULT } from 'utils/constants'
 import { NUMBER_FORMAT_CLASSNAMES } from './MarketSwapForm'
+import InlineNotification from '@components/shared/InlineNotification'
 
 const BuyTokenInput = ({
+  error,
   handleAmountOutChange,
   loading,
   setShowTokenSelect,
   handleRepay,
 }: {
+  error?: string
   handleAmountOutChange: (e: NumberFormatValues, info: SourceInfo) => void
   loading?: boolean
   setShowTokenSelect: Dispatch<SetStateAction<'input' | 'output' | undefined>>
@@ -94,6 +97,16 @@ const BuyTokenInput = ({
           </>
         )}
       </div>
+      {error ? (
+        <div className="col-span-2 mt-1 flex justify-center">
+          <InlineNotification
+            type="error"
+            desc={error}
+            hideBorder
+            hidePadding
+          />
+        </div>
+      ) : null}
     </div>
   )
 }

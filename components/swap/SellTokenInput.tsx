@@ -80,7 +80,7 @@ const SellTokenInput = ({
         </span>
       </div>
       {error ? (
-        <div className="col-span-2 mt-1 flex justify-end">
+        <div className="col-span-2 mt-1 flex justify-center">
           <InlineNotification
             type="error"
             desc={error}

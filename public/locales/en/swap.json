@@ -17,6 +17,7 @@
     "max-slippage": "Max Slippage",
     "maximum-cost": "Maximum Cost",
     "minimum-received": "Minimum Received",
+    "no-borrow": "No borrow to repay",
     "no-history": "No swap history",
     "no-swap-found": "No swap found",
     "output-reduce-only-warning": "{{symbol}} is in reduce only mode. You can swap to close borrows only",
