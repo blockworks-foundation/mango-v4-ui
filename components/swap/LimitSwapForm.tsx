@@ -33,7 +33,7 @@ import Button, { LinkButton } from '@components/shared/Button'
 import Loading from '@components/shared/Loading'
 import TokenLogo from '@components/shared/TokenLogo'
 import InlineNotification from '@components/shared/InlineNotification'
-import { getPairChartSettings, handleFlipPrices } from './SwapTokenChart'
+import { getChartPairSettings, handleFlipPrices } from './SwapTokenChart'
 import Select from '@components/forms/Select'
 import useIpAddress from 'hooks/useIpAddress'
 import { Bank } from '@blockworks-foundation/mango-v4'
@@ -111,6 +111,17 @@ const LimitSwapForm = ({
     limitPrice,
   } = mangoStore((s) => s.swap)
 
+  const [inputBankName, outputBankName, inputBankDecimals, outputBankDecimals] =
+    useMemo(() => {
+      if (!inputBank || !outputBank) return ['', '', 0, 0]
+      return [
+        inputBank.name,
+        outputBank.name,
+        inputBank.mintDecimals,
+        outputBank.mintDecimals,
+      ]
+    }, [inputBank, outputBank])
+
   const amountInAsDecimal: Decimal | null = useMemo(() => {
     return Number(amountInFormValue)
       ? new Decimal(amountInFormValue)
@@ -118,16 +129,17 @@ const LimitSwapForm = ({
   }, [amountInFormValue])
 
   const flipPrices = useMemo(() => {
-    if (!swapChartSettings.length || !inputBank || !outputBank) return false
-    const pairSettings = getPairChartSettings(
+    if (!swapChartSettings.length || !inputBankName || !outputBankName)
+      return false
+    const pairSettings = getChartPairSettings(
       swapChartSettings,
-      inputBank.name,
-      outputBank.name,
+      inputBankName,
+      outputBankName,
     )
     if (pairSettings) {
-      return pairSettings.quote === inputBank.name
+      return pairSettings.quote === inputBankName
     } else return false
-  }, [swapChartSettings, inputBank, outputBank])
+  }, [swapChartSettings, inputBankName, outputBankName])
 
   const setAmountInFormValue = useCallback((amountIn: string) => {
     set((s) => {
@@ -165,14 +177,12 @@ const LimitSwapForm = ({
   useEffect(() => {
     if (!quotePrice || triggerPrice || showTokenSelect) return
     const multiplier = getOrderTypeMultiplier(OrderTypes.STOP_LOSS, flipPrices)
-    const decimals = !flipPrices
-      ? inputBank?.mintDecimals
-      : outputBank?.mintDecimals
+    const decimals = !flipPrices ? inputBankDecimals : outputBankDecimals
     setTriggerPrice((quotePrice * multiplier).toFixed(decimals))
   }, [
     flipPrices,
-    inputBank,
-    outputBank,
+    inputBankDecimals,
+    outputBankDecimals,
     quotePrice,
     showTokenSelect,
     triggerPrice,
@@ -182,16 +192,14 @@ const LimitSwapForm = ({
   useLayoutEffect(() => {
     if (!quotePrice) return
     const multiplier = getOrderTypeMultiplier(orderType, flipPrices)
-    const decimals = flipPrices
-      ? outputBank?.mintDecimals
-      : inputBank?.mintDecimals
+    const decimals = flipPrices ? outputBankDecimals : inputBankDecimals
     const price = (quotePrice * multiplier).toFixed(decimals)
     setTriggerPrice(price)
     if (amountInAsDecimal?.gt(0)) {
       const amountOut = getAmountOut(amountInAsDecimal.toString(), price)
       setAmountOutFormValue(amountOut.toString())
     }
-  }, [flipPrices])
+  }, [flipPrices, inputBankDecimals, orderType, outputBankDecimals])
 
   const triggerPriceDifference = useMemo(() => {
     if (!quotePrice) return 0
@@ -518,15 +526,15 @@ const LimitSwapForm = ({
     if (
       !amountInFormValue ||
       !amountOutFormValue ||
-      !inputBank ||
-      !outputBank ||
+      !inputBankName ||
+      !outputBankName ||
       !triggerPrice
     )
       return
 
     const quoteString = !flipPrices
-      ? `${inputBank.name} per ${outputBank.name}`
-      : `${outputBank.name} per ${inputBank.name}`
+      ? `${inputBankName} per ${outputBankName}`
+      : `${outputBankName} per ${inputBankName}`
 
     const orderTypeString =
       orderType === OrderTypes.STOP_LOSS
@@ -535,64 +543,64 @@ const LimitSwapForm = ({
 
     if (orderType === OrderTypes.REPAY_BORROW) {
       return t('trade:repay-borrow-order-desc', {
-        amount: floorToDecimal(amountOutFormValue, outputBank.mintDecimals),
+        amount: floorToDecimal(amountOutFormValue, outputBankDecimals),
         priceUnit: quoteString,
-        symbol: outputBank.name,
-        triggerPrice: floorToDecimal(triggerPrice, inputBank.mintDecimals),
+        symbol: outputBankName,
+        triggerPrice: floorToDecimal(triggerPrice, inputBankDecimals),
       })
-    } else if (inputBank.name === 'USDC') {
+    } else if (inputBankName === 'USDC') {
       return t('trade:trigger-order-desc', {
-        amount: floorToDecimal(amountOutFormValue, outputBank.mintDecimals),
+        amount: floorToDecimal(amountOutFormValue, outputBankDecimals),
         orderType: orderTypeString,
         priceUnit: quoteString,
-        symbol: outputBank.name,
-        triggerPrice: floorToDecimal(triggerPrice, inputBank.mintDecimals),
+        symbol: outputBankName,
+        triggerPrice: floorToDecimal(triggerPrice, inputBankDecimals),
       })
     } else {
       return t('trade:trigger-order-desc', {
-        amount: floorToDecimal(amountInFormValue, inputBank.mintDecimals),
+        amount: floorToDecimal(amountInFormValue, inputBankDecimals),
         orderType: orderTypeString,
         priceUnit: quoteString,
-        symbol: inputBank.name,
-        triggerPrice: floorToDecimal(triggerPrice, inputBank.mintDecimals),
+        symbol: inputBankName,
+        triggerPrice: floorToDecimal(triggerPrice, inputBankDecimals),
       })
     }
   }, [
     amountInFormValue,
     amountOutFormValue,
     flipPrices,
-    inputBank,
+    inputBankDecimals,
+    inputBankName,
     orderType,
-    outputBank,
+    outputBankDecimals,
+    outputBankName,
     triggerPrice,
   ])
 
   const triggerPriceSuffix = useMemo(() => {
-    if (!inputBank || !outputBank) return
+    if (!inputBankName || !outputBankName) return
     if (!flipPrices) {
-      return `${inputBank.name} per ${outputBank.name}`
+      return `${inputBankName} per ${outputBankName}`
     } else {
-      return `${outputBank.name} per ${inputBank.name}`
+      return `${outputBankName} per ${inputBankName}`
     }
-  }, [flipPrices, inputBank, outputBank])
+  }, [flipPrices, inputBankName, outputBankName])
 
   const toggleFlipPrices = useCallback(
     (flip: boolean) => {
-      if (!inputBank || !outputBank) return
+      if (!inputBankName || !outputBankName) return
       setFormErrors({})
       handleFlipPrices(
         flip,
-        inputBank.name,
-        outputBank.name,
+        inputBankName,
+        outputBankName,
         swapChartSettings,
         setSwapChartSettings,
       )
     },
     [
-      getOrderTypeMultiplier,
-      inputBank,
-      orderType,
-      outputBank,
+      inputBankName,
+      outputBankName,
       setFormErrors,
       setSwapChartSettings,
       swapChartSettings,
@@ -678,9 +686,7 @@ const LimitSwapForm = ({
                 allowNegative={false}
                 isNumericString={true}
                 decimalScale={
-                  !flipPrices
-                    ? inputBank?.mintDecimals
-                    : outputBank?.mintDecimals || 6
+                  !flipPrices ? inputBankDecimals : outputBankDecimals || 6
                 }
                 name="triggerPrice"
                 id="triggerPrice"
@@ -745,7 +751,7 @@ const LimitSwapForm = ({
           useMargin={false}
           amount={amountInAsDecimal.toNumber()}
           onChange={(v) => handleAmountInUi(v)}
-          step={1 / 10 ** (inputBank?.mintDecimals || 6)}
+          step={1 / 10 ** (inputBankDecimals || 6)}
         />
       ) : (
         <PercentageSelectButtons
@@ -761,7 +767,7 @@ const LimitSwapForm = ({
             desc={
               <>
                 {orderType !== OrderTypes.REPAY_BORROW ? (
-                  inputBank?.name === 'USDC' ? (
+                  inputBankName === 'USDC' ? (
                     <span className="text-th-up">{t('buy')}</span>
                   ) : (
                     <span className="text-th-down">{t('sell')}</span>
