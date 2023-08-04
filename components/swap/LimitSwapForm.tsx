@@ -29,7 +29,7 @@ import BuyTokenInput from './BuyTokenInput'
 import { notify } from 'utils/notifications'
 import * as sentry from '@sentry/nextjs'
 import { isMangoError } from 'types'
-import Button, { IconButton } from '@components/shared/Button'
+import Button, { LinkButton } from '@components/shared/Button'
 import Loading from '@components/shared/Loading'
 import TokenLogo from '@components/shared/TokenLogo'
 import InlineNotification from '@components/shared/InlineNotification'
@@ -657,11 +657,18 @@ const LimitSwapForm = ({
           </Select>
         </div>
         <div className="col-span-1">
-          <div className="flex items-center justify-between">
-            <p className="mb-2 text-th-fgd-2">{t('trade:trigger-price')}</p>
-            <IconButton hideBg onClick={() => toggleFlipPrices(!flipPrices)}>
-              <ArrowsRightLeftIcon className="h-4 w-4" />
-            </IconButton>
+          <div className="mb-2 flex items-end justify-between">
+            <p className="text-th-fgd-2">{t('trade:trigger-price')}</p>
+            <p
+              className={`font-mono text-xs ${
+                triggerPriceDifference >= 0 ? 'text-th-up' : 'text-th-down'
+              }`}
+            >
+              {triggerPriceDifference
+                ? triggerPriceDifference.toFixed(2)
+                : '0.00'}
+              %
+            </p>
           </div>
           <div className="flex items-center">
             <div className="relative w-full">
@@ -691,18 +698,14 @@ const LimitSwapForm = ({
               </div>
             </div>
           </div>
-          <div className="flex justify-between text-xxs text-th-fgd-4">
-            <span
-              className={
-                triggerPriceDifference >= 0 ? 'text-th-up' : 'text-th-down'
-              }
+          <div className="flex justify-end">
+            <LinkButton
+              className="flex items-center font-normal text-xxs text-th-fgd-3"
+              onClick={() => toggleFlipPrices(!flipPrices)}
             >
-              {triggerPriceDifference
-                ? triggerPriceDifference.toFixed(2)
-                : '0.00'}
-              %
-            </span>
-            <span>{triggerPriceSuffix}</span>
+              <span className="mr-1">{triggerPriceSuffix}</span>
+              <ArrowsRightLeftIcon className="h-3.5 w-3.5" />
+            </LinkButton>
           </div>
         </div>
         {formErrors.triggerPrice ? (
