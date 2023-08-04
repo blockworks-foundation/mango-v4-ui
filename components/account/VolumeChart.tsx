@@ -135,7 +135,9 @@ const VolumeChart = ({ hideChart }: { hideChart: () => void }) => {
       return dataTime >= limit
     })
     if (daysToShow === '30') {
-      return chunkDataByDay(filtered)
+      return chunkDataByDay(filtered).sort((a, b) =>
+        a.time.localeCompare(b.time),
+      )
     }
     return filtered
   }, [chartData, daysToShow])
