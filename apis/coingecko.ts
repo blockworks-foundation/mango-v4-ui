@@ -17,15 +17,18 @@ export const fetchChartData = async (
   baseTokenId: string | undefined,
   quoteTokenId: string | undefined,
   daysToShow: string,
+  flipPrices: boolean,
 ): Promise<ChartDataItem[]> => {
   if (!baseTokenId || !quoteTokenId) return []
+  const baseId = !flipPrices ? baseTokenId : quoteTokenId
+  const quoteId = !flipPrices ? quoteTokenId : baseTokenId
   try {
     const [inputResponse, outputResponse] = await Promise.all([
       fetch(
-        `https://api.coingecko.com/api/v3/coins/${baseTokenId}/ohlc?vs_currency=usd&days=${daysToShow}`,
+        `https://api.coingecko.com/api/v3/coins/${baseId}/ohlc?vs_currency=usd&days=${daysToShow}`,
       ),
       fetch(
-        `https://api.coingecko.com/api/v3/coins/${quoteTokenId}/ohlc?vs_currency=usd&days=${daysToShow}`,
+        `https://api.coingecko.com/api/v3/coins/${quoteId}/ohlc?vs_currency=usd&days=${daysToShow}`,
       ),
     ])
 

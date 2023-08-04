@@ -28,12 +28,12 @@ import SellTokenInput from './SellTokenInput'
 import BuyTokenInput from './BuyTokenInput'
 import { notify } from 'utils/notifications'
 import * as sentry from '@sentry/nextjs'
-import { SwapChartSettings, isMangoError } from 'types'
+import { isMangoError } from 'types'
 import Button, { IconButton } from '@components/shared/Button'
 import Loading from '@components/shared/Loading'
 import TokenLogo from '@components/shared/TokenLogo'
 import InlineNotification from '@components/shared/InlineNotification'
-import { handleFlipPrices } from './SwapTokenChart'
+import { getPairChartSettings, handleFlipPrices } from './SwapTokenChart'
 import Select from '@components/forms/Select'
 import useIpAddress from 'hooks/useIpAddress'
 import { Bank } from '@blockworks-foundation/mango-v4'
@@ -119,13 +119,13 @@ const LimitSwapForm = ({
 
   const flipPrices = useMemo(() => {
     if (!swapChartSettings.length || !inputBank || !outputBank) return false
-    const pairSettings = swapChartSettings.find(
-      (chart: SwapChartSettings) =>
-        chart.pair.includes(inputBank.name) &&
-        chart.pair.includes(outputBank.name),
+    const pairSettings = getPairChartSettings(
+      swapChartSettings,
+      inputBank.name,
+      outputBank.name,
     )
     if (pairSettings) {
-      return pairSettings.flipPrices
+      return pairSettings.quote === inputBank.name
     } else return false
   }, [swapChartSettings, inputBank, outputBank])
 

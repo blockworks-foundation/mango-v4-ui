@@ -468,6 +468,7 @@ export interface ContributionDetails {
 }
 
 export type SwapChartSettings = {
-  flipPrices: boolean
   pair: string
+  base: string
+  quote: string
 }

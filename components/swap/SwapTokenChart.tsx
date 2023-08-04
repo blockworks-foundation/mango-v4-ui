@@ -54,27 +54,49 @@ import useThemeWrapper from 'hooks/useThemeWrapper'
 
 dayjs.extend(relativeTime)
 
+export const getPairChartSettings = (
+  swapChartSettings: SwapChartSettings[],
+  inputToken: string,
+  outputToken: string,
+) => {
+  const pairSettings = swapChartSettings.find(
+    (chart: SwapChartSettings) =>
+      chart.pair.includes(inputToken) && chart.pair.includes(outputToken),
+  )
+  return pairSettings
+}
+
 export const handleFlipPrices = (
   flip: boolean,
-  // flipPrices: boolean,
   inputToken: string | undefined,
   outputToken: string | undefined,
   swapChartSettings: SwapChartSettings[],
   setSwapChartSettings: (settings: SwapChartSettings[]) => void,
 ) => {
   if (!inputToken || !outputToken) return
-  if (flip) {
+
+  const pairSettings = getPairChartSettings(
+    swapChartSettings,
+    inputToken,
+    outputToken,
+  )
+
+  const base = flip ? outputToken : inputToken
+  const quote = flip ? inputToken : outputToken
+
+  if (pairSettings) {
+    pairSettings.base = base
+    pairSettings.quote = quote
+    setSwapChartSettings([...swapChartSettings])
+  } else {
     setSwapChartSettings([
       ...swapChartSettings,
-      { pair: `${inputToken}/${outputToken}`, flipPrices: true },
+      {
+        pair: `${outputToken}/${inputToken}`,
+        base: base,
+        quote: quote,
+      },
     ])
-  } else {
-    setSwapChartSettings(
-      swapChartSettings.filter(
-        (chart: SwapChartSettings) =>
-          !chart.pair.includes(inputToken) && !chart.pair.includes(outputToken),
-      ),
-    )
   }
 }
 
@@ -229,13 +251,13 @@ const SwapTokenChart = () => {
 
   const flipPrices = useMemo(() => {
     if (!swapChartSettings.length || !inputBank || !outputBank) return false
-    const pairSettings = swapChartSettings.find(
-      (chart: SwapChartSettings) =>
-        chart.pair.includes(inputBank.name) &&
-        chart.pair.includes(outputBank.name),
+    const pairSettings = getPairChartSettings(
+      swapChartSettings,
+      inputBank.name,
+      outputBank.name,
     )
     if (pairSettings) {
-      return pairSettings.flipPrices
+      return pairSettings.quote === inputBank.name
     } else return false
   }, [swapChartSettings, inputBank, outputBank])
 
@@ -246,7 +268,7 @@ const SwapTokenChart = () => {
     return !flipPrices
       ? `${outputSymbol}/${inputSymbol}`
       : `${inputSymbol}/${outputSymbol}`
-  }, [flipPrices, inputBank, inputCoingeckoId, outputBank])
+  }, [flipPrices, inputBank, outputBank])
 
   const handleSwapMouseEnter = useCallback(
     (
@@ -363,12 +385,12 @@ const SwapTokenChart = () => {
   )
 
   const {
-    data: coingeckoDataQuery,
+    data: coingeckoData,
     isLoading,
     isFetching,
   } = useQuery(
-    ['swap-chart-data', baseTokenId, quoteTokenId, daysToShow],
-    () => fetchChartData(baseTokenId, quoteTokenId, daysToShow),
+    ['swap-chart-data', baseTokenId, quoteTokenId, daysToShow, flipPrices],
+    () => fetchChartData(baseTokenId, quoteTokenId, daysToShow, flipPrices),
     {
       cacheTime: 1000 * 60 * 15,
       staleTime: 1000 * 60 * 1,
@@ -376,21 +398,6 @@ const SwapTokenChart = () => {
       refetchOnWindowFocus: false,
     },
   )
-
-  const coingeckoData = useMemo(() => {
-    if (!coingeckoDataQuery || !coingeckoDataQuery.length) return []
-    if (!flipPrices) {
-      return coingeckoDataQuery
-    } else {
-      return coingeckoDataQuery.map((d: ChartDataItem) => {
-        const price =
-          d.inputTokenPrice / d.outputTokenPrice === d.price
-            ? d.outputTokenPrice / d.inputTokenPrice
-            : d.inputTokenPrice / d.outputTokenPrice
-        return { ...d, price: price }
-      })
-    }
-  }, [flipPrices, coingeckoDataQuery])
 
   const chartSwapTimes = useMemo(() => {
     if (
@@ -415,7 +422,8 @@ const SwapTokenChart = () => {
   }, [swapHistory, loadSwapHistory, inputBank, outputBank])
 
   const swapHistoryPoints = useMemo(() => {
-    if (!coingeckoData.length || !chartSwapTimes.length) return []
+    if (!coingeckoData || !coingeckoData.length || !chartSwapTimes.length)
+      return []
     return chartSwapTimes.map((x) => {
       const makeChartDataItem = { inputTokenPrice: 1, outputTokenPrice: 1 }
       const index = coingeckoData.findIndex((d) => d.time > x) // find index of data point with x value greater than highlight x
