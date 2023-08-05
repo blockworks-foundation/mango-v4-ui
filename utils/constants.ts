@@ -53,6 +53,8 @@ export const PRIORITY_FEE_KEY = 'priorityFeeKey-0.1'
 
 export const SHOW_ORDER_LINES_KEY = 'showOrderLines-0.1'
 
+export const SWAP_MARGIN_KEY = 'swapMargin-0.1'
+
 export const SHOW_SWAP_INTRO_MODAL = 'showSwapModal-0.1'
 
 export const ACCEPT_TERMS_KEY = 'termsOfUseAccepted-0.1'
@@ -125,6 +127,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   'eth (portal)': true,
   hnt: true,
   jitosol: true,
+  kin: true,
   ldo: true,
   mngo: true,
   msol: true,

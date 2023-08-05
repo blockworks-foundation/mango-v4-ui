@@ -959,6 +959,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                       type="error"
                     />
                     <CreateSwitchboardOracleModal
+                      tier={coinTier}
                       orcaPoolAddress={orcaPoolAddress}
                       raydiumPoolAddress={raydiumPoolAddress}
                       baseTokenName={currentTokenInfo.symbol}

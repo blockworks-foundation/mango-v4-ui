@@ -36,7 +36,7 @@ const set = mangoStore.getState().set
 
 const TopBar = () => {
   const { t } = useTranslation('common')
-  const { mangoAccount } = useMangoAccount()
+  const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const { connected } = useWallet()
   const themeData = mangoStore((s) => s.themeData)
 
@@ -200,7 +200,7 @@ const TopBar = () => {
           )}
           {connected ? (
             <div className="flex h-[63px] items-center bg-th-bkg-1">
-              <NotificationsButton />
+              {mangoAccountAddress && <NotificationsButton />}
               <AccountsButton />
               <ConnectedMenu />
             </div>

@@ -1,7 +1,7 @@
 import { HealthType } from '@blockworks-foundation/mango-v4'
 import {
   ArrowUpTrayIcon,
-  ExclamationCircleIcon,
+  // ExclamationCircleIcon,
   LinkIcon,
 } from '@heroicons/react/20/solid'
 import Decimal from 'decimal.js'
@@ -153,6 +153,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
   const showInsufficientBalance = Number(inputAmount)
     ? tokenMax.lt(inputAmount)
     : false
+  console.log(showInsufficientBalance)
 
   return (
     <>
@@ -262,7 +263,9 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
             size="large"
             disabled={
               connected &&
-              (!inputAmount || showInsufficientBalance || initHealth <= 0)
+              (!inputAmount ||
+                // showInsufficientBalance ||
+                initHealth <= 0)
             }
           >
             {!connected ? (
@@ -272,14 +275,15 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
               </div>
             ) : submitting ? (
               <Loading className="mr-2 h-5 w-5" />
-            ) : showInsufficientBalance ? (
-              <div className="flex items-center">
-                <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-                {t('swap:insufficient-balance', {
-                  symbol: selectedToken,
-                })}
-              </div>
             ) : (
+              // showInsufficientBalance ? (
+              //   <div className="flex items-center">
+              //     <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+              //     {t('swap:insufficient-balance', {
+              //       symbol: selectedToken,
+              //     })}
+              //   </div>
+              // ) :
               <div className="flex items-center">
                 <ArrowUpTrayIcon className="mr-2 h-5 w-5" />
                 {t('withdraw')}

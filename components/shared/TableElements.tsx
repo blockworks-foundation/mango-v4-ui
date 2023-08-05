@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import dayjs from 'dayjs'
 import { MouseEventHandler, ReactNode, forwardRef } from 'react'
+import { LinkButton } from './Button'
+import { ArrowSmallDownIcon } from '@heroicons/react/20/solid'
+import { SortConfig } from 'hooks/useSortableData'
 
 export const Table = ({
   children,
@@ -101,3 +104,35 @@ export const TableDateDisplay = ({
     </p>
   </>
 )
+
+export const SortableColumnHeader = ({
+  sort,
+  sortConfig,
+  sortKey,
+  title,
+  titleClass,
+}: {
+  sort: (key: string) => void
+  sortConfig: SortConfig | null
+  sortKey: string
+  title: string
+  titleClass?: string
+}) => {
+  return (
+    <LinkButton
+      className="flex items-center font-normal"
+      onClick={() => sort(sortKey)}
+    >
+      <span className={`text-th-fgd-3 ${titleClass}`}>{title}</span>
+      <ArrowSmallDownIcon
+        className={`default-transition ml-1 h-4 w-4 flex-shrink-0 ${
+          sortConfig?.key === sortKey
+            ? sortConfig?.direction === 'ascending'
+              ? 'rotate-180'
+              : 'rotate-360'
+            : null
+        }`}
+      />
+    </LinkButton>
+  )
+}

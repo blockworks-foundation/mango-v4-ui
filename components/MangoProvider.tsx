@@ -2,7 +2,6 @@ import { useEffect } from 'react'
 import mangoStore from '@store/mangoStore'
 import { Keypair, PublicKey } from '@solana/web3.js'
 import { useRouter } from 'next/router'
-import { MangoAccount } from '@blockworks-foundation/mango-v4'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useInterval from './shared/useInterval'
 import { SECONDS } from 'utils/constants'
@@ -99,13 +98,9 @@ const HydrateStore = () => {
         if (!mangoAccount) return
 
         if (context.slot > lastSeenSlot) {
-          const decodedMangoAccount = client.program.coder.accounts.decode(
-            'mangoAccount',
-            info?.data,
-          )
-          const newMangoAccount = MangoAccount.from(
+          const newMangoAccount = await client.getMangoAccountFromAi(
             mangoAccount.publicKey,
-            decodedMangoAccount,
+            info,
           )
           if (newMangoAccount.serum3Active().length > 0) {
             await newMangoAccount.reloadSerum3OpenOrders(client)

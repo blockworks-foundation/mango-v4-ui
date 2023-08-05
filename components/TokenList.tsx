@@ -17,7 +17,14 @@ import Tooltip from './shared/Tooltip'
 import { formatTokenSymbol } from 'utils/tokens'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useJupiterMints from '../hooks/useJupiterMints'
-import { Table, Td, Th, TrBody, TrHead } from './shared/TableElements'
+import {
+  SortableColumnHeader,
+  Table,
+  Td,
+  Th,
+  TrBody,
+  TrHead,
+} from './shared/TableElements'
 import DepositWithdrawModal from './modals/DepositWithdrawModal'
 import BorrowRepayModal from './modals/BorrowRepayModal'
 import { WRAPPED_SOL_MINT } from '@project-serum/serum/lib/token-instructions'
@@ -33,6 +40,22 @@ import useUnownedAccount from 'hooks/useUnownedAccount'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import TokenLogo from './shared/TokenLogo'
 import useHealthContributions from 'hooks/useHealthContributions'
+import { useSortableData } from 'hooks/useSortableData'
+
+type TableData = {
+  bank: Bank
+  balance: number
+  symbol: string
+  interestAmount: number
+  interestValue: number
+  inOrders: number
+  unsettled: number
+  collateralValue: number
+  assetWeight: string
+  liabWeight: string
+  depositRate: number
+  borrowRate: number
+}
 
 const TokenList = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
@@ -50,26 +73,82 @@ const TokenList = () => {
   const showTableView = width ? width > breakpoints.md : false
   const banks = useBanksWithBalances('balance')
 
-  const filteredBanks = useMemo(() => {
-    if (banks.length) {
-      return showZeroBalances || !mangoAccountAddress
-        ? banks
-        : banks.filter((b) => Math.abs(b.balance) > 0)
-    }
-    return []
-  }, [banks, mangoAccountAddress, showZeroBalances])
+  const formattedTableData = useCallback(
+    (banks: BankWithBalance[]) => {
+      const formatted = []
+      for (const b of banks) {
+        const bank = b.bank
+        const balance = b.balance
+        const balanceValue = balance * bank.uiPrice
+        const symbol = bank.name === 'MSOL' ? 'mSOL' : bank.name
 
-  // const filteredBanks = useMemo(() => {
-  //   if (!banks.length) return []
-  //   if (showZeroBalances || !mangoAccountAddress) return banks
-  //   const filtered = banks.filter((b) => {
-  //     const contribution =
-  //       initContributions.find((cont) => cont.asset === b.bank.name)
-  //         ?.contribution || 0
-  //     return Math.abs(contribution) > 0
-  //   })
-  //   return filtered
-  // }, [banks, mangoAccountAddress, showZeroBalances, initContributions])
+        const hasInterestEarned = totalInterestData.find(
+          (d) =>
+            d.symbol.toLowerCase() === symbol.toLowerCase() ||
+            (symbol === 'ETH (Portal)' && d.symbol === 'ETH'),
+        )
+
+        const interestAmount = hasInterestEarned
+          ? hasInterestEarned.borrow_interest * -1 +
+            hasInterestEarned.deposit_interest
+          : 0
+
+        const interestValue = hasInterestEarned
+          ? hasInterestEarned.borrow_interest_usd * -1 +
+            hasInterestEarned.deposit_interest_usd
+          : 0.0
+
+        const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0
+
+        const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
+
+        const collateralValue =
+          initContributions.find((val) => val.asset === bank.name)
+            ?.contribution || 0
+
+        const assetWeight = bank.scaledInitAssetWeight(bank.price).toFixed(2)
+        const liabWeight = bank.scaledInitLiabWeight(bank.price).toFixed(2)
+
+        const depositRate = bank.getDepositRateUi()
+        const borrowRate = bank.getBorrowRateUi()
+
+        const data = {
+          balance,
+          balanceValue,
+          bank,
+          symbol,
+          interestAmount,
+          interestValue,
+          inOrders,
+          unsettled,
+          collateralValue,
+          assetWeight,
+          liabWeight,
+          depositRate,
+          borrowRate,
+        }
+        formatted.push(data)
+      }
+      return formatted
+    },
+    [initContributions, spotBalances, totalInterestData],
+  )
+
+  const unsortedTableData = useMemo(() => {
+    if (!banks.length) return []
+    if (showZeroBalances || !mangoAccountAddress) {
+      return formattedTableData(banks)
+    } else {
+      const filtered = banks.filter((b) => Math.abs(b.balance) > 0)
+      return formattedTableData(filtered)
+    }
+  }, [banks, mangoAccountAddress, showZeroBalances, totalInterestData])
+
+  const {
+    items: tableData,
+    requestSort,
+    sortConfig,
+  } = useSortableData(unsortedTableData)
 
   return (
     <ContentBox hideBorder hidePadding>
@@ -89,36 +168,84 @@ const TokenList = () => {
           <Table>
             <thead>
               <TrHead>
-                <Th className="text-left">{t('token')}</Th>
+                <Th className="text-left">
+                  <SortableColumnHeader
+                    sortKey="symbol"
+                    sort={() => requestSort('symbol')}
+                    sortConfig={sortConfig}
+                    title={t('token')}
+                  />
+                </Th>
                 <Th>
                   <div className="flex justify-end">
                     <Tooltip content="A negative balance represents a borrow">
-                      <span className="tooltip-underline">{t('balance')}</span>
+                      <SortableColumnHeader
+                        sortKey="balanceValue"
+                        sort={() => requestSort('balanceValue')}
+                        sortConfig={sortConfig}
+                        title={t('balance')}
+                        titleClass="tooltip-underline"
+                      />
                     </Tooltip>
                   </div>
                 </Th>
                 <Th>
                   <div className="flex justify-end">
                     <Tooltip content={t('tooltip-collateral-value')}>
-                      <span className="tooltip-underline">
-                        {t('collateral-value')}
-                      </span>
+                      <SortableColumnHeader
+                        sortKey="collateralValue"
+                        sort={() => requestSort('collateralValue')}
+                        sortConfig={sortConfig}
+                        title={t('collateral-value')}
+                        titleClass="tooltip-underline"
+                      />
                     </Tooltip>
                   </div>
                 </Th>
-                <Th className="text-right">{t('trade:in-orders')}</Th>
-                <Th className="text-right">{t('trade:unsettled')}</Th>
-                <Th className="flex justify-end" id="account-step-nine">
-                  <Tooltip content="The sum of interest earned and interest paid for each token">
-                    <span className="tooltip-underline">
-                      {t('interest-earned-paid')}
-                    </span>
-                  </Tooltip>
+                <Th>
+                  <div className="flex justify-end">
+                    <SortableColumnHeader
+                      sortKey="inOrders"
+                      sort={() => requestSort('inOrders')}
+                      sortConfig={sortConfig}
+                      title={t('trade:in-orders')}
+                    />
+                  </div>
                 </Th>
-                <Th id="account-step-ten">
+                <Th>
+                  <div className="flex justify-end">
+                    <SortableColumnHeader
+                      sortKey="unsettled"
+                      sort={() => requestSort('unsettled')}
+                      sortConfig={sortConfig}
+                      title={t('trade:unsettled')}
+                    />
+                  </div>
+                </Th>
+                <Th>
+                  <div className="flex justify-end">
+                    <Tooltip content="The sum of interest earned and interest paid for each token">
+                      <SortableColumnHeader
+                        sortKey="interestValue"
+                        sort={() => requestSort('interestValue')}
+                        sortConfig={sortConfig}
+                        title={t('interest-earned-paid')}
+                        titleClass="tooltip-underline"
+                      />
+                    </Tooltip>
+                  </div>
+                </Th>
+                <Th>
                   <div className="flex justify-end">
                     <Tooltip content="The interest rates for depositing (green/left) and borrowing (red/right)">
-                      <span className="tooltip-underline">{t('rates')}</span>
+                      <SortableColumnHeader
+                        sortKey="depositRate"
+                        sort={() => requestSort('depositRate')}
+                        sortConfig={sortConfig}
+                        title={t('rates')}
+                        titleClass="tooltip-underline"
+                      />
+                      {/* <span className="tooltip-underline">{t('rates')}</span> */}
                     </Tooltip>
                   </div>
                 </Th>
@@ -128,47 +255,24 @@ const TokenList = () => {
               </TrHead>
             </thead>
             <tbody>
-              {filteredBanks.map((b) => {
-                const bank = b.bank
-
-                const tokenBalance = b.balance
-                const symbol = bank.name === 'MSOL' ? 'mSOL' : bank.name
-
-                const hasInterestEarned = totalInterestData.find(
-                  (d) =>
-                    d.symbol.toLowerCase() === symbol.toLowerCase() ||
-                    (symbol === 'ETH (Portal)' && d.symbol === 'ETH'),
-                )
-
-                const interestAmount = hasInterestEarned
-                  ? hasInterestEarned.borrow_interest * -1 +
-                    hasInterestEarned.deposit_interest
-                  : 0
-
-                const interestValue = hasInterestEarned
-                  ? hasInterestEarned.borrow_interest_usd * -1 +
-                    hasInterestEarned.deposit_interest_usd
-                  : 0.0
-
-                const inOrders =
-                  spotBalances[bank.mint.toString()]?.inOrders || 0
-
-                const unsettled =
-                  spotBalances[bank.mint.toString()]?.unsettled || 0
-
-                const collateralValue =
-                  initContributions.find((val) => val.asset === bank.name)
-                    ?.contribution || 0
-
-                const assetWeight = bank
-                  .scaledInitAssetWeight(bank.price)
-                  .toFixed(2)
-                const liabWeight = bank
-                  .scaledInitLiabWeight(bank.price)
-                  .toFixed(2)
+              {tableData.map((data) => {
+                const {
+                  balance,
+                  bank,
+                  symbol,
+                  interestAmount,
+                  interestValue,
+                  inOrders,
+                  unsettled,
+                  collateralValue,
+                  assetWeight,
+                  liabWeight,
+                  depositRate,
+                  borrowRate,
+                } = data
 
                 return (
-                  <TrBody key={bank.name}>
+                  <TrBody key={symbol}>
                     <Td>
                       <div className="flex items-center">
                         <div className="mr-2.5 flex flex-shrink-0 items-center">
@@ -179,7 +283,7 @@ const TokenList = () => {
                     </Td>
                     <Td className="text-right">
                       <BankAmountWithValue
-                        amount={tokenBalance}
+                        amount={balance}
                         bank={bank}
                         stacked
                       />
@@ -229,17 +333,14 @@ const TokenList = () => {
                       <div className="flex justify-end space-x-1.5">
                         <p className="text-th-up">
                           <FormatNumericValue
-                            value={bank.getDepositRateUi()}
+                            value={depositRate}
                             decimals={2}
                           />
                           %
                         </p>
                         <span className="text-th-fgd-4">|</span>
                         <p className="text-th-down">
-                          <FormatNumericValue
-                            value={bank.getBorrowRateUi()}
-                            decimals={2}
-                          />
+                          <FormatNumericValue value={borrowRate} decimals={2} />
                           %
                         </p>
                       </div>
@@ -257,8 +358,8 @@ const TokenList = () => {
         </>
       ) : (
         <div className="border-b border-th-bkg-3">
-          {filteredBanks.map((b) => {
-            return <MobileTokenListItem key={b.bank.name} bank={b} />
+          {tableData.map((data) => {
+            return <MobileTokenListItem key={data.bank.name} data={data} />
           })}
         </div>
       )}
@@ -268,46 +369,23 @@ const TokenList = () => {
 
 export default TokenList
 
-const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
+const MobileTokenListItem = ({ data }: { data: TableData }) => {
   const { t } = useTranslation(['common', 'token'])
-  const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const { mangoAccount } = useMangoAccount()
-  const { initContributions } = useHealthContributions()
-  const totalInterestData = mangoStore(
-    (s) => s.mangoAccount.interestTotals.data,
-  )
-  const tokenBank = bank.bank
-  const mint = tokenBank.mint
-  const symbol = tokenBank.name === 'MSOL' ? 'mSOL' : tokenBank.name
-
-  const hasInterestEarned = totalInterestData.find(
-    (d) =>
-      d.symbol.toLowerCase() === symbol.toLowerCase() ||
-      (symbol === 'ETH (Portal)' && d.symbol === 'ETH'),
-  )
-
-  const interestAmount = hasInterestEarned
-    ? hasInterestEarned.borrow_interest * -1 +
-      hasInterestEarned.deposit_interest
-    : 0
-
-  const interestValue = hasInterestEarned
-    ? hasInterestEarned.borrow_interest_usd * -1 +
-      hasInterestEarned.deposit_interest_usd
-    : 0
-
-  const tokenBalance = bank.balance
-  const unsettled = spotBalances[mint.toString()]?.unsettled || 0
-  const inOrders = spotBalances[mint.toString()]?.inOrders || 0
-
-  const collateralValue =
-    initContributions.find((val) => val.asset === tokenBank.name)
-      ?.contribution || 0
-
-  const assetWeight = tokenBank
-    .scaledInitAssetWeight(tokenBank.price)
-    .toFixed(2)
-  const liabWeight = tokenBank.scaledInitLiabWeight(tokenBank.price).toFixed(2)
+  const {
+    bank,
+    balance,
+    symbol,
+    interestAmount,
+    interestValue,
+    inOrders,
+    unsettled,
+    collateralValue,
+    assetWeight,
+    liabWeight,
+    depositRate,
+    borrowRate,
+  } = data
 
   return (
     <Disclosure>
@@ -319,7 +397,7 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <div className="mr-2.5">
-                  <TokenLogo bank={tokenBank} />
+                  <TokenLogo bank={bank} />
                 </div>
                 <div>
                   <p className="mb-0.5 leading-none text-th-fgd-1">{symbol}</p>
@@ -329,15 +407,13 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
                 <div className="text-right">
                   <p className="font-mono text-sm text-th-fgd-2">
                     <FormatNumericValue
-                      value={tokenBalance}
-                      decimals={tokenBank.mintDecimals}
+                      value={balance}
+                      decimals={bank.mintDecimals}
                     />
                   </p>
                   <span className="font-mono text-xs text-th-fgd-3">
                     <FormatNumericValue
-                      value={
-                        mangoAccount ? tokenBalance * tokenBank.uiPrice : 0
-                      }
+                      value={mangoAccount ? balance * bank.uiPrice : 0}
                       decimals={2}
                       isUsd
                     />
@@ -385,13 +461,13 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
                   <p className="text-xs text-th-fgd-3">
                     {t('trade:in-orders')}
                   </p>
-                  <BankAmountWithValue amount={inOrders} bank={tokenBank} />
+                  <BankAmountWithValue amount={inOrders} bank={bank} />
                 </div>
                 <div className="col-span-1">
                   <p className="text-xs text-th-fgd-3">
                     {t('trade:unsettled')}
                   </p>
-                  <BankAmountWithValue amount={unsettled} bank={tokenBank} />
+                  <BankAmountWithValue amount={unsettled} bank={bank} />
                 </div>
                 <div className="col-span-1">
                   <p className="text-xs text-th-fgd-3">
@@ -399,7 +475,7 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
                   </p>
                   <BankAmountWithValue
                     amount={interestAmount}
-                    bank={tokenBank}
+                    bank={bank}
                     value={interestValue}
                   />
                 </div>
@@ -407,24 +483,16 @@ const MobileTokenListItem = ({ bank }: { bank: BankWithBalance }) => {
                   <p className="text-xs text-th-fgd-3">{t('rates')}</p>
                   <p className="space-x-2 font-mono">
                     <span className="text-th-up">
-                      <FormatNumericValue
-                        value={tokenBank.getDepositRateUi()}
-                        decimals={2}
-                      />
-                      %
+                      <FormatNumericValue value={depositRate} decimals={2} />%
                     </span>
                     <span className="font-normal text-th-fgd-4">|</span>
                     <span className="text-th-down">
-                      <FormatNumericValue
-                        value={tokenBank.getBorrowRateUi()}
-                        decimals={2}
-                      />
-                      %
+                      <FormatNumericValue value={borrowRate} decimals={2} />%
                     </span>
                   </p>
                 </div>
                 <div className="col-span-1">
-                  <ActionsMenu bank={tokenBank} mangoAccount={mangoAccount} />
+                  <ActionsMenu bank={bank} mangoAccount={mangoAccount} />
                 </div>
               </div>
             </Disclosure.Panel>

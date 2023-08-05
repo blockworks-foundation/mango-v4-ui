@@ -1,11 +1,11 @@
 import FavoriteMarketButton from '@components/shared/FavoriteMarketButton'
 import { Popover } from '@headlessui/react'
-import { ChevronDownIcon } from '@heroicons/react/20/solid'
+import { ChevronDownIcon, MagnifyingGlassIcon } from '@heroicons/react/20/solid'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react'
 import {
   floorToDecimal,
   formatCurrencyValue,
@@ -21,8 +21,11 @@ import Loading from '@components/shared/Loading'
 import MarketChange from '@components/shared/MarketChange'
 import SheenLoader from '@components/shared/SheenLoader'
 // import Select from '@components/forms/Select'
-import useListedMarketsWithMarketData from 'hooks/useListedMarketsWithMarketData'
+import useListedMarketsWithMarketData, {
+  SerumMarketWithMarketData,
+} from 'hooks/useListedMarketsWithMarketData'
 import { AllowedKeys, sortPerpMarkets, sortSpotMarkets } from 'utils/markets'
+import Input from '@components/forms/Input'
 
 const MARKET_LINK_CLASSES =
   'grid grid-cols-3 md:grid-cols-4 flex items-center w-full py-2 px-4 rounded-r-md focus:outline-none focus-visible:text-th-active md:hover:cursor-pointer md:hover:bg-th-bkg-3 md:hover:text-th-fgd-1'
@@ -37,6 +40,38 @@ const MARKET_LINK_DISABLED_CLASSES =
 //   'change_1h',
 // ]
 
+const generateSearchTerm = (
+  item: SerumMarketWithMarketData,
+  searchValue: string,
+) => {
+  const normalizedSearchValue = searchValue.toLowerCase()
+  const value = item.name.toLowerCase()
+
+  const isMatchingWithName =
+    item.name.toLowerCase().indexOf(normalizedSearchValue) >= 0
+  const matchingSymbolPercent = isMatchingWithName
+    ? normalizedSearchValue.length / item.name.length
+    : 0
+
+  return {
+    token: item,
+    matchingIdx: value.indexOf(normalizedSearchValue),
+    matchingSymbolPercent,
+  }
+}
+
+const startSearch = (
+  items: SerumMarketWithMarketData[],
+  searchValue: string,
+) => {
+  return items
+    .map((item) => generateSearchTerm(item, searchValue))
+    .filter((item) => item.matchingIdx >= 0)
+    .sort((i1, i2) => i1.matchingIdx - i2.matchingIdx)
+    .sort((i1, i2) => i2.matchingSymbolPercent - i1.matchingSymbolPercent)
+    .map((item) => item.token)
+}
+
 const MarketSelectDropdown = () => {
   const { t } = useTranslation('common')
   const { selectedMarket } = useSelectedMarket()
@@ -44,10 +79,13 @@ const MarketSelectDropdown = () => {
     selectedMarket instanceof PerpMarket ? 'perp' : 'spot',
   )
   const [sortByKey] = useState<AllowedKeys>('quote_volume_24h')
+  const [search, setSearch] = useState('')
+  const [isOpen, setIsOpen] = useState(false)
   const { group } = useMangoGroup()
   const [spotBaseFilter, setSpotBaseFilter] = useState('All')
   const { perpMarketsWithData, serumMarketsWithData, isLoading, isFetching } =
     useListedMarketsWithMarketData()
+  const focusRef = useRef<HTMLInputElement>(null)
 
   const perpMarketsToShow = useMemo(() => {
     if (!perpMarketsWithData.length) return []
@@ -70,17 +108,30 @@ const MarketSelectDropdown = () => {
 
   const serumMarketsToShow = useMemo(() => {
     if (!serumMarketsWithData.length) return []
-
     if (spotBaseFilter !== 'All') {
       const filteredMarkets = serumMarketsWithData.filter((m) => {
         const base = m.name.split('/')[1]
         return base === spotBaseFilter
       })
-      return sortSpotMarkets(filteredMarkets, sortByKey)
+      return search
+        ? startSearch(filteredMarkets, search)
+        : sortSpotMarkets(filteredMarkets, sortByKey)
     } else {
-      return sortSpotMarkets(serumMarketsWithData, sortByKey)
+      return search
+        ? startSearch(serumMarketsWithData, search)
+        : sortSpotMarkets(serumMarketsWithData, sortByKey)
     }
-  }, [serumMarketsWithData, sortByKey, spotBaseFilter])
+  }, [search, serumMarketsWithData, sortByKey, spotBaseFilter])
+
+  const handleUpdateSearch = (e: ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value)
+  }
+
+  useEffect(() => {
+    if (focusRef?.current && spotOrPerp === 'spot') {
+      focusRef.current.focus()
+    }
+  }, [focusRef, isOpen, spotOrPerp])
 
   const loadingMarketData = isLoading || isFetching
 
@@ -94,6 +145,7 @@ const MarketSelectDropdown = () => {
           <Popover.Button
             className="-ml-4 flex h-12 items-center justify-between px-4 focus-visible:bg-th-bkg-3 disabled:cursor-not-allowed disabled:opacity-60 md:hover:bg-th-bkg-2 disabled:md:hover:bg-th-bkg-1"
             disabled={!group}
+            onClick={() => setIsOpen(!isOpen)}
           >
             <div className="flex items-center">
               {selectedMarket ? (
@@ -157,6 +209,7 @@ const MarketSelectDropdown = () => {
                               }}
                               onClick={() => {
                                 close()
+                                setSearch('')
                               }}
                               shallow={true}
                             >
@@ -218,6 +271,16 @@ const MarketSelectDropdown = () => {
               {spotOrPerp === 'spot' && serumMarketsToShow.length ? (
                 <>
                   <div className="flex items-center justify-between mb-3 px-4">
+                    <div className="relative w-1/2">
+                      <Input
+                        className="pl-8 h-8"
+                        type="text"
+                        value={search}
+                        onChange={handleUpdateSearch}
+                        ref={focusRef}
+                      />
+                      <MagnifyingGlassIcon className="absolute left-2 top-2 h-4 w-4" />
+                    </div>
                     <div>
                       {spotBaseTokens.map((tab) => (
                         <button
@@ -294,6 +357,7 @@ const MarketSelectDropdown = () => {
                           }}
                           onClick={() => {
                             close()
+                            setSearch('')
                           }}
                           shallow={true}
                         >

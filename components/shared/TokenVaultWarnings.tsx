@@ -23,7 +23,11 @@ const TokenVaultWarnings = ({
 
   const [maxWithdraw, maxBorrow] = useMemo(() => {
     if (!mangoAccount || !group) return [0, 0]
-    const maxWithdraw = getMaxWithdrawForBank(group, bank, mangoAccount)
+    const maxWithdraw = getMaxWithdrawForBank(
+      group,
+      bank,
+      mangoAccount,
+    ).toNumber()
     const maxBorrow = mangoAccount.getMaxWithdrawWithBorrowForTokenUi(
       group,
       bank.mint,
