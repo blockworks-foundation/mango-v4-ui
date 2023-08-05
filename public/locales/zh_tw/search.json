@@ -10,5 +10,6 @@
     "search-by": "搜尋方式",
     "search-for": "搜尋",
     "search-failed": "出錯了。稍後再試。",
-    "wallet-pk": "錢包地址"
+    "wallet-pk": "錢包地址",
+    "open-orders-pk": "Open Orders Address"
 }
