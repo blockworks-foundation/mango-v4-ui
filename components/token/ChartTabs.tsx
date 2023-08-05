@@ -56,7 +56,7 @@ const ChartTabs = ({ bank }: { bank: Bank }) => {
               ['token:deposit-rates', 0],
             ]}
           />
-          <div className="h-96 border-t border-th-bkg-3 px-6 py-6">
+          <div className="h-[412px] sm:h-96 border-t border-th-bkg-3 px-6 py-6">
             {activeDepositsTab === 'token:deposits' ? (
               <DetailedAreaOrBarChart
                 data={statsHistory}
@@ -96,7 +96,7 @@ const ChartTabs = ({ bank }: { bank: Bank }) => {
               ['token:borrow-rates', 0],
             ]}
           />
-          <div className="h-96 border-t border-th-bkg-3 px-6 py-6">
+          <div className="h-[412px] sm:h-96 border-t border-th-bkg-3 px-6 py-6">
             {activeBorrowsTab === 'token:borrows' ? (
               <DetailedAreaOrBarChart
                 data={statsHistory}
