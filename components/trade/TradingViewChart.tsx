@@ -1,4 +1,11 @@
-import { useEffect, useRef, useMemo, useState, useCallback } from 'react'
+import {
+  useEffect,
+  useRef,
+  useMemo,
+  useState,
+  useCallback,
+  Fragment,
+} from 'react'
 import {
   widget,
   ChartingLibraryWidgetOptions,
@@ -35,6 +42,7 @@ import useTradeHistory from 'hooks/useTradeHistory'
 import dayjs from 'dayjs'
 import ModifyTvOrderModal from '@components/modals/ModifyTvOrderModal'
 import { findSerum3MarketPkInOpenOrders } from './OpenOrders'
+import { Transition } from '@headlessui/react'
 import useThemeWrapper from 'hooks/useThemeWrapper'
 
 export interface ChartContainerProps {
@@ -79,9 +87,11 @@ const TradingViewChart = () => {
     showOrderLinesLocalStorage,
   )
   const tradeExecutions = mangoStore((s) => s.tradingView.tradeExecutions)
+  const themeData = mangoStore((s) => s.themeData)
   const { data: combinedTradeHistory, isLoading: loadingTradeHistory } =
     useTradeHistory()
   const [showTradeExecutions, toggleShowTradeExecutions] = useState(false)
+  const [showThemeEasterEgg, toggleShowThemeEasterEgg] = useState(false)
   const [cachedTradeHistory, setCachedTradeHistory] =
     useState(combinedTradeHistory)
   const [userId] = useLocalStorageState(TV_USER_ID_KEY, '')
@@ -444,6 +454,18 @@ const TradingViewChart = () => {
     [theme],
   )
 
+  const toggleThemeEasterEgg = useCallback(
+    (el: HTMLElement) => {
+      toggleShowThemeEasterEgg((prevState) => !prevState)
+      if (el.style.color === hexToRgb(COLORS.ACTIVE[theme])) {
+        el.style.color = COLORS.FGD4[theme]
+      } else {
+        el.style.color = COLORS.ACTIVE[theme]
+      }
+    },
+    [theme],
+  )
+
   const createOLButton = useCallback(() => {
     const button = tvWidgetRef?.current?.createButton()
     if (!button) {
@@ -475,6 +497,20 @@ const TradingViewChart = () => {
     }
   }, [t, toggleTradeExecutions, showTradeExecutions, theme])
 
+  const createEasterEggButton = useCallback(() => {
+    const button = tvWidgetRef?.current?.createButton()
+    if (!button) {
+      return
+    }
+    button.textContent = theme.toUpperCase()
+    button.addEventListener('click', () => toggleThemeEasterEgg(button))
+    if (showThemeEasterEgg) {
+      button.style.color = COLORS.ACTIVE[theme]
+    } else {
+      button.style.color = COLORS.FGD4[theme]
+    }
+  }, [toggleThemeEasterEgg, showTradeExecutions, theme])
+
   useEffect(() => {
     if (window) {
       let chartStyleOverrides = {
@@ -486,6 +522,7 @@ const TradingViewChart = () => {
         'paneProperties.legendProperties.showStudyTitles': false,
         'scalesProperties.showStudyLastValue': false,
         'scalesProperties.fontSize': 11,
+        'scalesProperties.lineColor': COLORS.BKG4[theme],
       }
 
       const mainSeriesProperties = [
@@ -573,7 +610,7 @@ const TradingViewChart = () => {
         theme:
           theme === 'Light' || theme === 'Banana' || theme === 'Lychee'
             ? 'Light'
-            : 'Dark',
+            : themeData.tvChartTheme,
         custom_css_url: '/styles/tradingview.css',
         loading_screen: {
           backgroundColor: COLORS.BKG1[theme],
@@ -594,7 +631,7 @@ const TradingViewChart = () => {
         setHeaderReady(true)
       })
     }
-  }, [theme, defaultProps, isMobile, userId])
+  }, [theme, themeData, defaultProps, isMobile, userId])
 
   // set a limit price from right click context menu
   useEffect(() => {
@@ -628,8 +665,11 @@ const TradingViewChart = () => {
     if (chartReady && headerReady && !orderLinesButtonRef.current) {
       createOLButton()
       createTEButton()
+      if (themeData.tvImagePath) {
+        createEasterEggButton()
+      }
     }
-  }, [createOLButton, createTEButton, chartReady, headerReady])
+  }, [createOLButton, createTEButton, chartReady, headerReady, themeData])
 
   // update order lines if a user's open orders change
   useEffect(() => {
@@ -780,6 +820,21 @@ const TradingViewChart = () => {
 
   return (
     <>
+      <Transition
+        show={showThemeEasterEgg}
+        as={Fragment}
+        enter="transition ease-in duration-500"
+        enterFrom="scale-0 opacity-0"
+        enterTo="scale-100 rotate-[-370deg] opacity-100"
+        leave="transition ease-out duration-500"
+        leaveFrom="scale-100 opacity-100"
+        leaveTo="scale-0 opacity-0"
+      >
+        <img
+          className="absolute top-8 right-20 h-auto w-36"
+          src="/images/themes/bonk/tv-chart-image.png"
+        />
+      </Transition>
       <div
         id={defaultProps.container as string}
         className="tradingview-chart"

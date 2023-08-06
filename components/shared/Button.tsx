@@ -1,3 +1,4 @@
+import mangoStore from '@store/mangoStore'
 import { useTheme } from 'next-themes'
 import { forwardRef, FunctionComponent, ReactNode, Ref } from 'react'
 
@@ -27,12 +28,15 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
   ...props
 }) => {
   const { theme } = useTheme()
+  const themeData = mangoStore((s) => s.themeData)
   return (
     <button
       onClick={onClick}
       disabled={disabled}
       className={`rounded-md ${
-        secondary
+        themeData.buttonStyle === 'raised'
+          ? 'raised-button'
+          : secondary
           ? 'border border-th-button focus-visible:border-th-fgd-4 md:hover:border-th-button-hover'
           : 'bg-th-button focus-visible:border focus-visible:border-th-fgd-4 md:hover:bg-th-button-hover'
       } ${

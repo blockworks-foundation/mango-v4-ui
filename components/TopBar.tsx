@@ -27,10 +27,10 @@ import useUnownedAccount from 'hooks/useUnownedAccount'
 import NotificationsButton from './notifications/NotificationsButton'
 import Tooltip from './shared/Tooltip'
 import { copyToClipboard } from 'utils'
+import mangoStore from '@store/mangoStore'
 import UserSetupModal from './modals/UserSetupModal'
 import { IS_ONBOARDED_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import mangoStore from '@store/mangoStore'
 
 const set = mangoStore.getState().set
 
@@ -38,6 +38,7 @@ const TopBar = () => {
   const { t } = useTranslation('common')
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const { connected } = useWallet()
+  const themeData = mangoStore((s) => s.themeData)
 
   const [action, setAction] = useState<'deposit' | 'withdraw'>('deposit')
   const [copied, setCopied] = useState('')
@@ -89,9 +90,8 @@ const TopBar = () => {
 
   return (
     <div
-      className={`flex h-16 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1 ${
-        query.token || query.market ? '' : 'pl-4 md:pl-6'
-      }`}
+      className={`flex h-16 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1`}
+      style={{ backgroundImage: `url(${themeData.topTilePath})` }}
     >
       <div className="flex w-full items-center justify-between md:space-x-4">
         <span className="mb-0 flex items-center">
@@ -104,18 +104,18 @@ const TopBar = () => {
             </button>
           ) : null}
           {connected ? (
-            <div className="hidden md:block">
+            <div className="hidden h-[63px] bg-th-bkg-1 md:flex md:items-center md:pl-6 md:pr-8">
               <SolanaTps />
             </div>
           ) : null}
           <img
-            className="mr-4 h-8 w-8 flex-shrink-0 md:hidden"
-            src="/logos/logo-mark.svg"
-            alt="next"
+            className="mr-4 h-9 w-9 flex-shrink-0 md:hidden"
+            src={themeData.logoPath}
+            alt="logo"
           />
           {!connected ? (
             mangoAccount ? (
-              <span className="hidden items-center md:flex">
+              <span className="hidden items-center md:flex md:pl-6">
                 <EyeIcon className="h-5 w-5 text-th-fgd-3" />
                 <span className="ml-2">
                   {t('unowned-helper', {
@@ -169,7 +169,7 @@ const TopBar = () => {
                 </Tooltip>
               </span>
             ) : (
-              <span className="hidden items-center md:flex">
+              <span className="hidden items-center md:flex md:pl-6">
                 <WalletIcon className="h-5 w-5 text-th-fgd-3" />
                 <span className="ml-2">{t('connect-helper')}</span>
                 <ArrowRightIcon className="sideways-bounce ml-2 h-5 w-5 text-th-fgd-1" />
@@ -199,7 +199,7 @@ const TopBar = () => {
             >{`${t('deposit')} / ${t('withdraw')}`}</Button>
           )}
           {connected ? (
-            <div className="flex items-center">
+            <div className="flex h-[63px] items-center bg-th-bkg-1">
               {mangoAccountAddress && <NotificationsButton />}
               <AccountsButton />
               <ConnectedMenu />

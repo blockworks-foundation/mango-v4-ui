@@ -7,7 +7,7 @@ import ChartOnRight from '@components/icons/ChartOnRight'
 import Tooltip from '@components/shared/Tooltip'
 import { TradeLayout } from '@components/trade/TradeAdvancedPage'
 // import dayjs from 'dayjs'
-import { ReactNode } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 // import { useRouter } from 'next/router'
 // import { useCallback } from 'react'
 import dayjs from 'dayjs'
@@ -23,7 +23,9 @@ import {
   TRADE_CHART_UI_KEY,
   TRADE_LAYOUT_KEY,
 } from 'utils/constants'
+import mangoStore from '@store/mangoStore'
 import Switch from '@components/forms/Switch'
+import { CUSTOM_SKINS } from 'utils/theme'
 
 const NOTIFICATION_POSITIONS = [
   'bottom-left',
@@ -47,7 +49,7 @@ const LANGS = [
   // { locale: 'zh', name: 'chinese', description: 'simplified chinese' },
 ]
 
-export const THEMES = [
+const DEFAULT_THEMES = [
   'light',
   'medium',
   'dark',
@@ -63,6 +65,9 @@ export const THEMES = [
 const DisplaySettings = () => {
   const { t } = useTranslation(['common', 'settings'])
   const { theme, setTheme } = useTheme()
+  const [themes, setThemes] = useState(DEFAULT_THEMES)
+  const nfts = mangoStore((s) => s.wallet.nfts.data)
+
   const [savedLanguage, setSavedLanguage] = useLocalStorageState(
     'language',
     'en',
@@ -87,6 +92,24 @@ const DisplaySettings = () => {
     true,
   )
 
+  // add nft skins to theme selection list
+  useEffect(() => {
+    if (nfts.length) {
+      const customThemes = []
+      for (const nft of nfts) {
+        const collectionAddress = nft?.collectionAddress
+        for (const themeKey in CUSTOM_SKINS) {
+          if (CUSTOM_SKINS[themeKey] === collectionAddress) {
+            customThemes.push(themeKey)
+          }
+        }
+      }
+      if (customThemes.length) {
+        setThemes([...customThemes, ...DEFAULT_THEMES])
+      }
+    }
+  }, [nfts])
+
   const handleLangChange = useCallback(
     (l: string) => {
       setSavedLanguage(l)
@@ -107,7 +130,7 @@ const DisplaySettings = () => {
             onChange={(t) => setTheme(t)}
             className="w-full"
           >
-            {THEMES.map((theme) => (
+            {themes.map((theme) => (
               <Select.Option key={theme} value={t(`settings:${theme}`)}>
                 {t(`settings:${theme}`)}
               </Select.Option>

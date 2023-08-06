@@ -10,6 +10,7 @@ export const COLORS: Record<string, Record<string, string>> = {
     Banana: '#fcf9cf',
     Lychee: '#faebec',
     Olive: '#383629',
+    Bonk: '#EE7C2F',
   },
   BKG2: {
     'Mango Classic': '#282433',
@@ -22,6 +23,7 @@ export const COLORS: Record<string, Record<string, string>> = {
     Banana: '#f7f2ba',
     Lychee: '#f4d7d9',
     Olive: '#474433',
+    Bonk: '#DD7813',
   },
   BKG3: {
     'Mango Classic': '#332e42',
@@ -34,6 +36,7 @@ export const COLORS: Record<string, Record<string, string>> = {
     Banana: '#f0eaa8',
     Lychee: '#efc3c6',
     Olive: '#56523e',
+    Bonk: '#E5B55D',
   },
   BKG4: {
     'Mango Classic': '#3f3851',
@@ -46,6 +49,7 @@ export const COLORS: Record<string, Record<string, string>> = {
     Banana: '#e6df99',
     Lychee: '#eaaeb2',
     Olive: '#656049',
+    Bonk: '#DDA131',
   },
   FGD4: {
     'Mango Classic': '#9189ae',
@@ -58,6 +62,7 @@ export const COLORS: Record<string, Record<string, string>> = {
     Banana: '#7b7b65',
     Lychee: '#b7343a',
     Olive: '#acaa8b',
+    Bonk: '#F3E9AA',
   },
   UP: {
     'Mango Classic': '#89B92A',
@@ -70,6 +75,7 @@ export const COLORS: Record<string, Record<string, string>> = {
     Banana: '#86AE7E',
     Lychee: '#2d805e',
     Olive: '#4eaa27',
+    Bonk: '#FAE34C',
   },
   ACTIVE: {
     'Mango Classic': '#f1c84b',
@@ -82,6 +88,7 @@ export const COLORS: Record<string, Record<string, string>> = {
     Banana: '#606afb',
     Lychee: '#040e9f',
     Olive: '#e7dc83',
+    Bonk: '#332910',
   },
   DOWN: {
     'Mango Classic': '#F84638',
@@ -94,5 +101,6 @@ export const COLORS: Record<string, Record<string, string>> = {
     Banana: '#BE6A6A',
     Lychee: '#c5303a',
     Olive: '#ee392f',
+    Bonk: '#C22E30',
   },
 }

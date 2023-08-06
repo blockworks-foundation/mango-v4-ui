@@ -55,7 +55,9 @@ const AdvancedMarketHeader = ({
 
   return (
     <>
-      <div className="flex flex-col bg-th-bkg-1 md:h-12 md:flex-row md:items-center">
+      <div
+        className={`flex flex-col bg-th-bkg-1 md:h-12 md:flex-row md:items-center`}
+      >
         <div className="w-full pl-4 md:w-auto md:py-0 md:pl-6 lg:pb-0">
           <MarketSelectDropdown />
         </div>

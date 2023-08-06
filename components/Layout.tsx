@@ -9,7 +9,8 @@ import {
 } from 'react'
 import { ArrowPathIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useViewport } from '../hooks/useViewport'
-import { breakpoints } from '../utils/theme'
+import { breakpoints, nftThemeMeta } from '../utils/theme'
+import mangoStore from '@store/mangoStore'
 import BottomBar from './mobile/BottomBar'
 import TopBar from './TopBar'
 import useLocalStorageState from '../hooks/useLocalStorageState'
@@ -26,7 +27,7 @@ import useInterval from './shared/useInterval'
 import { Transition } from '@headlessui/react'
 import { useTranslation } from 'next-i18next'
 import TermsOfUseModal from './modals/TermsOfUseModal'
-import { ttCommons, ttCommonsExpanded, ttCommonsMono } from 'utils/fonts'
+import { useTheme } from 'next-themes'
 import PromoBanner from './rewards/PromoBanner'
 import { useRouter } from 'next/router'
 
@@ -34,6 +35,8 @@ export const sideBarAnimationDuration = 300
 const termsLastUpdated = 1679441610978
 
 const Layout = ({ children }: { children: ReactNode }) => {
+  const themeData = mangoStore((s) => s.themeData)
+  const { theme } = useTheme()
   const [isCollapsed, setIsCollapsed] = useLocalStorageState(
     SIDEBAR_COLLAPSE_KEY,
     false,
@@ -73,14 +76,33 @@ const Layout = ({ children }: { children: ReactNode }) => {
     particlesInit()
   }, [])
 
+  useEffect(() => {
+    const set = mangoStore.getState().set
+    if (theme && nftThemeMeta[theme]) {
+      set((s) => {
+        s.themeData = nftThemeMeta[theme]
+      })
+    } else {
+      set((s) => {
+        s.themeData = nftThemeMeta.default
+      })
+    }
+  }, [theme])
+
   return (
     <main
-      className={`${ttCommons.variable} ${ttCommonsExpanded.variable} ${ttCommonsMono.variable} font-sans`}
+      className={`${themeData.fonts.body.variable} ${themeData.fonts.display.variable} ${themeData.fonts.mono.variable} font-sans`}
     >
       <div className="fixed z-30">
         <SuccessParticles />
       </div>
-      <div className="flex-grow bg-th-bkg-1 text-th-fgd-2 transition-all">
+      <div
+        className={`min-h-screen flex-grow ${
+          !themeData.useGradientBg
+            ? 'bg-th-bkg-1'
+            : 'bg-gradient-to-b from-th-bkg-1 to-th-bkg-2'
+        } text-th-fgd-2 transition-all`}
+      >
         <div className="fixed bottom-0 left-0 z-20 w-full md:hidden">
           <BottomBar />
         </div>
@@ -107,7 +129,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
         {/* note: overflow-x-hidden below prevents position sticky from working in activity feed  */}
         <div
           className={`w-full overflow-x-hidden transition-all duration-${sideBarAnimationDuration} ease-in-out ${
-            isCollapsed ? 'md:pl-[64px]' : 'md:pl-44 lg:pl-48 xl:pl-52'
+            isCollapsed ? 'md:pl-[64px]' : 'pl-[200px]'
           }`}
         >
           <TopBar />

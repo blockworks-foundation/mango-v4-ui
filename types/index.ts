@@ -300,6 +300,7 @@ export interface SwapHistoryItem {
 
 export interface NFT {
   address: string
+  collectionAddress?: string
   image: string
   name: string
   mint: string
@@ -389,6 +390,24 @@ export interface TradeForm {
   postOnly: boolean
   ioc: boolean
   reduceOnly: boolean
+}
+
+export interface ThemeData {
+  buttonStyle: 'flat' | 'raised'
+  fonts: {
+    body: any
+    display: any
+    mono: any
+  }
+  logoPath: string
+  platformName: string
+  rainAnimationImagePath: string
+  sideImagePath: string
+  sideTilePath: string
+  topTilePath: string
+  tvChartTheme: 'Light' | 'Dark'
+  tvImagePath: string
+  useGradientBg: boolean
 }
 
 export interface MangoError extends Error {
