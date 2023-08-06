@@ -7,6 +7,7 @@ import PreferredExplorerSettings from './PreferredExplorerSettings'
 import RpcSettings from './RpcSettings'
 import SoundSettings from './SoundSettings'
 import { breakpoints } from 'utils/theme'
+import AccountSettings from './AccountSettings'
 
 const SettingsPage = () => {
   const { width } = useViewport()
@@ -15,6 +16,9 @@ const SettingsPage = () => {
     <div className="grid grid-cols-12">
       <div className="col-span-12 border-b border-th-bkg-3 lg:col-span-10 lg:col-start-2 xl:col-span-8 xl:col-start-3">
         <RpcSettings />
+      </div>
+      <div className="col-span-12 border-b border-th-bkg-3 pt-8 lg:col-span-10 lg:col-start-2 xl:col-span-8 xl:col-start-3">
+        <AccountSettings />
       </div>
       <div className="col-span-12 border-b border-th-bkg-3 pt-8 lg:col-span-10 lg:col-start-2 xl:col-span-8 xl:col-start-3">
         <DisplaySettings />
