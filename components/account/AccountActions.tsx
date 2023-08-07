@@ -5,6 +5,7 @@ import {
   ArrowUpLeftIcon,
   DocumentDuplicateIcon,
   PencilIcon,
+  SquaresPlusIcon,
   TrashIcon,
   UserPlusIcon,
   WrenchIcon,
@@ -26,6 +27,7 @@ import ActionsLinkButton from './ActionsLinkButton'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
+import MangoAccountSizeModal from '@components/modals/MangoAccountSizeModal'
 
 export const handleCopyAddress = (
   mangoAccount: MangoAccount,
@@ -39,7 +41,7 @@ export const handleCopyAddress = (
 }
 
 const AccountActions = () => {
-  const { t } = useTranslation(['common', 'close-account'])
+  const { t } = useTranslation(['common', 'close-account', 'settings'])
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const [showCloseAccountModal, setShowCloseAccountModal] = useState(false)
   const [showEditAccountModal, setShowEditAccountModal] = useState(false)
@@ -47,6 +49,7 @@ const AccountActions = () => {
   const [showRepayModal, setShowRepayModal] = useState(false)
   const [showDelegateModal, setShowDelegateModal] = useState(false)
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
+  const [showAccountSizeModal, setShowAccountSizeModal] = useState(false)
   const { connected } = useWallet()
   const { isDelegatedAccount, isUnownedAccount } = useUnownedAccount()
   const { width } = useViewport()
@@ -147,6 +150,16 @@ const AccountActions = () => {
                     <ActionsLinkButton
                       disabled={isDelegatedAccount}
                       mangoAccount={mangoAccount!}
+                      onClick={() => setShowAccountSizeModal(true)}
+                    >
+                      <SquaresPlusIcon className="h-4 w-4" />
+                      <span className="ml-2">
+                        {t('settings:increase-account-size')}
+                      </span>
+                    </ActionsLinkButton>
+                    <ActionsLinkButton
+                      disabled={isDelegatedAccount}
+                      mangoAccount={mangoAccount!}
                       onClick={() => setShowCloseAccountModal(true)}
                     >
                       <TrashIcon className="h-4 w-4" />
@@ -195,6 +208,12 @@ const AccountActions = () => {
         <CreateAccountModal
           isOpen={showCreateAccountModal}
           onClose={() => setShowCreateAccountModal(false)}
+        />
+      ) : null}
+      {showAccountSizeModal ? (
+        <MangoAccountSizeModal
+          isOpen={showAccountSizeModal}
+          onClose={() => setShowAccountSizeModal(false)}
         />
       ) : null}
     </>
