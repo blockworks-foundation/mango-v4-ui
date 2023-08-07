@@ -2,7 +2,6 @@ import Link from 'next/link'
 import {
   EllipsisHorizontalIcon,
   BuildingLibraryIcon,
-  LightBulbIcon,
   ArrowTopRightOnSquareIcon,
   ChevronDownIcon,
   CurrencyDollarIcon,
@@ -16,6 +15,7 @@ import {
   PlusCircleIcon,
   ArchiveBoxArrowDownIcon,
   ExclamationTriangleIcon,
+  DocumentTextIcon,
   // ClipboardDocumentIcon,
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
@@ -222,7 +222,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               />
               <MenuItem
                 collapsed={false}
-                icon={<LightBulbIcon className="h-5 w-5" />}
+                icon={<DocumentTextIcon className="h-5 w-5" />}
                 title={t('documentation')}
                 pagePath="https://docs.mango.markets"
                 hideIconBg
