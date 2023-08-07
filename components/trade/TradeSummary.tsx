@@ -283,7 +283,6 @@ const TradeSummary = ({
         <div className="flex justify-between text-xs">
           <p>{t('trade:avg-entry-price')}</p>
           <p className="text-th-fgd-2">
-            {tradeForm.tradeType === 'Market' ? '~' : null}
             <FormatNumericValue
               value={avgEntryPrice}
               decimals={getDecimalCount(selectedMarket.tickSize)}
@@ -292,6 +291,10 @@ const TradeSummary = ({
           </p>
         </div>
       ) : null}
+      <div className="flex justify-between text-xs">
+        <p>{t('common:route')}</p>
+        <p className="text-th-fgd-2">Openbook</p>
+      </div>
     </div>
   )
 }

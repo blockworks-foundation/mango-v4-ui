@@ -122,26 +122,29 @@ const TradingViewChart = () => {
   const tvWidgetRef = useRef<IChartingLibraryWidget>()
   const orderLinesButtonRef = useRef<HTMLElement>()
 
-  const selectedMarketPk = useMemo(() => {
-    const group = mangoStore.getState().group
-    if (!group || !selectedMarketName)
-      return '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6'
-
-    if (!selectedMarketName?.toLowerCase().includes('perp')) {
-      return group
-        .getSerum3MarketByName(selectedMarketName)
-        .serumMarketExternal.toString()
-    } else {
-      return group.getPerpMarketByName(selectedMarketName).publicKey.toString()
-    }
-  }, [selectedMarketName])
-
+  // Sets the "symbol" in trading view which is used to fetch chart data via the datafeed
   useEffect(() => {
     const group = mangoStore.getState().group
-    if (tvWidgetRef.current && chartReady && selectedMarketPk && group) {
+    let mktAddress = 'So11111111111111111111111111111111111111112'
+
+    if (
+      group &&
+      selectedMarketName &&
+      !selectedMarketName?.toLowerCase().includes('perp')
+    ) {
+      mktAddress = group
+        .getSerum3MarketByName(selectedMarketName)
+        .serumMarketExternal.toString()
+    } else if (group && selectedMarketName) {
+      mktAddress = group
+        .getPerpMarketByName(selectedMarketName)
+        .publicKey.toString()
+    }
+
+    if (tvWidgetRef.current && chartReady && mktAddress && group) {
       try {
         tvWidgetRef.current.setSymbol(
-          selectedMarketPk,
+          mktAddress,
           tvWidgetRef.current.activeChart().resolution(),
           () => {
             if (showOrderLinesLocalStorage) {
@@ -156,7 +159,7 @@ const TradingViewChart = () => {
         console.warn('Trading View change symbol error: ', e)
       }
     }
-  }, [chartReady, selectedMarketPk, showOrderLinesLocalStorage])
+  }, [chartReady, selectedMarketName, showOrderLinesLocalStorage])
 
   useEffect(() => {
     if (showOrderLines !== showOrderLinesLocalStorage) {
