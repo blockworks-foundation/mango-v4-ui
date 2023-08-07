@@ -554,8 +554,7 @@ const TradingViewChart = () => {
       const marketAddress =
         (mkt instanceof Serum3Market
           ? mkt?.serumMarketExternal.toString()
-          : mkt?.publicKey.toString()) ||
-        '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6'
+          : mkt?.publicKey.toString()) || 'Loading'
 
       const widgetOptions: ChartingLibraryWidgetOptions = {
         // debug: true,
@@ -626,11 +625,11 @@ const TradingViewChart = () => {
 
       console.log('creating new chart')
       const tvWidget = new widget(widgetOptions)
-      tvWidgetRef.current = tvWidget
-      tvWidgetRef.current.onChartReady(() => {
+      tvWidget.onChartReady(() => {
+        tvWidgetRef.current = tvWidget
         setChartReady(true)
       })
-      tvWidgetRef.current.headerReady().then(() => {
+      tvWidget.headerReady().then(() => {
         setHeaderReady(true)
       })
     }

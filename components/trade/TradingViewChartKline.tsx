@@ -186,7 +186,7 @@ const TradingViewChartKline = ({ setIsFullView, isFullView }: Props) => {
   useEffect(() => {
     let dataFeed = spotDataFeed
     const group = mangoStore.getState().group
-    let address = '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6'
+    let address = ''
 
     if (!selectedMarketName?.toLowerCase().includes('perp') && group) {
       address = group!
