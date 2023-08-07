@@ -22,7 +22,7 @@ import {
 } from '@components/settings/AccountSettings'
 
 const MIN_ACCOUNTS = 8
-const MAX_ACCOUNTS: AccountSizeForm = {
+export const MAX_ACCOUNTS: AccountSizeForm = {
   tokenAccounts: '16',
   spotOpenOrders: '8',
   perpAccounts: '8',
@@ -247,10 +247,12 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
           <AccountSizeFormInput
             availableAccounts={availableTokens}
             error={formErrors?.tokenAccounts}
-            label={t('settings:token-accounts')}
+            label={t('tokens')}
             handleMax={() => handleMax('tokenAccounts')}
             handleSetForm={handleSetForm}
-            tooltipContent={t('settings:tooltip-token-accounts')}
+            tooltipContent={t('settings:tooltip-token-accounts', {
+              max: MAX_ACCOUNTS.tokenAccounts,
+            })}
             type="tokenAccounts"
             value={accountSizeForm.tokenAccounts}
           />
@@ -263,7 +265,9 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
             label={t('settings:spot-open-orders')}
             handleMax={() => handleMax('spotOpenOrders')}
             handleSetForm={handleSetForm}
-            tooltipContent={t('settings:tooltip-spot-open-orders')}
+            tooltipContent={t('settings:tooltip-spot-open-orders', {
+              max: MAX_ACCOUNTS.spotOpenOrders,
+            })}
             type="spotOpenOrders"
             value={accountSizeForm.spotOpenOrders}
           />
@@ -273,10 +277,12 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
             availableAccounts={availablePerps}
             disabled
             error={formErrors?.perpAccounts}
-            label={t('settings:perp-accounts')}
+            label={t('settings:perp-positions')}
             handleMax={() => handleMax('perpAccounts')}
             handleSetForm={handleSetForm}
-            tooltipContent={t('settings:tooltip-perp-accounts')}
+            tooltipContent={t('settings:tooltip-perp-positions', {
+              max: MAX_ACCOUNTS.perpAccounts,
+            })}
             type="perpAccounts"
             value={accountSizeForm.perpAccounts}
           />
@@ -288,7 +294,9 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
             label={t('settings:perp-open-orders')}
             handleMax={() => handleMax('perpOpenOrders')}
             handleSetForm={handleSetForm}
-            tooltipContent={t('settings:tooltip-perp-open-orders')}
+            tooltipContent={t('settings:tooltip-perp-open-orders', {
+              max: MAX_ACCOUNTS.perpOpenOrders,
+            })}
             type="perpOpenOrders"
             value={accountSizeForm.perpOpenOrders}
           />

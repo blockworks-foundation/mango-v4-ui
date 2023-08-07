@@ -1,4 +1,6 @@
-import MangoAccountSizeModal from '@components/modals/MangoAccountSizeModal'
+import MangoAccountSizeModal, {
+  MAX_ACCOUNTS,
+} from '@components/modals/MangoAccountSizeModal'
 import { LinkButton } from '@components/shared/Button'
 import Tooltip from '@components/shared/Tooltip'
 import { SquaresPlusIcon } from '@heroicons/react/20/solid'
@@ -92,15 +94,21 @@ const AccountSettings = () => {
         </LinkButton>
       </div>
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
-        <Tooltip content={t('settings:tooltip-token-accounts')}>
-          <p className="tooltip-underline mb-2 md:mb-0">
-            {t('settings:token-accounts')}
-          </p>
+        <Tooltip
+          content={t('settings:tooltip-token-accounts', {
+            max: MAX_ACCOUNTS.tokenAccounts,
+          })}
+        >
+          <p className="tooltip-underline mb-2 md:mb-0">{t('tokens')}</p>
         </Tooltip>
         <p className="font-mono text-th-fgd-2">{availableTokens}</p>
       </div>
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
-        <Tooltip content={t('settings:tooltip-spot-open-orders')}>
+        <Tooltip
+          content={t('settings:tooltip-spot-open-orders', {
+            max: MAX_ACCOUNTS.spotOpenOrders,
+          })}
+        >
           <p className="tooltip-underline mb-2 md:mb-0">
             {t('settings:spot-open-orders')}
           </p>
@@ -108,15 +116,23 @@ const AccountSettings = () => {
         <p className="font-mono text-th-fgd-2">{availableSerum3}</p>
       </div>
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
-        <Tooltip content={t('settings:tooltip-perp-accounts')}>
+        <Tooltip
+          content={t('settings:tooltip-perp-positions', {
+            max: MAX_ACCOUNTS.perpAccounts,
+          })}
+        >
           <p className="tooltip-underline mb-2 md:mb-0">
-            {t('settings:perp-accounts')}
+            {t('settings:perp-positions')}
           </p>
         </Tooltip>
         <p className="font-mono text-th-fgd-2">{availablePerps}</p>
       </div>
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
-        <Tooltip content={t('settings:tooltip-perp-open-orders')}>
+        <Tooltip
+          content={t('settings:tooltip-perp-open-orders', {
+            max: MAX_ACCOUNTS.perpOpenOrders,
+          })}
+        >
           <p className="tooltip-underline mb-2 md:mb-0">
             {t('settings:perp-open-orders')}
           </p>
