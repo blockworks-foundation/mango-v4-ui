@@ -72,11 +72,14 @@ const Orderbook = () => {
     if (element) {
       console.log('vertically centering')
 
-      if (element.scrollHeight > window.innerHeight) {
+      if (
+        element.parentElement &&
+        element.scrollHeight > element.parentElement.offsetHeight
+      ) {
         element.scrollTop =
           (element.scrollHeight - element.scrollHeight) / 2 +
-          (element.scrollHeight - window.innerHeight) / 2 +
-          94
+          (element.scrollHeight - element.parentElement.offsetHeight) / 2 +
+          60
       } else {
         element.scrollTop = (element.scrollHeight - element.offsetHeight) / 2
       }
