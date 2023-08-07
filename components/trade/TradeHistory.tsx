@@ -161,7 +161,7 @@ const TradeHistory = () => {
                     </Td>
                     <Td className="text-right font-mono">{size}</Td>
                     <Td className="text-right font-mono">
-                      <FormatNumericValue value={price} />
+                      <p>{price}</p>
                     </Td>
                     <Td className="text-right font-mono">
                       <FormatNumericValue value={value} decimals={2} isUsd />
