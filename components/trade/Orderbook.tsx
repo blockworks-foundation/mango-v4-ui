@@ -16,12 +16,12 @@ import { useTranslation } from 'next-i18next'
 import Decimal from 'decimal.js'
 import Tooltip from '@components/shared/Tooltip'
 import GroupSize from './GroupSize'
-import { useViewport } from 'hooks/useViewport'
+// import { useViewport } from 'hooks/useViewport'
 import { BookSide, Serum3Market } from '@blockworks-foundation/mango-v4'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import { OrderbookFeed } from '@blockworks-foundation/mango-feeds'
-import { breakpoints } from 'utils/theme'
+// import { breakpoints } from 'utils/theme'
 import {
   decodeBook,
   decodeBookL2,
@@ -48,22 +48,60 @@ const Orderbook = () => {
   const [tickSize, setTickSize] = useState(0)
   const [grouping, setGrouping] = useState(0.01)
   const [useOrderbookFeed, setUseOrderbookFeed] = useState(false)
+  const orderbookElRef = useRef<HTMLDivElement>(null)
+  const [isScrolled, setIsScrolled] = useState(false)
   // const [useOrderbookFeed, setUseOrderbookFeed] = useState(
   //   localStorage.getItem(USE_ORDERBOOK_FEED_KEY) !== null
   //     ? localStorage.getItem(USE_ORDERBOOK_FEED_KEY) === 'true'
   //     : true
   // )
-  const { width } = useViewport()
+  // const { width } = useViewport()
   const [orderbookData, setOrderbookData] = useState<OrderbookData | null>(null)
   const currentOrderbookData = useRef<OrderbookL2>()
 
   const depth = useMemo(() => {
-    return width > breakpoints['3xl'] ? 12 : 10
-  }, [width])
+    return 30
+  }, [])
 
   const depthArray: number[] = useMemo(() => {
     return Array(depth).fill(0)
   }, [depth])
+
+  const verticallyCenterOrderbook = useCallback(() => {
+    const element = orderbookElRef.current
+    if (element) {
+      console.log('vertically centering')
+
+      if (
+        element.parentElement &&
+        element.scrollHeight > element.parentElement.offsetHeight
+      ) {
+        element.scrollTop =
+          (element.scrollHeight - element.scrollHeight) / 2 +
+          (element.scrollHeight - element.parentElement.offsetHeight) / 2 +
+          60
+      } else {
+        element.scrollTop = (element.scrollHeight - element.offsetHeight) / 2
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    console.log('hi')
+
+    window.addEventListener('resize', verticallyCenterOrderbook)
+  }, [verticallyCenterOrderbook])
+
+  // const resetOrderbook = useCallback(async () => {
+  //   // setShowBids(true)
+  //   // setShowAsks(true)
+  //   await sleep(300)
+  //   verticallyCenterOrderbook()
+  // }, [verticallyCenterOrderbook])
+
+  const handleScroll = useCallback(() => {
+    setIsScrolled(true)
+  }, [])
 
   const orderbookFeed = useRef<OrderbookFeed | null>(null)
 
@@ -182,6 +220,9 @@ const Orderbook = () => {
                 spread,
                 spreadPercentage,
               })
+              if (!isScrolled) {
+                verticallyCenterOrderbook()
+              }
             } else {
               setOrderbookData(null)
             }
@@ -422,7 +463,7 @@ const Orderbook = () => {
   }, [])
 
   return (
-    <div>
+    <div className="flex h-full flex-col">
       <div className="h-10 flex items-center justify-between border-b border-th-bkg-3 px-4">
         {market ? (
           <>
@@ -448,7 +489,11 @@ const Orderbook = () => {
         <div className="col-span-1">{t('price')}</div>
         <div className="col-span-1 text-right">{t('trade:size')}</div>
       </div>
-      <div className="relative h-full">
+      <div
+        className="hide-scroll relative h-full overflow-y-scroll"
+        ref={orderbookElRef}
+        onScroll={handleScroll}
+      >
         {depthArray.map((_x, idx) => {
           let index = idx
           if (orderbookData?.asks) {
