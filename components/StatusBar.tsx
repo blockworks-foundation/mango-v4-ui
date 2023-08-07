@@ -4,13 +4,14 @@ import DiscordIcon from './icons/DiscordIcon'
 import { TwitterIcon } from './icons/TwitterIcon'
 import { DocumentTextIcon } from '@heroicons/react/20/solid'
 import { useEffect, useState } from 'react'
+import { IDL } from '@blockworks-foundation/mango-v4'
 
 const DEFAULT_LATEST_COMMIT = { sha: '', url: '' }
 
 const getLatestCommit = async () => {
   try {
     const response = await fetch(
-      `https://api.github.com/repos/blockworks-foundation/mango-v4/commits`,
+      `https://api.github.com/repos/blockworks-foundation/mango-v4-ui/commits`,
     )
     const data = await response.json()
 
@@ -45,15 +46,19 @@ const StatusBar = () => {
         <Tps />
       </div>
       <div className="col-span-1 text-center">
+        <span className="text-th-fgd-3 text-xs">v{IDL.version}</span>
         {latestCommit.sha && latestCommit.url ? (
-          <a
-            className="text-th-fgd-3 text-xs focus:outline-none md:hover:text-th-fgd-2"
-            href={latestCommit.url}
-            rel="noreferrer noopener"
-            target="_blank"
-          >
-            {latestCommit.sha}
-          </a>
+          <>
+            <span className="mx-1.5 text-th-fgd-4">|</span>
+            <a
+              className="text-th-fgd-3 text-xs focus:outline-none md:hover:text-th-fgd-2"
+              href={latestCommit.url}
+              rel="noreferrer noopener"
+              target="_blank"
+            >
+              {latestCommit.sha}
+            </a>
+          </>
         ) : null}
       </div>
       <div className="col-span-1 flex items-center justify-end space-x-4 text-xs">
