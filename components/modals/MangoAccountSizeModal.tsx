@@ -22,10 +22,15 @@ import {
 } from '@components/settings/AccountSettings'
 
 const MIN_ACCOUNTS = 8
-const MAX_ACCOUNTS = '16'
+const MAX_ACCOUNTS: AccountSizeForm = {
+  tokenAccounts: '16',
+  spotOpenOrders: '8',
+  perpAccounts: '8',
+  perpOpenOrders: '64',
+}
 
 const INPUT_CLASSES =
-  'h-10 rounded-md border w-full border-th-input-border bg-th-input-bkg px-3 font-mono text-base text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover'
+  'h-10 rounded-md rounded-r-none border w-full border-th-input-border bg-th-input-bkg px-3 font-mono text-base text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover disabled:text-th-fgd-4 disabled:bg-th-bkg-2 disabled:hover:border-th-input-border'
 
 type FormErrors = Partial<Record<keyof AccountSizeForm, string>>
 
@@ -150,7 +155,7 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
     setFormErrors({})
     setAccountSizeForm((prevState) => ({
       ...prevState,
-      [propertyName]: MAX_ACCOUNTS,
+      [propertyName]: MAX_ACCOUNTS[propertyName],
     }))
   }
 
@@ -253,6 +258,7 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
         <div className="mb-4">
           <AccountSizeFormInput
             availableAccounts={availableSerum3}
+            disabled
             error={formErrors?.spotOpenOrders}
             label={t('settings:spot-open-orders')}
             handleMax={() => handleMax('spotOpenOrders')}
@@ -265,6 +271,7 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
         <div className="mb-4">
           <AccountSizeFormInput
             availableAccounts={availablePerps}
+            disabled
             error={formErrors?.perpAccounts}
             label={t('settings:perp-accounts')}
             handleMax={() => handleMax('perpAccounts')}
@@ -305,6 +312,7 @@ export default MangoAccountSizeModal
 
 const AccountSizeFormInput = ({
   availableAccounts,
+  disabled,
   error,
   label,
   handleMax,
@@ -314,6 +322,7 @@ const AccountSizeFormInput = ({
   value,
 }: {
   availableAccounts: ReactNode
+  disabled?: boolean
   error: string | undefined
   label: string
   handleMax: (type: keyof AccountSizeForm) => void
@@ -335,17 +344,19 @@ const AccountSizeFormInput = ({
             <Label className="mr-1 tooltip-underline" text={label} />
           </Tooltip>
         </div>
-        <LinkButton
-          className="mb-2 font-normal"
-          onClick={() => handleMax('tokenAccounts')}
-        >
-          {t('max')}
-        </LinkButton>
+        {!disabled ? (
+          <LinkButton
+            className="mb-2 font-normal"
+            onClick={() => handleMax('tokenAccounts')}
+          >
+            {t('max')}
+          </LinkButton>
+        ) : null}
       </div>
-      <div className="relative">
+      <div className="flex items-center">
         <NumberFormat
-          name="tokenAccounts"
-          id="tokenAccounts"
+          name={type as string}
+          id={type as string}
           inputMode="numeric"
           thousandSeparator=","
           allowNegative={false}
@@ -353,8 +364,13 @@ const AccountSizeFormInput = ({
           className={INPUT_CLASSES}
           value={value}
           onValueChange={(e, sourceInfo) => handleSetForm(type, e, sourceInfo)}
+          disabled={disabled}
         />
-        <div className="absolute top-0 right-0 flex items-center border border-l-0 border-th-input-border rounded-r h-10 px-2 bg-th-input-bkg">
+        <div
+          className={`flex items-center border border-l-0 border-th-input-border rounded-r-md h-10 px-2 ${
+            disabled ? 'bg-th-bkg-2' : 'bg-th-input-bkg'
+          }`}
+        >
           <p className="font-mono text-xs">{availableAccounts}</p>
         </div>
       </div>
