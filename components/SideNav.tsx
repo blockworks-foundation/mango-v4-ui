@@ -20,7 +20,7 @@ import {
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
-import { Fragment, ReactNode } from 'react'
+import { Fragment, ReactNode, useEffect, useMemo } from 'react'
 import { Disclosure, Popover, Transition } from '@headlessui/react'
 import MangoAccountSummary from './account/MangoAccountSummary'
 import Tooltip from './shared/Tooltip'
@@ -32,34 +32,94 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import { useTheme } from 'next-themes'
 import LeaderboardIcon from './icons/LeaderboardIcon'
 import { sideBarAnimationDuration } from './Layout'
+import { CUSTOM_SKINS } from 'utils/theme'
+import { NFT } from 'types'
 
 const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation(['common', 'search'])
-  const { connected } = useWallet()
+  const { connected, publicKey } = useWallet()
+  const { theme } = useTheme()
   const group = mangoStore.getState().group
+  const themeData = mangoStore((s) => s.themeData)
+  const nfts = mangoStore((s) => s.wallet.nfts.data)
   const { mangoAccount } = useMangoAccount()
   const router = useRouter()
   const { pathname } = router
 
+  const playAnimation = () => {
+    const set = mangoStore.getState().set
+    set((s) => {
+      s.successAnimation.theme = true
+    })
+  }
+
+  // fetch nfts when pk changes
+  useEffect(() => {
+    if (publicKey) {
+      const actions = mangoStore.getState().actions
+      const connection = mangoStore.getState().connection
+      actions.fetchNfts(connection, publicKey)
+    }
+  }, [publicKey])
+
+  // find all mango skin nfts
+  const mangoNfts = useMemo(() => {
+    if (!nfts.length) return []
+    const mangoNfts: NFT[] = []
+    for (const nft of nfts) {
+      const collectionAddress = nft?.collectionAddress
+      for (const themeKey in CUSTOM_SKINS) {
+        if (CUSTOM_SKINS[themeKey] === collectionAddress) {
+          mangoNfts.push(nft)
+        }
+      }
+    }
+    return mangoNfts
+  }, [nfts])
+
+  // find sidebar image url from skin nft for theme
+  const sidebarImageUrl = useMemo(() => {
+    if (!theme) return themeData.sideImagePath
+    const collectionAddress = CUSTOM_SKINS[theme.toLowerCase()]
+    if (collectionAddress && mangoNfts.length) {
+      const sidebarImageUrl =
+        mangoNfts.find((nft) => nft.collectionAddress === collectionAddress)
+          ?.image || themeData.sideImagePath
+      return sidebarImageUrl
+    }
+    return themeData.sideImagePath
+  }, [mangoNfts, theme, themeData])
+
   return (
     <div
       className={`transition-all duration-${sideBarAnimationDuration} ${
-        collapsed ? 'w-[64px]' : 'w-44 lg:w-48 xl:w-52'
-      } box-border border-r border-th-bkg-3 bg-th-bkg-1`}
+        collapsed ? 'w-[64px]' : 'w-[200px]'
+      } border-r border-th-bkg-3 bg-th-bkg-1 bg-repeat`}
+      style={{ backgroundImage: `url(${themeData.sideTilePath})` }}
     >
+      {sidebarImageUrl && !collapsed ? (
+        <img
+          className={`absolute bottom-16 h-auto w-full flex-shrink-0`}
+          onClick={() => playAnimation()}
+          src={sidebarImageUrl}
+          alt="next"
+        />
+      ) : null}
       <div className="flex min-h-screen flex-col justify-between">
-        <div className="my-2">
+        <div className="mb-2">
           <Link href={'/'} shallow={true} passHref legacyBehavior>
             <div
-              className={`h-14 items-center transition-all duration-${sideBarAnimationDuration} ease-in-out ${
+              className={`items-center transition-all duration-${sideBarAnimationDuration} ease-in-out ${
                 collapsed ? '' : 'justify-start'
-              } pb-1 pt-2 pl-4`}
+              } pb-1 pl-3`}
             >
-              <div className={`flex flex-shrink-0 cursor-pointer items-center`}>
+              <div
+                className={`flex h-16 flex-shrink-0 cursor-pointer items-center bg-th-bkg-1`}
+              >
                 <img
-                  className={`h-8 w-8 flex-shrink-0`}
-                  src="/logos/logo-mark.svg"
-                  alt="next"
+                  className={`h-9 w-9 flex-shrink-0`}
+                  src={themeData.logoPath}
+                  alt="logo"
                 />
                 <Transition
                   show={!collapsed}
@@ -71,8 +131,8 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                   leaveFrom="opacity-100"
                   leaveTo="opacity-0"
                 >
-                  <span className="ml-3 font-display text-lg text-th-fgd-1">
-                    Mango
+                  <span className={`ml-3 font-display text-lg text-th-fgd-1`}>
+                    {themeData.platformName}
                   </span>
                 </Transition>
               </div>
@@ -208,7 +268,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
             </ExpandableMenuItem>
           </div>
         </div>
-        <div className="border-t border-th-bkg-3">
+        <div className="z-10 border-t border-th-bkg-3 bg-th-bkg-1">
           <ExpandableMenuItem
             collapsed={collapsed}
             icon={
@@ -341,6 +401,7 @@ export const ExpandableMenuItem = ({
   title: string | ReactNode
 }) => {
   const { theme } = useTheme()
+  const themeData = mangoStore((s) => s.themeData)
 
   return collapsed ? (
     <Popover className={`relative z-30 ${alignBottom ? '' : 'py-2 pl-4'}`}>
@@ -438,7 +499,11 @@ export const ExpandableMenuItem = ({
             leaveFrom="opacity-100 max-h-80"
             leaveTo="opacity-0 max-h-0"
           >
-            <Disclosure.Panel className="w-full overflow-hidden">
+            <Disclosure.Panel
+              className={`w-full overflow-hidden ${
+                themeData.sideImagePath ? 'z-10 bg-th-bkg-1 py-2' : ''
+              }`}
+            >
               <div className={`${!alignBottom ? 'ml-1.5' : ''}`}>
                 {children}
               </div>

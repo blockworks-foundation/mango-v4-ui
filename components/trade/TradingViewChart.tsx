@@ -1,4 +1,11 @@
-import { useEffect, useRef, useMemo, useState, useCallback } from 'react'
+import {
+  useEffect,
+  useRef,
+  useMemo,
+  useState,
+  useCallback,
+  Fragment,
+} from 'react'
 import {
   widget,
   ChartingLibraryWidgetOptions,
@@ -35,6 +42,7 @@ import useTradeHistory from 'hooks/useTradeHistory'
 import dayjs from 'dayjs'
 import ModifyTvOrderModal from '@components/modals/ModifyTvOrderModal'
 import { findSerum3MarketPkInOpenOrders } from './OpenOrders'
+import { Transition } from '@headlessui/react'
 import useThemeWrapper from 'hooks/useThemeWrapper'
 
 export interface ChartContainerProps {
@@ -79,9 +87,11 @@ const TradingViewChart = () => {
     showOrderLinesLocalStorage,
   )
   const tradeExecutions = mangoStore((s) => s.tradingView.tradeExecutions)
+  const themeData = mangoStore((s) => s.themeData)
   const { data: combinedTradeHistory, isLoading: loadingTradeHistory } =
     useTradeHistory()
   const [showTradeExecutions, toggleShowTradeExecutions] = useState(false)
+  const [showThemeEasterEgg, toggleShowThemeEasterEgg] = useState(false)
   const [cachedTradeHistory, setCachedTradeHistory] =
     useState(combinedTradeHistory)
   const [userId] = useLocalStorageState(TV_USER_ID_KEY, '')
@@ -112,26 +122,29 @@ const TradingViewChart = () => {
   const tvWidgetRef = useRef<IChartingLibraryWidget>()
   const orderLinesButtonRef = useRef<HTMLElement>()
 
-  const selectedMarketPk = useMemo(() => {
-    const group = mangoStore.getState().group
-    if (!group || !selectedMarketName)
-      return '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6'
-
-    if (!selectedMarketName?.toLowerCase().includes('perp')) {
-      return group
-        .getSerum3MarketByName(selectedMarketName)
-        .serumMarketExternal.toString()
-    } else {
-      return group.getPerpMarketByName(selectedMarketName).publicKey.toString()
-    }
-  }, [selectedMarketName])
-
+  // Sets the "symbol" in trading view which is used to fetch chart data via the datafeed
   useEffect(() => {
     const group = mangoStore.getState().group
-    if (tvWidgetRef.current && chartReady && selectedMarketPk && group) {
+    let mktAddress = 'So11111111111111111111111111111111111111112'
+
+    if (
+      group &&
+      selectedMarketName &&
+      !selectedMarketName?.toLowerCase().includes('perp')
+    ) {
+      mktAddress = group
+        .getSerum3MarketByName(selectedMarketName)
+        .serumMarketExternal.toString()
+    } else if (group && selectedMarketName) {
+      mktAddress = group
+        .getPerpMarketByName(selectedMarketName)
+        .publicKey.toString()
+    }
+
+    if (tvWidgetRef.current && chartReady && mktAddress && group) {
       try {
         tvWidgetRef.current.setSymbol(
-          selectedMarketPk,
+          mktAddress,
           tvWidgetRef.current.activeChart().resolution(),
           () => {
             if (showOrderLinesLocalStorage) {
@@ -146,7 +159,7 @@ const TradingViewChart = () => {
         console.warn('Trading View change symbol error: ', e)
       }
     }
-  }, [chartReady, selectedMarketPk, showOrderLinesLocalStorage])
+  }, [chartReady, selectedMarketName, showOrderLinesLocalStorage])
 
   useEffect(() => {
     if (showOrderLines !== showOrderLinesLocalStorage) {
@@ -444,6 +457,18 @@ const TradingViewChart = () => {
     [theme],
   )
 
+  const toggleThemeEasterEgg = useCallback(
+    (el: HTMLElement) => {
+      toggleShowThemeEasterEgg((prevState) => !prevState)
+      if (el.style.color === hexToRgb(COLORS.ACTIVE[theme])) {
+        el.style.color = COLORS.FGD4[theme]
+      } else {
+        el.style.color = COLORS.ACTIVE[theme]
+      }
+    },
+    [theme],
+  )
+
   const createOLButton = useCallback(() => {
     const button = tvWidgetRef?.current?.createButton()
     if (!button) {
@@ -475,6 +500,20 @@ const TradingViewChart = () => {
     }
   }, [t, toggleTradeExecutions, showTradeExecutions, theme])
 
+  const createEasterEggButton = useCallback(() => {
+    const button = tvWidgetRef?.current?.createButton()
+    if (!button) {
+      return
+    }
+    button.textContent = theme.toUpperCase()
+    button.addEventListener('click', () => toggleThemeEasterEgg(button))
+    if (showThemeEasterEgg) {
+      button.style.color = COLORS.ACTIVE[theme]
+    } else {
+      button.style.color = COLORS.FGD4[theme]
+    }
+  }, [toggleThemeEasterEgg, showTradeExecutions, theme])
+
   useEffect(() => {
     if (window) {
       let chartStyleOverrides = {
@@ -486,6 +525,7 @@ const TradingViewChart = () => {
         'paneProperties.legendProperties.showStudyTitles': false,
         'scalesProperties.showStudyLastValue': false,
         'scalesProperties.fontSize': 11,
+        'scalesProperties.lineColor': COLORS.BKG4[theme],
       }
 
       const mainSeriesProperties = [
@@ -514,8 +554,7 @@ const TradingViewChart = () => {
       const marketAddress =
         (mkt instanceof Serum3Market
           ? mkt?.serumMarketExternal.toString()
-          : mkt?.publicKey.toString()) ||
-        '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6'
+          : mkt?.publicKey.toString()) || 'Loading'
 
       const widgetOptions: ChartingLibraryWidgetOptions = {
         // debug: true,
@@ -573,7 +612,7 @@ const TradingViewChart = () => {
         theme:
           theme === 'Light' || theme === 'Banana' || theme === 'Lychee'
             ? 'Light'
-            : 'Dark',
+            : themeData.tvChartTheme,
         custom_css_url: '/styles/tradingview.css',
         loading_screen: {
           backgroundColor: COLORS.BKG1[theme],
@@ -586,15 +625,15 @@ const TradingViewChart = () => {
 
       console.log('creating new chart')
       const tvWidget = new widget(widgetOptions)
-      tvWidgetRef.current = tvWidget
-      tvWidgetRef.current.onChartReady(() => {
+      tvWidget.onChartReady(() => {
+        tvWidgetRef.current = tvWidget
         setChartReady(true)
       })
-      tvWidgetRef.current.headerReady().then(() => {
+      tvWidget.headerReady().then(() => {
         setHeaderReady(true)
       })
     }
-  }, [theme, defaultProps, isMobile, userId])
+  }, [theme, themeData, defaultProps, isMobile, userId])
 
   // set a limit price from right click context menu
   useEffect(() => {
@@ -628,8 +667,11 @@ const TradingViewChart = () => {
     if (chartReady && headerReady && !orderLinesButtonRef.current) {
       createOLButton()
       createTEButton()
+      if (themeData.tvImagePath) {
+        createEasterEggButton()
+      }
     }
-  }, [createOLButton, createTEButton, chartReady, headerReady])
+  }, [createOLButton, createTEButton, chartReady, headerReady, themeData])
 
   // update order lines if a user's open orders change
   useEffect(() => {
@@ -780,6 +822,21 @@ const TradingViewChart = () => {
 
   return (
     <>
+      <Transition
+        show={showThemeEasterEgg}
+        as={Fragment}
+        enter="transition ease-in duration-500"
+        enterFrom="scale-0 opacity-0"
+        enterTo="scale-100 rotate-[-370deg] opacity-100"
+        leave="transition ease-out duration-500"
+        leaveFrom="scale-100 opacity-100"
+        leaveTo="scale-0 opacity-0"
+      >
+        <img
+          className="absolute top-8 right-20 h-auto w-36"
+          src="/images/themes/bonk/tv-chart-image.png"
+        />
+      </Transition>
       <div
         id={defaultProps.container as string}
         className="tradingview-chart"

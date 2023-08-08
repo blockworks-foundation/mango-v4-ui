@@ -135,7 +135,7 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
         </div>
       </div>
       <div className="col-span-1 px-6 pb-4 md:pt-4">
-        <div className="flex justify-between pb-4">
+        <div className="flex justify-between py-4 md:pt-0">
           <Tooltip content={t('token:tooltip-net-borrow-period')}>
             <p className="tooltip-underline">{t('token:net-borrow-period')}</p>
           </Tooltip>

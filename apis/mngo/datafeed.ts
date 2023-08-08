@@ -46,6 +46,8 @@ type Bar = KlineBar & TradingViewBar
 
 type SymbolInfo = LibrarySymbolInfo & {
   address: string
+  base_token: string
+  quote_token: string
 }
 
 const lastBarsCache = new Map()
@@ -150,6 +152,8 @@ export default {
     const ticker = mangoStore.getState().selectedMarket.name
 
     const symbolInfo: SymbolInfo = {
+      base_token: '',
+      quote_token: '',
       address: symbolItem.address,
       ticker: symbolItem.address,
       name: symbolItem.symbol || symbolItem.address,

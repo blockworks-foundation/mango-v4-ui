@@ -59,7 +59,7 @@ const TradeAdvancedPage = () => {
 
   const totalCols = 24
   const gridBreakpoints = useMemo(() => {
-    const sidebarWidth = isCollapsed ? 64 : 207
+    const sidebarWidth = isCollapsed ? 64 : 200
     return {
       md: breakpoints.md - sidebarWidth,
       lg: breakpoints.lg - sidebarWidth,

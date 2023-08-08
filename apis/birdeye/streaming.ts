@@ -14,7 +14,7 @@ socket.addEventListener('open', (_event) => {
 // Listen for messages
 socket.addEventListener('message', (msg) => {
   const data = JSON.parse(msg.data)
-  if (data.type !== 'PRICE_DATA') return console.warn(data)
+  if (data.type !== 'BASE_QUOTE_PRICE_DATA') return console.warn(data)
 
   const currTime = data.data.unixTime * 1000
   const lastBar = subscriptionItem.lastBar
@@ -60,11 +60,11 @@ export function subscribeOnStream(
   }
 
   const msg = {
-    type: 'SUBSCRIBE_PRICE',
+    type: 'SUBSCRIBE_BASE_QUOTE_PRICE',
     data: {
       chartType: parseResolution(resolution),
-      address: symbolInfo.address,
-      currency: symbolInfo.type || 'usd',
+      baseAddress: symbolInfo.base_token,
+      quoteAddress: symbolInfo.quote_token,
     },
   }
   if (!isOpen(socket)) {
@@ -80,7 +80,7 @@ export function subscribeOnStream(
 
 export function unsubscribeFromStream() {
   const msg = {
-    type: 'UNSUBSCRIBE_PRICE',
+    type: 'UNSUBSCRIBE_BASE_QUOTE_PRICE',
   }
 
   if (!isOpen(socket)) {

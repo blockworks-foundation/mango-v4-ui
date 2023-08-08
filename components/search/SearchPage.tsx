@@ -21,6 +21,7 @@ const SEARCH_TYPES = [
   'mango-account-name',
   'profile-name',
   'wallet-pk',
+  'open-orders-pk',
 ]
 
 const SearchPage = () => {
@@ -33,7 +34,11 @@ const SearchPage = () => {
   const [isAccountSearch, setIsAccountSearch] = useState(true)
 
   const handleSearch = async () => {
-    if (searchType === 'mango-account' || searchType === 'mango-account-name') {
+    if (
+      searchType === 'mango-account' ||
+      searchType === 'mango-account-name' ||
+      searchType === 'open-orders-pk'
+    ) {
       setIsAccountSearch(true)
     } else {
       setIsAccountSearch(false)

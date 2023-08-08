@@ -26,9 +26,9 @@ import { floorToDecimal } from 'utils/numbers'
 import { withValueLimit } from './MarketSwapForm'
 import SellTokenInput from './SellTokenInput'
 import BuyTokenInput from './BuyTokenInput'
-import { notify } from 'utils/notifications'
-import * as sentry from '@sentry/nextjs'
-import { isMangoError } from 'types'
+// import { notify } from 'utils/notifications'
+// import * as sentry from '@sentry/nextjs'
+// import { isMangoError } from 'types'
 import Button, { LinkButton } from '@components/shared/Button'
 import Loading from '@components/shared/Loading'
 import TokenLogo from '@components/shared/TokenLogo'
@@ -36,7 +36,7 @@ import InlineNotification from '@components/shared/InlineNotification'
 import { getChartPairSettings, handleFlipPrices } from './SwapTokenChart'
 import Select from '@components/forms/Select'
 import useIpAddress from 'hooks/useIpAddress'
-import { Bank } from '@blockworks-foundation/mango-v4'
+// import { Bank } from '@blockworks-foundation/mango-v4'
 
 type LimitSwapFormProps = {
   showTokenSelect: 'input' | 'output' | undefined
@@ -67,12 +67,12 @@ const ORDER_TYPES = [
 
 const set = mangoStore.getState().set
 
-const getSellTokenBalance = (inputBank: Bank | undefined) => {
-  const mangoAccount = mangoStore.getState().mangoAccount.current
-  if (!inputBank || !mangoAccount) return 0
-  const balance = mangoAccount.getTokenBalanceUi(inputBank)
-  return balance
-}
+// const getSellTokenBalance = (inputBank: Bank | undefined) => {
+//   const mangoAccount = mangoStore.getState().mangoAccount.current
+//   if (!inputBank || !mangoAccount) return 0
+//   const balance = mangoAccount.getTokenBalanceUi(inputBank)
+//   return balance
+// }
 
 const getOrderTypeMultiplier = (orderType: OrderTypes, flipPrices: boolean) => {
   if (orderType === OrderTypes.STOP_LOSS) {
@@ -95,7 +95,10 @@ const LimitSwapForm = ({
   const [orderType, setOrderType] = useState(ORDER_TYPES[0])
   const [orderTypeMultiplier, setOrderTypeMultiplier] =
     useState<OrderTypeMultiplier | null>(null)
-  const [submitting, setSubmitting] = useState(false)
+  const [
+    submitting,
+    // setSubmitting
+  ] = useState(false)
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const [formErrors, setFormErrors] = useState<FormErrors>({})
   const [swapChartSettings, setSwapChartSettings] = useLocalStorageState(
@@ -108,7 +111,7 @@ const LimitSwapForm = ({
     outputBank,
     amountIn: amountInFormValue,
     amountOut: amountOutFormValue,
-    limitPrice,
+    // limitPrice,
   } = mangoStore((s) => s.swap)
 
   const [inputBankName, outputBankName, inputBankDecimals, outputBankDecimals] =
@@ -222,64 +225,64 @@ const LimitSwapForm = ({
     return borrow
   }, [orderType, outputBank])
 
-  const isFormValid = useCallback(
-    (form: LimitSwapForm) => {
-      const invalidFields: FormErrors = {}
-      setFormErrors({})
-      const requiredFields: (keyof LimitSwapForm)[] = [
-        'amountIn',
-        'triggerPrice',
-      ]
-      const triggerPriceNumber = parseFloat(form.triggerPrice)
-      const sellTokenBalance = getSellTokenBalance(inputBank)
-      for (const key of requiredFields) {
-        const value = form[key] as string
-        if (!value) {
-          invalidFields[key] = t('settings:error-required-field')
-        }
-      }
-      if (orderType === OrderTypes.STOP_LOSS) {
-        if (!flipPrices && triggerPriceNumber <= quotePrice) {
-          invalidFields.triggerPrice =
-            'Trigger price must be above oracle price'
-        }
-        if (flipPrices && triggerPriceNumber >= quotePrice) {
-          invalidFields.triggerPrice =
-            'Trigger price must be below oracle price'
-        }
-      }
-      if (orderType === OrderTypes.TAKE_PROFIT) {
-        if (!flipPrices && triggerPriceNumber >= quotePrice) {
-          invalidFields.triggerPrice =
-            'Trigger price must be below oracle price'
-        }
-        if (flipPrices && triggerPriceNumber <= quotePrice) {
-          invalidFields.triggerPrice =
-            'Trigger price must be above oracle price'
-        }
-      }
-      if (orderType === OrderTypes.REPAY_BORROW && !hasBorrowToRepay) {
-        invalidFields.hasBorrows = t('swap:no-borrow')
-      }
-      if (form.amountIn > sellTokenBalance) {
-        invalidFields.amountIn = t('swap:insufficient-balance', {
-          symbol: inputBank?.name,
-        })
-      }
-      if (Object.keys(invalidFields).length) {
-        setFormErrors(invalidFields)
-      }
-      return invalidFields
-    },
-    [
-      flipPrices,
-      hasBorrowToRepay,
-      inputBank,
-      orderType,
-      quotePrice,
-      setFormErrors,
-    ],
-  )
+  // const isFormValid = useCallback(
+  //   (form: LimitSwapForm) => {
+  //     const invalidFields: FormErrors = {}
+  //     setFormErrors({})
+  //     const requiredFields: (keyof LimitSwapForm)[] = [
+  //       'amountIn',
+  //       'triggerPrice',
+  //     ]
+  //     const triggerPriceNumber = parseFloat(form.triggerPrice)
+  //     const sellTokenBalance = getSellTokenBalance(inputBank)
+  //     for (const key of requiredFields) {
+  //       const value = form[key] as string
+  //       if (!value) {
+  //         invalidFields[key] = t('settings:error-required-field')
+  //       }
+  //     }
+  //     if (orderType === OrderTypes.STOP_LOSS) {
+  //       if (!flipPrices && triggerPriceNumber <= quotePrice) {
+  //         invalidFields.triggerPrice =
+  //           'Trigger price must be above oracle price'
+  //       }
+  //       if (flipPrices && triggerPriceNumber >= quotePrice) {
+  //         invalidFields.triggerPrice =
+  //           'Trigger price must be below oracle price'
+  //       }
+  //     }
+  //     if (orderType === OrderTypes.TAKE_PROFIT) {
+  //       if (!flipPrices && triggerPriceNumber >= quotePrice) {
+  //         invalidFields.triggerPrice =
+  //           'Trigger price must be below oracle price'
+  //       }
+  //       if (flipPrices && triggerPriceNumber <= quotePrice) {
+  //         invalidFields.triggerPrice =
+  //           'Trigger price must be above oracle price'
+  //       }
+  //     }
+  //     if (orderType === OrderTypes.REPAY_BORROW && !hasBorrowToRepay) {
+  //       invalidFields.hasBorrows = t('swap:no-borrow')
+  //     }
+  //     if (form.amountIn > sellTokenBalance) {
+  //       invalidFields.amountIn = t('swap:insufficient-balance', {
+  //         symbol: inputBank?.name,
+  //       })
+  //     }
+  //     if (Object.keys(invalidFields).length) {
+  //       setFormErrors(invalidFields)
+  //     }
+  //     return invalidFields
+  //   },
+  //   [
+  //     flipPrices,
+  //     hasBorrowToRepay,
+  //     inputBank,
+  //     orderType,
+  //     quotePrice,
+  //     setFormErrors,
+  //   ],
+  // )
 
   // set order type multiplier on page load
   useEffect(() => {
@@ -451,76 +454,76 @@ const LimitSwapForm = ({
     triggerPrice,
   ])
 
-  const handlePlaceStopLoss = useCallback(async () => {
-    const invalidFields = isFormValid({
-      amountIn: amountInAsDecimal.toNumber(),
-      hasBorrows: hasBorrowToRepay,
-      triggerPrice,
-    })
-    if (Object.keys(invalidFields).length) {
-      return
-    }
-    try {
-      const client = mangoStore.getState().client
-      const group = mangoStore.getState().group
-      const actions = mangoStore.getState().actions
-      const mangoAccount = mangoStore.getState().mangoAccount.current
-      const inputBank = mangoStore.getState().swap.inputBank
-      const outputBank = mangoStore.getState().swap.outputBank
+  // const handlePlaceStopLoss = useCallback(async () => {
+  //   const invalidFields = isFormValid({
+  //     amountIn: amountInAsDecimal.toNumber(),
+  //     hasBorrows: hasBorrowToRepay,
+  //     triggerPrice,
+  //   })
+  //   if (Object.keys(invalidFields).length) {
+  //     return
+  //   }
+  //   try {
+  //     const client = mangoStore.getState().client
+  //     const group = mangoStore.getState().group
+  //     const actions = mangoStore.getState().actions
+  //     const mangoAccount = mangoStore.getState().mangoAccount.current
+  //     const inputBank = mangoStore.getState().swap.inputBank
+  //     const outputBank = mangoStore.getState().swap.outputBank
 
-      if (!mangoAccount || !group || !inputBank || !outputBank || !triggerPrice)
-        return
-      setSubmitting(true)
+  //     if (!mangoAccount || !group || !inputBank || !outputBank || !triggerPrice)
+  //       return
+  //     setSubmitting(true)
 
-      const inputMint = inputBank.mint
-      const outputMint = outputBank.mint
-      const amountIn = amountInAsDecimal.toNumber()
+  //     const inputMint = inputBank.mint
+  //     const outputMint = outputBank.mint
+  //     const amountIn = amountInAsDecimal.toNumber()
 
-      try {
-        const tx = await client.tokenConditionalSwapStopLoss(
-          group,
-          mangoAccount,
-          inputMint,
-          parseFloat(triggerPrice),
-          outputMint,
-          null,
-          amountIn,
-          null,
-          null,
-        )
-        notify({
-          title: 'Transaction confirmed',
-          type: 'success',
-          txid: tx,
-          noSound: true,
-        })
-        actions.fetchGroup()
-        await actions.reloadMangoAccount()
-      } catch (e) {
-        console.error('onSwap error: ', e)
-        sentry.captureException(e)
-        if (isMangoError(e)) {
-          notify({
-            title: 'Transaction failed',
-            description: e.message,
-            txid: e?.txid,
-            type: 'error',
-          })
-        }
-      }
-    } catch (e) {
-      console.error('Swap error:', e)
-    } finally {
-      setSubmitting(false)
-    }
-  }, [
-    hasBorrowToRepay,
-    flipPrices,
-    limitPrice,
-    triggerPrice,
-    amountInAsDecimal,
-    amountOutFormValue,
-  ])
+  //     try {
+  //       const tx = await client.tokenConditionalSwapStopLoss(
+  //         group,
+  //         mangoAccount,
+  //         inputMint,
+  //         parseFloat(triggerPrice),
+  //         outputMint,
+  //         null,
+  //         amountIn,
+  //         null,
+  //         null,
+  //       )
+  //       notify({
+  //         title: 'Transaction confirmed',
+  //         type: 'success',
+  //         txid: tx,
+  //         noSound: true,
+  //       })
+  //       actions.fetchGroup()
+  //       await actions.reloadMangoAccount()
+  //     } catch (e) {
+  //       console.error('onSwap error: ', e)
+  //       sentry.captureException(e)
+  //       if (isMangoError(e)) {
+  //         notify({
+  //           title: 'Transaction failed',
+  //           description: e.message,
+  //           txid: e?.txid,
+  //           type: 'error',
+  //         })
+  //       }
+  //     }
+  //   } catch (e) {
+  //     console.error('Swap error:', e)
+  //   } finally {
+  //     setSubmitting(false)
+  //   }
+  // }, [
+  //   hasBorrowToRepay,
+  //   flipPrices,
+  //   limitPrice,
+  //   triggerPrice,
+  //   amountInAsDecimal,
+  //   amountOutFormValue,
+  // ])
 
   const orderDescription = useMemo(() => {
     if (
@@ -782,7 +785,7 @@ const LimitSwapForm = ({
       ) : null}
       {ipAllowed ? (
         <Button
-          onClick={handlePlaceStopLoss}
+          // onClick={handlePlaceStopLoss}
           className="mt-6 mb-4 flex w-full items-center justify-center text-base"
           size="large"
         >

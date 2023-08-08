@@ -399,7 +399,7 @@ const TokenOverviewTable = () => {
                           <div className="col-span-1">
                             <p className="text-xs">{t('utilization')}</p>
                             <p className="font-mono text-th-fgd-1">
-                              {utilization}%
+                              {utilization.toFixed(1)}%
                             </p>
                           </div>
                           <div className="col-span-1">

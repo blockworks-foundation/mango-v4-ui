@@ -82,6 +82,7 @@ const AdvancedTradeForm = () => {
   const { t } = useTranslation(['common', 'trade'])
   const { mangoAccount } = useMangoAccount()
   const tradeForm = mangoStore((s) => s.tradeForm)
+  const themeData = mangoStore((s) => s.themeData)
   const [placingOrder, setPlacingOrder] = useState(false)
   const [tradeFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const [savedCheckboxSettings, setSavedCheckboxSettings] =
@@ -747,8 +748,16 @@ const AdvancedTradeForm = () => {
                     !connected
                       ? ''
                       : tradeForm.side === 'buy'
-                      ? 'bg-th-up-dark text-white md:hover:bg-th-up-dark md:hover:brightness-90'
-                      : 'bg-th-down-dark text-white md:hover:bg-th-down-dark md:hover:brightness-90'
+                      ? `bg-th-up-dark md:hover:bg-th-up-dark ${
+                          themeData.buttonStyle === 'raised'
+                            ? 'raised-buy-button'
+                            : 'text-white md:hover:brightness-90'
+                        }`
+                      : `bg-th-down-dark text-white ${
+                          themeData.buttonStyle === 'raised'
+                            ? ''
+                            : 'md:hover:bg-th-down-dark md:hover:brightness-90'
+                        }`
                   }`}
                   disabled={disabled}
                   size="large"

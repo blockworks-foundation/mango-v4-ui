@@ -66,6 +66,10 @@
   color: var(--text);
 }
 
+.marketStatusOpen-OPHVUfI4, html.theme-dark .marketStatusOpen-OPHVUfI4 {
+  color: #60BF4F;
+}
+
 /* light theme */
 
 html .chart-page .chart-container-border {

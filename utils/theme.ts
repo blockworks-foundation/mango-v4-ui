@@ -1,3 +1,12 @@
+import { ThemeData } from 'types'
+import {
+  nunitoBody,
+  nunitoDisplay,
+  ttCommons,
+  ttCommonsExpanded,
+  ttCommonsMono,
+} from './fonts'
+
 export const breakpoints = {
   sm: 640,
   // => @media (min-width: 640px) { ... }
@@ -16,4 +25,41 @@ export const breakpoints = {
 
   '3xl': 1792,
   // => @media (min-width: 1792px) { ... }
+}
+
+type NftThemeMeta = {
+  [key: string]: ThemeData
+}
+
+export const nftThemeMeta: NftThemeMeta = {
+  default: {
+    buttonStyle: 'flat',
+    fonts: { body: ttCommons, display: ttCommonsExpanded, mono: ttCommonsMono },
+    logoPath: '/logos/logo-mark.svg',
+    platformName: 'Mango',
+    rainAnimationImagePath: '',
+    sideImagePath: '',
+    sideTilePath: '',
+    topTilePath: '',
+    tvChartTheme: 'Dark',
+    tvImagePath: '',
+    useGradientBg: false,
+  },
+  Bonk: {
+    buttonStyle: 'raised',
+    fonts: { body: nunitoBody, display: nunitoDisplay, mono: ttCommonsMono },
+    logoPath: '/images/themes/bonk/bonk-logo.png',
+    platformName: 'Bongo',
+    rainAnimationImagePath: '/images/themes/bonk/bonk-animation-logo.png',
+    sideImagePath: '/images/themes/bonk/sidenav-image.png',
+    sideTilePath: '/images/themes/bonk/bonk-tile.png',
+    topTilePath: '/images/themes/bonk/bonk-tile.png',
+    tvChartTheme: 'Light',
+    tvImagePath: '/images/themes/bonk/tv-chart-image.png',
+    useGradientBg: true,
+  },
+}
+
+export const CUSTOM_SKINS: { [key: string]: string } = {
+  bonk: '6FUYsgvSPiLsMpKZqLWswkw7j4juudZyVopU6RYKLkQ3',
 }

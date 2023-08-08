@@ -59,6 +59,7 @@ import {
   TourSettings,
   ProfileDetails,
   MangoTokenStatsItem,
+  ThemeData,
   PositionStat,
   OrderbookTooltip,
 } from 'types'
@@ -73,6 +74,7 @@ import {
   IExecutionLineAdapter,
   IOrderLineAdapter,
 } from '@public/charting_library/charting_library'
+import { nftThemeMeta } from 'utils/theme'
 
 const GROUP = new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX')
 
@@ -204,6 +206,7 @@ export type MangoStore = {
   }
   successAnimation: {
     swap: boolean
+    theme: boolean
     trade: boolean
   }
   swap: {
@@ -219,6 +222,7 @@ export type MangoStore = {
     limitPrice?: string
   }
   set: (x: (x: MangoStore) => void) => void
+  themeData: ThemeData
   tokenStats: {
     initialLoad: boolean
     loading: boolean
@@ -369,6 +373,7 @@ const mangoStore = create<MangoStore>()(
       },
       successAnimation: {
         swap: false,
+        theme: false,
         trade: false,
       },
       swap: {
@@ -383,6 +388,7 @@ const mangoStore = create<MangoStore>()(
         amountOut: '',
         limitPrice: '',
       },
+      themeData: nftThemeMeta.default,
       tokenStats: {
         initialLoad: false,
         loading: true,
@@ -678,15 +684,17 @@ const mangoStore = create<MangoStore>()(
             const nfts = await getNFTsByOwner(ownerPk, connection)
             set((state) => {
               state.wallet.nfts.data = nfts
-              state.wallet.nfts.loading = false
             })
           } catch (error) {
             notify({
               type: 'error',
               title: 'Unable to fetch nfts',
             })
+          } finally {
+            set((state) => {
+              state.wallet.nfts.loading = false
+            })
           }
-          return []
         },
         fetchOpenOrders: async (refetchMangoAccount = false) => {
           const set = get().set

@@ -166,7 +166,7 @@ const TokenPage = () => {
                   </div>
                 ) : null}
               </div>
-              {coingeckoTokenInfo?.market_data ? (
+              {high_24h.usd && low_24h.usd ? (
                 <DailyRange
                   high={high_24h.usd}
                   low={low_24h.usd}

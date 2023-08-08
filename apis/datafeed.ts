@@ -24,7 +24,11 @@ import {
   SearchSymbolResultItem,
 } from '@public/charting_library'
 import { PublicKey } from '@solana/web3.js'
-import { Group } from '@blockworks-foundation/mango-v4'
+import {
+  Group,
+  PerpMarket,
+  Serum3Market,
+} from '@blockworks-foundation/mango-v4'
 
 export const SUPPORTED_RESOLUTIONS = [
   '1',
@@ -58,6 +62,8 @@ type Bar = KlineBar & TradingViewBar
 
 export type SymbolInfo = LibrarySymbolInfo & {
   address: string
+  quote_token: string
+  base_token: string
 }
 
 const lastBarsCache = new Map()
@@ -70,17 +76,17 @@ const configurationData = {
   exchanges: [],
 }
 
-const getTickerFromMktAddress = (
+const getMktFromMktAddress = (
   group: Group,
   symbolAddress: string,
-): string | null => {
+): Serum3Market | PerpMarket | null => {
   try {
     const serumMkt = group.getSerum3MarketByExternalMarket(
       new PublicKey(symbolAddress),
     )
 
     if (serumMkt) {
-      return serumMkt.name
+      return serumMkt
     }
   } catch {
     console.log('Address is not a serum market')
@@ -92,7 +98,7 @@ const getTickerFromMktAddress = (
   )
 
   if (perpMkt) {
-    return perpMkt.name
+    return perpMkt
   }
 
   return null
@@ -156,14 +162,18 @@ export const queryBirdeyeBars = async (
     from: number
     to: number
   },
+  quote_token: string,
 ): Promise<Bar[]> => {
   const { from, to } = periodParams
+
   const urlParameters = {
-    address: tokenAddress,
+    base_address: tokenAddress,
+    quote_address: quote_token,
     type: parseResolution(resolution),
     time_from: from,
     time_to: to,
   }
+
   const query = Object.keys(urlParameters)
     .map(
       (name: string) =>
@@ -171,7 +181,7 @@ export const queryBirdeyeBars = async (
     )
     .join('&')
 
-  const data = await makeApiRequest(`defi/ohlcv/pair?${query}`)
+  const data = await makeApiRequest(`defi/ohlcv/base_quote?${query}`)
   if (!data.success || data.data.items.length === 0) {
     return []
   }
@@ -237,15 +247,34 @@ export default {
     const mangoStoreState = mangoStore.getState()
     const group = mangoStoreState.group
     let ticker = mangoStoreState.selectedMarket.name
+    let quote_token = ''
+    let base_token = ''
+    console.log(1)
 
     if (group && symbolAddress) {
-      const newTicker = getTickerFromMktAddress(group, symbolAddress)
-      if (newTicker) {
-        ticker = newTicker
+      console.log(2)
+
+      const market = getMktFromMktAddress(group, symbolAddress)
+      if (market) {
+        console.log(3)
+
+        ticker = market.name
+        if (market instanceof Serum3Market) {
+          console.log(4)
+
+          base_token = group
+            .getFirstBankByTokenIndex(market.baseTokenIndex)
+            .mint.toString()
+          quote_token = group
+            .getFirstBankByTokenIndex(market.quoteTokenIndex)
+            .mint.toString()
+        }
       }
     }
 
     const symbolInfo: SymbolInfo = {
+      quote_token,
+      base_token,
       address: symbolItem.address,
       ticker: symbolItem.address,
       name: ticker || symbolItem.address,
@@ -287,25 +316,24 @@ export default {
     ) => void,
     onErrorCallback: (e: any) => void,
   ) => {
+    console.log('symboleInfo', symbolInfo)
     try {
       const { firstDataRequest } = periodParams
       let bars
-      if (
-        symbolInfo.description?.includes('PERP') &&
-        symbolInfo.address !== '8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6'
-      ) {
+      if (symbolInfo.description?.includes('PERP') && symbolInfo.address) {
         marketType = 'perp'
         bars = await queryPerpBars(
           symbolInfo.address,
           resolution as any,
           periodParams,
         )
-      } else {
+      } else if (symbolInfo.address) {
         marketType = 'spot'
         bars = await queryBirdeyeBars(
-          symbolInfo.address,
+          symbolInfo.base_token,
           resolution as any,
           periodParams,
+          symbolInfo.quote_token,
         )
       }
       if (!bars || bars.length === 0) {
