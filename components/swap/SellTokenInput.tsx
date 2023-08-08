@@ -73,11 +73,15 @@ const SellTokenInput = ({
           onValueChange={handleAmountInChange}
           isAllowed={withValueLimit}
         />
-        <span className="absolute right-3 bottom-1.5 text-xxs text-th-fgd-4">
-          {inputBank
-            ? formatCurrencyValue(inputBank.uiPrice * Number(amountInFormValue))
-            : '–'}
-        </span>
+        {!isNaN(Number(amountInFormValue)) ? (
+          <span className="absolute right-3 bottom-1.5 text-xxs text-th-fgd-4">
+            {inputBank
+              ? formatCurrencyValue(
+                  inputBank.uiPrice * Number(amountInFormValue),
+                )
+              : '–'}
+          </span>
+        ) : null}
       </div>
       {error ? (
         <div className="col-span-2 mt-1 flex justify-center">

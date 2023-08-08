@@ -87,13 +87,15 @@ const BuyTokenInput = ({
               value={amountOutFormValue}
               onValueChange={handleAmountOutChange}
             />
-            <span className="absolute right-3 bottom-1.5 text-xxs text-th-fgd-4">
-              {outputBank
-                ? formatCurrencyValue(
-                    outputBank.uiPrice * Number(amountOutFormValue),
-                  )
-                : '–'}
-            </span>
+            {!isNaN(Number(amountOutFormValue)) ? (
+              <span className="absolute right-3 bottom-1.5 text-xxs text-th-fgd-4">
+                {outputBank
+                  ? formatCurrencyValue(
+                      outputBank.uiPrice * Number(amountOutFormValue),
+                    )
+                  : '–'}
+              </span>
+            ) : null}
           </>
         )}
       </div>

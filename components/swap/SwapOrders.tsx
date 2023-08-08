@@ -39,6 +39,8 @@ const SwapOrders = () => {
     return mangoAccount.tokenConditionalSwaps.filter((tcs) => tcs.hasData)
   }, [mangoAccount])
 
+  console.log(orders)
+
   const formattedTableData = useCallback(() => {
     if (!group) return []
     const formatted = []
@@ -50,7 +52,7 @@ const SwapOrders = () => {
         order.getMaxSellUi(group),
         sellBank.mintDecimals,
       ).toNumber()
-      const triggerPrice = order.getPriceLowerLimitUi(group)
+      const triggerPrice = order.getPriceUpperLimitUi(group)
       const pricePremium = order.getPricePremium()
       const filled = order.getSoldUi(group)
       const currentPrice = (sellBank.uiPrice / buyBank.uiPrice).toFixed(

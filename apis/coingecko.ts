@@ -20,8 +20,8 @@ export const fetchChartData = async (
   flipPrices: boolean,
 ): Promise<ChartDataItem[]> => {
   if (!baseTokenId || !quoteTokenId) return []
-  const baseId = !flipPrices ? baseTokenId : quoteTokenId
-  const quoteId = !flipPrices ? quoteTokenId : baseTokenId
+  const baseId = flipPrices ? baseTokenId : quoteTokenId
+  const quoteId = flipPrices ? quoteTokenId : baseTokenId
   try {
     const [inputResponse, outputResponse] = await Promise.all([
       fetch(

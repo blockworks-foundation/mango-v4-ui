@@ -271,7 +271,7 @@ const SwapTokenChart = () => {
     if (!inputBankName || !outputBankName) return ''
     const inputSymbol = formatTokenSymbol(inputBankName)
     const outputSymbol = formatTokenSymbol(outputBankName)
-    return !flipPrices
+    return flipPrices
       ? `${outputSymbol}/${inputSymbol}`
       : `${inputSymbol}/${outputSymbol}`
   }, [flipPrices, inputBankName, outputBankName])
