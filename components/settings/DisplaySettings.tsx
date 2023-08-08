@@ -50,6 +50,7 @@ const LANGS = [
 ]
 
 const DEFAULT_THEMES = [
+  'pepe',
   'light',
   'medium',
   'dark',

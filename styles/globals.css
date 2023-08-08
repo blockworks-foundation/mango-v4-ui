@@ -393,6 +393,35 @@ th {
   --warning: theme('colors.bonk-theme.warning');
 }
 
+[data-theme='Pepe'] {
+  --active: theme('colors.pepe-theme.active.DEFAULT');
+  --active-dark: theme('colors.pepe-theme.active.dark');
+  --down: theme('colors.pepe-theme.down.DEFAULT');
+  --down-dark: theme('colors.pepe-theme.down.dark');
+  --down-muted: theme('colors.pepe-theme.down.muted');
+  --up: theme('colors.pepe-theme.up.DEFAULT');
+  --up-dark: theme('colors.pepe-theme.up.dark');
+  --up-muted: theme('colors.pepe-theme.up.muted');
+  --link: theme('colors.pepe-theme.link.DEFAULT');
+  --link-hover: theme('colors.pepe-theme.link.hover');
+  --bkg-1: theme('colors.pepe-theme.bkg-1');
+  --bkg-2: theme('colors.pepe-theme.bkg-2');
+  --bkg-3: theme('colors.pepe-theme.bkg-3');
+  --bkg-4: theme('colors.pepe-theme.bkg-4');
+  --fgd-1: theme('colors.pepe-theme.fgd-1');
+  --fgd-2: theme('colors.pepe-theme.fgd-2');
+  --fgd-3: theme('colors.pepe-theme.fgd-3');
+  --fgd-4: theme('colors.pepe-theme.fgd-4');
+  --button: theme('colors.pepe-theme.button.DEFAULT');
+  --button-hover: theme('colors.pepe-theme.button.hover');
+  --input-bkg: theme('colors.pepe-theme.input.bkg');
+  --input-border: theme('colors.pepe-theme.input.border');
+  --input-border-hover: theme('colors.pepe-theme.input.borderDark');
+  --error: theme('colors.pepe-theme.error');
+  --success: theme('colors.pepe-theme.success');
+  --warning: theme('colors.pepe-theme.warning');
+}
+
 /* Base */
 
 body {

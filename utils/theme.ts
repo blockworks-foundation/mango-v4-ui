@@ -58,6 +58,19 @@ export const nftThemeMeta: NftThemeMeta = {
     tvImagePath: '/images/themes/bonk/tv-chart-image.png',
     useGradientBg: true,
   },
+  Pepe: {
+    buttonStyle: 'raised',
+    fonts: { body: ttCommons, display: ttCommonsExpanded, mono: ttCommonsMono },
+    logoPath: '/images/themes/pepe/pepe-logo.png',
+    platformName: 'Pepe',
+    rainAnimationImagePath: '',
+    sideImagePath: '',
+    sideTilePath: '/images/themes/pepe/pepe-vert-tile.png',
+    topTilePath: '/images/themes/pepe/pepe-hori-tile.png',
+    tvChartTheme: 'Dark',
+    tvImagePath: '',
+    useGradientBg: false,
+  },
 }
 
 export const CUSTOM_SKINS: { [key: string]: string } = {
