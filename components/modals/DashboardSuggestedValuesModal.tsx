@@ -21,6 +21,7 @@ import { createProposal } from 'utils/governance/instructions/createProposal'
 import { notify } from 'utils/notifications'
 import Button from '@components/shared/Button'
 import { compareObjectsAndGetDifferentKeys } from 'utils/governance/tools'
+import { Disclosure } from '@headlessui/react'
 
 const DashboardSuggestedValues = ({
   isOpen,
@@ -281,161 +282,169 @@ const DashboardSuggestedValues = ({
   )
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="flex min-h-[264px] flex-col items-center justify-center">
-        <KeyValuePair
-          label="Loan Fee Rate"
-          value={`${formattedBankValues.loanFeeRate} bps`}
-          proposedValue={
-            suggestedFields.loanFeeRate && `${suggestedFields.loanFeeRate} bps`
-          }
-        />
-        <KeyValuePair
-          label="Loan origination fee rate"
-          value={`${formattedBankValues.loanOriginationFeeRate} bps`}
-          proposedValue={
-            suggestedFields.loanOriginationFeeRate &&
-            `${suggestedFields.loanOriginationFeeRate} bps`
-          }
-        />
-        <KeyValuePair
-          label="Maint Asset/Liab Weight"
-          value={`${formattedBankValues.maintAssetWeight} /
+    <Modal
+      panelClassNames={'sm:max-w-[700px]'}
+      isOpen={isOpen}
+      onClose={onClose}
+    >
+      <div className="flex flex-col max-h-[600px] w-full overflow-auto">
+        <Disclosure.Panel>
+          <KeyValuePair
+            label="Loan Fee Rate"
+            value={`${formattedBankValues.loanFeeRate} bps`}
+            proposedValue={
+              suggestedFields.loanFeeRate &&
+              `${suggestedFields.loanFeeRate} bps`
+            }
+          />
+          <KeyValuePair
+            label="Loan origination fee rate"
+            value={`${formattedBankValues.loanOriginationFeeRate} bps`}
+            proposedValue={
+              suggestedFields.loanOriginationFeeRate &&
+              `${suggestedFields.loanOriginationFeeRate} bps`
+            }
+          />
+          <KeyValuePair
+            label="Maint Asset/Liab Weight"
+            value={`${formattedBankValues.maintAssetWeight} /
                               ${formattedBankValues.maintLiabWeight}`}
-          proposedValue={
-            (suggestedFields.maintAssetWeight ||
-              suggestedFields.maintLiabWeight) &&
-            `${
-              suggestedFields.maintAssetWeight ||
-              formattedBankValues.maintAssetWeight
-            } /
+            proposedValue={
+              (suggestedFields.maintAssetWeight ||
+                suggestedFields.maintLiabWeight) &&
+              `${
+                suggestedFields.maintAssetWeight ||
+                formattedBankValues.maintAssetWeight
+              } /
                               ${
                                 suggestedFields.maintLiabWeight ||
                                 formattedBankValues.maintLiabWeight
                               }`
-          }
-        />
-        <KeyValuePair
-          label="Init Asset/Liab Weight"
-          value={`${formattedBankValues.initAssetWeight} /
+            }
+          />
+          <KeyValuePair
+            label="Init Asset/Liab Weight"
+            value={`${formattedBankValues.initAssetWeight} /
                               ${formattedBankValues.initLiabWeight}`}
-          proposedValue={
-            (suggestedFields.initAssetWeight ||
-              suggestedFields.initLiabWeight) &&
-            `${
-              suggestedFields.initAssetWeight ||
-              formattedBankValues.initAssetWeight
-            } /
+            proposedValue={
+              (suggestedFields.initAssetWeight ||
+                suggestedFields.initLiabWeight) &&
+              `${
+                suggestedFields.initAssetWeight ||
+                formattedBankValues.initAssetWeight
+              } /
                               ${
                                 suggestedFields.initLiabWeight ||
                                 formattedBankValues.initLiabWeight
                               }`
-          }
-        />
-        <KeyValuePair
-          label="Deposit weight scale start quote"
-          value={`$${formattedBankValues.depositWeightScale}`}
-          proposedValue={
-            suggestedFields.depositWeightScale &&
-            `$${suggestedFields.depositWeightScale}`
-          }
-        />
-        <KeyValuePair
-          label="Borrow weight scale start quote"
-          value={`$${formattedBankValues.borrowWeightScale}`}
-          proposedValue={
-            suggestedFields.borrowWeightScale &&
-            `$${suggestedFields.borrowWeightScale}`
-          }
-        />
-        <KeyValuePair
-          label="Rate params"
-          value={
-            <span className="text-right">
-              {`${formattedBankValues.rate0}% @ ${formattedBankValues.util0}% util, `}
-              {`${formattedBankValues.rate1}% @ ${formattedBankValues.util1}% util, `}
-              {`${formattedBankValues.maxRate}% @ 100% util`}
-            </span>
-          }
-          proposedValue={
-            (suggestedFields.rate0 ||
-              suggestedFields.rate1 ||
-              suggestedFields.util0 ||
-              suggestedFields.util1 ||
-              suggestedFields.maxRate) && (
+            }
+          />
+          <KeyValuePair
+            label="Deposit weight scale start quote"
+            value={`$${formattedBankValues.depositWeightScale}`}
+            proposedValue={
+              suggestedFields.depositWeightScale &&
+              `$${suggestedFields.depositWeightScale}`
+            }
+          />
+          <KeyValuePair
+            label="Borrow weight scale start quote"
+            value={`$${formattedBankValues.borrowWeightScale}`}
+            proposedValue={
+              suggestedFields.borrowWeightScale &&
+              `$${suggestedFields.borrowWeightScale}`
+            }
+          />
+          <KeyValuePair
+            label="Rate params"
+            value={
               <span className="text-right">
-                {`${suggestedFields.rate0 || formattedBankValues.rate0}% @ ${
-                  suggestedFields.util0 || formattedBankValues.util0
-                }% util, `}
-                {`${suggestedFields.rate1 || formattedBankValues.rate1}% @ ${
-                  suggestedFields.util1 || formattedBankValues.util1
-                }% util, `}
-                {`${
-                  suggestedFields.maxRate || formattedBankValues.maxRate
-                }% @ 100% util`}
+                {`${formattedBankValues.rate0}% @ ${formattedBankValues.util0}% util, `}
+                {`${formattedBankValues.rate1}% @ ${formattedBankValues.util1}% util, `}
+                {`${formattedBankValues.maxRate}% @ 100% util`}
               </span>
-            )
-          }
-        />
-        <KeyValuePair
-          label="Adjustment factor"
-          value={`${formattedBankValues.adjustmentFactor}%`}
-          proposedValue={
-            suggestedFields.adjustmentFactor &&
-            `${suggestedFields.adjustmentFactor}%`
-          }
-        />
-        <KeyValuePair
-          label="Oracle: Conf Filter"
-          value={`${formattedBankValues.oracleConfFilter}%`}
-          proposedValue={
-            suggestedFields.oracleConfFilter &&
-            `${suggestedFields.oracleConfFilter}%`
-          }
-        />
-        <KeyValuePair
-          label="Oracle: Max Staleness"
-          value={`${bank.oracleConfig.maxStalenessSlots} slots`}
-          proposedValue={
-            suggestedFields.maxStalenessSlots &&
-            `${suggestedFields.maxStalenessSlots} slots`
-          }
-        />
-        <KeyValuePair
-          label="Group Insurance Fund"
-          value={`${mintInfo!.groupInsuranceFund}`}
-        />
-        <KeyValuePair
-          label="Min vault to deposits ratio"
-          value={`${formattedBankValues.minVaultToDepositsRatio}%`}
-          proposedValue={
-            suggestedFields.minVaultToDepositsRatio &&
-            `${suggestedFields.minVaultToDepositsRatio}%`
-          }
-        />
-        <KeyValuePair
-          label="Net borrows in window / Net borrow limit per window quote"
-          value={`$${formattedBankValues.minVaultToDepositsRatio} / $${formattedBankValues.netBorrowLimitPerWindowQuote}`}
-          proposedValue={
-            (suggestedFields.minVaultToDepositsRatio ||
-              suggestedFields.netBorrowLimitPerWindowQuote) &&
-            `$${
-              suggestedFields.minVaultToDepositsRatio ||
-              formattedBankValues.minVaultToDepositsRatio
-            } / $${
-              suggestedFields.netBorrowLimitPerWindowQuote ||
-              formattedBankValues.netBorrowLimitPerWindowQuote
-            }`
-          }
-        />
-        <KeyValuePair
-          label="Liquidation fee"
-          value={`${formattedBankValues.liquidationFee}%`}
-          proposedValue={
-            suggestedFields.liquidationFee &&
-            `${suggestedFields.liquidationFee}%`
-          }
-        />
+            }
+            proposedValue={
+              (suggestedFields.rate0 ||
+                suggestedFields.rate1 ||
+                suggestedFields.util0 ||
+                suggestedFields.util1 ||
+                suggestedFields.maxRate) && (
+                <span className="text-right">
+                  {`${suggestedFields.rate0 || formattedBankValues.rate0}% @ ${
+                    suggestedFields.util0 || formattedBankValues.util0
+                  }% util, `}
+                  {`${suggestedFields.rate1 || formattedBankValues.rate1}% @ ${
+                    suggestedFields.util1 || formattedBankValues.util1
+                  }% util, `}
+                  {`${
+                    suggestedFields.maxRate || formattedBankValues.maxRate
+                  }% @ 100% util`}
+                </span>
+              )
+            }
+          />
+          <KeyValuePair
+            label="Adjustment factor"
+            value={`${formattedBankValues.adjustmentFactor}%`}
+            proposedValue={
+              suggestedFields.adjustmentFactor &&
+              `${suggestedFields.adjustmentFactor}%`
+            }
+          />
+          <KeyValuePair
+            label="Oracle: Conf Filter"
+            value={`${formattedBankValues.oracleConfFilter}%`}
+            proposedValue={
+              suggestedFields.oracleConfFilter &&
+              `${suggestedFields.oracleConfFilter}%`
+            }
+          />
+          <KeyValuePair
+            label="Oracle: Max Staleness"
+            value={`${bank.oracleConfig.maxStalenessSlots} slots`}
+            proposedValue={
+              suggestedFields.maxStalenessSlots &&
+              `${suggestedFields.maxStalenessSlots} slots`
+            }
+          />
+          <KeyValuePair
+            label="Group Insurance Fund"
+            value={`${mintInfo!.groupInsuranceFund}`}
+          />
+          <KeyValuePair
+            label="Min vault to deposits ratio"
+            value={`${formattedBankValues.minVaultToDepositsRatio}%`}
+            proposedValue={
+              suggestedFields.minVaultToDepositsRatio &&
+              `${suggestedFields.minVaultToDepositsRatio}%`
+            }
+          />
+          <KeyValuePair
+            label="Net borrows in window / Net borrow limit per window quote"
+            value={`$${formattedBankValues.minVaultToDepositsRatio} / $${formattedBankValues.netBorrowLimitPerWindowQuote}`}
+            proposedValue={
+              (suggestedFields.minVaultToDepositsRatio ||
+                suggestedFields.netBorrowLimitPerWindowQuote) &&
+              `$${
+                suggestedFields.minVaultToDepositsRatio ||
+                formattedBankValues.minVaultToDepositsRatio
+              } / $${
+                suggestedFields.netBorrowLimitPerWindowQuote ||
+                formattedBankValues.netBorrowLimitPerWindowQuote
+              }`
+            }
+          />
+          <KeyValuePair
+            label="Liquidation fee"
+            value={`${formattedBankValues.liquidationFee}%`}
+            proposedValue={
+              suggestedFields.liquidationFee &&
+              `${suggestedFields.liquidationFee}%`
+            }
+          />
+        </Disclosure.Panel>
+
         {invalidKeys.length && (
           <div className="flex items-center p-4">
             <div className="mr-auto">
