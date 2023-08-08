@@ -305,6 +305,8 @@ const Dashboard: NextPage = () => {
                                     >
                                       Check suggested values
                                       <DashboardSuggestedValues
+                                        group={group}
+                                        bank={bank}
                                         isOpen={isOpenSuggestionModal}
                                         onClose={() =>
                                           setIsOpenSuggestionModal(false)
