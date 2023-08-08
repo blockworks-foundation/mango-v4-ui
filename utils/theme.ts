@@ -68,7 +68,7 @@ export const nftThemeMeta: NftThemeMeta = {
     sideTilePath: '/images/themes/pepe/pepe-vert-tile.png',
     topTilePath: '/images/themes/pepe/pepe-hori-tile.png',
     tvChartTheme: 'Dark',
-    tvImagePath: '',
+    tvImagePath: '/images/themes/pepe/tv-chart-image.png',
     useGradientBg: false,
   },
 }
