@@ -19,20 +19,18 @@ export const getOracle = async ({
   baseSymbol,
   quoteSymbol,
   connection,
-  pythOnly = false,
+  tier,
 }: {
   baseSymbol: string
   quoteSymbol: string
   connection: Connection
-  pythOnly?: boolean
+  tier: LISTING_PRESETS_KEYS
 }) => {
+  const pythOnly = tier === 'MID' || tier === 'PREMIUM'
+  console.log(tier)
   try {
     let oraclePk = ''
-    const pythOracle = await getPythOracle({
-      baseSymbol,
-      quoteSymbol,
-      connection,
-    })
+    const pythOracle = null
     if (pythOracle) {
       oraclePk = pythOracle
     } else if (!pythOnly) {
@@ -40,6 +38,7 @@ export const getOracle = async ({
         baseSymbol,
         quoteSymbol,
         connection,
+        noLock: tier === 'UNTRUSTED',
       })
       oraclePk = switchBoardOracle
     }
@@ -90,10 +89,12 @@ export const getSwitchBoardOracle = async ({
   baseSymbol,
   quoteSymbol,
   connection,
+  noLock,
 }: {
   baseSymbol: string
   quoteSymbol: string
   connection: Connection
+  noLock: boolean
 }) => {
   try {
     const SWITCHBOARD_PROGRAM_ID = 'SW1TCH7qEPTdLsDHRgPuMQjbQxKdH2aBStViMFnt64f'
@@ -123,19 +124,40 @@ export const getSwitchBoardOracle = async ({
       ),
     )
 
+    const regex = new RegExp(`\\b${baseSymbol.toLowerCase()}\\b(?![A-Z])`, 'gi')
     const possibleFeedIndexes = feedNames.reduce(function (r, v, i) {
       return r.concat(
-        v.toLowerCase().includes(baseSymbol.toLowerCase()) &&
+        regex.test(v.toLowerCase()) &&
           v.toLowerCase().includes(quoteSymbol.toLowerCase())
           ? i
           : [],
       )
     }, [] as number[])
 
-    const possibleFeeds = allFeeds.filter(
-      (x, i) => possibleFeedIndexes.includes(i) && x.account.isLocked,
+    const trustedQuesKeys = [
+      new PublicKey('3HBb2DQqDfuMdzWxNk1Eo9RTMkFYmuEAd32RiLKn9pAn'),
+    ]
+    const sponsoredAuthKeys = [
+      new PublicKey('A4PzGUimdCMv8xvT5gK2fxonXqMMayDm3eSXRvXZhjzU'),
+      new PublicKey('31Sof5r1xi7dfcaz4x9Kuwm8J9ueAdDduMcme59sP8gc'),
+    ]
+
+    const possibleFeeds = allFeeds
+      .filter((x, i) => possibleFeedIndexes.includes(i))
+      .filter((x) => (noLock ? true : x.account.isLocked))
+      .sort((x) => (x.account.isLocked ? 1 : -1))
+
+    console.log(possibleFeeds, possibleFeedIndexes)
+
+    const sponsoredFeeds = possibleFeeds.filter((x) =>
+      sponsoredAuthKeys.find((s) => s.equals(x.account.authority as PublicKey)),
     )
-    return possibleFeeds.length ? possibleFeeds[0].publicKey.toBase58() : ''
+
+    return sponsoredFeeds.length
+      ? sponsoredFeeds[0].publicKey.toBase58()
+      : possibleFeeds.length
+      ? possibleFeeds[0].publicKey.toBase58()
+      : ''
   } catch (e) {
     notify({
       title: 'Switchboard oracle fetch error',

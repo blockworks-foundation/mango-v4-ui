@@ -159,14 +159,14 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   }
 
   const getListingParams = useCallback(
-    async (tokenInfo: Token, isMidOrPremium: boolean) => {
+    async (tokenInfo: Token, tier: LISTING_PRESETS_KEYS) => {
       setLoadingListingParams(true)
       const [oraclePk, marketPk] = await Promise.all([
         getOracle({
           baseSymbol: tokenInfo.symbol,
           quoteSymbol: 'usd',
           connection,
-          pythOnly: isMidOrPremium,
+          tier: tier,
         }),
         getBestMarket({
           baseMint: mint,
@@ -292,6 +292,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           description: `${e}`,
           type: 'error',
         })
+        return 'UNTRUSTED'
       }
     },
     [t, handleGetRoutesWithFixedArgs],
@@ -338,8 +339,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     setCurrentTokenInfo(tokenInfo)
     if (tokenInfo) {
       const tier = await handleLiqudityCheck(new PublicKey(mint))
-      const isMidOrPremium = tier === 'PREMIUM' || tier === 'MID'
-      getListingParams(tokenInfo, isMidOrPremium)
+      getListingParams(tokenInfo, tier)
     }
   }, [getListingParams, handleLiqudityCheck, jupiterTokens, mint, t])
 
@@ -578,14 +578,14 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
 
   const closeCreateOpenBookMarketModal = () => {
     setCreateOpenbookMarket(false)
-    if (currentTokenInfo) {
-      getListingParams(currentTokenInfo, isMidOrPremium)
+    if (currentTokenInfo && coinTier) {
+      getListingParams(currentTokenInfo, coinTier)
     }
   }
   const closeCreateOracleModal = () => {
     setOracleModalOpen(false)
-    if (currentTokenInfo) {
-      getListingParams(currentTokenInfo, isMidOrPremium)
+    if (currentTokenInfo && coinTier) {
+      getListingParams(currentTokenInfo, coinTier)
     }
   }
 
