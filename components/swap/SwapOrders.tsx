@@ -1,4 +1,4 @@
-import { IconButton } from '@components/shared/Button'
+import { IconButton, LinkButton } from '@components/shared/Button'
 import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import {
   SortableColumnHeader,
@@ -134,6 +134,48 @@ const SwapOrders = () => {
         }
       }
     } catch (e) {
+      console.error('failed to cancel trigger order', e)
+    } finally {
+      setCancelId('')
+    }
+  }
+
+  const handleCancelAll = async () => {
+    try {
+      const client = mangoStore.getState().client
+      const group = mangoStore.getState().group
+      const actions = mangoStore.getState().actions
+      const mangoAccount = mangoStore.getState().mangoAccount.current
+
+      if (!mangoAccount || !group) return
+      setCancelId('all')
+
+      try {
+        const tx = await client.tokenConditionalSwapCancelAll(
+          group,
+          mangoAccount,
+        )
+        notify({
+          title: 'Transaction confirmed',
+          type: 'success',
+          txid: tx,
+          noSound: true,
+        })
+        actions.fetchGroup()
+        await actions.reloadMangoAccount()
+      } catch (e) {
+        console.error('failed to cancel trigger orders', e)
+        sentry.captureException(e)
+        if (isMangoError(e)) {
+          notify({
+            title: 'Transaction failed',
+            description: e.message,
+            txid: e?.txid,
+            type: 'error',
+          })
+        }
+      }
+    } catch (e) {
       console.error('failed to cancel swap order', e)
     } finally {
       setCancelId('')
@@ -212,7 +254,13 @@ const SwapOrders = () => {
               />
             </div>
           </Th>
-          <Th className="text-right">{t('cancel')}</Th>
+          <Th>
+            <div className="flex justify-end">
+              <LinkButton onClick={handleCancelAll}>
+                {t('trade:cancel-all')}
+              </LinkButton>
+            </div>
+          </Th>
         </TrHead>
       </thead>
       <tbody>
@@ -273,11 +321,13 @@ const SwapOrders = () => {
               </Td>
               <Td className="flex justify-end">
                 <IconButton
-                  disabled={cancelId === data.id.toString()}
+                  disabled={
+                    cancelId === data.id.toString() || cancelId === 'all'
+                  }
                   onClick={() => handleCancel(data.id)}
                   size="small"
                 >
-                  {cancelId === data.id.toString() ? (
+                  {cancelId === data.id.toString() || cancelId === 'all' ? (
                     <Loading />
                   ) : (
                     <TrashIcon className="h-4 w-4" />
