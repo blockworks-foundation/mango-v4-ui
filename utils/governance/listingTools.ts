@@ -134,6 +134,9 @@ export const getSwitchBoardOracle = async ({
     )
 
     //find feeds that match base + quote
+    //base is checked to include followed by non alphabetic character e.g
+    //if base is kin it will match kin_usd, kin/USD, kin usd, but not king/usd
+    //looks like most feeds are using space, _ or /
     const possibleFeedIndexes = feedNames.reduce(function (r, v, i) {
       const isBaseMatch =
         v.toLowerCase().includes(baseSymbol.toLowerCase()) &&
@@ -153,15 +156,20 @@ export const getSwitchBoardOracle = async ({
 
     //feeds sponsored by switchboard or solend
     const trustedQuesKeys = [
+      //switchboard sponsored que
       new PublicKey('3HBb2DQqDfuMdzWxNk1Eo9RTMkFYmuEAd32RiLKn9pAn'),
     ]
     const sponsoredAuthKeys = [
+      //solend
       new PublicKey('A4PzGUimdCMv8xvT5gK2fxonXqMMayDm3eSXRvXZhjzU'),
+      //switchboard
       new PublicKey('31Sof5r1xi7dfcaz4x9Kuwm8J9ueAdDduMcme59sP8gc'),
     ]
 
     const possibleFeeds = allFeeds
       .filter((x, i) => possibleFeedIndexes.includes(i))
+      //unlocked feeds can be used only when noLock is true
+      //atm only for untrusted use
       .filter((x) => (noLock ? true : x.account.isLocked))
       .sort((x) => (x.account.isLocked ? -1 : 1))
 
