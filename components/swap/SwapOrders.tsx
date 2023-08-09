@@ -24,6 +24,7 @@ import { floorToDecimal } from 'utils/numbers'
 import * as sentry from '@sentry/nextjs'
 import { isMangoError } from 'types'
 import Loading from '@components/shared/Loading'
+import SideBadge from '@components/shared/SideBadge'
 
 const SwapOrders = () => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
@@ -48,13 +49,23 @@ const SwapOrders = () => {
       const buyBank = group.getFirstBankByTokenIndex(order.buyTokenIndex)
       const sellBank = group.getFirstBankByTokenIndex(order.sellTokenIndex)
       const pair = `${sellBank.name}/${buyBank.name}`
-      // const maxBuy = order.getMaxBuyUi(group)
-      // const maxSell = order.getMaxSellUi(group)
-
-      const size = floorToDecimal(
+      const maxBuy = floorToDecimal(
+        order.getMaxBuyUi(group),
+        buyBank.mintDecimals,
+      ).toNumber()
+      const maxSell = floorToDecimal(
         order.getMaxSellUi(group),
         sellBank.mintDecimals,
       ).toNumber()
+      let size
+      let side
+      if (maxBuy === 0 || maxBuy > maxSell) {
+        size = maxSell
+        side = 'sell'
+      } else {
+        size = maxBuy
+        side = 'buy'
+      }
 
       const triggerPrice = order.getThresholdPriceUi(group)
       const pricePremium = order.getPricePremium()
@@ -69,6 +80,7 @@ const SwapOrders = () => {
         currentPrice,
         sellBank,
         pair,
+        side,
         size,
         filled,
         triggerPrice,
@@ -143,6 +155,16 @@ const SwapOrders = () => {
           <Th>
             <div className="flex justify-end">
               <SortableColumnHeader
+                sortKey="side"
+                sort={() => requestSort('side')}
+                sortConfig={sortConfig}
+                title={t('trade:side')}
+              />
+            </div>
+          </Th>
+          <Th>
+            <div className="flex justify-end">
+              <SortableColumnHeader
                 sortKey="size"
                 sort={() => requestSort('size')}
                 sortConfig={sortConfig}
@@ -201,29 +223,31 @@ const SwapOrders = () => {
             fee,
             pair,
             sellBank,
+            side,
             size,
             filled,
             triggerPrice,
           } = data
+
+          const bank = side === 'buy' ? buyBank : sellBank
           return (
             <TrBody key={i} className="text-sm">
               <Td>{pair}</Td>
               <Td>
+                <div className="flex justify-end">
+                  <SideBadge side={side} />
+                </div>
+              </Td>
+              <Td>
                 <p className="text-right">
                   {size}
-                  <span className="text-th-fgd-3 font-body">
-                    {' '}
-                    {sellBank.name}
-                  </span>
+                  <span className="text-th-fgd-3 font-body"> {bank.name}</span>
                 </p>
               </Td>
               <Td>
                 <p className="text-right">
                   {filled}/{size}
-                  <span className="text-th-fgd-3 font-body">
-                    {' '}
-                    {sellBank.name}
-                  </span>
+                  <span className="text-th-fgd-3 font-body"> {bank.name}</span>
                 </p>
               </Td>
               <Td>
@@ -240,7 +264,7 @@ const SwapOrders = () => {
                   {triggerPrice}
                   <span className="text-th-fgd-3 font-body">
                     {' '}
-                    {buyBank.name}
+                    {side === 'buy' ? sellBank.name : buyBank.name}
                   </span>
                 </p>
               </Td>

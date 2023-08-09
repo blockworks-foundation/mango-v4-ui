@@ -5,7 +5,7 @@ import NumberFormat, {
   NumberFormatValues,
   SourceInfo,
 } from 'react-number-format'
-import { formatCurrencyValue } from 'utils/numbers'
+import { floorToDecimal, formatCurrencyValue } from 'utils/numbers'
 import { useTranslation } from 'react-i18next'
 import { Dispatch, SetStateAction, useMemo } from 'react'
 import mangoStore from '@store/mangoStore'
@@ -13,6 +13,7 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import { OUTPUT_TOKEN_DEFAULT } from 'utils/constants'
 import { NUMBER_FORMAT_CLASSNAMES } from './MarketSwapForm'
 import InlineNotification from '@components/shared/InlineNotification'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 const BuyTokenInput = ({
   error,
@@ -28,17 +29,21 @@ const BuyTokenInput = ({
   handleRepay: (amountOut: string) => void
 }) => {
   const { t } = useTranslation('common')
+  const { mangoAccount } = useMangoAccount()
   const { group } = useMangoGroup()
   const { outputBank, amountOut: amountOutFormValue } = mangoStore(
     (s) => s.swap,
   )
 
   const outputTokenBalanceBorrow = useMemo(() => {
-    if (!outputBank) return 0
-    const mangoAccount = mangoStore.getState().mangoAccount.current
-    const balance = mangoAccount?.getTokenBalanceUi(outputBank)
-    return balance && balance < 0 ? Math.abs(balance) : 0
-  }, [outputBank])
+    if (!outputBank || !mangoAccount) return 0
+    const balance = mangoAccount.getTokenBalanceUi(outputBank)
+    const roundedBalance = floorToDecimal(
+      balance,
+      outputBank.mintDecimals,
+    ).toNumber()
+    return balance && balance < 0 ? Math.abs(roundedBalance).toString() : 0
+  }, [mangoAccount, outputBank])
 
   return (
     <div className="mb-2 grid grid-cols-2 rounded-xl bg-th-bkg-2 p-3">
@@ -49,11 +54,7 @@ const BuyTokenInput = ({
             className="mb-0.5 text-xs"
             decimals={outputBank?.mintDecimals || 9}
             label={t('repay')}
-            onClick={() =>
-              handleRepay(
-                outputTokenBalanceBorrow.toFixed(outputBank?.mintDecimals || 9),
-              )
-            }
+            onClick={() => handleRepay(outputTokenBalanceBorrow)}
             value={outputTokenBalanceBorrow}
           />
         ) : null}

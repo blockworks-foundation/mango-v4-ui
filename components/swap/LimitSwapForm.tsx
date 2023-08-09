@@ -37,6 +37,7 @@ import { getChartPairSettings, handleFlipPrices } from './SwapTokenChart'
 import Select from '@components/forms/Select'
 import useIpAddress from 'hooks/useIpAddress'
 import { Bank } from '@blockworks-foundation/mango-v4'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 type LimitSwapFormProps = {
   showTokenSelect: 'input' | 'output' | undefined
@@ -89,6 +90,7 @@ const LimitSwapForm = ({
   setShowTokenSelect,
 }: LimitSwapFormProps) => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
+  const { mangoAccount } = useMangoAccount()
   const { ipAllowed, ipCountry } = useIpAddress()
   const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
   const [triggerPrice, setTriggerPrice] = useState('')
@@ -224,12 +226,11 @@ const LimitSwapForm = ({
   }
 
   const hasBorrowToRepay = useMemo(() => {
-    const mangoAccount = mangoStore.getState().mangoAccount.current
     if (orderType !== OrderTypes.REPAY_BORROW || !outputBank || !mangoAccount)
       return
     const borrow = mangoAccount.getTokenBorrowsUi(outputBank)
     return borrow
-  }, [orderType, outputBank])
+  }, [mangoAccount, orderType, outputBank])
 
   const isFormValid = useCallback(
     (form: LimitSwapForm) => {
