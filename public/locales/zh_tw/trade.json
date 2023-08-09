@@ -9,6 +9,7 @@
     "book": "單薄",
     "buys": "買",
     "cancel-order-error": "取消訂單失敗",
+    "cancel-all-orders": "Cancel All Orders",
     "close-confirm": "市場平倉 {{config_name}}",
     "close-position": "平倉",
     "connect-orders": "連接以查看未結訂單",

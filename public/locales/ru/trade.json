@@ -8,6 +8,7 @@
     "book": "Book",
     "buys": "Buys",
     "cancel-order-error": "Failed to cancel order",
+    "cancel-all-orders": "Cancel All Orders",
     "close-confirm": "Market close your {{config_name}} position",
     "close-position": "Close Position",
     "connect-orders": "Connect to view your open orders",

@@ -9,23 +9,25 @@ import {
   Serum3Side,
 } from '@blockworks-foundation/mango-v4'
 import Input from '@components/forms/Input'
-import { IconButton } from '@components/shared/Button'
+import Button, { IconButton } from '@components/shared/Button'
 import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import Loading from '@components/shared/Loading'
 import SideBadge from '@components/shared/SideBadge'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import Tooltip from '@components/shared/Tooltip'
+import { Disclosure } from '@headlessui/react'
 import {
   CheckIcon,
   NoSymbolIcon,
   PencilIcon,
   TrashIcon,
   XMarkIcon,
+  ChevronDownIcon,
 } from '@heroicons/react/20/solid'
 import { Order } from '@project-serum/serum/lib/market'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { PublicKey } from '@solana/web3.js'
+import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
@@ -65,6 +67,7 @@ const OpenOrders = () => {
   const { t } = useTranslation(['common', 'trade'])
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
   const [cancelId, setCancelId] = useState<string>('')
+  const [cancelMultiple, setCancelMultiple] = useState<boolean>(false)
   const [modifyOrderId, setModifyOrderId] = useState<string | undefined>(
     undefined,
   )
@@ -232,6 +235,76 @@ const OpenOrders = () => {
     [t],
   )
 
+  const handleCancelAllOrders = useCallback(
+    async (orders: (Order | PerpOrder)[]) => {
+      const client = mangoStore.getState().client
+      const group = mangoStore.getState().group
+      const mangoAccount = mangoStore.getState().mangoAccount.current
+      const actions = mangoStore.getState().actions
+      if (!group || !mangoAccount) return
+      setCancelMultiple(true)
+      try {
+        const cancelIxs: TransactionInstruction[] = []
+        for (const o of orders) {
+          if (o instanceof PerpOrder) {
+            const ix = await client.perpCancelOrderIx(
+              group,
+              mangoAccount,
+              o.perpMarketIndex,
+              o.orderId,
+            )
+            cancelIxs.push(ix)
+          } else {
+            const marketPk = findSerum3MarketPkInOpenOrders(o)
+            if (!marketPk) return
+            const ix = await client.serum3CancelOrderIx(
+              group,
+              mangoAccount,
+              new PublicKey(marketPk),
+              o.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
+              o.orderId,
+            )
+            cancelIxs.push(ix)
+          }
+        }
+        // split txns if there's more than 8 orders
+        if (cancelIxs.length < 9) {
+          const tx = await client.sendAndConfirmTransaction(cancelIxs)
+          notify({
+            type: 'success',
+            title: 'Transaction successful',
+            txid: tx,
+          })
+        } else {
+          const batchSize = 8
+          for (let i = 0; i < cancelIxs.length; i += batchSize) {
+            const cancelIxBatch = cancelIxs.slice(i, i + batchSize)
+            const tx = await client.sendAndConfirmTransaction(cancelIxBatch)
+            notify({
+              type: 'success',
+              title: 'Transaction successful',
+              txid: tx,
+            })
+          }
+        }
+        actions.fetchOpenOrders()
+      } catch (e) {
+        console.error('Error canceling', e)
+        if (isMangoError(e)) {
+          notify({
+            title: t('trade:cancel-order-error'),
+            description: e.message,
+            txid: e.txid,
+            type: 'error',
+          })
+        }
+      } finally {
+        setCancelMultiple(false)
+      }
+    },
+    [t],
+  )
+
   const showEditOrderForm = (order: Order | PerpOrder, tickSize: number) => {
     setModifyOrderId(order.orderId.toString())
     setModifiedOrderSize(order.size.toString())
@@ -246,173 +319,271 @@ const OpenOrders = () => {
 
   return mangoAccountAddress && Object.values(openOrders).flat().length ? (
     showTableView ? (
-      <Table>
-        <thead>
-          <TrHead>
-            <Th className="w-[16.67%] text-left">{t('market')}</Th>
-            <Th className="w-[16.67%] text-right">{t('trade:size')}</Th>
-            <Th className="w-[16.67%] text-right">{t('price')}</Th>
-            <Th className="w-[16.67%] text-right">{t('value')}</Th>
-            {!isUnownedAccount ? (
-              <Th className="w-[16.67%] text-right" />
-            ) : null}
-          </TrHead>
-        </thead>
-        <tbody>
-          {Object.entries(openOrders)
-            .sort()
-            .map(([marketPk, orders]) => {
-              return orders.map((o) => {
-                const group = mangoStore.getState().group!
-                let market: PerpMarket | Serum3Market
-                let tickSize: number
-                let minOrderSize: number
-                let expiryTimestamp: number | undefined
-                let value: number
-                if (o instanceof PerpOrder) {
-                  market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
-                  tickSize = market.tickSize
-                  minOrderSize = market.minOrderSize
-                  expiryTimestamp =
-                    o.expiryTimestamp === U64_MAX_BN
-                      ? 0
-                      : o.expiryTimestamp.toNumber()
-                  value = o.size * o.price
-                } else {
-                  market = group.getSerum3MarketByExternalMarket(
-                    new PublicKey(marketPk),
-                  )
-                  const serumMarket = group.getSerum3ExternalMarket(
-                    market.serumMarketExternal,
-                  )
-                  const quoteBank = group.getFirstBankByTokenIndex(
-                    market.quoteTokenIndex,
-                  )
-                  tickSize = serumMarket.tickSize
-                  minOrderSize = serumMarket.minOrderSize
-                  value = o.size * o.price * quoteBank.uiPrice
-                }
-                const side =
-                  o instanceof PerpOrder
-                    ? 'bid' in o.side
-                      ? 'long'
-                      : 'short'
-                    : o.side
-                return (
-                  <TrBody
-                    key={`${o.side}${o.size}${o.price}${o.orderId.toString()}`}
-                    className="my-1 p-2"
-                  >
-                    <Td className="w-[16.67%]">
-                      <TableMarketName market={market} side={side} />
-                    </Td>
-                    {modifyOrderId !== o.orderId.toString() ? (
-                      <>
-                        <Td className="w-[16.67%] text-right font-mono">
-                          <FormatNumericValue
-                            value={o.size}
-                            decimals={getDecimalCount(minOrderSize)}
-                          />
-                        </Td>
-                        <Td className="w-[16.67%] whitespace-nowrap text-right font-mono">
-                          <FormatNumericValue
-                            value={o.price}
-                            decimals={getDecimalCount(tickSize)}
-                          />
-                        </Td>
-                      </>
-                    ) : (
-                      <>
-                        <Td className="w-[16.67%]">
-                          <input
-                            className="h-8 w-full rounded-l-none rounded-r-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono text-sm hover:border-th-fgd-3 focus:border-th-fgd-3 focus:outline-none"
-                            type="text"
-                            value={modifiedOrderSize}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                              setModifiedOrderSize(e.target.value)
-                            }
-                          />
-                        </Td>
-                        <Td className="w-[16.67%]">
-                          <input
-                            autoFocus
-                            className="h-8 w-full rounded-l-none rounded-r-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono text-sm hover:border-th-fgd-3 focus:border-th-fgd-3 focus:outline-none"
-                            type="text"
-                            value={modifiedOrderPrice}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                              setModifiedOrderPrice(e.target.value)
-                            }
-                          />
-                        </Td>
-                      </>
-                    )}
-                    <Td className="w-[16.67%] text-right font-mono">
-                      <FormatNumericValue value={value} isUsd />
-                      {expiryTimestamp ? (
-                        <div className="h-min text-xxs leading-tight text-th-fgd-4">{`Expires ${new Date(
-                          expiryTimestamp * 1000,
-                        ).toLocaleTimeString()}`}</div>
-                      ) : null}
-                    </Td>
-                    {!isUnownedAccount ? (
+      <>
+        <Table>
+          <thead>
+            <TrHead>
+              <Th className="w-[16.67%] text-left">{t('market')}</Th>
+              <Th className="w-[16.67%] text-right">{t('trade:size')}</Th>
+              <Th className="w-[16.67%] text-right">{t('price')}</Th>
+              <Th className="w-[16.67%] text-right">{t('value')}</Th>
+              {!isUnownedAccount ? (
+                <Th className="w-[16.67%] text-right" />
+              ) : null}
+            </TrHead>
+          </thead>
+          <tbody>
+            {Object.entries(openOrders)
+              .sort()
+              .map(([marketPk, orders]) => {
+                return orders.map((o) => {
+                  const group = mangoStore.getState().group!
+                  let market: PerpMarket | Serum3Market
+                  let tickSize: number
+                  let minOrderSize: number
+                  let expiryTimestamp: number | undefined
+                  let value: number
+                  if (o instanceof PerpOrder) {
+                    market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
+                    tickSize = market.tickSize
+                    minOrderSize = market.minOrderSize
+                    expiryTimestamp =
+                      o.expiryTimestamp === U64_MAX_BN
+                        ? 0
+                        : o.expiryTimestamp.toNumber()
+                    value = o.size * o.price
+                  } else {
+                    market = group.getSerum3MarketByExternalMarket(
+                      new PublicKey(marketPk),
+                    )
+                    const serumMarket = group.getSerum3ExternalMarket(
+                      market.serumMarketExternal,
+                    )
+                    const quoteBank = group.getFirstBankByTokenIndex(
+                      market.quoteTokenIndex,
+                    )
+                    tickSize = serumMarket.tickSize
+                    minOrderSize = serumMarket.minOrderSize
+                    value = o.size * o.price * quoteBank.uiPrice
+                  }
+                  const side =
+                    o instanceof PerpOrder
+                      ? 'bid' in o.side
+                        ? 'long'
+                        : 'short'
+                      : o.side
+                  return (
+                    <TrBody
+                      key={`${o.side}${o.size}${
+                        o.price
+                      }${o.orderId.toString()}`}
+                      className="my-1 p-2"
+                    >
                       <Td className="w-[16.67%]">
-                        <div className="flex justify-end space-x-2">
-                          {modifyOrderId !== o.orderId.toString() ? (
-                            <>
-                              <IconButton
-                                onClick={() => showEditOrderForm(o, tickSize)}
-                                size="small"
-                              >
-                                <PencilIcon className="h-4 w-4" />
-                              </IconButton>
-                              <Tooltip content={t('cancel')}>
+                        <TableMarketName market={market} side={side} />
+                      </Td>
+                      {modifyOrderId !== o.orderId.toString() ? (
+                        <>
+                          <Td className="w-[16.67%] text-right font-mono">
+                            <FormatNumericValue
+                              value={o.size}
+                              decimals={getDecimalCount(minOrderSize)}
+                            />
+                          </Td>
+                          <Td className="w-[16.67%] whitespace-nowrap text-right font-mono">
+                            <FormatNumericValue
+                              value={o.price}
+                              decimals={getDecimalCount(tickSize)}
+                            />
+                          </Td>
+                        </>
+                      ) : (
+                        <>
+                          <Td className="w-[16.67%]">
+                            <input
+                              className="h-8 w-full rounded-l-none rounded-r-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono text-sm hover:border-th-fgd-3 focus:border-th-fgd-3 focus:outline-none"
+                              type="text"
+                              value={modifiedOrderSize}
+                              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                setModifiedOrderSize(e.target.value)
+                              }
+                            />
+                          </Td>
+                          <Td className="w-[16.67%]">
+                            <input
+                              autoFocus
+                              className="h-8 w-full rounded-l-none rounded-r-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono text-sm hover:border-th-fgd-3 focus:border-th-fgd-3 focus:outline-none"
+                              type="text"
+                              value={modifiedOrderPrice}
+                              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                setModifiedOrderPrice(e.target.value)
+                              }
+                            />
+                          </Td>
+                        </>
+                      )}
+                      <Td className="w-[16.67%] text-right font-mono">
+                        <FormatNumericValue value={value} isUsd />
+                        {expiryTimestamp ? (
+                          <div className="h-min text-xxs leading-tight text-th-fgd-4">{`Expires ${new Date(
+                            expiryTimestamp * 1000,
+                          ).toLocaleTimeString()}`}</div>
+                        ) : null}
+                      </Td>
+                      {!isUnownedAccount ? (
+                        <Td className="w-[16.67%]">
+                          <div className="flex justify-end space-x-2">
+                            {modifyOrderId !== o.orderId.toString() ? (
+                              <>
                                 <IconButton
-                                  disabled={cancelId === o.orderId.toString()}
-                                  onClick={() =>
-                                    o instanceof PerpOrder
-                                      ? handleCancelPerpOrder(o)
-                                      : handleCancelSerumOrder(o)
-                                  }
+                                  onClick={() => showEditOrderForm(o, tickSize)}
                                   size="small"
                                 >
-                                  {cancelId === o.orderId.toString() ? (
+                                  <PencilIcon className="h-4 w-4" />
+                                </IconButton>
+                                <Tooltip content={t('cancel')}>
+                                  <IconButton
+                                    disabled={cancelId === o.orderId.toString()}
+                                    onClick={() =>
+                                      o instanceof PerpOrder
+                                        ? handleCancelPerpOrder(o)
+                                        : handleCancelSerumOrder(o)
+                                    }
+                                    size="small"
+                                  >
+                                    {cancelId === o.orderId.toString() ? (
+                                      <Loading className="h-4 w-4" />
+                                    ) : (
+                                      <TrashIcon className="h-4 w-4" />
+                                    )}
+                                  </IconButton>
+                                </Tooltip>
+                              </>
+                            ) : (
+                              <>
+                                <IconButton
+                                  onClick={() => modifyOrder(o)}
+                                  size="small"
+                                >
+                                  {loadingModifyOrder ? (
                                     <Loading className="h-4 w-4" />
                                   ) : (
-                                    <TrashIcon className="h-4 w-4" />
+                                    <CheckIcon className="h-4 w-4" />
                                   )}
                                 </IconButton>
-                              </Tooltip>
-                            </>
-                          ) : (
-                            <>
-                              <IconButton
-                                onClick={() => modifyOrder(o)}
-                                size="small"
-                              >
-                                {loadingModifyOrder ? (
-                                  <Loading className="h-4 w-4" />
-                                ) : (
-                                  <CheckIcon className="h-4 w-4" />
-                                )}
-                              </IconButton>
-                              <IconButton
-                                onClick={cancelEditOrderForm}
-                                size="small"
-                              >
-                                <XMarkIcon className="h-4 w-4" />
-                              </IconButton>
-                            </>
-                          )}
-                        </div>
-                      </Td>
-                    ) : null}
-                  </TrBody>
-                )
+                                <IconButton
+                                  onClick={cancelEditOrderForm}
+                                  size="small"
+                                >
+                                  <XMarkIcon className="h-4 w-4" />
+                                </IconButton>
+                              </>
+                            )}
+                          </div>
+                        </Td>
+                      ) : null}
+                    </TrBody>
+                  )
+                })
               })
-            })
-            .flat()}
-        </tbody>
-      </Table>
+              .flat()}
+          </tbody>
+        </Table>
+        <div className="flex items-center">
+          <div className="flex-grow"></div>
+          {Object.values(openOrders).flat().length > 0 ? (
+            // <Button
+            //   className={`flex w-full items-center justify-center bg-th-dark text-white md:hover:bg-th-dark md:hover:brightness-90`}
+            //   size="large"
+            //   type="submit"
+            //   onClick={() => {
+            //     // const perpOrders: PerpOrder[] = Object.values(openOrders).flat().filter(o => o instanceof PerpOrder)
+            //     // const serumOrders: Order[] = Object.values(openOrders).flat().filter(o => !(o instanceof PerpOrder))
+            //     const orders = Object.values(openOrders).flat()
+            //     handleCancelAllOrders(orders)
+
+            //   }
+            //   }
+            // >
+            // <p className="text-xs">{t('trade:cancel-all')}</p>
+            // </Button>
+            <div className="w-1/12 bg-th-dark sm:hover:bg-th-dark sm:hover:brightness-90">
+              <Disclosure>
+                {({ open }) => (
+                  <>
+                    <Disclosure.Button>
+                      {open ? null : (
+                        <p className="text-xs">
+                          {' '}
+                          {t('trade:cancel-all-orders')}
+                        </p>
+                      )}
+                      <ChevronDownIcon
+                        className={`${
+                          open ? 'rotate-180' : 'rotate-360'
+                        } ml-3 h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                      />
+                    </Disclosure.Button>
+                    <Disclosure.Panel>
+                      <Button
+                        className="w-full mt-2 mr-1 items-center justify-center bg-th-dark text-white text-xs sm:hover:bg-th-dark sm:hover:brightness-90"
+                        secondary
+                        size="small"
+                        onClick={() => {
+                          const orders = Object.values(openOrders).flat()
+                          handleCancelAllOrders(orders)
+                        }}
+                      >
+                        Cancel All
+                      </Button>
+                      <Button
+                        className="w-full mt-2 mr-1 items-center justify-center bg-th-dark text-white text-xs sm:hover:bg-th-dark sm:hover:brightness-90"
+                        secondary
+                        size="small"
+                        onClick={() => {
+                          const serumOrders = Object.values(openOrders)
+                            .flat()
+                            .filter((o) => !(o instanceof PerpOrder)) as Order[]
+                          handleCancelAllOrders(serumOrders)
+                        }}
+                      >
+                        Cancel Spot
+                      </Button>
+                      <Button
+                        className="w-full mt-2 mr-1 items-center justify-center bg-th-dark text-white text-xs sm:hover:bg-th-dark sm:hover:brightness-90"
+                        secondary
+                        size="small"
+                        onClick={() => {
+                          const perpOrders = Object.values(openOrders)
+                            .flat()
+                            .filter(
+                              (o) => o instanceof PerpOrder,
+                            ) as PerpOrder[]
+                          handleCancelAllOrders(perpOrders)
+                        }}
+                      >
+                        Cancel Perp
+                      </Button>
+                    </Disclosure.Panel>
+
+                    {cancelMultiple ? (
+                      <Loading className="h-4 w-4" />
+                    ) : (
+                      <CheckIcon className="h-4 w-4" />
+                    )}
+                  </>
+                )}
+              </Disclosure>
+            </div>
+          ) : (
+            <Button disabled className="w-full leading-tight" size="large">
+              {/* {t('country-not-allowed', {
+                          country: ipCountry ? `(${ipCountry})` : '',
+                        })} */}
+            </Button>
+          )}
+        </div>
+      </>
     ) : (
       <div>
         {Object.entries(openOrders).map(([marketPk, orders]) => {
