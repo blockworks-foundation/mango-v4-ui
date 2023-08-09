@@ -44,7 +44,7 @@ const StatsPage = () => {
     return TABS.map((t) => [t, 0])
   }, [])
   return (
-    <div className="pb-20 md:pb-16">
+    <div className="pb-20 md:pb-[27px]">
       {market ? (
         <PerpStatsPage />
       ) : token ? (

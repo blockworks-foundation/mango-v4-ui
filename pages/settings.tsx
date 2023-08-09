@@ -25,7 +25,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
 
 const Settings: NextPage = () => {
   return (
-    <div className="p-8 pb-20 md:pb-16 lg:p-10">
+    <div className="p-8 pb-20 md:pb-16">
       <SettingsPage />
     </div>
   )

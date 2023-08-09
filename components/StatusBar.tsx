@@ -44,7 +44,7 @@ const StatusBar = ({ collapsed }: { collapsed: boolean }) => {
     <div
       className={`hidden fixed ${
         collapsed ? 'w-[calc(100vw-64px)]' : 'w-[calc(100vw-200px)]'
-      } bottom-0 bg-th-bkg-2 md:grid md:grid-cols-3 px-4 md:px-6 py-1`}
+      } bottom-0 bg-th-input-bkg md:grid md:grid-cols-3 px-4 md:px-6 py-1`}
     >
       <div className="col-span-1 flex items-center">
         <Tps />
