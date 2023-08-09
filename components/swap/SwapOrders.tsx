@@ -48,11 +48,15 @@ const SwapOrders = () => {
       const buyBank = group.getFirstBankByTokenIndex(order.buyTokenIndex)
       const sellBank = group.getFirstBankByTokenIndex(order.sellTokenIndex)
       const pair = `${sellBank.name}/${buyBank.name}`
+      // const maxBuy = order.getMaxBuyUi(group)
+      // const maxSell = order.getMaxSellUi(group)
+
       const size = floorToDecimal(
         order.getMaxSellUi(group),
         sellBank.mintDecimals,
       ).toNumber()
-      const triggerPrice = order.getPriceUpperLimitUi(group)
+
+      const triggerPrice = order.getThresholdPriceUi(group)
       const pricePremium = order.getPricePremium()
       const filled = order.getSoldUi(group)
       const currentPrice = (sellBank.uiPrice / buyBank.uiPrice).toFixed(

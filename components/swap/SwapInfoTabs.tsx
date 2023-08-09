@@ -7,23 +7,32 @@ import ManualRefresh from '@components/shared/ManualRefresh'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import SwapOrders from './SwapOrders'
+import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
 
 const SwapInfoTabs = () => {
   const [selectedTab, setSelectedTab] = useState('balances')
   const { mangoAccount } = useMangoAccount()
   const { width } = useViewport()
+  const { data: isWhiteListed } = useIsWhiteListed()
   const isMobile = width ? width < breakpoints.lg : false
 
   const tabsWithCount: [string, number][] = useMemo(() => {
-    const stopOrdersCount =
-      mangoAccount?.tokenConditionalSwaps.filter((tcs) => tcs.hasData)
-        ?.length || 0
-    return [
+    let tabs: [string, number][] = [
       ['balances', 0],
-      ['trade:trigger-orders', stopOrdersCount],
       ['swap:swap-history', 0],
     ]
-  }, [mangoAccount])
+    if (isWhiteListed) {
+      const stopOrdersCount =
+        mangoAccount?.tokenConditionalSwaps.filter((tcs) => tcs.hasData)
+          ?.length || 0
+      tabs = [
+        ['balances', 0],
+        ['trade:trigger-orders', stopOrdersCount],
+        ['swap:swap-history', 0],
+      ]
+    }
+    return tabs
+  }, [isWhiteListed, mangoAccount])
 
   return (
     <div className="hide-scroll h-full overflow-y-scroll">
