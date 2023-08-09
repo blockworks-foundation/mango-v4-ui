@@ -283,10 +283,11 @@ const DashboardSuggestedValues = ({
 
   return (
     <Modal
-      panelClassNames={'sm:max-w-[700px]'}
+      panelClassNames={' !max-w-[800px]'}
       isOpen={isOpen}
       onClose={onClose}
     >
+      <h3 className="mb-6">{bank.name}</h3>
       <div className="flex flex-col max-h-[600px] w-full overflow-auto">
         <Disclosure.Panel>
           <KeyValuePair
@@ -447,10 +448,10 @@ const DashboardSuggestedValues = ({
 
         {invalidKeys.length && (
           <div className="flex items-center p-4">
-            <div className="mr-auto">
+            <p className="mr-auto ">
               Green values are params that needs to change suggested by current
               liquidity
-            </div>
+            </p>
             <Button
               onClick={() =>
                 proposeNewSuggestedValues(
