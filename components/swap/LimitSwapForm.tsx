@@ -222,14 +222,19 @@ const LimitSwapForm = ({
 
   const handleTokenSelect = (type: 'input' | 'output') => {
     setShowTokenSelect(type)
+    setFormErrors({})
     setTriggerPrice('')
   }
 
   const hasBorrowToRepay = useMemo(() => {
     if (orderType !== OrderTypes.REPAY_BORROW || !outputBank || !mangoAccount)
       return
-    const borrow = mangoAccount.getTokenBorrowsUi(outputBank)
-    return borrow
+    const balance = mangoAccount.getTokenBalanceUi(outputBank)
+    const roundedBalance = floorToDecimal(
+      balance,
+      outputBank.mintDecimals,
+    ).toNumber()
+    return balance && balance < 0 ? Math.abs(roundedBalance) : 0
   }, [mangoAccount, orderType, outputBank])
 
   const isFormValid = useCallback(
@@ -611,13 +616,31 @@ const LimitSwapForm = ({
       ? `${inputBankName} per ${outputBankName}`
       : `${outputBankName} per ${inputBankName}`
 
-    if (orderType === OrderTypes.REPAY_BORROW) {
-      return t('trade:repay-borrow-order-desc', {
-        amount: floorToDecimal(amountOutFormValue, outputBankDecimals),
-        priceUnit: quoteString,
-        symbol: outputBankName,
-        triggerPrice: floorToDecimal(triggerPrice, inputBankDecimals),
-      })
+    if (hasBorrowToRepay && orderType === OrderTypes.REPAY_BORROW) {
+      const amountOut = floorToDecimal(
+        amountOutFormValue,
+        outputBankDecimals,
+      ).toNumber()
+      if (amountOut <= hasBorrowToRepay) {
+        return t('trade:repay-borrow-order-desc', {
+          amount: amountOut,
+          priceUnit: quoteString,
+          symbol: outputBankName,
+          triggerPrice: floorToDecimal(triggerPrice, inputBankDecimals),
+        })
+      } else {
+        const depositAmount = floorToDecimal(
+          amountOut - hasBorrowToRepay,
+          outputBankDecimals,
+        ).toNumber()
+        return t('trade:repay-borrow-deposit-order-desc', {
+          borrowAmount: hasBorrowToRepay,
+          depositAmount: depositAmount,
+          priceUnit: quoteString,
+          symbol: outputBankName,
+          triggerPrice: floorToDecimal(triggerPrice, inputBankDecimals),
+        })
+      }
     } else {
       const orderTypeString =
         orderType === OrderTypes.STOP_LOSS
@@ -640,6 +663,7 @@ const LimitSwapForm = ({
     amountInFormValue,
     amountOutFormValue,
     flipPrices,
+    hasBorrowToRepay,
     inputBankDecimals,
     inputBankName,
     orderType,
@@ -816,7 +840,9 @@ const LimitSwapForm = ({
         error={formErrors.hasBorrows}
         handleAmountOutChange={handleAmountOutChange}
         setShowTokenSelect={() => handleTokenSelect('output')}
-        handleRepay={handleRepay}
+        handleRepay={
+          orderType === OrderTypes.REPAY_BORROW ? handleRepay : undefined
+        }
       />
       {swapFormSizeUi === 'slider' ? (
         <SwapSlider
@@ -838,7 +864,11 @@ const LimitSwapForm = ({
           <InlineNotification
             desc={
               <>
-                <span className="text-th-down">{t('sell')}</span>{' '}
+                {orderType !== OrderTypes.REPAY_BORROW ? (
+                  <>
+                    <span className="text-th-down">{t('sell')}</span>{' '}
+                  </>
+                ) : null}
                 {orderDescription}
               </>
             }

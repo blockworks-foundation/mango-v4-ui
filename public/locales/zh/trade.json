@@ -75,6 +75,7 @@
     "reduce": "Reduce",
     "reduce-only": "限减少",
     "repay-borrow-order-desc": "Repay {{amount}} {{symbol}} if the oracle price reaches {{triggerPrice}} {{priceUnit}}",
+    "repay-borrow-deposit-order-desc": "Repay {{borrowAmount}} and buy {{depositAmount}} {{symbol}} if the oracle price reaches {{triggerPrice}} {{priceUnit}}",
     "rises-to": "rises to",
     "sells": "卖单",
     "settle-funds": "借清资金",

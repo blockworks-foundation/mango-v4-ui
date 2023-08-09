@@ -26,7 +26,7 @@ const BuyTokenInput = ({
   handleAmountOutChange: (e: NumberFormatValues, info: SourceInfo) => void
   loading?: boolean
   setShowTokenSelect: Dispatch<SetStateAction<'input' | 'output' | undefined>>
-  handleRepay: (amountOut: string) => void
+  handleRepay?: (amountOut: string) => void
 }) => {
   const { t } = useTranslation('common')
   const { mangoAccount } = useMangoAccount()
@@ -49,7 +49,7 @@ const BuyTokenInput = ({
     <div className="mb-2 grid grid-cols-2 rounded-xl bg-th-bkg-2 p-3">
       <div className="col-span-2 mb-2 flex items-end justify-between">
         <p className="text-th-fgd-2">{t('buy')}</p>
-        {outputTokenBalanceBorrow ? (
+        {handleRepay && outputTokenBalanceBorrow ? (
           <MaxAmountButton
             className="mb-0.5 text-xs"
             decimals={outputBank?.mintDecimals || 9}

@@ -76,6 +76,7 @@
     "reduce": "Reduce",
     "reduce-only": "Reduce Only",
     "repay-borrow-order-desc": "Repay {{amount}} {{symbol}} if the oracle price reaches {{triggerPrice}} {{priceUnit}}",
+    "repay-borrow-deposit-order-desc": "Repay {{borrowAmount}} and buy {{depositAmount}} {{symbol}} if the oracle price reaches {{triggerPrice}} {{priceUnit}}",
     "rises-to": "rises to",
     "sells": "Sells",
     "settle-funds": "Settle Funds",
