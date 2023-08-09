@@ -14,6 +14,7 @@ import {
 import { Market } from '@project-serum/serum'
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import EmptyWallet from 'utils/wallet'
+import dayjs from 'dayjs'
 
 export const getOracle = async ({
   baseSymbol,
@@ -115,25 +116,42 @@ export const getSwitchBoardOracle = async ({
       provider,
     )
 
-    const allFeeds =
+    //get all feeds check if they are tried to fetch in last 24h
+    const allFeeds = (
       await switchboardProgram.account.aggregatorAccountData.all()
+    ).filter((x) =>
+      isWithinLast24Hours(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (x as any).account.currentRound.roundOpenTimestamp.toNumber(),
+      ),
+    )
 
+    //parse names of feeds
     const feedNames = allFeeds.map((x) =>
       String.fromCharCode(
         ...[...(x.account.name as number[])].filter((x) => x),
       ),
     )
 
-    const regex = new RegExp(`\\b${baseSymbol.toLowerCase()}\\b(?![A-Z])`, 'gi')
+    //find feeds that match base + quote
     const possibleFeedIndexes = feedNames.reduce(function (r, v, i) {
-      return r.concat(
-        regex.test(v.toLowerCase()) &&
-          v.toLowerCase().includes(quoteSymbol.toLowerCase())
-          ? i
-          : [],
-      )
+      const isBaseMatch =
+        v.toLowerCase().includes(baseSymbol.toLowerCase()) &&
+        (() => {
+          const match = v.toLowerCase().match(baseSymbol.toLowerCase())
+          if (!match) return false
+
+          const idx = match!.index! + baseSymbol.length
+          const nextChar = v[idx]
+          return !nextChar || [' ', '/', '_'].includes(nextChar)
+        })()
+
+      const isQuoteMatch = v.toLowerCase().includes(quoteSymbol.toLowerCase())
+
+      return r.concat(isBaseMatch && isQuoteMatch ? i : [])
     }, [] as number[])
 
+    //feeds sponsored by switchboard or solend
     const trustedQuesKeys = [
       new PublicKey('3HBb2DQqDfuMdzWxNk1Eo9RTMkFYmuEAd32RiLKn9pAn'),
     ]
@@ -145,12 +163,16 @@ export const getSwitchBoardOracle = async ({
     const possibleFeeds = allFeeds
       .filter((x, i) => possibleFeedIndexes.includes(i))
       .filter((x) => (noLock ? true : x.account.isLocked))
-      .sort((x) => (x.account.isLocked ? 1 : -1))
+      .sort((x) => (x.account.isLocked ? -1 : 1))
 
-    console.log(possibleFeeds, possibleFeedIndexes)
-
-    const sponsoredFeeds = possibleFeeds.filter((x) =>
-      sponsoredAuthKeys.find((s) => s.equals(x.account.authority as PublicKey)),
+    const sponsoredFeeds = possibleFeeds.filter(
+      (x) =>
+        sponsoredAuthKeys.find((s) =>
+          s.equals(x.account.authority as PublicKey),
+        ) ||
+        trustedQuesKeys.find((s) =>
+          s.equals(x.account.queuePubkey as PublicKey),
+        ),
     )
 
     return sponsoredFeeds.length
@@ -554,4 +576,13 @@ export const getFormattedBankValues = (group: Group, bank: Bank) => {
     ),
     liquidationFee: (bank.liquidationFee.toNumber() * 100).toFixed(2),
   }
+}
+
+function isWithinLast24Hours(timestampInSeconds: number) {
+  const now = dayjs()
+  const inputDate = dayjs.unix(timestampInSeconds) // Convert seconds to dayjs object
+
+  const differenceInHours = now.diff(inputDate, 'hour')
+
+  return differenceInHours < 24
 }
