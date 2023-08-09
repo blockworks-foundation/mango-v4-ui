@@ -74,6 +74,7 @@ const SwapForm = () => {
       !inputBank ||
       !mangoAccount ||
       !outputBank ||
+      !amountInFormValue ||
       !amountOutFormValue ||
       !group
     )

@@ -607,14 +607,9 @@ const LimitSwapForm = ({
     )
       return
 
-    const quoteString = !flipPrices
+    const quoteString = flipPrices
       ? `${inputBankName} per ${outputBankName}`
       : `${outputBankName} per ${inputBankName}`
-
-    const orderTypeString =
-      orderType === OrderTypes.STOP_LOSS
-        ? t('trade:falls-to')
-        : t('trade:rises-to')
 
     if (orderType === OrderTypes.REPAY_BORROW) {
       return t('trade:repay-borrow-order-desc', {
@@ -623,15 +618,16 @@ const LimitSwapForm = ({
         symbol: outputBankName,
         triggerPrice: floorToDecimal(triggerPrice, inputBankDecimals),
       })
-    } else if (inputBankName === 'USDC') {
-      return t('trade:trigger-order-desc', {
-        amount: floorToDecimal(amountOutFormValue, outputBankDecimals),
-        orderType: orderTypeString,
-        priceUnit: quoteString,
-        symbol: outputBankName,
-        triggerPrice: floorToDecimal(triggerPrice, inputBankDecimals),
-      })
     } else {
+      const orderTypeString =
+        orderType === OrderTypes.STOP_LOSS
+          ? !flipPrices
+            ? t('trade:falls-to')
+            : t('trade:rises-to')
+          : !flipPrices
+          ? t('trade:rises-to')
+          : t('trade:falls-to')
+
       return t('trade:trigger-order-desc', {
         amount: floorToDecimal(amountInFormValue, inputBankDecimals),
         orderType: orderTypeString,
@@ -842,13 +838,7 @@ const LimitSwapForm = ({
           <InlineNotification
             desc={
               <>
-                {orderType !== OrderTypes.REPAY_BORROW ? (
-                  inputBankName === 'USDC' ? (
-                    <span className="text-th-up">{t('buy')}</span>
-                  ) : (
-                    <span className="text-th-down">{t('sell')}</span>
-                  )
-                ) : null}{' '}
+                <span className="text-th-down">{t('sell')}</span>{' '}
                 {orderDescription}
               </>
             }
