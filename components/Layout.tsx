@@ -133,12 +133,10 @@ const Layout = ({ children }: { children: ReactNode }) => {
             isCollapsed ? 'md:pl-[64px]' : 'pl-[200px]'
           }`}
         >
-          <div className="min-h-[calc(100vh-36px)]">
-            <TopBar />
-            {asPath !== '/rewards' ? <PromoBanner /> : null}
-            {children}
-          </div>
-          <StatusBar />
+          <TopBar />
+          {asPath !== '/rewards' ? <PromoBanner /> : null}
+          {children}
+          <StatusBar collapsed={isCollapsed} />
         </div>
         <DeployRefreshManager />
         <TermsOfUse />

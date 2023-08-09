@@ -29,7 +29,7 @@ const getLatestCommit = async () => {
   }
 }
 
-const StatusBar = () => {
+const StatusBar = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation('common')
   const [latestCommit, setLatestCommit] = useState(DEFAULT_LATEST_COMMIT)
 
@@ -41,7 +41,11 @@ const StatusBar = () => {
   }, [latestCommit])
 
   return (
-    <div className="hidden relative bottom-0 bg-th-bkg-2 md:grid md:grid-cols-3 px-4 md:px-6 py-2">
+    <div
+      className={`hidden fixed ${
+        collapsed ? 'w-[calc(100vw-64px)]' : 'w-[calc(100vw-200px)]'
+      } bottom-0 bg-th-bkg-2 md:grid md:grid-cols-3 px-4 md:px-6 py-1`}
+    >
       <div className="col-span-1 flex items-center">
         <Tps />
       </div>

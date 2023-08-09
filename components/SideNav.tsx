@@ -105,7 +105,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
           alt="next"
         />
       ) : null}
-      <div className="flex min-h-screen flex-col justify-between">
+      <div className="flex h-screen flex-col justify-between">
         <div className="mb-2">
           <Link href={'/'} shallow={true} passHref legacyBehavior>
             <div
