@@ -46,16 +46,40 @@ const PerpPositions = () => {
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
 
-  const totalUnrealizedPnl = useMemo(() => {
+  const totalPnlStats = useMemo(() => {
     if (openPerpPositions.length && group !== undefined) {
-      return openPerpPositions
-        .map((position) => {
-          const market = group.getPerpMarketByMarketIndex(position.marketIndex)
-          return position.getUnRealizedPnlUi(market)
-        })
-        .reduce((a, b) => a + b)
+      const pnlByMarket = openPerpPositions.map((position) => {
+        const market = group.getPerpMarketByMarketIndex(position.marketIndex)
+        const basePosition = position.getBasePositionUi(market)
+        const avgEntryPrice = position.getAverageEntryPriceUi(market)
+        return {
+          unrealized: position.getUnRealizedPnlUi(market),
+          realized: position.getRealizedPnlUi(),
+          total: position.cumulativePnlOverPositionLifetimeUi(market),
+          unsettled: position.getUnsettledPnlUi(market),
+          averageEntryValue: Math.abs(basePosition) * avgEntryPrice,
+        }
+      })
+
+      const p = pnlByMarket.reduce((a, b) => {
+        return {
+          unrealized: a.unrealized + b.unrealized,
+          realized: a.realized + b.realized,
+          total: a.total + b.total,
+          unsettled: a.unsettled + b.unsettled,
+          averageEntryValue: a.averageEntryValue + b.averageEntryValue,
+        }
+      })
+
+      return {
+        unrealized: p.unrealized,
+        realized: p.realized,
+        total: p.total,
+        unsettled: p.unsettled,
+        roe: (p.unrealized / p.averageEntryValue) * 100,
+      }
     }
-    return 0.0
+    return { unrealized: 0, realized: 0, total: 0, unsettled: 0, roe: 0 }
   }, [openPerpPositions, group])
 
   const handlePositionClick = (positionSize: number, market: PerpMarket) => {
@@ -301,7 +325,10 @@ const PerpPositions = () => {
                   )
                 })}
                 {openPerpPositions.length > 0 ? (
-                  <TrBody key={`total-unrealized-pnl`} className="my-1 p-1">
+                  <tr
+                    key={`total-unrealized-pnl`}
+                    className="my-1 p-2 border-y border-th-bkg-3"
+                  >
                     <Td className="text-right font-mono">
                       <></>
                     </Td>
@@ -315,25 +342,62 @@ const PerpPositions = () => {
                       <></>
                     </Td>
                     <Td className="text-right font-mono">
-                      <div>
-                        <span className="font-body text-s text-th-fgd-3">
-                          Total Unrealized PnL:
+                      <div className="flex justify-end items-center">
+                        <span className="font-body mr-3 text-md text-th-fgd-3">
+                          Total:
                         </span>
-                        <span>
-                          <FormatNumericValue
-                            classNames={`ml-4 text-th-fgd-3 ${
-                              totalUnrealizedPnl >= 0
-                                ? 'text-th-up'
-                                : 'text-th-down'
-                            }`}
-                            value={totalUnrealizedPnl}
-                            isUsd
-                            decimals={2}
-                          />
-                        </span>
+                        <Tooltip
+                          content={
+                            <PnlTooltipContent
+                              unrealizedPnl={totalPnlStats.unrealized}
+                              realizedPnl={totalPnlStats.realized}
+                              totalPnl={totalPnlStats.total}
+                              unsettledPnl={totalPnlStats.unsettled}
+                            />
+                          }
+                          delay={100}
+                        >
+                          <div className="flex">
+                            <span>
+                              <FormatNumericValue
+                                classNames={`tooltip-underline ${
+                                  totalPnlStats.unrealized >= 0
+                                    ? 'text-th-up'
+                                    : 'text-th-down'
+                                }`}
+                                value={totalPnlStats.unrealized}
+                                isUsd
+                                decimals={2}
+                              />
+                            </span>
+                          </div>
+                        </Tooltip>
                       </div>
                     </Td>
-                  </TrBody>
+                    {!isUnownedAccount ? (
+                      <Td className="text-right font-mono">
+                        {/* <div className="flex justify-start items-center">
+                            <span
+                              className={
+                                totalPnlStats.roe >= 0
+                                  ? 'text-th-up'
+                                  : 'text-th-down'
+                              }
+                            >
+                              <FormatNumericValue
+                                classNames="text-xs"
+                                value={totalPnlStats.roe}
+                                decimals={2}
+                              />
+                              %{' '}
+                              <span className="font-body text-xs text-th-fgd-3">
+                                (ROE)
+                              </span>
+                            </span>
+                        </div> */}
+                      </Td>
+                    ) : null}
+                  </tr>
                 ) : null}
               </tbody>
             </Table>
@@ -600,28 +664,70 @@ const PerpPositions = () => {
               )
             })}
             {openPerpPositions.length > 0 ? (
-              <div
-                className={`flex w-full items-center justify-between border-t border-th-bkg-3 p-4 text-left focus:outline-none`}
-              >
-                <div className="flex items-center"></div>
-                <div className="flex items-center space-x-2">
-                  <span className="font-body text-s text-th-fgd-3">
-                    Total Unrealized PnL:
-                  </span>
-                  <span
-                    className={`font-mono ${
-                      totalUnrealizedPnl > 0 ? 'text-th-up' : 'text-th-down'
-                    }`}
-                  >
-                    <FormatNumericValue
-                      value={totalUnrealizedPnl}
-                      isUsd
-                      decimals={2}
-                    />
-                  </span>
-                  <div className={`ml-3 h-6 w-6 flex-shrink-0 text-th-fgd-3`} />
-                </div>
-              </div>
+              <>
+                <Disclosure>
+                  {({ open }) => (
+                    <>
+                      <Disclosure.Button
+                        className={`flex w-full justify-end border-t border-th-bkg-3 p-1 text-right focus:outline-none`}
+                      >
+                        <div className="flex flex-col justify-end mt-1 ml-auto">
+                          <div className="flex flex-row">
+                            <span className="font-body mr-3 text-md text-th-fgd-3">
+                              Total Unrealized PnL:
+                            </span>
+                            <span
+                              className={`font-mono mr-2 ${
+                                totalPnlStats.unrealized > 0
+                                  ? 'text-th-up'
+                                  : 'text-th-down'
+                              }`}
+                            >
+                              <FormatNumericValue
+                                value={totalPnlStats.unrealized}
+                                isUsd
+                                decimals={2}
+                              />
+                            </span>
+                          </div>
+
+                          <div className="flex flex-row justify-end">
+                            <Transition
+                              enter="transition ease-in duration-200"
+                              enterFrom="opacity-0"
+                              enterTo="opacity-100"
+                            >
+                              <Disclosure.Panel className="mt-1">
+                                <span className="font-body mr-3 text-md text-right text-th-fgd-3">
+                                  Total ROE:
+                                </span>
+                                <span
+                                  className={`font-mono mr-2 ${
+                                    totalPnlStats.roe >= 0
+                                      ? 'text-th-up'
+                                      : 'text-th-down'
+                                  }`}
+                                >
+                                  <FormatNumericValue
+                                    value={totalPnlStats.roe}
+                                    decimals={2}
+                                  />
+                                  %{' '}
+                                </span>
+                              </Disclosure.Panel>
+                            </Transition>
+                          </div>
+                        </div>
+                        <ChevronDownIcon
+                          className={`${
+                            open ? 'rotate-180' : 'rotate-360'
+                          } mr-3 mt-1 h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                        />
+                      </Disclosure.Button>
+                    </>
+                  )}
+                </Disclosure>
+              </>
             ) : null}
           </div>
         )
