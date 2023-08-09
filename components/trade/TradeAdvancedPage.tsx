@@ -57,6 +57,8 @@ const TradeAdvancedPage = () => {
   )
   const [isCollapsed] = useLocalStorageState(SIDEBAR_COLLAPSE_KEY, false)
 
+  const minPageHeight = 1000
+  const topnavbarHeight = 64
   const totalCols = 24
   const gridBreakpoints = useMemo(() => {
     const sidebarWidth = isCollapsed ? 64 : 200
@@ -70,8 +72,7 @@ const TradeAdvancedPage = () => {
   }, [isCollapsed])
 
   const defaultLayouts: ReactGridLayout.Layouts = useMemo(() => {
-    const topnavbarHeight = 64
-    const innerHeight = Math.max(height - topnavbarHeight, 1000)
+    const innerHeight = Math.max(height - topnavbarHeight, minPageHeight)
     const marketHeaderHeight = 48
 
     const balancesXPos = {
@@ -252,10 +253,18 @@ const TradeAdvancedPage = () => {
         { i: 'tv-chart', x: 0, y: 1, w: 17, h: 464 },
         { i: 'orderbook', x: 18, y: 2, w: 7, h: 552 },
         { i: 'trade-form', x: 18, y: 1, w: 7, h: 572 },
-        { i: 'balances', x: 0, y: 2, w: 17, h: 428 + marketHeaderHeight },
+        {
+          i: 'balances',
+          x: 0,
+          y: 2,
+          w: 17,
+          h: 552 + 572 - 464,
+        },
       ],
     }
   }, [height, tradeLayout])
+
+  console.log(innerHeight)
 
   const [layouts, setLayouts] = useState<Layouts>(defaultLayouts)
   const [breakpoint, setBreakpoint] = useState('')
