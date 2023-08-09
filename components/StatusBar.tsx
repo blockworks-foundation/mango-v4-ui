@@ -5,6 +5,8 @@ import { TwitterIcon } from './icons/TwitterIcon'
 import { DocumentTextIcon } from '@heroicons/react/20/solid'
 import { useEffect, useState } from 'react'
 import { IDL } from '@blockworks-foundation/mango-v4'
+import RpcPing from './RpcPing'
+import Tooltip from './shared/Tooltip'
 
 const DEFAULT_LATEST_COMMIT = { sha: '', url: '' }
 
@@ -46,13 +48,17 @@ const StatusBar = ({ collapsed }: { collapsed: boolean }) => {
         collapsed ? 'w-[calc(100vw-64px)]' : 'w-[calc(100vw-200px)]'
       } bottom-0 bg-th-input-bkg md:grid md:grid-cols-3 px-4 md:px-6 py-1`}
     >
-      <div className="col-span-1 flex items-center">
+      <div className="col-span-1 flex items-center space-x-2">
         <Tps />
+        <span className="text-th-fgd-4">|</span>
+        <RpcPing />
       </div>
-      <div className="col-span-1 text-center">
-        <span className="text-th-fgd-3 text-xs">v{IDL.version}</span>
+      <div className="col-span-1 flex items-center justify-center">
+        <Tooltip content={t('program-version')}>
+          <span className="text-th-fgd-3 text-xs">v{IDL.version}</span>
+        </Tooltip>
         {latestCommit.sha && latestCommit.url ? (
-          <>
+          <Tooltip content={t('latest-ui-commit')}>
             <span className="mx-1.5 text-th-fgd-4">|</span>
             <a
               className="text-th-fgd-3 text-xs focus:outline-none md:hover:text-th-fgd-2"
@@ -62,7 +68,7 @@ const StatusBar = ({ collapsed }: { collapsed: boolean }) => {
             >
               {latestCommit.sha}
             </a>
-          </>
+          </Tooltip>
         ) : null}
       </div>
       <div className="col-span-1 flex items-center justify-end space-x-4 text-xs">
