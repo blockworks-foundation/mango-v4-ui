@@ -753,10 +753,10 @@ const AdvancedTradeForm = () => {
                             ? 'raised-buy-button'
                             : 'text-white md:hover:brightness-90'
                         }`
-                      : `bg-th-down-dark text-white ${
+                      : `bg-th-down-dark md:hover:bg-th-down-dark ${
                           themeData.buttonStyle === 'raised'
-                            ? ''
-                            : 'md:hover:bg-th-down-dark md:hover:brightness-90'
+                            ? 'raised-sell-button'
+                            : 'text-white md:hover:brightness-90'
                         }`
                   }`}
                   disabled={disabled}

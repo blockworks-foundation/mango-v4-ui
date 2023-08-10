@@ -834,7 +834,7 @@ const TradingViewChart = () => {
       >
         <img
           className="absolute top-8 right-20 h-auto w-36"
-          src="/images/themes/bonk/tv-chart-image.png"
+          src={themeData.tvImagePath}
         />
       </Transition>
       <div

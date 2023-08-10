@@ -2,7 +2,6 @@ import Link from 'next/link'
 import {
   EllipsisHorizontalIcon,
   BuildingLibraryIcon,
-  LightBulbIcon,
   ArrowTopRightOnSquareIcon,
   ChevronDownIcon,
   CurrencyDollarIcon,
@@ -16,6 +15,7 @@ import {
   PlusCircleIcon,
   ArchiveBoxArrowDownIcon,
   ExclamationTriangleIcon,
+  DocumentTextIcon,
   // ClipboardDocumentIcon,
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
@@ -94,8 +94,12 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
     <div
       className={`transition-all duration-${sideBarAnimationDuration} ${
         collapsed ? 'w-[64px]' : 'w-[200px]'
-      } border-r border-th-bkg-3 bg-th-bkg-1 bg-repeat`}
-      style={{ backgroundImage: `url(${themeData.sideTilePath})` }}
+      } border-r border-th-bkg-3 bg-th-bkg-1 bg-contain`}
+      style={
+        collapsed
+          ? { backgroundImage: `url(${themeData.sideTilePath})` }
+          : { backgroundImage: `url(${themeData.sideTilePathExpanded})` }
+      }
     >
       {sidebarImageUrl && !collapsed ? (
         <img
@@ -105,7 +109,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
           alt="next"
         />
       ) : null}
-      <div className="flex min-h-screen flex-col justify-between">
+      <div className="flex h-screen flex-col justify-between">
         <div className="mb-2">
           <Link href={'/'} shallow={true} passHref legacyBehavior>
             <div
@@ -222,7 +226,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               />
               <MenuItem
                 collapsed={false}
-                icon={<LightBulbIcon className="h-5 w-5" />}
+                icon={<DocumentTextIcon className="h-5 w-5" />}
                 title={t('documentation')}
                 pagePath="https://docs.mango.markets"
                 hideIconBg
