@@ -284,76 +284,80 @@ const TradeAdvancedPage = () => {
     <MobileTradeAdvancedPage />
   ) : (
     <TradeHotKeys>
-      <FavoriteMarketsBar />
-      <ResponsiveGridLayout
-        layouts={layouts}
-        breakpoints={gridBreakpoints}
-        onBreakpointChange={(bp) => setBreakpoint(bp)}
-        cols={{
-          xxxl: totalCols,
-          xxl: totalCols,
-          xl: totalCols,
-          lg: totalCols,
-          md: totalCols,
-          sm: totalCols,
-        }}
-        rowHeight={1}
-        isDraggable={!uiLocked}
-        isResizable={!uiLocked}
-        containerPadding={[0, 0]}
-        margin={[0, 0]}
-        useCSSTransforms
-        onLayoutChange={handleLayoutChange}
-        measureBeforeMount
-      >
-        <div key="market-header" className="z-10">
-          <AdvancedMarketHeader />
-        </div>
-        <div
-          key="tv-chart"
-          className="h-full border border-x-0 border-th-bkg-3"
+      <div className="pb-[27px]">
+        <FavoriteMarketsBar />
+        <ResponsiveGridLayout
+          layouts={layouts}
+          breakpoints={gridBreakpoints}
+          onBreakpointChange={(bp) => setBreakpoint(bp)}
+          cols={{
+            xxxl: totalCols,
+            xxl: totalCols,
+            xl: totalCols,
+            lg: totalCols,
+            md: totalCols,
+            sm: totalCols,
+          }}
+          rowHeight={1}
+          isDraggable={!uiLocked}
+          isResizable={!uiLocked}
+          containerPadding={[0, 0]}
+          margin={[0, 0]}
+          useCSSTransforms
+          onLayoutChange={handleLayoutChange}
+          measureBeforeMount
         >
-          <div className={`relative h-full overflow-auto`}>
-            <OrderbookTooltip />
-            <TradingChartContainer />
+          <div key="market-header" className="z-10">
+            <AdvancedMarketHeader />
           </div>
-        </div>
-        <div
-          className={`${
-            tradeLayout === 'chartLeft' ? 'lg:border-r lg:border-th-bkg-3' : ''
-          }`}
-          key="balances"
-        >
-          <TradeInfoTabs />
-        </div>
-        <div
-          className={`border-y border-l border-th-bkg-3 lg:border-b-0 ${
-            tradeLayout === 'chartMiddleOBRight'
-              ? 'lg:border-r lg:border-l-0'
-              : ''
-          } ${
-            tradeLayout === 'chartRight' ? 'lg:border-r lg:border-l-0' : ''
-          } ${tradeLayout === 'chartLeft' ? 'lg:border-l-0' : ''}`}
-          key="trade-form"
-        >
-          <AdvancedTradeForm />
-        </div>
-        <div
-          key="orderbook"
-          className={`overflow-hidden border-l border-th-bkg-3 lg:border-y ${
-            tradeLayout === 'chartRight' ? 'lg:border-l-0 lg:border-r' : ''
-          } ${
-            tradeLayout === 'chartMiddleOBLeft'
-              ? 'lg:border-l-0 lg:border-r'
-              : ''
-          } ${tradeLayout === 'chartLeft' ? 'lg:border-r' : ''}`}
-        >
-          <OrderbookAndTrades />
-        </div>
-      </ResponsiveGridLayout>
-      {/* {!tourSettings?.trade_tour_seen && isOnboarded && connected ? (
+          <div
+            key="tv-chart"
+            className="h-full border border-x-0 border-th-bkg-3"
+          >
+            <div className={`relative h-full overflow-auto`}>
+              <OrderbookTooltip />
+              <TradingChartContainer />
+            </div>
+          </div>
+          <div
+            className={`${
+              tradeLayout === 'chartLeft'
+                ? 'lg:border-r lg:border-th-bkg-3'
+                : ''
+            }`}
+            key="balances"
+          >
+            <TradeInfoTabs />
+          </div>
+          <div
+            className={`border-y border-l border-th-bkg-3 lg:border-b-0 ${
+              tradeLayout === 'chartMiddleOBRight'
+                ? 'lg:border-r lg:border-l-0'
+                : ''
+            } ${
+              tradeLayout === 'chartRight' ? 'lg:border-r lg:border-l-0' : ''
+            } ${tradeLayout === 'chartLeft' ? 'lg:border-l-0' : ''}`}
+            key="trade-form"
+          >
+            <AdvancedTradeForm />
+          </div>
+          <div
+            key="orderbook"
+            className={`overflow-hidden border-l border-th-bkg-3 lg:border-y ${
+              tradeLayout === 'chartRight' ? 'lg:border-l-0 lg:border-r' : ''
+            } ${
+              tradeLayout === 'chartMiddleOBLeft'
+                ? 'lg:border-l-0 lg:border-r'
+                : ''
+            } ${tradeLayout === 'chartLeft' ? 'lg:border-r' : ''}`}
+          >
+            <OrderbookAndTrades />
+          </div>
+        </ResponsiveGridLayout>
+        {/* {!tourSettings?.trade_tour_seen && isOnboarded && connected ? (
         <TradeOnboardingTour />
       ) : null} */}
+      </div>
     </TradeHotKeys>
   )
 }

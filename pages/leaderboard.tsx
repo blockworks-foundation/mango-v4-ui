@@ -18,7 +18,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
 
 const Leaderboard: NextPage = () => {
   return (
-    <div className="pb-16 md:pb-0">
+    <div className="pb-16 md:pb-[27px]">
       <LeaderboardPage />
     </div>
   )

@@ -15,7 +15,7 @@ import ConnectedMenu from './wallet/ConnectedMenu'
 import ConnectWalletButton from './wallet/ConnectWalletButton'
 import CreateAccountModal from './modals/CreateAccountModal'
 import { useRouter } from 'next/router'
-import SolanaTps from './SolanaTps'
+// import SolanaTps from './SolanaTps'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useOnlineStatus from 'hooks/useOnlineStatus'
 import { abbreviateAddress } from 'utils/formatting'
@@ -103,11 +103,11 @@ const TopBar = () => {
               <ArrowLeftIcon className="h-5 w-5" />
             </button>
           ) : null}
-          {connected ? (
+          {/* {connected ? (
             <div className="hidden h-[63px] bg-th-bkg-1 md:flex md:items-center md:pl-6 md:pr-8">
               <SolanaTps />
             </div>
-          ) : null}
+          ) : null} */}
           <img
             className="mr-4 h-9 w-9 flex-shrink-0 md:hidden"
             src={themeData.logoPath}
