@@ -49,13 +49,13 @@ export const nunitoBody = Nunito({
 
 // pepe theme
 
-export const gloriaDisplay = Short_Stack({
+export const shortStackDisplay = Short_Stack({
   weight: '400',
   subsets: ['latin'],
   variable: '--font-display',
 })
 
-export const gloriaBody = Short_Stack({
+export const shortStackBody = Short_Stack({
   weight: '400',
   subsets: ['latin'],
   variable: '--font-body',

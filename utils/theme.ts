@@ -1,9 +1,9 @@
 import { ThemeData } from 'types'
 import {
-  gloriaBody,
-  gloriaDisplay,
   nunitoBody,
   nunitoDisplay,
+  shortStackBody,
+  shortStackDisplay,
   ttCommons,
   ttCommonsExpanded,
   ttCommonsMono,
@@ -64,7 +64,11 @@ export const nftThemeMeta: NftThemeMeta = {
   },
   Pepe: {
     buttonStyle: 'raised',
-    fonts: { body: gloriaBody, display: gloriaDisplay, mono: ttCommonsMono },
+    fonts: {
+      body: shortStackBody,
+      display: shortStackDisplay,
+      mono: ttCommonsMono,
+    },
     logoPath: '/images/themes/pepe/pepe-logo.png',
     platformName: 'Pepe',
     rainAnimationImagePath: '/images/themes/pepe/pepe-logo.png',
