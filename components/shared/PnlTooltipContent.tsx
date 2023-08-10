@@ -1,16 +1,19 @@
 import { useTranslation } from 'next-i18next'
 import { formatCurrencyValue } from 'utils/numbers'
+import FormatNumericValue from './FormatNumericValue'
 
 const PnlTooltipContent = ({
   unrealizedPnl,
   realizedPnl,
   totalPnl,
   unsettledPnl,
+  roe,
 }: {
   unrealizedPnl: number
   realizedPnl: number
   totalPnl: number
   unsettledPnl: number
+  roe: number
 }) => {
   const { t } = useTranslation(['common', 'trade'])
   return (
@@ -40,6 +43,13 @@ const PnlTooltipContent = ({
           <p className="mr-3">{t('trade:total-pnl')}</p>
           <span className="font-mono text-th-fgd-2">
             {formatCurrencyValue(totalPnl, 2)}
+          </span>
+        </div>
+        <div className="flex justify-between">
+          <p className="mr-3">{t('trade:return-on-equity')}</p>
+          <span className="font-mono text-th-fgd-2">
+            <FormatNumericValue classNames="text-xs" value={roe} decimals={2} />
+            %{' '}
           </span>
         </div>
       </div>
