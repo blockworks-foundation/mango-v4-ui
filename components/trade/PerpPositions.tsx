@@ -312,7 +312,7 @@ const PerpPositions = () => {
                     </TrBody>
                   )
                 })}
-                {openPerpPositions.length > 0 ? (
+                {openPerpPositions.length > 1 ? (
                   <tr
                     key={`total-unrealized-pnl`}
                     className="my-1 p-2 border-y border-th-bkg-3"
@@ -331,7 +331,7 @@ const PerpPositions = () => {
                     </Td>
                     <Td className="text-right font-mono">
                       <div className="flex justify-end items-center">
-                        <span className="font-body mr-4 text-md text-th-fgd-3">
+                        <span className="font-body mr-2 text-xs text-th-fgd-3">
                           Total:
                         </span>
                         <Tooltip
