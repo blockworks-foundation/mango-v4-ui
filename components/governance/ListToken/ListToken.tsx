@@ -43,6 +43,7 @@ import {
   LISTING_PRESETS,
   coinTiersToNames,
   calculateMarketTradingParams,
+  LISTING_PRESETS_PYTH,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 
 type FormErrors = Partial<Record<keyof TokenListForm, string>>
@@ -160,7 +161,11 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     }
   }, [quoteBank, currentTokenInfo, baseTokenPrice])
   const tierPreset = useMemo(() => {
-    return listingTier ? LISTING_PRESETS[listingTier] : {}
+    return listingTier
+      ? isPyth
+        ? LISTING_PRESETS_PYTH[listingTier]
+        : LISTING_PRESETS[listingTier]
+      : {}
   }, [listingTier])
 
   const handleSetAdvForm = (propertyName: string, value: string | number) => {
