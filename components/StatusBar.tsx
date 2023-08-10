@@ -55,7 +55,14 @@ const StatusBar = ({ collapsed }: { collapsed: boolean }) => {
       </div>
       <div className="col-span-1 flex items-center justify-center">
         <Tooltip content={t('program-version')}>
-          <span className="text-th-fgd-3 text-xs">v{IDL.version}</span>
+          <a
+            className="text-th-fgd-3 text-xs focus:outline-none md:hover:text-th-fgd-2"
+            href={`https://github.com/blockworks-foundation/mango-v4/releases`}
+            rel="noreferrer noopener"
+            target="_blank"
+          >
+            <span className="text-th-fgd-3 text-xs">v{IDL.version}</span>
+          </a>
         </Tooltip>
         {latestCommit.sha && latestCommit.url ? (
           <Tooltip content={t('latest-ui-commit')}>
