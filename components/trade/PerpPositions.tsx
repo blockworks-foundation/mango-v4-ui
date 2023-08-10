@@ -265,6 +265,7 @@ const PerpPositions = () => {
                                 realizedPnl={realizedPnl}
                                 totalPnl={totalPnl}
                                 unsettledPnl={unsettledPnl}
+                                roe={roe}
                               />
                             }
                             delay={100}
@@ -283,19 +284,6 @@ const PerpPositions = () => {
                               />
                             </span>
                           </Tooltip>
-                          <span
-                            className={roe >= 0 ? 'text-th-up' : 'text-th-down'}
-                          >
-                            <FormatNumericValue
-                              classNames="text-xs"
-                              value={roe}
-                              decimals={2}
-                            />
-                            %{' '}
-                            <span className="font-body text-xs text-th-fgd-3">
-                              (ROE)
-                            </span>
-                          </span>
                         </div>
                       </Td>
                       {!isUnownedAccount ? (
@@ -343,7 +331,7 @@ const PerpPositions = () => {
                     </Td>
                     <Td className="text-right font-mono">
                       <div className="flex justify-end items-center">
-                        <span className="font-body mr-3 text-md text-th-fgd-3">
+                        <span className="font-body mr-4 text-md text-th-fgd-3">
                           Total:
                         </span>
                         <Tooltip
@@ -353,6 +341,7 @@ const PerpPositions = () => {
                               realizedPnl={totalPnlStats.realized}
                               totalPnl={totalPnlStats.total}
                               unsettledPnl={totalPnlStats.unsettled}
+                              roe={totalPnlStats.roe}
                             />
                           }
                           delay={100}
@@ -376,25 +365,8 @@ const PerpPositions = () => {
                     </Td>
                     {!isUnownedAccount ? (
                       <Td className="text-right font-mono">
-                        {/* <div className="flex justify-start items-center">
-                            <span
-                              className={
-                                totalPnlStats.roe >= 0
-                                  ? 'text-th-up'
-                                  : 'text-th-down'
-                              }
-                            >
-                              <FormatNumericValue
-                                classNames="text-xs"
-                                value={totalPnlStats.roe}
-                                decimals={2}
-                              />
-                              %{' '}
-                              <span className="font-body text-xs text-th-fgd-3">
-                                (ROE)
-                              </span>
-                            </span>
-                        </div> */}
+                        {' '}
+                        <></>
                       </Td>
                     ) : null}
                   </tr>
@@ -604,6 +576,7 @@ const PerpPositions = () => {
                                     realizedPnl={realizedPnl}
                                     totalPnl={totalPnl}
                                     unsettledPnl={unsettledPnl}
+                                    roe={roe}
                                   />
                                 }
                                 delay={100}
@@ -702,7 +675,7 @@ const PerpPositions = () => {
                                   Total ROE:
                                 </span>
                                 <span
-                                  className={`font-mono mr-2 ${
+                                  className={`font-mono mr-1.5 ${
                                     totalPnlStats.roe >= 0
                                       ? 'text-th-up'
                                       : 'text-th-down'
