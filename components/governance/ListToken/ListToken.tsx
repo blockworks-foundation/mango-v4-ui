@@ -31,20 +31,19 @@ import { Disclosure } from '@headlessui/react'
 import { abbreviateAddress } from 'utils/formatting'
 import { formatNumericValue } from 'utils/numbers'
 import useMangoGroup from 'hooks/useMangoGroup'
-import {
-  LISTING_PRESETS,
-  LISTING_PRESETS_KEYS,
-  coinTiersToNames,
-  getBestMarket,
-  getOracle,
-} from 'utils/governance/listingTools'
+import { getBestMarket, getOracle } from 'utils/governance/listingTools'
 import { fmtTokenAmount, tryGetPubKey } from 'utils/governance/tools'
 import OnBoarding from '../OnBoarding'
 import CreateOpenbookMarketModal from '@components/modals/CreateOpenbookMarketModal'
-import { calculateTradingParameters } from 'utils/governance/listingTools'
 import useJupiterMints from 'hooks/useJupiterMints'
 import CreateSwitchboardOracleModal from '@components/modals/CreateSwitchboardOracleModal'
 import { BN } from '@coral-xyz/anchor'
+import {
+  LISTING_PRESETS_KEYS,
+  LISTING_PRESETS,
+  coinTiersToNames,
+  calculateMarketTradingParams,
+} from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 
 type FormErrors = Partial<Record<keyof TokenListForm, string>>
 
@@ -142,7 +141,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     : 0
   const tradingParams = useMemo(() => {
     if (quoteBank && currentTokenInfo) {
-      return calculateTradingParameters(
+      return calculateMarketTradingParams(
         baseTokenPrice,
         quoteBank.uiPrice,
         currentTokenInfo.decimals,

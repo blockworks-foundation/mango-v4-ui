@@ -5,8 +5,6 @@ import mangoStore from '@store/mangoStore'
 import { useWallet } from '@solana/wallet-adapter-react'
 import GovernanceStore from '@store/governanceStore'
 import {
-  LISTING_PRESETS,
-  LISTING_PRESETS_KEYS,
   formatSuggestedValues,
   getFormattedBankValues,
 } from 'utils/governance/listingTools'
@@ -22,6 +20,10 @@ import { notify } from 'utils/notifications'
 import Button from '@components/shared/Button'
 import { compareObjectsAndGetDifferentKeys } from 'utils/governance/tools'
 import { Disclosure } from '@headlessui/react'
+import {
+  LISTING_PRESETS,
+  LISTING_PRESETS_KEYS,
+} from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 
 const DashboardSuggestedValues = ({
   isOpen,
@@ -97,7 +99,7 @@ const DashboardSuggestedValues = ({
     const suggestedTiers = Object.keys(filteredResp).reduce(
       (acc: { [key: string]: string | undefined }, key: string) => {
         acc[key] = Object.values(LISTING_PRESETS).find(
-          (x) => x.target_amount === filteredResp[key].target_amount,
+          (x) => x.preset_target_amount === filteredResp[key].target_amount,
         )?.preset_key
         return acc
       },
