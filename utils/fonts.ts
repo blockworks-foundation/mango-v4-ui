@@ -1,5 +1,5 @@
 import localFont from 'next/font/local'
-import { Nunito } from 'next/font/google'
+import { Nunito, Short_Stack } from 'next/font/google'
 
 // this font should be used as the mono variant for all themes
 
@@ -43,6 +43,20 @@ export const nunitoDisplay = Nunito({
 })
 
 export const nunitoBody = Nunito({
+  subsets: ['latin'],
+  variable: '--font-body',
+})
+
+// pepe theme
+
+export const gloriaDisplay = Short_Stack({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-display',
+})
+
+export const gloriaBody = Short_Stack({
+  weight: '400',
   subsets: ['latin'],
   variable: '--font-body',
 })

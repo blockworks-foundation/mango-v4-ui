@@ -10,7 +10,7 @@ const PromoBanner = () => {
   return isWhiteListed && showBanner ? (
     <div className="relative">
       <div className="flex flex-wrap items-center justify-center bg-th-bkg-2 py-3 px-10">
-        <p className="mr-2  text-center text-th-fgd-1 text-th-fgd-1 lg:text-base">
+        <p className="mr-2  text-center text-th-fgd-1 lg:text-base">
           Season 1 of Mango Mints is starting soon.
         </p>
         <Link

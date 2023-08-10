@@ -435,8 +435,8 @@ module.exports = {
             dark: 'hsl(52, 95%, 54%)',
           },
           button: {
-            DEFAULT: 'hsl(282, 88%, 30%)',
-            hover: 'hsl(282, 88%, 24%)',
+            DEFAULT: 'hsl(104, 72%, 30%)',
+            hover: 'hsl(104, 72%, 24%)',
           },
           input: {
             bkg: 'hsl(104, 31%, 15%)',
@@ -446,8 +446,8 @@ module.exports = {
           link: { DEFAULT: 'hsl(45, 86%, 62%)', hover: 'hsl(45, 86%, 57%)' },
           down: {
             DEFAULT: 'hsl(12, 70%, 56%)',
-            dark: 'hsl(359, 70%, 46%)',
-            muted: 'hsl(359, 40%, 46%)',
+            dark: 'hsl(12, 70%, 46%)',
+            muted: 'hsl(12, 40%, 46%)',
           },
           up: {
             DEFAULT: 'hsl(102, 72%, 44%)',

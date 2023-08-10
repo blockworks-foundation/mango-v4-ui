@@ -90,7 +90,7 @@ const TopBar = () => {
 
   return (
     <div
-      className={`flex h-16 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1`}
+      className={`flex h-16 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1 bg-contain`}
       style={{ backgroundImage: `url(${themeData.topTilePath})` }}
     >
       <div className="flex w-full items-center justify-between md:space-x-4">

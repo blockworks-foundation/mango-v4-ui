@@ -705,7 +705,7 @@ input[type='range']::-webkit-slider-runnable-track {
 /* raised buy button */
 
 .raised-buy-button {
-  @apply relative flex items-center justify-center bg-th-up text-th-active transition-none;
+  @apply relative flex items-center justify-center bg-th-up text-black transition-none;
   box-shadow: 0 6px var(--up-dark);
 }
 
@@ -717,6 +717,24 @@ input[type='range']::-webkit-slider-runnable-track {
 
 .raised-buy-button:active {
   box-shadow: 0 0 var(--up-dark);
+  top: 6px;
+}
+
+/* raised sell button */
+
+.raised-sell-button {
+  @apply relative flex items-center justify-center bg-th-down text-white transition-none;
+  box-shadow: 0 6px var(--down-dark);
+}
+
+.raised-sell-button:hover {
+  background-color: var(--down) !important;
+  box-shadow: 0 4px var(--down-dark);
+  top: 2px;
+}
+
+.raised-sell-button:active {
+  box-shadow: 0 0 var(--down-dark);
   top: 6px;
 }
 
