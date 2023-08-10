@@ -114,7 +114,19 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const [orcaPoolAddress, setOrcaPoolAddress] = useState('')
   const [raydiumPoolAddress, setRaydiumPoolAddress] = useState('')
   const [oracleModalOpen, setOracleModalOpen] = useState(false)
-  const [coinTier, setCoinTier] = useState<LISTING_PRESETS_KEYS | ''>('')
+  const [liqudityTier, setLiqudityTier] = useState<LISTING_PRESETS_KEYS | ''>(
+    '',
+  )
+  const [isPyth, setIsPyth] = useState(false)
+  const tierLowerThenCurrent =
+    liqudityTier === 'PREMIUM'
+      ? 'MID'
+      : liqudityTier === 'MID'
+      ? 'MEME'
+      : liqudityTier
+  const isMidOrPremium = liqudityTier === 'MID' || liqudityTier === 'PREMIUM'
+  const listingTier =
+    isMidOrPremium && !isPyth ? tierLowerThenCurrent : liqudityTier
 
   const quoteBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
   const minVoterWeight = useMemo(
@@ -149,8 +161,8 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     }
   }, [quoteBank, currentTokenInfo, baseTokenPrice])
   const tierPreset = useMemo(() => {
-    return coinTier ? LISTING_PRESETS[coinTier] : {}
-  }, [coinTier])
+    return listingTier ? LISTING_PRESETS[listingTier] : {}
+  }, [listingTier])
 
   const handleSetAdvForm = (propertyName: string, value: string | number) => {
     setFormErrors({})
@@ -159,9 +171,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
 
   const getListingParams = useCallback(
     async (tokenInfo: Token, tier: LISTING_PRESETS_KEYS) => {
-      const tierLowerThenCurrent =
-        tier === 'PREMIUM' ? 'MID' : tier === 'MID' ? 'MEME' : tier
-      const isMidOrPremium = tier === 'MID' || tier === 'PREMIUM'
       setLoadingListingParams(true)
       const [{ oraclePk, isPyth }, marketPk] = await Promise.all([
         getOracle({
@@ -207,9 +216,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         proposalTitle: `List ${tokenInfo.symbol} on Mango-v4`,
       })
       setLoadingListingParams(false)
-      if (isMidOrPremium && !isPyth) {
-        setCoinTier(tierLowerThenCurrent)
-      }
+      setIsPyth(isPyth)
     },
     [advForm, client.programId, connection, group, mint, proposals],
   )
@@ -287,7 +294,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           indexForTierFromSwaps > -1
             ? TIERS[indexForTierFromSwaps]
             : 'UNTRUSTED'
-        setCoinTier(tier)
+        setLiqudityTier(tier)
         setPriceImpact(midTierCheck ? midTierCheck.priceImpactPct * 100 : 100)
         handleGetPoolParams(tier, tokenMint)
         return tier
@@ -355,7 +362,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     setProposalPk(null)
     setOrcaPoolAddress('')
     setRaydiumPoolAddress('')
-    setCoinTier('')
+    setLiqudityTier('')
     setBaseTokenPrice(0)
   }
 
@@ -583,14 +590,14 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
 
   const closeCreateOpenBookMarketModal = () => {
     setCreateOpenbookMarket(false)
-    if (currentTokenInfo && coinTier) {
-      getListingParams(currentTokenInfo, coinTier)
+    if (currentTokenInfo && liqudityTier) {
+      getListingParams(currentTokenInfo, liqudityTier)
     }
   }
   const closeCreateOracleModal = () => {
     setOracleModalOpen(false)
-    if (currentTokenInfo && coinTier) {
-      getListingParams(currentTokenInfo, coinTier)
+    if (currentTokenInfo && liqudityTier) {
+      getListingParams(currentTokenInfo, liqudityTier)
     }
   }
 
@@ -661,9 +668,16 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                 <div className="mb-2 flex items-center justify-between">
                   <p>{t('tier')}</p>
                   <p className="text-th-fgd-2">
-                    {coinTier && coinTiersToNames[coinTier]}
+                    {listingTier && coinTiersToNames[listingTier]}
                   </p>
                 </div>
+                {isMidOrPremium && !isPyth && (
+                  <div className="mb-2 flex items-center justify-end">
+                    <p className="text-th-warning">
+                      Pyth oracle needed for higher tier
+                    </p>
+                  </div>
+                )}
                 <div className="flex items-center justify-between">
                   <p>{t('mint')}</p>
                   <p className="flex items-center">
@@ -907,7 +921,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
               </div>
               <ol className="list-decimal pl-4">
                 {!advForm.openBookMarketExternalPk &&
-                coinTier &&
+                liqudityTier &&
                 !loadingListingParams ? (
                   <li className="pl-2">
                     <div className="mb-4">
@@ -938,7 +952,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                     ) : null}
                   </li>
                 ) : null}
-                {!advForm.oraclePk && coinTier && !loadingListingParams ? (
+                {!advForm.oraclePk && liqudityTier && !loadingListingParams ? (
                   <li
                     className={`my-4 pl-2 ${
                       !advForm.openBookMarketExternalPk
@@ -960,7 +974,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                       type="error"
                     />
                     <CreateSwitchboardOracleModal
-                      tier={coinTier}
+                      tier={liqudityTier}
                       orcaPoolAddress={orcaPoolAddress}
                       raydiumPoolAddress={raydiumPoolAddress}
                       baseTokenName={currentTokenInfo.symbol}
