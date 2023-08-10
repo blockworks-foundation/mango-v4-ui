@@ -332,7 +332,9 @@ const CreateSwitchboardOracleModal = ({
         <p>
           {t('create-switch-oracle')} {baseTokenName}/USDC
         </p>
-        <p>{t('estimated-oracle-cost')}</p>
+        <p>
+          {t('estimated-oracle-cost')} {tierSettings[tier].fundAmount} SOL
+        </p>
       </div>
 
       <div className="float-right">
