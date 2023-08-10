@@ -27,14 +27,16 @@ export const getOracle = async ({
   connection: Connection
   tier: LISTING_PRESETS_KEYS
 }) => {
-  const pythOnly = tier === 'MID' || tier === 'PREMIUM'
-  console.log(tier)
   try {
     let oraclePk = ''
-    const pythOracle = null
+    const pythOracle = await getPythOracle({
+      baseSymbol,
+      quoteSymbol,
+      connection,
+    })
     if (pythOracle) {
       oraclePk = pythOracle
-    } else if (!pythOnly) {
+    } else {
       const switchBoardOracle = await getSwitchBoardOracle({
         baseSymbol,
         quoteSymbol,
@@ -44,13 +46,14 @@ export const getOracle = async ({
       oraclePk = switchBoardOracle
     }
 
-    return oraclePk
+    return { oraclePk, isPyth: !!pythOracle }
   } catch (e) {
     notify({
       title: 'Oracle not found',
       description: `${e}`,
       type: 'error',
     })
+    return { oraclePk: '', isPyth: false }
   }
 }
 
@@ -119,11 +122,15 @@ export const getSwitchBoardOracle = async ({
     //get all feeds check if they are tried to fetch in last 24h
     const allFeeds = (
       await switchboardProgram.account.aggregatorAccountData.all()
-    ).filter((x) =>
-      isWithinLast24Hours(
+    ).filter(
+      (x) =>
+        isWithinLastXHours(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (x as any).account.currentRound.roundOpenTimestamp.toNumber(),
+          24,
+        ) ||
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (x as any).account.currentRound.roundOpenTimestamp.toNumber(),
-      ),
+        isWithinLastXHours((x as any).account.creationTimestamp.toNumber(), 2),
     )
 
     //parse names of feeds
@@ -586,11 +593,11 @@ export const getFormattedBankValues = (group: Group, bank: Bank) => {
   }
 }
 
-function isWithinLast24Hours(timestampInSeconds: number) {
+function isWithinLastXHours(timestampInSeconds: number, hoursNumber: number) {
   const now = dayjs()
   const inputDate = dayjs.unix(timestampInSeconds) // Convert seconds to dayjs object
 
   const differenceInHours = now.diff(inputDate, 'hour')
 
-  return differenceInHours < 24
+  return differenceInHours < hoursNumber
 }

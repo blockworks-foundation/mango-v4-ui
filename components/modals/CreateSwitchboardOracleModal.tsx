@@ -121,7 +121,7 @@ const CreateSwitchboardOracleModal = ({
           batchSize: 6,
           minRequiredOracleResults: 3,
           minRequiredJobResults: 2,
-          minUpdateDelaySeconds: 0,
+          minUpdateDelaySeconds: 6,
           forceReportPeriod: 3600,
           withdrawAuthority: MANGO_DAO_WALLET,
           authority: payer,

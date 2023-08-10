@@ -115,7 +115,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const [raydiumPoolAddress, setRaydiumPoolAddress] = useState('')
   const [oracleModalOpen, setOracleModalOpen] = useState(false)
   const [coinTier, setCoinTier] = useState<LISTING_PRESETS_KEYS | ''>('')
-  const isMidOrPremium = coinTier === 'PREMIUM' || coinTier === 'MID'
 
   const quoteBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
   const minVoterWeight = useMemo(
@@ -160,8 +159,11 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
 
   const getListingParams = useCallback(
     async (tokenInfo: Token, tier: LISTING_PRESETS_KEYS) => {
+      const tierLowerThenCurrent =
+        tier === 'PREMIUM' ? 'MID' : tier === 'MID' ? 'MEME' : tier
+      const isMidOrPremium = tier === 'MID' || tier === 'PREMIUM'
       setLoadingListingParams(true)
-      const [oraclePk, marketPk] = await Promise.all([
+      const [{ oraclePk, isPyth }, marketPk] = await Promise.all([
         getOracle({
           baseSymbol: tokenInfo.symbol,
           quoteSymbol: 'usd',
@@ -205,6 +207,9 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         proposalTitle: `List ${tokenInfo.symbol} on Mango-v4`,
       })
       setLoadingListingParams(false)
+      if (isMidOrPremium && !isPyth) {
+        setCoinTier(tierLowerThenCurrent)
+      }
     },
     [advForm, client.programId, connection, group, mint, proposals],
   )
@@ -944,16 +949,12 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                     <InlineNotification
                       desc={
                         <div>
-                          {!isMidOrPremium ? (
-                            <a
-                              onClick={() => setOracleModalOpen(true)}
-                              className="cursor-pointer underline"
-                            >
-                              {t('cant-list-oracle-not-found-switch')}
-                            </a>
-                          ) : (
-                            t('cant-list-oracle-not-found-pyth')
-                          )}
+                          <a
+                            onClick={() => setOracleModalOpen(true)}
+                            className="cursor-pointer underline"
+                          >
+                            {t('cant-list-oracle-not-found-switch')}
+                          </a>
                         </div>
                       }
                       type="error"
