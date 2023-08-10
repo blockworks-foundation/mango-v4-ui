@@ -404,6 +404,7 @@ export interface ThemeData {
   rainAnimationImagePath: string
   sideImagePath: string
   sideTilePath: string
+  sideTilePathExpanded: string
   topTilePath: string
   tvChartTheme: 'Light' | 'Dark'
   tvImagePath: string
