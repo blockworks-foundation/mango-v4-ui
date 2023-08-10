@@ -45,6 +45,7 @@
     "tooltip-margin": "啟用保證金時將能槓桿換幣。如果換幣數量超過您的餘額將會自動借款。",
     "tooltip-max-slippage": "如果價格下滑超過您的最大滑點，換幣交易將不會被執行",
     "use-margin": "允許槓桿",
+    "warning-no-collateral": "You have no free collateral",
     "you-buy": "You're buying",
     "you-sell": "You're selling"
 }

@@ -7,7 +7,10 @@ import { useTranslation } from 'next-i18next'
 import SwapFormTokenList from './SwapFormTokenList'
 import { IconButton, LinkButton } from '../shared/Button'
 import { EnterBottomExitBottom } from '../shared/Transitions'
-import { HealthType } from '@blockworks-foundation/mango-v4'
+import {
+  HealthType,
+  toUiDecimalsForQuote,
+} from '@blockworks-foundation/mango-v4'
 import { SWAP_MARGIN_KEY } from '../../utils/constants'
 import HealthImpact from '@components/shared/HealthImpact'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
@@ -20,11 +23,13 @@ import LimitSwapForm from './LimitSwapForm'
 import Switch from '@components/forms/Switch'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 const set = mangoStore.getState().set
 
 const SwapForm = () => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
+  const { mangoAccountAddress } = useMangoAccount()
   const { data: isWhiteListed } = useIsWhiteListed()
   const [showTokenSelect, setShowTokenSelect] = useState<'input' | 'output'>()
   const [showSettings, setShowSettings] = useState(false)
@@ -131,6 +136,14 @@ const SwapForm = () => {
     return slippage
   }, [amountInFormValue, inputBank])
 
+  const freeCollateral = useMemo(() => {
+    const group = mangoStore.getState().group
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+    return group && mangoAccount
+      ? toUiDecimalsForQuote(mangoAccount.getCollateralValue(group))
+      : 0
+  }, [mangoAccountAddress])
+
   return (
     <ContentBox
       hidePadding
@@ -165,6 +178,14 @@ const SwapForm = () => {
                 activeValue={swapOrLimit}
                 values={['swap', 'trade:trigger-order']}
                 onChange={(v) => handleSwapOrLimit(v)}
+              />
+            </div>
+          ) : null}
+          {freeCollateral <= 0 ? (
+            <div className="mb-3">
+              <InlineNotification
+                type="warning"
+                desc={t('swap:warning-no-collateral')}
               />
             </div>
           ) : null}

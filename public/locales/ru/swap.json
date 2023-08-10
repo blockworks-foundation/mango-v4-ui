@@ -43,6 +43,7 @@
     "tooltip-margin": "When margin is enabled you can add leverage to your swaps. Borrows are opened automatically if a swap exceeds your balance.",
     "tooltip-max-slippage": "If price slips beyond your maximum slippage your swap will not be executed",
     "use-margin": "Allow Margin",
+    "warning-no-collateral": "You have no free collateral",
     "you-buy": "You're buying",
     "you-sell": "You're selling"
 }
