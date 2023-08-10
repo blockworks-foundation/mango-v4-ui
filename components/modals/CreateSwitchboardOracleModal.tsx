@@ -65,6 +65,34 @@ const CreateSwitchboardOracleModal = ({
     UNTRUSTED: '100',
   }
 
+  const tierSettings: {
+    [key: string]: {
+      varianceThreshold: number
+      fundAmount: number
+    }
+  } = {
+    PREMIUM: {
+      varianceThreshold: 0.62,
+      fundAmount: 5,
+    },
+    MID: {
+      varianceThreshold: 0.62,
+      fundAmount: 5,
+    },
+    MEME: {
+      varianceThreshold: 1,
+      fundAmount: 2,
+    },
+    SHIT: {
+      varianceThreshold: 1,
+      fundAmount: 2,
+    },
+    UNTRUSTED: {
+      varianceThreshold: 1,
+      fundAmount: 2,
+    },
+  }
+
   const [creatingOracle, setCreatingOracle] = useState(false)
 
   const create = useCallback(async () => {
@@ -93,16 +121,17 @@ const CreateSwitchboardOracleModal = ({
           batchSize: 6,
           minRequiredOracleResults: 3,
           minRequiredJobResults: 2,
-          minUpdateDelaySeconds: 300,
+          minUpdateDelaySeconds: 6,
+          forceReportPeriod: 3600,
           withdrawAuthority: MANGO_DAO_WALLET,
           authority: payer,
           crankDataBuffer: crankAccount.dataBuffer?.publicKey,
           crankPubkey: crankAccount.publicKey,
-          fundAmount: 2.6,
+          fundAmount: tierSettings[tier].fundAmount,
           basePriorityFee: 0,
           disableCrank: false,
           maxPriorityFeeMultiplier: 0,
-          varianceThreshold: 0.5,
+          varianceThreshold: tierSettings[tier].varianceThreshold,
           priorityFeeBump: 0,
           priorityFeeBumpPeriod: 0,
           jobs: [

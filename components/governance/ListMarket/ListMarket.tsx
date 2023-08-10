@@ -29,8 +29,8 @@ import { notify } from 'utils/notifications'
 import ListingSuccess from '../ListingSuccess'
 import { formatTokenSymbol } from 'utils/tokens'
 import OnBoarding from '../OnBoarding'
-import { calculateTradingParameters } from 'utils/governance/listingTools'
 import { tryGetPubKey } from 'utils/governance/tools'
+import { calculateMarketTradingParams } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 
 type FormErrors = Partial<Record<keyof ListMarketForm, string>>
 
@@ -251,7 +251,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
 
   const tradingParams = useMemo(() => {
     if (baseBank && quoteBank) {
-      return calculateTradingParameters(
+      return calculateMarketTradingParams(
         baseBank.uiPrice,
         quoteBank.uiPrice,
         baseBank.mintDecimals,
