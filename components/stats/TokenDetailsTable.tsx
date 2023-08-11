@@ -10,7 +10,14 @@ import { breakpoints } from '../../utils/theme'
 import ContentBox from '../shared/ContentBox'
 import Tooltip from '@components/shared/Tooltip'
 import { Bank } from '@blockworks-foundation/mango-v4'
-import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
+import {
+  SortableColumnHeader,
+  Table,
+  Td,
+  Th,
+  TrBody,
+  TrHead,
+} from '@components/shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
 import { getOracleProvider } from 'hooks/useOracleProvider'
@@ -18,6 +25,8 @@ import { useRouter } from 'next/router'
 import { goToTokenPage } from './TokenOverviewTable'
 import { LinkButton } from '@components/shared/Button'
 import TokenLogo from '@components/shared/TokenLogo'
+import { useCallback } from 'react'
+import { useSortableData } from 'hooks/useSortableData'
 
 const TokenDetailsTable = () => {
   const { t } = useTranslation(['common', 'activity', 'token', 'trade'])
@@ -27,6 +36,45 @@ const TokenDetailsTable = () => {
   const banks = useBanksWithBalances()
   const router = useRouter()
 
+  const formattedTableData = useCallback(() => {
+    const formatted = []
+    for (const b of banks) {
+      const bank: Bank = b.bank
+      const mintInfo = group?.mintInfosMapByMint.get(bank.mint.toString())
+      const deposits = bank.uiDeposits()
+      const initAssetWeight = bank.scaledInitAssetWeight(bank.price)
+      const initLiabWeight = bank.scaledInitLiabWeight(bank.price)
+      const isInsured = mintInfo?.groupInsuranceFund ? t('yes') : t('no')
+      const liquidationFee = bank.liquidationFee.toNumber() * 100
+      const loanOriginationFee = 100 * bank.loanOriginationFeeRate.toNumber()
+      const [oracleProvider, oracleLinkPath] = getOracleProvider(bank)
+      const symbol = bank.name
+
+      const data = {
+        bank,
+        deposits,
+        initAssetWeight,
+        initLiabWeight,
+        isInsured,
+        liquidationFee,
+        loanOriginationFee,
+        oracleLinkPath,
+        oracleProvider,
+        symbol,
+      }
+      formatted.push(data)
+    }
+    return formatted.sort(
+      (a, b) => b.deposits * b.bank.uiPrice - a.deposits * a.bank.uiPrice,
+    )
+  }, [banks, group])
+
+  const {
+    items: tableData,
+    requestSort,
+    sortConfig,
+  } = useSortableData(formattedTableData())
+
   return group ? (
     <ContentBox hideBorder hidePadding>
       {showTableView ? (
@@ -34,117 +82,138 @@ const TokenDetailsTable = () => {
           <Table>
             <thead>
               <TrHead>
-                <Th className="text-left">{t('token')}</Th>
+                <Th className="text-left">
+                  <SortableColumnHeader
+                    sortKey="symbol"
+                    sort={() => requestSort('symbol')}
+                    sortConfig={sortConfig}
+                    title={t('token')}
+                  />
+                </Th>
                 <Th>
-                  <div className="flex justify-end text-right">
+                  <div className="flex justify-end">
                     <Tooltip content={t('asset-liability-weight-desc')}>
-                      <span className="tooltip-underline">
-                        {t('asset-liability-weight')}
-                      </span>
+                      <SortableColumnHeader
+                        sortKey="initAssetWeight"
+                        sort={() => requestSort('initAssetWeight')}
+                        sortConfig={sortConfig}
+                        title={t('asset-liability-weight')}
+                      />
                     </Tooltip>
                   </div>
                 </Th>
                 <Th>
-                  <div className="flex justify-end text-right">
+                  <div className="flex justify-end">
                     <Tooltip content={t('tooltip-borrow-fee')}>
-                      <span className="tooltip-underline">
-                        {t('borrow-fee')}
-                      </span>
+                      <SortableColumnHeader
+                        sortKey="loanOriginationFee"
+                        sort={() => requestSort('loanOriginationFee')}
+                        sortConfig={sortConfig}
+                        title={t('borrow-fee')}
+                      />
                     </Tooltip>
                   </div>
                 </Th>
                 <Th>
-                  <div className="flex justify-end text-right">
+                  <div className="flex justify-end">
                     <Tooltip
                       content={t('token:tooltip-liquidation-fee', {
                         symbol: t('tokens').toLowerCase(),
                       })}
                     >
-                      <span className="tooltip-underline">
-                        {t('activity:liquidation-fee')}
-                      </span>
+                      <SortableColumnHeader
+                        sortKey="liquidationFee"
+                        sort={() => requestSort('liquidationFee')}
+                        sortConfig={sortConfig}
+                        title={t('activity:liquidation-fee')}
+                      />
                     </Tooltip>
                   </div>
                 </Th>
-                <Th className="text-right">
-                  <Tooltip
-                    content={
-                      <div>
-                        {t('trade:tooltip-insured', { tokenOrMarket: '' })}
-                        <a
-                          className="mt-2 flex items-center"
-                          href="https://docs.mango.markets/mango-markets/insurance-fund"
-                          rel="noopener noreferrer"
-                          target="_blank"
-                        >
-                          Learn more
-                        </a>
-                      </div>
-                    }
-                  >
-                    <span className="tooltip-underline">
-                      {t('trade:insured', { token: '' })}
-                    </span>
-                  </Tooltip>
+                <Th>
+                  <div className="flex justify-end">
+                    <Tooltip
+                      content={
+                        <div>
+                          {t('trade:tooltip-insured', { tokenOrMarket: '' })}
+                          <a
+                            className="mt-2 flex items-center"
+                            href="https://docs.mango.markets/mango-markets/insurance-fund"
+                            rel="noopener noreferrer"
+                            target="_blank"
+                          >
+                            Learn more
+                          </a>
+                        </div>
+                      }
+                    >
+                      <SortableColumnHeader
+                        sortKey="isInsured"
+                        sort={() => requestSort('isInsured')}
+                        sortConfig={sortConfig}
+                        title={t('trade:insured', { token: '' })}
+                      />
+                    </Tooltip>
+                  </div>
                 </Th>
-                <Th className="text-right">{t('trade:oracle')}</Th>
+                <Th>
+                  <div className="flex justify-end">
+                    <SortableColumnHeader
+                      sortKey="oracleProvider"
+                      sort={() => requestSort('oracleProvider')}
+                      sortConfig={sortConfig}
+                      title={t('trade:oracle')}
+                    />
+                  </div>
+                </Th>
                 <Th />
               </TrHead>
             </thead>
             <tbody>
-              {banks.map((b) => {
-                const bank: Bank = b.bank
-
-                const [oracleProvider, oracleLinkPath] = getOracleProvider(bank)
-
-                const mintInfo = group.mintInfosMapByMint.get(
-                  bank.mint.toString(),
-                )
+              {tableData.map((data) => {
+                const {
+                  bank,
+                  initAssetWeight,
+                  initLiabWeight,
+                  isInsured,
+                  liquidationFee,
+                  loanOriginationFee,
+                  oracleLinkPath,
+                  oracleProvider,
+                  symbol,
+                } = data
 
                 return (
                   <TrBody
                     className="default-transition md:hover:cursor-pointer md:hover:bg-th-bkg-2"
-                    key={bank.name}
-                    onClick={() =>
-                      goToTokenPage(bank.name.split(' ')[0], router)
-                    }
+                    key={symbol}
+                    onClick={() => goToTokenPage(symbol.split(' ')[0], router)}
                   >
                     <Td>
                       <div className="flex items-center">
                         <div className="mr-2.5 flex flex-shrink-0 items-center">
                           <TokenLogo bank={bank} />
                         </div>
-                        <p className="font-body">{bank.name}</p>
+                        <p className="font-body">{symbol}</p>
                       </div>
                     </Td>
                     <Td>
                       <div className="flex justify-end space-x-1.5 text-right">
-                        <p>
-                          {bank.scaledInitAssetWeight(bank.price).toFixed(2)}
-                        </p>
+                        <p>{initAssetWeight.toFixed(2)}</p>
                         <span className="text-th-fgd-4">|</span>
-                        <p>
-                          {bank.scaledInitLiabWeight(bank.price).toFixed(2)}
-                        </p>
+                        <p>{initLiabWeight.toFixed(2)}</p>
                       </div>
                     </Td>
                     <Td>
                       <p className="text-right">
-                        {(100 * bank.loanOriginationFeeRate.toNumber()).toFixed(
-                          2,
-                        )}
-                        %
+                        {loanOriginationFee.toFixed(2)}%
                       </p>
                     </Td>
                     <Td>
-                      <p className="text-right">
-                        {(bank.liquidationFee.toNumber() * 100).toFixed(2)}%
-                      </p>
+                      <p className="text-right">{liquidationFee.toFixed(2)}%</p>
                     </Td>
                     <Td>
-                      <p className="text-right">
-                        {mintInfo?.groupInsuranceFund ? t('yes') : t('no')}
-                      </p>
+                      <p className="text-right">{isInsured}</p>
                     </Td>
                     <Td>
                       {oracleLinkPath ? (

@@ -84,7 +84,9 @@ const TokenOverviewTable = () => {
       }
       formatted.push(data)
     }
-    return formatted
+    return formatted.sort(
+      (a, b) => b.deposits * b.bank.uiPrice - a.deposits * a.bank.uiPrice,
+    )
   }, [banks, group])
 
   const {
