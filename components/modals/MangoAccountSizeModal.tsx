@@ -23,7 +23,7 @@ import {
 
 const MIN_ACCOUNTS = 8
 export const MAX_ACCOUNTS: AccountSizeForm = {
-  tokenAccounts: '16',
+  tokenAccounts: '10',
   spotOpenOrders: '8',
   perpAccounts: '8',
   perpOpenOrders: '64',
