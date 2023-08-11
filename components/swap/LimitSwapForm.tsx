@@ -7,7 +7,12 @@ import {
   SetStateAction,
   useLayoutEffect,
 } from 'react'
-import { ArrowDownIcon, ArrowsRightLeftIcon } from '@heroicons/react/20/solid'
+import {
+  ArrowDownIcon,
+  ArrowDownTrayIcon,
+  ArrowsRightLeftIcon,
+  LinkIcon,
+} from '@heroicons/react/20/solid'
 import NumberFormat, {
   NumberFormatValues,
   SourceInfo,
@@ -36,8 +41,11 @@ import InlineNotification from '@components/shared/InlineNotification'
 import { getChartPairSettings, handleFlipPrices } from './SwapTokenChart'
 import Select from '@components/forms/Select'
 import useIpAddress from 'hooks/useIpAddress'
-import { Bank } from '@blockworks-foundation/mango-v4'
+import { Bank, toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import useMangoAccount from 'hooks/useMangoAccount'
+import { useWallet } from '@solana/wallet-adapter-react'
+import { useTokenMax } from './useTokenMax'
+import DepositWithdrawModal from '@components/modals/DepositWithdrawModal'
 
 type LimitSwapFormProps = {
   showTokenSelect: 'input' | 'output' | undefined
@@ -90,7 +98,7 @@ const LimitSwapForm = ({
   setShowTokenSelect,
 }: LimitSwapFormProps) => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
-  const { mangoAccount } = useMangoAccount()
+  const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const { ipAllowed, ipCountry } = useIpAddress()
   const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
   const [triggerPrice, setTriggerPrice] = useState('')
@@ -111,6 +119,10 @@ const LimitSwapForm = ({
     amountIn: amountInFormValue,
     amountOut: amountOutFormValue,
   } = mangoStore((s) => s.swap)
+
+  const { connected, connect } = useWallet()
+  const { amount: tokenMax } = useTokenMax()
+  const [showDepositModal, setShowDepositModal] = useState(false)
 
   const [inputBankName, outputBankName, inputBankDecimals, outputBankDecimals] =
     useMemo(() => {
@@ -134,6 +146,17 @@ const LimitSwapForm = ({
       ? new Decimal(amountOutFormValue)
       : new Decimal(0)
   }, [amountOutFormValue])
+
+  const freeCollateral = useMemo(() => {
+    const group = mangoStore.getState().group
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+    return group && mangoAccount
+      ? toUiDecimalsForQuote(mangoAccount.getCollateralValue(group))
+      : 0
+  }, [mangoAccountAddress])
+
+  const showInsufficientBalance =
+    tokenMax.lt(amountInAsDecimal) || tokenMax.eq(0)
 
   const flipPrices = useMemo(() => {
     if (!swapChartSettings.length || !inputBankName || !outputBankName)
@@ -731,6 +754,12 @@ const LimitSwapForm = ({
   //     parseFloat(triggerPrice) < quotePrice) ||
   //   amountInAsDecimal.gt(sellTokenBalance)
 
+  const onClick = !connected
+    ? connect
+    : showInsufficientBalance || freeCollateral <= 0
+    ? () => setShowDepositModal(true)
+    : () => handlePlaceStopLoss
+
   return (
     <>
       <SellTokenInput
@@ -878,11 +907,27 @@ const LimitSwapForm = ({
       ) : null}
       {ipAllowed ? (
         <Button
-          onClick={handlePlaceStopLoss}
+          onClick={onClick}
           className="mt-6 mb-4 flex w-full items-center justify-center text-base"
           size="large"
         >
-          {submitting ? <Loading /> : t('swap:place-limit-order')}
+          {connected ? (
+            showInsufficientBalance || freeCollateral <= 0 ? (
+              <div className="flex items-center">
+                <ArrowDownTrayIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+                {t('swap:deposit-funds')}
+              </div>
+            ) : submitting ? (
+              <Loading />
+            ) : (
+              <span>{t('swap:place-limit-order')}</span>
+            )
+          ) : (
+            <div className="flex items-center">
+              <LinkIcon className="mr-2 h-5 w-5" />
+              {t('connect')}
+            </div>
+          )}
         </Button>
       ) : (
         <Button
@@ -895,6 +940,14 @@ const LimitSwapForm = ({
           })}
         </Button>
       )}
+      {showDepositModal ? (
+        <DepositWithdrawModal
+          action="deposit"
+          isOpen={showDepositModal}
+          onClose={() => setShowDepositModal(false)}
+          token={freeCollateral > 0 ? inputBankName : ''}
+        />
+      ) : null}
     </>
   )
 }
