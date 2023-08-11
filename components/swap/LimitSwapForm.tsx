@@ -758,7 +758,7 @@ const LimitSwapForm = ({
     ? connect
     : showInsufficientBalance || freeCollateral <= 0
     ? () => setShowDepositModal(true)
-    : () => handlePlaceStopLoss
+    : handlePlaceStopLoss
 
   return (
     <>
