@@ -61,7 +61,7 @@ const StatusBar = ({ collapsed }: { collapsed: boolean }) => {
             rel="noreferrer noopener"
             target="_blank"
           >
-            <span className="text-th-fgd-3 text-xs">v{IDL.version}</span>
+            <span>v{IDL.version}</span>
           </a>
         </Tooltip>
         {latestCommit.sha && latestCommit.url ? (
