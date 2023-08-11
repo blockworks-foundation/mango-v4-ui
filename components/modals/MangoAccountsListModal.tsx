@@ -228,7 +228,7 @@ const MangoAccountsListModal = ({
               </div>
             )}
           </div>
-          {mangoAccounts.length < 5 ? (
+          <div className="pt-6">
             <LinkButton
               className="w-full justify-center"
               onClick={() => setShowNewAccountForm(true)}
@@ -236,19 +236,7 @@ const MangoAccountsListModal = ({
               <PlusCircleIcon className="h-5 w-5" />
               <span className="ml-2">{t('add-new-account')}</span>
             </LinkButton>
-          ) : (
-            <p className="text-center">
-              {t('account:need-more-accounts')}{' '}
-              <a
-                className="focus:outline-none"
-                href="https://discord.gg/2uwjsBc5yw"
-                rel="noreferrer noopener"
-                target="_blank"
-              >
-                {t('discord')}
-              </a>
-            </p>
-          )}
+          </div>
           <EnterRightExitLeft
             className="absolute bottom-0 left-0 z-20 h-full w-full overflow-hidden bg-th-bkg-1"
             show={showNewAccountForm}
