@@ -103,7 +103,7 @@ const UserSetupModal = ({
     if (!group || !publicKey) return
     setLoadingAccount(true)
     try {
-      const tx = await client.createMangoAccount(
+      const { signature: tx } = await client.createMangoAccount(
         group,
         0,
         accountName || 'Account 1',
@@ -143,7 +143,7 @@ const UserSetupModal = ({
     if (!mangoAccount || !group || !bank) return
     try {
       setSubmitDeposit(true)
-      const tx = await client.tokenDeposit(
+      const { signature: tx, slot } = await client.tokenDeposit(
         group,
         mangoAccount,
         bank.mint,
@@ -155,7 +155,7 @@ const UserSetupModal = ({
         txid: tx,
       })
 
-      await actions.reloadMangoAccount()
+      await actions.reloadMangoAccount(slot)
       setSubmitDeposit(false)
       onClose()
       // setShowSetupStep(4)

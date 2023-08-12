@@ -203,7 +203,7 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
       return
     setSubmitting(true)
     try {
-      const tx = await client.accountExpandV2(
+      const { signature: tx, slot } = await client.accountExpandV2(
         group,
         mangoAccount,
         parseInt(tokenAccounts),
@@ -217,7 +217,7 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
         type: 'success',
         txid: tx,
       })
-      await actions.reloadMangoAccount()
+      await actions.reloadMangoAccount(slot)
       setSubmitting(false)
     } catch (e) {
       console.error(e)

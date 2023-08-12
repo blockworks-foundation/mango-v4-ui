@@ -287,7 +287,7 @@ const SwapReviewRouteInfo = ({
             )
 
       try {
-        const tx = await client.marginTrade({
+        const { signature: tx, slot } = await client.marginTrade({
           group,
           mangoAccount,
           inputMintPk: inputBank.mint,
@@ -311,7 +311,7 @@ const SwapReviewRouteInfo = ({
         })
         actions.fetchGroup()
         actions.fetchSwapHistory(mangoAccount.publicKey.toString(), 30000)
-        await actions.reloadMangoAccount()
+        await actions.reloadMangoAccount(slot)
       } catch (e) {
         console.error('onSwap error: ', e)
         sentry.captureException(e)

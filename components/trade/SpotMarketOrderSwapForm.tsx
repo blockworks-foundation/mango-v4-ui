@@ -200,7 +200,7 @@ export default function SpotMarketOrderSwapForm() {
     )
 
     try {
-      const tx = await client.marginTrade({
+      const { signature: tx, slot } = await client.marginTrade({
         group,
         mangoAccount,
         inputMintPk: inputBank.mint,
@@ -227,7 +227,7 @@ export default function SpotMarketOrderSwapForm() {
       })
       actions.fetchGroup()
       actions.fetchSwapHistory(mangoAccount.publicKey.toString(), 30000)
-      await actions.reloadMangoAccount()
+      await actions.reloadMangoAccount(slot)
       set((s) => {
         s.tradeForm.baseSize = ''
         s.tradeForm.quoteSize = ''

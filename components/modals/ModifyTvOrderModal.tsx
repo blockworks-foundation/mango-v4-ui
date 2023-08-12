@@ -85,7 +85,7 @@ const ModifyTvOrderModal = ({
         : o.price
       if (!group || !mangoAccount) return
       try {
-        let tx = ''
+        let tx
         if (o instanceof PerpOrder) {
           tx = await client.modifyPerpOrder(
             group,
@@ -125,7 +125,7 @@ const ModifyTvOrderModal = ({
         notify({
           type: 'success',
           title: 'Transaction successful',
-          txid: tx,
+          txid: tx.signature,
         })
         onClose()
       } catch (e) {
@@ -139,7 +139,12 @@ const ModifyTvOrderModal = ({
         })
       }
     },
-    [findSerum3MarketPkInOpenOrders, modifiedOrderPrice, modifiedOrderSize],
+    [
+      findSerum3MarketPkInOpenOrders,
+      modifiedOrderPrice,
+      modifiedOrderSize,
+      tickDecimals,
+    ],
   )
 
   return selectedMarket ? (

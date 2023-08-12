@@ -93,7 +93,7 @@ const OpenOrders = () => {
 
       setCancelId(o.orderId.toString())
       try {
-        const tx = await client.serum3CancelOrder(
+        const { signature: tx } = await client.serum3CancelOrder(
           group,
           mangoAccount,
           market!.serumMarketExternal,
@@ -135,7 +135,7 @@ const OpenOrders = () => {
       if (!group || !mangoAccount) return
       setLoadingModifyOrder(true)
       try {
-        let tx = ''
+        let tx
         if (o instanceof PerpOrder) {
           tx = await client.modifyPerpOrder(
             group,
@@ -175,7 +175,7 @@ const OpenOrders = () => {
         notify({
           type: 'success',
           title: 'Transaction successful',
-          txid: tx,
+          txid: tx.signature,
         })
       } catch (e) {
         console.error('Error canceling', e)
@@ -203,7 +203,7 @@ const OpenOrders = () => {
       if (!group || !mangoAccount) return
       setCancelId(o.orderId.toString())
       try {
-        const tx = await client.perpCancelOrder(
+        const { signature: tx } = await client.perpCancelOrder(
           group,
           mangoAccount,
           o.perpMarketIndex,

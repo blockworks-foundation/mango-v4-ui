@@ -392,7 +392,7 @@ const AdvancedTradeForm = () => {
           : tradeForm.postOnly && tradeForm.tradeType !== 'Market'
           ? Serum3OrderType.postOnly
           : Serum3OrderType.limit
-        const tx = await client.serum3PlaceOrder(
+        const { signature: tx } = await client.serum3PlaceOrder(
           group,
           mangoAccount,
           selectedMarket.serumMarketExternal,
@@ -427,7 +427,7 @@ const AdvancedTradeForm = () => {
             : PerpOrderType.limit
         console.log('perpOrderType', perpOrderType)
 
-        const tx = await client.perpPlaceOrder(
+        const { signature: tx } = await client.perpPlaceOrder(
           group,
           mangoAccount,
           selectedMarket.perpMarketIndex,

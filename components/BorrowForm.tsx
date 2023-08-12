@@ -118,7 +118,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
     if (!mangoAccount || !group || !publicKey) return
     setSubmitting(true)
     try {
-      const tx = await client.tokenWithdraw(
+      const { signature: tx, slot } = await client.tokenWithdraw(
         group,
         mangoAccount,
         bank!.mint,
@@ -130,7 +130,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
         type: 'success',
         txid: tx,
       })
-      await actions.reloadMangoAccount()
+      await actions.reloadMangoAccount(slot)
       actions.fetchWalletTokens(publicKey)
       setSubmitting(false)
       onSuccess()
