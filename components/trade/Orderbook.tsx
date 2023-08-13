@@ -31,7 +31,7 @@ import {
   updatePerpMarketOnGroup,
 } from 'utils/orderbook'
 import { OrderbookData, OrderbookL2 } from 'types'
-import { isEqual } from 'lodash'
+import isEqual from 'lodash/isEqual'
 
 const sizeCompacter = Intl.NumberFormat('en', {
   maximumFractionDigits: 6,

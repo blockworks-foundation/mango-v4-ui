@@ -15,7 +15,6 @@ import {
 import { useState } from 'react'
 import { MANGO_MINT_DECIMALS } from 'utils/governance/constants'
 // import { useTranslation } from 'next-i18next'
-// import ResponsivePagination from 'react-responsive-pagination'
 import { ImgWithLoader } from '@components/ImgWithLoader'
 import NftMarketButton from './NftMarketButton'
 

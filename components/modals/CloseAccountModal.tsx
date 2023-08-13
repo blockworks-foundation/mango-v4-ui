@@ -46,7 +46,10 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
     if (!mangoAccount || !group) return
     setLoading(true)
     try {
-      const tx = await client.emptyAndCloseMangoAccount(group, mangoAccount)
+      const { signature: tx } = await client.emptyAndCloseMangoAccount(
+        group,
+        mangoAccount,
+      )
       if (tx) {
         const newMangoAccounts = mangoAccounts.filter(
           (ma) => !ma.publicKey.equals(mangoAccount.publicKey),

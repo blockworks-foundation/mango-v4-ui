@@ -111,7 +111,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
     if (!mangoAccount || !group || !bank) return
     setSubmitting(true)
     try {
-      const tx = await client.tokenWithdraw(
+      const { signature: tx, slot } = await client.tokenWithdraw(
         group,
         mangoAccount,
         bank.mint,
@@ -123,7 +123,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
         type: 'success',
         txid: tx,
       })
-      await actions.reloadMangoAccount()
+      await actions.reloadMangoAccount(slot)
       setSubmitting(false)
       onSuccess()
     } catch (e) {

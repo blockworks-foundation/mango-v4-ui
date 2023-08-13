@@ -108,7 +108,7 @@ const SwapOrders = () => {
       setCancelId(id.toString())
 
       try {
-        const tx = await client.tokenConditionalSwapCancel(
+        const { signature: tx, slot } = await client.tokenConditionalSwapCancel(
           group,
           mangoAccount,
           id,
@@ -120,7 +120,7 @@ const SwapOrders = () => {
           noSound: true,
         })
         actions.fetchGroup()
-        await actions.reloadMangoAccount()
+        await actions.reloadMangoAccount(slot)
       } catch (e) {
         console.error('failed to cancel swap order', e)
         sentry.captureException(e)
@@ -151,10 +151,8 @@ const SwapOrders = () => {
       setCancelId('all')
 
       try {
-        const tx = await client.tokenConditionalSwapCancelAll(
-          group,
-          mangoAccount,
-        )
+        const { signature: tx, slot } =
+          await client.tokenConditionalSwapCancelAll(group, mangoAccount)
         notify({
           title: 'Transaction confirmed',
           type: 'success',
@@ -162,7 +160,7 @@ const SwapOrders = () => {
           noSound: true,
         })
         actions.fetchGroup()
-        await actions.reloadMangoAccount()
+        await actions.reloadMangoAccount(slot)
       } catch (e) {
         console.error('failed to cancel trigger orders', e)
         sentry.captureException(e)

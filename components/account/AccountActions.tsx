@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import Button, { IconButton } from '../shared/Button'
 import {
   ArrowDownRightIcon,
@@ -28,6 +28,7 @@ import useUnownedAccount from 'hooks/useUnownedAccount'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import MangoAccountSizeModal from '@components/modals/MangoAccountSizeModal'
+import { getIsAccountSizeFull } from '@components/settings/AccountSettings'
 
 export const handleCopyAddress = (
   mangoAccount: MangoAccount,
@@ -62,6 +63,11 @@ const AccountActions = () => {
       setShowCreateAccountModal(true)
     }
   }
+
+  const isAccountFull = useMemo(() => {
+    if (!mangoAccountAddress) return true
+    return getIsAccountSizeFull()
+  }, [mangoAccountAddress])
 
   return (
     <>
@@ -147,16 +153,18 @@ const AccountActions = () => {
                       <UserPlusIcon className="h-4 w-4" />
                       <span className="ml-2">{t('delegate-account')}</span>
                     </ActionsLinkButton>
-                    <ActionsLinkButton
-                      disabled={isDelegatedAccount}
-                      mangoAccount={mangoAccount!}
-                      onClick={() => setShowAccountSizeModal(true)}
-                    >
-                      <SquaresPlusIcon className="h-4 w-4" />
-                      <span className="ml-2">
-                        {t('settings:increase-account-size')}
-                      </span>
-                    </ActionsLinkButton>
+                    {!isAccountFull ? (
+                      <ActionsLinkButton
+                        disabled={isDelegatedAccount}
+                        mangoAccount={mangoAccount!}
+                        onClick={() => setShowAccountSizeModal(true)}
+                      >
+                        <SquaresPlusIcon className="h-4 w-4" />
+                        <span className="ml-2">
+                          {t('settings:increase-account-size')}
+                        </span>
+                      </ActionsLinkButton>
+                    ) : null}
                     <ActionsLinkButton
                       disabled={isDelegatedAccount}
                       mangoAccount={mangoAccount!}

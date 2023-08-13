@@ -108,11 +108,13 @@ const TopBar = () => {
               <SolanaTps />
             </div>
           ) : null} */}
-          <img
-            className="mr-4 h-9 w-9 flex-shrink-0 md:hidden"
-            src={themeData.logoPath}
-            alt="logo"
-          />
+          <div className="bg-th-bkg-1 flex items-center justify-center h-[63px] w-16 md:hidden">
+            <img
+              className="h-9 w-9 flex-shrink-0"
+              src={themeData.logoPath}
+              alt="logo"
+            />
+          </div>
           {!connected ? (
             mangoAccount ? (
               <span className="hidden items-center md:flex md:pl-6">
@@ -189,7 +191,7 @@ const TopBar = () => {
           {isUnownedAccount || (!connected && isMobile) ? null : isMobile ? (
             <button
               onClick={() => handleDepositWithdrawModal('deposit')}
-              className="h-16 border-l border-th-bkg-3 px-4 font-display text-th-fgd-1"
+              className="h-[63px] bg-th-bkg-1 border-l border-th-bkg-3 px-4 font-display text-center text-th-fgd-1"
             >{`${t('deposit')} / ${t('withdraw')}`}</button>
           ) : (
             <Button

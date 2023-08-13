@@ -593,11 +593,11 @@ const LimitSwapForm = ({
         notify({
           title: 'Transaction confirmed',
           type: 'success',
-          txid: tx,
+          txid: tx?.signature,
           noSound: true,
         })
         actions.fetchGroup()
-        await actions.reloadMangoAccount()
+        await actions.reloadMangoAccount(tx?.slot)
       } catch (e) {
         console.error('onSwap error: ', e)
         sentry.captureException(e)

@@ -232,7 +232,7 @@ const TradingViewChart = () => {
         notify({
           type: 'success',
           title: 'Transaction successful',
-          txid: tx,
+          txid: tx.signature,
         })
       } catch (e) {
         console.error('Error canceling', e)
@@ -266,7 +266,7 @@ const TradingViewChart = () => {
         notify({
           type: 'success',
           title: 'Transaction successful',
-          txid: tx,
+          txid: tx.signature,
         })
       } catch (e) {
         console.error('Error canceling', e)

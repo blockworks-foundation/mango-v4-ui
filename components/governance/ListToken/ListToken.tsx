@@ -925,7 +925,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
               </div>
               <ol className="list-decimal pl-4">
                 {!advForm.openBookMarketExternalPk &&
-                liqudityTier &&
+                listingTier &&
                 !loadingListingParams ? (
                   <li className="pl-2">
                     <div className="mb-4">
@@ -956,7 +956,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                     ) : null}
                   </li>
                 ) : null}
-                {!advForm.oraclePk && liqudityTier && !loadingListingParams ? (
+                {!advForm.oraclePk && listingTier && !loadingListingParams ? (
                   <li
                     className={`my-4 pl-2 ${
                       !advForm.openBookMarketExternalPk
@@ -978,7 +978,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                       type="error"
                     />
                     <CreateSwitchboardOracleModal
-                      tier={liqudityTier}
+                      tier={listingTier}
                       orcaPoolAddress={orcaPoolAddress}
                       raydiumPoolAddress={raydiumPoolAddress}
                       baseTokenName={currentTokenInfo.symbol}
