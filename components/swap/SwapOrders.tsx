@@ -70,9 +70,10 @@ const SwapOrders = () => {
       const triggerPrice = order.getThresholdPriceUi(group)
       const pricePremium = order.getPricePremium()
       const filled = order.getSoldUi(group)
-      const currentPrice = (sellBank.uiPrice / buyBank.uiPrice).toFixed(
-        buyBank.mintDecimals,
-      )
+      // const currentPrice = (sellBank.uiPrice / buyBank.uiPrice).toFixed(
+      //   buyBank.mintDecimals,
+      // )
+      const currentPrice = order.getCurrentPairPriceUi(group)
 
       const data = {
         ...order,
