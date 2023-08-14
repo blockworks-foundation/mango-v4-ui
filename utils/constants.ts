@@ -45,6 +45,8 @@ export const TRADE_CHART_UI_KEY = 'tradeChart-0.3'
 
 export const FAVORITE_MARKETS_KEY = 'favoriteMarkets-0.2'
 
+export const FAVORITE_SWAPS_KEY = 'favoriteSwaps-0.1'
+
 export const THEME_KEY = 'theme-0.1'
 
 export const RPC_PROVIDER_KEY = 'rpcProviderKey-0.7'

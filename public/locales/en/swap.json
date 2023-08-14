@@ -39,6 +39,8 @@
     "tooltip-borrow-no-balance": "You'll borrow {{borrowAmount}} {{token}} to execute this swap. The current {{token}} variable borrow rate is {{rate}}%",
     "tooltip-margin": "When margin is enabled you can add leverage to your swaps. Borrows are opened automatically if a swap exceeds your balance.",
     "tooltip-max-slippage": "If price slips beyond your maximum slippage your swap will not be executed",
+    "tooltip-favorite-swap-add": "Add pair to favorites",
+    "tooltip-favorite-swap-remove": "Remove pair from favorites",
     "use-margin": "Allow Margin",
     "no-swap-found": "No swap found"
 }
