@@ -16,7 +16,7 @@ type useQuoteRoutesPropTypes = {
   amount: string
   slippage: number
   swapMode: string
-  wallet: string | undefined | null
+  wallet: string | undefined
   mode?: SwapModes
   enabled?: () => boolean
 }
@@ -117,41 +117,38 @@ export const handleGetRoutes = async (
   slippage = 50,
   swapMode = 'ExactIn',
   feeBps = 0,
-  wallet: string | undefined | null,
+  wallet: string | undefined,
   mode: SwapModes = 'ALL',
   jupiterOnlyDirectRoutes = false,
 ) => {
   try {
     wallet ||= PublicKey.default.toBase58()
-    const mangoRoute = fetchMangoRoutes(
-      inputMint,
-      outputMint,
-      amount,
-      slippage,
-      swapMode,
-      feeBps,
-      wallet,
-    )
-    const jupiterRoute = fetchJupiterRoutes(
-      inputMint,
-      outputMint,
-      amount,
-      slippage,
-      swapMode,
-      feeBps,
-      jupiterOnlyDirectRoutes,
-    )
 
     const routes = []
-    if (mode == 'ALL') {
+
+    if (mode === 'ALL' || mode === 'MANGO') {
+      const mangoRoute = fetchMangoRoutes(
+        inputMint,
+        outputMint,
+        amount,
+        slippage,
+        swapMode,
+        feeBps,
+        wallet,
+      )
       routes.push(mangoRoute)
-      routes.push(jupiterRoute)
     }
 
-    if (mode === 'MANGO') {
-      routes.push(mangoRoute)
-    }
-    if (mode === 'JUPITER') {
+    if (mode === 'ALL' || mode === 'JUPITER') {
+      const jupiterRoute = fetchJupiterRoutes(
+        inputMint,
+        outputMint,
+        amount,
+        slippage,
+        swapMode,
+        feeBps,
+        jupiterOnlyDirectRoutes,
+      )
       routes.push(jupiterRoute)
     }
 
@@ -234,7 +231,7 @@ const useQuoteRoutes = ({
     {
       cacheTime: 1000 * 60,
       staleTime: 1000 * 3,
-      enabled: enabled ? enabled() : amount ? true : false,
+      enabled: enabled ? enabled() : nativeAmount.toNumber() ? true : false,
       refetchInterval: 20000,
       retry: 3,
     },
