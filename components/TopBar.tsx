@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   ArrowLeftIcon,
-  ArrowRightIcon,
   CheckCircleIcon,
   DocumentDuplicateIcon,
   ExclamationTriangleIcon,
@@ -9,7 +8,6 @@ import {
 } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
-import WalletIcon from './icons/WalletIcon'
 import Button from './shared/Button'
 import ConnectedMenu from './wallet/ConnectedMenu'
 import ConnectWalletButton from './wallet/ConnectWalletButton'
@@ -31,6 +29,12 @@ import mangoStore from '@store/mangoStore'
 import UserSetupModal from './modals/UserSetupModal'
 import { IS_ONBOARDED_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
+import useBanksWithBalances from 'hooks/useBanksWithBalances'
+import useMarketsData from 'hooks/useMarketsData'
+import { MarketData } from 'types'
+import FormatNumericValue from './shared/FormatNumericValue'
+import SheenLoader from './shared/SheenLoader'
+import usePrevious from './shared/usePrevious'
 
 const set = mangoStore.getState().set
 
@@ -56,6 +60,32 @@ const TopBar = () => {
   const { isUnownedAccount } = useUnownedAccount()
   const showUserSetup = mangoStore((s) => s.showUserSetup)
   const [, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
+  const banks = useBanksWithBalances()
+  const {
+    data: marketsData,
+    isLoading: loadingPerpVolume,
+    isFetching: fetchingPerpVolume,
+  } = useMarketsData()
+
+  const tvl = useMemo(() => {
+    if (banks.length) {
+      return banks.reduce((a, c) => a + c.bank.uiPrice * c.bank.uiDeposits(), 0)
+    }
+    return 0
+  }, [banks])
+
+  const previousTvl = usePrevious(tvl)
+
+  const perpVolume = useMemo(() => {
+    if (!marketsData) return 0
+    const perpData: MarketData = marketsData.perpData
+    const perpEntries = Object.entries(perpData)
+    const totalDailyPerpVolume = perpEntries.reduce((a, c) => {
+      const volume = c[1][0].quote_volume_24h
+      return a + volume
+    }, 0)
+    return totalDailyPerpVolume
+  }, [marketsData])
 
   const handleCloseSetup = useCallback(() => {
     set((s) => {
@@ -115,69 +145,93 @@ const TopBar = () => {
               alt="logo"
             />
           </div>
-          {!connected ? (
-            mangoAccount ? (
-              <span className="hidden items-center md:flex md:pl-6">
-                <EyeIcon className="h-5 w-5 text-th-fgd-3" />
-                <span className="ml-2">
-                  {t('unowned-helper', {
-                    accountPk: '',
-                  })}
+          {mangoAccount && isUnownedAccount ? (
+            <span className="hidden items-center md:flex md:pl-6">
+              <EyeIcon className="h-5 w-5 text-th-fgd-3" />
+              <span className="ml-2">
+                {t('unowned-helper', {
+                  accountPk: '',
+                })}
+              </span>
+              :
+              <Tooltip
+                content={
+                  <>
+                    <p>{t('account')}</p>
+                    <button
+                      className="mb-2 flex items-center"
+                      onClick={() =>
+                        handleCopy(mangoAccount.publicKey.toString())
+                      }
+                    >
+                      <p className="mr-1.5 font-mono text-th-fgd-1">
+                        {abbreviateAddress(mangoAccount.publicKey)}
+                      </p>
+                      {copied === mangoAccount.publicKey.toString() ? (
+                        <CheckCircleIcon className="h-4 w-4 flex-shrink-0 text-th-success" />
+                      ) : (
+                        <DocumentDuplicateIcon className="h-4 w-4 flex-shrink-0" />
+                      )}
+                    </button>
+                    <p>{t('wallet')}</p>
+                    <button
+                      className="flex items-center"
+                      onClick={() => handleCopy(mangoAccount.owner.toString())}
+                    >
+                      <p className="mr-1.5 font-mono text-th-fgd-1">
+                        {abbreviateAddress(mangoAccount.owner)}
+                      </p>
+                      {copied === mangoAccount.owner.toString() ? (
+                        <CheckCircleIcon className="h-4 w-4 flex-shrink-0 text-th-success" />
+                      ) : (
+                        <DocumentDuplicateIcon className="h-4 w-4 flex-shrink-0" />
+                      )}
+                    </button>
+                  </>
+                }
+              >
+                <span className="tooltip-underline ml-1 font-bold text-th-fgd-1">
+                  {mangoAccount.name
+                    ? mangoAccount.name
+                    : abbreviateAddress(mangoAccount.publicKey)}
                 </span>
-                :
-                <Tooltip
-                  content={
-                    <>
-                      <p>{t('account')}</p>
-                      <button
-                        className="mb-2 flex items-center"
-                        onClick={() =>
-                          handleCopy(mangoAccount.publicKey.toString())
-                        }
-                      >
-                        <p className="mr-1.5 font-mono text-th-fgd-1">
-                          {abbreviateAddress(mangoAccount.publicKey)}
-                        </p>
-                        {copied === mangoAccount.publicKey.toString() ? (
-                          <CheckCircleIcon className="h-4 w-4 flex-shrink-0 text-th-success" />
-                        ) : (
-                          <DocumentDuplicateIcon className="h-4 w-4 flex-shrink-0" />
-                        )}
-                      </button>
-                      <p>{t('wallet')}</p>
-                      <button
-                        className="flex items-center"
-                        onClick={() =>
-                          handleCopy(mangoAccount.owner.toString())
-                        }
-                      >
-                        <p className="mr-1.5 font-mono text-th-fgd-1">
-                          {abbreviateAddress(mangoAccount.owner)}
-                        </p>
-                        {copied === mangoAccount.owner.toString() ? (
-                          <CheckCircleIcon className="h-4 w-4 flex-shrink-0 text-th-success" />
-                        ) : (
-                          <DocumentDuplicateIcon className="h-4 w-4 flex-shrink-0" />
-                        )}
-                      </button>
-                    </>
-                  }
+              </Tooltip>
+            </span>
+          ) : (
+            <div className="hidden lg:flex items-center space-x-5 pl-6">
+              <div>
+                <p className="text-xs text-th-fgd-4">{t('total-deposits')}</p>
+                <span
+                  className={`font-mono ${
+                    tvl > previousTvl
+                      ? 'text-th-up'
+                      : tvl < previousTvl
+                      ? 'text-th-down'
+                      : 'text-th-fgd-2'
+                  }`}
                 >
-                  <span className="tooltip-underline ml-1 font-bold text-th-fgd-1">
-                    {mangoAccount.name
-                      ? mangoAccount.name
-                      : abbreviateAddress(mangoAccount.publicKey)}
+                  {tvl ? <FormatNumericValue value={tvl} isUsd /> : '–'}
+                </span>
+              </div>
+              <div>
+                <p className="text-xs text-th-fgd-4">24h Perp Volume</p>
+                {loadingPerpVolume || fetchingPerpVolume ? (
+                  <SheenLoader className="mt-1">
+                    <div className="h-4 w-20 bg-th-bkg-2" />
+                  </SheenLoader>
+                ) : (
+                  <span className="font-mono">
+                    <FormatNumericValue value={perpVolume} isUsd />
                   </span>
-                </Tooltip>
-              </span>
-            ) : (
-              <span className="hidden items-center md:flex md:pl-6">
-                <WalletIcon className="h-5 w-5 text-th-fgd-3" />
-                <span className="ml-2">{t('connect-helper')}</span>
-                <ArrowRightIcon className="sideways-bounce ml-2 h-5 w-5 text-th-fgd-1" />
-              </span>
-            )
-          ) : null}
+                )}
+              </div>
+            </div>
+            // <span className="hidden items-center md:flex md:pl-6">
+            //   <WalletIcon className="h-5 w-5 text-th-fgd-3" />
+            //   <span className="ml-2">{t('connect-helper')}</span>
+            //   <ArrowRightIcon className="sideways-bounce ml-2 h-5 w-5 text-th-fgd-1" />
+            // </span>
+          )}
         </span>
         {!isOnline ? (
           <div className="absolute top-3 left-1/2 z-10 flex h-10 w-max -translate-x-1/2 items-center rounded-full bg-th-down py-2 px-4 md:top-8">
