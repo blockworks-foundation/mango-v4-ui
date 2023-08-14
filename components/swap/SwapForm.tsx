@@ -1,11 +1,11 @@
 import { useState, useCallback, useMemo, useEffect } from 'react'
 import { PublicKey } from '@solana/web3.js'
-import { Cog8ToothIcon } from '@heroicons/react/20/solid'
+import { PencilIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
 import ContentBox from '../shared/ContentBox'
 import { useTranslation } from 'next-i18next'
 import SwapFormTokenList from './SwapFormTokenList'
-import { IconButton, LinkButton } from '../shared/Button'
+import { LinkButton } from '../shared/Button'
 import { EnterBottomExitBottom } from '../shared/Transitions'
 import { HealthType } from '@blockworks-foundation/mango-v4'
 import { SWAP_MARGIN_KEY } from '../../utils/constants'
@@ -160,7 +160,7 @@ const SwapForm = () => {
         </EnterBottomExitBottom>
         <div className="relative p-6">
           {isWhiteListed ? (
-            <div className="mb-6">
+            <div className="relative mb-6">
               <TabUnderline
                 activeValue={swapOrLimit}
                 values={['swap', 'trade:trigger-order']}
@@ -168,17 +168,19 @@ const SwapForm = () => {
               />
             </div>
           ) : null}
-          <div className="absolute right-4 top-4">
-            <IconButton
-              className="text-th-fgd-3"
-              hideBg
-              onClick={() => setShowSettings(true)}
-            >
-              <Cog8ToothIcon className="h-5 w-5" />
-            </IconButton>
-          </div>
           {swapOrLimit === 'swap' ? (
-            <MarketSwapForm setShowTokenSelect={setShowTokenSelect} />
+            <>
+              {/* <div className="absolute right-4 top-4">
+                <IconButton
+                  className="text-th-fgd-3"
+                  hideBg
+                  onClick={() => setShowSettings(true)}
+                >
+                  <Cog8ToothIcon className="h-5 w-5" />
+                </IconButton>
+              </div> */}
+              <MarketSwapForm setShowTokenSelect={setShowTokenSelect} />
+            </>
           ) : (
             <LimitSwapForm
               showTokenSelect={showTokenSelect}
@@ -236,10 +238,11 @@ const SwapForm = () => {
                     {t('swap:max-slippage')}
                   </p>
                   <LinkButton
-                    className="text-right font-mono text-sm font-normal text-th-fgd-2 underline underline-offset-2 md:hover:no-underline"
+                    className="flex items-center text-right font-mono text-sm font-normal text-th-fgd-2"
                     onClick={() => setShowSettings(true)}
                   >
-                    {slippage}%
+                    <span className="mr-1.5">{slippage}%</span>
+                    <PencilIcon className="h-4 w-4" />
                   </LinkButton>
                 </div>
               </>
