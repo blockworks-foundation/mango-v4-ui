@@ -87,7 +87,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
   }, [selectedToken])
 
   const tokenPositionsFull = useMemo(() => {
-    if (!bank || !usedTokens.length || !totalTokens.length) return true
+    if (!bank || !usedTokens.length || !totalTokens.length) return false
     const hasTokenPosition = usedTokens.find(
       (token) => token.tokenIndex === bank.tokenIndex,
     )

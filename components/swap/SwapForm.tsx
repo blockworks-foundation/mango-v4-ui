@@ -50,6 +50,8 @@ import Tooltip from '@components/shared/Tooltip'
 import { formatCurrencyValue } from 'utils/numbers'
 import Switch from '@components/forms/Switch'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
+import useMangoAccountAccounts from 'hooks/useMangoAccountAccounts'
+import Link from 'next/link'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -612,6 +614,25 @@ const SwapFormSubmitButton = ({
   const { t } = useTranslation('common')
   const { connected, connect } = useWallet()
   const { amount: tokenMax, amountWithBorrow } = useTokenMax(useMargin)
+  const { usedTokens, totalTokens } = useMangoAccountAccounts()
+  const { inputBank, outputBank } = mangoStore((s) => s.swap)
+
+  const tokenPositionsFull = useMemo(() => {
+    if (!inputBank || !outputBank || !usedTokens.length || !totalTokens.length)
+      return false
+    const hasInputTokenPosition = usedTokens.find(
+      (token) => token.tokenIndex === inputBank.tokenIndex,
+    )
+    const hasOutputTokenPosition = usedTokens.find(
+      (token) => token.tokenIndex === outputBank.tokenIndex,
+    )
+    if (
+      (hasInputTokenPosition && hasOutputTokenPosition) ||
+      totalTokens.length - usedTokens.length >= 2
+    ) {
+      return false
+    } else return true
+  }, [inputBank, outputBank, usedTokens, totalTokens])
 
   const showInsufficientBalance = useMargin
     ? amountWithBorrow.lt(amountIn)
@@ -622,7 +643,8 @@ const SwapFormSubmitButton = ({
     (!amountIn.toNumber() ||
       showInsufficientBalance ||
       !amountOut ||
-      !selectedRoute)
+      !selectedRoute ||
+      tokenPositionsFull)
 
   const onClick = connected ? () => setShowConfirm(true) : connect
 
@@ -654,6 +676,21 @@ const SwapFormSubmitButton = ({
           </div>
         )}
       </Button>
+      {tokenPositionsFull ? (
+        <div className="pb-4">
+          <InlineNotification
+            type="error"
+            desc={
+              <>
+                {t('error-token-positions-full')}{' '}
+                <Link href="/settings" shallow>
+                  {t('manage')}
+                </Link>
+              </>
+            }
+          />
+        </div>
+      ) : null}
       {selectedRoute === null && amountIn.gt(0) ? (
         <div className="mb-4">
           <InlineNotification type="error" desc={t('swap:no-swap-found')} />
