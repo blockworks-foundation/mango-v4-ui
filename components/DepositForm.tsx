@@ -2,7 +2,6 @@ import {
   ArrowDownTrayIcon,
   ArrowPathIcon,
   ExclamationCircleIcon,
-  LinkIcon,
 } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
@@ -36,6 +35,7 @@ import { isMangoError } from 'types'
 import TokenListButton from './shared/TokenListButton'
 import { ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES, BackButton } from './BorrowForm'
 import TokenLogo from './shared/TokenLogo'
+import SecondaryConnectButton from './shared/SecondaryConnectButton'
 
 interface DepositFormProps {
   onSuccess: () => void
@@ -73,7 +73,6 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
   const [refreshingWalletTokens, setRefreshingWalletTokens] = useState(false)
-  const { connect } = useWallet()
   const { maxSolDeposit } = useSolBalance()
   const banks = useBanksWithBalances('walletBalance')
 
@@ -290,33 +289,35 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
               </div>
             ) : null}
           </div>
-          <Button
-            onClick={connected ? handleDeposit : connect}
-            className="flex w-full items-center justify-center"
-            disabled={connected && (!inputAmount || showInsufficientBalance)}
-            size="large"
-          >
-            {!connected ? (
-              <div className="flex items-center">
-                <LinkIcon className="mr-2 h-5 w-5" />
-                {t('connect')}
-              </div>
-            ) : submitting ? (
-              <Loading className="mr-2 h-5 w-5" />
-            ) : showInsufficientBalance ? (
-              <div className="flex items-center">
-                <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-                {t('swap:insufficient-balance', {
-                  symbol: selectedToken,
-                })}
-              </div>
-            ) : (
-              <div className="flex items-center">
-                <ArrowDownTrayIcon className="mr-2 h-5 w-5" />
-                {t('deposit')}
-              </div>
-            )}
-          </Button>
+          {connected ? (
+            <Button
+              onClick={handleDeposit}
+              className="flex w-full items-center justify-center"
+              disabled={connected && (!inputAmount || showInsufficientBalance)}
+              size="large"
+            >
+              {submitting ? (
+                <Loading className="mr-2 h-5 w-5" />
+              ) : showInsufficientBalance ? (
+                <div className="flex items-center">
+                  <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+                  {t('swap:insufficient-balance', {
+                    symbol: selectedToken,
+                  })}
+                </div>
+              ) : (
+                <div className="flex items-center">
+                  <ArrowDownTrayIcon className="mr-2 h-5 w-5" />
+                  {t('deposit')}
+                </div>
+              )}
+            </Button>
+          ) : (
+            <SecondaryConnectButton
+              className="flex w-full items-center justify-center"
+              isLarge
+            />
+          )}
         </div>
       </FadeInFadeOut>
     </>

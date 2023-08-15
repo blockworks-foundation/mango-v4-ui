@@ -4,7 +4,7 @@ import { Keypair, PublicKey } from '@solana/web3.js'
 import { useRouter } from 'next/router'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useInterval from './shared/useInterval'
-import { SECONDS } from 'utils/constants'
+import { LAST_WALLET_NAME, SECONDS } from 'utils/constants'
 import useNetworkSpeed from 'hooks/useNetworkSpeed'
 import { useWallet } from '@solana/wallet-adapter-react'
 import useLocalStorageState from 'hooks/useLocalStorageState'
@@ -20,7 +20,7 @@ const HydrateStore = () => {
   const slowNetwork = useNetworkSpeed()
   const { wallet } = useWallet()
 
-  const [, setLastWalletName] = useLocalStorageState('lastWalletName', '')
+  const [, setLastWalletName] = useLocalStorageState(LAST_WALLET_NAME, '')
 
   useEffect(() => {
     if (wallet?.adapter) {

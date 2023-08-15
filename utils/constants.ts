@@ -69,6 +69,8 @@ export const HOT_KEYS_KEY = 'hotKeys-0.1'
 
 export const AUTO_CONNECT_WALLET = 'auto-connect-0.1'
 
+export const LAST_WALLET_NAME = 'lastWalletName'
+
 // Unused
 export const PROFILE_CATEGORIES = [
   'borrower',

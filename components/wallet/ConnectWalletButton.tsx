@@ -3,7 +3,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 import WalletIcon from '@components/icons/WalletIcon'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { IS_ONBOARDED_KEY } from 'utils/constants'
+import { IS_ONBOARDED_KEY, LAST_WALLET_NAME } from 'utils/constants'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import { Popover, Transition } from '@headlessui/react'
 // import Loading from '@components/shared/Loading'
@@ -20,7 +20,7 @@ export default function ConnectWalletButton({
   const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
   const [lastWalletName] = useLocalStorageState<WalletName | null>(
-    'lastWalletName',
+    LAST_WALLET_NAME,
     '',
   )
 
