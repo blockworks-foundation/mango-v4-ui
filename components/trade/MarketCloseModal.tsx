@@ -163,7 +163,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
         )
 
         const maxSlippage = 0.025
-        const tx = await client.perpPlaceOrder(
+        const { signature: tx } = await client.perpPlaceOrder(
           group,
           mangoAccount,
           perpMarket.perpMarketIndex,

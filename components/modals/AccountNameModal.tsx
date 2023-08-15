@@ -24,7 +24,11 @@ const AccountNameModal = ({ isOpen, onClose }: ModalProps) => {
     if (!mangoAccount || !group) return
     setLoading(true)
     try {
-      const tx = await client.editMangoAccount(group, mangoAccount, name)
+      const { signature: tx, slot } = await client.editMangoAccount(
+        group,
+        mangoAccount,
+        name,
+      )
 
       setLoading(false)
       onClose()
@@ -33,7 +37,7 @@ const AccountNameModal = ({ isOpen, onClose }: ModalProps) => {
         type: 'success',
         txid: tx,
       })
-      await actions.reloadMangoAccount()
+      await actions.reloadMangoAccount(slot)
     } catch (e) {
       console.error(e)
       setLoading(false)

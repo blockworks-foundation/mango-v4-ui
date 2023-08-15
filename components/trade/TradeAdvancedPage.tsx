@@ -57,6 +57,8 @@ const TradeAdvancedPage = () => {
   )
   const [isCollapsed] = useLocalStorageState(SIDEBAR_COLLAPSE_KEY, false)
 
+  const minPageHeight = 1000
+  const topnavbarHeight = 64
   const totalCols = 24
   const gridBreakpoints = useMemo(() => {
     const sidebarWidth = isCollapsed ? 64 : 200
@@ -70,8 +72,7 @@ const TradeAdvancedPage = () => {
   }, [isCollapsed])
 
   const defaultLayouts: ReactGridLayout.Layouts = useMemo(() => {
-    const topnavbarHeight = 64
-    const innerHeight = Math.max(height - topnavbarHeight, 1000)
+    const innerHeight = Math.max(height - topnavbarHeight, minPageHeight)
     const marketHeaderHeight = 48
 
     const balancesXPos = {
@@ -252,10 +253,18 @@ const TradeAdvancedPage = () => {
         { i: 'tv-chart', x: 0, y: 1, w: 17, h: 464 },
         { i: 'orderbook', x: 18, y: 2, w: 7, h: 552 },
         { i: 'trade-form', x: 18, y: 1, w: 7, h: 572 },
-        { i: 'balances', x: 0, y: 2, w: 17, h: 428 + marketHeaderHeight },
+        {
+          i: 'balances',
+          x: 0,
+          y: 2,
+          w: 17,
+          h: 552 + 572 - 464,
+        },
       ],
     }
   }, [height, tradeLayout])
+
+  console.log(innerHeight)
 
   const [layouts, setLayouts] = useState<Layouts>(defaultLayouts)
   const [breakpoint, setBreakpoint] = useState('')
@@ -275,76 +284,80 @@ const TradeAdvancedPage = () => {
     <MobileTradeAdvancedPage />
   ) : (
     <TradeHotKeys>
-      <FavoriteMarketsBar />
-      <ResponsiveGridLayout
-        layouts={layouts}
-        breakpoints={gridBreakpoints}
-        onBreakpointChange={(bp) => setBreakpoint(bp)}
-        cols={{
-          xxxl: totalCols,
-          xxl: totalCols,
-          xl: totalCols,
-          lg: totalCols,
-          md: totalCols,
-          sm: totalCols,
-        }}
-        rowHeight={1}
-        isDraggable={!uiLocked}
-        isResizable={!uiLocked}
-        containerPadding={[0, 0]}
-        margin={[0, 0]}
-        useCSSTransforms
-        onLayoutChange={handleLayoutChange}
-        measureBeforeMount
-      >
-        <div key="market-header" className="z-10">
-          <AdvancedMarketHeader />
-        </div>
-        <div
-          key="tv-chart"
-          className="h-full border border-x-0 border-th-bkg-3"
+      <div className="pb-[27px]">
+        <FavoriteMarketsBar />
+        <ResponsiveGridLayout
+          layouts={layouts}
+          breakpoints={gridBreakpoints}
+          onBreakpointChange={(bp) => setBreakpoint(bp)}
+          cols={{
+            xxxl: totalCols,
+            xxl: totalCols,
+            xl: totalCols,
+            lg: totalCols,
+            md: totalCols,
+            sm: totalCols,
+          }}
+          rowHeight={1}
+          isDraggable={!uiLocked}
+          isResizable={!uiLocked}
+          containerPadding={[0, 0]}
+          margin={[0, 0]}
+          useCSSTransforms
+          onLayoutChange={handleLayoutChange}
+          measureBeforeMount
         >
-          <div className={`relative h-full overflow-auto`}>
-            <OrderbookTooltip />
-            <TradingChartContainer />
+          <div key="market-header" className="z-10">
+            <AdvancedMarketHeader />
           </div>
-        </div>
-        <div
-          className={`${
-            tradeLayout === 'chartLeft' ? 'lg:border-r lg:border-th-bkg-3' : ''
-          }`}
-          key="balances"
-        >
-          <TradeInfoTabs />
-        </div>
-        <div
-          className={`border-y border-l border-th-bkg-3 lg:border-b-0 ${
-            tradeLayout === 'chartMiddleOBRight'
-              ? 'lg:border-r lg:border-l-0'
-              : ''
-          } ${
-            tradeLayout === 'chartRight' ? 'lg:border-r lg:border-l-0' : ''
-          } ${tradeLayout === 'chartLeft' ? 'lg:border-l-0' : ''}`}
-          key="trade-form"
-        >
-          <AdvancedTradeForm />
-        </div>
-        <div
-          key="orderbook"
-          className={`overflow-hidden border-l border-th-bkg-3 lg:border-y ${
-            tradeLayout === 'chartRight' ? 'lg:border-l-0 lg:border-r' : ''
-          } ${
-            tradeLayout === 'chartMiddleOBLeft'
-              ? 'lg:border-l-0 lg:border-r'
-              : ''
-          } ${tradeLayout === 'chartLeft' ? 'lg:border-r' : ''}`}
-        >
-          <OrderbookAndTrades />
-        </div>
-      </ResponsiveGridLayout>
-      {/* {!tourSettings?.trade_tour_seen && isOnboarded && connected ? (
+          <div
+            key="tv-chart"
+            className="h-full border border-x-0 border-th-bkg-3"
+          >
+            <div className={`relative h-full overflow-auto`}>
+              <OrderbookTooltip />
+              <TradingChartContainer />
+            </div>
+          </div>
+          <div
+            className={`${
+              tradeLayout === 'chartLeft'
+                ? 'lg:border-r lg:border-th-bkg-3'
+                : ''
+            }`}
+            key="balances"
+          >
+            <TradeInfoTabs />
+          </div>
+          <div
+            className={`border-y border-l border-th-bkg-3 lg:border-b-0 ${
+              tradeLayout === 'chartMiddleOBRight'
+                ? 'lg:border-r lg:border-l-0'
+                : ''
+            } ${
+              tradeLayout === 'chartRight' ? 'lg:border-r lg:border-l-0' : ''
+            } ${tradeLayout === 'chartLeft' ? 'lg:border-l-0' : ''}`}
+            key="trade-form"
+          >
+            <AdvancedTradeForm />
+          </div>
+          <div
+            key="orderbook"
+            className={`overflow-hidden border-l border-th-bkg-3 lg:border-y ${
+              tradeLayout === 'chartRight' ? 'lg:border-l-0 lg:border-r' : ''
+            } ${
+              tradeLayout === 'chartMiddleOBLeft'
+                ? 'lg:border-l-0 lg:border-r'
+                : ''
+            } ${tradeLayout === 'chartLeft' ? 'lg:border-r' : ''}`}
+          >
+            <OrderbookAndTrades />
+          </div>
+        </ResponsiveGridLayout>
+        {/* {!tourSettings?.trade_tour_seen && isOnboarded && connected ? (
         <TradeOnboardingTour />
       ) : null} */}
+      </div>
     </TradeHotKeys>
   )
 }

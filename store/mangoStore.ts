@@ -248,7 +248,7 @@ export type MangoStore = {
       limit?: number,
     ) => Promise<void>
     fetchGroup: () => Promise<void>
-    reloadMangoAccount: () => Promise<void>
+    reloadMangoAccount: (slot?: number) => Promise<void>
     fetchMangoAccounts: (ownerPk: PublicKey) => Promise<void>
     fetchNfts: (connection: Connection, walletPk: PublicKey) => void
     fetchOpenOrders: (refetchMangoAccount?: boolean) => Promise<void>
@@ -568,31 +568,38 @@ const mangoStore = create<MangoStore>()(
             }
           }
         },
-        reloadMangoAccount: async () => {
+        reloadMangoAccount: async (confirmationSlot) => {
           const set = get().set
           const actions = get().actions
           try {
             const group = get().group
             const client = get().client
             const mangoAccount = get().mangoAccount.current
-            const lastSlot = get().mangoAccount.lastSlot
             if (!group) throw new Error('Group not loaded')
             if (!mangoAccount)
               throw new Error('No mango account exists for reload')
 
             const { value: reloadedMangoAccount, slot } =
               await mangoAccount.reloadWithSlot(client)
-            if (slot > lastSlot) {
-              const ma = get().mangoAccounts.find((ma) =>
-                ma.publicKey.equals(reloadedMangoAccount.publicKey),
-              )
-              if (ma) {
-                Object.assign(ma, reloadedMangoAccount)
+            const lastSlot = get().mangoAccount.lastSlot
+            if (
+              !confirmationSlot ||
+              (confirmationSlot && slot > confirmationSlot)
+            ) {
+              if (slot > lastSlot) {
+                const ma = get().mangoAccounts.find((ma) =>
+                  ma.publicKey.equals(reloadedMangoAccount.publicKey),
+                )
+                if (ma) {
+                  Object.assign(ma, reloadedMangoAccount)
+                }
+                set((state) => {
+                  state.mangoAccount.current = reloadedMangoAccount
+                  state.mangoAccount.lastSlot = slot
+                })
               }
-              set((state) => {
-                state.mangoAccount.current = reloadedMangoAccount
-                state.mangoAccount.lastSlot = slot
-              })
+            } else if (confirmationSlot && slot < confirmationSlot) {
+              actions.reloadMangoAccount(confirmationSlot)
             }
           } catch (e) {
             console.error('Error reloading mango acct', e)

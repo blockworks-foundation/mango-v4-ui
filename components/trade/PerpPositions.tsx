@@ -14,7 +14,7 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 import { calculateLimitPriceForMarketOrder } from 'utils/tradeForm'
@@ -45,6 +45,42 @@ const PerpPositions = () => {
   const { isUnownedAccount } = useUnownedAccount()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
+
+  const totalPnlStats = useMemo(() => {
+    if (openPerpPositions.length && group !== undefined) {
+      const pnlByMarket = openPerpPositions.map((position) => {
+        const market = group.getPerpMarketByMarketIndex(position.marketIndex)
+        const basePosition = position.getBasePositionUi(market)
+        const avgEntryPrice = position.getAverageEntryPriceUi(market)
+        return {
+          unrealized: position.getUnRealizedPnlUi(market),
+          realized: position.getRealizedPnlUi(),
+          total: position.cumulativePnlOverPositionLifetimeUi(market),
+          unsettled: position.getUnsettledPnlUi(market),
+          averageEntryValue: Math.abs(basePosition) * avgEntryPrice,
+        }
+      })
+
+      const p = pnlByMarket.reduce((a, b) => {
+        return {
+          unrealized: a.unrealized + b.unrealized,
+          realized: a.realized + b.realized,
+          total: a.total + b.total,
+          unsettled: a.unsettled + b.unsettled,
+          averageEntryValue: a.averageEntryValue + b.averageEntryValue,
+        }
+      })
+
+      return {
+        unrealized: p.unrealized,
+        realized: p.realized,
+        total: p.total,
+        unsettled: p.unsettled,
+        roe: (p.unrealized / p.averageEntryValue) * 100,
+      }
+    }
+    return { unrealized: 0, realized: 0, total: 0, unsettled: 0, roe: 0 }
+  }, [openPerpPositions, group])
 
   const handlePositionClick = (positionSize: number, market: PerpMarket) => {
     const tradeForm = mangoStore.getState().tradeForm
@@ -229,6 +265,7 @@ const PerpPositions = () => {
                                 realizedPnl={realizedPnl}
                                 totalPnl={totalPnl}
                                 unsettledPnl={unsettledPnl}
+                                roe={roe}
                               />
                             }
                             delay={100}
@@ -247,19 +284,6 @@ const PerpPositions = () => {
                               />
                             </span>
                           </Tooltip>
-                          <span
-                            className={roe >= 0 ? 'text-th-up' : 'text-th-down'}
-                          >
-                            <FormatNumericValue
-                              classNames="text-xs"
-                              value={roe}
-                              decimals={2}
-                            />
-                            %{' '}
-                            <span className="font-body text-xs text-th-fgd-3">
-                              (ROE)
-                            </span>
-                          </span>
                         </div>
                       </Td>
                       {!isUnownedAccount ? (
@@ -288,6 +312,65 @@ const PerpPositions = () => {
                     </TrBody>
                   )
                 })}
+                {openPerpPositions.length > 1 ? (
+                  <tr
+                    key={`total-unrealized-pnl`}
+                    className="my-1 p-2 border-y border-th-bkg-3"
+                  >
+                    <Td className="text-right font-mono">
+                      <></>
+                    </Td>
+                    <Td className="text-right font-mono">
+                      <></>
+                    </Td>
+                    <Td className="text-right font-mono">
+                      <></>
+                    </Td>
+                    <Td className="text-right font-mono">
+                      <></>
+                    </Td>
+                    <Td className="text-right font-mono">
+                      <div className="flex justify-end items-center">
+                        <span className="font-body mr-2 text-xs text-th-fgd-3">
+                          Total:
+                        </span>
+                        <Tooltip
+                          content={
+                            <PnlTooltipContent
+                              unrealizedPnl={totalPnlStats.unrealized}
+                              realizedPnl={totalPnlStats.realized}
+                              totalPnl={totalPnlStats.total}
+                              unsettledPnl={totalPnlStats.unsettled}
+                              roe={totalPnlStats.roe}
+                            />
+                          }
+                          delay={100}
+                        >
+                          <div className="flex">
+                            <span>
+                              <FormatNumericValue
+                                classNames={`tooltip-underline ${
+                                  totalPnlStats.unrealized >= 0
+                                    ? 'text-th-up'
+                                    : 'text-th-down'
+                                }`}
+                                value={totalPnlStats.unrealized}
+                                isUsd
+                                decimals={2}
+                              />
+                            </span>
+                          </div>
+                        </Tooltip>
+                      </div>
+                    </Td>
+                    {!isUnownedAccount ? (
+                      <Td className="text-right font-mono">
+                        {' '}
+                        <></>
+                      </Td>
+                    ) : null}
+                  </tr>
+                ) : null}
               </tbody>
             </Table>
           </div>
@@ -493,6 +576,7 @@ const PerpPositions = () => {
                                     realizedPnl={realizedPnl}
                                     totalPnl={totalPnl}
                                     unsettledPnl={unsettledPnl}
+                                    roe={roe}
                                   />
                                 }
                                 delay={100}
@@ -552,6 +636,72 @@ const PerpPositions = () => {
                 </Disclosure>
               )
             })}
+            {openPerpPositions.length > 0 ? (
+              <>
+                <Disclosure>
+                  {({ open }) => (
+                    <>
+                      <Disclosure.Button
+                        className={`flex w-full justify-end border-t border-th-bkg-3 p-1 text-right focus:outline-none`}
+                      >
+                        <div className="flex flex-col justify-end mt-1 ml-auto">
+                          <div className="flex flex-row">
+                            <span className="font-body mr-3 text-md text-th-fgd-3">
+                              Total Unrealized PnL:
+                            </span>
+                            <span
+                              className={`font-mono mr-2 ${
+                                totalPnlStats.unrealized > 0
+                                  ? 'text-th-up'
+                                  : 'text-th-down'
+                              }`}
+                            >
+                              <FormatNumericValue
+                                value={totalPnlStats.unrealized}
+                                isUsd
+                                decimals={2}
+                              />
+                            </span>
+                          </div>
+
+                          <div className="flex flex-row justify-end">
+                            <Transition
+                              enter="transition ease-in duration-200"
+                              enterFrom="opacity-0"
+                              enterTo="opacity-100"
+                            >
+                              <Disclosure.Panel className="mt-1">
+                                <span className="font-body mr-3 text-md text-right text-th-fgd-3">
+                                  Total ROE:
+                                </span>
+                                <span
+                                  className={`font-mono mr-1.5 ${
+                                    totalPnlStats.roe >= 0
+                                      ? 'text-th-up'
+                                      : 'text-th-down'
+                                  }`}
+                                >
+                                  <FormatNumericValue
+                                    value={totalPnlStats.roe}
+                                    decimals={2}
+                                  />
+                                  %{' '}
+                                </span>
+                              </Disclosure.Panel>
+                            </Transition>
+                          </div>
+                        </div>
+                        <ChevronDownIcon
+                          className={`${
+                            open ? 'rotate-180' : 'rotate-360'
+                          } mr-3 mt-1 h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                        />
+                      </Disclosure.Button>
+                    </>
+                  )}
+                </Disclosure>
+              </>
+            ) : null}
           </div>
         )
       ) : mangoAccount || connected ? (

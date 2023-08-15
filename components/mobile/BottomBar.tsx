@@ -8,7 +8,6 @@ import {
   Bars3Icon,
   XMarkIcon,
   ChevronRightIcon,
-  LightBulbIcon,
   ArrowsRightLeftIcon,
   CurrencyDollarIcon,
   Cog8ToothIcon,
@@ -21,6 +20,7 @@ import {
   // ClipboardDocumentIcon,
   NewspaperIcon,
   ExclamationTriangleIcon,
+  DocumentTextIcon,
 } from '@heroicons/react/20/solid'
 import SolanaTps from '@components/SolanaTps'
 import LeaderboardIcon from '@components/icons/LeaderboardIcon'
@@ -158,7 +158,7 @@ const MoreMenuPanel = ({
         <MoreMenuItem
           title={t('learn')}
           path="https://docs.mango.markets/"
-          icon={<LightBulbIcon className="h-5 w-5" />}
+          icon={<DocumentTextIcon className="h-5 w-5" />}
           isExternal
         />
         <MoreMenuItem

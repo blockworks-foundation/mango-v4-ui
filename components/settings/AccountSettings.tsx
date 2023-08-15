@@ -3,7 +3,10 @@ import MangoAccountSizeModal, {
 } from '@components/modals/MangoAccountSizeModal'
 import { LinkButton } from '@components/shared/Button'
 import Tooltip from '@components/shared/Tooltip'
-import { SquaresPlusIcon } from '@heroicons/react/20/solid'
+import {
+  ExclamationCircleIcon,
+  SquaresPlusIcon,
+} from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useTranslation } from 'next-i18next'
@@ -47,6 +50,31 @@ export const getAvaialableAccountsColor = (used: number, total: number) => {
     : 'text-th-down'
 }
 
+const isAccountSlotFull = (slots: number, max: string) => {
+  const numberMax = Number(max)
+  return slots >= numberMax
+}
+
+export const getIsAccountSizeFull = () => {
+  const mangoAccount = mangoStore.getState().mangoAccount.current
+  if (!mangoAccount) return true
+  return (
+    isAccountSlotFull(
+      mangoAccount.tokens.length,
+      MAX_ACCOUNTS.tokenAccounts!,
+    ) &&
+    isAccountSlotFull(
+      mangoAccount.serum3.length,
+      MAX_ACCOUNTS.spotOpenOrders!,
+    ) &&
+    isAccountSlotFull(mangoAccount.perps.length, MAX_ACCOUNTS.perpAccounts!) &&
+    isAccountSlotFull(
+      mangoAccount.perpOpenOrders.length,
+      MAX_ACCOUNTS.perpOpenOrders!,
+    )
+  )
+}
+
 const AccountSettings = () => {
   const { t } = useTranslation(['common', 'settings'])
   const { mangoAccountAddress } = useMangoAccount()
@@ -81,17 +109,31 @@ const AccountSettings = () => {
       ]
     }, [mangoAccountAddress])
 
+  const isAccountFull = useMemo(() => {
+    if (!mangoAccountAddress) return true
+    return getIsAccountSizeFull()
+  }, [mangoAccountAddress])
+
   return (
     <>
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-base">{t('account')}</h2>
-        <LinkButton
-          className="flex items-center"
-          onClick={() => setShowAccountSizeModal(true)}
-        >
-          <SquaresPlusIcon className="h-4 w-4 mr-1.5" />
-          {t('settings:increase-account-size')}
-        </LinkButton>
+        {!isAccountFull ? (
+          <LinkButton
+            className="flex items-center"
+            onClick={() => setShowAccountSizeModal(true)}
+          >
+            <SquaresPlusIcon className="h-4 w-4 mr-1.5" />
+            {t('settings:increase-account-size')}
+          </LinkButton>
+        ) : (
+          <div className="flex items-center">
+            <ExclamationCircleIcon className="h-4 w-4 mr-1.5 text-th-error" />
+            <p className="text-th-error">
+              {t('settings:error-account-size-full')}
+            </p>
+          </div>
+        )}
       </div>
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
         <Tooltip

@@ -306,7 +306,7 @@ const TradeHotKeys = ({ children }: { children: ReactNode }) => {
           notify({
             type: 'success',
             title: 'Transaction successful',
-            txid: tx,
+            txid: tx.signature,
           })
         } else if (selectedMarket instanceof PerpMarket) {
           const perpOrderType =
@@ -343,7 +343,7 @@ const TradeHotKeys = ({ children }: { children: ReactNode }) => {
           notify({
             type: 'success',
             title: 'Transaction successful',
-            txid: tx,
+            txid: tx.signature,
           })
         }
       } catch (e) {

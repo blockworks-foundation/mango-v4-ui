@@ -232,7 +232,7 @@ const TradingViewChart = () => {
         notify({
           type: 'success',
           title: 'Transaction successful',
-          txid: tx,
+          txid: tx.signature,
         })
       } catch (e) {
         console.error('Error canceling', e)
@@ -266,7 +266,7 @@ const TradingViewChart = () => {
         notify({
           type: 'success',
           title: 'Transaction successful',
-          txid: tx,
+          txid: tx.signature,
         })
       } catch (e) {
         console.error('Error canceling', e)
@@ -834,7 +834,7 @@ const TradingViewChart = () => {
       >
         <img
           className="absolute top-8 right-20 h-auto w-36"
-          src="/images/themes/bonk/tv-chart-image.png"
+          src={themeData.tvImagePath}
         />
       </Transition>
       <div

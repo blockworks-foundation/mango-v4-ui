@@ -40,7 +40,7 @@ const DelegateModal = ({ isOpen, onClose }: ModalProps) => {
     }
 
     try {
-      const tx = await client.editMangoAccount(
+      const { signature: tx, slot } = await client.editMangoAccount(
         group,
         mangoAccount,
         undefined,
@@ -57,7 +57,7 @@ const DelegateModal = ({ isOpen, onClose }: ModalProps) => {
         type: 'success',
         txid: tx,
       })
-      await actions.reloadMangoAccount()
+      await actions.reloadMangoAccount(slot)
     } catch (e) {
       console.error(e)
       if (!isMangoError(e)) return

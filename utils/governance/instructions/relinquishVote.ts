@@ -46,7 +46,7 @@ export async function relinquishVote(
   notify({
     title: 'Transaction confirmed',
     type: 'success',
-    txid: tx,
+    txid: tx.signature,
     noSound: true,
   })
 }

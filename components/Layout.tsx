@@ -30,6 +30,7 @@ import TermsOfUseModal from './modals/TermsOfUseModal'
 import { useTheme } from 'next-themes'
 import PromoBanner from './rewards/PromoBanner'
 import { useRouter } from 'next/router'
+import StatusBar from './StatusBar'
 
 export const sideBarAnimationDuration = 300
 const termsLastUpdated = 1679441610978
@@ -135,6 +136,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
           <TopBar />
           {asPath !== '/rewards' ? <PromoBanner /> : null}
           {children}
+          <StatusBar collapsed={isCollapsed} />
         </div>
         <DeployRefreshManager />
         <TermsOfUse />

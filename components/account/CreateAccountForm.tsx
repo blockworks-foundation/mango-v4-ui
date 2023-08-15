@@ -50,11 +50,11 @@ const CreateAccountForm = ({
     setLoading(true)
     try {
       const newAccountNum = getNextAccountNumber(mangoAccounts)
-      const tx = await client.createMangoAccount(
+      const { signature: tx } = await client.createMangoAccount(
         group,
         newAccountNum,
         name || `Account ${newAccountNum + 1}`,
-        16, // tokenCount
+        10, // tokenCount
       )
       if (tx) {
         const pk = wallet.adapter.publicKey
@@ -66,7 +66,6 @@ const CreateAccountForm = ({
           (acc) => acc.accountNum === newAccountNum,
         )
         if (newAccount) {
-          await newAccount.reloadSerum3OpenOrders(client)
           set((s) => {
             s.mangoAccount.current = newAccount
             s.mangoAccounts = reloadedMangoAccounts

@@ -130,7 +130,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
 
     setSubmitting(true)
     try {
-      const tx = await client.tokenDeposit(
+      const { signature: tx, slot } = await client.tokenDeposit(
         group,
         mangoAccount,
         bank.mint,
@@ -142,7 +142,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
         txid: tx,
       })
 
-      await actions.reloadMangoAccount()
+      await actions.reloadMangoAccount(slot)
       actions.fetchWalletTokens(publicKey)
       setSubmitting(false)
       onSuccess()

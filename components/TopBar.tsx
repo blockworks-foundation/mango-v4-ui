@@ -15,7 +15,7 @@ import ConnectedMenu from './wallet/ConnectedMenu'
 import ConnectWalletButton from './wallet/ConnectWalletButton'
 import CreateAccountModal from './modals/CreateAccountModal'
 import { useRouter } from 'next/router'
-import SolanaTps from './SolanaTps'
+// import SolanaTps from './SolanaTps'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useOnlineStatus from 'hooks/useOnlineStatus'
 import { abbreviateAddress } from 'utils/formatting'
@@ -90,7 +90,7 @@ const TopBar = () => {
 
   return (
     <div
-      className={`flex h-16 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1`}
+      className={`flex h-16 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1 bg-contain`}
       style={{ backgroundImage: `url(${themeData.topTilePath})` }}
     >
       <div className="flex w-full items-center justify-between md:space-x-4">
@@ -103,16 +103,18 @@ const TopBar = () => {
               <ArrowLeftIcon className="h-5 w-5" />
             </button>
           ) : null}
-          {connected ? (
+          {/* {connected ? (
             <div className="hidden h-[63px] bg-th-bkg-1 md:flex md:items-center md:pl-6 md:pr-8">
               <SolanaTps />
             </div>
-          ) : null}
-          <img
-            className="mr-4 h-9 w-9 flex-shrink-0 md:hidden"
-            src={themeData.logoPath}
-            alt="logo"
-          />
+          ) : null} */}
+          <div className="bg-th-bkg-1 flex items-center justify-center h-[63px] w-16 md:hidden">
+            <img
+              className="h-9 w-9 flex-shrink-0"
+              src={themeData.logoPath}
+              alt="logo"
+            />
+          </div>
           {!connected ? (
             mangoAccount ? (
               <span className="hidden items-center md:flex md:pl-6">
@@ -189,7 +191,7 @@ const TopBar = () => {
           {isUnownedAccount || (!connected && isMobile) ? null : isMobile ? (
             <button
               onClick={() => handleDepositWithdrawModal('deposit')}
-              className="h-16 border-l border-th-bkg-3 px-4 font-display text-th-fgd-1"
+              className="h-[63px] bg-th-bkg-1 border-l border-th-bkg-3 px-4 font-display text-center text-th-fgd-1"
             >{`${t('deposit')} / ${t('withdraw')}`}</button>
           ) : (
             <Button

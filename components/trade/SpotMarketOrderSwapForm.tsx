@@ -14,16 +14,12 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useWallet } from '@solana/wallet-adapter-react'
 import useIpAddress from 'hooks/useIpAddress'
 import { useTranslation } from 'next-i18next'
-import { FormEvent, useCallback, useMemo, useState } from 'react'
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import Loading from '@components/shared/Loading'
 import Button from '@components/shared/Button'
 import Image from 'next/image'
 import useQuoteRoutes from '@components/swap/useQuoteRoutes'
-import {
-  HealthType,
-  Serum3Market,
-  fetchJupiterTransaction,
-} from '@blockworks-foundation/mango-v4'
+import { HealthType, Serum3Market } from '@blockworks-foundation/mango-v4'
 import Decimal from 'decimal.js'
 import { notify } from 'utils/notifications'
 import * as sentry from '@sentry/nextjs'
@@ -42,6 +38,11 @@ import { formatTokenSymbol } from 'utils/tokens'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { useTokenMax } from '@components/swap/useTokenMax'
 import SheenLoader from '@components/shared/SheenLoader'
+import { fetchJupiterTransaction } from '@components/swap/SwapReviewRouteInfo'
+import {
+  AddressLookupTableAccount,
+  TransactionInstruction,
+} from '@solana/web3.js'
 
 const set = mangoStore.getState().set
 const slippage = 100
@@ -54,6 +55,11 @@ function stringToNumberOrZero(s: string): number {
   return n
 }
 
+type PreloadedTransaction = {
+  data: [TransactionInstruction[], AddressLookupTableAccount[]]
+  timestamp: number
+}
+
 export default function SpotMarketOrderSwapForm() {
   const { t } = useTranslation()
   const { baseSize, quoteSize, side } = mangoStore((s) => s.tradeForm)
@@ -64,6 +70,7 @@ export default function SpotMarketOrderSwapForm() {
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const [savedCheckboxSettings, setSavedCheckboxSettings] =
     useLocalStorageState(TRADE_CHECKBOXES_KEY, DEFAULT_CHECKBOX_SETTINGS)
+  const [swapTx, setSwapTx] = useState<PreloadedTransaction>()
   const {
     selectedMarket,
     price: oraclePrice,
@@ -167,14 +174,12 @@ export default function SpotMarketOrderSwapForm() {
     slippage,
     swapMode: 'ExactIn',
     wallet: publicKey?.toBase58(),
+    mode: 'JUPITER',
   })
 
-  const handlePlaceOrder = useCallback(async () => {
-    const client = mangoStore.getState().client
+  const fetchTransaction = useCallback(async () => {
     const group = mangoStore.getState().group
     const mangoAccount = mangoStore.getState().mangoAccount.current
-    const { baseSize, quoteSize, side } = mangoStore.getState().tradeForm
-    const actions = mangoStore.getState().actions
     const connection = mangoStore.getState().connection
 
     if (!group || !mangoAccount) return
@@ -189,7 +194,6 @@ export default function SpotMarketOrderSwapForm() {
     )
       return
 
-    setPlacingOrder(true)
     const [ixs, alts] = await fetchJupiterTransaction(
       connection,
       selectedRoute,
@@ -199,8 +203,38 @@ export default function SpotMarketOrderSwapForm() {
       outputBank.mint,
     )
 
+    setSwapTx({ data: [ixs, alts], timestamp: Date.now() })
+
+    return [ixs, alts]
+  }, [selectedRoute, inputBank, outputBank, publicKey])
+
+  useEffect(() => {
+    if (selectedRoute) fetchTransaction()
+  }, [selectedRoute, fetchTransaction])
+
+  const handlePlaceOrder = useCallback(async () => {
+    const client = mangoStore.getState().client
+    const group = mangoStore.getState().group
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+    const { baseSize, quoteSize, side } = mangoStore.getState().tradeForm
+    const actions = mangoStore.getState().actions
+
+    if (
+      !mangoAccount ||
+      !group ||
+      !inputBank ||
+      !outputBank ||
+      !publicKey ||
+      !selectedRoute ||
+      !swapTx
+    )
+      return
+
+    setPlacingOrder(true)
+
     try {
-      const tx = await client.marginTrade({
+      const [ixs, alts] = swapTx.data
+      const { signature: tx, slot } = await client.marginTrade({
         group,
         mangoAccount,
         inputMintPk: inputBank.mint,
@@ -227,7 +261,7 @@ export default function SpotMarketOrderSwapForm() {
       })
       actions.fetchGroup()
       actions.fetchSwapHistory(mangoAccount.publicKey.toString(), 30000)
-      await actions.reloadMangoAccount()
+      await actions.reloadMangoAccount(slot)
       set((s) => {
         s.tradeForm.baseSize = ''
         s.tradeForm.quoteSize = ''
@@ -246,7 +280,7 @@ export default function SpotMarketOrderSwapForm() {
     } finally {
       setPlacingOrder(false)
     }
-  }, [inputBank, outputBank, publicKey, selectedRoute])
+  }, [inputBank, outputBank, publicKey, selectedRoute, swapTx])
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -342,7 +376,6 @@ export default function SpotMarketOrderSwapForm() {
   const disabled =
     (connected && (!baseSize || !oraclePrice)) ||
     !serumOrPerpMarket ||
-    parseFloat(baseSize) < serumOrPerpMarket.minOrderSize ||
     isLoading ||
     tooMuchSize
 
@@ -464,7 +497,7 @@ export default function SpotMarketOrderSwapForm() {
               </Checkbox>
             </Tooltip>
           </div>
-          <div className="mt-6 mb-4 flex">
+          <div className="mt-6 mb-4 flex" onMouseEnter={fetchTransaction}>
             {ipAllowed ? (
               <Button
                 className={`flex w-full items-center justify-center ${

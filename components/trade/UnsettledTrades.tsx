@@ -47,7 +47,7 @@ const UnsettledTrades = ({
     setSettleMktAddress(mktAddress)
 
     try {
-      const txid = await client.serum3SettleFunds(
+      const tx = await client.serum3SettleFunds(
         group,
         mangoAccount,
         new PublicKey(mktAddress),
@@ -56,7 +56,7 @@ const UnsettledTrades = ({
       notify({
         type: 'success',
         title: 'Successfully settled funds',
-        txid,
+        txid: tx.signature,
       })
     } catch (e) {
       if (isMangoError(e)) {
@@ -107,7 +107,7 @@ const UnsettledTrades = ({
       const unprofitableAccount =
         mangoAccountPnl > 0 ? settleCandidates[0].account : mangoAccount
 
-      const txid = await client.perpSettlePnlAndFees(
+      const { signature: txid, slot } = await client.perpSettlePnlAndFees(
         group,
         profitableAccount,
         unprofitableAccount,
@@ -115,7 +115,7 @@ const UnsettledTrades = ({
         mangoAccount,
         market.perpMarketIndex,
       )
-      actions.reloadMangoAccount()
+      actions.reloadMangoAccount(slot)
       notify({
         type: 'success',
         title: 'Successfully settled P&L',

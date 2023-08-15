@@ -23,7 +23,7 @@ import {
 
 const MIN_ACCOUNTS = 8
 export const MAX_ACCOUNTS: AccountSizeForm = {
-  tokenAccounts: '16',
+  tokenAccounts: '10',
   spotOpenOrders: '8',
   perpAccounts: '8',
   perpOpenOrders: '64',
@@ -87,12 +87,12 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
     }, [mangoAccountAddress])
 
   useEffect(() => {
-    if (mangoAccountAddress) {
+    if (mangoAccount) {
       setAccountSizeForm({
-        tokenAccounts: mangoAccount?.tokens.length.toString(),
-        spotOpenOrders: mangoAccount?.serum3.length.toString(),
-        perpAccounts: mangoAccount?.perps.length.toString(),
-        perpOpenOrders: mangoAccount?.perpOpenOrders.length.toString(),
+        tokenAccounts: mangoAccount.tokens.length.toString(),
+        spotOpenOrders: mangoAccount.serum3.length.toString(),
+        perpAccounts: mangoAccount.perps.length.toString(),
+        perpOpenOrders: mangoAccount.perpOpenOrders.length.toString(),
       })
     }
   }, [mangoAccountAddress])
@@ -203,7 +203,7 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
       return
     setSubmitting(true)
     try {
-      const tx = await client.accountExpandV2(
+      const { signature: tx, slot } = await client.accountExpandV2(
         group,
         mangoAccount,
         parseInt(tokenAccounts),
@@ -217,7 +217,7 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
         type: 'success',
         txid: tx,
       })
-      await actions.reloadMangoAccount()
+      await actions.reloadMangoAccount(slot)
       setSubmitting(false)
     } catch (e) {
       console.error(e)
@@ -246,6 +246,12 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
         <div className="mb-4">
           <AccountSizeFormInput
             availableAccounts={availableTokens}
+            disabled={
+              mangoAccount
+                ? mangoAccount.tokens.length >=
+                  Number(MAX_ACCOUNTS.tokenAccounts)
+                : false
+            }
             error={formErrors?.tokenAccounts}
             label={t('tokens')}
             handleMax={() => handleMax('tokenAccounts')}
@@ -290,6 +296,12 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
         <div>
           <AccountSizeFormInput
             availableAccounts={availablePerpOo}
+            disabled={
+              mangoAccount
+                ? mangoAccount.perpOpenOrders.length >=
+                  Number(MAX_ACCOUNTS.perpOpenOrders)
+                : false
+            }
             error={formErrors?.perpOpenOrders}
             label={t('settings:perp-open-orders')}
             handleMax={() => handleMax('perpOpenOrders')}
