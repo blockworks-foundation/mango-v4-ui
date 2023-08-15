@@ -4,7 +4,6 @@ import {
   ArrowDownIcon,
   Cog8ToothIcon,
   ExclamationCircleIcon,
-  LinkIcon,
 } from '@heroicons/react/20/solid'
 import NumberFormat, {
   NumberFormatValues,
@@ -50,6 +49,7 @@ import Tooltip from '@components/shared/Tooltip'
 import { formatCurrencyValue } from 'utils/numbers'
 import Switch from '@components/forms/Switch'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
+import SecondaryConnectButton from '@components/shared/SecondaryConnectButton'
 
 const MAX_DIGITS = 11
 export const withValueLimit = (values: NumberFormatValues): boolean => {
@@ -610,7 +610,7 @@ const SwapFormSubmitButton = ({
   useMargin: boolean
 }) => {
   const { t } = useTranslation('common')
-  const { connected, connect } = useWallet()
+  const { connected } = useWallet()
   const { amount: tokenMax, amountWithBorrow } = useTokenMax(useMargin)
 
   const showInsufficientBalance = useMargin
@@ -624,18 +624,16 @@ const SwapFormSubmitButton = ({
       !amountOut ||
       !selectedRoute)
 
-  const onClick = connected ? () => setShowConfirm(true) : connect
-
   return (
     <>
-      <Button
-        onClick={onClick}
-        className="mt-6 mb-4 flex w-full items-center justify-center text-base"
-        disabled={disabled}
-        size="large"
-      >
-        {connected ? (
-          showInsufficientBalance ? (
+      {connected ? (
+        <Button
+          onClick={() => setShowConfirm(true)}
+          className="mt-6 mb-4 flex w-full items-center justify-center text-base"
+          disabled={disabled}
+          size="large"
+        >
+          {showInsufficientBalance ? (
             <div className="flex items-center">
               <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
               {t('swap:insufficient-balance', {
@@ -646,14 +644,14 @@ const SwapFormSubmitButton = ({
             <Loading />
           ) : (
             <span>{t('swap:review-swap')}</span>
-          )
-        ) : (
-          <div className="flex items-center">
-            <LinkIcon className="mr-2 h-5 w-5" />
-            {t('connect')}
-          </div>
-        )}
-      </Button>
+          )}
+        </Button>
+      ) : (
+        <SecondaryConnectButton
+          className="mt-6 mb-4 flex w-full items-center justify-center"
+          isLarge
+        />
+      )}
       {selectedRoute === null && amountIn.gt(0) ? (
         <div className="mb-4">
           <InlineNotification type="error" desc={t('swap:no-swap-found')} />
