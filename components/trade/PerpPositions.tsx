@@ -176,10 +176,15 @@ const PerpPositions = () => {
                   const roe =
                     (unrealizedPnl / (Math.abs(basePosition) * avgEntryPrice)) *
                     100
-                  const estLiqPrice = position.getLiquidationPriceUi(
-                    group,
-                    mangoAccount,
-                  )
+                  let estLiqPrice
+                  try {
+                    estLiqPrice = position.getLiquidationPriceUi(
+                      group,
+                      mangoAccount,
+                    )
+                  } catch (e) {
+                    estLiqPrice = null
+                  }
 
                   return (
                     <TrBody
