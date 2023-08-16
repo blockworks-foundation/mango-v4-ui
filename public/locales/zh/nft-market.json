@@ -1,12 +1,12 @@
 {
-    "sell": "Sell",
-    "my-bids": "My Bids",
-    "price": "Price",
-    "buy": "Buy",
-    "bid": "Bid",
-    "cancel-listing": "Cancel Listing",
-    "bids": "Bids",
-    "cancel": "Cancel",
-    "accept-bid": "Accept bid",
-    "list": "List"
+    "accept-bid": "接受出价",
+    "bid": "出价",
+    "bids": "出价",
+    "buy": "买",
+    "cancel": "取消",
+    "cancel-listing": "取消上架",
+    "list": "上架",
+    "my-bids": "我的出价",
+    "price": "价格",
+    "sell": "卖"
 }
