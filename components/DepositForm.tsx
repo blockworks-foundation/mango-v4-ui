@@ -36,6 +36,9 @@ import { isMangoError } from 'types'
 import TokenListButton from './shared/TokenListButton'
 import { ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES, BackButton } from './BorrowForm'
 import TokenLogo from './shared/TokenLogo'
+import useMangoAccountAccounts from 'hooks/useMangoAccountAccounts'
+import InlineNotification from './shared/InlineNotification'
+import Link from 'next/link'
 
 interface DepositFormProps {
   onSuccess: () => void
@@ -76,11 +79,20 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
   const { connect } = useWallet()
   const { maxSolDeposit } = useSolBalance()
   const banks = useBanksWithBalances('walletBalance')
+  const { usedTokens, totalTokens } = useMangoAccountAccounts()
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
     return group?.banksMapByName.get(selectedToken)?.[0]
   }, [selectedToken])
+
+  const tokenPositionsFull = useMemo(() => {
+    if (!bank || !usedTokens.length || !totalTokens.length) return false
+    const hasTokenPosition = usedTokens.find(
+      (token) => token.tokenIndex === bank.tokenIndex,
+    )
+    return hasTokenPosition ? false : usedTokens.length >= totalTokens.length
+  }, [bank, usedTokens, totalTokens])
 
   const { connected, publicKey } = useWallet()
   const walletTokens = mangoStore((s) => s.wallet.tokens)
@@ -293,7 +305,10 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
           <Button
             onClick={connected ? handleDeposit : connect}
             className="flex w-full items-center justify-center"
-            disabled={connected && (!inputAmount || showInsufficientBalance)}
+            disabled={
+              connected &&
+              (!inputAmount || showInsufficientBalance || tokenPositionsFull)
+            }
             size="large"
           >
             {!connected ? (
@@ -317,6 +332,19 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
               </div>
             )}
           </Button>
+          {tokenPositionsFull ? (
+            <InlineNotification
+              type="error"
+              desc={
+                <>
+                  {t('error-token-positions-full')}{' '}
+                  <Link href="/settings" onClick={() => onSuccess()} shallow>
+                    {t('manage')}
+                  </Link>
+                </>
+              }
+            />
+          ) : null}
         </div>
       </FadeInFadeOut>
     </>
