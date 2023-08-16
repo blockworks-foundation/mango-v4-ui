@@ -15,21 +15,18 @@ import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useSortableData } from 'hooks/useSortableData'
-// import { useViewport } from 'hooks/useViewport'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { notify } from 'utils/notifications'
 import { floorToDecimal } from 'utils/numbers'
-// import { breakpoints } from 'utils/theme'
 import * as sentry from '@sentry/nextjs'
 import { isMangoError } from 'types'
 import Loading from '@components/shared/Loading'
 import SideBadge from '@components/shared/SideBadge'
 
+// todo: add mobile table
 const SwapOrders = () => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
-  //   const { width } = useViewport()
-  //   const showTableView = width ? width > breakpoints.md : false
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const { group } = useMangoGroup()
   const { connected } = useWallet()
@@ -39,8 +36,6 @@ const SwapOrders = () => {
     if (!mangoAccount) return []
     return mangoAccount.tokenConditionalSwaps.filter((tcs) => tcs.hasData)
   }, [mangoAccount])
-
-  console.log(orders)
 
   const formattedTableData = useCallback(() => {
     if (!group) return []
@@ -70,9 +65,6 @@ const SwapOrders = () => {
       const triggerPrice = order.getThresholdPriceUi(group)
       const pricePremium = order.getPricePremium()
       const filled = order.getSoldUi(group)
-      // const currentPrice = (sellBank.uiPrice / buyBank.uiPrice).toFixed(
-      //   buyBank.mintDecimals,
-      // )
       const currentPrice = order.getCurrentPairPriceUi(group)
 
       const data = {

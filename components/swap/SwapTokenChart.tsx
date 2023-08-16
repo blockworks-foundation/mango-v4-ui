@@ -454,21 +454,21 @@ const SwapTokenChart = () => {
     })
   }, [coingeckoData, chartSwapTimes])
 
-  // const latestChartDataItem = useMemo(() => {
-  //   if (!inputBank || !outputBank) return []
-  //   const price = !flipPrices
-  //     ? outputBank.uiPrice / inputBank.uiPrice
-  //     : inputBank.uiPrice / outputBank.uiPrice
-  //   const item: ChartDataItem[] = [
-  //     {
-  //       price,
-  //       time: Date.now(),
-  //       inputTokenPrice: inputBank.uiPrice,
-  //       outputTokenPrice: outputBank.uiPrice,
-  //     },
-  //   ]
-  //   return item
-  // }, [flipPrices, inputBank, outputBank])
+  const latestChartDataItem = useMemo(() => {
+    if (!inputBank || !outputBank) return []
+    const price = flipPrices
+      ? outputBank.uiPrice / inputBank.uiPrice
+      : inputBank.uiPrice / outputBank.uiPrice
+    const item: ChartDataItem[] = [
+      {
+        price,
+        time: Date.now(),
+        inputTokenPrice: inputBank.uiPrice,
+        outputTokenPrice: outputBank.uiPrice,
+      },
+    ]
+    return item
+  }, [flipPrices, inputBank, outputBank])
 
   const chartData = useMemo(() => {
     if (!coingeckoData || !coingeckoData.length || coingeckoData.length < 2)
@@ -479,10 +479,11 @@ const SwapTokenChart = () => {
       const swapPoints = swapHistoryPoints.filter(
         (point) => point.time >= minTime && point.time <= maxTime,
       )
-      return coingeckoData.concat(swapPoints).sort((a, b) => a.time - b.time)
-      // .concat(latestChartDataItem)
-    } else return coingeckoData
-    // .concat(latestChartDataItem)
+      return coingeckoData
+        .concat(swapPoints)
+        .sort((a, b) => a.time - b.time)
+        .concat(latestChartDataItem)
+    } else return coingeckoData.concat(latestChartDataItem)
   }, [coingeckoData, swapHistoryPoints, showSwaps])
 
   const handleMouseMove: CategoricalChartFunc = useCallback(

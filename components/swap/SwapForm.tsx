@@ -169,18 +169,7 @@ const SwapForm = () => {
             </div>
           ) : null}
           {swapOrLimit === 'swap' ? (
-            <>
-              {/* <div className="absolute right-4 top-4">
-                <IconButton
-                  className="text-th-fgd-3"
-                  hideBg
-                  onClick={() => setShowSettings(true)}
-                >
-                  <Cog8ToothIcon className="h-5 w-5" />
-                </IconButton>
-              </div> */}
-              <MarketSwapForm setShowTokenSelect={setShowTokenSelect} />
-            </>
+            <MarketSwapForm setShowTokenSelect={setShowTokenSelect} />
           ) : (
             <LimitSwapForm
               showTokenSelect={showTokenSelect}
@@ -257,23 +246,6 @@ const SwapForm = () => {
                     {estSlippage.toFixed(2)}%
                   </span>
                 </div>
-                {/* {outputBank ? (
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-th-fgd-3">
-                      {t('swap:est-received')}
-                    </p>
-                    <span className="font-mono text-th-fgd-2">
-                      {floorToDecimal(
-                        amountOutAsDecimal.div(1 + estSlippage / 100),
-                        outputBank.mintDecimals,
-                      ).toNumber()}
-                      <span className="font-body text-th-fgd-3">
-                        {' '}
-                        {outputBank?.name}
-                      </span>
-                    </span>
-                  </div>
-                ) : null} */}
               </>
             ) : null}
           </div>

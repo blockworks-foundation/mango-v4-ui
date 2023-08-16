@@ -746,14 +746,6 @@ const LimitSwapForm = ({
     [flipPrices, quotePrice, setFormErrors, setOrderTypeMultiplier],
   )
 
-  // const disablePlaceOrder =
-  //   (orderType === OrderTypes.REPAY_BORROW && !hasBorrowToRepay) ||
-  //   (orderType === OrderTypes.STOP_LOSS &&
-  //     parseFloat(triggerPrice) > quotePrice) ||
-  //   (orderType === OrderTypes.TAKE_PROFIT &&
-  //     parseFloat(triggerPrice) < quotePrice) ||
-  //   amountInAsDecimal.gt(sellTokenBalance)
-
   const onClick = !connected
     ? connect
     : showInsufficientBalance || freeCollateral <= 0

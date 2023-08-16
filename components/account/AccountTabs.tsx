@@ -27,24 +27,6 @@ const AccountTabs = () => {
   const isMobile = width ? width < breakpoints.lg : false
   const { data: isWhiteListed } = useIsWhiteListed()
 
-  // const tabsWithCount: [string, number][] = useMemo(() => {
-  //   let tabs: [string, number][] = [
-  //     ['balances', 0],
-  //     ['swap:swap-history', 0],
-  //   ]
-  // if (isWhiteListed) {
-  //   const stopOrdersCount =
-  //     mangoAccount?.tokenConditionalSwaps.filter((tcs) => tcs.hasData)
-  //       ?.length || 0
-  //   tabs = [
-  //     ['balances', 0],
-  //     ['trade:trigger-orders', stopOrdersCount],
-  //     ['swap:swap-history', 0],
-  //   ]
-  // }
-  //   return tabs
-  // }, [isWhiteListed, mangoAccount])
-
   const tabsWithCount: [string, number][] = useMemo(() => {
     const unsettledTradeCount =
       Object.values(unsettledSpotBalances).flat().length +
