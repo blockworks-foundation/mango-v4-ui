@@ -137,7 +137,7 @@ const PerpPositions = () => {
                   <Th className="text-left">{t('market')}</Th>
                   <Th className="text-right">{t('trade:size')}</Th>
                   <Th className="text-right">{t('trade:avg-entry-price')}</Th>
-                  {/* <Th>
+                  <Th>
                     <div className="flex justify-end">
                       <Tooltip content={t('trade:tooltip-est-liq-price')}>
                         <span className="tooltip-underline">
@@ -145,7 +145,7 @@ const PerpPositions = () => {
                         </span>
                       </Tooltip>
                     </div>
-                  </Th> */}
+                  </Th>
                   <Th className="text-right">{t('trade:unrealized-pnl')}</Th>
                   {!isUnownedAccount ? <Th /> : null}
                 </TrHead>
@@ -176,10 +176,10 @@ const PerpPositions = () => {
                   const roe =
                     (unrealizedPnl / (Math.abs(basePosition) * avgEntryPrice)) *
                     100
-                  // const estLiqPrice = position.getLiquidationPriceUi(
-                  //   group,
-                  //   mangoAccount,
-                  // )
+                  const estLiqPrice = position.getLiquidationPriceUi(
+                    group,
+                    mangoAccount,
+                  )
 
                   return (
                     <TrBody
@@ -245,7 +245,7 @@ const PerpPositions = () => {
                           />
                         </div>
                       </Td>
-                      {/* <Td className="text-right font-mono">
+                      <Td className="text-right font-mono">
                         {estLiqPrice ? (
                           <FormatNumericValue
                             value={estLiqPrice}
@@ -255,7 +255,7 @@ const PerpPositions = () => {
                         ) : (
                           '–'
                         )}
-                      </Td> */}
+                      </Td>
                       <Td className="text-right font-mono">
                         <div className="flex flex-col items-end ">
                           <Tooltip
@@ -326,9 +326,9 @@ const PerpPositions = () => {
                     <Td className="text-right font-mono">
                       <></>
                     </Td>
-                    {/* <Td className="text-right font-mono">
+                    <Td className="text-right font-mono">
                       <></>
-                    </Td> */}
+                    </Td>
                     <Td className="text-right font-mono">
                       <div className="flex justify-end items-center">
                         <span className="font-body mr-2 text-xs text-th-fgd-3">
@@ -399,10 +399,10 @@ const PerpPositions = () => {
               const realizedPnl = position.getRealizedPnlUi()
               const roe =
                 (unrealizedPnl / (Math.abs(basePosition) * avgEntryPrice)) * 100
-              // const estLiqPrice = position.getLiquidationPriceUi(
-              //   group,
-              //   mangoAccount,
-              // )
+              const estLiqPrice = position.getLiquidationPriceUi(
+                group,
+                mangoAccount,
+              )
               const unsettledPnl = position.getUnsettledPnlUi(market)
               const notional = Math.abs(floorBasePosition) * market._uiPrice
               return (
@@ -533,7 +533,7 @@ const PerpPositions = () => {
                                 />
                               </div>
                             </div>
-                            {/* <div className="col-span-1">
+                            <div className="col-span-1">
                               <Tooltip
                                 content={t('trade:tooltip-est-liq-price')}
                               >
@@ -552,7 +552,7 @@ const PerpPositions = () => {
                                   '–'
                                 )}
                               </p>
-                            </div> */}
+                            </div>
                             <div className="col-span-1">
                               <p className="text-xs text-th-fgd-3">
                                 {t('trade:unsettled')} {t('pnl')}
