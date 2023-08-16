@@ -51,6 +51,7 @@ import { IconButton } from '@components/shared/Button'
 import Tooltip from '@components/shared/Tooltip'
 import { SwapChartSettings, SwapHistoryItem } from 'types'
 import useThemeWrapper from 'hooks/useThemeWrapper'
+import FavoriteSwapButton from './FavoriteSwapButton'
 
 dayjs.extend(relativeTime)
 
@@ -622,6 +623,10 @@ const SwapTokenChart = () => {
           </div>
           <div className="mt-2 h-40 w-auto md:h-96">
             <div className="absolute top-[2px] right-0 -mb-2 flex items-center justify-end space-x-4">
+              <FavoriteSwapButton
+                inputToken={inputBank!.name}
+                outputToken={outputBank!.name}
+              />
               <Tooltip
                 content={
                   showSwaps

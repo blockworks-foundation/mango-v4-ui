@@ -2,119 +2,41 @@ import MangoAccountSizeModal, {
   MAX_ACCOUNTS,
 } from '@components/modals/MangoAccountSizeModal'
 import { LinkButton } from '@components/shared/Button'
+import TokenLogo from '@components/shared/TokenLogo'
 import Tooltip from '@components/shared/Tooltip'
+import MarketLogos from '@components/trade/MarketLogos'
+import { Disclosure } from '@headlessui/react'
 import {
+  ChevronDownIcon,
   ExclamationCircleIcon,
   SquaresPlusIcon,
 } from '@heroicons/react/20/solid'
-import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
+import useMangoAccountAccounts, {
+  getAvaialableAccountsColor,
+} from 'hooks/useMangoAccountAccounts'
+import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
-import { useMemo, useState } from 'react'
-
-// todo: use these functions to auto show model when an account is full
-export const getUsedMangoAccountAccounts = (
-  mangoAccountAddress: string | undefined,
-) => {
-  const mangoAccount = mangoStore.getState().mangoAccount.current
-  if (!mangoAccountAddress || !mangoAccount) return [0, 0, 0, 0]
-  const { tokens, serum3, perps, perpOpenOrders } = mangoAccount
-  const usedTokens = tokens.filter((t) => t.inUseCount).length
-  const usedSerum3 = serum3.filter((s) => s.marketIndex !== 65535).length
-  const usedPerps = perps.filter((p) => p.marketIndex !== 65535).length
-  const usedPerpOo = perpOpenOrders.filter(
-    (p) => p.orderMarket !== 65535,
-  ).length
-  return [usedTokens, usedSerum3, usedPerps, usedPerpOo]
-}
-
-export const getTotalMangoAccountAccounts = (
-  mangoAccountAddress: string | undefined,
-) => {
-  const mangoAccount = mangoStore.getState().mangoAccount.current
-  if (!mangoAccountAddress || !mangoAccount) return [0, 0, 0, 0]
-  const { tokens, serum3, perps, perpOpenOrders } = mangoAccount
-  const totalTokens = tokens.length
-  const totalSerum3 = serum3.length
-  const totalPerps = perps.length
-  const totalPerpOpenOrders = perpOpenOrders.length
-  return [totalTokens, totalSerum3, totalPerps, totalPerpOpenOrders]
-}
-
-export const getAvaialableAccountsColor = (used: number, total: number) => {
-  const remaining = total - used
-  return remaining >= 4
-    ? 'text-th-up'
-    : remaining >= 2
-    ? 'text-th-warning'
-    : 'text-th-down'
-}
-
-const isAccountSlotFull = (slots: number, max: string) => {
-  const numberMax = Number(max)
-  return slots >= numberMax
-}
-
-export const getIsAccountSizeFull = () => {
-  const mangoAccount = mangoStore.getState().mangoAccount.current
-  if (!mangoAccount) return true
-  return (
-    isAccountSlotFull(
-      mangoAccount.tokens.length,
-      MAX_ACCOUNTS.tokenAccounts!,
-    ) &&
-    isAccountSlotFull(
-      mangoAccount.serum3.length,
-      MAX_ACCOUNTS.spotOpenOrders!,
-    ) &&
-    isAccountSlotFull(mangoAccount.perps.length, MAX_ACCOUNTS.perpAccounts!) &&
-    isAccountSlotFull(
-      mangoAccount.perpOpenOrders.length,
-      MAX_ACCOUNTS.perpOpenOrders!,
-    )
-  )
-}
+import { useState } from 'react'
 
 const AccountSettings = () => {
   const { t } = useTranslation(['common', 'settings'])
   const { mangoAccountAddress } = useMangoAccount()
+  const { group } = useMangoGroup()
   const [showAccountSizeModal, setShowAccountSizeModal] = useState(false)
+  const {
+    usedTokens,
+    usedSerum3,
+    usedPerps,
+    usedPerpOo,
+    totalTokens,
+    totalSerum3,
+    totalPerps,
+    totalPerpOpenOrders,
+    isAccountFull,
+  } = useMangoAccountAccounts()
 
-  const [availableTokens, availableSerum3, availablePerps, availablePerpOo] =
-    useMemo(() => {
-      const [usedTokens, usedSerum3, usedPerps, usedPerpOo] =
-        getUsedMangoAccountAccounts(mangoAccountAddress)
-      const [totalTokens, totalSerum3, totalPerps, totalPerpOpenOrders] =
-        getTotalMangoAccountAccounts(mangoAccountAddress)
-      return [
-        <span
-          className={getAvaialableAccountsColor(usedTokens, totalTokens)}
-          key="tokenAccounts"
-        >{`${usedTokens}/${totalTokens}`}</span>,
-        <span
-          className={getAvaialableAccountsColor(usedSerum3, totalSerum3)}
-          key="spotOpenOrders"
-        >{`${usedSerum3}/${totalSerum3}`}</span>,
-        <span
-          className={getAvaialableAccountsColor(usedPerps, totalPerps)}
-          key="perpAccounts"
-        >{`${usedPerps}/${totalPerps}`}</span>,
-        <span
-          className={getAvaialableAccountsColor(
-            usedPerpOo,
-            totalPerpOpenOrders,
-          )}
-          key="perpOpenOrders"
-        >{`${usedPerpOo}/${totalPerpOpenOrders}`}</span>,
-      ]
-    }, [mangoAccountAddress])
-
-  const isAccountFull = useMemo(() => {
-    if (!mangoAccountAddress) return true
-    return getIsAccountSizeFull()
-  }, [mangoAccountAddress])
-
-  return (
+  return mangoAccountAddress && group ? (
     <>
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-base">{t('account')}</h2>
@@ -135,40 +57,234 @@ const AccountSettings = () => {
           </div>
         )}
       </div>
-      <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
-        <Tooltip
-          content={t('settings:tooltip-token-accounts', {
-            max: MAX_ACCOUNTS.tokenAccounts,
-          })}
-        >
-          <p className="tooltip-underline mb-2 md:mb-0">{t('tokens')}</p>
-        </Tooltip>
-        <p className="font-mono text-th-fgd-2">{availableTokens}</p>
-      </div>
-      <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
-        <Tooltip
-          content={t('settings:tooltip-spot-open-orders', {
-            max: MAX_ACCOUNTS.spotOpenOrders,
-          })}
-        >
-          <p className="tooltip-underline mb-2 md:mb-0">
-            {t('settings:spot-open-orders')}
-          </p>
-        </Tooltip>
-        <p className="font-mono text-th-fgd-2">{availableSerum3}</p>
-      </div>
-      <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
-        <Tooltip
-          content={t('settings:tooltip-perp-positions', {
-            max: MAX_ACCOUNTS.perpAccounts,
-          })}
-        >
-          <p className="tooltip-underline mb-2 md:mb-0">
-            {t('settings:perp-positions')}
-          </p>
-        </Tooltip>
-        <p className="font-mono text-th-fgd-2">{availablePerps}</p>
-      </div>
+      <Disclosure>
+        {({ open }) => (
+          <>
+            <Disclosure.Button className="w-full border-t border-th-bkg-3 py-4 md:px-4">
+              <div className="flex items-center justify-between">
+                <Tooltip
+                  content={t('settings:tooltip-token-accounts', {
+                    max: MAX_ACCOUNTS.tokenAccounts,
+                  })}
+                >
+                  <p className="tooltip-underline">{t('tokens')}</p>
+                </Tooltip>
+                <div className="flex items-center space-x-2">
+                  <p className="font-mono">
+                    <span
+                      className={getAvaialableAccountsColor(
+                        usedTokens.length,
+                        totalTokens.length,
+                      )}
+                    >{`${usedTokens.length}/${totalTokens.length}`}</span>
+                  </p>
+                  <ChevronDownIcon
+                    className={`${
+                      open ? 'rotate-180' : 'rotate-360'
+                    } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                  />
+                </div>
+              </div>
+            </Disclosure.Button>
+            <Disclosure.Panel className="md:px-4 pb-2">
+              {usedTokens.length ? (
+                usedTokens.map((token, i) => {
+                  const tokenBank = group.getFirstBankByTokenIndex(
+                    token.tokenIndex,
+                  )
+                  return (
+                    <div
+                      className="flex items-center mb-2"
+                      key={token.tokenIndex}
+                    >
+                      <p className="mr-3 text-th-fgd-4">{i + 1}.</p>
+                      <TokenLogo bank={tokenBank} size={20} />
+                      <p className="ml-2 text-th-fgd-2">{tokenBank.name}</p>
+                    </div>
+                  )
+                })
+              ) : (
+                <p className="text-center mb-2">
+                  {t('notifications:empty-state-title')}...
+                </p>
+              )}
+            </Disclosure.Panel>
+          </>
+        )}
+      </Disclosure>
+      <Disclosure>
+        {({ open }) => (
+          <>
+            <Disclosure.Button className="w-full border-t border-th-bkg-3 py-4 md:px-4">
+              <div className="flex items-center justify-between">
+                <Tooltip
+                  content={t('settings:tooltip-spot-open-orders', {
+                    max: MAX_ACCOUNTS.spotOpenOrders,
+                  })}
+                >
+                  <p className="tooltip-underline mb-2 md:mb-0">
+                    {t('settings:spot-open-orders')}
+                  </p>
+                </Tooltip>
+                <div className="flex items-center space-x-2">
+                  <p className="font-mono">
+                    <span
+                      className={getAvaialableAccountsColor(
+                        usedSerum3.length,
+                        totalSerum3.length,
+                      )}
+                      key="spotOpenOrders"
+                    >{`${usedSerum3.length}/${totalSerum3.length}`}</span>
+                  </p>
+                  <ChevronDownIcon
+                    className={`${
+                      open ? 'rotate-180' : 'rotate-360'
+                    } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                  />
+                </div>
+              </div>
+            </Disclosure.Button>
+            <Disclosure.Panel className="md:px-4 pb-2">
+              {usedSerum3.length ? (
+                usedSerum3.map((mkt, i) => {
+                  const market = group.getSerum3MarketByMarketIndex(
+                    mkt.marketIndex,
+                  )
+                  return (
+                    <div
+                      className="flex items-center mb-2"
+                      key={mkt.marketIndex}
+                    >
+                      <p className="mr-3 text-th-fgd-4">{i + 1}.</p>
+                      <MarketLogos market={market} />
+                      <p className="text-th-fgd-2">{market.name}</p>
+                    </div>
+                  )
+                })
+              ) : (
+                <p className="text-center mb-2">
+                  {t('notifications:empty-state-title')}...
+                </p>
+              )}
+            </Disclosure.Panel>
+          </>
+        )}
+      </Disclosure>
+      <Disclosure>
+        {({ open }) => (
+          <>
+            <Disclosure.Button className="w-full border-t border-th-bkg-3 py-4 md:px-4">
+              <div className="flex items-center justify-between">
+                <Tooltip
+                  content={t('settings:tooltip-perp-positions', {
+                    max: MAX_ACCOUNTS.perpAccounts,
+                  })}
+                >
+                  <p className="tooltip-underline mb-2 md:mb-0">
+                    {t('settings:perp-positions')}
+                  </p>
+                </Tooltip>
+                <div className="flex items-center space-x-2">
+                  <p className="font-mono">
+                    <span
+                      className={getAvaialableAccountsColor(
+                        usedPerps.length,
+                        totalPerps.length,
+                      )}
+                    >{`${usedPerps.length}/${totalPerps.length}`}</span>
+                  </p>
+                  <ChevronDownIcon
+                    className={`${
+                      open ? 'rotate-180' : 'rotate-360'
+                    } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                  />
+                </div>
+              </div>
+            </Disclosure.Button>
+            <Disclosure.Panel className="md:px-4 pb-2">
+              {usedPerps.length ? (
+                usedPerps.map((perp, i) => {
+                  const market = group.getPerpMarketByMarketIndex(
+                    perp.marketIndex,
+                  )
+                  return (
+                    <div
+                      className="flex items-center mb-2"
+                      key={perp.marketIndex}
+                    >
+                      <p className="mr-3 text-th-fgd-4">{i + 1}.</p>
+                      <MarketLogos market={market} />
+                      <p className="text-th-fgd-2">{market.name}</p>
+                    </div>
+                  )
+                })
+              ) : (
+                <p className="text-center mb-2">
+                  {t('notifications:empty-state-title')}...
+                </p>
+              )}
+            </Disclosure.Panel>
+          </>
+        )}
+      </Disclosure>
+      <Disclosure>
+        {({ open }) => (
+          <>
+            <Disclosure.Button className="w-full border-t border-th-bkg-3 py-4 md:px-4">
+              <div className="flex items-center justify-between">
+                <Tooltip
+                  content={t('settings:tooltip-perp-open-orders', {
+                    max: MAX_ACCOUNTS.perpOpenOrders,
+                  })}
+                >
+                  <p className="tooltip-underline mb-2 md:mb-0">
+                    {t('settings:perp-open-orders')}
+                  </p>
+                </Tooltip>
+                <div className="flex items-center space-x-2">
+                  <p className="font-mono">
+                    <span
+                      className={getAvaialableAccountsColor(
+                        usedPerpOo.length,
+                        totalPerpOpenOrders.length,
+                      )}
+                    >{`${usedPerpOo.length}/${totalPerpOpenOrders.length}`}</span>
+                  </p>
+                  <ChevronDownIcon
+                    className={`${
+                      open ? 'rotate-180' : 'rotate-360'
+                    } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                  />
+                </div>
+              </div>
+            </Disclosure.Button>
+            <Disclosure.Panel className="md:px-4 pb-2">
+              {usedPerpOo.length ? (
+                usedPerpOo.map((perp, i) => {
+                  const market = group.getPerpMarketByMarketIndex(
+                    perp.orderMarket,
+                  )
+                  return (
+                    <div
+                      className="flex items-center mb-2"
+                      key={perp.orderMarket}
+                    >
+                      <p className="mr-3 text-th-fgd-4">{i + 1}.</p>
+                      <MarketLogos market={market} />
+                      <p className="text-th-fgd-2">{market.name}</p>
+                    </div>
+                  )
+                })
+              ) : (
+                <p className="text-center mb-2">
+                  {t('notifications:empty-state-title')}...
+                </p>
+              )}
+            </Disclosure.Panel>
+          </>
+        )}
+      </Disclosure>
+      {/* 
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
         <Tooltip
           content={t('settings:tooltip-perp-open-orders', {
@@ -180,7 +296,7 @@ const AccountSettings = () => {
           </p>
         </Tooltip>
         <p className="font-mono text-th-fgd-2">{availablePerpOo}</p>
-      </div>
+      </div> */}
       {showAccountSizeModal ? (
         <MangoAccountSizeModal
           isOpen={showAccountSizeModal}
@@ -188,7 +304,7 @@ const AccountSettings = () => {
         />
       ) : null}
     </>
-  )
+  ) : null
 }
 
 export default AccountSettings

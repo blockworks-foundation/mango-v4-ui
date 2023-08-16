@@ -331,9 +331,14 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       'ExactIn',
       true,
     )
+
     const marketInfos = swaps.routes.flatMap((x) => x.marketInfos)
-    const orcaPool = marketInfos.find((x) => x.label === 'Orca')
-    const raydiumPool = marketInfos.find((x) => x.label === 'Raydium')
+    const orcaPool = marketInfos.find((x) =>
+      x.label.toLowerCase().includes('orca'),
+    )
+    const raydiumPool = marketInfos.find((x) =>
+      x.label.toLowerCase().includes('raydium'),
+    )
     setOrcaPoolAddress(orcaPool?.id || '')
     setRaydiumPoolAddress(raydiumPool?.id || '')
   }

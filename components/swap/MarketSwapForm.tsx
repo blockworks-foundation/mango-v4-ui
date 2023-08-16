@@ -35,6 +35,8 @@ import InlineNotification from '@components/shared/InlineNotification'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import DepositWithdrawModal from '@components/modals/DepositWithdrawModal'
+import useMangoAccountAccounts from 'hooks/useMangoAccountAccounts'
+import Link from 'next/link'
 
 type MarketSwapFormProps = {
   setShowTokenSelect: Dispatch<SetStateAction<'input' | 'output' | undefined>>
@@ -328,6 +330,25 @@ const SwapFormSubmitButton = ({
   const { connected, connect } = useWallet()
   const { amount: tokenMax, amountWithBorrow } = useTokenMax(useMargin)
   const [showDepositModal, setShowDepositModal] = useState(false)
+  const { usedTokens, totalTokens } = useMangoAccountAccounts()
+  const { inputBank, outputBank } = mangoStore((s) => s.swap)
+
+  const tokenPositionsFull = useMemo(() => {
+    if (!inputBank || !outputBank || !usedTokens.length || !totalTokens.length)
+      return false
+    const hasInputTokenPosition = usedTokens.find(
+      (token) => token.tokenIndex === inputBank.tokenIndex,
+    )
+    const hasOutputTokenPosition = usedTokens.find(
+      (token) => token.tokenIndex === outputBank.tokenIndex,
+    )
+    if (
+      (hasInputTokenPosition && hasOutputTokenPosition) ||
+      totalTokens.length - usedTokens.length >= 2
+    ) {
+      return false
+    } else return true
+  }, [inputBank, outputBank, usedTokens, totalTokens])
 
   const freeCollateral = useMemo(() => {
     const group = mangoStore.getState().group
@@ -345,7 +366,7 @@ const SwapFormSubmitButton = ({
     connected &&
     !showInsufficientBalance &&
     freeCollateral > 0 &&
-    (!amountIn.toNumber() || !amountOut || !selectedRoute)
+    (!amountIn.toNumber() || !amountOut || !selectedRoute || tokenPositionsFull)
 
   const onClick = !connected
     ? connect
@@ -379,6 +400,21 @@ const SwapFormSubmitButton = ({
           </div>
         )}
       </Button>
+      {tokenPositionsFull ? (
+        <div className="pb-4">
+          <InlineNotification
+            type="error"
+            desc={
+              <>
+                {t('error-token-positions-full')}{' '}
+                <Link href="/settings" shallow>
+                  {t('manage')}
+                </Link>
+              </>
+            }
+          />
+        </div>
+      ) : null}
       {selectedRoute === null && amountIn.gt(0) ? (
         <div className="mb-4">
           <InlineNotification type="error" desc={t('swap:no-swap-found')} />
