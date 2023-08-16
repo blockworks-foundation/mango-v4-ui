@@ -50,6 +50,7 @@ const LANGS = [
 ]
 
 const DEFAULT_THEMES = [
+  'monke',
   'light',
   'medium',
   'dark',

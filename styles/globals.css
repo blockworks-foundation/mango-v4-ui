@@ -422,6 +422,35 @@ th {
   --warning: theme('colors.pepe-theme.warning');
 }
 
+[data-theme='Monke'] {
+  --active: theme('colors.monke-theme.active.DEFAULT');
+  --active-dark: theme('colors.monke-theme.active.dark');
+  --down: theme('colors.monke-theme.down.DEFAULT');
+  --down-dark: theme('colors.monke-theme.down.dark');
+  --down-muted: theme('colors.monke-theme.down.muted');
+  --up: theme('colors.monke-theme.up.DEFAULT');
+  --up-dark: theme('colors.monke-theme.up.dark');
+  --up-muted: theme('colors.monke-theme.up.muted');
+  --link: theme('colors.monke-theme.link.DEFAULT');
+  --link-hover: theme('colors.monke-theme.link.hover');
+  --bkg-1: theme('colors.monke-theme.bkg-1');
+  --bkg-2: theme('colors.monke-theme.bkg-2');
+  --bkg-3: theme('colors.monke-theme.bkg-3');
+  --bkg-4: theme('colors.monke-theme.bkg-4');
+  --fgd-1: theme('colors.monke-theme.fgd-1');
+  --fgd-2: theme('colors.monke-theme.fgd-2');
+  --fgd-3: theme('colors.monke-theme.fgd-3');
+  --fgd-4: theme('colors.monke-theme.fgd-4');
+  --button: theme('colors.monke-theme.button.DEFAULT');
+  --button-hover: theme('colors.monke-theme.button.hover');
+  --input-bkg: theme('colors.monke-theme.input.bkg');
+  --input-border: theme('colors.monke-theme.input.border');
+  --input-border-hover: theme('colors.monke-theme.input.borderDark');
+  --error: theme('colors.monke-theme.error');
+  --success: theme('colors.monke-theme.success');
+  --warning: theme('colors.monke-theme.warning');
+}
+
 /* Base */
 
 body {

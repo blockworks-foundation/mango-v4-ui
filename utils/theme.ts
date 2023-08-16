@@ -80,9 +80,24 @@ export const nftThemeMeta: NftThemeMeta = {
     tvImagePath: '/images/themes/pepe/tv-chart-image.png',
     useGradientBg: false,
   },
+  Monke: {
+    buttonStyle: 'raised',
+    fonts: { body: nunitoBody, display: nunitoDisplay, mono: ttCommonsMono },
+    logoPath: '/images/themes/monke/monke-logo.png',
+    platformName: 'Monke',
+    rainAnimationImagePath: '/images/themes/monke/monke-animation-logo.png',
+    sideImagePath: '/images/themes/monke/sidenav-image.png',
+    sideTilePath: '/images/themes/monke/monke-vert-tile.png',
+    sideTilePathExpanded: '/images/themes/monke/monke-vert-tile-expanded.png',
+    topTilePath: '/images/themes/monke/monke-hori-tile.png',
+    tvChartTheme: 'Dark',
+    tvImagePath: '/images/themes/bonk/tv-chart-image.png',
+    useGradientBg: false,
+  },
 }
 
 export const CUSTOM_SKINS: { [key: string]: string } = {
   bonk: '6FUYsgvSPiLsMpKZqLWswkw7j4juudZyVopU6RYKLkQ3',
   pepe: '6FUYsgvSPiLsMpKZqLWswkw7j4juudZyVopU6RYKLkQ3',
+  // monke: '6FUYsgvSPiLsMpKZqLWswkw7j4juudZyVopU6RYKLkQ3',
 }

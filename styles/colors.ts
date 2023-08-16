@@ -12,6 +12,7 @@ export const COLORS: Record<string, Record<string, string>> = {
     Olive: '#383629',
     Bonk: '#EE7C2F',
     Pepe: '#2B4521',
+    Monke: '#174421',
   },
   BKG2: {
     'Mango Classic': '#282433',
@@ -26,6 +27,7 @@ export const COLORS: Record<string, Record<string, string>> = {
     Olive: '#474433',
     Bonk: '#DD7813',
     Pepe: '#375A2B',
+    Monke: '#1F5B2C',
   },
   BKG3: {
     'Mango Classic': '#332e42',
@@ -40,6 +42,7 @@ export const COLORS: Record<string, Record<string, string>> = {
     Olive: '#56523e',
     Bonk: '#E5B55D',
     Pepe: '#446E35',
+    Monke: '#246A34',
   },
   BKG4: {
     'Mango Classic': '#3f3851',
@@ -54,6 +57,7 @@ export const COLORS: Record<string, Record<string, string>> = {
     Olive: '#656049',
     Bonk: '#DDA131',
     Pepe: '#51833F',
+    Monke: '#2A7A3B',
   },
   FGD4: {
     'Mango Classic': '#9189ae',
@@ -68,6 +72,7 @@ export const COLORS: Record<string, Record<string, string>> = {
     Olive: '#acaa8b',
     Bonk: '#F3E9AA',
     Pepe: '#88BD75',
+    Monke: '#EBE5AD',
   },
   UP: {
     'Mango Classic': '#89B92A',
@@ -82,6 +87,7 @@ export const COLORS: Record<string, Record<string, string>> = {
     Olive: '#4eaa27',
     Bonk: '#FAE34C',
     Pepe: '#50C11F',
+    Monke: '#50C11F',
   },
   ACTIVE: {
     'Mango Classic': '#f1c84b',
@@ -96,6 +102,7 @@ export const COLORS: Record<string, Record<string, string>> = {
     Olive: '#e7dc83',
     Bonk: '#332910',
     Pepe: '#FAE34C',
+    Monke: '#FFC919',
   },
   DOWN: {
     'Mango Classic': '#F84638',
@@ -110,5 +117,6 @@ export const COLORS: Record<string, Record<string, string>> = {
     Olive: '#ee392f',
     Bonk: '#C22E30',
     Pepe: '#DD6040',
+    Monke: '#DD6040',
   },
 }
