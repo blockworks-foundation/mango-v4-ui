@@ -17,7 +17,7 @@ const SwapInfoTabs = () => {
   const isMobile = width ? width < breakpoints.lg : false
 
   const tabsWithCount: [string, number][] = useMemo(() => {
-    let tabs: [string, number][] = [
+    const tabs: [string, number][] = [
       ['balances', 0],
       ['swap:swap-history', 0],
     ]
@@ -25,11 +25,7 @@ const SwapInfoTabs = () => {
       const stopOrdersCount =
         mangoAccount?.tokenConditionalSwaps.filter((tcs) => tcs.hasData)
           ?.length || 0
-      tabs = [
-        ['balances', 0],
-        ['trade:trigger-orders', stopOrdersCount],
-        ['swap:swap-history', 0],
-      ]
+      tabs.splice(1, 0, ['trade:trigger-orders', stopOrdersCount])
     }
     return tabs
   }, [isWhiteListed, mangoAccount])
