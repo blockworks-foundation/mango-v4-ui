@@ -9,6 +9,7 @@
     "book": "Book",
     "buys": "Buys",
     "cancel-all": "Cancel All",
+    "cancel-order": "Cancel Order",
     "cancel-order-error": "Failed to cancel order",
     "close-confirm": "Market close your {{config_name}} position",
     "close-position": "Close Position",
