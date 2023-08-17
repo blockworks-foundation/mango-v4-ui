@@ -20,10 +20,7 @@ import NumberFormat, {
 import Decimal from 'decimal.js'
 import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
-import {
-  SIZE_INPUT_UI_KEY,
-  SWAP_CHART_SETTINGS_KEY,
-} from '../../utils/constants'
+import { SIZE_INPUT_UI_KEY } from '../../utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import SwapSlider from './SwapSlider'
 import PercentageSelectButtons from './PercentageSelectButtons'
@@ -38,7 +35,6 @@ import Button, { LinkButton } from '@components/shared/Button'
 import Loading from '@components/shared/Loading'
 import TokenLogo from '@components/shared/TokenLogo'
 import InlineNotification from '@components/shared/InlineNotification'
-import { getChartPairSettings, handleFlipPrices } from './SwapTokenChart'
 import Select from '@components/forms/Select'
 import useIpAddress from 'hooks/useIpAddress'
 import { Bank, toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
@@ -108,16 +104,13 @@ const LimitSwapForm = ({
   const [submitting, setSubmitting] = useState(false)
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const [formErrors, setFormErrors] = useState<FormErrors>({})
-  const [swapChartSettings, setSwapChartSettings] = useLocalStorageState(
-    SWAP_CHART_SETTINGS_KEY,
-    [],
-  )
 
   const {
     inputBank,
     outputBank,
     amountIn: amountInFormValue,
     amountOut: amountOutFormValue,
+    flipPrices,
   } = mangoStore((s) => s.swap)
 
   const { connected, connect } = useWallet()
@@ -157,19 +150,6 @@ const LimitSwapForm = ({
 
   const showInsufficientBalance =
     tokenMax.lt(amountInAsDecimal) || tokenMax.eq(0)
-
-  const flipPrices = useMemo(() => {
-    if (!swapChartSettings.length || !inputBankName || !outputBankName)
-      return false
-    const pairSettings = getChartPairSettings(
-      swapChartSettings,
-      inputBankName,
-      outputBankName,
-    )
-    if (pairSettings) {
-      return pairSettings.quote === inputBankName
-    } else return false
-  }, [swapChartSettings, inputBankName, outputBankName])
 
   const setAmountInFormValue = useCallback((amountIn: string) => {
     set((s) => {
@@ -708,21 +688,11 @@ const LimitSwapForm = ({
     (flip: boolean) => {
       if (!inputBankName || !outputBankName) return
       setFormErrors({})
-      handleFlipPrices(
-        flip,
-        inputBankName,
-        outputBankName,
-        swapChartSettings,
-        setSwapChartSettings,
-      )
+      set((state) => {
+        state.swap.flipPrices = flip
+      })
     },
-    [
-      inputBankName,
-      outputBankName,
-      setFormErrors,
-      setSwapChartSettings,
-      swapChartSettings,
-    ],
+    [inputBankName, outputBankName, setFormErrors],
   )
 
   const handleOrderTypeChange = useCallback(

@@ -49,7 +49,6 @@ const SwapForm = () => {
       const bank = group.getFirstBankByMint(new PublicKey(mintAddress))
       set((s) => {
         s.swap.inputBank = bank
-        s.swap.limitPrice = ''
       })
     }
     setShowTokenSelect(undefined)
@@ -61,7 +60,6 @@ const SwapForm = () => {
       const bank = group.getFirstBankByMint(new PublicKey(mintAddress))
       set((s) => {
         s.swap.outputBank = bank
-        s.swap.limitPrice = ''
       })
     }
     setShowTokenSelect(undefined)

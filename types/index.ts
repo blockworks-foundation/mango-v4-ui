@@ -486,9 +486,3 @@ export interface ContributionDetails {
   perpMarketContributions: PerpMarketContribution[]
   spotUi: number
 }
-
-export type SwapChartSettings = {
-  pair: string
-  base: string
-  quote: string
-}

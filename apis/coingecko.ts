@@ -1,3 +1,5 @@
+import { Bank } from '@blockworks-foundation/mango-v4'
+
 type CoingeckoOhlcv = [
   time: number,
   open: number,
@@ -15,7 +17,9 @@ export type ChartDataItem = {
 
 export const fetchChartData = async (
   baseTokenId: string | undefined,
+  inputBank: Bank | undefined,
   quoteTokenId: string | undefined,
+  outputBank: Bank | undefined,
   daysToShow: string,
   flipPrices: boolean,
 ): Promise<ChartDataItem[]> => {
@@ -50,7 +54,20 @@ export const fetchChartData = async (
           })
         }
       }
-      return parsedData
+      if (inputBank && outputBank) {
+        const latestPrice = flipPrices
+          ? outputBank.uiPrice / inputBank.uiPrice
+          : inputBank.uiPrice / outputBank.uiPrice
+        const item: ChartDataItem[] = [
+          {
+            price: latestPrice,
+            time: Date.now(),
+            inputTokenPrice: inputBank.uiPrice,
+            outputTokenPrice: outputBank.uiPrice,
+          },
+        ]
+        return parsedData.concat(item)
+      } else return parsedData
     } else {
       return []
     }

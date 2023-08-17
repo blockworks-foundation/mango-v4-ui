@@ -219,7 +219,7 @@ export type MangoStore = {
     swapMode: 'ExactIn' | 'ExactOut'
     amountIn: string
     amountOut: string
-    limitPrice?: string
+    flipPrices: boolean
   }
   set: (x: (x: MangoStore) => void) => void
   themeData: ThemeData
@@ -386,7 +386,7 @@ const mangoStore = create<MangoStore>()(
         swapMode: 'ExactIn',
         amountIn: '',
         amountOut: '',
-        limitPrice: '',
+        flipPrices: false,
       },
       themeData: nftThemeMeta.default,
       tokenStats: {

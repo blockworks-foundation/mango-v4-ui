@@ -59,8 +59,6 @@ export const SWAP_MARGIN_KEY = 'swapMargin-0.1'
 
 export const SHOW_SWAP_INTRO_MODAL = 'showSwapModal-0.1'
 
-export const SWAP_CHART_SETTINGS_KEY = 'swapChartSettings-0.1'
-
 export const ACCEPT_TERMS_KEY = 'termsOfUseAccepted-0.1'
 
 export const TRADE_LAYOUT_KEY = 'tradeLayoutKey-0.1'

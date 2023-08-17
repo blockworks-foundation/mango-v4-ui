@@ -32,10 +32,7 @@ import { ChartDataItem, fetchChartData } from 'apis/coingecko'
 import mangoStore from '@store/mangoStore'
 import useJupiterSwapData from './useJupiterSwapData'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import {
-  ANIMATION_SETTINGS_KEY,
-  SWAP_CHART_SETTINGS_KEY,
-} from 'utils/constants'
+import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import { useTranslation } from 'next-i18next'
 import {
@@ -49,57 +46,13 @@ import { CategoricalChartFunc } from 'recharts/types/chart/generateCategoricalCh
 import { interpolateNumber } from 'd3-interpolate'
 import { IconButton } from '@components/shared/Button'
 import Tooltip from '@components/shared/Tooltip'
-import { SwapChartSettings, SwapHistoryItem } from 'types'
+import { SwapHistoryItem } from 'types'
 import useThemeWrapper from 'hooks/useThemeWrapper'
 import FavoriteSwapButton from './FavoriteSwapButton'
 
 dayjs.extend(relativeTime)
 
-export const getChartPairSettings = (
-  swapChartSettings: SwapChartSettings[],
-  inputToken: string,
-  outputToken: string,
-) => {
-  const pairSettings = swapChartSettings.find(
-    (chart: SwapChartSettings) =>
-      chart.pair.includes(inputToken) && chart.pair.includes(outputToken),
-  )
-  return pairSettings
-}
-
-export const handleFlipPrices = (
-  flip: boolean,
-  inputToken: string | undefined,
-  outputToken: string | undefined,
-  swapChartSettings: SwapChartSettings[],
-  setSwapChartSettings: (settings: SwapChartSettings[]) => void,
-) => {
-  if (!inputToken || !outputToken) return
-
-  const pairSettings = getChartPairSettings(
-    swapChartSettings,
-    inputToken,
-    outputToken,
-  )
-
-  const base = flip ? outputToken : inputToken
-  const quote = flip ? inputToken : outputToken
-
-  if (pairSettings) {
-    pairSettings.base = base
-    pairSettings.quote = quote
-    setSwapChartSettings([...swapChartSettings])
-  } else {
-    setSwapChartSettings([
-      ...swapChartSettings,
-      {
-        pair: `${outputToken}/${inputToken}`,
-        base: base,
-        quote: quote,
-      },
-    ])
-  }
-}
+const set = mangoStore.getState().set
 
 const CustomizedLabel = ({
   chartData,
@@ -225,8 +178,7 @@ const SwapHistoryArrows = (props: ExtendedReferenceDotProps) => {
 
 const SwapTokenChart = () => {
   const { t } = useTranslation('common')
-  const inputBank = mangoStore((s) => s.swap.inputBank)
-  const outputBank = mangoStore((s) => s.swap.outputBank)
+  const { inputBank, outputBank, flipPrices } = mangoStore((s) => s.swap)
   const { inputCoingeckoId, outputCoingeckoId } = useJupiterSwapData()
   const [baseTokenId, setBaseTokenId] = useState(inputCoingeckoId)
   const [quoteTokenId, setQuoteTokenId] = useState(outputCoingeckoId)
@@ -236,10 +188,6 @@ const SwapTokenChart = () => {
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
     INITIAL_ANIMATION_SETTINGS,
-  )
-  const [swapChartSettings, setSwapChartSettings] = useLocalStorageState(
-    SWAP_CHART_SETTINGS_KEY,
-    [],
   )
   const swapHistory = mangoStore((s) => s.mangoAccount.swapHistory.data)
   const loadSwapHistory = mangoStore((s) => s.mangoAccount.swapHistory.loading)
@@ -254,19 +202,6 @@ const SwapTokenChart = () => {
     if (!inputBank || !outputBank) return ['', '']
     return [inputBank.name, outputBank.name]
   }, [inputBank, outputBank])
-
-  const flipPrices = useMemo(() => {
-    if (!swapChartSettings.length || !inputBankName || !outputBankName)
-      return false
-    const pairSettings = getChartPairSettings(
-      swapChartSettings,
-      inputBankName,
-      outputBankName,
-    )
-    if (pairSettings) {
-      return pairSettings.quote === inputBankName
-    } else return false
-  }, [swapChartSettings, inputBankName, outputBankName])
 
   const swapMarketName = useMemo(() => {
     if (!inputBankName || !outputBankName) return ''
@@ -397,11 +332,19 @@ const SwapTokenChart = () => {
     isFetching,
   } = useQuery(
     ['swap-chart-data', baseTokenId, quoteTokenId, daysToShow, flipPrices],
-    () => fetchChartData(baseTokenId, quoteTokenId, daysToShow, flipPrices),
+    () =>
+      fetchChartData(
+        baseTokenId,
+        inputBank,
+        quoteTokenId,
+        outputBank,
+        daysToShow,
+        flipPrices,
+      ),
     {
       cacheTime: 1000 * 60 * 15,
       staleTime: 1000 * 60 * 1,
-      enabled: !!baseTokenId && !!quoteTokenId,
+      enabled: !!(baseTokenId && quoteTokenId),
       refetchOnWindowFocus: false,
     },
   )
@@ -454,22 +397,6 @@ const SwapTokenChart = () => {
     })
   }, [coingeckoData, chartSwapTimes])
 
-  const latestChartDataItem = useMemo(() => {
-    if (!inputBank || !outputBank) return []
-    const price = flipPrices
-      ? outputBank.uiPrice / inputBank.uiPrice
-      : inputBank.uiPrice / outputBank.uiPrice
-    const item: ChartDataItem[] = [
-      {
-        price,
-        time: Date.now(),
-        inputTokenPrice: inputBank.uiPrice,
-        outputTokenPrice: outputBank.uiPrice,
-      },
-    ]
-    return item
-  }, [flipPrices, inputBank, outputBank])
-
   const chartData = useMemo(() => {
     if (!coingeckoData || !coingeckoData.length || coingeckoData.length < 2)
       return []
@@ -479,11 +406,8 @@ const SwapTokenChart = () => {
       const swapPoints = swapHistoryPoints.filter(
         (point) => point.time >= minTime && point.time <= maxTime,
       )
-      return coingeckoData
-        .concat(swapPoints)
-        .sort((a, b) => a.time - b.time)
-        .concat(latestChartDataItem)
-    } else return coingeckoData.concat(latestChartDataItem)
+      return coingeckoData.concat(swapPoints).sort((a, b) => a.time - b.time)
+    } else return coingeckoData
   }, [coingeckoData, swapHistoryPoints, showSwaps])
 
   const handleMouseMove: CategoricalChartFunc = useCallback(
@@ -553,13 +477,9 @@ const SwapTokenChart = () => {
                   <IconButton
                     className="px-2 text-th-fgd-3"
                     onClick={() =>
-                      handleFlipPrices(
-                        !flipPrices,
-                        inputBankName,
-                        outputBankName,
-                        swapChartSettings,
-                        setSwapChartSettings,
-                      )
+                      set((state) => {
+                        state.swap.flipPrices = !flipPrices
+                      })
                     }
                     hideBg
                   >
