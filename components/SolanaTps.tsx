@@ -45,7 +45,7 @@ const SolanaTps = () => {
         <div className="flex items-center">
           <div className="relative mr-1 h-3 w-3">
             <div
-              className={`absolute top-0.5 left-0.5 h-2 w-2 rounded-full ${
+              className={`absolute left-0.5 top-0.5 h-2 w-2 rounded-full ${
                 tps < tpsWarningThreshold
                   ? 'bg-th-warning'
                   : tps < tpsAlertThreshold

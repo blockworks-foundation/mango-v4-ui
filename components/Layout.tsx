@@ -114,7 +114,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
             onClick={handleToggleSidebar}
           >
             <ChevronRightIcon
-              className={`absolute bottom-2 -right-[2px] h-4 w-4 flex-shrink-0 ${
+              className={`absolute -right-[2px] bottom-2 h-4 w-4 flex-shrink-0 ${
                 !isCollapsed ? 'rotate-180' : 'rotate-360'
               }`}
             />
@@ -197,7 +197,7 @@ function DeployRefreshManager(): JSX.Element | null {
       leaveTo="opacity-0"
     >
       <button
-        className="fixed -bottom-[46px] left-1/2 z-50 flex -translate-x-1/2 items-center rounded-full border border-th-bkg-4 bg-th-bkg-3 py-3 px-4 shadow-md focus:outline-none md:hover:bg-th-bkg-4 md:hover:shadow-none"
+        className="fixed -bottom-[46px] left-1/2 z-50 flex -translate-x-1/2 items-center rounded-full border border-th-bkg-4 bg-th-bkg-3 px-4 py-3 shadow-md focus:outline-none md:hover:bg-th-bkg-4 md:hover:shadow-none"
         onClick={() => window.location.reload()}
       >
         <p className="mr-2 whitespace-nowrap text-th-fgd-1">

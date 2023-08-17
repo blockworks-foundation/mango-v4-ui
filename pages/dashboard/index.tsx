@@ -100,7 +100,7 @@ const Dashboard: NextPage = () => {
                     Collpase All
                   </Button>
                 </div>
-                <h3 className="mt-6 mb-3 text-base text-th-fgd-3">Banks</h3>
+                <h3 className="mb-3 mt-6 text-base text-th-fgd-3">Banks</h3>
                 <div className="border-b border-th-bkg-3">
                   {Array.from(group.banksMapByMint)
                     .sort((a, b) => a[0].localeCompare(b[0]))
@@ -315,7 +315,7 @@ const Dashboard: NextPage = () => {
                                     value={`${formattedBankValues.liquidationFee}%`}
                                   />
                                   {bank.mint.toBase58() !== USDC_MINT && (
-                                    <div className="flex mt-2 mb-4">
+                                    <div className="mb-4 mt-2 flex">
                                       <Button
                                         className=" ml-auto"
                                         onClick={() =>
@@ -346,7 +346,7 @@ const Dashboard: NextPage = () => {
                     )}
                 </div>
 
-                <h3 className="mt-6 mb-3 text-base text-th-fgd-3">
+                <h3 className="mb-3 mt-6 text-base text-th-fgd-3">
                   Perp Markets
                 </h3>
                 <div className="border-b border-th-bkg-3">
@@ -635,7 +635,7 @@ const Dashboard: NextPage = () => {
                       )
                     })}
                 </div>
-                <h3 className="mt-6 mb-3 text-base text-th-fgd-3">
+                <h3 className="mb-3 mt-6 text-base text-th-fgd-3">
                   Spot Markets
                 </h3>
                 <div className="border-b border-th-bkg-3">
@@ -815,7 +815,7 @@ export const DashboardNavbar = () => {
   const { asPath } = useRouter()
 
   return (
-    <div className="mt-4 mb-2 flex border border-th-bkg-3">
+    <div className="mb-2 mt-4 flex border border-th-bkg-3">
       <div>
         <Link href={'/dashboard'} shallow={true}>
           <h4

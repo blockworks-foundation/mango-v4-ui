@@ -87,7 +87,7 @@ const SellTokenInput = ({
           isAllowed={withValueLimit}
         />
         {!isNaN(Number(amountInFormValue)) ? (
-          <span className="absolute right-3 bottom-1.5 text-xxs text-th-fgd-4">
+          <span className="absolute bottom-1.5 right-3 text-xxs text-th-fgd-4">
             {inputBank
               ? formatCurrencyValue(
                   inputBank.uiPrice * Number(amountInFormValue),

@@ -332,10 +332,10 @@ const TradeAdvancedPage = () => {
           <div
             className={`border-y border-l border-th-bkg-3 lg:border-b-0 ${
               tradeLayout === 'chartMiddleOBRight'
-                ? 'lg:border-r lg:border-l-0'
+                ? 'lg:border-l-0 lg:border-r'
                 : ''
             } ${
-              tradeLayout === 'chartRight' ? 'lg:border-r lg:border-l-0' : ''
+              tradeLayout === 'chartRight' ? 'lg:border-l-0 lg:border-r' : ''
             } ${tradeLayout === 'chartLeft' ? 'lg:border-l-0' : ''}`}
             key="trade-form"
           >

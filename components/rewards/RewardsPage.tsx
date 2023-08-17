@@ -114,7 +114,7 @@ const RewardsPage = () => {
     <>
       <div className="bg-[url('/images/rewards/madlad-tile.png')]">
         <div className="mx-auto flex max-w-[1140px] flex-col items-center p-8 lg:flex-row lg:p-10">
-          <div className="mb-6 h-[180px] w-[180px] flex-shrink-0 lg:mr-10 lg:mb-0 lg:h-[220px] lg:w-[220px]">
+          <div className="mb-6 h-[180px] w-[180px] flex-shrink-0 lg:mb-0 lg:mr-10 lg:h-[220px] lg:w-[220px]">
             <Image
               className="rounded-lg shadow-lg"
               priority

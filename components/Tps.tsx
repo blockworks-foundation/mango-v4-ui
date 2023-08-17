@@ -51,7 +51,7 @@ const Tps = () => {
             isLessThan
           />
           <Tooltip content={t('solana-tps-desc')}>
-            <span className="font-mono text-th-fgd-2 text-xs">
+            <span className="font-mono text-xs text-th-fgd-2">
               <span className="mr-1">{formatNumericValue(tps, 0)}</span>
               <span className="font-normal text-th-fgd-4">TPS</span>
             </span>
@@ -98,7 +98,7 @@ export const StatusDot = ({
   return (
     <div className="relative mr-1 h-3 w-3">
       <div
-        className={`absolute top-0.5 left-0.5 h-2 w-2 rounded-full ${dotColor}`}
+        className={`absolute left-0.5 top-0.5 h-2 w-2 rounded-full ${dotColor}`}
       />
       <div className={`absolute h-3 w-3 rounded-full opacity-40 ${dotColor}`} />
     </div>

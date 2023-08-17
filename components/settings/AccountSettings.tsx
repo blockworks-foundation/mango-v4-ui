@@ -45,12 +45,12 @@ const AccountSettings = () => {
             className="flex items-center"
             onClick={() => setShowAccountSizeModal(true)}
           >
-            <SquaresPlusIcon className="h-4 w-4 mr-1.5" />
+            <SquaresPlusIcon className="mr-1.5 h-4 w-4" />
             {t('settings:increase-account-size')}
           </LinkButton>
         ) : (
           <div className="flex items-center">
-            <ExclamationCircleIcon className="h-4 w-4 mr-1.5 text-th-error" />
+            <ExclamationCircleIcon className="mr-1.5 h-4 w-4 text-th-error" />
             <p className="text-th-error">
               {t('settings:error-account-size-full')}
             </p>
@@ -86,7 +86,7 @@ const AccountSettings = () => {
                 </div>
               </div>
             </Disclosure.Button>
-            <Disclosure.Panel className="md:px-4 pb-2">
+            <Disclosure.Panel className="pb-2 md:px-4">
               {usedTokens.length ? (
                 usedTokens.map((token, i) => {
                   const tokenBank = group.getFirstBankByTokenIndex(
@@ -94,7 +94,7 @@ const AccountSettings = () => {
                   )
                   return (
                     <div
-                      className="flex items-center mb-2"
+                      className="mb-2 flex items-center"
                       key={token.tokenIndex}
                     >
                       <p className="mr-3 text-th-fgd-4">{i + 1}.</p>
@@ -104,7 +104,7 @@ const AccountSettings = () => {
                   )
                 })
               ) : (
-                <p className="text-center mb-2">
+                <p className="mb-2 text-center">
                   {t('notifications:empty-state-title')}...
                 </p>
               )}
@@ -144,7 +144,7 @@ const AccountSettings = () => {
                 </div>
               </div>
             </Disclosure.Button>
-            <Disclosure.Panel className="md:px-4 pb-2">
+            <Disclosure.Panel className="pb-2 md:px-4">
               {usedSerum3.length ? (
                 usedSerum3.map((mkt, i) => {
                   const market = group.getSerum3MarketByMarketIndex(
@@ -152,7 +152,7 @@ const AccountSettings = () => {
                   )
                   return (
                     <div
-                      className="flex items-center mb-2"
+                      className="mb-2 flex items-center"
                       key={mkt.marketIndex}
                     >
                       <p className="mr-3 text-th-fgd-4">{i + 1}.</p>
@@ -162,7 +162,7 @@ const AccountSettings = () => {
                   )
                 })
               ) : (
-                <p className="text-center mb-2">
+                <p className="mb-2 text-center">
                   {t('notifications:empty-state-title')}...
                 </p>
               )}
@@ -201,7 +201,7 @@ const AccountSettings = () => {
                 </div>
               </div>
             </Disclosure.Button>
-            <Disclosure.Panel className="md:px-4 pb-2">
+            <Disclosure.Panel className="pb-2 md:px-4">
               {usedPerps.length ? (
                 usedPerps.map((perp, i) => {
                   const market = group.getPerpMarketByMarketIndex(
@@ -209,7 +209,7 @@ const AccountSettings = () => {
                   )
                   return (
                     <div
-                      className="flex items-center mb-2"
+                      className="mb-2 flex items-center"
                       key={perp.marketIndex}
                     >
                       <p className="mr-3 text-th-fgd-4">{i + 1}.</p>
@@ -219,7 +219,7 @@ const AccountSettings = () => {
                   )
                 })
               ) : (
-                <p className="text-center mb-2">
+                <p className="mb-2 text-center">
                   {t('notifications:empty-state-title')}...
                 </p>
               )}
@@ -258,7 +258,7 @@ const AccountSettings = () => {
                 </div>
               </div>
             </Disclosure.Button>
-            <Disclosure.Panel className="md:px-4 pb-2">
+            <Disclosure.Panel className="pb-2 md:px-4">
               {usedPerpOo.length ? (
                 usedPerpOo.map((perp, i) => {
                   const market = group.getPerpMarketByMarketIndex(
@@ -266,7 +266,7 @@ const AccountSettings = () => {
                   )
                   return (
                     <div
-                      className="flex items-center mb-2"
+                      className="mb-2 flex items-center"
                       key={perp.orderMarket}
                     >
                       <p className="mr-3 text-th-fgd-4">{i + 1}.</p>
@@ -276,7 +276,7 @@ const AccountSettings = () => {
                   )
                 })
               ) : (
-                <p className="text-center mb-2">
+                <p className="mb-2 text-center">
                   {t('notifications:empty-state-title')}...
                 </p>
               )}

@@ -117,7 +117,7 @@ const TopTokenAccounts = ({ bank }: { bank: Bank }) => {
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center rounded-md border border-th-bkg-3 py-8 px-3 md:px-4">
+          <div className="flex flex-col items-center justify-center rounded-md border border-th-bkg-3 px-3 py-8 md:px-4">
             <NoSymbolIcon className="h-6 w-6 text-th-fgd-4" />
             <p>{t('no-depositors')}</p>
           </div>
@@ -140,7 +140,7 @@ const TopTokenAccounts = ({ bank }: { bank: Bank }) => {
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center rounded-md border border-th-bkg-3 py-8 px-3 md:px-4">
+          <div className="flex flex-col items-center justify-center rounded-md border border-th-bkg-3 px-3 py-8 md:px-4">
             <NoSymbolIcon className="h-6 w-6 text-th-fgd-4" />
             <p>{t('no-borrowers')}</p>
           </div>

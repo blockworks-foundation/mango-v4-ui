@@ -831,7 +831,7 @@ const TradingViewChart = () => {
         leaveTo="scale-0 opacity-0"
       >
         <img
-          className="absolute top-8 right-20 h-auto w-36"
+          className="absolute right-20 top-8 h-auto w-36"
           src={themeData.tvImagePath}
         />
       </Transition>

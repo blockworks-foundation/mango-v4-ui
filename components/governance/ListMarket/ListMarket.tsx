@@ -284,7 +284,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
       ) : null}
       {currentView === VIEWS.BASE_TOKEN ? (
         <div className="mb-6">
-          <div className="rounded-lg border border-th-bkg-3 px-4 pt-6 pb-2">
+          <div className="rounded-lg border border-th-bkg-3 px-4 pb-2 pt-6">
             <h2 className="mb-3 px-2 text-base">
               {t('market-pair')}{' '}
               {baseToken && quoteToken
@@ -389,7 +389,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
                     {t('market-name-desc')}
                   </p>
                 </div>
-                <ul className="ml-4 mb-4 list-outside list-decimal space-y-1">
+                <ul className="mb-4 ml-4 list-outside list-decimal space-y-1">
                   <li>{t('market-name-convention-1')}</li>
                   <li>{t('market-name-convention-2')}</li>
                   <li>{t('market-name-convention-3')}</li>

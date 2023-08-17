@@ -18,7 +18,7 @@ const FavoriteMarketsBar = () => {
 
   return (
     <Transition
-      className="hide-scroll flex items-center space-x-2 overflow-x-auto border-b border-th-bkg-3 bg-th-bkg-2 py-1 px-4 md:space-x-4 md:px-6"
+      className="hide-scroll flex items-center space-x-2 overflow-x-auto border-b border-th-bkg-3 bg-th-bkg-2 px-4 py-1 md:space-x-4 md:px-6"
       show={!!favoriteMarkets.length}
       enter="transition-all ease-in duration-200"
       enterFrom="opacity-0 h-0"

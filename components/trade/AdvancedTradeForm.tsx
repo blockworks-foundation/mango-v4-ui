@@ -742,7 +742,7 @@ const AdvancedTradeForm = () => {
                 </div>
               )}
             </div>
-            <div className="mt-6 mb-4 flex px-3 md:px-4">
+            <div className="mb-4 mt-6 flex px-3 md:px-4">
               {ipAllowed ? (
                 connected ? (
                   <Button

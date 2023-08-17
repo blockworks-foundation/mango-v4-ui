@@ -458,7 +458,7 @@ const Orderbook = () => {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="h-10 flex items-center justify-between border-b border-th-bkg-3 px-4">
+      <div className="flex h-10 items-center justify-between border-b border-th-bkg-3 px-4">
         {market ? (
           <>
             <p className="text-xs">{t('trade:grouping')}:</p>
@@ -521,7 +521,7 @@ const Orderbook = () => {
           )
         })}
         <div
-          className="my-1 grid grid-cols-2 border-y border-th-bkg-3 py-1 px-4 text-xs text-th-fgd-4"
+          className="my-1 grid grid-cols-2 border-y border-th-bkg-3 px-4 py-1 text-xs text-th-fgd-4"
           id="trade-step-nine"
         >
           <div className="col-span-1 flex justify-between">

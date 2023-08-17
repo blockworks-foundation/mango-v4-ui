@@ -132,7 +132,7 @@ const SwapForm = () => {
   return (
     <ContentBox
       hidePadding
-      className="relative overflow-hidden border-x-0 bg-th-bkg-1 md:border-l md:border-r-0 md:border-t-0 md:border-b-0"
+      className="relative overflow-hidden border-x-0 bg-th-bkg-1 md:border-b-0 md:border-l md:border-r-0 md:border-t-0"
     >
       <div>
         <EnterBottomExitBottom

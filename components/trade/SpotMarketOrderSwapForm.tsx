@@ -497,7 +497,7 @@ export default function SpotMarketOrderSwapForm() {
               </Checkbox>
             </Tooltip>
           </div>
-          <div className="mt-6 mb-4 flex" onMouseEnter={fetchTransaction}>
+          <div className="mb-4 mt-6 flex" onMouseEnter={fetchTransaction}>
             {ipAllowed ? (
               <Button
                 className={`flex w-full items-center justify-center ${
@@ -686,7 +686,7 @@ export default function SpotMarketOrderSwapForm() {
                       )
                     })}
                   >
-                    <div className="tooltip-underline truncate whitespace-nowrap max-w-[140px]">
+                    <div className="tooltip-underline max-w-[140px] truncate whitespace-nowrap">
                       {selectedRoute?.marketInfos.map((info, index) => {
                         let includeSeparator = false
                         if (

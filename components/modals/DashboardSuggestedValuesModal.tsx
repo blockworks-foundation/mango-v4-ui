@@ -287,7 +287,7 @@ const DashboardSuggestedValues = ({
       <h3 className="mb-6">
         {bank.name} - Suggested tier: {suggestedTier}
       </h3>
-      <div className="flex flex-col max-h-[600px] w-full overflow-auto">
+      <div className="flex max-h-[600px] w-full flex-col overflow-auto">
         <Disclosure.Panel>
           <KeyValuePair
             label="Loan Fee Rate"

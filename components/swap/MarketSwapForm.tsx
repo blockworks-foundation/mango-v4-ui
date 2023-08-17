@@ -219,7 +219,7 @@ const MarketSwapForm = ({ setShowTokenSelect }: MarketSwapFormProps) => {
     <>
       <div>
         <Transition
-          className="absolute top-0 right-0 z-10 h-full w-full bg-th-bkg-1 pb-0"
+          className="absolute right-0 top-0 z-10 h-full w-full bg-th-bkg-1 pb-0"
           show={showConfirm}
           enter="transition ease-in duration-300"
           enterFrom="-translate-x-full"
@@ -291,7 +291,7 @@ const MarketSwapForm = ({ setShowTokenSelect }: MarketSwapFormProps) => {
       ) : (
         <Button
           disabled
-          className="mt-6 mb-4 w-full leading-tight"
+          className="mb-4 mt-6 w-full leading-tight"
           size="large"
         >
           {t('country-not-allowed', {
@@ -375,7 +375,7 @@ const SwapFormSubmitButton = ({
       {connected ? (
         <Button
           onClick={onClick}
-          className="mt-6 mb-4 flex w-full items-center justify-center text-base"
+          className="mb-4 mt-6 flex w-full items-center justify-center text-base"
           disabled={disabled}
           size="large"
         >
@@ -392,7 +392,7 @@ const SwapFormSubmitButton = ({
         </Button>
       ) : (
         <SecondaryConnectButton
-          className="mt-6 mb-4 flex w-full items-center justify-center"
+          className="mb-4 mt-6 flex w-full items-center justify-center"
           isLarge
         />
       )}

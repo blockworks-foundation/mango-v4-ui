@@ -302,7 +302,7 @@ const DepthChart = () => {
 
   return chartData.length ? (
     <>
-      <div className="flex h-10 items-center border-b border-th-bkg-3 py-1 px-2">
+      <div className="flex h-10 items-center border-b border-th-bkg-3 px-2 py-1">
         <div className="flex w-full items-center">
           <span className="w-16 font-mono text-xs text-th-fgd-3">
             {priceRangePercent}%

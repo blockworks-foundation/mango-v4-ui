@@ -228,7 +228,7 @@ const UserSetupModal = ({
         <ColorBlur
           width="66%"
           height="300px"
-          className="-top-20 -left-20 bg-th-button opacity-10 brightness-125"
+          className="-left-20 -top-20 bg-th-button opacity-10 brightness-125"
         />
         <ColorBlur
           width="50%"
@@ -236,11 +236,11 @@ const UserSetupModal = ({
           className="-bottom-20 -right-20 bg-th-bkg-1 opacity-30 mix-blend-multiply"
         />
         <img
-          className={`absolute top-6 left-6 h-10 w-10 flex-shrink-0`}
+          className={`absolute left-6 top-6 h-10 w-10 flex-shrink-0`}
           src="/logos/logo-mark.svg"
           alt="next"
         />
-        <div className="absolute top-0 left-0 z-10 flex h-1.5 w-full flex-grow bg-th-bkg-3">
+        <div className="absolute left-0 top-0 z-10 flex h-1.5 w-full flex-grow bg-th-bkg-3">
           <div
             style={{
               width: `${(showSetupStep / 3) * 100}%`,
@@ -300,7 +300,7 @@ const UserSetupModal = ({
                 <div className="space-y-2">
                   {walletsDisplayed?.map((w) => (
                     <button
-                      className={`col-span-1 w-full rounded-md border py-3 px-4 text-base font-normal focus:outline-none md:hover:cursor-pointer md:hover:border-th-fgd-4 ${
+                      className={`col-span-1 w-full rounded-md border px-4 py-3 text-base font-normal focus:outline-none md:hover:cursor-pointer md:hover:border-th-fgd-4 ${
                         w.adapter.name === wallet?.adapter.name
                           ? 'border-th-active text-th-fgd-1 md:hover:border-th-active'
                           : 'border-th-bkg-4 text-th-fgd-2'

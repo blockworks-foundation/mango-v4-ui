@@ -44,9 +44,9 @@ const StatusBar = ({ collapsed }: { collapsed: boolean }) => {
 
   return (
     <div
-      className={`hidden fixed ${
+      className={`fixed hidden ${
         collapsed ? 'w-[calc(100vw-64px)]' : 'w-[calc(100vw-200px)]'
-      } bottom-0 bg-th-input-bkg md:grid md:grid-cols-3 px-4 md:px-6 py-1 z-10`}
+      } bottom-0 z-10 bg-th-input-bkg px-4 py-1 md:grid md:grid-cols-3 md:px-6`}
     >
       <div className="col-span-1 flex items-center space-x-2">
         <Tps />
@@ -56,7 +56,7 @@ const StatusBar = ({ collapsed }: { collapsed: boolean }) => {
       <div className="col-span-1 flex items-center justify-center">
         <Tooltip content={t('program-version')}>
           <a
-            className="text-th-fgd-3 text-xs focus:outline-none md:hover:text-th-fgd-2"
+            className="text-xs text-th-fgd-3 focus:outline-none md:hover:text-th-fgd-2"
             href={`https://github.com/blockworks-foundation/mango-v4/releases`}
             rel="noreferrer noopener"
             target="_blank"
@@ -68,7 +68,7 @@ const StatusBar = ({ collapsed }: { collapsed: boolean }) => {
           <Tooltip content={t('latest-ui-commit')}>
             <span className="mx-1.5 text-th-fgd-4">|</span>
             <a
-              className="text-th-fgd-3 text-xs focus:outline-none md:hover:text-th-fgd-2"
+              className="text-xs text-th-fgd-3 focus:outline-none md:hover:text-th-fgd-2"
               href={latestCommit.url}
               rel="noreferrer noopener"
               target="_blank"
@@ -80,30 +80,30 @@ const StatusBar = ({ collapsed }: { collapsed: boolean }) => {
       </div>
       <div className="col-span-1 flex items-center justify-end space-x-4 text-xs">
         <a
-          className="text-th-fgd-3 focus:outline-none flex items-center md:hover:text-th-fgd-2"
+          className="flex items-center text-th-fgd-3 focus:outline-none md:hover:text-th-fgd-2"
           href="https://docs.mango.markets"
           rel="noreferrer noopener"
           target="_blank"
         >
-          <DocumentTextIcon className="h-3 w-3 mr-1" />
+          <DocumentTextIcon className="mr-1 h-3 w-3" />
           <span>{t('docs')}</span>
         </a>
         <a
-          className="text-th-fgd-3 focus:outline-none flex items-center md:hover:text-th-fgd-2"
+          className="flex items-center text-th-fgd-3 focus:outline-none md:hover:text-th-fgd-2"
           href="https://discord.gg/2uwjsBc5yw"
           rel="noreferrer noopener"
           target="_blank"
         >
-          <DiscordIcon className="h-3 w-3 mr-1" />
+          <DiscordIcon className="mr-1 h-3 w-3" />
           <span>{t('discord')}</span>
         </a>
         <a
-          className="text-th-fgd-3 focus:outline-none flex items-center md:hover:text-th-fgd-2"
+          className="flex items-center text-th-fgd-3 focus:outline-none md:hover:text-th-fgd-2"
           href="https://twitter.com/mangomarkets"
           rel="noreferrer noopener"
           target="_blank"
         >
-          <TwitterIcon className="h-3 w-3 mr-1" />
+          <TwitterIcon className="mr-1 h-3 w-3" />
           <span>{t('twitter')}</span>
         </a>
       </div>

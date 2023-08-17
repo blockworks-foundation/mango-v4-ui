@@ -441,7 +441,7 @@ export const ExpandableMenuItem = ({
       >
         <div
           className={`rounded-md rounded-l-none bg-th-bkg-2 ${
-            alignBottom ? 'pt-4 pb-2' : 'py-2'
+            alignBottom ? 'pb-2 pt-4' : 'py-2'
           }`}
         >
           <div className="flex items-center justify-between pl-4 pr-2">

@@ -38,7 +38,7 @@ const TokenStatsCharts = () => {
 
   return (
     <>
-      <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-r">
+      <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 md:border-r">
         <DetailedAreaOrBarChart
           data={mangoStats.concat([
             {
@@ -60,7 +60,7 @@ const TokenStatsCharts = () => {
           yKey={'depositValue'}
         />
       </div>
-      <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:pl-6">
+      <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 md:pl-6">
         <DetailedAreaOrBarChart
           data={mangoStats.concat([
             {
@@ -82,7 +82,7 @@ const TokenStatsCharts = () => {
           yKey={'borrowValue'}
         />
       </div>
-      <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-r md:pl-6">
+      <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 md:border-r md:pl-6">
         <DetailedAreaOrBarChart
           data={mangoStats.concat([
             {

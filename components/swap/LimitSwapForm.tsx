@@ -783,7 +783,7 @@ const LimitSwapForm = ({
                 onValueChange={handleTriggerPrice}
                 isAllowed={withValueLimit}
               />
-              <div className="absolute top-1/2 -translate-y-1/2 left-2">
+              <div className="absolute left-2 top-1/2 -translate-y-1/2">
                 <TokenLogo
                   bank={flipPrices ? inputBank : outputBank}
                   size={16}
@@ -793,7 +793,7 @@ const LimitSwapForm = ({
           </div>
           <div className="flex justify-end">
             <LinkButton
-              className="flex items-center font-normal text-xxs text-th-fgd-3"
+              className="flex items-center text-xxs font-normal text-th-fgd-3"
               onClick={() => toggleFlipPrices(!flipPrices)}
             >
               <span className="mr-1">{triggerPriceSuffix}</span>
@@ -870,7 +870,7 @@ const LimitSwapForm = ({
       {ipAllowed ? (
         <Button
           onClick={onClick}
-          className="mt-6 mb-4 flex w-full items-center justify-center text-base"
+          className="mb-4 mt-6 flex w-full items-center justify-center text-base"
           size="large"
         >
           {connected ? (
@@ -894,7 +894,7 @@ const LimitSwapForm = ({
       ) : (
         <Button
           disabled
-          className="mt-6 mb-4 w-full leading-tight"
+          className="mb-4 mt-6 w-full leading-tight"
           size="large"
         >
           {t('country-not-allowed', {

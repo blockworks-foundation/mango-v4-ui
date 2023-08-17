@@ -134,9 +134,8 @@ const makeCreateMarketInstruction = async ({
   }
 }) => {
   const ins1: TransactionInstruction[] = []
-  const accountLamports = await connection.getMinimumBalanceForRentExemption(
-    165,
-  )
+  const accountLamports =
+    await connection.getMinimumBalanceForRentExemption(165)
   ins1.push(
     SystemProgram.createAccount({
       fromPubkey: wallet,

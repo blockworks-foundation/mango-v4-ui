@@ -290,7 +290,7 @@ const SwapOrders = () => {
                 <Td>
                   <p className="text-right">
                     {size}
-                    <span className="text-th-fgd-3 font-body">
+                    <span className="font-body text-th-fgd-3">
                       {' '}
                       {bank.name}
                     </span>
@@ -299,7 +299,7 @@ const SwapOrders = () => {
                 <Td>
                   <p className="text-right">
                     {filled}/{size}
-                    <span className="text-th-fgd-3 font-body">
+                    <span className="font-body text-th-fgd-3">
                       {' '}
                       {bank.name}
                     </span>
@@ -308,7 +308,7 @@ const SwapOrders = () => {
                 <Td>
                   <p className="text-right">
                     {currentPrice}
-                    <span className="text-th-fgd-3 font-body">
+                    <span className="font-body text-th-fgd-3">
                       {' '}
                       {buyBank.name}
                     </span>
@@ -317,7 +317,7 @@ const SwapOrders = () => {
                 <Td>
                   <p className="text-right">
                     {triggerPrice}
-                    <span className="text-th-fgd-3 font-body">
+                    <span className="font-body text-th-fgd-3">
                       {' '}
                       {side === 'buy' ? sellBank.name : buyBank.name}
                     </span>
@@ -377,15 +377,15 @@ const SwapOrders = () => {
                         <SideBadge side={side} />
                         <p className="font-mono text-th-fgd-2">
                           {size}
-                          <span className="text-th-fgd-3 font-body">
+                          <span className="font-body text-th-fgd-3">
                             {' '}
                             {bank.name}
                           </span>
-                          <span className="text-th-fgd-3 font-body">
+                          <span className="font-body text-th-fgd-3">
                             {' at '}
                           </span>
                           {triggerPrice}
-                          <span className="text-th-fgd-3 font-body">
+                          <span className="font-body text-th-fgd-3">
                             {' '}
                             {side === 'buy' ? sellBank.name : buyBank.name}
                           </span>
@@ -404,14 +404,14 @@ const SwapOrders = () => {
                     enterTo="opacity-100"
                   >
                     <Disclosure.Panel>
-                      <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4 pb-4">
+                      <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pb-4 pt-4">
                         <div className="col-span-1">
                           <p className="text-xs text-th-fgd-3">
                             {t('trade:size')}
                           </p>
                           <p className="font-mono text-th-fgd-1">
                             {size}
-                            <span className="text-th-fgd-3 font-body">
+                            <span className="font-body text-th-fgd-3">
                               {' '}
                               {bank.name}
                             </span>
@@ -423,7 +423,7 @@ const SwapOrders = () => {
                           </p>
                           <p className="font-mono text-th-fgd-1">
                             {filled}/{size}
-                            <span className="text-th-fgd-3 font-body">
+                            <span className="font-body text-th-fgd-3">
                               {' '}
                               {bank.name}
                             </span>
@@ -435,7 +435,7 @@ const SwapOrders = () => {
                           </p>
                           <p className="font-mono text-th-fgd-1">
                             {currentPrice}
-                            <span className="text-th-fgd-3 font-body">
+                            <span className="font-body text-th-fgd-3">
                               {' '}
                               {buyBank.name}
                             </span>
@@ -447,7 +447,7 @@ const SwapOrders = () => {
                           </p>
                           <p className="font-mono text-th-fgd-1">
                             {triggerPrice}
-                            <span className="text-th-fgd-3 font-body">
+                            <span className="font-body text-th-fgd-3">
                               {' '}
                               {side === 'buy' ? sellBank.name : buyBank.name}
                             </span>

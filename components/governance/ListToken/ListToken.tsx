@@ -995,7 +995,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                   </li>
                 ) : null}
               </ol>
-              <div className="mt-6 flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
+              <div className="mt-6 flex flex-col space-y-3 sm:flex-row sm:space-x-4 sm:space-y-0">
                 <Button secondary onClick={cancel} size="large">
                   {t('cancel')}
                 </Button>

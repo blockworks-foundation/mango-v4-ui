@@ -465,7 +465,7 @@ const SwapTokenChart = () => {
       ) : chartData?.length && baseTokenId && quoteTokenId ? (
         <div className="relative h-full">
           {swapTooltipData ? (
-            <div className="absolute left-1/2 bottom-2 z-10 w-full -translate-x-1/2 rounded-md border border-th-bkg-3 bg-th-bkg-1 px-4 py-2">
+            <div className="absolute bottom-2 left-1/2 z-10 w-full -translate-x-1/2 rounded-md border border-th-bkg-3 bg-th-bkg-1 px-4 py-2">
               {renderTooltipContent(swapTooltipData)}
             </div>
           ) : null}
@@ -543,7 +543,7 @@ const SwapTokenChart = () => {
             </div>
           </div>
           <div className="mt-2 h-40 w-auto md:h-96">
-            <div className="absolute top-[2px] right-0 -mb-2 flex items-center justify-end space-x-4">
+            <div className="absolute right-0 top-[2px] -mb-2 flex items-center justify-end space-x-4">
               <FavoriteSwapButton
                 inputToken={inputBank!.name}
                 outputToken={outputBank!.name}

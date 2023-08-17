@@ -45,7 +45,7 @@ const MaxMarketSwapAmount = ({
   if (mangoAccountLoading) return null
 
   return (
-    <div className="mb-2 mt-3 flex items-center justify-between w-full">
+    <div className="mb-2 mt-3 flex w-full items-center justify-between">
       <p className="text-xs text-th-fgd-3">{t('trade:size')}</p>
       <MaxAmountButton
         className="text-xs"

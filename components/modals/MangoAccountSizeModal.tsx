@@ -323,7 +323,7 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
           />
         </div>
         <Button
-          className="w-full mb-4 mt-6 flex items-center justify-center"
+          className="mb-4 mt-6 flex w-full items-center justify-center"
           onClick={handleUpdateAccountSize}
           size="large"
         >
@@ -370,7 +370,7 @@ const AccountSizeFormInput = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <Tooltip content={tooltipContent}>
-            <Label className="mr-1 tooltip-underline" text={label} />
+            <Label className="tooltip-underline mr-1" text={label} />
           </Tooltip>
         </div>
         {!disabled ? (
@@ -396,7 +396,7 @@ const AccountSizeFormInput = ({
           disabled={disabled}
         />
         <div
-          className={`flex items-center border border-l-0 border-th-input-border rounded-r-md h-10 px-2 ${
+          className={`flex h-10 items-center rounded-r-md border border-l-0 border-th-input-border px-2 ${
             disabled ? 'bg-th-bkg-2' : 'bg-th-input-bkg'
           }`}
         >

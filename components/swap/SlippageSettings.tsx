@@ -32,7 +32,7 @@ const SlippageSettings = ({ onClose }: { onClose: () => void }) => {
     <>
       <h3 className="mb-3">{t('swap:slippage')}</h3>
       <IconButton
-        className="absolute top-2 right-2 text-th-fgd-3"
+        className="absolute right-2 top-2 text-th-fgd-3"
         onClick={onClose}
         hideBg
       >

@@ -105,7 +105,7 @@ const AccountPage = () => {
           <div className="hide-scroll flex justify-center space-x-2 md:justify-start">
             {TABS.map((tab) => (
               <button
-                className={`rounded-md py-1.5 px-2.5 text-sm font-medium focus-visible:bg-th-bkg-3 focus-visible:text-th-fgd-1 ${
+                className={`rounded-md px-2.5 py-1.5 text-sm font-medium focus-visible:bg-th-bkg-3 focus-visible:text-th-fgd-1 ${
                   activeTab === tab
                     ? 'bg-th-bkg-3 text-th-active md:hover:text-th-active'
                     : 'text-th-fgd-3 md:hover:text-th-fgd-2'
@@ -131,7 +131,7 @@ const AccountPage = () => {
             ) : null}
           </div>
         </div>
-        <div className="mt-6 mb-1 lg:mt-0">
+        <div className="mb-1 mt-6 lg:mt-0">
           <AccountActions />
         </div>
       </div>

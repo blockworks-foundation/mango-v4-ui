@@ -8,11 +8,11 @@ const PerpMarketsPositions = () => {
   const { t } = useTranslation('stats')
   return (
     <>
-      <div className="px-6 pt-6 pb-2">
+      <div className="px-6 pb-2 pt-6">
         <h2 className="text-lg">{t('stats:largest-perp-positions')}</h2>
       </div>
       <LargestPerpPositions />
-      <div className="px-6 pt-8 pb-2">
+      <div className="px-6 pb-2 pt-8">
         <h2 className="text-lg">{t('stats:closest-to-liquidation')}</h2>
       </div>
       <ClosestToLiquidation />

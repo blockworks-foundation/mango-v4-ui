@@ -104,7 +104,7 @@ export default function ConnectWalletButton({
                   leaveFrom="opacity-100"
                   leaveTo="opacity-0"
                 >
-                  <Popover.Panel className="absolute top-16 right-0 z-20 w-48 rounded-md rounded-t-none bg-th-bkg-2 px-4 py-2.5 outline-none">
+                  <Popover.Panel className="absolute right-0 top-16 z-20 w-48 rounded-md rounded-t-none bg-th-bkg-2 px-4 py-2.5 outline-none">
                     {detectedWallets.map((wallet, index) => (
                       <button
                         className="flex w-full flex-row items-center justify-between rounded-none py-2 font-normal focus:outline-none focus-visible:text-th-active md:hover:cursor-pointer md:hover:text-th-active"

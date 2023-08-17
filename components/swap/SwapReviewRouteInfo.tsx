@@ -374,7 +374,7 @@ const SwapReviewRouteInfo = ({
     <div className="thin-scroll flex h-full flex-col justify-between overflow-y-auto">
       <div>
         <IconButton
-          className="absolute top-4 left-4 mr-3 text-th-fgd-2"
+          className="absolute left-4 top-4 mr-3 text-th-fgd-2"
           onClick={onClose}
           size="small"
           ref={focusRef}

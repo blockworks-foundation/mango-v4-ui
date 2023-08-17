@@ -66,7 +66,7 @@ const Market: NextPage = () => {
   return isWhiteListed ? (
     <>
       <div className="mx-auto flex max-w-[1140px] flex-col px-6">
-        <div className="flex items-center justify-between pt-8 pb-6">
+        <div className="flex items-center justify-between pb-6 pt-8">
           <h1>NFT Market</h1>
           <div className="flex space-x-2">
             <Button onClick={() => setSellNftModal(true)}>

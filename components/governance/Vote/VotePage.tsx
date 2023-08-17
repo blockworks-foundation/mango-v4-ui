@@ -5,7 +5,7 @@ const Vote = dynamic(() => import('./Vote'))
 
 const VotePage = () => {
   return (
-    <div className="py-8 px-4 pb-20 sm:px-6 md:pb-16 lg:p-10">
+    <div className="px-4 py-8 pb-20 sm:px-6 md:pb-16 lg:p-10">
       <GovernancePageWrapper>
         <Vote />
       </GovernancePageWrapper>
