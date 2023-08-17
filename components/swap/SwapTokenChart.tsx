@@ -1,4 +1,4 @@
-import {
+import React, {
   MouseEventHandler,
   useCallback,
   useEffect,
@@ -51,6 +51,8 @@ import useThemeWrapper from 'hooks/useThemeWrapper'
 import FavoriteSwapButton from './FavoriteSwapButton'
 
 dayjs.extend(relativeTime)
+
+const set = mangoStore.getState().set
 
 const CustomizedLabel = ({
   chartData,
@@ -176,14 +178,12 @@ const SwapHistoryArrows = (props: ExtendedReferenceDotProps) => {
 
 const SwapTokenChart = () => {
   const { t } = useTranslation('common')
-  const inputBank = mangoStore((s) => s.swap.inputBank)
-  const outputBank = mangoStore((s) => s.swap.outputBank)
+  const { inputBank, outputBank, flipPrices } = mangoStore((s) => s.swap)
   const { inputCoingeckoId, outputCoingeckoId } = useJupiterSwapData()
   const [baseTokenId, setBaseTokenId] = useState(inputCoingeckoId)
   const [quoteTokenId, setQuoteTokenId] = useState(outputCoingeckoId)
   const [mouseData, setMouseData] = useState<ChartDataItem>()
   const [daysToShow, setDaysToShow] = useState('1')
-  const [flipPrices, setFlipPrices] = useState(false)
   const { theme } = useThemeWrapper()
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
@@ -197,6 +197,20 @@ const SwapTokenChart = () => {
   const [swapTooltipCoingeckoPrice, setSwapTooltipCoingeckoPrice] = useState<
     string | number | undefined
   >(undefined)
+
+  const [inputBankName, outputBankName] = useMemo(() => {
+    if (!inputBank || !outputBank) return ['', '']
+    return [inputBank.name, outputBank.name]
+  }, [inputBank, outputBank])
+
+  const swapMarketName = useMemo(() => {
+    if (!inputBankName || !outputBankName) return ''
+    const inputSymbol = formatTokenSymbol(inputBankName)
+    const outputSymbol = formatTokenSymbol(outputBankName)
+    return flipPrices
+      ? `${outputSymbol}/${inputSymbol}`
+      : `${inputSymbol}/${outputSymbol}`
+  }, [flipPrices, inputBankName, outputBankName])
 
   const handleSwapMouseEnter = useCallback(
     (
@@ -216,19 +230,6 @@ const SwapTokenChart = () => {
   const handleSwapMouseLeave = useCallback(() => {
     setSwapTooltipData(null)
   }, [setSwapTooltipData])
-
-  const swapMarketName = useMemo(() => {
-    if (!inputBank || !outputBank) return ''
-    const inputSymbol = formatTokenSymbol(inputBank.name)
-    const outputSymbol = formatTokenSymbol(outputBank.name)
-    return ['usd-coin', 'tether'].includes(inputCoingeckoId || '')
-      ? !flipPrices
-        ? `${outputSymbol}/${inputSymbol}`
-        : `${inputSymbol}/${outputSymbol}`
-      : !flipPrices
-      ? `${inputSymbol}/${outputSymbol}`
-      : `${outputSymbol}/${inputSymbol}`
-  }, [flipPrices, inputBank, inputCoingeckoId, outputBank])
 
   const renderTooltipContent = useCallback(
     (swap: SwapHistoryItem) => {
@@ -326,47 +327,40 @@ const SwapTokenChart = () => {
   )
 
   const {
-    data: coingeckoDataQuery,
+    data: coingeckoData,
     isLoading,
     isFetching,
   } = useQuery(
-    ['swap-chart-data', baseTokenId, quoteTokenId, daysToShow],
-    () => fetchChartData(baseTokenId, quoteTokenId, daysToShow),
+    ['swap-chart-data', baseTokenId, quoteTokenId, daysToShow, flipPrices],
+    () =>
+      fetchChartData(
+        baseTokenId,
+        inputBank,
+        quoteTokenId,
+        outputBank,
+        daysToShow,
+        flipPrices,
+      ),
     {
       cacheTime: 1000 * 60 * 15,
       staleTime: 1000 * 60 * 1,
-      enabled: !!baseTokenId && !!quoteTokenId,
+      enabled: !!(baseTokenId && quoteTokenId),
       refetchOnWindowFocus: false,
     },
   )
-
-  const coingeckoData = useMemo(() => {
-    if (!coingeckoDataQuery || !coingeckoDataQuery.length) return []
-    if (!flipPrices) {
-      return coingeckoDataQuery
-    } else {
-      return coingeckoDataQuery.map((d: ChartDataItem) => {
-        const price =
-          d.inputTokenPrice / d.outputTokenPrice === d.price
-            ? d.outputTokenPrice / d.inputTokenPrice
-            : d.inputTokenPrice / d.outputTokenPrice
-        return { ...d, price: price }
-      })
-    }
-  }, [flipPrices, coingeckoDataQuery])
 
   const chartSwapTimes = useMemo(() => {
     if (
       loadSwapHistory ||
       !swapHistory ||
       !swapHistory.length ||
-      !inputBank ||
-      !outputBank
+      !inputBankName ||
+      !outputBankName
     )
       return []
     const chartSymbols = [
-      inputBank.name === 'ETH (Portal)' ? 'ETH' : inputBank.name,
-      outputBank.name === 'ETH (Portal)' ? 'ETH' : outputBank.name,
+      inputBankName === 'ETH (Portal)' ? 'ETH' : inputBankName,
+      outputBankName === 'ETH (Portal)' ? 'ETH' : outputBankName,
     ]
     return swapHistory
       .filter(
@@ -375,10 +369,11 @@ const SwapTokenChart = () => {
           chartSymbols.includes(swap.swap_out_symbol),
       )
       .map((val) => dayjs(val.block_datetime).unix() * 1000)
-  }, [swapHistory, loadSwapHistory, inputBank, outputBank])
+  }, [swapHistory, loadSwapHistory, inputBankName, outputBankName])
 
   const swapHistoryPoints = useMemo(() => {
-    if (!coingeckoData.length || !chartSwapTimes.length) return []
+    if (!coingeckoData || !coingeckoData.length || !chartSwapTimes.length)
+      return []
     return chartSwapTimes.map((x) => {
       const makeChartDataItem = { inputTokenPrice: 1, outputTokenPrice: 1 }
       const index = coingeckoData.findIndex((d) => d.time > x) // find index of data point with x value greater than highlight x
@@ -430,20 +425,15 @@ const SwapTokenChart = () => {
 
   useEffect(() => {
     if (!inputCoingeckoId || !outputCoingeckoId) return
-
-    if (['usd-coin', 'tether'].includes(outputCoingeckoId)) {
-      setBaseTokenId(inputCoingeckoId)
-      setQuoteTokenId(outputCoingeckoId)
-    } else {
-      setBaseTokenId(outputCoingeckoId)
-      setQuoteTokenId(inputCoingeckoId)
-    }
+    setBaseTokenId(inputCoingeckoId)
+    setQuoteTokenId(outputCoingeckoId)
   }, [inputCoingeckoId, outputCoingeckoId])
 
   const calculateChartChange = useCallback(() => {
     if (!chartData?.length) return 0
     if (mouseData) {
       const index = chartData.findIndex((d) => d.time === mouseData.time)
+      if (index === -1) return 0
       return (
         ((chartData[index]['price'] - chartData[0]['price']) /
           chartData[0]['price']) *
@@ -481,12 +471,16 @@ const SwapTokenChart = () => {
           ) : null}
           <div className="flex items-start justify-between">
             <div>
-              {inputBank && outputBank ? (
+              {inputBankName && outputBankName ? (
                 <div className="mb-0.5 flex items-center">
                   <p className="text-base text-th-fgd-3">{swapMarketName}</p>
                   <IconButton
                     className="px-2 text-th-fgd-3"
-                    onClick={() => setFlipPrices(!flipPrices)}
+                    onClick={() =>
+                      set((state) => {
+                        state.swap.flipPrices = !flipPrices
+                      })
+                    }
                     hideBg
                   >
                     <ArrowsRightLeftIcon className="h-5 w-5" />
@@ -548,7 +542,7 @@ const SwapTokenChart = () => {
               )}
             </div>
           </div>
-          <div className="mt-2 h-40 w-auto md:h-72">
+          <div className="mt-2 h-40 w-auto md:h-96">
             <div className="absolute top-[2px] right-0 -mb-2 flex items-center justify-end space-x-4">
               <FavoriteSwapButton
                 inputToken={inputBank!.name}
@@ -678,4 +672,4 @@ const SwapTokenChart = () => {
   )
 }
 
-export default SwapTokenChart
+export default React.memo(SwapTokenChart)

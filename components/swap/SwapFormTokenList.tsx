@@ -209,9 +209,9 @@ const SwapFormTokenList = ({
     <>
       <p className="mb-3">
         {type === 'input'
-          ? t('swap:pay')
+          ? t('swap:you-sell')
           : type === 'output'
-          ? t('swap:receive')
+          ? t('swap:you-buy')
           : ''}
       </p>
       <IconButton
