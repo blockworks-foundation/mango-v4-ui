@@ -1,6 +1,6 @@
 export const COLORS: Record<string, Record<string, string>> = {
   BKG1: {
-    'Mango Classic': '#18181C',
+    'Mango Classic': '#1D1924',
     Dark: '#111113',
     Light: '#fcfcfc',
     'High Contrast': '#000000',
