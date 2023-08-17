@@ -67,7 +67,14 @@ const TabUnderline = <T extends Values>({
           `}
             key={`${value}` + i}
           >
-            {names ? names[i] : t(`${value}`)}
+            <span className="relative">
+              {names ? names[i] : t(`${value}`)}
+              {value === 'trade:trigger-order' ? (
+                <span className="absolute -top-3 -right-5 py-0.5 px-1 rounded bg-th-active font-bold text-xxs leading-none uppercase text-th-bkg-1 ml-2">
+                  beta
+                </span>
+              ) : null}
+            </span>
           </button>
         ))}
       </nav>

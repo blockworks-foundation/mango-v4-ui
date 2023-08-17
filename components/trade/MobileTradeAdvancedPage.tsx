@@ -42,18 +42,20 @@ const MobileTradeAdvancedPage = () => {
             showBorders
           />
         </div>
-        <div className={activeTab === 'trade:book' ? 'visible' : 'hidden'}>
-          <Orderbook />
-        </div>
-        <div
-          className={`h-full ${
-            activeTab === 'trade:depth' ? 'visible' : 'hidden'
-          }`}
-        >
-          <DepthChart />
-        </div>
-        <div className={activeTab === 'trade:trades' ? 'visible' : 'hidden'}>
-          <RecentTrades />
+        <div className="hide-scroll max-h-[578px] overflow-auto">
+          <div className={activeTab === 'trade:book' ? 'visible' : 'hidden'}>
+            <Orderbook />
+          </div>
+          <div
+            className={`h-full ${
+              activeTab === 'trade:depth' ? 'visible' : 'hidden'
+            }`}
+          >
+            <DepthChart />
+          </div>
+          <div className={activeTab === 'trade:trades' ? 'visible' : 'hidden'}>
+            <RecentTrades />
+          </div>
         </div>
       </div>
       <div className="col-span-2 border-t border-th-bkg-3 sm:col-span-3">

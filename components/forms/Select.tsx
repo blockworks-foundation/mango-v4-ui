@@ -2,35 +2,40 @@
 import { Listbox } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import { ReactNode } from 'react'
+import { TradeForm } from 'types'
 
-interface SelectProps {
-  value: string | ReactNode
-  onChange: (x: any) => void
+type Values = TradeForm['tradeType'] | ReactNode
+
+interface SelectProps<T extends Values> {
+  value: T | string
+  onChange: (x: T) => void
   children: ReactNode
   className?: string
+  buttonClassName?: string
   dropdownPanelClassName?: string
   icon?: ReactNode
   placeholder?: string
   disabled?: boolean
 }
 
-const Select = ({
+const Select = <T extends Values>({
   value,
   onChange,
   children,
   className,
+  buttonClassName,
   dropdownPanelClassName,
   icon,
   placeholder = 'Select',
   disabled = false,
-}: SelectProps) => {
+}: SelectProps<T>) => {
   return (
     <div className={`relative ${className}`}>
       <Listbox value={value} onChange={onChange} disabled={disabled}>
         {({ open }) => (
           <>
             <Listbox.Button
-              className={`h-full w-full rounded-md bg-th-input-bkg py-2.5 font-normal ring-1 ring-inset ring-th-input-border focus:outline-none focus-visible:ring-th-fgd-4 md:hover:ring-th-input-border-hover`}
+              className={`h-full w-full rounded-md bg-th-input-bkg py-2.5 font-normal ring-1 ring-inset ring-th-input-border focus:outline-none focus-visible:ring-th-fgd-4 md:hover:ring-th-input-border-hover ${buttonClassName}`}
             >
               <div
                 className={`flex items-center justify-between space-x-2 px-3 text-th-fgd-1`}

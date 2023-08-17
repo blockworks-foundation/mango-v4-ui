@@ -5,6 +5,7 @@
     "hourly": "Hourly",
     "largest-perp-positions": "Largest Positions",
     "perp-details": "{{market}} Stats",
+    "perp-open-interest": "Perp Open Interest",
     "perp-volume": "Perp Volume",
     "pnl-liquidation-fee": "Positive PnL Liquidation Fee",
     "settle-pnl-factor": "Settle PnL Factor",

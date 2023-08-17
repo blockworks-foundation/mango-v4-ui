@@ -5,6 +5,7 @@
     "hourly": "小時",
     "largest-perp-positions": "Largest Positions",
     "perp-details": "{{market}}統計",
+    "perp-open-interest": "Perp Open Interest",
     "perp-volume": "Perp Volume",
     "pnl-liquidation-fee": "正數盈虧清算費用",
     "settle-pnl-factor": "結清盈虧因素",

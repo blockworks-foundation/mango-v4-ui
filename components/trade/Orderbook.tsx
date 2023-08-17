@@ -32,6 +32,8 @@ import {
 } from 'utils/orderbook'
 import { OrderbookData, OrderbookL2 } from 'types'
 import isEqual from 'lodash/isEqual'
+import { useViewport } from 'hooks/useViewport'
+import { breakpoints } from 'utils/theme'
 
 const sizeCompacter = Intl.NumberFormat('en', {
   maximumFractionDigits: 6,
@@ -55,13 +57,14 @@ const Orderbook = () => {
   //     ? localStorage.getItem(USE_ORDERBOOK_FEED_KEY) === 'true'
   //     : true
   // )
-  // const { width } = useViewport()
+  const { width } = useViewport()
+  const isMobile = width ? width < breakpoints.md : false
   const [orderbookData, setOrderbookData] = useState<OrderbookData | null>(null)
   const currentOrderbookData = useRef<OrderbookL2>()
 
   const depth = useMemo(() => {
-    return 30
-  }, [])
+    return isMobile ? 12 : 30
+  }, [isMobile])
 
   const depthArray: number[] = useMemo(() => {
     return Array(depth).fill(0)
@@ -87,17 +90,8 @@ const Orderbook = () => {
   }, [])
 
   useEffect(() => {
-    console.log('hi')
-
     window.addEventListener('resize', verticallyCenterOrderbook)
   }, [verticallyCenterOrderbook])
-
-  // const resetOrderbook = useCallback(async () => {
-  //   // setShowBids(true)
-  //   // setShowAsks(true)
-  //   await sleep(300)
-  //   verticallyCenterOrderbook()
-  // }, [verticallyCenterOrderbook])
 
   const handleScroll = useCallback(() => {
     setIsScrolled(true)

@@ -99,7 +99,7 @@ const ListingsView = () => {
           ></AssetBidsModal>
         )}
       </div>
-      <div className="grid auto-cols-max grid-flow-row grid-flow-col auto-rows-max gap-4">
+      <div className="grid auto-cols-max grid-flow-row auto-rows-max gap-4">
         {listings?.results?.map((x, idx) => {
           const imgSource = x.asset.json?.image
           const nftBids = bids?.filter((bid) =>

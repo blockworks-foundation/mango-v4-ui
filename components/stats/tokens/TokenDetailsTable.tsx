@@ -5,9 +5,9 @@ import {
   ChevronRightIcon,
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
-import { useViewport } from '../../hooks/useViewport'
-import { breakpoints } from '../../utils/theme'
-import ContentBox from '../shared/ContentBox'
+import { useViewport } from '../../../hooks/useViewport'
+import { breakpoints } from '../../../utils/theme'
+import ContentBox from '../../shared/ContentBox'
 import Tooltip from '@components/shared/Tooltip'
 import { Bank } from '@blockworks-foundation/mango-v4'
 import {

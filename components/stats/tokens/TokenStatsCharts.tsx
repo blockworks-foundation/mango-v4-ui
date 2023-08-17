@@ -1,29 +1,19 @@
 import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 import { formatYAxis } from 'utils/formatting'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
-import useMangoGroup from 'hooks/useMangoGroup'
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import DetailedAreaOrBarChart from '@components/shared/DetailedAreaOrBarChart'
 
 const TokenStatsCharts = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
-  const { group } = useMangoGroup()
   const mangoStats = mangoStore((s) => s.tokenStats.mangoStats)
-  const initialStatsLoad = mangoStore((s) => s.tokenStats.initialLoad)
   const loadingStats = mangoStore((s) => s.tokenStats.loading)
   const [borrowDaysToShow, setBorrowDaysToShow] = useState('30')
   const [depositDaysToShow, setDepositDaysToShow] = useState('30')
   const banks = useBanksWithBalances()
-
-  useEffect(() => {
-    if (group && !initialStatsLoad) {
-      const actions = mangoStore.getState().actions
-      actions.fetchTokenStats()
-    }
-  }, [group, initialStatsLoad])
 
   const [
     currentTotalDepositValue,

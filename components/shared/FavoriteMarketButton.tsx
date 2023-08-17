@@ -2,7 +2,7 @@ import { StarIcon } from '@heroicons/react/24/outline'
 import { StarIcon as FilledStarIcon } from '@heroicons/react/20/solid'
 import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { FAVORITE_MARKETS_KEY } from 'utils/constants'
+import { DEFAULT_FAVORITE_MKTS, FAVORITE_MARKETS_KEY } from 'utils/constants'
 
 const FavoriteMarketButton = ({
   market,
@@ -11,7 +11,7 @@ const FavoriteMarketButton = ({
 }) => {
   const [favoriteMarkets, setFavoriteMarkets] = useLocalStorageState<string[]>(
     FAVORITE_MARKETS_KEY,
-    [],
+    DEFAULT_FAVORITE_MKTS,
   )
 
   const addToFavorites = (marketName: string) => {
