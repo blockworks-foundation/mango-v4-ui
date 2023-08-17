@@ -2,7 +2,6 @@ import { HealthType } from '@blockworks-foundation/mango-v4'
 import {
   ArrowUpTrayIcon,
   // ExclamationCircleIcon,
-  LinkIcon,
 } from '@heroicons/react/20/solid'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
@@ -37,6 +36,7 @@ import { isMangoError } from 'types'
 import TokenListButton from './shared/TokenListButton'
 import { ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES, BackButton } from './BorrowForm'
 import TokenLogo from './shared/TokenLogo'
+import SecondaryConnectButton from './shared/SecondaryConnectButton'
 
 interface WithdrawFormProps {
   onSuccess: () => void
@@ -54,7 +54,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
   const { mangoAccount } = useMangoAccount()
-  const { connect, connected } = useWallet()
+  const { connected } = useWallet()
   const banks = useBanksWithBalances('maxWithdraw')
 
   const bank = useMemo(() => {
@@ -257,39 +257,41 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
               </div>
             ) : null}
           </div>
-          <Button
-            onClick={connected ? handleWithdraw : connect}
-            className="flex w-full items-center justify-center"
-            size="large"
-            disabled={
-              connected &&
-              (!inputAmount ||
-                // showInsufficientBalance ||
-                initHealth <= 0)
-            }
-          >
-            {!connected ? (
-              <div className="flex items-center">
-                <LinkIcon className="mr-2 h-5 w-5" />
-                {t('connect')}
-              </div>
-            ) : submitting ? (
-              <Loading className="mr-2 h-5 w-5" />
-            ) : (
-              // showInsufficientBalance ? (
-              //   <div className="flex items-center">
-              //     <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-              //     {t('swap:insufficient-balance', {
-              //       symbol: selectedToken,
-              //     })}
-              //   </div>
-              // ) :
-              <div className="flex items-center">
-                <ArrowUpTrayIcon className="mr-2 h-5 w-5" />
-                {t('withdraw')}
-              </div>
-            )}
-          </Button>
+          {connected ? (
+            <Button
+              onClick={handleWithdraw}
+              className="flex w-full items-center justify-center"
+              size="large"
+              disabled={
+                connected &&
+                (!inputAmount ||
+                  // showInsufficientBalance ||
+                  initHealth <= 0)
+              }
+            >
+              {submitting ? (
+                <Loading className="mr-2 h-5 w-5" />
+              ) : (
+                // showInsufficientBalance ? (
+                //   <div className="flex items-center">
+                //     <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+                //     {t('swap:insufficient-balance', {
+                //       symbol: selectedToken,
+                //     })}
+                //   </div>
+                // ) :
+                <div className="flex items-center">
+                  <ArrowUpTrayIcon className="mr-2 h-5 w-5" />
+                  {t('withdraw')}
+                </div>
+              )}
+            </Button>
+          ) : (
+            <SecondaryConnectButton
+              className="flex w-full items-center justify-center"
+              isLarge
+            />
+          )}
         </div>
       </FadeInFadeOut>
     </>

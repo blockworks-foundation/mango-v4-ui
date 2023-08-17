@@ -6,11 +6,7 @@ import {
   Dispatch,
   SetStateAction,
 } from 'react'
-import {
-  ArrowDownIcon,
-  ArrowDownTrayIcon,
-  LinkIcon,
-} from '@heroicons/react/20/solid'
+import { ArrowDownIcon, ArrowDownTrayIcon } from '@heroicons/react/20/solid'
 import { NumberFormatValues, SourceInfo } from 'react-number-format'
 import Decimal from 'decimal.js'
 import mangoStore from '@store/mangoStore'
@@ -37,6 +33,7 @@ import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import DepositWithdrawModal from '@components/modals/DepositWithdrawModal'
 import useMangoAccountAccounts from 'hooks/useMangoAccountAccounts'
 import Link from 'next/link'
+import SecondaryConnectButton from '@components/shared/SecondaryConnectButton'
 
 type MarketSwapFormProps = {
   setShowTokenSelect: Dispatch<SetStateAction<'input' | 'output' | undefined>>
@@ -327,7 +324,7 @@ const SwapFormSubmitButton = ({
 }) => {
   const { t } = useTranslation('common')
   const { mangoAccountAddress } = useMangoAccount()
-  const { connected, connect } = useWallet()
+  const { connected } = useWallet()
   const { amount: tokenMax, amountWithBorrow } = useTokenMax(useMargin)
   const [showDepositModal, setShowDepositModal] = useState(false)
   const { usedTokens, totalTokens } = useMangoAccountAccounts()
@@ -368,22 +365,21 @@ const SwapFormSubmitButton = ({
     freeCollateral > 0 &&
     (!amountIn.toNumber() || !amountOut || !selectedRoute || tokenPositionsFull)
 
-  const onClick = !connected
-    ? connect
-    : showInsufficientBalance || freeCollateral <= 0
-    ? () => setShowDepositModal(true)
-    : () => setShowConfirm(true)
+  const onClick =
+    showInsufficientBalance || freeCollateral <= 0
+      ? () => setShowDepositModal(true)
+      : () => setShowConfirm(true)
 
   return (
     <>
-      <Button
-        onClick={onClick}
-        className="mt-6 mb-4 flex w-full items-center justify-center text-base"
-        disabled={disabled}
-        size="large"
-      >
-        {connected ? (
-          showInsufficientBalance || freeCollateral <= 0 ? (
+      {connected ? (
+        <Button
+          onClick={onClick}
+          className="mt-6 mb-4 flex w-full items-center justify-center text-base"
+          disabled={disabled}
+          size="large"
+        >
+          {showInsufficientBalance || freeCollateral <= 0 ? (
             <div className="flex items-center">
               <ArrowDownTrayIcon className="mr-2 h-5 w-5 flex-shrink-0" />
               {t('swap:deposit-funds')}
@@ -392,14 +388,14 @@ const SwapFormSubmitButton = ({
             <Loading />
           ) : (
             <span>{t('swap:review-swap')}</span>
-          )
-        ) : (
-          <div className="flex items-center">
-            <LinkIcon className="mr-2 h-5 w-5" />
-            {t('connect')}
-          </div>
-        )}
-      </Button>
+          )}
+        </Button>
+      ) : (
+        <SecondaryConnectButton
+          className="mt-6 mb-4 flex w-full items-center justify-center"
+          isLarge
+        />
+      )}
       {tokenPositionsFull ? (
         <div className="pb-4">
           <InlineNotification
