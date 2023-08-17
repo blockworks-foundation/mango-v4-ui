@@ -401,3 +401,20 @@ function isWithinLastXHours(timestampInSeconds: number, hoursNumber: number) {
 
   return differenceInHours < hoursNumber
 }
+
+export type PriceImpactResp = {
+  avg_price_impact_percent: number
+  side: 'ask' | 'bid'
+  target_amount: number
+  symbol: string
+  //there is more fileds they are just not used on ui
+}
+export type PriceImpactRespWithoutSide = Omit<PriceImpactResp, 'side'>
+
+export const getPriceImpacts = async () => {
+  const resp = await fetch(
+    'https://api.mngo.cloud/data/v4/risk/listed-tokens-one-week-price-impacts',
+  )
+  const jsonReps = (await resp.json()) as PriceImpactResp[]
+  return jsonReps
+}
