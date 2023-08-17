@@ -76,6 +76,7 @@ const DepthChart = () => {
   const [priceRangePercent, setPriceRangePercentPercent] = useState('10')
   const { width } = useViewport()
   const increaseHeight = width ? width > breakpoints['3xl'] : false
+  const isMobile = width ? width < breakpoints.md : false
 
   const formatOrderbookData = (orderbook: RawOrderbook, markPrice: number) => {
     const maxPrice = markPrice * 4
@@ -315,7 +316,11 @@ const DepthChart = () => {
           />
         </div>
       </div>
-      <div className={increaseHeight ? 'h-[570px]' : 'h-[482px]'}>
+      <div
+        className={
+          increaseHeight ? 'h-[570px]' : isMobile ? 'h-[538px]' : 'h-[482px]'
+        }
+      >
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={chartData}
