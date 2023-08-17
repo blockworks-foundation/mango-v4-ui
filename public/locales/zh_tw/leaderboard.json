@@ -1,4 +1,4 @@
 {
-    "leaderboard-desc": "Top 100 Mango traders by total PnL (spot and perp)",
-    "leaderboard-unavailable": "Leaderboard unavailable"
+    "leaderboard-desc": "按總盈虧（現貨和永續合約）計算的前100名Mango交易商",
+    "leaderboard-unavailable": "無法顯示排行榜"
 }

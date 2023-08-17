@@ -13,10 +13,15 @@ import Button from '@components/shared/Button'
 import BN from 'bn.js'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
-import { getFormattedBankValues } from 'utils/governance/listingTools'
+import {
+  PriceImpactResp,
+  getFormattedBankValues,
+  getPriceImpacts,
+} from 'utils/governance/listingTools'
 import GovernancePageWrapper from '@components/governance/GovernancePageWrapper'
 import TokenLogo from '@components/shared/TokenLogo'
 import DashboardSuggestedValues from '@components/modals/DashboardSuggestedValuesModal'
+import { USDC_MINT } from 'utils/constants'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -37,8 +42,21 @@ export async function getStaticProps({ locale }: { locale: string }) {
 
 const Dashboard: NextPage = () => {
   const { group } = useMangoGroup()
+  const connection = mangoStore((s) => s.connection)
 
   const [isOpenSuggestionModal, setIsOpenSuggestionModal] = useState(false)
+  const [priceImpacts, setPriceImapcts] = useState<PriceImpactResp[]>([])
+
+  useEffect(() => {
+    const handleGetPriceImapcts = async () => {
+      const [resp] = await Promise.all([getPriceImpacts()])
+      setPriceImapcts(resp)
+    }
+    if (group) {
+      handleGetPriceImapcts()
+    }
+  }, [connection, group])
+
   return (
     <GovernancePageWrapper noStyles={true}>
       <div className="grid grid-cols-12">
@@ -296,24 +314,29 @@ const Dashboard: NextPage = () => {
                                     label="Liquidation fee"
                                     value={`${formattedBankValues.liquidationFee}%`}
                                   />
-                                  <div className="flex mt-2 mb-4">
-                                    <Button
-                                      className=" ml-auto"
-                                      onClick={() =>
-                                        setIsOpenSuggestionModal(true)
-                                      }
-                                    >
-                                      Check suggested values
-                                      <DashboardSuggestedValues
-                                        group={group}
-                                        bank={bank}
-                                        isOpen={isOpenSuggestionModal}
-                                        onClose={() =>
-                                          setIsOpenSuggestionModal(false)
+                                  {bank.mint.toBase58() !== USDC_MINT && (
+                                    <div className="flex mt-2 mb-4">
+                                      <Button
+                                        className=" ml-auto"
+                                        onClick={() =>
+                                          setIsOpenSuggestionModal(true)
                                         }
-                                      ></DashboardSuggestedValues>
-                                    </Button>
-                                  </div>
+                                      >
+                                        Check suggested values
+                                        {isOpenSuggestionModal && (
+                                          <DashboardSuggestedValues
+                                            priceImpacts={priceImpacts}
+                                            group={group}
+                                            bank={bank}
+                                            isOpen={isOpenSuggestionModal}
+                                            onClose={() =>
+                                              setIsOpenSuggestionModal(false)
+                                            }
+                                          ></DashboardSuggestedValues>
+                                        )}
+                                      </Button>
+                                    </div>
+                                  )}
                                 </Disclosure.Panel>
                               </>
                             )}

@@ -27,7 +27,7 @@ interface PerpStatsData {
 }
 
 const MangoPerpStatsCharts = () => {
-  const { t } = useTranslation(['common', 'token', 'trade'])
+  const { t } = useTranslation(['common', 'stats', 'token', 'trade'])
   const loadingPerpStats = mangoStore((s) => s.perpStats.loading)
   const perpStats = mangoStore((s) => s.perpStats.data)
   const [feesDaysToShow, setFeesDaysToShow] = useState('30')
@@ -129,7 +129,7 @@ const MangoPerpStatsCharts = () => {
             loaderHeightClass="h-[350px]"
             prefix="$"
             tickFormat={(x) => `$${formatYAxis(x)}`}
-            title={t('trade:open-interest')}
+            title={t('stats:perp-open-interest')}
             xKey="date"
             yKey={'openInterest'}
           />

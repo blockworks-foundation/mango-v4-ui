@@ -1,9 +1,8 @@
 import { Bank } from '@blockworks-foundation/mango-v4'
 import TabButtons from '@components/shared/TabButtons'
 import mangoStore from '@store/mangoStore'
-import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { TokenStatsItem } from 'types'
 import { formatYAxis } from 'utils/formatting'
 import DetailedAreaOrBarChart from '@components/shared/DetailedAreaOrBarChart'
@@ -18,16 +17,7 @@ const ChartTabs = ({ bank }: { bank: Bank }) => {
   const [depositRateDaysToShow, setDepositRateDaysToShow] = useState('30')
   const [borrowRateDaysToShow, setBorrowRateDaysToShow] = useState('30')
   const tokenStats = mangoStore((s) => s.tokenStats.data)
-  const initialStatsLoad = mangoStore((s) => s.tokenStats.initialLoad)
   const loadingTokenStats = mangoStore((s) => s.tokenStats.loading)
-  const actions = mangoStore.getState().actions
-  const { group } = useMangoGroup()
-
-  useEffect(() => {
-    if (group && !initialStatsLoad) {
-      actions.fetchTokenStats()
-    }
-  }, [group])
 
   const statsHistory = useMemo(() => {
     if (!tokenStats?.length) return []

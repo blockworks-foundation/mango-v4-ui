@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useState } from 'react'
 import Button, { IconButton } from '../shared/Button'
 import {
   ArrowDownRightIcon,
@@ -28,7 +28,7 @@ import useUnownedAccount from 'hooks/useUnownedAccount'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import MangoAccountSizeModal from '@components/modals/MangoAccountSizeModal'
-import { getIsAccountSizeFull } from '@components/settings/AccountSettings'
+import useMangoAccountAccounts from 'hooks/useMangoAccountAccounts'
 
 export const handleCopyAddress = (
   mangoAccount: MangoAccount,
@@ -55,6 +55,7 @@ const AccountActions = () => {
   const { isDelegatedAccount, isUnownedAccount } = useUnownedAccount()
   const { width } = useViewport()
   const isMobile = width ? width < breakpoints.sm : false
+  const { isAccountFull } = useMangoAccountAccounts()
 
   const handleBorrowModal = () => {
     if (mangoAccountAddress || !connected) {
@@ -63,11 +64,6 @@ const AccountActions = () => {
       setShowCreateAccountModal(true)
     }
   }
-
-  const isAccountFull = useMemo(() => {
-    if (!mangoAccountAddress) return true
-    return getIsAccountSizeFull()
-  }, [mangoAccountAddress])
 
   return (
     <>

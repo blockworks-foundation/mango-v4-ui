@@ -14,7 +14,14 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { PAGINATION_PAGE_LENGTH, PREFERRED_EXPLORER_KEY } from 'utils/constants'
 import Tooltip from '@components/shared/Tooltip'
 import { formatTokenSymbol } from 'utils/tokens'
-import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
+import {
+  SortableColumnHeader,
+  Table,
+  Td,
+  Th,
+  TrBody,
+  TrHead,
+} from '@components/shared/TableElements'
 import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
 import useMangoAccount from 'hooks/useMangoAccount'
 import ConnectEmptyState from '@components/shared/ConnectEmptyState'
@@ -22,6 +29,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import useMangoGroup from 'hooks/useMangoGroup'
 import TokenLogo from '@components/shared/TokenLogo'
+import { useSortableData } from 'hooks/useSortableData'
 
 const SwapHistoryTable = () => {
   const { t } = useTranslation(['common', 'settings', 'swap'])
@@ -60,23 +68,134 @@ const SwapHistoryTable = () => {
     )
   }, [actions, offset, mangoAccountAddress])
 
+  const formattedTableData = useCallback(() => {
+    const formatted = []
+    for (const swap of swapHistory) {
+      const {
+        block_datetime,
+        signature,
+        swap_in_amount,
+        swap_in_loan_origination_fee,
+        swap_in_symbol,
+        swap_out_amount,
+        loan,
+        loan_origination_fee,
+        swap_out_symbol,
+        swap_out_price_usd,
+      } = swap
+
+      const borrowAmount =
+        loan > 0 ? `${floorToDecimal(loan, countLeadingZeros(loan) + 2)}` : 0
+      const borrowFee =
+        swap_in_loan_origination_fee > 0
+          ? swap_in_loan_origination_fee.toFixed(4)
+          : loan_origination_fee > 0
+          ? loan_origination_fee.toFixed(4)
+          : 0
+
+      const bankInSymbol =
+        swap_in_symbol === 'ETH' ? 'ETH (Portal)' : swap_in_symbol
+      const bankOutSymbol =
+        swap_out_symbol === 'ETH' ? 'ETH (Portal)' : swap_out_symbol
+
+      const inBank = group?.banksMapByName.get(bankInSymbol)?.[0]
+      const outBank = group?.banksMapByName.get(bankOutSymbol)?.[0]
+
+      const inSymbol = formatTokenSymbol(swap_in_symbol)
+      const outSymbol = formatTokenSymbol(swap_out_symbol)
+
+      const inDecimals = countLeadingZeros(swap_in_amount) + 2
+      const outDecimals = countLeadingZeros(swap_out_amount) + 2
+
+      const value = swap_out_price_usd * swap_out_amount
+
+      const data = {
+        block_datetime,
+        borrowAmount,
+        borrowFee,
+        inBank,
+        inDecimals,
+        inSymbol,
+        outBank,
+        outDecimals,
+        outSymbol,
+        signature,
+        swap_in_amount,
+        swap_out_amount,
+        value,
+      }
+      formatted.push(data)
+    }
+    return formatted
+  }, [group, swapHistory])
+
+  const {
+    items: tableData,
+    requestSort,
+    sortConfig,
+  } = useSortableData(formattedTableData())
+
   return group &&
     mangoAccountAddress &&
-    (swapHistory.length || loadSwapHistory) ? (
+    (tableData.length || loadSwapHistory) ? (
     <>
       {showTableView ? (
         <Table>
           <thead>
             <TrHead>
-              <Th className="text-left">{t('date')}</Th>
-              <Th className="text-left">{t('swap:paid')}</Th>
-              <Th className="text-left">{t('swap:received')}</Th>
-              <Th className="text-right">{t('value')}</Th>
-              <Th className="text-right">{t('borrow')}</Th>
+              <Th className="text-left">
+                <SortableColumnHeader
+                  sortKey="block_datetime"
+                  sort={() => requestSort('block_datetime')}
+                  sortConfig={sortConfig}
+                  title={t('date')}
+                />
+              </Th>
+              <Th className="text-left">
+                <SortableColumnHeader
+                  sortKey="swap_in_amount"
+                  sort={() => requestSort('swap_in_amount')}
+                  sortConfig={sortConfig}
+                  title={t('swap:paid')}
+                />
+              </Th>
+              <Th className="text-left">
+                <SortableColumnHeader
+                  sortKey="swap_out_amount"
+                  sort={() => requestSort('swap_out_amount')}
+                  sortConfig={sortConfig}
+                  title={t('swap:received')}
+                />
+              </Th>
               <Th>
-                <div className="flex justify-end text-right">
+                <div className="flex justify-end">
+                  <SortableColumnHeader
+                    sortKey="value"
+                    sort={() => requestSort('value')}
+                    sortConfig={sortConfig}
+                    title={t('value')}
+                  />
+                </div>
+              </Th>
+              <Th>
+                <div className="flex justify-end">
+                  <SortableColumnHeader
+                    sortKey="borrowAmount"
+                    sort={() => requestSort('borrowAmount')}
+                    sortConfig={sortConfig}
+                    title={t('borrow')}
+                  />
+                </div>
+              </Th>
+              <Th>
+                <div className="flex justify-end">
                   <Tooltip content={t('tooltip-borrow-fee')}>
-                    <span className="tooltip-underline">{t('borrow-fee')}</span>
+                    <SortableColumnHeader
+                      sortKey="borrowFee"
+                      sort={() => requestSort('borrowFee')}
+                      sortConfig={sortConfig}
+                      title={t('borrow-fee')}
+                    />
                   </Tooltip>
                 </div>
               </Th>
@@ -84,43 +203,22 @@ const SwapHistoryTable = () => {
             </TrHead>
           </thead>
           <tbody>
-            {swapHistory.map((h) => {
+            {tableData.map((swap) => {
               const {
                 block_datetime,
+                borrowAmount,
+                borrowFee,
+                inBank,
+                inDecimals,
+                inSymbol,
+                outBank,
+                outDecimals,
+                outSymbol,
                 signature,
                 swap_in_amount,
-                swap_in_loan_origination_fee,
-                swap_in_symbol,
                 swap_out_amount,
-                loan,
-                loan_origination_fee,
-                swap_out_price_usd,
-                swap_out_symbol,
-              } = h
-              const borrowAmount =
-                loan > 0
-                  ? `${floorToDecimal(loan, countLeadingZeros(loan) + 2)}`
-                  : 0
-              const borrowFee =
-                swap_in_loan_origination_fee > 0
-                  ? swap_in_loan_origination_fee.toFixed(4)
-                  : loan_origination_fee > 0
-                  ? loan_origination_fee.toFixed(4)
-                  : 0
-
-              const bankInSymbol =
-                swap_in_symbol === 'ETH' ? 'ETH (Portal)' : swap_in_symbol
-              const bankOutSymbol =
-                swap_out_symbol === 'ETH' ? 'ETH (Portal)' : swap_out_symbol
-
-              const inBank = group.banksMapByName.get(bankInSymbol)?.[0]
-              const outBank = group.banksMapByName.get(bankOutSymbol)?.[0]
-
-              const inSymbol = formatTokenSymbol(swap_in_symbol)
-              const outSymbol = formatTokenSymbol(swap_out_symbol)
-
-              const inDecimals = countLeadingZeros(swap_in_amount) + 2
-              const outDecimals = countLeadingZeros(swap_out_amount) + 2
+                value,
+              } = swap
               return (
                 <TrBody key={signature}>
                   <Td>
@@ -133,9 +231,11 @@ const SwapHistoryTable = () => {
                   </Td>
                   <Td>
                     <div className="flex items-center">
-                      <div className="mr-2.5 flex flex-shrink-0 items-center">
-                        <TokenLogo bank={inBank} />
-                      </div>
+                      {inBank ? (
+                        <div className="mr-2.5 flex flex-shrink-0 items-center">
+                          <TokenLogo bank={inBank} />
+                        </div>
+                      ) : null}
                       <p className="whitespace-nowrap">
                         <FormatNumericValue
                           value={swap_in_amount}
@@ -149,9 +249,11 @@ const SwapHistoryTable = () => {
                   </Td>
                   <Td>
                     <div className="flex items-center">
-                      <div className="mr-2.5 flex flex-shrink-0 items-center">
-                        <TokenLogo bank={outBank} />
-                      </div>
+                      {outBank ? (
+                        <div className="mr-2.5 flex flex-shrink-0 items-center">
+                          <TokenLogo bank={outBank} />
+                        </div>
+                      ) : null}
                       <p className="whitespace-nowrap">
                         <FormatNumericValue
                           value={swap_out_amount}
@@ -165,11 +267,7 @@ const SwapHistoryTable = () => {
                   </Td>
                   <Td>
                     <p className="text-right">
-                      <FormatNumericValue
-                        value={swap_out_price_usd * swap_out_amount}
-                        decimals={2}
-                        isUsd
-                      />
+                      <FormatNumericValue value={value} decimals={2} isUsd />
                     </p>
                   </Td>
                   <Td>
@@ -224,36 +322,20 @@ const SwapHistoryTable = () => {
         </Table>
       ) : (
         <div>
-          {swapHistory.map((h, i) => {
+          {tableData.map((swap, i) => {
             const {
               block_datetime,
+              borrowAmount,
+              borrowFee,
+              inDecimals,
+              inSymbol,
+              outDecimals,
+              outSymbol,
               signature,
               swap_in_amount,
-              swap_in_loan_origination_fee,
-              swap_in_symbol,
               swap_out_amount,
-              loan,
-              loan_origination_fee,
-              swap_out_price_usd,
-              swap_out_symbol,
-            } = h
-
-            const borrowAmount =
-              loan > 0
-                ? `${floorToDecimal(loan, countLeadingZeros(loan) + 2)}`
-                : 0
-            const borrowFee =
-              swap_in_loan_origination_fee > 0
-                ? swap_in_loan_origination_fee.toFixed(4)
-                : loan_origination_fee > 0
-                ? loan_origination_fee.toFixed(4)
-                : 0
-
-            const inSymbol = formatTokenSymbol(swap_in_symbol)
-            const outSymbol = formatTokenSymbol(swap_out_symbol)
-
-            const inDecimals = countLeadingZeros(swap_in_amount) + 2
-            const outDecimals = countLeadingZeros(swap_out_amount) + 2
+              value,
+            } = swap
 
             return (
               <Disclosure key={signature}>
@@ -315,10 +397,7 @@ const SwapHistoryTable = () => {
                               {t('value')}
                             </p>
                             <p className="font-mono text-th-fgd-1">
-                              <FormatNumericValue
-                                value={swap_out_price_usd * swap_out_amount}
-                                isUsd
-                              />
+                              <FormatNumericValue value={value} isUsd />
                             </p>
                           </div>
                           {borrowAmount ? (
