@@ -517,11 +517,11 @@ const TradingViewChart = () => {
   useEffect(() => {
     if (window) {
       let chartStyleOverrides = {
-        'paneProperties.background': 'rgba(0,0,0,0)',
+        'paneProperties.background': COLORS.BKG1[theme],
         'paneProperties.backgroundType': 'solid',
         'paneProperties.legendProperties.showBackground': false,
-        // 'paneProperties.vertGridProperties.color': 'rgba(0,0,0,0)',
-        // 'paneProperties.horzGridProperties.color': 'rgba(0,0,0,0)',
+        'paneProperties.vertGridProperties.color': 'rgba(0,0,0,0)',
+        'paneProperties.horzGridProperties.color': 'rgba(0,0,0,0)',
         'paneProperties.legendProperties.showStudyTitles': false,
         'scalesProperties.showStudyLastValue': false,
         'scalesProperties.fontSize': 11,
