@@ -120,7 +120,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
             />
           </button>
           <div
-            className={`thin-scroll h-full ${
+            className={`hide-scroll h-full ${
               !isCollapsed ? 'overflow-y-auto' : ''
             }`}
           >
