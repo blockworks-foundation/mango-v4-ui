@@ -19,14 +19,26 @@ import NotificationCookieStore from '@store/notificationCookieStore'
 import dayjs from 'dayjs'
 import { useTranslation } from 'next-i18next'
 import { notify } from 'utils/notifications'
+import {
+  Connection,
+  PublicKey,
+  Transaction,
+  TransactionInstruction,
+} from '@solana/web3.js'
+import mangoStore from '@store/mangoStore'
+const MEMO_PROGRAM_ID = new PublicKey(
+  'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr',
+)
 
-export const createSolanaMessage = (
+export const createSolanaMessage = async (
   wallet: WalletContextState,
   setCookie: (wallet: string, token: string) => void,
+  connection: Connection,
+  usingLedger: boolean,
 ) => {
   const payload = new Payload()
   payload.domain = window.location.host
-  payload.address = wallet.publicKey!.toString()
+  payload.address = wallet.publicKey!.toBase58()
   payload.uri = window.location.origin
   payload.statement = 'Login to Mango Notifications Admin App'
   payload.version = '1'
@@ -36,39 +48,79 @@ export const createSolanaMessage = (
 
   const messageText = message.prepareMessage()
   const messageEncoded = new TextEncoder().encode(messageText)
+  if (usingLedger) {
+    const tx = new Transaction()
 
-  wallet.signMessage!(messageEncoded)
-    .then(async (resp) => {
-      const tokenResp = await fetch(`${NOTIFICATION_API}auth`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...payload,
-          signatureString: bs58.encode(resp),
-        }),
-      })
-      const body = await tokenResp.json()
-      const token = body.token
-      const error = body.error
-      if (error) {
-        notify({
-          type: 'error',
-          title: 'Error',
-          description: error,
-        })
-        return
-      }
-      setCookie(payload.address, token)
+    tx.add(
+      new TransactionInstruction({
+        programId: MEMO_PROGRAM_ID,
+        keys: [],
+        data: Buffer.from(messageText),
+      }),
+    )
+    tx.feePayer = wallet.publicKey!
+    tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash
+
+    const signedTx = await wallet.signTransaction!(tx)
+    const serializedTx = signedTx.serialize()
+
+    const tokenResp = await fetch(`${NOTIFICATION_API}auth`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        ...payload,
+        isLedger: true,
+        serializedTx: Array.from(serializedTx),
+      }),
     })
-    .catch((e) => {
+    const body = await tokenResp.json()
+    const token = body.token
+    const error = body.error
+    if (error) {
       notify({
         type: 'error',
         title: 'Error',
-        description: e.message ? e.message : `${e}`,
+        description: error,
       })
-    })
+      return
+    }
+    setCookie(payload.address, token)
+  } else {
+    wallet.signMessage!(messageEncoded)
+      .then(async (resp) => {
+        const tokenResp = await fetch(`${NOTIFICATION_API}auth`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...payload,
+            signatureString: bs58.encode(resp),
+          }),
+        })
+        const body = await tokenResp.json()
+        const token = body.token
+        const error = body.error
+        if (error) {
+          notify({
+            type: 'error',
+            title: 'Error',
+            description: error,
+          })
+          return
+        }
+        setCookie(payload.address, token)
+      })
+      .catch((e) => {
+        notify({
+          type: 'error',
+          title: 'Error',
+          description: e.message ? e.message : `${e}`,
+        })
+      })
+  }
 }
 
 const NotificationsDrawer = ({
@@ -80,6 +132,7 @@ const NotificationsDrawer = ({
 }) => {
   const { t } = useTranslation('notifications')
   const { data, refetch } = useNotifications()
+  const connection = mangoStore((s) => s.connection)
   const wallet = useWallet()
   const isAuth = useIsAuthorized()
   const headers = useHeaders()
@@ -271,7 +324,9 @@ const NotificationsDrawer = ({
                   <p>{t('unauth-desc')}</p>
                   <Button
                     className="mt-6"
-                    onClick={() => createSolanaMessage(wallet, setCookie)}
+                    onClick={() =>
+                      createSolanaMessage(wallet, setCookie, connection, false)
+                    }
                   >
                     {t('sign-message')}
                   </Button>
