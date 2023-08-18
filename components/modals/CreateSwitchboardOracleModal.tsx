@@ -128,12 +128,13 @@ const CreateSwitchboardOracleModal = ({
           crankDataBuffer: crankAccount.dataBuffer?.publicKey,
           crankPubkey: crankAccount.publicKey,
           fundAmount: tierSettings[tier].fundAmount,
-          basePriorityFee: 0,
+          slidingWindow: true,
           disableCrank: false,
-          maxPriorityFeeMultiplier: 0,
           varianceThreshold: tierSettings[tier].varianceThreshold,
-          priorityFeeBump: 0,
-          priorityFeeBumpPeriod: 0,
+          maxPriorityFeeMultiplier: 5,
+          priorityFeeBumpPeriod: 10,
+          priorityFeeBump: 1000,
+          basePriorityFee: 1000,
           jobs: [
             {
               weight: 1,
