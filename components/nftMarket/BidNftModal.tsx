@@ -11,6 +11,7 @@ import { useAuctionHouse, useBids } from 'hooks/market/useAuctionHouse'
 import { ImgWithLoader } from '@components/ImgWithLoader'
 // import { useTranslation } from 'next-i18next'
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
+import Loading from '@components/shared/Loading'
 
 type ListingModalProps = {
   listing?: Listing
@@ -25,17 +26,25 @@ const BidNftModal = ({ isOpen, onClose, listing }: ListingModalProps) => {
 
   const [bidPrice, setBidPrice] = useState('')
   const [assetMint, setAssetMint] = useState('')
+  const [submittingOffer, setSubmittingOffer] = useState(false)
 
   const bid = useCallback(async () => {
-    await metaplex!.auctionHouse().bid({
-      auctionHouse: auctionHouse!,
-      price: token(bidPrice, MANGO_MINT_DECIMALS),
-      mintAccount: noneListedAssetMode
-        ? new PublicKey(assetMint)
-        : listing!.asset.mint.address,
-    })
-    onClose()
-    refetch()
+    setSubmittingOffer(true)
+    try {
+      await metaplex!.auctionHouse().bid({
+        auctionHouse: auctionHouse!,
+        price: token(bidPrice, MANGO_MINT_DECIMALS),
+        mintAccount: noneListedAssetMode
+          ? new PublicKey(assetMint)
+          : listing!.asset.mint.address,
+      })
+      onClose()
+      refetch()
+    } catch (e) {
+      console.log('error making offer', e)
+    } finally {
+      setSubmittingOffer(false)
+    }
   }, [
     metaplex,
     auctionHouse,
@@ -45,6 +54,7 @@ const BidNftModal = ({ isOpen, onClose, listing }: ListingModalProps) => {
     listing,
     onClose,
     refetch,
+    setSubmittingOffer,
   ])
 
   return (
@@ -96,12 +106,12 @@ const BidNftModal = ({ isOpen, onClose, listing }: ListingModalProps) => {
             />
           </div>
           <Button
-            className="ml-2 whitespace-nowrap"
+            className="ml-2 flex items-center justify-center whitespace-nowrap"
             onClick={bid}
             disabled={!bidPrice}
             size="large"
           >
-            Make Offer
+            {submittingOffer ? <Loading /> : 'Make Offer'}
           </Button>
         </div>
       </div>

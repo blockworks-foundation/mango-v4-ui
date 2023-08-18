@@ -1,3 +1,5 @@
+import { ReactNode } from 'react'
+
 const NftMarketButton = ({
   className,
   colorClass,
@@ -6,7 +8,7 @@ const NftMarketButton = ({
 }: {
   className?: string
   colorClass: string
-  text: string
+  text: string | ReactNode
   onClick: () => void
 }) => {
   return (
