@@ -163,6 +163,7 @@ export const queryBirdeyeBars = async (
     to: number
   },
   quote_token: string,
+  market: string,
 ): Promise<Bar[]> => {
   const { from, to } = periodParams
 
@@ -172,6 +173,7 @@ export const queryBirdeyeBars = async (
     type: parseResolution(resolution),
     time_from: from,
     time_to: to,
+    merge_market_id: market,
   }
 
   const query = Object.keys(urlParameters)
@@ -181,7 +183,7 @@ export const queryBirdeyeBars = async (
     )
     .join('&')
 
-  const data = await makeApiRequest(`defi/ohlcv/base_quote?${query}`)
+  const data = await makeApiRequest(`defi/ohlcv/base_quote_merge?${query}`)
   if (!data.success || data.data.items.length === 0) {
     return []
   }
@@ -327,6 +329,7 @@ export default {
           resolution as any,
           periodParams,
           symbolInfo.quote_token,
+          symbolInfo.address,
         )
       }
       if (!bars || bars.length === 0) {
