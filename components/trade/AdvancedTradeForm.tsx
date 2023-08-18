@@ -426,7 +426,6 @@ const AdvancedTradeForm = () => {
             : tradeForm.postOnly
             ? PerpOrderType.postOnly
             : PerpOrderType.limit
-        console.log('perpOrderType', perpOrderType)
 
         const { signature: tx } = await client.perpPlaceOrder(
           group,

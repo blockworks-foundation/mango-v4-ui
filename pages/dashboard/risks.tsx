@@ -76,8 +76,6 @@ const RiskDashboard: NextPage = () => {
     },
   )
 
-  console.log('resp', data)
-
   return (
     <div className="grid grid-cols-12">
       <div className="col-span-12 lg:col-span-8 lg:col-start-3">
@@ -88,7 +86,6 @@ const RiskDashboard: NextPage = () => {
             <div className="mt-4">
               {Object.entries(data).map(
                 ([tableType, table]: [string, TableData]) => {
-                  console.log('table', table)
                   if (!table?.data?.length) return null
                   return (
                     <div className="mt-12" key={tableType}>

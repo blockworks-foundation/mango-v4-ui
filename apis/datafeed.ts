@@ -249,19 +249,12 @@ export default {
     let ticker = mangoStoreState.selectedMarket.name
     let quote_token = ''
     let base_token = ''
-    console.log(1)
 
     if (group && symbolAddress) {
-      console.log(2)
-
       const market = getMktFromMktAddress(group, symbolAddress)
       if (market) {
-        console.log(3)
-
         ticker = market.name
         if (market instanceof Serum3Market) {
-          console.log(4)
-
           base_token = group
             .getFirstBankByTokenIndex(market.baseTokenIndex)
             .mint.toString()

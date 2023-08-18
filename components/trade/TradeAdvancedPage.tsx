@@ -264,8 +264,6 @@ const TradeAdvancedPage = () => {
     }
   }, [height, tradeLayout])
 
-  console.log(innerHeight)
-
   const [layouts, setLayouts] = useState<Layouts>(defaultLayouts)
   const [breakpoint, setBreakpoint] = useState('')
 

@@ -73,8 +73,6 @@ const Orderbook = () => {
   const verticallyCenterOrderbook = useCallback(() => {
     const element = orderbookElRef.current
     if (element) {
-      console.log('vertically centering')
-
       if (
         element.parentElement &&
         element.scrollHeight > element.parentElement.offsetHeight
