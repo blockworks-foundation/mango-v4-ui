@@ -8,8 +8,7 @@ import {
   useState,
 } from 'react'
 import { ArrowPathIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
-import { useViewport } from '../hooks/useViewport'
-import { breakpoints, nftThemeMeta } from '../utils/theme'
+import { nftThemeMeta } from '../utils/theme'
 import mangoStore from '@store/mangoStore'
 import BottomBar from './mobile/BottomBar'
 import TopBar from './TopBar'
@@ -42,15 +41,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
     SIDEBAR_COLLAPSE_KEY,
     false,
   )
-
-  const { width } = useViewport()
   const { asPath } = useRouter()
-
-  useEffect(() => {
-    if (width < breakpoints['2xl']) {
-      setIsCollapsed(true)
-    }
-  }, [width])
 
   useEffect(() => {
     const animationFrames = 15
@@ -75,7 +66,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     particlesInit()
-  }, [])
+  }, [particlesInit])
 
   useEffect(() => {
     const set = mangoStore.getState().set
@@ -102,7 +93,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
         <SuccessParticles />
       </div>
       <div
-        className={`min-h-screen flex-grow ${
+        className={`min-h-screen grow ${
           !themeData.useGradientBg
             ? 'bg-th-bkg-1'
             : 'bg-gradient-to-b from-th-bkg-1 to-th-bkg-2'
@@ -118,8 +109,8 @@ const Layout = ({ children }: { children: ReactNode }) => {
             onClick={handleToggleSidebar}
           >
             <ChevronRightIcon
-              className={`absolute -right-[2px] bottom-2 h-4 w-4 flex-shrink-0 ${
-                !isCollapsed ? 'rotate-180' : 'rotate-360'
+              className={`absolute bottom-2 h-4 w-4 shrink-0 ${
+                !isCollapsed ? 'rotate-180' : ''
               }`}
             />
           </button>

@@ -32,8 +32,11 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import { useTheme } from 'next-themes'
 import LeaderboardIcon from './icons/LeaderboardIcon'
 import { sideBarAnimationDuration } from './Layout'
-import { CUSTOM_SKINS } from 'utils/theme'
+import { CUSTOM_SKINS, breakpoints } from 'utils/theme'
 import { NFT } from 'types'
+import { useViewport } from 'hooks/useViewport'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import { SIDEBAR_COLLAPSE_KEY } from 'utils/constants'
 
 const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation(['common', 'search'])
@@ -45,6 +48,14 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { mangoAccount } = useMangoAccount()
   const router = useRouter()
   const { pathname } = router
+
+  const { width } = useViewport()
+  const [, setIsCollapsed] = useLocalStorageState(SIDEBAR_COLLAPSE_KEY, false)
+  useEffect(() => {
+    if (width !== 0 && width < breakpoints['2xl']) {
+      setIsCollapsed(true)
+    }
+  }, [width, setIsCollapsed])
 
   const playAnimation = () => {
     const set = mangoStore.getState().set
