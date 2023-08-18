@@ -73,6 +73,8 @@ export const AUTO_CONNECT_WALLET = 'auto-connect-0.1'
 
 export const LAST_WALLET_NAME = 'lastWalletName'
 
+export const PRIVACY_MODE = 'privacy-mode-0.1'
+
 // Unused
 export const PROFILE_CATEGORIES = [
   'borrower',
