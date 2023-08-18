@@ -90,6 +90,10 @@ const Layout = ({ children }: { children: ReactNode }) => {
     }
   }, [theme])
 
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  if (!mounted) return null
+
   return (
     <main
       className={`${themeData.fonts.body.variable} ${themeData.fonts.display.variable} ${themeData.fonts.mono.variable} font-sans`}

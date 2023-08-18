@@ -32,7 +32,6 @@ import TransactionNotification from '@components/notifications/TransactionNotifi
 import { ThemeProvider } from 'next-themes'
 import { appWithTranslation } from 'next-i18next'
 import Layout from '../components/Layout'
-import { ViewportProvider } from '../hooks/useViewport'
 import MangoProvider from '@components/MangoProvider'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { notify } from 'utils/notifications'
@@ -134,12 +133,10 @@ function MyApp({ Component, pageProps }: AppProps) {
           >
             <MangoProvider />
             <ThemeProvider defaultTheme="Mango Classic" storageKey={THEME_KEY}>
-              <ViewportProvider>
-                <PageTitle />
-                <Layout>
-                  <Component {...pageProps} />
-                </Layout>
-              </ViewportProvider>
+              <PageTitle />
+              <Layout>
+                <Component {...pageProps} />
+              </Layout>
               <TransactionNotification />
             </ThemeProvider>
           </WalletProvider>
