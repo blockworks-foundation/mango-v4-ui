@@ -163,6 +163,7 @@ export const queryBirdeyeBars = async (
     to: number
   },
   quote_token: string,
+  market: string,
 ): Promise<Bar[]> => {
   const { from, to } = periodParams
 
@@ -172,6 +173,7 @@ export const queryBirdeyeBars = async (
     type: parseResolution(resolution),
     time_from: from,
     time_to: to,
+    merge_market_id: market,
   }
 
   const query = Object.keys(urlParameters)
@@ -181,7 +183,7 @@ export const queryBirdeyeBars = async (
     )
     .join('&')
 
-  const data = await makeApiRequest(`defi/ohlcv/base_quote?${query}`)
+  const data = await makeApiRequest(`defi/ohlcv/base_quote_merge?${query}`)
   if (!data.success || data.data.items.length === 0) {
     return []
   }
@@ -208,7 +210,7 @@ export const queryBirdeyeBars = async (
   return bars
 }
 
-export default {
+const datafeed = {
   onReady: (callback: (configuration: DatafeedConfiguration) => void) => {
     setTimeout(() => callback(configurationData as any))
   },
@@ -249,19 +251,12 @@ export default {
     let ticker = mangoStoreState.selectedMarket.name
     let quote_token = ''
     let base_token = ''
-    console.log(1)
 
     if (group && symbolAddress) {
-      console.log(2)
-
       const market = getMktFromMktAddress(group, symbolAddress)
       if (market) {
-        console.log(3)
-
         ticker = market.name
         if (market instanceof Serum3Market) {
-          console.log(4)
-
           base_token = group
             .getFirstBankByTokenIndex(market.baseTokenIndex)
             .mint.toString()
@@ -316,7 +311,6 @@ export default {
     ) => void,
     onErrorCallback: (e: any) => void,
   ) => {
-    console.log('symboleInfo', symbolInfo)
     try {
       const { firstDataRequest } = periodParams
       let bars
@@ -334,6 +328,7 @@ export default {
           resolution as any,
           periodParams,
           symbolInfo.quote_token,
+          symbolInfo.address,
         )
       }
       if (!bars || bars.length === 0) {
@@ -391,7 +386,7 @@ export default {
     if (marketType === 'perp') {
       unsubscribeFromPerpStream(subscriberUID)
     } else {
-      unsubscribeFromStream()
+      // unsubscribeFromStream()
     }
   },
 
@@ -407,3 +402,5 @@ export default {
 
   // isSocketOpen: marketType === 'spot' ? isOpen : isPerpOpen,
 }
+
+export default datafeed

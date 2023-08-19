@@ -92,7 +92,7 @@ const BorrowPage = () => {
     <>
       <div className="flex flex-col border-b border-th-bkg-3 px-4 py-4 md:px-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-col md:flex-row">
-          <div className="pb-4 md:pr-6 md:pb-0">
+          <div className="pb-4 md:pb-0 md:pr-6">
             <p className="mb-0.5 text-base">
               {t('borrow:current-borrow-value')}
             </p>
@@ -122,7 +122,7 @@ const BorrowPage = () => {
               )}
             </div>
           </div>
-          <div className="h-full border-t border-th-bkg-3 pt-4 md:border-t-0 md:border-b-0 md:border-l md:pt-0 md:pl-6">
+          <div className="h-full border-t border-th-bkg-3 pt-4 md:border-b-0 md:border-l md:border-t-0 md:pl-6 md:pt-0">
             <p className="mb-0.5 text-base">
               {t('borrow:available-to-borrow')}
             </p>
@@ -143,7 +143,7 @@ const BorrowPage = () => {
             </div>
           </div>
         </div>
-        <div className="mt-6 mb-1 lg:mt-0 lg:mb-0">
+        <div className="mb-1 mt-6 lg:mb-0 lg:mt-0">
           <div className="flex items-center space-x-2">
             <Button
               className="flex w-1/2 items-center justify-center md:w-auto"

@@ -1,29 +1,19 @@
 import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 import { formatYAxis } from 'utils/formatting'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
-import useMangoGroup from 'hooks/useMangoGroup'
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import DetailedAreaOrBarChart from '@components/shared/DetailedAreaOrBarChart'
 
 const TokenStatsCharts = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
-  const { group } = useMangoGroup()
   const mangoStats = mangoStore((s) => s.tokenStats.mangoStats)
-  const initialStatsLoad = mangoStore((s) => s.tokenStats.initialLoad)
   const loadingStats = mangoStore((s) => s.tokenStats.loading)
   const [borrowDaysToShow, setBorrowDaysToShow] = useState('30')
   const [depositDaysToShow, setDepositDaysToShow] = useState('30')
   const banks = useBanksWithBalances()
-
-  useEffect(() => {
-    if (group && !initialStatsLoad) {
-      const actions = mangoStore.getState().actions
-      actions.fetchTokenStats()
-    }
-  }, [group, initialStatsLoad])
 
   const [
     currentTotalDepositValue,
@@ -48,7 +38,7 @@ const TokenStatsCharts = () => {
 
   return (
     <>
-      <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-r">
+      <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 md:border-r">
         <DetailedAreaOrBarChart
           data={mangoStats.concat([
             {
@@ -70,7 +60,7 @@ const TokenStatsCharts = () => {
           yKey={'depositValue'}
         />
       </div>
-      <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:pl-6">
+      <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 md:pl-6">
         <DetailedAreaOrBarChart
           data={mangoStats.concat([
             {
@@ -92,7 +82,7 @@ const TokenStatsCharts = () => {
           yKey={'borrowValue'}
         />
       </div>
-      <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-r md:pl-6">
+      <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 md:border-r md:pl-6">
         <DetailedAreaOrBarChart
           data={mangoStats.concat([
             {

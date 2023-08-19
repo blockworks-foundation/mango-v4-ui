@@ -15,7 +15,7 @@ const SecondaryTabBar = ({
       <div className="hide-scroll flex space-x-2 pl-4 md:pl-6">
         {tabs.map((tab) => (
           <button
-            className={`rounded-md py-1.5 px-2.5 text-sm font-medium focus-visible:bg-th-bkg-4 md:hover:bg-th-bkg-4 ${
+            className={`rounded-md px-2.5 py-1.5 text-sm font-medium focus-visible:bg-th-bkg-4 md:hover:bg-th-bkg-4 ${
               activeTab === tab
                 ? 'bg-th-bkg-4 text-th-active focus-visible:text-th-active'
                 : 'text-th-fgd-3 focus-visible:text-th-fgd-1'

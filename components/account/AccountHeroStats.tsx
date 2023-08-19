@@ -232,7 +232,7 @@ const AccountHeroStats = ({
                 </Tooltip>
               ) : null}
             </div>
-            <div className="mt-1 mb-0.5 flex items-center space-x-3">
+            <div className="mb-0.5 mt-1 flex items-center space-x-3">
               <p className="text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
                 {maintHealth}%
               </p>
@@ -263,7 +263,7 @@ const AccountHeroStats = ({
             >
               <p className="tooltip-underline">{t('free-collateral')}</p>
             </Tooltip>
-            <p className="mt-1 mb-0.5 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
+            <p className="mb-0.5 mt-1 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
               <FormatNumericValue
                 value={
                   group && mangoAccount
@@ -345,7 +345,7 @@ const AccountHeroStats = ({
                 </div>
               ) : null}
             </div>
-            <p className="mt-1 mb-0.5 text-left text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
+            <p className="mb-0.5 mt-1 text-left text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
               <FormatNumericValue
                 value={accountPnl}
                 decimals={2}
@@ -436,7 +436,7 @@ const AccountHeroStats = ({
                 </Tooltip>
               ) : null}
             </div>
-            <p className="mt-1 mb-0.5 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
+            <p className="mb-0.5 mt-1 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
               <FormatNumericValue
                 value={interestTotalValue}
                 decimals={2}
@@ -482,7 +482,7 @@ const AccountHeroStats = ({
               <div className="h-7 w-16 bg-th-bkg-2" />
             </SheenLoader>
           ) : (
-            <p className="mt-1 mb-0.5 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
+            <p className="mb-0.5 mt-1 text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
               <FormatNumericValue
                 value={fundingTotalValue}
                 decimals={2}

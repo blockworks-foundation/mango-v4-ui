@@ -146,7 +146,7 @@ const SharePositionModal = ({
                 </div>
               </div>
             </div>
-            <div className="absolute top-0 left-0">
+            <div className="absolute left-0 top-0">
               <img
                 src={roi >= 0 ? '/images/space.svg' : '/images/underwater.svg'}
                 alt="Share Background"

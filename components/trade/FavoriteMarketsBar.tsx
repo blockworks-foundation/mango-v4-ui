@@ -4,17 +4,21 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import Link from 'next/link'
-import { FAVORITE_MARKETS_KEY } from 'utils/constants'
+import { DEFAULT_FAVORITE_MKTS, FAVORITE_MARKETS_KEY } from 'utils/constants'
 import MarketLogos from './MarketLogos'
+import Tooltip from '@components/shared/Tooltip'
 
 const FavoriteMarketsBar = () => {
-  const [favoriteMarkets] = useLocalStorageState(FAVORITE_MARKETS_KEY, [])
+  const [favoriteMarkets, setFavorites] = useLocalStorageState(
+    FAVORITE_MARKETS_KEY,
+    DEFAULT_FAVORITE_MKTS,
+  )
   const { selectedMarket } = useSelectedMarket()
   const { group } = useMangoGroup()
 
   return (
     <Transition
-      className="hide-scroll flex items-center space-x-2 overflow-x-auto border-b border-th-bkg-3 bg-th-bkg-2 py-1 px-4 md:space-x-4 md:px-6"
+      className="hide-scroll flex items-center space-x-2 overflow-x-auto border-b border-th-bkg-3 bg-th-bkg-2 px-4 py-1 md:space-x-4 md:px-6"
       show={!!favoriteMarkets.length}
       enter="transition-all ease-in duration-200"
       enterFrom="opacity-0 h-0"
@@ -23,7 +27,11 @@ const FavoriteMarketsBar = () => {
       leaveFrom="opacity-100 h-8"
       leaveTo="opacity-0 h-0"
     >
-      <StarIcon className="h-4 w-4 flex-shrink-0 text-th-fgd-4" />
+      <Tooltip content="Remove all favorites">
+        <div onClick={() => setFavorites([])} className="cursor-pointer">
+          <StarIcon className="h-4 w-4 flex-shrink-0 text-th-fgd-4" />
+        </div>
+      </Tooltip>
       {favoriteMarkets.map((mkt: string) => {
         // const change24h = marketsInfo?.find((m) => m.name === mkt)?.change24h
         const isPerp = mkt.includes('PERP')

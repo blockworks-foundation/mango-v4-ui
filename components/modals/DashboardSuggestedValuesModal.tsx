@@ -5,10 +5,12 @@ import mangoStore from '@store/mangoStore'
 import { useWallet } from '@solana/wallet-adapter-react'
 import GovernanceStore from '@store/governanceStore'
 import {
+  PriceImpactResp,
+  PriceImpactRespWithoutSide,
   formatSuggestedValues,
   getFormattedBankValues,
 } from 'utils/governance/listingTools'
-import { Bank, Group } from '@blockworks-foundation/mango-v4'
+import { Bank, Group, OracleProvider } from '@blockworks-foundation/mango-v4'
 import { AccountMeta } from '@solana/web3.js'
 import { BN } from '@project-serum/anchor'
 import {
@@ -23,6 +25,7 @@ import { Disclosure } from '@headlessui/react'
 import {
   LISTING_PRESETS,
   LISTING_PRESETS_KEYS,
+  LISTING_PRESETS_PYTH,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 
 const DashboardSuggestedValues = ({
@@ -30,9 +33,11 @@ const DashboardSuggestedValues = ({
   onClose,
   bank,
   group,
+  priceImpacts,
 }: ModalProps & {
   bank: Bank
   group: Group
+  priceImpacts: PriceImpactResp[]
 }) => {
   const client = mangoStore((s) => s.client)
   //do not deconstruct wallet is used for anchor to sign
@@ -41,28 +46,19 @@ const DashboardSuggestedValues = ({
   const voter = GovernanceStore((s) => s.voter)
   const vsrClient = GovernanceStore((s) => s.vsrClient)
   const proposals = GovernanceStore((s) => s.proposals)
+  const PRESETS =
+    bank?.oracleProvider === OracleProvider.Pyth
+      ? LISTING_PRESETS_PYTH
+      : LISTING_PRESETS
 
-  const [suggestedTiers, setSuggestedTiers] = useState<
-    Partial<{ [key: string]: string }>
-  >({})
+  const [suggestedTier, setSuggstedTier] =
+    useState<LISTING_PRESETS_KEYS>('SHIT')
 
   const getSuggestedTierForListedTokens = useCallback(async () => {
-    type PriceImpactResp = {
-      avg_price_impact_percent: number
-      side: 'ask' | 'bid'
-      target_amount: number
-      symbol: string
-      //there is more fileds they are just not used on ui
-    }
-    type PriceImpactRespWithoutSide = Omit<PriceImpactResp, 'side'>
-    const resp = await fetch(
-      'https://api.mngo.cloud/data/v4/risk/listed-tokens-one-week-price-impacts',
-    )
-    const jsonReps = (await resp.json()) as PriceImpactResp[]
-    const filteredResp = jsonReps
+    const filteredResp = priceImpacts
       .reduce((acc: PriceImpactRespWithoutSide[], val: PriceImpactResp) => {
         if (val.side === 'ask') {
-          const bidSide = jsonReps.find(
+          const bidSide = priceImpacts.find(
             (x) =>
               x.symbol === val.symbol &&
               x.target_amount === val.target_amount &&
@@ -96,18 +92,25 @@ const DashboardSuggestedValues = ({
         },
         {},
       )
-    const suggestedTiers = Object.keys(filteredResp).reduce(
-      (acc: { [key: string]: string | undefined }, key: string) => {
-        acc[key] = Object.values(LISTING_PRESETS).find(
-          (x) => x.preset_target_amount === filteredResp[key].target_amount,
-        )?.preset_key
-        return acc
-      },
-      {},
-    )
+    const priceImapct = filteredResp[getApiTokenName(bank.name)]
+    const liqudityTier =
+      Object.values(PRESETS).find(
+        (x) => x.preset_target_amount === priceImapct?.target_amount,
+      )?.preset_key || 'SHIT'
+    const tierLowerThenCurrent =
+      liqudityTier === 'PREMIUM'
+        ? 'MID'
+        : liqudityTier === 'MID'
+        ? 'MEME'
+        : liqudityTier
+    const isMidOrPremium = liqudityTier === 'MID' || liqudityTier === 'PREMIUM'
+    const listingTier =
+      isMidOrPremium && bank?.oracleProvider !== OracleProvider.Pyth
+        ? tierLowerThenCurrent
+        : liqudityTier
 
-    setSuggestedTiers(suggestedTiers)
-  }, [])
+    setSuggstedTier(listingTier as LISTING_PRESETS_KEYS)
+  }, [priceImpacts])
 
   const proposeNewSuggestedValues = useCallback(
     async (
@@ -117,7 +120,8 @@ const DashboardSuggestedValues = ({
     ) => {
       const proposalTx = []
       const mintInfo = group!.mintInfosMapByTokenIndex.get(bank.tokenIndex)!
-      const preset = LISTING_PRESETS[tokenTier]
+      const preset = PRESETS[tokenTier]
+
       const fieldsToChange = invalidFieldsKeys.reduce(
         (obj, key) => ({ ...obj, [key]: preset[key as keyof typeof preset] }),
         {},
@@ -232,16 +236,11 @@ const DashboardSuggestedValues = ({
     ],
   )
 
-  const extractTokenTierForName = (
-    suggestedTokenObj: Partial<{
-      [key: string]: string
-    }>,
-    tier: string,
-  ) => {
-    if (tier === 'ETH (Portal)') {
-      return suggestedTokenObj['ETH']
+  const getApiTokenName = (bankName: string) => {
+    if (bankName === 'ETH (Portal)') {
+      return 'ETH'
     }
-    return suggestedTokenObj[tier]
+    return bankName
   }
 
   useEffect(() => {
@@ -252,11 +251,7 @@ const DashboardSuggestedValues = ({
 
   const formattedBankValues = getFormattedBankValues(group, bank)
 
-  const suggestedTier = extractTokenTierForName(suggestedTiers, bank.name)
-    ? extractTokenTierForName(suggestedTiers, bank.name)!
-    : 'SHIT'
-
-  const suggestedVaules = LISTING_PRESETS[suggestedTier as LISTING_PRESETS_KEYS]
+  const suggestedVaules = PRESETS[suggestedTier as LISTING_PRESETS_KEYS]
   const suggestedFormattedPreset = formatSuggestedValues(suggestedVaules)
 
   type SuggestedFormattedPreset = typeof suggestedFormattedPreset
@@ -289,8 +284,10 @@ const DashboardSuggestedValues = ({
       isOpen={isOpen}
       onClose={onClose}
     >
-      <h3 className="mb-6">{bank.name}</h3>
-      <div className="flex flex-col max-h-[600px] w-full overflow-auto">
+      <h3 className="mb-6">
+        {bank.name} - Suggested tier: {suggestedTier}
+      </h3>
+      <div className="flex max-h-[600px] w-full flex-col overflow-auto">
         <Disclosure.Panel>
           <KeyValuePair
             label="Loan Fee Rate"

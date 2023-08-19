@@ -89,8 +89,6 @@ const UnsettledTrades = ({
       if (mangoAccountPnl === undefined)
         throw new Error('Unable to get account P&L')
 
-      console.log('mangoAccountPnl', mangoAccountPnl)
-
       const allMangoAccounts = await client.getAllMangoAccounts(group, true)
 
       const settleCandidates = await market.getSettlePnlCandidates(
@@ -100,7 +98,6 @@ const UnsettledTrades = ({
         mangoAccountPnl < 0 ? 'positive' : 'negative',
         2,
       )
-      console.log('settleCandidates', settleCandidates)
 
       const profitableAccount =
         mangoAccountPnl < 0 ? settleCandidates[0].account : mangoAccount

@@ -1,9 +1,9 @@
 import { useTranslation } from 'next-i18next'
 import { useCallback } from 'react'
-import { useViewport } from '../../hooks/useViewport'
-import { COLORS } from '../../styles/colors'
-import { breakpoints } from '../../utils/theme'
-import ContentBox from '../shared/ContentBox'
+import { useViewport } from '../../../hooks/useViewport'
+import { COLORS } from '../../../styles/colors'
+import { breakpoints } from '../../../utils/theme'
+import ContentBox from '../../shared/ContentBox'
 import MarketLogos from '@components/trade/MarketLogos'
 import useMangoGroup from 'hooks/useMangoGroup'
 import {
@@ -343,7 +343,7 @@ const MobileSpotMarketItem = ({
             enterTo="opacity-100"
           >
             <Disclosure.Panel>
-              <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4 pb-4">
+              <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pb-4 pt-4">
                 <div className="col-span-1">
                   <p className="text-xs text-th-fgd-3">{t('price')}</p>
                   <p className="font-mono text-th-fgd-2">

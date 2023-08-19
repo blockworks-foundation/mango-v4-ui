@@ -117,7 +117,7 @@ const AccountValue = ({
             />
             <Transition
               appear={true}
-              className="absolute right-2 bottom-2"
+              className="absolute bottom-2 right-2"
               show={showExpandChart || isMobile}
               enter="transition ease-in duration-300"
               enterFrom="opacity-0 scale-75"

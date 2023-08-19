@@ -17,6 +17,10 @@ import { MANGO_MINT_DECIMALS } from 'utils/governance/constants'
 // import { useTranslation } from 'next-i18next'
 import { ImgWithLoader } from '@components/ImgWithLoader'
 import NftMarketButton from './NftMarketButton'
+import { formatNumericValue } from 'utils/numbers'
+import Loading from '@components/shared/Loading'
+import SheenLoader from '@components/shared/SheenLoader'
+import EmptyState from './EmptyState'
 
 const filter = [ALL_FILTER, 'My Listings']
 
@@ -26,32 +30,49 @@ const ListingsView = () => {
   // const { t } = useTranslation(['nft-market'])
   const [currentFilter, setCurrentFilter] = useState(ALL_FILTER)
   const { data: bids } = useBids()
-
-  // const [page, setPage] = useState(1)
   const [bidListing, setBidListing] = useState<null | Listing>(null)
   const [assetBidsListing, setAssetBidsListing] = useState<null | Listing>(null)
   const { data: auctionHouse } = useAuctionHouse()
   const [asssetBidsModal, setAssetBidsModal] = useState(false)
   const [bidNftModal, setBidNftModal] = useState(false)
+  const [cancellingListing, setCancellingListing] = useState('')
+  const [buying, setBuying] = useState('')
 
   const { refetch } = useLazyListings()
-  // const { data: listings } = useListings(currentFilter, page)
-  const { data: listings } = useListings()
+  const {
+    data: listings,
+    isLoading: loadingListings,
+    isFetching: fetchingListings,
+  } = useListings()
 
   const cancelListing = async (listing: Listing) => {
-    await metaplex!.auctionHouse().cancelListing({
-      auctionHouse: auctionHouse!,
-      listing: listing,
-    })
-    refetch()
+    setCancellingListing(listing.asset.mint.address.toString())
+    try {
+      await metaplex!.auctionHouse().cancelListing({
+        auctionHouse: auctionHouse!,
+        listing: listing,
+      })
+      refetch()
+    } catch (e) {
+      console.log('error cancelling listing', e)
+    } finally {
+      setCancellingListing('')
+    }
   }
 
   const buyAsset = async (listing: Listing) => {
-    await metaplex!.auctionHouse().buy({
-      auctionHouse: auctionHouse!,
-      listing,
-    })
-    refetch()
+    setBuying(listing.asset.mint.address.toString())
+    try {
+      await metaplex!.auctionHouse().buy({
+        auctionHouse: auctionHouse!,
+        listing,
+      })
+      refetch()
+    } catch (e) {
+      console.log('error buying nft', e)
+    } finally {
+      setBuying('')
+    }
   }
 
   const openBidModal = (listing: Listing) => {
@@ -74,6 +95,9 @@ const ListingsView = () => {
   //   setPage(page)
   // }
 
+  const loading = loadingListings || fetchingListings
+  console.log(listings?.results)
+
   return (
     <div className="flex flex-col">
       <div className="mb-4 mt-2 flex items-center justify-between rounded-md bg-th-bkg-2 p-2 pl-4">
@@ -91,110 +115,140 @@ const ListingsView = () => {
             </Select.Option>
           ))}
         </Select>
-        {asssetBidsModal && assetBidsListing && (
+        {asssetBidsModal && assetBidsListing ? (
           <AssetBidsModal
             listing={assetBidsListing}
             isOpen={asssetBidsModal}
             onClose={closeBidsModal}
           ></AssetBidsModal>
-        )}
+        ) : null}
       </div>
-      <div className="grid auto-cols-max grid-flow-row grid-flow-col auto-rows-max gap-4">
-        {listings?.results?.map((x, idx) => {
-          const imgSource = x.asset.json?.image
-          const nftBids = bids?.filter((bid) =>
-            bid.metadataAddress.equals(x.asset.metadataAddress),
-          )
-          const bestBid = nftBids
-            ? nftBids.reduce((a, c) => {
-                const price = toUiDecimals(
-                  c.price.basisPoints.toNumber(),
-                  MANGO_MINT_DECIMALS,
-                )
-                if (price > a) {
-                  a = price
-                }
-                return a
-              }, 0)
-            : 0
-          return (
-            <div className="w-60 rounded-lg border border-th-bkg-3" key={idx}>
-              {imgSource ? (
-                <div className="flex h-60 w-full items-start overflow-hidden rounded-t-lg">
-                  <ImgWithLoader
-                    alt="nft"
-                    className="h-auto w-60 flex-shrink-0"
-                    src={imgSource}
-                  />
-                </div>
-              ) : null}
-              <div className="p-4">
-                <div className="flex justify-between">
-                  <div>
-                    <p className="text-xs">Buy Now</p>
-                    <div className="flex items-center">
-                      {/* <img
+      <div className="grid grid-flow-row auto-rows-max grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
+        {listings?.results ? (
+          listings.results.map((x, idx) => {
+            const imgSource = x.asset.json?.image
+            const nftBids = bids?.filter((bid) =>
+              bid.metadataAddress.equals(x.asset.metadataAddress),
+            )
+            const bestBid = nftBids
+              ? nftBids.reduce((a, c) => {
+                  const price = toUiDecimals(
+                    c.price.basisPoints.toNumber(),
+                    MANGO_MINT_DECIMALS,
+                  )
+                  if (price > a) {
+                    a = price
+                  }
+                  return a
+                }, 0)
+              : 0
+            return (
+              <div
+                className="col-span-1 rounded-lg border border-th-bkg-3"
+                key={idx}
+              >
+                {imgSource ? (
+                  <div className="flex h-60 w-full items-center overflow-hidden rounded-t-lg">
+                    <ImgWithLoader
+                      alt="nft"
+                      className="h-auto w-full flex-shrink-0"
+                      src={imgSource}
+                    />
+                  </div>
+                ) : null}
+                <div className="p-4">
+                  <div className="flex justify-between">
+                    <div>
+                      <p className="text-xs">Buy Now</p>
+                      <div className="flex items-center">
+                        {/* <img
                         className="mr-1 h-3.5 w-auto"
                         src="/icons/mngo.svg"
                       /> */}
-                      <span className="font-display text-base">
-                        {toUiDecimals(
-                          x.price.basisPoints.toNumber(),
-                          MANGO_MINT_DECIMALS,
-                        )}{' '}
-                        <span className="font-body font-bold">MNGO</span>
-                      </span>
+                        <span className="font-display text-base">
+                          {formatNumericValue(
+                            toUiDecimals(
+                              x.price.basisPoints.toNumber(),
+                              MANGO_MINT_DECIMALS,
+                            ),
+                          )}{' '}
+                          <span className="font-body font-bold">MNGO</span>
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div>
-                  <p className="mt-2 text-xs">
-                    {bestBid ? `Best Offer: ${bestBid} MNGO` : 'No offers'}
-                  </p>
-                </div>
-                {publicKey && !x.sellerAddress.equals(publicKey) && (
-                  <div className="mt-3 flex space-x-2 border-t border-th-bkg-3 pt-4">
-                    <NftMarketButton
-                      className="w-1/2"
-                      text="Buy Now"
-                      colorClass="success"
-                      onClick={() => buyAsset(x)}
-                    />
-                    <NftMarketButton
-                      className="w-1/2"
-                      text="Make Offer"
-                      colorClass="fgd-3"
-                      onClick={() => openBidModal(x)}
-                    />
-                    {bidNftModal && bidListing && (
-                      <BidNftModal
-                        listing={bidListing}
-                        isOpen={bidNftModal}
-                        onClose={closeBidModal}
-                      ></BidNftModal>
-                    )}
+                  <div>
+                    <p className="mt-2 text-xs">
+                      {bestBid ? `Best Offer: ${bestBid} MNGO` : 'No offers'}
+                    </p>
                   </div>
-                )}
-                {publicKey && x.sellerAddress.equals(publicKey) && (
-                  <div className="mt-3 flex space-x-2 border-t border-th-bkg-3 pt-4">
-                    <NftMarketButton
-                      className="w-1/2"
-                      text="Delist"
-                      colorClass="error"
-                      onClick={() => cancelListing(x)}
-                    />
-                    <NftMarketButton
-                      className="w-1/2"
-                      text={`Offers (${nftBids?.length})`}
-                      colorClass="fgd-3"
-                      onClick={() => openBidsModal(x)}
-                    />
-                  </div>
-                )}
+                  {publicKey && !x.sellerAddress.equals(publicKey) && (
+                    <div className="mt-3 space-y-2 border-t border-th-bkg-3 pt-4">
+                      <NftMarketButton
+                        className="w-full"
+                        text={
+                          buying === x.asset.mint.address.toString() ? (
+                            <Loading />
+                          ) : (
+                            'Buy Now'
+                          )
+                        }
+                        colorClass="success"
+                        onClick={() => buyAsset(x)}
+                      />
+                      <NftMarketButton
+                        className="w-full"
+                        text="Make Offer"
+                        colorClass="fgd-3"
+                        onClick={() => openBidModal(x)}
+                      />
+                      {bidNftModal && bidListing && (
+                        <BidNftModal
+                          listing={bidListing}
+                          isOpen={bidNftModal}
+                          onClose={closeBidModal}
+                        ></BidNftModal>
+                      )}
+                    </div>
+                  )}
+                  {publicKey && x.sellerAddress.equals(publicKey) && (
+                    <div className="mt-3 space-y-2 border-t border-th-bkg-3 pt-4">
+                      <NftMarketButton
+                        className="w-full"
+                        text={
+                          cancellingListing ===
+                          x.asset.mint.address.toString() ? (
+                            <Loading />
+                          ) : (
+                            'Delist'
+                          )
+                        }
+                        colorClass="error"
+                        onClick={() => cancelListing(x)}
+                      />
+                      <NftMarketButton
+                        className="w-full"
+                        text={`Offers (${nftBids?.length})`}
+                        colorClass="fgd-3"
+                        onClick={() => openBidsModal(x)}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          )
-        })}
+            )
+          })
+        ) : loading ? (
+          [...Array(4)].map((x, i) => (
+            <SheenLoader className="flex flex-1" key={i}>
+              <div className="col-span-1 h-64 w-full bg-th-bkg-2" />
+            </SheenLoader>
+          ))
+        ) : (
+          <div className="col-span-5">
+            <EmptyState text="No listings to display..." />
+          </div>
+        )}
       </div>
       {/* <div>
         <ResponsivePagination

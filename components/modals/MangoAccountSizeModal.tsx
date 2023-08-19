@@ -1,6 +1,6 @@
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import NumberFormat, {
   NumberFormatValues,
@@ -15,11 +15,9 @@ import InlineNotification from '../shared/InlineNotification'
 import Modal from '@components/shared/Modal'
 import { ModalProps } from 'types/modal'
 import Label from '@components/forms/Label'
-import {
+import useMangoAccountAccounts, {
   getAvaialableAccountsColor,
-  getTotalMangoAccountAccounts,
-  getUsedMangoAccountAccounts,
-} from '@components/settings/AccountSettings'
+} from 'hooks/useMangoAccountAccounts'
 
 const MIN_ACCOUNTS = 8
 export const MAX_ACCOUNTS: AccountSizeForm = {
@@ -56,35 +54,16 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
     useState<AccountSizeForm>(DEFAULT_FORM)
   const [formErrors, setFormErrors] = useState<FormErrors>()
   const [submitting, setSubmitting] = useState(false)
-
-  const [availableTokens, availableSerum3, availablePerps, availablePerpOo] =
-    useMemo(() => {
-      const [usedTokens, usedSerum3, usedPerps, usedPerpOo] =
-        getUsedMangoAccountAccounts(mangoAccountAddress)
-      const [totalTokens, totalSerum3, totalPerps, totalPerpOpenOrders] =
-        getTotalMangoAccountAccounts(mangoAccountAddress)
-      return [
-        <span
-          className={getAvaialableAccountsColor(usedTokens, totalTokens)}
-          key="tokenAccounts"
-        >{`${usedTokens}/${totalTokens}`}</span>,
-        <span
-          className={getAvaialableAccountsColor(usedSerum3, totalSerum3)}
-          key="spotOpenOrders"
-        >{`${usedSerum3}/${totalSerum3}`}</span>,
-        <span
-          className={getAvaialableAccountsColor(usedPerps, totalPerps)}
-          key="perpAccounts"
-        >{`${usedPerps}/${totalPerps}`}</span>,
-        <span
-          className={getAvaialableAccountsColor(
-            usedPerpOo,
-            totalPerpOpenOrders,
-          )}
-          key="perpOpenOrders"
-        >{`${usedPerpOo}/${totalPerpOpenOrders}`}</span>,
-      ]
-    }, [mangoAccountAddress])
+  const {
+    usedTokens,
+    usedSerum3,
+    usedPerps,
+    usedPerpOo,
+    totalTokens,
+    totalSerum3,
+    totalPerps,
+    totalPerpOpenOrders,
+  } = useMangoAccountAccounts()
 
   useEffect(() => {
     if (mangoAccount) {
@@ -245,7 +224,14 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
         </p>
         <div className="mb-4">
           <AccountSizeFormInput
-            availableAccounts={availableTokens}
+            availableAccounts={
+              <span
+                className={getAvaialableAccountsColor(
+                  usedTokens.length,
+                  totalTokens.length,
+                )}
+              >{`${usedTokens.length}/${totalTokens.length}`}</span>
+            }
             disabled={
               mangoAccount
                 ? mangoAccount.tokens.length >=
@@ -265,7 +251,14 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
         </div>
         <div className="mb-4">
           <AccountSizeFormInput
-            availableAccounts={availableSerum3}
+            availableAccounts={
+              <span
+                className={getAvaialableAccountsColor(
+                  usedSerum3.length,
+                  totalSerum3.length,
+                )}
+              >{`${usedSerum3.length}/${totalSerum3.length}`}</span>
+            }
             disabled
             error={formErrors?.spotOpenOrders}
             label={t('settings:spot-open-orders')}
@@ -280,7 +273,15 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
         </div>
         <div className="mb-4">
           <AccountSizeFormInput
-            availableAccounts={availablePerps}
+            availableAccounts={
+              <span
+                className={getAvaialableAccountsColor(
+                  usedPerps.length,
+                  totalPerps.length,
+                )}
+                key="spotOpenOrders"
+              >{`${usedPerps.length}/${totalPerps.length}`}</span>
+            }
             disabled
             error={formErrors?.perpAccounts}
             label={t('settings:perp-positions')}
@@ -295,7 +296,15 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
         </div>
         <div>
           <AccountSizeFormInput
-            availableAccounts={availablePerpOo}
+            availableAccounts={
+              <span
+                className={getAvaialableAccountsColor(
+                  usedPerpOo.length,
+                  totalPerpOpenOrders.length,
+                )}
+                key="spotOpenOrders"
+              >{`${usedPerpOo.length}/${totalPerpOpenOrders.length}`}</span>
+            }
             disabled={
               mangoAccount
                 ? mangoAccount.perpOpenOrders.length >=
@@ -314,7 +323,7 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
           />
         </div>
         <Button
-          className="w-full mb-4 mt-6 flex items-center justify-center"
+          className="mb-4 mt-6 flex w-full items-center justify-center"
           onClick={handleUpdateAccountSize}
           size="large"
         >
@@ -361,7 +370,7 @@ const AccountSizeFormInput = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <Tooltip content={tooltipContent}>
-            <Label className="mr-1 tooltip-underline" text={label} />
+            <Label className="tooltip-underline mr-1" text={label} />
           </Tooltip>
         </div>
         {!disabled ? (
@@ -387,7 +396,7 @@ const AccountSizeFormInput = ({
           disabled={disabled}
         />
         <div
-          className={`flex items-center border border-l-0 border-th-input-border rounded-r-md h-10 px-2 ${
+          className={`flex h-10 items-center rounded-r-md border border-l-0 border-th-input-border px-2 ${
             disabled ? 'bg-th-bkg-2' : 'bg-th-input-bkg'
           }`}
         >

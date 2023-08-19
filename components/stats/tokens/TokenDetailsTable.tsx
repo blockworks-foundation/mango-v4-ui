@@ -5,9 +5,9 @@ import {
   ChevronRightIcon,
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
-import { useViewport } from '../../hooks/useViewport'
-import { breakpoints } from '../../utils/theme'
-import ContentBox from '../shared/ContentBox'
+import { useViewport } from '../../../hooks/useViewport'
+import { breakpoints } from '../../../utils/theme'
+import ContentBox from '../../shared/ContentBox'
 import Tooltip from '@components/shared/Tooltip'
 import { Bank } from '@blockworks-foundation/mango-v4'
 import {
@@ -278,7 +278,7 @@ const TokenDetailsTable = () => {
                       enterTo="opacity-100"
                     >
                       <Disclosure.Panel>
-                        <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4 pb-4">
+                        <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pb-4 pt-4">
                           <div className="col-span-1">
                             <Tooltip
                               content={t('asset-liability-weight-desc')}

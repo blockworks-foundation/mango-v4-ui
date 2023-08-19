@@ -127,6 +127,7 @@ export const DEFAULT_TRADE_FORM: TradeForm = {
   baseSize: '',
   quoteSize: '',
   tradeType: 'Limit',
+  triggerPrice: '',
   postOnly: false,
   ioc: false,
   reduceOnly: false,
@@ -218,6 +219,7 @@ export type MangoStore = {
     swapMode: 'ExactIn' | 'ExactOut'
     amountIn: string
     amountOut: string
+    flipPrices: boolean
   }
   set: (x: (x: MangoStore) => void) => void
   themeData: ThemeData
@@ -384,6 +386,7 @@ const mangoStore = create<MangoStore>()(
         swapMode: 'ExactIn',
         amountIn: '',
         amountOut: '',
+        flipPrices: false,
       },
       themeData: nftThemeMeta.default,
       tokenStats: {

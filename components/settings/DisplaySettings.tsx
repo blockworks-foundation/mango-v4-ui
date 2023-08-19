@@ -126,8 +126,8 @@ const DisplaySettings = () => {
         <p className="mb-2 md:mb-0">{t('settings:theme')}</p>
         <div className="w-full min-w-[140px] md:w-auto">
           <Select
-            value={theme}
-            onChange={(t) => setTheme(t)}
+            value={theme || DEFAULT_THEMES[0]}
+            onChange={(t: string) => setTheme(t)}
             className="w-full"
           >
             {themes.map((theme) => (

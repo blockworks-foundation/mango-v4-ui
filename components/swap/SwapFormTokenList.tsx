@@ -209,13 +209,13 @@ const SwapFormTokenList = ({
     <>
       <p className="mb-3">
         {type === 'input'
-          ? t('swap:pay')
+          ? t('swap:you-sell')
           : type === 'output'
-          ? t('swap:receive')
+          ? t('swap:you-buy')
           : ''}
       </p>
       <IconButton
-        className="absolute top-2 right-2 text-th-fgd-3 hover:text-th-fgd-2"
+        className="absolute right-2 top-2 text-th-fgd-3 hover:text-th-fgd-2"
         onClick={onClose}
         hideBg
       >

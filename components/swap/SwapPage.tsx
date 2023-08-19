@@ -12,6 +12,7 @@ import mangoStore from '@store/mangoStore'
 // import useLocalStorageState from 'hooks/useLocalStorageState'
 // import { IS_ONBOARDED_KEY } from 'utils/constants'
 import SwapTokenChart from './SwapTokenChart'
+import FavoriteSwapsBar from './FavoriteSwapsBar'
 
 const SwapPage = () => {
   const { mangoAccountAddress } = useMangoAccount()
@@ -34,6 +35,9 @@ const SwapPage = () => {
   return (
     <>
       <div className="grid grid-cols-12">
+        <div className="col-span-12">
+          <FavoriteSwapsBar />
+        </div>
         <div className="col-span-12 border-th-bkg-3 md:col-span-6 md:border-b lg:col-span-7 xl:col-span-8">
           <SwapTokenChart />
         </div>

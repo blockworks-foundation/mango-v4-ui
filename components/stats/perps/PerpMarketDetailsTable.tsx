@@ -1,8 +1,6 @@
 import { useTranslation } from 'next-i18next'
-import { useViewport } from '../../hooks/useViewport'
 import mangoStore from '@store/mangoStore'
-import { breakpoints } from '../../utils/theme'
-import ContentBox from '../shared/ContentBox'
+import ContentBox from '@components/shared/ContentBox'
 import MarketLogos from '@components/trade/MarketLogos'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import {
@@ -17,6 +15,8 @@ import { goToPerpMarketDetails } from './PerpMarketsOverviewTable'
 import { useRouter } from 'next/router'
 import { LinkButton } from '@components/shared/Button'
 import SoonBadge from '@components/shared/SoonBadge'
+import { useViewport } from 'hooks/useViewport'
+import { breakpoints } from 'utils/theme'
 
 const PerpMarketDetailsTable = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -209,7 +209,7 @@ const PerpMarketDetailsTable = () => {
                       enterTo="opacity-100"
                     >
                       <Disclosure.Panel>
-                        <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4 pb-4">
+                        <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pb-4 pt-4">
                           <div className="col-span-1">
                             <p className="text-xs text-th-fgd-3">
                               {t('trade:min-order-size')}

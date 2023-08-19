@@ -49,7 +49,7 @@ const RpcPing = () => {
           warning={rpcWarningThreshold}
         />
         <Tooltip content={t('rpc-ping')}>
-          <span className="font-mono text-th-fgd-2 text-xs">
+          <span className="font-mono text-xs text-th-fgd-2">
             <span className="mr-1">{formatNumericValue(rpcPing, 0)}</span>
             <span className="font-normal text-th-fgd-4">MS</span>
           </span>

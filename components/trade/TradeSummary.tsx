@@ -291,10 +291,12 @@ const TradeSummary = ({
           </p>
         </div>
       ) : null}
-      <div className="flex justify-between text-xs">
-        <p>{t('common:route')}</p>
-        <p className="text-th-fgd-2">Openbook</p>
-      </div>
+      {selectedMarket instanceof Serum3Market ? (
+        <div className="flex justify-between text-xs">
+          <p>{t('common:route')}</p>
+          <p className="text-th-fgd-2">Openbook</p>
+        </div>
+      ) : null}
     </div>
   )
 }

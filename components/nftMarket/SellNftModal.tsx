@@ -14,6 +14,7 @@ import { PublicKey } from '@solana/web3.js'
 import { token } from '@metaplex-foundation/js'
 import metaplexStore from '@store/metaplexStore'
 import { useAuctionHouse, useLazyListings } from 'hooks/market/useAuctionHouse'
+import Loading from '@components/shared/Loading'
 
 const SellNftModal = ({ isOpen, onClose }: ModalProps) => {
   const { publicKey } = useWallet()
@@ -25,7 +26,7 @@ const SellNftModal = ({ isOpen, onClose }: ModalProps) => {
   const nfts = mangoStore((s) => s.wallet.nfts.data)
   const isLoadingNfts = mangoStore((s) => s.wallet.nfts.loading)
   const fetchNfts = mangoStore((s) => s.actions.fetchNfts)
-
+  const [submitting, setSubmitting] = useState(false)
   const [minPrice, setMinPrice] = useState('')
   const [selectedNft, setSelectedNft] = useState<NFT | null>(null)
 
@@ -36,23 +37,30 @@ const SellNftModal = ({ isOpen, onClose }: ModalProps) => {
   }, [publicKey])
 
   const listAsset = async (mint: string, price: number) => {
-    const currentListings = await metaplex?.auctionHouse().findListings({
-      auctionHouse: auctionHouse!,
-      seller: publicKey!,
-      mint: new PublicKey(mint),
-    })
-    const isCurrentlyListed = currentListings?.filter((x) => !x.canceledAt)
-      .length
-    if (isCurrentlyListed) {
-      throw 'Item is currently listed by you'
+    setSubmitting(true)
+    try {
+      const currentListings = await metaplex?.auctionHouse().findListings({
+        auctionHouse: auctionHouse!,
+        seller: publicKey!,
+        mint: new PublicKey(mint),
+      })
+      const isCurrentlyListed = currentListings?.filter((x) => !x.canceledAt)
+        .length
+      if (isCurrentlyListed) {
+        throw 'Item is currently listed by you'
+      }
+      await metaplex!.auctionHouse().list({
+        auctionHouse: auctionHouse!, // A model of the Auction House related to this listing
+        mintAccount: new PublicKey(mint), // The mint account to create a listing for, used to find the metadata
+        price: token(price, MANGO_MINT_DECIMALS), // The listing price
+      })
+      refetch()
+      onClose()
+    } catch (e) {
+      console.log('error listing nft', e)
+    } finally {
+      setSubmitting(false)
     }
-    await metaplex!.auctionHouse().list({
-      auctionHouse: auctionHouse!, // A model of the Auction House related to this listing
-      mintAccount: new PublicKey(mint), // The mint account to create a listing for, used to find the metadata
-      price: token(price, MANGO_MINT_DECIMALS), // The listing price
-    })
-    refetch()
-    onClose()
   }
 
   return (
@@ -107,12 +115,12 @@ const SellNftModal = ({ isOpen, onClose }: ModalProps) => {
           ></Input>
         </div>
         <Button
-          className="ml-2"
+          className="ml-2 flex items-center justify-center"
           disabled={!selectedNft || !minPrice}
           onClick={() => listAsset(selectedNft!.mint, Number(minPrice))}
           size="large"
         >
-          {t('nftMarket:list')}
+          {submitting ? <Loading /> : 'List'}
         </Button>
       </div>
     </Modal>

@@ -3,7 +3,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 import WalletIcon from '@components/icons/WalletIcon'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { IS_ONBOARDED_KEY } from 'utils/constants'
+import { IS_ONBOARDED_KEY, LAST_WALLET_NAME } from 'utils/constants'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import { Popover, Transition } from '@headlessui/react'
 // import Loading from '@components/shared/Loading'
@@ -20,7 +20,7 @@ export default function ConnectWalletButton({
   const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
   const [lastWalletName] = useLocalStorageState<WalletName | null>(
-    'lastWalletName',
+    LAST_WALLET_NAME,
     '',
   )
 
@@ -104,7 +104,7 @@ export default function ConnectWalletButton({
                   leaveFrom="opacity-100"
                   leaveTo="opacity-0"
                 >
-                  <Popover.Panel className="absolute top-16 right-0 z-20 w-48 rounded-md rounded-t-none bg-th-bkg-2 px-4 py-2.5 outline-none">
+                  <Popover.Panel className="absolute right-0 top-16 z-20 w-48 rounded-md rounded-t-none bg-th-bkg-2 px-4 py-2.5 outline-none">
                     {detectedWallets.map((wallet, index) => (
                       <button
                         className="flex w-full flex-row items-center justify-between rounded-none py-2 font-normal focus:outline-none focus-visible:text-th-active md:hover:cursor-pointer md:hover:text-th-active"

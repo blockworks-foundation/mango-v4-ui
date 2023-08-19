@@ -24,7 +24,8 @@ import {
 import { ImgWithLoader } from '@components/ImgWithLoader'
 import NftMarketButton from './NftMarketButton'
 import { abbreviateAddress } from 'utils/formatting'
-import { NoSymbolIcon } from '@heroicons/react/20/solid'
+import EmptyState from './EmptyState'
+import { formatNumericValue } from 'utils/numbers'
 
 const AllBidsView = () => {
   const { publicKey } = useWallet()
@@ -124,9 +125,11 @@ const AllBidsView = () => {
                       </Td>
                       <Td>
                         <p className="text-right">
-                          {toUiDecimals(
-                            x.price.basisPoints.toNumber(),
-                            MANGO_MINT_DECIMALS,
+                          {formatNumericValue(
+                            toUiDecimals(
+                              x.price.basisPoints.toNumber(),
+                              MANGO_MINT_DECIMALS,
+                            ),
                           )}
                           <span className="font-body">{' MNGO'}</span>
                         </p>
@@ -136,9 +139,11 @@ const AllBidsView = () => {
                           <p className="text-right">
                             {listing ? (
                               <>
-                                {toUiDecimals(
-                                  listing.price.basisPoints.toNumber(),
-                                  MANGO_MINT_DECIMALS,
+                                {formatNumericValue(
+                                  toUiDecimals(
+                                    listing.price.basisPoints.toNumber(),
+                                    MANGO_MINT_DECIMALS,
+                                  ),
                                 )}
                                 <span className="font-body">{' MNGO'}</span>
                               </>
@@ -207,10 +212,7 @@ const AllBidsView = () => {
             </tbody>
           </Table>
         ) : (
-          <div className="mt-4 flex flex-col items-center rounded-md border border-th-bkg-3 p-4">
-            <NoSymbolIcon className="mb-1 h-7 w-7 text-th-fgd-4" />
-            <p>No offers to show...</p>
-          </div>
+          <EmptyState text="No offers to display..." />
         )}
       </div>
       {showBidModal ? (

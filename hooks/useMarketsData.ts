@@ -12,7 +12,7 @@ const fetchMarketData = async () => {
     const spotData = await data[1].json()
     return { perpData, spotData }
   } catch (e) {
-    console.log('failed to fetch market data', e)
+    console.error('Failed to fetch market data', e)
     return { perpData: [], spotData: [] }
   }
 }

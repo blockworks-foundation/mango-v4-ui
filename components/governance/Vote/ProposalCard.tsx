@@ -266,7 +266,7 @@ const ProposalCard = ({
         )}
       </div>
       {mangoMint && (
-        <div className="mt-6 flex w-full flex-col space-y-4 border-t border-th-bkg-3 pt-4 md:flex-row md:space-y-0 md:space-x-6">
+        <div className="mt-6 flex w-full flex-col space-y-4 border-t border-th-bkg-3 pt-4 md:flex-row md:space-x-6 md:space-y-0">
           <VoteResults communityMint={mangoMint} proposal={proposal.account} />
           <QuorumProgress
             proposal={proposal}

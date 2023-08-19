@@ -162,10 +162,10 @@ const MarketSelectDropdown = () => {
             <ChevronDownIcon
               className={`${
                 open ? 'rotate-180' : 'rotate-360'
-              } mt-0.5 ml-2 h-6 w-6 flex-shrink-0 text-th-fgd-2`}
+              } ml-2 mt-0.5 h-6 w-6 flex-shrink-0 text-th-fgd-2`}
             />
           </Popover.Button>
-          <Popover.Panel className="absolute top-12 z-40 w-screen border-y md:border-r border-th-bkg-3 bg-th-bkg-2 -left-4 md:w-[560px]">
+          <Popover.Panel className="absolute -left-4 top-12 z-40 w-screen border-y border-th-bkg-3 bg-th-bkg-2 md:w-[560px] md:border-r">
             <div className="border-b border-th-bkg-3">
               <TabButtons
                 activeValue={spotOrPerp}
@@ -177,16 +177,16 @@ const MarketSelectDropdown = () => {
                 fillWidth
               />
             </div>
-            <div className="py-3 max-h-[calc(100vh-160px)] thin-scroll overflow-auto">
+            <div className="thin-scroll max-h-[calc(100vh-160px)] overflow-auto py-3">
               {spotOrPerp === 'perp' && perpMarketsToShow.length ? (
                 <>
-                  <div className="grid grid-cols-3 md:grid-cols-4 pl-4 pr-14 text-xxs border-b border-th-bkg-3 pb-1 mb-2">
+                  <div className="mb-2 grid grid-cols-3 border-b border-th-bkg-3 pb-1 pl-4 pr-14 text-xxs md:grid-cols-4">
                     <p className="col-span-1">{t('market')}</p>
                     <p className="col-span-1 text-right">{t('price')}</p>
                     <p className="col-span-1 text-right">
                       {t('rolling-change')}
                     </p>
-                    <p className="col-span-1 text-right hidden md:block">
+                    <p className="col-span-1 hidden text-right md:block">
                       {t('daily-volume')}
                     </p>
                   </div>
@@ -198,7 +198,7 @@ const MarketSelectDropdown = () => {
                     const volume = volumeData ? volumeData : 0
 
                     return (
-                      <div className="flex items-center w-full" key={m.name}>
+                      <div className="flex w-full items-center" key={m.name}>
                         {!isComingSoon ? (
                           <>
                             <Link
@@ -215,7 +215,7 @@ const MarketSelectDropdown = () => {
                             >
                               <div className="col-span-1 flex items-center">
                                 <MarketLogos market={m} size="small" />
-                                <span className="text-th-fgd-2 text-xs">
+                                <span className="text-xs text-th-fgd-2">
                                   {m.name}
                                 </span>
                               </div>
@@ -230,7 +230,7 @@ const MarketSelectDropdown = () => {
                               <div className="col-span-1 flex justify-end">
                                 <MarketChange market={m} size="small" />
                               </div>
-                              <div className="col-span-1 md:flex justify-end hidden">
+                              <div className="col-span-1 hidden justify-end md:flex">
                                 {loadingMarketData ? (
                                   <SheenLoader className="mt-0.5">
                                     <div className="h-3.5 w-12 bg-th-bkg-2" />
@@ -270,10 +270,10 @@ const MarketSelectDropdown = () => {
               ) : null}
               {spotOrPerp === 'spot' && serumMarketsToShow.length ? (
                 <>
-                  <div className="flex items-center justify-between mb-3 px-4">
+                  <div className="mb-3 flex items-center justify-between px-4">
                     <div className="relative w-1/2">
                       <Input
-                        className="pl-8 h-8"
+                        className="h-8 pl-8"
                         type="text"
                         value={search}
                         onChange={handleUpdateSearch}
@@ -284,7 +284,7 @@ const MarketSelectDropdown = () => {
                     <div>
                       {spotBaseTokens.map((tab) => (
                         <button
-                          className={`rounded-md py-1.5 px-2.5 text-sm font-medium focus-visible:bg-th-bkg-3 focus-visible:text-th-fgd-1 ${
+                          className={`rounded-md px-2.5 py-1.5 text-sm font-medium focus-visible:bg-th-bkg-3 focus-visible:text-th-fgd-1 ${
                             spotBaseFilter === tab
                               ? 'bg-th-bkg-3 text-th-active md:hover:text-th-active'
                               : 'text-th-fgd-3 md:hover:text-th-fgd-2'
@@ -315,13 +315,13 @@ const MarketSelectDropdown = () => {
                       </Select>
                     </div> */}
                   </div>
-                  <div className="grid grid-cols-3 md:grid-cols-4 pl-4 pr-14 text-xxs border-b border-th-bkg-3 pb-1 mb-2">
+                  <div className="mb-2 grid grid-cols-3 border-b border-th-bkg-3 pb-1 pl-4 pr-14 text-xxs md:grid-cols-4">
                     <p className="col-span-1">{t('market')}</p>
                     <p className="col-span-1 text-right">{t('price')}</p>
                     <p className="col-span-1 text-right">
                       {t('rolling-change')}
                     </p>
-                    <p className="col-span-1 text-right hidden md:block">
+                    <p className="col-span-1 hidden text-right md:block">
                       {t('daily-volume')}
                     </p>
                   </div>
@@ -348,7 +348,7 @@ const MarketSelectDropdown = () => {
                     const volume = volumeData ? volumeData : 0
 
                     return (
-                      <div className="flex items-center w-full" key={m.name}>
+                      <div className="flex w-full items-center" key={m.name}>
                         <Link
                           className={MARKET_LINK_CLASSES}
                           href={{
@@ -363,7 +363,7 @@ const MarketSelectDropdown = () => {
                         >
                           <div className="col-span-1 flex items-center">
                             <MarketLogos market={m} size="small" />
-                            <span className="text-th-fgd-2 text-xs">
+                            <span className="text-xs text-th-fgd-2">
                               {m.name}
                             </span>
                           </div>
@@ -389,7 +389,7 @@ const MarketSelectDropdown = () => {
                           <div className="col-span-1 flex justify-end">
                             <MarketChange market={m} size="small" />
                           </div>
-                          <div className="col-span-1 md:flex justify-end hidden">
+                          <div className="col-span-1 hidden justify-end md:flex">
                             {loadingMarketData ? (
                               <SheenLoader className="mt-0.5">
                                 <div className="h-3.5 w-12 bg-th-bkg-2" />

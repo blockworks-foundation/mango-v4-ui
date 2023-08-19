@@ -4,7 +4,6 @@ import {
   ArrowUpLeftIcon,
   ArrowUpTrayIcon,
   ExclamationCircleIcon,
-  LinkIcon,
 } from '@heroicons/react/20/solid'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
@@ -26,7 +25,7 @@ import Button from './shared/Button'
 import InlineNotification from './shared/InlineNotification'
 import Loading from './shared/Loading'
 import { EnterBottomExitBottom, FadeInFadeOut } from './shared/Transitions'
-import { withValueLimit } from './swap/SwapForm'
+import { withValueLimit } from './swap/MarketSwapForm'
 import { getMaxWithdrawForBank } from './swap/useTokenMax'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
@@ -42,6 +41,7 @@ import useBanksWithBalances from 'hooks/useBanksWithBalances'
 import { isMangoError } from 'types'
 import TokenListButton from './shared/TokenListButton'
 import TokenLogo from './shared/TokenLogo'
+import SecondaryConnectButton from './shared/SecondaryConnectButton'
 
 interface BorrowFormProps {
   onSuccess: () => void
@@ -62,7 +62,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
   const [showTokenList, setShowTokenList] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
   const { mangoAccount } = useMangoAccount()
-  const { connected, publicKey, connect } = useWallet()
+  const { connected, publicKey } = useWallet()
   const banks = useBanksWithBalances('maxBorrow')
 
   const bank = useMemo(() => {
@@ -326,38 +326,40 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
               </div>
             ) : null}
           </div>
-          <Button
-            onClick={connected ? handleBorrow : connect}
-            className="flex w-full items-center justify-center"
-            disabled={connected && (!inputAmount || showInsufficientBalance)}
-            size="large"
-          >
-            {!connected ? (
-              <div className="flex items-center">
-                <LinkIcon className="mr-2 h-5 w-5" />
-                {t('connect')}
-              </div>
-            ) : submitting ? (
-              <Loading className="mr-2 h-5 w-5" />
-            ) : showInsufficientBalance ? (
-              <div className="flex items-center">
-                <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-                {t('swap:insufficient-collateral')}
-              </div>
-            ) : isBorrow || !inputAmount ? (
-              <div className="flex items-center">
-                <ArrowUpLeftIcon className="mr-2 h-5 w-5" />
-                {tokenBalance.toNumber()
-                  ? `${t('withdraw')} & ${t('borrow')}`
-                  : t('borrow')}
-              </div>
-            ) : (
-              <div className="flex items-center">
-                <ArrowUpTrayIcon className="mr-2 h-5 w-5" />
-                {t('withdraw')}
-              </div>
-            )}
-          </Button>
+          {connected ? (
+            <Button
+              onClick={handleBorrow}
+              className="flex w-full items-center justify-center"
+              disabled={connected && (!inputAmount || showInsufficientBalance)}
+              size="large"
+            >
+              {submitting ? (
+                <Loading className="mr-2 h-5 w-5" />
+              ) : showInsufficientBalance ? (
+                <div className="flex items-center">
+                  <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+                  {t('swap:insufficient-collateral')}
+                </div>
+              ) : isBorrow || !inputAmount ? (
+                <div className="flex items-center">
+                  <ArrowUpLeftIcon className="mr-2 h-5 w-5" />
+                  {tokenBalance.toNumber()
+                    ? `${t('withdraw')} & ${t('borrow')}`
+                    : t('borrow')}
+                </div>
+              ) : (
+                <div className="flex items-center">
+                  <ArrowUpTrayIcon className="mr-2 h-5 w-5" />
+                  {t('withdraw')}
+                </div>
+              )}
+            </Button>
+          ) : (
+            <SecondaryConnectButton
+              className="flex w-full items-center justify-center"
+              isLarge
+            />
+          )}
         </div>
       </FadeInFadeOut>
     </>

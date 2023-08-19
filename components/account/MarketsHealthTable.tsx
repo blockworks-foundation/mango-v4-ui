@@ -207,7 +207,7 @@ const MarketsHealthTable = ({
                       enterTo="opacity-100"
                     >
                       <Disclosure.Panel>
-                        <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4 pb-4">
+                        <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pb-4 pt-4">
                           <div className="col-span-1">
                             <p className="text-xs text-th-fgd-3">
                               <Tooltip

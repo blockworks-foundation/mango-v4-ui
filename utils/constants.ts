@@ -6,10 +6,10 @@ export const CLIENT_TX_TIMEOUT = 90000
 
 export const SECONDS = 1000
 
-export const INPUT_TOKEN_DEFAULT = 'USDC'
+export const INPUT_TOKEN_DEFAULT = 'SOL'
 export const MANGO_MINT = 'MangoCzJ36AjZyKwVj3VnYU4GTonjfVEnJmvvWaxLac'
 export const USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
-export const OUTPUT_TOKEN_DEFAULT = 'SOL'
+export const OUTPUT_TOKEN_DEFAULT = 'MNGO'
 
 export const JUPITER_V4_PROGRAM_ID =
   'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB'
@@ -45,6 +45,8 @@ export const TRADE_CHART_UI_KEY = 'tradeChart-0.3'
 
 export const FAVORITE_MARKETS_KEY = 'favoriteMarkets-0.2'
 
+export const FAVORITE_SWAPS_KEY = 'favoriteSwaps-0.1'
+
 export const THEME_KEY = 'theme-0.1'
 
 export const RPC_PROVIDER_KEY = 'rpcProviderKey-0.7'
@@ -68,6 +70,8 @@ export const USE_ORDERBOOK_FEED_KEY = 'useOrderbookFeed-0.1'
 export const HOT_KEYS_KEY = 'hotKeys-0.1'
 
 export const AUTO_CONNECT_WALLET = 'auto-connect-0.1'
+
+export const LAST_WALLET_NAME = 'lastWalletName'
 
 // Unused
 export const PROFILE_CATEGORIES = [
@@ -141,6 +145,13 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   wbtcpo: true,
   'wbtc (portal)': true,
 }
+
+export const DEFAULT_FAVORITE_MKTS = [
+  'SOL-PERP',
+  'ETH-PERP',
+  'BTC-PERP',
+  'RNDR-PERP',
+]
 
 export const WHITE_LIST_API = 'https://api.mngo.cloud/whitelist/v1/'
 export const DAILY_SECONDS = 86400

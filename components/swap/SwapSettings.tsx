@@ -47,7 +47,7 @@ const SwapSettings = ({ onClose }: { onClose: () => void }) => {
     <>
       <h3 className="mb-3">{t('settings')}</h3>
       <IconButton
-        className="absolute top-2 right-2"
+        className="absolute right-2 top-2"
         onClick={onClose}
         hideBg
         ref={focusRef}

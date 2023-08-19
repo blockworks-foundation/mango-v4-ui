@@ -27,7 +27,7 @@ interface PerpStatsData {
 }
 
 const MangoPerpStatsCharts = () => {
-  const { t } = useTranslation(['common', 'token', 'trade'])
+  const { t } = useTranslation(['common', 'stats', 'token', 'trade'])
   const loadingPerpStats = mangoStore((s) => s.perpStats.loading)
   const perpStats = mangoStore((s) => s.perpStats.data)
   const [feesDaysToShow, setFeesDaysToShow] = useState('30')
@@ -102,7 +102,7 @@ const MangoPerpStatsCharts = () => {
   return (
     <>
       {feeValues.length ? (
-        <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:pl-6">
+        <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 md:pl-6">
           <DetailedAreaOrBarChart
             data={feeValues}
             daysToShow={feesDaysToShow}
@@ -119,7 +119,7 @@ const MangoPerpStatsCharts = () => {
         </div>
       ) : null}
       {openInterestValues.length ? (
-        <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:border-r">
+        <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 md:border-r">
           <DetailedAreaOrBarChart
             data={openInterestValues}
             daysToShow={oiDaysToShow}
@@ -129,14 +129,14 @@ const MangoPerpStatsCharts = () => {
             loaderHeightClass="h-[350px]"
             prefix="$"
             tickFormat={(x) => `$${formatYAxis(x)}`}
-            title={t('trade:open-interest')}
+            title={t('stats:perp-open-interest')}
             xKey="date"
             yKey={'openInterest'}
           />
         </div>
       ) : null}
       {volumeValues.length ? (
-        <div className="col-span-2 border-b border-th-bkg-3 py-4 px-6 md:col-span-1 md:pl-6">
+        <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 md:pl-6">
           <DetailedAreaOrBarChart
             data={volumeValues}
             daysToShow={volumeDaysToShow}

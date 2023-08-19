@@ -108,7 +108,7 @@ const TopBar = () => {
               <SolanaTps />
             </div>
           ) : null} */}
-          <div className="bg-th-bkg-1 flex items-center justify-center h-[63px] w-16 md:hidden">
+          <div className="flex h-[63px] w-16 items-center justify-center bg-th-bkg-1 md:hidden">
             <img
               className="h-9 w-9 flex-shrink-0"
               src={themeData.logoPath}
@@ -180,7 +180,7 @@ const TopBar = () => {
           ) : null}
         </span>
         {!isOnline ? (
-          <div className="absolute top-3 left-1/2 z-10 flex h-10 w-max -translate-x-1/2 items-center rounded-full bg-th-down py-2 px-4 md:top-8">
+          <div className="absolute left-1/2 top-3 z-10 flex h-10 w-max -translate-x-1/2 items-center rounded-full bg-th-down px-4 py-2 md:top-8">
             <ExclamationTriangleIcon className="h-5 w-5 flex-shrink-0 text-th-fgd-1" />
             <p className="ml-2 text-th-fgd-1">
               Your connection appears to be offline
@@ -191,7 +191,7 @@ const TopBar = () => {
           {isUnownedAccount || (!connected && isMobile) ? null : isMobile ? (
             <button
               onClick={() => handleDepositWithdrawModal('deposit')}
-              className="h-[63px] bg-th-bkg-1 border-l border-th-bkg-3 px-4 font-display text-center text-th-fgd-1"
+              className="h-[63px] border-l border-th-bkg-3 bg-th-bkg-1 px-4 text-center font-display text-th-fgd-1"
             >{`${t('deposit')} / ${t('withdraw')}`}</button>
           ) : (
             <Button

@@ -32,6 +32,8 @@ import {
 } from 'utils/orderbook'
 import { OrderbookData, OrderbookL2 } from 'types'
 import isEqual from 'lodash/isEqual'
+import { useViewport } from 'hooks/useViewport'
+import { breakpoints } from 'utils/theme'
 
 const sizeCompacter = Intl.NumberFormat('en', {
   maximumFractionDigits: 6,
@@ -55,13 +57,14 @@ const Orderbook = () => {
   //     ? localStorage.getItem(USE_ORDERBOOK_FEED_KEY) === 'true'
   //     : true
   // )
-  // const { width } = useViewport()
+  const { width } = useViewport()
+  const isMobile = width ? width < breakpoints.md : false
   const [orderbookData, setOrderbookData] = useState<OrderbookData | null>(null)
   const currentOrderbookData = useRef<OrderbookL2>()
 
   const depth = useMemo(() => {
-    return 30
-  }, [])
+    return isMobile ? 12 : 30
+  }, [isMobile])
 
   const depthArray: number[] = useMemo(() => {
     return Array(depth).fill(0)
@@ -70,8 +73,6 @@ const Orderbook = () => {
   const verticallyCenterOrderbook = useCallback(() => {
     const element = orderbookElRef.current
     if (element) {
-      console.log('vertically centering')
-
       if (
         element.parentElement &&
         element.scrollHeight > element.parentElement.offsetHeight
@@ -87,17 +88,8 @@ const Orderbook = () => {
   }, [])
 
   useEffect(() => {
-    console.log('hi')
-
     window.addEventListener('resize', verticallyCenterOrderbook)
   }, [verticallyCenterOrderbook])
-
-  // const resetOrderbook = useCallback(async () => {
-  //   // setShowBids(true)
-  //   // setShowAsks(true)
-  //   await sleep(300)
-  //   verticallyCenterOrderbook()
-  // }, [verticallyCenterOrderbook])
 
   const handleScroll = useCallback(() => {
     setIsScrolled(true)
@@ -464,7 +456,7 @@ const Orderbook = () => {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="h-10 flex items-center justify-between border-b border-th-bkg-3 px-4">
+      <div className="flex h-10 items-center justify-between border-b border-th-bkg-3 px-4">
         {market ? (
           <>
             <p className="text-xs">{t('trade:grouping')}:</p>
@@ -527,7 +519,7 @@ const Orderbook = () => {
           )
         })}
         <div
-          className="my-1 grid grid-cols-2 border-y border-th-bkg-3 py-1 px-4 text-xs text-th-fgd-4"
+          className="my-1 grid grid-cols-2 border-y border-th-bkg-3 px-4 py-1 text-xs text-th-fgd-4"
           id="trade-step-nine"
         >
           <div className="col-span-1 flex justify-between">

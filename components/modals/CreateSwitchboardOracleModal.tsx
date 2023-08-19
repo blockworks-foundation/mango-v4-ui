@@ -55,7 +55,7 @@ const CreateSwitchboardOracleModal = ({
   const { t } = useTranslation(['governance'])
   const connection = mangoStore((s) => s.connection)
   const wallet = useWallet()
-  const quoteTokenName = 'USDC'
+  const quoteTokenName = 'USD'
   const pythUsdOracle = 'Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD'
   const tierToSwapValue: { [key: string]: string } = {
     PREMIUM: '10000',
@@ -122,18 +122,19 @@ const CreateSwitchboardOracleModal = ({
           minRequiredOracleResults: 3,
           minRequiredJobResults: 2,
           minUpdateDelaySeconds: 6,
-          forceReportPeriod: 3600,
+          forceReportPeriod: 24 * 60 * 60,
           withdrawAuthority: MANGO_DAO_WALLET,
           authority: payer,
           crankDataBuffer: crankAccount.dataBuffer?.publicKey,
           crankPubkey: crankAccount.publicKey,
           fundAmount: tierSettings[tier].fundAmount,
-          basePriorityFee: 0,
+          slidingWindow: true,
           disableCrank: false,
-          maxPriorityFeeMultiplier: 0,
           varianceThreshold: tierSettings[tier].varianceThreshold,
-          priorityFeeBump: 0,
-          priorityFeeBumpPeriod: 0,
+          maxPriorityFeeMultiplier: 5,
+          priorityFeeBumpPeriod: 10,
+          priorityFeeBump: 1000,
+          basePriorityFee: 1000,
           jobs: [
             {
               weight: 1,
@@ -330,7 +331,7 @@ const CreateSwitchboardOracleModal = ({
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="space-y-4 pb-4">
         <p>
-          {t('create-switch-oracle')} {baseTokenName}/USDC
+          {t('create-switch-oracle')} {baseTokenName}/USD
         </p>
         <p>
           {t('estimated-oracle-cost')} {tierSettings[tier].fundAmount} SOL

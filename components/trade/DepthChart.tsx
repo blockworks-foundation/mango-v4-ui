@@ -76,6 +76,7 @@ const DepthChart = () => {
   const [priceRangePercent, setPriceRangePercentPercent] = useState('10')
   const { width } = useViewport()
   const increaseHeight = width ? width > breakpoints['3xl'] : false
+  const isMobile = width ? width < breakpoints.md : false
 
   const formatOrderbookData = (orderbook: RawOrderbook, markPrice: number) => {
     const maxPrice = markPrice * 4
@@ -301,7 +302,7 @@ const DepthChart = () => {
 
   return chartData.length ? (
     <>
-      <div className="flex h-10 items-center border-b border-th-bkg-3 py-1 px-2">
+      <div className="flex h-10 items-center border-b border-th-bkg-3 px-2 py-1">
         <div className="flex w-full items-center">
           <span className="w-16 font-mono text-xs text-th-fgd-3">
             {priceRangePercent}%
@@ -315,7 +316,11 @@ const DepthChart = () => {
           />
         </div>
       </div>
-      <div className={increaseHeight ? 'h-[570px]' : 'h-[482px]'}>
+      <div
+        className={
+          increaseHeight ? 'h-[570px]' : isMobile ? 'h-[538px]' : 'h-[482px]'
+        }
+      >
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={chartData}

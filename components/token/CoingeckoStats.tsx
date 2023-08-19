@@ -113,7 +113,7 @@ const CoingeckoStats = ({
   return (
     <>
       {description ? (
-        <div className="border-b border-th-bkg-3 py-4 px-6">
+        <div className="border-b border-th-bkg-3 px-6 py-4">
           <h2 className="mb-1 text-xl">About {bank.name}</h2>
           <div className="flex items-end">
             <p className="max-w-[720px]">{parse(description)}</p>

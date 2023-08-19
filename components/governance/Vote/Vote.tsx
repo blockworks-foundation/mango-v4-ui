@@ -62,7 +62,7 @@ const Vote = () => {
   return (
     <div>
       <div className="mb-4 flex flex-col items-center justify-between sm:flex-row">
-        <h1 className="mb-3 sm:mr-4 sm:mb-0">{t('active-proposals')}</h1>
+        <h1 className="mb-3 sm:mb-0 sm:mr-4">{t('active-proposals')}</h1>
         <VotingPower />
       </div>
       {loadingProposals || loadingRealm ? (

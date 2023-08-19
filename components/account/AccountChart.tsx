@@ -60,7 +60,7 @@ const AccountChart = ({
         <div className="flex space-x-2">
           {CHART_TABS.map((tab) => (
             <button
-              className={`whitespace-nowrap rounded-md py-1.5 px-2.5 text-sm font-medium focus-visible:bg-th-bkg-3 focus-visible:text-th-fgd-1 ${
+              className={`whitespace-nowrap rounded-md px-2.5 py-1.5 text-sm font-medium focus-visible:bg-th-bkg-3 focus-visible:text-th-fgd-1 ${
                 chartName === tab
                   ? 'bg-th-bkg-3 text-th-active md:hover:text-th-active'
                   : 'text-th-fgd-3 md:hover:text-th-fgd-2'

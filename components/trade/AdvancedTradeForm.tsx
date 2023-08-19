@@ -31,7 +31,7 @@ import { notify } from 'utils/notifications'
 import SpotSlider from './SpotSlider'
 import { calculateLimitPriceForMarketOrder } from 'utils/tradeForm'
 import Image from 'next/legacy/image'
-import { LinkIcon, QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
+import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import Loading from '@components/shared/Loading'
 import TabUnderline from '@components/shared/TabUnderline'
 import PerpSlider from './PerpSlider'
@@ -58,6 +58,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { isMangoError } from 'types'
 import InlineNotification from '@components/shared/InlineNotification'
 import SpotMarketOrderSwapForm from './SpotMarketOrderSwapForm'
+import SecondaryConnectButton from '@components/shared/SecondaryConnectButton'
 
 const set = mangoStore.getState().set
 
@@ -92,7 +93,7 @@ const AdvancedTradeForm = () => {
     SOUND_SETTINGS_KEY,
     INITIAL_SOUND_SETTINGS,
   )
-  const { connected, connect } = useWallet()
+  const { connected } = useWallet()
   const {
     selectedMarket,
     price: oraclePrice,
@@ -425,7 +426,6 @@ const AdvancedTradeForm = () => {
             : tradeForm.postOnly
             ? PerpOrderType.postOnly
             : PerpOrderType.limit
-        console.log('perpOrderType', perpOrderType)
 
         const { signature: tx } = await client.perpPlaceOrder(
           group,
@@ -477,7 +477,7 @@ const AdvancedTradeForm = () => {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    connected ? handlePlaceOrder() : connect()
+    handlePlaceOrder()
   }
 
   const disabled =
@@ -741,51 +741,51 @@ const AdvancedTradeForm = () => {
                 </div>
               )}
             </div>
-            <div className="mt-6 mb-4 flex px-3 md:px-4">
+            <div className="mb-4 mt-6 flex px-3 md:px-4">
               {ipAllowed ? (
-                <Button
-                  className={`flex w-full items-center justify-center ${
-                    !connected
-                      ? ''
-                      : tradeForm.side === 'buy'
-                      ? `bg-th-up-dark md:hover:bg-th-up-dark ${
-                          themeData.buttonStyle === 'raised'
-                            ? 'raised-buy-button'
-                            : 'text-white md:hover:brightness-90'
-                        }`
-                      : `bg-th-down-dark md:hover:bg-th-down-dark ${
-                          themeData.buttonStyle === 'raised'
-                            ? 'raised-sell-button'
-                            : 'text-white md:hover:brightness-90'
-                        }`
-                  }`}
-                  disabled={disabled}
-                  size="large"
-                  type="submit"
-                >
-                  {!connected ? (
-                    <div className="flex items-center">
-                      <LinkIcon className="mr-2 h-5 w-5" />
-                      {t('connect')}
-                    </div>
-                  ) : !placingOrder ? (
-                    <span>
-                      {t('trade:place-order', {
-                        side:
-                          tradeForm.side === 'buy'
-                            ? sideNames[0]
-                            : sideNames[1],
-                      })}
-                    </span>
-                  ) : (
-                    <div className="flex items-center space-x-2">
-                      <Loading />
-                      <span className="hidden sm:block">
-                        {t('trade:placing-order')}
+                connected ? (
+                  <Button
+                    className={`flex w-full items-center justify-center ${
+                      tradeForm.side === 'buy'
+                        ? `bg-th-up-dark md:hover:bg-th-up-dark ${
+                            themeData.buttonStyle === 'raised'
+                              ? 'raised-buy-button'
+                              : 'text-white md:hover:brightness-90'
+                          }`
+                        : `bg-th-down-dark md:hover:bg-th-down-dark ${
+                            themeData.buttonStyle === 'raised'
+                              ? 'raised-sell-button'
+                              : 'text-white md:hover:brightness-90'
+                          }`
+                    }`}
+                    disabled={disabled}
+                    size="large"
+                    type="submit"
+                  >
+                    {!placingOrder ? (
+                      <span>
+                        {t('trade:place-order', {
+                          side:
+                            tradeForm.side === 'buy'
+                              ? sideNames[0]
+                              : sideNames[1],
+                        })}
                       </span>
-                    </div>
-                  )}
-                </Button>
+                    ) : (
+                      <div className="flex items-center space-x-2">
+                        <Loading />
+                        <span className="hidden sm:block">
+                          {t('trade:placing-order')}
+                        </span>
+                      </div>
+                    )}
+                  </Button>
+                ) : (
+                  <SecondaryConnectButton
+                    className="flex w-full items-center justify-center"
+                    isLarge
+                  />
+                )
               ) : (
                 <Button disabled className="w-full leading-tight" size="large">
                   {t('country-not-allowed', {

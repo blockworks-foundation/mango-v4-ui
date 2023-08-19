@@ -146,7 +146,7 @@ const TokenPage = () => {
                 )}
               </div>
               <div className="flex flex-wrap items-end font-display text-5xl text-th-fgd-1">
-                <div className="mr-3 mb-2">
+                <div className="mb-2 mr-3">
                   {animationSettings['number-scroll'] ? (
                     <FlipNumbers
                       height={48}

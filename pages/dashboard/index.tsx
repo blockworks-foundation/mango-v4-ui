@@ -13,10 +13,15 @@ import Button from '@components/shared/Button'
 import BN from 'bn.js'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
-import { getFormattedBankValues } from 'utils/governance/listingTools'
+import {
+  PriceImpactResp,
+  getFormattedBankValues,
+  getPriceImpacts,
+} from 'utils/governance/listingTools'
 import GovernancePageWrapper from '@components/governance/GovernancePageWrapper'
 import TokenLogo from '@components/shared/TokenLogo'
 import DashboardSuggestedValues from '@components/modals/DashboardSuggestedValuesModal'
+import { USDC_MINT } from 'utils/constants'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -37,8 +42,21 @@ export async function getStaticProps({ locale }: { locale: string }) {
 
 const Dashboard: NextPage = () => {
   const { group } = useMangoGroup()
+  const connection = mangoStore((s) => s.connection)
 
   const [isOpenSuggestionModal, setIsOpenSuggestionModal] = useState(false)
+  const [priceImpacts, setPriceImapcts] = useState<PriceImpactResp[]>([])
+
+  useEffect(() => {
+    const handleGetPriceImapcts = async () => {
+      const [resp] = await Promise.all([getPriceImpacts()])
+      setPriceImapcts(resp)
+    }
+    if (group) {
+      handleGetPriceImapcts()
+    }
+  }, [connection, group])
+
   return (
     <GovernancePageWrapper noStyles={true}>
       <div className="grid grid-cols-12">
@@ -82,7 +100,7 @@ const Dashboard: NextPage = () => {
                     Collpase All
                   </Button>
                 </div>
-                <h3 className="mt-6 mb-3 text-base text-th-fgd-3">Banks</h3>
+                <h3 className="mb-3 mt-6 text-base text-th-fgd-3">Banks</h3>
                 <div className="border-b border-th-bkg-3">
                   {Array.from(group.banksMapByMint)
                     .sort((a, b) => a[0].localeCompare(b[0]))
@@ -296,24 +314,29 @@ const Dashboard: NextPage = () => {
                                     label="Liquidation fee"
                                     value={`${formattedBankValues.liquidationFee}%`}
                                   />
-                                  <div className="flex mt-2 mb-4">
-                                    <Button
-                                      className=" ml-auto"
-                                      onClick={() =>
-                                        setIsOpenSuggestionModal(true)
-                                      }
-                                    >
-                                      Check suggested values
-                                      <DashboardSuggestedValues
-                                        group={group}
-                                        bank={bank}
-                                        isOpen={isOpenSuggestionModal}
-                                        onClose={() =>
-                                          setIsOpenSuggestionModal(false)
+                                  {bank.mint.toBase58() !== USDC_MINT && (
+                                    <div className="mb-4 mt-2 flex">
+                                      <Button
+                                        className=" ml-auto"
+                                        onClick={() =>
+                                          setIsOpenSuggestionModal(true)
                                         }
-                                      ></DashboardSuggestedValues>
-                                    </Button>
-                                  </div>
+                                      >
+                                        Check suggested values
+                                        {isOpenSuggestionModal && (
+                                          <DashboardSuggestedValues
+                                            priceImpacts={priceImpacts}
+                                            group={group}
+                                            bank={bank}
+                                            isOpen={isOpenSuggestionModal}
+                                            onClose={() =>
+                                              setIsOpenSuggestionModal(false)
+                                            }
+                                          ></DashboardSuggestedValues>
+                                        )}
+                                      </Button>
+                                    </div>
+                                  )}
                                 </Disclosure.Panel>
                               </>
                             )}
@@ -323,7 +346,7 @@ const Dashboard: NextPage = () => {
                     )}
                 </div>
 
-                <h3 className="mt-6 mb-3 text-base text-th-fgd-3">
+                <h3 className="mb-3 mt-6 text-base text-th-fgd-3">
                   Perp Markets
                 </h3>
                 <div className="border-b border-th-bkg-3">
@@ -612,7 +635,7 @@ const Dashboard: NextPage = () => {
                       )
                     })}
                 </div>
-                <h3 className="mt-6 mb-3 text-base text-th-fgd-3">
+                <h3 className="mb-3 mt-6 text-base text-th-fgd-3">
                   Spot Markets
                 </h3>
                 <div className="border-b border-th-bkg-3">
@@ -792,7 +815,7 @@ export const DashboardNavbar = () => {
   const { asPath } = useRouter()
 
   return (
-    <div className="mt-4 mb-2 flex border border-th-bkg-3">
+    <div className="mb-2 mt-4 flex border border-th-bkg-3">
       <div>
         <Link href={'/dashboard'} shallow={true}>
           <h4

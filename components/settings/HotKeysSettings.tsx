@@ -452,7 +452,7 @@ const HotKeyModal = ({ isOpen, onClose }: ModalProps) => {
               </div>
             </div>
           ) : null}
-          <div className="mt-4 mr-3" id="trade-step-eight">
+          <div className="mr-3 mt-4" id="trade-step-eight">
             <Tooltip
               className="hidden md:block"
               delay={100}

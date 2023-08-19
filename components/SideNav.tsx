@@ -32,8 +32,11 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import { useTheme } from 'next-themes'
 import LeaderboardIcon from './icons/LeaderboardIcon'
 import { sideBarAnimationDuration } from './Layout'
-import { CUSTOM_SKINS } from 'utils/theme'
+import { CUSTOM_SKINS, breakpoints } from 'utils/theme'
 import { NFT } from 'types'
+import { useViewport } from 'hooks/useViewport'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import { SIDEBAR_COLLAPSE_KEY } from 'utils/constants'
 
 const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation(['common', 'search'])
@@ -45,6 +48,14 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { mangoAccount } = useMangoAccount()
   const router = useRouter()
   const { pathname } = router
+
+  const { width } = useViewport()
+  const [, setIsCollapsed] = useLocalStorageState(SIDEBAR_COLLAPSE_KEY, false)
+  useEffect(() => {
+    if (width !== 0 && width < breakpoints['2xl']) {
+      setIsCollapsed(true)
+    }
+  }, [width, setIsCollapsed])
 
   const playAnimation = () => {
     const set = mangoStore.getState().set
@@ -441,7 +452,7 @@ export const ExpandableMenuItem = ({
       >
         <div
           className={`rounded-md rounded-l-none bg-th-bkg-2 ${
-            alignBottom ? 'pt-4 pb-2' : 'py-2'
+            alignBottom ? 'pb-2 pt-4' : 'py-2'
           }`}
         >
           <div className="flex items-center justify-between pl-4 pr-2">
@@ -458,7 +469,7 @@ export const ExpandableMenuItem = ({
       {({ open }) => (
         <>
           <Disclosure.Button
-            className={`flex h-full w-full items-center justify-between rounded-none px-4 py-2 focus-visible:text-th-active md:hover:text-th-active ${
+            className={`flex w-full items-center justify-between rounded-none px-4 py-2 focus-visible:text-th-active md:hover:text-th-active ${
               alignBottom
                 ? 'h-[64px] focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2'
                 : ''

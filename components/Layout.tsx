@@ -8,8 +8,7 @@ import {
   useState,
 } from 'react'
 import { ArrowPathIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
-import { useViewport } from '../hooks/useViewport'
-import { breakpoints, nftThemeMeta } from '../utils/theme'
+import { nftThemeMeta } from '../utils/theme'
 import mangoStore from '@store/mangoStore'
 import BottomBar from './mobile/BottomBar'
 import TopBar from './TopBar'
@@ -42,15 +41,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
     SIDEBAR_COLLAPSE_KEY,
     false,
   )
-
-  const { width } = useViewport()
   const { asPath } = useRouter()
-
-  useEffect(() => {
-    if (width < breakpoints['2xl']) {
-      setIsCollapsed(true)
-    }
-  }, [width])
 
   useEffect(() => {
     const animationFrames = 15
@@ -75,7 +66,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     particlesInit()
-  }, [])
+  }, [particlesInit])
 
   useEffect(() => {
     const set = mangoStore.getState().set
@@ -90,6 +81,10 @@ const Layout = ({ children }: { children: ReactNode }) => {
     }
   }, [theme])
 
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  if (!mounted) return null
+
   return (
     <main
       className={`${themeData.fonts.body.variable} ${themeData.fonts.display.variable} ${themeData.fonts.mono.variable} font-sans`}
@@ -98,7 +93,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
         <SuccessParticles />
       </div>
       <div
-        className={`min-h-screen flex-grow ${
+        className={`min-h-screen grow ${
           !themeData.useGradientBg
             ? 'bg-th-bkg-1'
             : 'bg-gradient-to-b from-th-bkg-1 to-th-bkg-2'
@@ -114,13 +109,13 @@ const Layout = ({ children }: { children: ReactNode }) => {
             onClick={handleToggleSidebar}
           >
             <ChevronRightIcon
-              className={`absolute bottom-2 -right-[2px] h-4 w-4 flex-shrink-0 ${
-                !isCollapsed ? 'rotate-180' : 'rotate-360'
+              className={`absolute bottom-2 h-4 w-4 shrink-0 ${
+                !isCollapsed ? 'rotate-180' : ''
               }`}
             />
           </button>
           <div
-            className={`thin-scroll h-full ${
+            className={`hide-scroll h-full ${
               !isCollapsed ? 'overflow-y-auto' : ''
             }`}
           >
@@ -197,7 +192,7 @@ function DeployRefreshManager(): JSX.Element | null {
       leaveTo="opacity-0"
     >
       <button
-        className="fixed -bottom-[46px] left-1/2 z-50 flex -translate-x-1/2 items-center rounded-full border border-th-bkg-4 bg-th-bkg-3 py-3 px-4 shadow-md focus:outline-none md:hover:bg-th-bkg-4 md:hover:shadow-none"
+        className="fixed -bottom-[46px] left-1/2 z-50 flex -translate-x-1/2 items-center rounded-full border border-th-bkg-4 bg-th-bkg-3 px-4 py-3 shadow-md focus:outline-none md:hover:bg-th-bkg-4 md:hover:shadow-none"
         onClick={() => window.location.reload()}
       >
         <p className="mr-2 whitespace-nowrap text-th-fgd-1">

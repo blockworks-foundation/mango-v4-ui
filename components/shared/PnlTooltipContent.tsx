@@ -29,7 +29,7 @@ const PnlTooltipContent = ({
             {formatCurrencyValue(unrealizedPnl, 2)}
           </span>
         </div>
-        <div className="border-b border-th-bkg-4 pb-3 flex justify-between">
+        <div className="flex justify-between border-b border-th-bkg-4 pb-3">
           <p className="mr-3">{t('trade:realized-pnl')}</p>
           <span className={`font-mono ${getPnlColor(realizedPnl)}`}>
             {formatCurrencyValue(realizedPnl, 2)}
@@ -41,7 +41,7 @@ const PnlTooltipContent = ({
             {formatCurrencyValue(totalPnl, 2)}
           </span>
         </div>
-        <div className="border-b border-th-bkg-4 pb-3 flex justify-between">
+        <div className="flex justify-between border-b border-th-bkg-4 pb-3">
           <p className="mr-3">{t('trade:return-on-equity')}</p>
           <span className={`font-mono ${getPnlColor(roe)}`}>
             <FormatNumericValue classNames="text-xs" value={roe} decimals={2} />

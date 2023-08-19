@@ -12,29 +12,43 @@ import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
 import OpenOrders from '@components/trade/OpenOrders'
 import HistoryTabs from './HistoryTabs'
 import ManualRefresh from '@components/shared/ManualRefresh'
+import useMangoAccount from 'hooks/useMangoAccount'
+import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
+import SwapOrders from '@components/swap/SwapOrders'
 
 const AccountTabs = () => {
   const [activeTab, setActiveTab] = useState('balances')
+  const { mangoAccount } = useMangoAccount()
   const { width } = useViewport()
   const unsettledSpotBalances = useUnsettledSpotBalances()
   const unsettledPerpPositions = useUnsettledPerpPositions()
   const openPerpPositions = useOpenPerpPositions()
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
   const isMobile = width ? width < breakpoints.lg : false
+  const { data: isWhiteListed } = useIsWhiteListed()
 
   const tabsWithCount: [string, number][] = useMemo(() => {
     const unsettledTradeCount =
       Object.values(unsettledSpotBalances).flat().length +
       unsettledPerpPositions?.length
 
-    return [
+    const tabs: [string, number][] = [
       ['balances', 0],
       ['trade:positions', openPerpPositions.length],
       ['trade:orders', Object.values(openOrders).flat().length],
       ['trade:unsettled', unsettledTradeCount],
       ['history', 0],
     ]
+    if (isWhiteListed) {
+      const stopOrdersCount =
+        mangoAccount?.tokenConditionalSwaps.filter((tcs) => tcs.hasData)
+          ?.length || 0
+      tabs.splice(3, 0, ['trade:trigger-orders', stopOrdersCount])
+    }
+    return tabs
   }, [
+    isWhiteListed,
+    mangoAccount,
     openPerpPositions,
     unsettledPerpPositions,
     unsettledSpotBalances,
@@ -72,6 +86,8 @@ const TabContent = ({ activeTab }: { activeTab: string }) => {
       return <PerpPositions />
     case 'trade:orders':
       return <OpenOrders />
+    case 'trade:trigger-orders':
+      return <SwapOrders />
     case 'trade:unsettled':
       return (
         <UnsettledTrades

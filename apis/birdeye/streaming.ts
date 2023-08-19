@@ -14,10 +14,18 @@ socket.addEventListener('open', (_event) => {
 // Listen for messages
 socket.addEventListener('message', (msg) => {
   const data = JSON.parse(msg.data)
+
   if (data.type !== 'BASE_QUOTE_PRICE_DATA') return console.warn(data)
 
   const currTime = data.data.unixTime * 1000
   const lastBar = subscriptionItem.lastBar
+
+  if (
+    data.data.baseAddress !== subscriptionItem.baseAddress ||
+    data.data.quoteAddress !== subscriptionItem.quoteAddress
+  )
+    return
+
   const resolution = subscriptionItem.resolution
   const nextBarTime = getNextBarTime(lastBar, resolution)
 
@@ -57,6 +65,8 @@ export function subscribeOnStream(
     resolution,
     lastBar,
     callback: onRealtimeCallback,
+    baseAddress: symbolInfo.base_token,
+    quoteAddress: symbolInfo.quote_token,
   }
 
   const msg = {
@@ -67,15 +77,19 @@ export function subscribeOnStream(
       quoteAddress: symbolInfo.quote_token,
     },
   }
+
   if (!isOpen(socket)) {
     console.warn('Socket Closed')
     socket.addEventListener('open', (_event) => {
+      if (!msg.data.baseAddress || msg.data.quoteAddress) return
       socket.send(JSON.stringify(msg))
     })
     return
   }
   console.warn('[subscribeBars birdeye]')
-  socket.send(JSON.stringify(msg))
+  if (msg.data.baseAddress && msg.data.quoteAddress) {
+    socket.send(JSON.stringify(msg))
+  }
 }
 
 export function unsubscribeFromStream() {

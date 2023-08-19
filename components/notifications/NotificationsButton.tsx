@@ -36,7 +36,7 @@ const NotificationsButton = () => {
         <BellIcon className="h-5 w-5" />
         <span className="sr-only">Notifications</span>
         {notificationCount !== 0 ? (
-          <div className="absolute top-4 left-8">
+          <div className="absolute left-8 top-4">
             <span className="relative flex h-3.5 w-max items-center justify-center rounded-full bg-th-down px-1 text-xxs font-bold text-white">
               {formatNumericValue(notificationCount)}
             </span>

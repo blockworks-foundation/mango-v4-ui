@@ -162,7 +162,7 @@ const RecentTrades = () => {
   return (
     <ErrorBoundary>
       <div className="hide-scroll h-full overflow-y-scroll">
-        <div className="flex items-center justify-between border-b border-th-bkg-3 py-1 pr-2 pl-0">
+        <div className="flex items-center justify-between border-b border-th-bkg-3 py-1 pl-0 pr-2">
           <Tooltip
             className="hidden md:block"
             content={t('trade:tooltip-volume-alert')}

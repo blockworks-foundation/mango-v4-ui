@@ -169,7 +169,7 @@ const ActivityFilters = () => {
       </div>
       {showFilters ? (
         <Disclosure.Panel
-          className="absolute top-[114px] left-0 z-10 w-full border-t border-th-bkg-3 bg-th-bkg-2 px-6 pb-6 shadow-md sm:top-14"
+          className="absolute left-0 top-[114px] z-10 w-full border-t border-th-bkg-3 bg-th-bkg-2 px-6 pb-6 shadow-md sm:top-14"
           static
         >
           <FiltersForm

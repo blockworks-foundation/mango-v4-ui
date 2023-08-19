@@ -176,10 +176,15 @@ const PerpPositions = () => {
                   const roe =
                     (unrealizedPnl / (Math.abs(basePosition) * avgEntryPrice)) *
                     100
-                  const estLiqPrice = position.getLiquidationPriceUi(
-                    group,
-                    mangoAccount,
-                  )
+                  let estLiqPrice
+                  try {
+                    estLiqPrice = position.getLiquidationPriceUi(
+                      group,
+                      mangoAccount,
+                    )
+                  } catch (e) {
+                    estLiqPrice = null
+                  }
 
                   return (
                     <TrBody
@@ -315,7 +320,7 @@ const PerpPositions = () => {
                 {openPerpPositions.length > 1 ? (
                   <tr
                     key={`total-unrealized-pnl`}
-                    className="my-1 p-2 border-y border-th-bkg-3"
+                    className="my-1 border-y border-th-bkg-3 p-2"
                   >
                     <Td className="text-right font-mono">
                       <></>
@@ -330,8 +335,8 @@ const PerpPositions = () => {
                       <></>
                     </Td>
                     <Td className="text-right font-mono">
-                      <div className="flex justify-end items-center">
-                        <span className="font-body mr-2 text-xs text-th-fgd-3">
+                      <div className="flex items-center justify-end">
+                        <span className="mr-2 font-body text-xs text-th-fgd-3">
                           Total:
                         </span>
                         <Tooltip
@@ -466,7 +471,7 @@ const PerpPositions = () => {
                         enterTo="opacity-100"
                       >
                         <Disclosure.Panel>
-                          <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pt-4 pb-4">
+                          <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pb-4 pt-4">
                             <div className="col-span-1">
                               <p className="text-xs text-th-fgd-3">
                                 {t('trade:size')}
@@ -644,13 +649,13 @@ const PerpPositions = () => {
                       <Disclosure.Button
                         className={`flex w-full justify-end border-t border-th-bkg-3 p-1 text-right focus:outline-none`}
                       >
-                        <div className="flex flex-col justify-end mt-1 ml-auto">
+                        <div className="ml-auto mt-1 flex flex-col justify-end">
                           <div className="flex flex-row">
-                            <span className="font-body mr-3 text-md text-th-fgd-3">
+                            <span className="text-md mr-3 font-body text-th-fgd-3">
                               Total Unrealized PnL:
                             </span>
                             <span
-                              className={`font-mono mr-2 ${
+                              className={`mr-2 font-mono ${
                                 totalPnlStats.unrealized > 0
                                   ? 'text-th-up'
                                   : 'text-th-down'
@@ -671,11 +676,11 @@ const PerpPositions = () => {
                               enterTo="opacity-100"
                             >
                               <Disclosure.Panel className="mt-1">
-                                <span className="font-body mr-3 text-md text-right text-th-fgd-3">
+                                <span className="text-md mr-3 text-right font-body text-th-fgd-3">
                                   Total ROE:
                                 </span>
                                 <span
-                                  className={`font-mono mr-1.5 ${
+                                  className={`mr-1.5 font-mono ${
                                     totalPnlStats.roe >= 0
                                       ? 'text-th-up'
                                       : 'text-th-down'
