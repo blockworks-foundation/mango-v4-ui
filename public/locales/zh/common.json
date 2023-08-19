@@ -75,7 +75,7 @@
   "edit": "编辑",
   "edit-account": "编辑帐户标签",
   "edit-profile-image": "切换头像",
-  "error-token-positions-full": "No token positions available in your account.",
+  "error-token-positions-full": "你帐户的币种位置已占满",
   "explorer": "浏览器",
   "fee": "费用",
   "feedback-survey": "反馈调查",
@@ -102,7 +102,7 @@
   "loading": "加载中",
   "loan-origination-fee": "借贷费用",
   "loan-origination-fee-tooltip": "执行借贷费用是{{fee}}。",
-  "manage": "Manage",
+  "manage": "管理",
   "mango": "Mango",
   "mango-stats": "Mango统计",
   "market": "市场",
@@ -115,7 +115,7 @@
   "new-account-failed": "开户出错",
   "new-account-success": "您的新帐户准备好了😎",
   "new-version": "新版本出来了",
-  "no": "No",
+  "no": "不",
   "optional": "可选",
   "outstanding-balance": "未结余额",
   "overview": "摘要",
@@ -183,7 +183,7 @@
   "utilization": "利用率",
   "value": "价值",
   "view-transaction": "查看交易",
-  "wallet": "Wallet",
+  "wallet": "钱包",
   "wallet-address": "钱包地址",
   "wallet-balance": "钱包余额",
   "wallet-disconnected": "已断开钱包连接",
@@ -193,5 +193,4 @@
   "vote": "投票",
   "yes": "是",
   "you": "你"
- }
- 
+}
