@@ -98,7 +98,7 @@
   "leverage": "槓桿",
   "liability-weight": "債務權重",
   "liquidity": "流動性",
-  "list-market": "列出市場",
+  "list-market": "上架市場",
   "loading": "加載中",
   "loan-origination-fee": "借貸費用",
   "loan-origination-fee-tooltip": "執行借貸費用是{{fee}}。",
@@ -189,7 +189,7 @@
   "wallet-disconnected": "已斷開錢包連接",
   "withdraw": "取款",
   "withdraw-amount": "取款額",
-  "list-market-token": "列出市場／幣種",
+  "list-market-token": "上架市場／幣種",
   "vote": "投票",
   "yes": "是",
   "you": "你"
