@@ -142,7 +142,7 @@ const AccountActions = () => {
                       <span className="ml-2">{t('edit-account')}</span>
                     </ActionsLinkButton>
                     <ActionsLinkButton
-                      disabled={isDelegatedAccount}
+                      disabled={isDelegatedAccount && isUnownedAccount}
                       mangoAccount={mangoAccount!}
                       onClick={() => setShowDelegateModal(true)}
                     >
