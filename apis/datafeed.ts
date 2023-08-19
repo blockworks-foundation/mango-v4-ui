@@ -210,7 +210,7 @@ export const queryBirdeyeBars = async (
   return bars
 }
 
-export default {
+const datafeed = {
   onReady: (callback: (configuration: DatafeedConfiguration) => void) => {
     setTimeout(() => callback(configurationData as any))
   },
@@ -311,7 +311,6 @@ export default {
     ) => void,
     onErrorCallback: (e: any) => void,
   ) => {
-    console.log('symboleInfo', symbolInfo)
     try {
       const { firstDataRequest } = periodParams
       let bars
@@ -387,7 +386,7 @@ export default {
     if (marketType === 'perp') {
       unsubscribeFromPerpStream(subscriberUID)
     } else {
-      unsubscribeFromStream()
+      // unsubscribeFromStream()
     }
   },
 
@@ -403,3 +402,5 @@ export default {
 
   // isSocketOpen: marketType === 'spot' ? isOpen : isPerpOpen,
 }
+
+export default datafeed
