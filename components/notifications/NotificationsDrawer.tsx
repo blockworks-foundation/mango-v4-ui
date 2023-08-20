@@ -26,6 +26,7 @@ import {
   TransactionInstruction,
 } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
+import Switch from '@components/forms/Switch'
 const MEMO_PROGRAM_ID = new PublicKey(
   'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr',
 )
@@ -138,6 +139,7 @@ const NotificationsDrawer = ({
   const headers = useHeaders()
   const setCookie = NotificationCookieStore((s) => s.setCookie)
   const [isRemoving, setIsRemoving] = useState(false)
+  const [useLedger, setUseLedger] = useState(false)
 
   const unseenNotifications = useMemo(() => {
     if (!data || !data.length) return []
@@ -321,14 +323,24 @@ const NotificationsDrawer = ({
                 <div className="flex flex-col items-center justify-center text-center">
                   <InboxIcon className="mb-2 h-7 w-7 text-th-fgd-2" />
                   <h3 className="mb-1 text-base">{t('unauth-title')}</h3>
-                  <p>{t('unauth-desc')}</p>
+                  <p className="mb-3">{t('unauth-desc')}</p>
+                  <p>{t('im-using-ledger')}</p>
+                  <Switch
+                    checked={useLedger}
+                    onChange={(checked) => setUseLedger(checked)}
+                  />
                   <Button
                     className="mt-6"
                     onClick={() =>
-                      createSolanaMessage(wallet, setCookie, connection, false)
+                      createSolanaMessage(
+                        wallet,
+                        setCookie,
+                        connection,
+                        useLedger,
+                      )
                     }
                   >
-                    {t('sign-message')}
+                    {useLedger ? t('sign-with-tx') : t('sign-message')}
                   </Button>
                 </div>
               </div>
