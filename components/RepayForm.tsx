@@ -1,7 +1,4 @@
-import {
-  ArrowDownRightIcon,
-  ExclamationCircleIcon,
-} from '@heroicons/react/20/solid'
+import { ArrowDownRightIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
@@ -19,7 +16,6 @@ import { EnterBottomExitBottom, FadeInFadeOut } from './shared/Transitions'
 import { withValueLimit } from './swap/MarketSwapForm'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
 import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
-import { walletBalanceForToken } from './DepositForm'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useMangoAccount from 'hooks/useMangoAccount'
 import {
@@ -58,13 +54,6 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
   }, [selectedToken])
 
   const { connected, publicKey } = useWallet()
-  const walletTokens = mangoStore((s) => s.wallet.tokens)
-
-  const walletBalance = useMemo(() => {
-    return selectedToken
-      ? walletBalanceForToken(walletTokens, selectedToken)
-      : { maxAmount: 0, maxDecimals: 6 }
-  }, [walletTokens, selectedToken])
 
   const borrowAmount = useMemo(() => {
     if (!mangoAccount || !bank) return new Decimal(0)
@@ -162,8 +151,6 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
       setSelectedToken(banks[0].bank.name)
     }
   }, [token, banks, selectedToken])
-
-  const showInsufficientBalance = walletBalance.maxAmount < Number(inputAmount)
 
   const outstandingAmount = borrowAmount.toNumber() - parseFloat(inputAmount)
   const isDeposit = parseFloat(inputAmount) > borrowAmount.toNumber()
@@ -291,18 +278,11 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
           <Button
             onClick={() => handleDeposit(inputAmount)}
             className="flex w-full items-center justify-center"
-            disabled={!inputAmount || showInsufficientBalance}
+            disabled={!inputAmount}
             size="large"
           >
             {submitting ? (
               <Loading className="mr-2 h-5 w-5" />
-            ) : showInsufficientBalance ? (
-              <div className="flex items-center">
-                <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-                {t('swap:insufficient-balance', {
-                  symbol: selectedToken,
-                })}
-              </div>
             ) : (
               <div className="flex items-center">
                 <ArrowDownRightIcon className="mr-2 h-5 w-5" />
