@@ -52,7 +52,9 @@ const SellTokenInput = ({
   }, [mangoAccountAddress])
 
   return (
-    <div className={`grid grid-cols-2 rounded-xl bg-th-bkg-2 p-3 ${className}`}>
+    <div
+      className={`grid grid-cols-2 rounded-t-xl bg-th-bkg-2 p-3 pb-2 ${className}`}
+    >
       <div className="col-span-2 mb-2 flex items-center justify-between">
         <p className="text-th-fgd-2">{t('sell')}</p>
         {!isUnownedAccount ? (

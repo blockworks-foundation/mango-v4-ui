@@ -732,6 +732,24 @@ const LimitSwapForm = ({
         handleMax={handleMax}
         isTriggerOrder
       />
+      <div className="bg-th-bkg-2 p-3 pt-0">
+        {swapFormSizeUi === 'slider' ? (
+          <SwapSlider
+            useMargin={false}
+            amount={amountInAsDecimal.toNumber()}
+            onChange={(v) => handleAmountInUi(v)}
+            step={1 / 10 ** (inputBankDecimals || 6)}
+          />
+        ) : (
+          <div className="-mt-2">
+            <PercentageSelectButtons
+              amountIn={amountInAsDecimal.toString()}
+              setAmountIn={(v) => handleAmountInUi(v)}
+              useMargin={false}
+            />
+          </div>
+        )}
+      </div>
       <div
         className={`grid grid-cols-2 gap-2 rounded-b-xl bg-th-bkg-2 p-3 pt-1`}
         id="swap-step-two"
@@ -835,20 +853,6 @@ const LimitSwapForm = ({
           orderType === OrderTypes.REPAY_BORROW ? handleRepay : undefined
         }
       />
-      {swapFormSizeUi === 'slider' ? (
-        <SwapSlider
-          useMargin={false}
-          amount={amountInAsDecimal.toNumber()}
-          onChange={(v) => handleAmountInUi(v)}
-          step={1 / 10 ** (inputBankDecimals || 6)}
-        />
-      ) : (
-        <PercentageSelectButtons
-          amountIn={amountInAsDecimal.toString()}
-          setAmountIn={(v) => handleAmountInUi(v)}
-          useMargin={false}
-        />
-      )}
       {orderType === OrderTypes.REPAY_BORROW &&
       !hasBorrowToRepay ? null : orderDescription ? (
         <div className="mt-4">
