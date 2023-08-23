@@ -147,7 +147,7 @@ const SwapForm = () => {
                 : handleTokenOutSelect
             }
             type={showTokenSelect}
-            useMargin={useMargin}
+            useMargin={swapOrLimit === 'swap' ? useMargin : false}
           />
         </EnterBottomExitBottom>
         <EnterBottomExitBottom
