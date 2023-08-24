@@ -8,7 +8,7 @@ import SwapFormTokenList from './SwapFormTokenList'
 import { LinkButton } from '../shared/Button'
 import { EnterBottomExitBottom } from '../shared/Transitions'
 import { HealthType } from '@blockworks-foundation/mango-v4'
-import { SWAP_MARGIN_KEY } from '../../utils/constants'
+import { OUTPUT_TOKEN_DEFAULT, SWAP_MARGIN_KEY } from '../../utils/constants'
 import HealthImpact from '@components/shared/HealthImpact'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import SwapSettings from './SwapSettings'
@@ -103,8 +103,15 @@ const SwapForm = () => {
   const handleSwapOrLimit = useCallback(
     (orderType: string) => {
       setSwapOrLimit(orderType)
+      if (orderType !== 'swap' && outputBank?.name === OUTPUT_TOKEN_DEFAULT) {
+        const { group } = mangoStore.getState()
+        const outputBankName = inputBank?.name === 'USDC' ? 'SOL' : 'USDC'
+        set((state) => {
+          state.swap.outputBank = group?.banksMapByName.get(outputBankName)?.[0]
+        })
+      }
     },
-    [outputBank, set, setSwapOrLimit],
+    [inputBank, outputBank, set, setSwapOrLimit],
   )
 
   const handleSetMargin = () => {
@@ -147,7 +154,7 @@ const SwapForm = () => {
                 : handleTokenOutSelect
             }
             type={showTokenSelect}
-            useMargin={useMargin}
+            useMargin={swapOrLimit === 'swap' ? useMargin : false}
           />
         </EnterBottomExitBottom>
         <EnterBottomExitBottom

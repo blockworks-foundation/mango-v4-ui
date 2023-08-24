@@ -14,7 +14,6 @@ import MaxSwapAmount from './MaxSwapAmount'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import InlineNotification from '@components/shared/InlineNotification'
 import useMangoAccount from 'hooks/useMangoAccount'
-import { useWallet } from '@solana/wallet-adapter-react'
 import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 
 const SellTokenInput = ({
@@ -34,7 +33,6 @@ const SellTokenInput = ({
 }) => {
   const { t } = useTranslation('common')
   const { mangoAccountAddress } = useMangoAccount()
-  const { connected } = useWallet()
   const { group } = useMangoGroup()
   const { isUnownedAccount } = useUnownedAccount()
   const {
@@ -48,11 +46,13 @@ const SellTokenInput = ({
     const mangoAccount = mangoStore.getState().mangoAccount.current
     return group && mangoAccount
       ? toUiDecimalsForQuote(mangoAccount.getCollateralValue(group))
-      : 0
+      : 10
   }, [mangoAccountAddress])
 
   return (
-    <div className={`grid grid-cols-2 rounded-xl bg-th-bkg-2 p-3 ${className}`}>
+    <div
+      className={`grid grid-cols-2 rounded-t-xl bg-th-bkg-2 p-3 pb-2 ${className}`}
+    >
       <div className="col-span-2 mb-2 flex items-center justify-between">
         <p className="text-th-fgd-2">{t('sell')}</p>
         {!isUnownedAccount ? (
@@ -96,7 +96,7 @@ const SellTokenInput = ({
           </span>
         ) : null}
       </div>
-      {connected && freeCollateral <= 0 ? (
+      {mangoAccountAddress && freeCollateral <= 0 ? (
         <div className="col-span-2 mt-1 flex justify-center">
           <InlineNotification
             type="warning"

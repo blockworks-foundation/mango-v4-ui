@@ -22,11 +22,11 @@ const ButtonGroup = <T extends Values>({
   large,
 }: ButtonGroupProps<T>) => {
   return (
-    <div className={`rounded-md bg-th-bkg-2 ${disabled ? 'opacity-50' : ''}`}>
+    <div className={`rounded-md bg-th-bkg-3 ${disabled ? 'opacity-50' : ''}`}>
       <div className="relative flex">
         {activeValue && values.includes(activeValue) ? (
           <div
-            className={`absolute left-0 top-0 h-full transform rounded-md bg-th-bkg-3`}
+            className={`absolute left-0 top-0 h-full transform rounded-md bg-th-bkg-4`}
             style={{
               transform: `translateX(${
                 values.findIndex((v) => v === activeValue) * 100
@@ -37,7 +37,7 @@ const ButtonGroup = <T extends Values>({
         ) : null}
         {values.map((v, i) => (
           <button
-            className={`${className} relative w-1/2 cursor-pointer rounded-md px-3 text-center focus-visible:bg-th-bkg-3 focus-visible:text-th-fgd-2 disabled:cursor-not-allowed ${
+            className={`${className} relative w-1/2 cursor-pointer rounded-md px-3 text-center focus-visible:bg-th-bkg-4 focus-visible:text-th-fgd-2 disabled:cursor-not-allowed ${
               large ? 'h-12 text-sm' : 'h-10 text-xs'
             } font-normal
               ${

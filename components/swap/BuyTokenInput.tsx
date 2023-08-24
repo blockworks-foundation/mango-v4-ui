@@ -70,7 +70,7 @@ const BuyTokenInput = ({
       </div>
       <div className="relative col-span-1">
         {loading ? (
-          <div className="flex h-[56px] w-full items-center justify-center rounded-l-none rounded-r-lg bg-th-input-bkg">
+          <div className="flex h-[56px] w-full items-center justify-center rounded-l-none rounded-r-lg border-l border-th-bkg-2 bg-th-input-bkg">
             <Loading />
           </div>
         ) : (

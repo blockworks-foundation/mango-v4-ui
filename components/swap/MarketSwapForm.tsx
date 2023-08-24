@@ -243,6 +243,24 @@ const MarketSwapForm = ({ setShowTokenSelect }: MarketSwapFormProps) => {
         setShowTokenSelect={setShowTokenSelect}
         handleMax={handleMax}
       />
+      <div className="rounded-b-xl bg-th-bkg-2 p-3 pt-0">
+        {swapFormSizeUi === 'slider' ? (
+          <SwapSlider
+            useMargin={useMargin}
+            amount={amountInAsDecimal.toNumber()}
+            onChange={(v) => setAmountInFormValue(v, true)}
+            step={1 / 10 ** (inputBank?.mintDecimals || 6)}
+          />
+        ) : (
+          <div className="-mt-2">
+            <PercentageSelectButtons
+              amountIn={amountInAsDecimal.toString()}
+              setAmountIn={(v) => setAmountInFormValue(v, true)}
+              useMargin={useMargin}
+            />
+          </div>
+        )}
+      </div>
       <div className="my-2 flex justify-center">
         <button
           className="rounded-full border border-th-fgd-4 p-1.5 text-th-fgd-3 focus-visible:border-th-active md:hover:border-th-active md:hover:text-th-active"
@@ -264,20 +282,6 @@ const MarketSwapForm = ({ setShowTokenSelect }: MarketSwapFormProps) => {
         setShowTokenSelect={setShowTokenSelect}
         handleRepay={handleRepay}
       />
-      {swapFormSizeUi === 'slider' ? (
-        <SwapSlider
-          useMargin={useMargin}
-          amount={amountInAsDecimal.toNumber()}
-          onChange={(v) => setAmountInFormValue(v, true)}
-          step={1 / 10 ** (inputBank?.mintDecimals || 6)}
-        />
-      ) : (
-        <PercentageSelectButtons
-          amountIn={amountInAsDecimal.toString()}
-          setAmountIn={(v) => setAmountInFormValue(v, true)}
-          useMargin={useMargin}
-        />
-      )}
       {ipAllowed ? (
         <SwapFormSubmitButton
           loadingSwapDetails={loadingSwapDetails}
