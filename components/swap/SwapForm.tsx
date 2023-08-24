@@ -105,12 +105,13 @@ const SwapForm = () => {
       setSwapOrLimit(orderType)
       if (orderType !== 'swap' && outputBank?.name === OUTPUT_TOKEN_DEFAULT) {
         const { group } = mangoStore.getState()
+        const outputBankName = inputBank?.name === 'USDC' ? 'SOL' : 'USDC'
         set((state) => {
-          state.swap.outputBank = group?.banksMapByName.get('USDC')?.[0]
+          state.swap.outputBank = group?.banksMapByName.get(outputBankName)?.[0]
         })
       }
     },
-    [outputBank, set, setSwapOrLimit],
+    [inputBank, outputBank, set, setSwapOrLimit],
   )
 
   const handleSetMargin = () => {
