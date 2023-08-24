@@ -156,3 +156,12 @@ export const DEFAULT_FAVORITE_MKTS = [
 export const WHITE_LIST_API = 'https://api.mngo.cloud/whitelist/v1/'
 export const DAILY_SECONDS = 86400
 export const DAILY_MILLISECONDS = 86400000
+
+// max slot numbers for mango account
+export const MAX_ACCOUNTS = {
+  tokenAccounts: '8',
+  spotOpenOrders: '4',
+  perpAccounts: '4',
+  perpOpenOrders: '64',
+  tcsOrders: '64',
+}

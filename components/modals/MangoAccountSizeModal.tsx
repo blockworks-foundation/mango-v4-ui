@@ -18,15 +18,9 @@ import Label from '@components/forms/Label'
 import useMangoAccountAccounts, {
   getAvaialableAccountsColor,
 } from 'hooks/useMangoAccountAccounts'
+import { MAX_ACCOUNTS } from 'utils/constants'
 
 const MIN_ACCOUNTS = 8
-export const MAX_ACCOUNTS = {
-  tokenAccounts: '8',
-  spotOpenOrders: '5',
-  perpAccounts: '4',
-  perpOpenOrders: '64',
-  tcsOrders: '64',
-}
 
 const INPUT_CLASSES =
   'h-10 rounded-md rounded-r-none border w-full border-th-input-border bg-th-input-bkg px-3 font-mono text-base text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover disabled:text-th-fgd-4 disabled:bg-th-bkg-2 disabled:hover:border-th-input-border'

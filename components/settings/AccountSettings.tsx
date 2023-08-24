@@ -1,6 +1,4 @@
-import MangoAccountSizeModal, {
-  MAX_ACCOUNTS,
-} from '@components/modals/MangoAccountSizeModal'
+import MangoAccountSizeModal from '@components/modals/MangoAccountSizeModal'
 import { LinkButton } from '@components/shared/Button'
 import TokenLogo from '@components/shared/TokenLogo'
 import Tooltip from '@components/shared/Tooltip'
@@ -14,6 +12,7 @@ import useMangoAccountAccounts, {
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
 import { useState } from 'react'
+import { MAX_ACCOUNTS } from 'utils/constants'
 
 const AccountSettings = () => {
   const { t } = useTranslation(['common', 'settings'])

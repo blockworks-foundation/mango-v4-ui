@@ -12,7 +12,7 @@ import { MangoAccount } from '@blockworks-foundation/mango-v4'
 import { ArrowLeftIcon } from '@heroicons/react/20/solid'
 import useSolBalance from 'hooks/useSolBalance'
 import { isMangoError } from 'types'
-import { MAX_ACCOUNTS } from '@components/modals/MangoAccountSizeModal'
+import { MAX_ACCOUNTS } from 'utils/constants'
 
 const getNextAccountNumber = (accounts: MangoAccount[]): number => {
   if (accounts.length > 1) {

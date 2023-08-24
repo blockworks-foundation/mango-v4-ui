@@ -1,13 +1,13 @@
 import mangoStore from '@store/mangoStore'
 import { useMemo } from 'react'
 import useMangoAccount from './useMangoAccount'
-import { MAX_ACCOUNTS } from '@components/modals/MangoAccountSizeModal'
 import {
   PerpOo,
   PerpPosition,
   Serum3Orders,
   TokenPosition,
 } from '@blockworks-foundation/mango-v4'
+import { MAX_ACCOUNTS } from 'utils/constants'
 
 export const getAvaialableAccountsColor = (used: number, total: number) => {
   const remaining = total - used

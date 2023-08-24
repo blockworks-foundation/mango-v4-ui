@@ -43,10 +43,9 @@ import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 import { isMangoError } from 'types'
 import ColorBlur from '@components/ColorBlur'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { ACCEPT_TERMS_KEY } from 'utils/constants'
+import { ACCEPT_TERMS_KEY, MAX_ACCOUNTS } from 'utils/constants'
 import { ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES } from '@components/BorrowForm'
 import { WalletReadyState } from '@solana/wallet-adapter-base'
-import { MAX_ACCOUNTS } from './MangoAccountSizeModal'
 
 const UserSetupModal = ({
   isOpen,
