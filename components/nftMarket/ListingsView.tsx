@@ -12,7 +12,7 @@ import {
   useLazyListings,
   useListings,
 } from 'hooks/market/useAuctionHouse'
-import { useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { MANGO_MINT_DECIMALS } from 'utils/governance/constants'
 // import { useTranslation } from 'next-i18next'
 import { ImgWithLoader } from '@components/ImgWithLoader'
@@ -22,7 +22,7 @@ import Loading from '@components/shared/Loading'
 import SheenLoader from '@components/shared/SheenLoader'
 import EmptyState from './EmptyState'
 
-const filter = [ALL_FILTER, 'Your Listings']
+const defaultFilters = [ALL_FILTER, 'Your Listings']
 
 const ListingsView = () => {
   const { publicKey } = useWallet()
@@ -44,6 +44,7 @@ const ListingsView = () => {
     isLoading: loadingListings,
     isFetching: fetchingListings,
   } = useListings()
+  const [listingsToShow, setListingsToShow] = useState(listings?.results)
 
   const cancelListing = async (listing: Listing) => {
     setCancellingListing(listing.asset.mint.address.toString())
@@ -95,6 +96,40 @@ const ListingsView = () => {
   //   setPage(page)
   // }
 
+  const filters = useMemo(() => {
+    if (!listings?.results || !listings?.results.length) return defaultFilters
+    const collections: string[] = []
+    for (const listing of listings.results) {
+      const collectionName = listing.asset.json?.collection?.family || 'Unknown'
+      if (!collections.includes(collectionName)) {
+        collections.push(collectionName)
+      }
+    }
+    return defaultFilters.concat(collections.sort((a, b) => a.localeCompare(b)))
+  }, [listings])
+
+  const handleFilter = useCallback(
+    (filter: string) => {
+      setCurrentFilter(filter)
+      if (filter === ALL_FILTER) {
+        setListingsToShow(listings?.results)
+      } else if (filter === 'Your Listings') {
+        const filteredListings = listings?.results.filter((listing) => {
+          return listing.sellerAddress.toString() === publicKey?.toString()
+        })
+        setListingsToShow(filteredListings)
+      } else {
+        const filteredListings = listings?.results.filter((listing) => {
+          const collectionName =
+            listing.asset.json?.collection?.family || 'Unknown'
+          return collectionName === filter
+        })
+        setListingsToShow(filteredListings)
+      }
+    },
+    [listings, publicKey],
+  )
+
   const loading = loadingListings || fetchingListings
 
   return (
@@ -103,10 +138,10 @@ const ListingsView = () => {
         <h3 className="text-sm font-normal text-th-fgd-3">{`Filter Results`}</h3>
         <Select
           value={currentFilter}
-          onChange={(filter) => setCurrentFilter(filter)}
-          className="w-[150px]"
+          onChange={(filter) => handleFilter(filter)}
+          className="w-[168px]"
         >
-          {filter.map((filter) => (
+          {filters.map((filter) => (
             <Select.Option key={filter} value={filter}>
               <div className="flex w-full items-center justify-between">
                 {filter}
@@ -123,9 +158,8 @@ const ListingsView = () => {
         ) : null}
       </div>
       <div className="grid grid-flow-row auto-rows-max grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
-        {listings?.results ? (
-          listings.results.map((x, idx) => {
-            console.log(x)
+        {listingsToShow && listingsToShow.length ? (
+          listingsToShow.map((x, idx) => {
             const imgSource = x.asset.json?.image
             const nftBids = bids?.filter((bid) =>
               bid.metadataAddress.equals(x.asset.metadataAddress),
