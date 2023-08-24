@@ -62,25 +62,11 @@ const BidNftModal = ({ isOpen, onClose, listing }: ListingModalProps) => {
       <h2 className="mb-4 text-center text-lg">Make an Offer</h2>
       <div className="flex flex-col items-center">
         {listing ? (
-          <div className="flex flex-col items-center">
-            <ImgWithLoader
-              alt={listing.asset.name}
-              className="mb-3 h-40 w-40 flex-shrink-0 rounded-md"
-              src={listing.asset.json!.image!}
-            />
-            <LinkButton>
-              <span className="font-body font-normal">
-                Buy Now:{' '}
-                <span className="font-display">
-                  {toUiDecimals(
-                    listing.price.basisPoints.toNumber(),
-                    MANGO_MINT_DECIMALS,
-                  )}{' '}
-                  <span className="font-bold">MNGO</span>
-                </span>
-              </span>
-            </LinkButton>
-          </div>
+          <ImgWithLoader
+            alt={listing.asset.name}
+            className="mb-3 h-40 w-40 flex-shrink-0 rounded-md"
+            src={listing.asset.json!.image!}
+          />
         ) : (
           <>
             <Label text="NFT Mint" />
@@ -114,6 +100,20 @@ const BidNftModal = ({ isOpen, onClose, listing }: ListingModalProps) => {
             {submittingOffer ? <Loading /> : 'Make Offer'}
           </Button>
         </div>
+        {listing ? (
+          <LinkButton className="mt-4">
+            <span className="font-body font-normal">
+              Buy Now:{' '}
+              <span className="font-display">
+                {toUiDecimals(
+                  listing.price.basisPoints.toNumber(),
+                  MANGO_MINT_DECIMALS,
+                )}{' '}
+                <span className="font-bold">MNGO</span>
+              </span>
+            </span>
+          </LinkButton>
+        ) : null}
       </div>
     </Modal>
   )

@@ -26,6 +26,7 @@ import NftMarketButton from './NftMarketButton'
 import { abbreviateAddress } from 'utils/formatting'
 import EmptyState from './EmptyState'
 import { formatNumericValue } from 'utils/numbers'
+import Loading from '@components/shared/Loading'
 
 const AllBidsView = () => {
   const { publicKey } = useWallet()
@@ -34,6 +35,8 @@ const AllBidsView = () => {
   // const { t } = useTranslation(['nft-market'])
   const [showBidModal, setShowBidModal] = useState(false)
   const [bidListing, setBidListing] = useState<null | Listing>(null)
+  const [buying, setBuying] = useState('')
+  const [cancellingBid, setCancellingBid] = useState('')
   const { data: bids, refetch } = useBids()
   const bidsToLoad = bids ? bids : []
   const { data: loadedBids } = useLoadBids(bidsToLoad)
@@ -49,15 +52,21 @@ const AllBidsView = () => {
   }, [publicKey])
 
   const cancelBid = async (bid: Bid) => {
-    await metaplex!.auctionHouse().cancelBid({
-      auctionHouse: auctionHouse!,
-      bid,
-    })
-    refetch()
+    setCancellingBid(bid.asset.mint.address.toString())
+    try {
+      await metaplex!.auctionHouse().cancelBid({
+        auctionHouse: auctionHouse!,
+        bid,
+      })
+      refetch()
+    } catch (e) {
+      console.log('error cancelling bid', e)
+    } finally {
+      setCancellingBid('')
+    }
   }
 
   const sellAsset = async (bid: Bid, tokenAccountPk: string) => {
-    console.log(tokenAccountPk)
     const tokenAccount = await metaplex
       ?.tokens()
       .findTokenByAddress({ address: new PublicKey(tokenAccountPk) })
@@ -71,11 +80,18 @@ const AllBidsView = () => {
   }
 
   const buyAsset = async (listing: Listing) => {
-    await metaplex!.auctionHouse().buy({
-      auctionHouse: auctionHouse!,
-      listing,
-    })
-    refetch()
+    setBuying(listing.asset.mint.address.toString())
+    try {
+      await metaplex!.auctionHouse().buy({
+        auctionHouse: auctionHouse!,
+        listing,
+      })
+      refetch()
+    } catch (e) {
+      console.log('error buying nft', e)
+    } finally {
+      setBuying('')
+    }
   }
 
   const openBidModal = (listing: Listing) => {
@@ -185,7 +201,14 @@ const AllBidsView = () => {
                               {publicKey && x.buyerAddress.equals(publicKey) ? (
                                 <NftMarketButton
                                   colorClass="error"
-                                  text="Cancel Offer"
+                                  text={
+                                    cancellingBid ===
+                                    x.asset.mint.address.toString() ? (
+                                      <Loading />
+                                    ) : (
+                                      'Cancel Offer'
+                                    )
+                                  }
                                   onClick={() => cancelBid(x)}
                                 />
                               ) : listing ? (
@@ -198,7 +221,14 @@ const AllBidsView = () => {
                               {listing ? (
                                 <NftMarketButton
                                   colorClass="success"
-                                  text="Buy Now"
+                                  text={
+                                    buying ===
+                                    listing.asset.mint.address.toString() ? (
+                                      <Loading />
+                                    ) : (
+                                      'Buy Now'
+                                    )
+                                  }
                                   onClick={() => buyAsset(listing)}
                                 />
                               ) : null}
