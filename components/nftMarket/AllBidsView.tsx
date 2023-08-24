@@ -27,6 +27,7 @@ import { abbreviateAddress } from 'utils/formatting'
 import EmptyState from './EmptyState'
 import { formatNumericValue } from 'utils/numbers'
 import Loading from '@components/shared/Loading'
+import { notify } from 'utils/notifications'
 
 const AllBidsView = () => {
   const { publicKey } = useWallet()
@@ -37,6 +38,7 @@ const AllBidsView = () => {
   const [bidListing, setBidListing] = useState<null | Listing>(null)
   const [buying, setBuying] = useState('')
   const [cancellingBid, setCancellingBid] = useState('')
+  const [accepting, setAccepting] = useState('')
   const { data: bids, refetch } = useBids()
   const bidsToLoad = bids ? bids : []
   const { data: loadedBids } = useLoadBids(bidsToLoad)
@@ -54,11 +56,18 @@ const AllBidsView = () => {
   const cancelBid = async (bid: Bid) => {
     setCancellingBid(bid.asset.mint.address.toString())
     try {
-      await metaplex!.auctionHouse().cancelBid({
+      const { response } = await metaplex!.auctionHouse().cancelBid({
         auctionHouse: auctionHouse!,
         bid,
       })
       refetch()
+      if (response) {
+        notify({
+          title: 'Transaction confirmed',
+          type: 'success',
+          txid: response.signature,
+        })
+      }
     } catch (e) {
       console.log('error cancelling bid', e)
     } finally {
@@ -67,26 +76,47 @@ const AllBidsView = () => {
   }
 
   const sellAsset = async (bid: Bid, tokenAccountPk: string) => {
-    const tokenAccount = await metaplex
-      ?.tokens()
-      .findTokenByAddress({ address: new PublicKey(tokenAccountPk) })
+    setAccepting(bid.asset.mint.address.toString())
+    try {
+      const tokenAccount = await metaplex
+        ?.tokens()
+        .findTokenByAddress({ address: new PublicKey(tokenAccountPk) })
 
-    await metaplex!.auctionHouse().sell({
-      auctionHouse: auctionHouse!,
-      bid: bid as PublicBid,
-      sellerToken: tokenAccount!,
-    })
-    refetch()
+      const { response } = await metaplex!.auctionHouse().sell({
+        auctionHouse: auctionHouse!,
+        bid: bid as PublicBid,
+        sellerToken: tokenAccount!,
+      })
+      refetch()
+      if (response) {
+        notify({
+          title: 'Transaction confirmed',
+          type: 'success',
+          txid: response.signature,
+        })
+      }
+    } catch (e) {
+      console.log('error accepting offer', e)
+    } finally {
+      setAccepting('')
+    }
   }
 
   const buyAsset = async (listing: Listing) => {
     setBuying(listing.asset.mint.address.toString())
     try {
-      await metaplex!.auctionHouse().buy({
+      const { response } = await metaplex!.auctionHouse().buy({
         auctionHouse: auctionHouse!,
         listing,
       })
       refetch()
+      if (response) {
+        notify({
+          title: 'Transaction confirmed',
+          type: 'success',
+          txid: response.signature,
+        })
+      }
     } catch (e) {
       console.log('error buying nft', e)
     } finally {
@@ -194,7 +224,14 @@ const AllBidsView = () => {
                                 )
                               }
                               colorClass="fgd-3"
-                              text="Accept Offer"
+                              text={
+                                accepting ===
+                                x.asset.mint.address.toString() ? (
+                                  <Loading />
+                                ) : (
+                                  'Accept Offer'
+                                )
+                              }
                             />
                           ) : (
                             <>

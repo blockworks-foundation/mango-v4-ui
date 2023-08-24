@@ -12,6 +12,7 @@ import { ImgWithLoader } from '@components/ImgWithLoader'
 // import { useTranslation } from 'next-i18next'
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import Loading from '@components/shared/Loading'
+import { notify } from 'utils/notifications'
 
 type ListingModalProps = {
   listing?: Listing
@@ -31,7 +32,7 @@ const BidNftModal = ({ isOpen, onClose, listing }: ListingModalProps) => {
   const bid = useCallback(async () => {
     setSubmittingOffer(true)
     try {
-      await metaplex!.auctionHouse().bid({
+      const { response } = await metaplex!.auctionHouse().bid({
         auctionHouse: auctionHouse!,
         price: token(bidPrice, MANGO_MINT_DECIMALS),
         mintAccount: noneListedAssetMode
@@ -40,6 +41,13 @@ const BidNftModal = ({ isOpen, onClose, listing }: ListingModalProps) => {
       })
       onClose()
       refetch()
+      if (response) {
+        notify({
+          title: 'Transaction confirmed',
+          type: 'success',
+          txid: response.signature,
+        })
+      }
     } catch (e) {
       console.log('error making offer', e)
     } finally {

@@ -17,6 +17,7 @@ import NftMarketButton from './NftMarketButton'
 import { useState } from 'react'
 import Loading from '@components/shared/Loading'
 import EmptyState from './EmptyState'
+import { notify } from 'utils/notifications'
 
 const MyBidsModal = ({ isOpen, onClose }: ModalProps) => {
   const { publicKey } = useWallet()
@@ -35,11 +36,18 @@ const MyBidsModal = ({ isOpen, onClose }: ModalProps) => {
   const cancelBid = async (bid: Bid) => {
     setCancelling(bid.asset.mint.address.toString())
     try {
-      await metaplex!.auctionHouse().cancelBid({
+      const { response } = await metaplex!.auctionHouse().cancelBid({
         auctionHouse: auctionHouse!,
         bid,
       })
       refetch()
+      if (response) {
+        notify({
+          title: 'Transaction confirmed',
+          type: 'success',
+          txid: response.signature,
+        })
+      }
     } catch (e) {
       console.log('error cancelling offer', e)
     } finally {

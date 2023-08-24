@@ -21,6 +21,7 @@ import { formatNumericValue } from 'utils/numbers'
 import Loading from '@components/shared/Loading'
 import SheenLoader from '@components/shared/SheenLoader'
 import EmptyState from './EmptyState'
+import { notify } from 'utils/notifications'
 
 const YOUR_LISTINGS = 'Your Listings'
 const PRICE_LOW_HIGH = 'Price: Low to High'
@@ -71,11 +72,18 @@ const ListingsView = () => {
   const cancelListing = async (listing: Listing) => {
     setCancellingListing(listing.asset.mint.address.toString())
     try {
-      await metaplex!.auctionHouse().cancelListing({
+      const { response } = await metaplex!.auctionHouse().cancelListing({
         auctionHouse: auctionHouse!,
         listing: listing,
       })
       refetch()
+      if (response) {
+        notify({
+          title: 'Transaction confirmed',
+          type: 'success',
+          txid: response.signature,
+        })
+      }
     } catch (e) {
       console.log('error cancelling listing', e)
     } finally {
@@ -86,11 +94,18 @@ const ListingsView = () => {
   const buyAsset = async (listing: Listing) => {
     setBuying(listing.asset.mint.address.toString())
     try {
-      await metaplex!.auctionHouse().buy({
+      const { response } = await metaplex!.auctionHouse().buy({
         auctionHouse: auctionHouse!,
         listing,
       })
       refetch()
+      if (response) {
+        notify({
+          title: 'Transaction confirmed',
+          type: 'success',
+          txid: response.signature,
+        })
+      }
     } catch (e) {
       console.log('error buying nft', e)
     } finally {
