@@ -22,7 +22,7 @@ import Loading from '@components/shared/Loading'
 import SheenLoader from '@components/shared/SheenLoader'
 import EmptyState from './EmptyState'
 
-const filter = [ALL_FILTER, 'My Listings']
+const filter = [ALL_FILTER, 'Your Listings']
 
 const ListingsView = () => {
   const { publicKey } = useWallet()
@@ -96,7 +96,6 @@ const ListingsView = () => {
   // }
 
   const loading = loadingListings || fetchingListings
-  console.log(listings?.results)
 
   return (
     <div className="flex flex-col">
