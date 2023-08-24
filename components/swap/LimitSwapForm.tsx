@@ -61,13 +61,13 @@ type OrderTypeMultiplier = 0.9 | 1 | 1.1
 enum OrderTypes {
   STOP_LOSS = 'trade:stop-loss',
   TAKE_PROFIT = 'trade:take-profit',
-  REPAY_BORROW = 'repay-borrow',
+  // REPAY_BORROW = 'repay-borrow',
 }
 
 const ORDER_TYPES = [
   OrderTypes.STOP_LOSS,
   OrderTypes.TAKE_PROFIT,
-  OrderTypes.REPAY_BORROW,
+  // OrderTypes.REPAY_BORROW,
 ]
 
 const set = mangoStore.getState().set
@@ -134,11 +134,11 @@ const LimitSwapForm = ({
       : new Decimal(0)
   }, [amountInFormValue])
 
-  const amountOutAsDecimal: Decimal | null = useMemo(() => {
-    return Number(amountOutFormValue)
-      ? new Decimal(amountOutFormValue)
-      : new Decimal(0)
-  }, [amountOutFormValue])
+  // const amountOutAsDecimal: Decimal | null = useMemo(() => {
+  //   return Number(amountOutFormValue)
+  //     ? new Decimal(amountOutFormValue)
+  //     : new Decimal(0)
+  // }, [amountOutFormValue])
 
   const freeCollateral = useMemo(() => {
     const group = mangoStore.getState().group
@@ -230,7 +230,11 @@ const LimitSwapForm = ({
   }
 
   const hasBorrowToRepay = useMemo(() => {
-    if (orderType !== OrderTypes.REPAY_BORROW || !outputBank || !mangoAccount)
+    if (
+      // orderType !== OrderTypes.REPAY_BORROW ||
+      !outputBank ||
+      !mangoAccount
+    )
       return
     const balance = mangoAccount.getTokenBalanceUi(outputBank)
     const roundedBalance = floorToDecimal(
@@ -276,7 +280,10 @@ const LimitSwapForm = ({
             'Trigger price must be above oracle price'
         }
       }
-      if (orderType === OrderTypes.REPAY_BORROW && !hasBorrowToRepay) {
+      if (
+        // orderType === OrderTypes.REPAY_BORROW &&
+        !hasBorrowToRepay
+      ) {
         invalidFields.hasBorrows = t('swap:no-borrow')
       }
       if (form.amountIn > sellTokenBalance) {
@@ -513,37 +520,37 @@ const LimitSwapForm = ({
 
       try {
         let tx
-        if (orderType === OrderTypes.REPAY_BORROW) {
-          const amountOut = amountOutAsDecimal.toNumber()
-          const orderPrice = parseFloat(triggerPrice)
-          if (quotePrice > orderPrice) {
-            tx = await client.tcsStopLossOnBorrow(
-              group,
-              mangoAccount,
-              inputBank,
-              outputBank,
-              orderPrice,
-              flipPrices,
-              amountOut,
-              null,
-              false,
-              null,
-            )
-          } else {
-            tx = await client.tcsTakeProfitOnBorrow(
-              group,
-              mangoAccount,
-              inputBank,
-              outputBank,
-              orderPrice,
-              flipPrices,
-              amountOut,
-              null,
-              false,
-              null,
-            )
-          }
-        }
+        // if (orderType === OrderTypes.REPAY_BORROW) {
+        //   const amountOut = amountOutAsDecimal.toNumber()
+        //   const orderPrice = parseFloat(triggerPrice)
+        //   if (quotePrice > orderPrice) {
+        //     tx = await client.tcsStopLossOnBorrow(
+        //       group,
+        //       mangoAccount,
+        //       inputBank,
+        //       outputBank,
+        //       orderPrice,
+        //       flipPrices,
+        //       amountOut,
+        //       null,
+        //       false,
+        //       null,
+        //     )
+        //   } else {
+        //     tx = await client.tcsTakeProfitOnBorrow(
+        //       group,
+        //       mangoAccount,
+        //       inputBank,
+        //       outputBank,
+        //       orderPrice,
+        //       flipPrices,
+        //       amountOut,
+        //       null,
+        //       false,
+        //       null,
+        //     )
+        //   }
+        // }
         if (orderType === OrderTypes.STOP_LOSS) {
           tx = await client.tcsStopLossOnDeposit(
             group,
@@ -619,7 +626,10 @@ const LimitSwapForm = ({
       ? `${inputBankName} per ${outputBankName}`
       : `${outputBankName} per ${inputBankName}`
 
-    if (hasBorrowToRepay && orderType === OrderTypes.REPAY_BORROW) {
+    if (
+      hasBorrowToRepay
+      // && orderType === OrderTypes.REPAY_BORROW
+    ) {
       const amountOut = floorToDecimal(
         amountOutFormValue,
         outputBankDecimals,
@@ -850,27 +860,31 @@ const LimitSwapForm = ({
         handleAmountOutChange={handleAmountOutChange}
         setShowTokenSelect={() => handleTokenSelect('output')}
         handleRepay={
-          orderType === OrderTypes.REPAY_BORROW ? handleRepay : undefined
+          // orderType === OrderTypes.REPAY_BORROW ?
+          handleRepay
+          // : undefined
         }
       />
-      {orderType === OrderTypes.REPAY_BORROW &&
-      !hasBorrowToRepay ? null : orderDescription ? (
-        <div className="mt-4">
-          <InlineNotification
-            desc={
-              <>
-                {orderType !== OrderTypes.REPAY_BORROW ? (
+      {
+        // orderType === OrderTypes.REPAY_BORROW &&
+        !hasBorrowToRepay ? null : orderDescription ? (
+          <div className="mt-4">
+            <InlineNotification
+              desc={
+                <>
+                  {/* {orderType !== OrderTypes.REPAY_BORROW ? (
                   <>
                     <span className="text-th-down">{t('sell')}</span>{' '}
                   </>
-                ) : null}
-                {orderDescription}
-              </>
-            }
-            type="info"
-          />
-        </div>
-      ) : null}
+                ) : null} */}
+                  {orderDescription}
+                </>
+              }
+              type="info"
+            />
+          </div>
+        ) : null
+      }
       {ipAllowed ? (
         <Button
           onClick={onClick}
