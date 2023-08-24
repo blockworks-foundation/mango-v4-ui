@@ -8,6 +8,9 @@ import {
   TokenPosition,
 } from '@blockworks-foundation/mango-v4'
 import { MAX_ACCOUNTS } from 'utils/constants'
+import useBanksWithBalances from './useBanksWithBalances'
+import { OpenOrders } from '@project-serum/serum'
+import { BN } from '@coral-xyz/anchor'
 
 export const getAvaialableAccountsColor = (used: number, total: number) => {
   const remaining = total - used
@@ -44,11 +47,22 @@ const getIsAccountSizeFull = () => {
 }
 
 export default function useMangoAccountAccounts() {
-  const { mangoAccountAddress } = useMangoAccount()
+  const { mangoAccountAddress, mangoAccount } = useMangoAccount()
+  const banks = useBanksWithBalances()
 
-  const [usedTokens, usedSerum3, usedPerps, usedPerpOo] = useMemo(() => {
-    const mangoAccount = mangoStore.getState().mangoAccount.current
-    if (!mangoAccountAddress || !mangoAccount) return [[], [], [], []]
+  const [
+    usedTokens,
+    usedSerum3,
+    usedPerps,
+    usedPerpOo,
+    emptyTokens,
+    emptySerum3,
+    emptyPerps,
+    emptyPerpOo,
+  ] = useMemo(() => {
+    if (!mangoAccountAddress || !mangoAccount)
+      return [[], [], [], [], [], [], [], []]
+
     const { tokens, serum3, perps, perpOpenOrders } = mangoAccount
     const usedTokens: TokenPosition[] = tokens.filter((t) => t.inUseCount)
     const usedSerum3: Serum3Orders[] = serum3.filter(
@@ -60,8 +74,48 @@ export default function useMangoAccountAccounts() {
     const usedPerpOo: PerpOo[] = perpOpenOrders.filter(
       (p) => p.orderMarket !== 65535,
     )
-    return [usedTokens, usedSerum3, usedPerps, usedPerpOo]
-  }, [mangoAccountAddress])
+
+    // const emptyPerpOo = [] // No instruction for closing perp oo
+    const emptyTokens = usedTokens.filter((t) => {
+      const bank = banks.find((b) => b.bank.tokenIndex === t.tokenIndex)
+      if (!bank) return false
+      return t.inUseCount && bank.balance === 0 && bank.borrowedAmount === 0
+    })
+
+    const emptyPerps = usedPerps.filter(
+      (p) =>
+        p.asksBaseLots.isZero() &&
+        p.bidsBaseLots.isZero() &&
+        p.takerBaseLots.isZero &&
+        p.takerQuoteLots.isZero() &&
+        p.basePositionLots.isZero() &&
+        p.quotePositionNative.isZero(),
+    )
+
+    const usedOpenOrders = usedSerum3
+      .map((s) => mangoAccount.serum3OosMapByMarketIndex.get(s.marketIndex))
+      .filter((o) => o !== undefined) as OpenOrders[]
+    const maxFreeSlotBits = new BN(2).pow(new BN(128)).sub(new BN(1)) // 2^128 - 1
+    const emptySerum3 = usedOpenOrders
+      .filter(
+        (o) =>
+          o.baseTokenTotal.isZero() &&
+          o.quoteTokenTotal.isZero() &&
+          o.freeSlotBits.eq(maxFreeSlotBits),
+      )
+      .map((f) => f.market)
+
+    return [
+      usedTokens,
+      usedSerum3,
+      usedPerps,
+      usedPerpOo,
+      emptyTokens,
+      emptySerum3,
+      emptyPerps,
+      [],
+    ]
+  }, [mangoAccountAddress, mangoAccount])
 
   const [totalTokens, totalSerum3, totalPerps, totalPerpOpenOrders] =
     useMemo(() => {
@@ -73,7 +127,7 @@ export default function useMangoAccountAccounts() {
       const totalPerps = perps
       const totalPerpOpenOrders = perpOpenOrders
       return [totalTokens, totalSerum3, totalPerps, totalPerpOpenOrders]
-    }, [mangoAccountAddress])
+    }, [mangoAccountAddress, mangoAccount])
 
   //   const [availableTokens, availableSerum3, availablePerps, availablePerpOo] =
   //     useMemo(() => {
@@ -99,6 +153,10 @@ export default function useMangoAccountAccounts() {
     usedSerum3,
     usedPerps,
     usedPerpOo,
+    emptyTokens,
+    emptySerum3,
+    emptyPerps,
+    emptyPerpOo,
     totalTokens,
     totalSerum3,
     totalPerps,
