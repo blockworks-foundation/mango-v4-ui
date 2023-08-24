@@ -125,6 +125,7 @@ const ListingsView = () => {
       <div className="grid grid-flow-row auto-rows-max grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
         {listings?.results ? (
           listings.results.map((x, idx) => {
+            console.log(x)
             const imgSource = x.asset.json?.image
             const nftBids = bids?.filter((bid) =>
               bid.metadataAddress.equals(x.asset.metadataAddress),
@@ -156,28 +157,25 @@ const ListingsView = () => {
                   </div>
                 ) : null}
                 <div className="p-4">
-                  <div className="flex justify-between">
-                    <div>
-                      <p className="text-xs">Buy Now</p>
-                      <div className="flex items-center">
-                        {/* <img
-                        className="mr-1 h-3.5 w-auto"
-                        src="/icons/mngo.svg"
-                      /> */}
-                        <span className="font-display text-base">
-                          {formatNumericValue(
-                            toUiDecimals(
-                              x.price.basisPoints.toNumber(),
-                              MANGO_MINT_DECIMALS,
-                            ),
-                          )}{' '}
-                          <span className="font-body font-bold">MNGO</span>
-                        </span>
-                      </div>
-                    </div>
+                  <h3 className="text-sm text-th-fgd-2">
+                    {x.asset.json?.name || x.asset.name || 'Unknown'}
+                  </h3>
+                  <p className="mb-1.5 text-xs">
+                    {x.asset.json?.collection?.family || 'Unknown'}
+                  </p>
+                  <div className="flex items-center">
+                    <span className="font-display text-base">
+                      {formatNumericValue(
+                        toUiDecimals(
+                          x.price.basisPoints.toNumber(),
+                          MANGO_MINT_DECIMALS,
+                        ),
+                      )}{' '}
+                      <span className="font-body font-bold">MNGO</span>
+                    </span>
                   </div>
                   <div>
-                    <p className="mt-2 text-xs">
+                    <p className="text-xs">
                       {bestBid ? `Best Offer: ${bestBid} MNGO` : 'No offers'}
                     </p>
                   </div>
