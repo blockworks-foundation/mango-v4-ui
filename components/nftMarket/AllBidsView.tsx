@@ -126,7 +126,7 @@ const AllBidsView = () => {
                     <TrBody key={idx}>
                       <Td>
                         <TableDateDisplay
-                          date={x.createdAt.toNumber()}
+                          date={x.createdAt.toNumber() * 1000}
                           showSeconds
                         />
                       </Td>

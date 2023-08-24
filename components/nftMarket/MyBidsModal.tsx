@@ -65,7 +65,9 @@ const MyBidsModal = ({ isOpen, onClose }: ModalProps) => {
                 />
                 <div>
                   <p className="text-xs">
-                    {dayjs(x.createdAt.toNumber()).format('DD MMM YY h:mma')}
+                    {dayjs(x.createdAt.toNumber() * 1000).format(
+                      'DD MMM YY h:mma',
+                    )}
                   </p>
                   <span className="font-display text-th-fgd-2">
                     {toUiDecimals(x.price.basisPoints, MANGO_MINT_DECIMALS)}{' '}
