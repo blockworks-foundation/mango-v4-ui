@@ -20,11 +20,12 @@ import useMangoAccountAccounts, {
 } from 'hooks/useMangoAccountAccounts'
 
 const MIN_ACCOUNTS = 8
-export const MAX_ACCOUNTS: AccountSizeForm = {
-  tokenAccounts: '10',
-  spotOpenOrders: '8',
-  perpAccounts: '8',
+export const MAX_ACCOUNTS = {
+  tokenAccounts: '8',
+  spotOpenOrders: '5',
+  perpAccounts: '4',
   perpOpenOrders: '64',
+  tcsOrders: '64',
 }
 
 const INPUT_CLASSES =
@@ -132,9 +133,10 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
 
   const handleMax = (propertyName: keyof AccountSizeForm) => {
     setFormErrors({})
+    const defaultSizes = MAX_ACCOUNTS as AccountSizeForm
     setAccountSizeForm((prevState) => ({
       ...prevState,
-      [propertyName]: MAX_ACCOUNTS[propertyName],
+      [propertyName]: defaultSizes[propertyName],
     }))
   }
 

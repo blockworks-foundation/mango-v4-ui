@@ -12,6 +12,7 @@ import { MangoAccount } from '@blockworks-foundation/mango-v4'
 import { ArrowLeftIcon } from '@heroicons/react/20/solid'
 import useSolBalance from 'hooks/useSolBalance'
 import { isMangoError } from 'types'
+import { MAX_ACCOUNTS } from '@components/modals/MangoAccountSizeModal'
 
 const getNextAccountNumber = (accounts: MangoAccount[]): number => {
   if (accounts.length > 1) {
@@ -54,7 +55,10 @@ const CreateAccountForm = ({
         group,
         newAccountNum,
         name || `Account ${newAccountNum + 1}`,
-        10, // tokenCount
+        parseInt(MAX_ACCOUNTS.tokenAccounts), // tokens
+        parseInt(MAX_ACCOUNTS.spotOpenOrders), // serum3
+        parseInt(MAX_ACCOUNTS.perpAccounts), // perps
+        parseInt(MAX_ACCOUNTS.perpOpenOrders), // perp Oo
       )
       if (tx) {
         const pk = wallet.adapter.publicKey

@@ -46,6 +46,7 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { ACCEPT_TERMS_KEY } from 'utils/constants'
 import { ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES } from '@components/BorrowForm'
 import { WalletReadyState } from '@solana/wallet-adapter-base'
+import { MAX_ACCOUNTS } from './MangoAccountSizeModal'
 
 const UserSetupModal = ({
   isOpen,
@@ -107,7 +108,10 @@ const UserSetupModal = ({
         group,
         0,
         accountName || 'Account 1',
-        16, // tokenCount
+        parseInt(MAX_ACCOUNTS.tokenAccounts), // tokens
+        parseInt(MAX_ACCOUNTS.spotOpenOrders), // serum3
+        parseInt(MAX_ACCOUNTS.perpAccounts), // perps
+        parseInt(MAX_ACCOUNTS.perpOpenOrders), // perp Oo
       )
       actions.fetchMangoAccounts(publicKey)
       if (tx) {
