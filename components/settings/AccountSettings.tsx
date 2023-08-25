@@ -1,3 +1,4 @@
+import HideMangoAccount from '@components/account/HideMangoAccount'
 import MangoAccountSizeModal from '@components/modals/MangoAccountSizeModal'
 import { LinkButton } from '@components/shared/Button'
 import TokenLogo from '@components/shared/TokenLogo'
@@ -286,6 +287,7 @@ const AccountSettings = () => {
         </Tooltip>
         <p className="font-mono text-th-fgd-2">{availablePerpOo}</p>
       </div> */}
+      <HideMangoAccount />
       {showAccountSizeModal ? (
         <MangoAccountSizeModal
           isOpen={showAccountSizeModal}
