@@ -8,6 +8,7 @@ import { useMemo, useState } from 'react'
 import { EmptyObject } from 'types'
 import { MANGO_DATA_API_URL } from 'utils/constants'
 import LeaderboardTable from './LeaderboardTable'
+import { PRIVATE_ACCOUNTS } from '@components/settings/AccountSettings'
 
 export interface LeaderboardRes {
   date_hour: string
@@ -42,7 +43,10 @@ const fetchLeaderboard = async (
 
   let leaderboardData
   if (isLeaderboard(parsedData)) {
-    leaderboardData = parsedData
+    const filteredData = parsedData.filter(
+      (data) => !PRIVATE_ACCOUNTS.includes(data.mango_account),
+    )
+    leaderboardData = filteredData
   }
 
   return leaderboardData ?? []

@@ -8,6 +8,7 @@ import { LAST_WALLET_NAME, SECONDS } from 'utils/constants'
 import useNetworkSpeed from 'hooks/useNetworkSpeed'
 import { useWallet } from '@solana/wallet-adapter-react'
 import useLocalStorageState from 'hooks/useLocalStorageState'
+import { PRIVATE_ACCOUNTS } from './settings/AccountSettings'
 
 const set = mangoStore.getState().set
 const actions = mangoStore.getState().actions
@@ -127,7 +128,14 @@ const HydrateStore = () => {
 const ReadOnlyMangoAccount = () => {
   const router = useRouter()
   const groupLoaded = mangoStore((s) => s.groupLoaded)
-  const ma = router.query?.address
+  let ma = router.query?.address
+
+  if (ma) {
+    const isPrivateAccount = PRIVATE_ACCOUNTS.find((acc) => acc === ma)
+    if (isPrivateAccount) {
+      ma = ''
+    }
+  }
 
   useEffect(() => {
     if (!groupLoaded) return

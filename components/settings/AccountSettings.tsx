@@ -1,3 +1,4 @@
+import Switch from '@components/forms/Switch'
 import MangoAccountSizeModal from '@components/modals/MangoAccountSizeModal'
 import { LinkButton } from '@components/shared/Button'
 import TokenLogo from '@components/shared/TokenLogo'
@@ -11,14 +12,17 @@ import useMangoAccountAccounts, {
 } from 'hooks/useMangoAccountAccounts'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { MAX_ACCOUNTS } from 'utils/constants'
+
+export const PRIVATE_ACCOUNTS = ['']
 
 const AccountSettings = () => {
   const { t } = useTranslation(['common', 'settings'])
   const { mangoAccountAddress } = useMangoAccount()
   const { group } = useMangoGroup()
   const [showAccountSizeModal, setShowAccountSizeModal] = useState(false)
+  const [privateAccount, setPrivateAccount] = useState(true)
   const {
     usedTokens,
     usedSerum3,
@@ -31,9 +35,28 @@ const AccountSettings = () => {
     isAccountFull,
   } = useMangoAccountAccounts()
 
+  useEffect(() => {
+    if (mangoAccountAddress) {
+      const isPrivateAccount = !!PRIVATE_ACCOUNTS.find(
+        (acc) => acc === mangoAccountAddress,
+      )
+      setPrivateAccount(isPrivateAccount)
+    }
+  }, [mangoAccountAddress])
+
+  const handlePrivateAccount = () => {
+    setPrivateAccount((prevState) => !prevState)
+  }
+
   return mangoAccountAddress && group ? (
     <>
       <h2 className="mb-4 text-base">{t('account')}</h2>
+      <div className="mb-6 flex items-center justify-between border-y border-th-bkg-3 p-4">
+        <Tooltip content={t('settings:tooltip-private-account')}>
+          <p className="tooltip-underline">{t('settings:private-account')}</p>
+        </Tooltip>
+        <Switch checked={privateAccount} onChange={handlePrivateAccount} />
+      </div>
       <div className="mb-4 flex items-center justify-between md:px-4">
         <h3 className="text-sm text-th-fgd-2">{t('settings:account-size')}</h3>
         {!isAccountFull ? (
