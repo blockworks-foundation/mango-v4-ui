@@ -32,7 +32,7 @@ import useUnownedAccount from 'hooks/useUnownedAccount'
 import HealthImpact from '@components/shared/HealthImpact'
 import Tooltip from '@components/shared/Tooltip'
 import Checkbox from '@components/forms/Checkbox'
-import MaxMarketSwapAmount from './MaxMarketSwapAmount'
+// import MaxMarketSwapAmount from './MaxMarketSwapAmount'
 import { floorToDecimal, formatNumericValue } from 'utils/numbers'
 import { formatTokenSymbol } from 'utils/tokens'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
@@ -43,9 +43,9 @@ import {
   AddressLookupTableAccount,
   TransactionInstruction,
 } from '@solana/web3.js'
+import MaxSwapAmount from '@components/swap/MaxSwapAmount'
 
 const set = mangoStore.getState().set
-const slippage = 100
 
 function stringToNumberOrZero(s: string): number {
   const n = parseFloat(s)
@@ -166,6 +166,8 @@ export default function SpotMarketOrderSwapForm() {
       return [baseBank, quoteBank]
     }
   }, [selectedMarket, side])
+
+  const slippage = mangoStore.getState().swap.slippage
 
   const { bestRoute: selectedRoute, isLoading } = useQuoteRoutes({
     inputMint: inputBank?.mint.toString() || '',
@@ -384,7 +386,7 @@ export default function SpotMarketOrderSwapForm() {
       <form onSubmit={(e) => handleSubmit(e)}>
         <div className="mt-3 px-3 md:px-4">
           {!isUnownedAccount ? (
-            <MaxMarketSwapAmount
+            <MaxSwapAmount
               useMargin={savedCheckboxSettings.margin}
               setAmountIn={setAmountFromSlider}
             />

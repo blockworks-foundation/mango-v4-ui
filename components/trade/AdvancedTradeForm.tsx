@@ -76,7 +76,7 @@ export const INPUT_PREFIX_CLASSNAMES =
 export const DEFAULT_CHECKBOX_SETTINGS = {
   ioc: false,
   post: false,
-  margin: false,
+  margin: true,
 }
 
 const AdvancedTradeForm = () => {
