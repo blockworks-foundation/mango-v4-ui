@@ -132,12 +132,12 @@ const AllBidsView = () => {
   return (
     <>
       <div className="flex flex-col">
-        {loadedBids?.length ? (
+        {loadedBids && loadedBids?.length ? (
           <Table>
             <thead>
               <TrHead>
                 <Th className="text-left">Date</Th>
-                <Th className="text-right">NFT</Th>
+                <Th className="text-left">NFT</Th>
                 <Th className="text-right">Offer</Th>
                 <Th className="text-right">Buy Now Price</Th>
                 <Th className="text-right">Buyer</Th>
@@ -150,7 +150,8 @@ const AllBidsView = () => {
                 .map((x, idx) => {
                   const listing = listings?.results?.find(
                     (nft: Listing) =>
-                      nft.asset.mint.toString() === x.asset.mint.toString(),
+                      nft.asset.mint.address.toString() ===
+                      x.asset.mint.address.toString(),
                   )
                   return (
                     <TrBody key={idx}>
@@ -161,12 +162,20 @@ const AllBidsView = () => {
                         />
                       </Td>
                       <Td>
-                        <div className="flex justify-end">
+                        <div className="flex items-center justify-start">
                           <ImgWithLoader
-                            className="w-12 rounded-md"
+                            className="mr-2 w-12 rounded-md"
                             alt={x.asset.name}
                             src={x.asset.json!.image!}
                           />
+                          <div>
+                            <p className="font-body">
+                              {x.asset.json?.name || 'Unknown'}
+                            </p>
+                            <p className="font-body text-xs text-th-fgd-3">
+                              {x.asset.json?.collection?.family || 'Unknown'}
+                            </p>
+                          </div>
                         </div>
                       </Td>
                       <Td>

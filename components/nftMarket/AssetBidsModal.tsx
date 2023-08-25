@@ -15,6 +15,7 @@ import dayjs from 'dayjs'
 import NftMarketButton from './NftMarketButton'
 import Loading from '@components/shared/Loading'
 import { useState } from 'react'
+import { notify } from 'utils/notifications'
 
 const AssetBidsModal = ({
   isOpen,
@@ -39,13 +40,20 @@ const AssetBidsModal = ({
         loadJsonMetadata: true,
       })
 
-      await metaplex!.auctionHouse().sell({
+      const { response } = await metaplex!.auctionHouse().sell({
         auctionHouse: auctionHouse!,
         bid: bid as PublicBid,
         sellerToken: listing.asset.token,
       })
       refetchLazyListings()
       reftechBids()
+      if (response) {
+        notify({
+          title: 'Transaction confirmed',
+          type: 'success',
+          txid: response.signature,
+        })
+      }
     } catch (e) {
       console.log('error accepting offer', e)
     } finally {

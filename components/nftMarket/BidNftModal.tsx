@@ -70,11 +70,21 @@ const BidNftModal = ({ isOpen, onClose, listing }: ListingModalProps) => {
       <h2 className="mb-4 text-center text-lg">Make an Offer</h2>
       <div className="flex flex-col items-center">
         {listing ? (
-          <ImgWithLoader
-            alt={listing.asset.name}
-            className="mb-3 h-40 w-40 flex-shrink-0 rounded-md"
-            src={listing.asset.json!.image!}
-          />
+          <div className="flex flex-col items-center text-center">
+            {listing.asset?.json?.image ? (
+              <ImgWithLoader
+                alt={listing.asset?.name || 'Unknown'}
+                className="mb-3 h-40 w-40 flex-shrink-0 rounded-md"
+                src={listing.asset.json.image}
+              />
+            ) : null}
+            <p className="font-bold text-th-fgd-2">
+              {listing.asset?.json?.name || 'Unknown'}
+            </p>
+            <p className="text-xs">
+              {listing.asset?.json?.collection?.family || 'Unknown'}
+            </p>
+          </div>
         ) : (
           <>
             <Label text="NFT Mint" />
@@ -88,7 +98,7 @@ const BidNftModal = ({ isOpen, onClose, listing }: ListingModalProps) => {
             />
           </>
         )}
-        <div className="mt-4 flex w-full items-end">
+        <div className="mt-4 flex w-full items-end border-t border-th-bkg-3 pt-4">
           <div className="w-full">
             <Label text="Offer Price"></Label>
             <Input
