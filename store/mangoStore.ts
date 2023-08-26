@@ -693,10 +693,7 @@ const mangoStore = create<MangoStore>()(
               state.wallet.nfts.data = nfts
             })
           } catch (error) {
-            notify({
-              type: 'error',
-              title: 'Unable to fetch nfts',
-            })
+            console.warn('Error: unable to fetch nfts.', error)
           } finally {
             set((state) => {
               state.wallet.nfts.loading = false
