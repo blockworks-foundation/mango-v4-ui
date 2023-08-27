@@ -28,6 +28,7 @@ const BidNftModal = ({ isOpen, onClose, listing }: ListingModalProps) => {
   const [bidPrice, setBidPrice] = useState('')
   const [assetMint, setAssetMint] = useState('')
   const [submittingOffer, setSubmittingOffer] = useState(false)
+  const [buying, setBuying] = useState(false)
 
   const bid = useCallback(async () => {
     setSubmittingOffer(true)
@@ -39,7 +40,6 @@ const BidNftModal = ({ isOpen, onClose, listing }: ListingModalProps) => {
           ? new PublicKey(assetMint)
           : listing!.asset.mint.address,
       })
-      onClose()
       refetch()
       if (response) {
         notify({
@@ -52,6 +52,7 @@ const BidNftModal = ({ isOpen, onClose, listing }: ListingModalProps) => {
       console.log('error making offer', e)
     } finally {
       setSubmittingOffer(false)
+      onClose()
     }
   }, [
     metaplex,
@@ -64,6 +65,31 @@ const BidNftModal = ({ isOpen, onClose, listing }: ListingModalProps) => {
     refetch,
     setSubmittingOffer,
   ])
+
+  const handleBuyNow = useCallback(
+    async (listing: Listing) => {
+      setBuying(true)
+      try {
+        const { response } = await metaplex!.auctionHouse().buy({
+          auctionHouse: auctionHouse!,
+          listing,
+        })
+        refetch()
+        if (response) {
+          notify({
+            title: 'Transaction confirmed',
+            type: 'success',
+            txid: response.signature,
+          })
+        }
+      } catch (e) {
+        console.log('error buying nft', e)
+      } finally {
+        setBuying(false)
+      }
+    },
+    [metaplex, auctionHouse, refetch, setBuying],
+  )
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -119,18 +145,24 @@ const BidNftModal = ({ isOpen, onClose, listing }: ListingModalProps) => {
           </Button>
         </div>
         {listing ? (
-          <LinkButton className="mt-4">
-            <span className="font-body font-normal">
-              Buy Now:{' '}
-              <span className="font-display">
-                {toUiDecimals(
-                  listing.price.basisPoints.toNumber(),
-                  MANGO_MINT_DECIMALS,
-                )}{' '}
-                <span className="font-bold">MNGO</span>
+          buying ? (
+            <div className="mt-4 text-th-fgd-3">
+              <Loading />
+            </div>
+          ) : (
+            <LinkButton className="mt-4" onClick={() => handleBuyNow(listing)}>
+              <span className="font-body font-normal">
+                Buy Now:{' '}
+                <span className="font-display">
+                  {toUiDecimals(
+                    listing.price.basisPoints.toNumber(),
+                    MANGO_MINT_DECIMALS,
+                  )}{' '}
+                  <span className="font-bold">MNGO</span>
+                </span>
               </span>
-            </span>
-          </LinkButton>
+            </LinkButton>
+          )
         ) : null}
       </div>
     </Modal>
