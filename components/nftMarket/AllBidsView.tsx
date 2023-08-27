@@ -28,6 +28,7 @@ import EmptyState from './EmptyState'
 import { formatNumericValue } from 'utils/numbers'
 import Loading from '@components/shared/Loading'
 import { notify } from 'utils/notifications'
+import SheenLoader from '@components/shared/SheenLoader'
 
 const AllBidsView = () => {
   const { publicKey } = useWallet()
@@ -41,7 +42,11 @@ const AllBidsView = () => {
   const [accepting, setAccepting] = useState('')
   const { data: bids, refetch } = useBids()
   const bidsToLoad = bids ? bids : []
-  const { data: loadedBids } = useLoadBids(bidsToLoad)
+  const {
+    data: loadedBids,
+    isLoading: loadingBids,
+    isFetching: fetchingBids,
+  } = useLoadBids(bidsToLoad)
   const connection = mangoStore((s) => s.connection)
   const fetchNfts = mangoStore((s) => s.actions.fetchNfts)
   const nfts = mangoStore((s) => s.wallet.nfts.data)
@@ -128,6 +133,8 @@ const AllBidsView = () => {
     setBidListing(listing)
     setShowBidModal(true)
   }
+
+  const loading = loadingBids || fetchingBids
 
   return (
     <>
@@ -287,6 +294,14 @@ const AllBidsView = () => {
                 })}
             </tbody>
           </Table>
+        ) : loading ? (
+          <div className="mt-4 space-y-1.5">
+            {[...Array(4)].map((x, i) => (
+              <SheenLoader className="mx-4 flex flex-1 md:mx-6" key={i}>
+                <div className="h-16 w-full bg-th-bkg-2" />
+              </SheenLoader>
+            ))}
+          </div>
         ) : (
           <EmptyState text="No offers to display..." />
         )}
