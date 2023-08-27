@@ -26,102 +26,119 @@ import {
   TransactionInstruction,
 } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
-import Switch from '@components/forms/Switch'
+import { ttCommons, ttCommonsExpanded, ttCommonsMono } from 'utils/fonts'
 const MEMO_PROGRAM_ID = new PublicKey(
   'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr',
 )
 
+const PAYLOAD_STATEMENT = 'Login to Mango Notifications'
+const PAYLOAD_VERSION = '1'
+const PAYLOAD_CHAIN_ID = 1
+
 export const createSolanaMessage = async (
   wallet: WalletContextState,
   setCookie: (wallet: string, token: string) => void,
-  connection: Connection,
-  usingLedger: boolean,
 ) => {
   const payload = new Payload()
   payload.domain = window.location.host
   payload.address = wallet.publicKey!.toBase58()
   payload.uri = window.location.origin
-  payload.statement = 'Login to Mango Notifications Admin App'
-  payload.version = '1'
-  payload.chainId = 1
+  payload.statement = PAYLOAD_STATEMENT
+  payload.version = PAYLOAD_VERSION
+  payload.chainId = PAYLOAD_CHAIN_ID
 
   const message = new SIWS({ payload })
 
   const messageText = message.prepareMessage()
   const messageEncoded = new TextEncoder().encode(messageText)
-  if (usingLedger) {
-    const tx = new Transaction()
-
-    tx.add(
-      new TransactionInstruction({
-        programId: MEMO_PROGRAM_ID,
-        keys: [],
-        data: Buffer.from(messageText),
-      }),
-    )
-    tx.feePayer = wallet.publicKey!
-    tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash
-
-    const signedTx = await wallet.signTransaction!(tx)
-    const serializedTx = signedTx.serialize()
-
-    const tokenResp = await fetch(`${NOTIFICATION_API}auth`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        ...payload,
-        isLedger: true,
-        serializedTx: Array.from(serializedTx),
-      }),
-    })
-    const body = await tokenResp.json()
-    const token = body.token
-    const error = body.error
-    if (error) {
-      notify({
-        type: 'error',
-        title: 'Error',
-        description: error,
+  wallet.signMessage!(messageEncoded)
+    .then(async (resp) => {
+      const tokenResp = await fetch(`${NOTIFICATION_API}auth`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...payload,
+          signatureString: bs58.encode(resp),
+        }),
       })
-      return
-    }
-    setCookie(payload.address, token)
-  } else {
-    wallet.signMessage!(messageEncoded)
-      .then(async (resp) => {
-        const tokenResp = await fetch(`${NOTIFICATION_API}auth`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            ...payload,
-            signatureString: bs58.encode(resp),
-          }),
-        })
-        const body = await tokenResp.json()
-        const token = body.token
-        const error = body.error
-        if (error) {
-          notify({
-            type: 'error',
-            title: 'Error',
-            description: error,
-          })
-          return
-        }
-        setCookie(payload.address, token)
-      })
-      .catch((e) => {
+      const body = await tokenResp.json()
+      const token = body.token
+      const error = body.error
+      if (error) {
         notify({
           type: 'error',
           title: 'Error',
-          description: e.message ? e.message : `${e}`,
+          description: error,
         })
+        return
+      }
+      setCookie(payload.address, token)
+    })
+    .catch((e) => {
+      notify({
+        type: 'error',
+        title: 'Error',
+        description: e.message ? e.message : `${e}`,
       })
+    })
+}
+
+export const createLedgerMessage = async (
+  wallet: WalletContextState,
+  setCookie: (wallet: string, token: string) => void,
+  connection: Connection,
+) => {
+  const payload = new Payload()
+  payload.domain = window.location.host
+  payload.address = wallet.publicKey!.toBase58()
+  payload.uri = window.location.origin
+  payload.statement = PAYLOAD_STATEMENT
+  payload.version = PAYLOAD_VERSION
+  payload.chainId = PAYLOAD_CHAIN_ID
+
+  const message = new SIWS({ payload })
+
+  const messageText = message.prepareMessage()
+  const tx = new Transaction()
+
+  tx.add(
+    new TransactionInstruction({
+      programId: MEMO_PROGRAM_ID,
+      keys: [],
+      data: Buffer.from(messageText),
+    }),
+  )
+  tx.feePayer = wallet.publicKey!
+  tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash
+
+  const signedTx = await wallet.signTransaction!(tx)
+  const serializedTx = signedTx.serialize()
+
+  const tokenResp = await fetch(`${NOTIFICATION_API}auth`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      ...payload,
+      isLedger: true,
+      serializedTx: Array.from(serializedTx),
+    }),
+  })
+  const body = await tokenResp.json()
+  const token = body.token
+  const error = body.error
+  if (error) {
+    notify({
+      type: 'error',
+      title: 'Error',
+      description: error,
+    })
+    return
   }
+  setCookie(payload.address, token)
 }
 
 const NotificationsDrawer = ({
@@ -139,7 +156,6 @@ const NotificationsDrawer = ({
   const headers = useHeaders()
   const setCookie = NotificationCookieStore((s) => s.setCookie)
   const [isRemoving, setIsRemoving] = useState(false)
-  const [useLedger, setUseLedger] = useState(false)
 
   const unseenNotifications = useMemo(() => {
     if (!data || !data.length) return []
@@ -247,7 +263,7 @@ const NotificationsDrawer = ({
           as={Fragment}
         >
           <Dialog.Panel
-            className={`thin-scroll absolute right-0 z-40 h-full w-full overflow-y-auto bg-th-bkg-1 text-left md:w-96`}
+            className={`thin-scroll absolute right-0 z-40 h-full w-full overflow-y-auto bg-th-bkg-1 text-left font-body md:w-96 ${ttCommons.variable} ${ttCommonsExpanded.variable} ${ttCommonsMono.variable}`}
           >
             <div className="flex h-16 items-center justify-between border-b border-th-bkg-3 pl-6">
               <h2 className="text-lg">{t('notifications')}</h2>
@@ -324,24 +340,21 @@ const NotificationsDrawer = ({
                   <InboxIcon className="mb-2 h-7 w-7 text-th-fgd-2" />
                   <h3 className="mb-1 text-base">{t('unauth-title')}</h3>
                   <p className="mb-3">{t('unauth-desc')}</p>
-                  <p>{t('im-using-ledger')}</p>
-                  <Switch
-                    checked={useLedger}
-                    onChange={(checked) => setUseLedger(checked)}
-                  />
                   <Button
                     className="mt-6"
+                    onClick={() => createSolanaMessage(wallet, setCookie)}
+                  >
+                    {t('sign-message')}
+                  </Button>
+                  <LinkButton
+                    className="mt-6 text-th-fgd-2"
+                    secondary
                     onClick={() =>
-                      createSolanaMessage(
-                        wallet,
-                        setCookie,
-                        connection,
-                        useLedger,
-                      )
+                      createLedgerMessage(wallet, setCookie, connection)
                     }
                   >
-                    {useLedger ? t('sign-with-tx') : t('sign-message')}
-                  </Button>
+                    {t('sign-using-ledger')}
+                  </LinkButton>
                 </div>
               </div>
             )}

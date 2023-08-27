@@ -4,8 +4,7 @@
     "empty-state-title": "Nothing to see here",
     "notifications": "Notifications",
     "sign-message": "Sign Message",
-    "sign-with-tx": "Sign with tx",
-    "im-using-ledger": "Im using ledger",
+    "sign-using-ledger": "Sign with Ledger",
     "unauth-desc": "Sign with your wallet to start receiving notifications",
     "unauth-title": "Notifications Inbox"
 }
