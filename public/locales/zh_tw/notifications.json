@@ -4,6 +4,8 @@
     "empty-state-title": "這裡沒什麼",
     "notifications": "通知",
     "sign-message": "簽署訊息",
+    "sign-with-tx": "Sign with tx",
+    "im-using-ledger": "Im using ledger",
     "unauth-desc": "連接錢包而受到通知",
     "unauth-title": "通知收件匣"
 }
