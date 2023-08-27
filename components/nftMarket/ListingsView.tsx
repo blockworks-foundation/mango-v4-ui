@@ -185,7 +185,7 @@ const ListingsView = () => {
   const loading = loadingListings || fetchingListings
 
   return (
-    <div className="flex flex-col">
+    <div>
       <div className="mb-4 mt-2 flex items-center justify-between rounded-md bg-th-bkg-2 p-2 pl-4">
         <h3 className="text-sm font-normal text-th-fgd-3">{`Filter Results`}</h3>
         <Select
@@ -201,13 +201,6 @@ const ListingsView = () => {
             </Select.Option>
           ))}
         </Select>
-        {asssetBidsModal && assetBidsListing ? (
-          <AssetBidsModal
-            listing={assetBidsListing}
-            isOpen={asssetBidsModal}
-            onClose={closeBidsModal}
-          ></AssetBidsModal>
-        ) : null}
       </div>
       <div className="grid grid-flow-row auto-rows-max grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
         {listingsToShow && listingsToShow.length ? (
@@ -285,13 +278,6 @@ const ListingsView = () => {
                         colorClass="fgd-3"
                         onClick={() => openBidModal(x)}
                       />
-                      {bidNftModal && bidListing && (
-                        <BidNftModal
-                          listing={bidListing}
-                          isOpen={bidNftModal}
-                          onClose={closeBidModal}
-                        ></BidNftModal>
-                      )}
                     </div>
                   )}
                   {publicKey && x.sellerAddress.equals(publicKey) && (
@@ -340,6 +326,20 @@ const ListingsView = () => {
           onPageChange={handlePageClick}
         />
       </div> */}
+      {asssetBidsModal && assetBidsListing ? (
+        <AssetBidsModal
+          listing={assetBidsListing}
+          isOpen={asssetBidsModal}
+          onClose={closeBidsModal}
+        />
+      ) : null}
+      {bidNftModal && bidListing ? (
+        <BidNftModal
+          listing={bidListing}
+          isOpen={bidNftModal}
+          onClose={closeBidModal}
+        />
+      ) : null}
     </div>
   )
 }
