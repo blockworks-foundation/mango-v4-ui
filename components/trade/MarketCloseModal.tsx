@@ -124,15 +124,15 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
   }, [connection, perpMarket, group])
 
   const insufficientLiquidity = useMemo(() => {
-    if (!perpMarket) return true
+    if (!perpMarket) return false
     const baseSize = position.getBasePositionUi(perpMarket)
     const isBids = baseSize < 0
     if (isBids) {
-      if (!bids || !bids.length) return true
+      if (!bids || !bids.length) return false
       const liquidityMax = bids.reduce((a, c) => a + c[1], 0)
       return liquidityMax < baseSize
     } else {
-      if (!asks || !asks.length) return true
+      if (!asks || !asks.length) return false
       const liquidityMax = asks.reduce((a, c) => a + c[1], 0)
       return liquidityMax < baseSize
     }
