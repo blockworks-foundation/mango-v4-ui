@@ -75,6 +75,7 @@
   "edit": "Edit",
   "edit-account": "Edit Account Name",
   "edit-profile-image": "Edit Profile Image",
+  "error-borrow-exceeds-limit": "Borrowed amount exceeds the limit for the current period. New period starts {{resetTime}}",
   "error-token-positions-full": "No token positions available in your account.",
   "explorer": "Explorer",
   "fee": "Fee",
