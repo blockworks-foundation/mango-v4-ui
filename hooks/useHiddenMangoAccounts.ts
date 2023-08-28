@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { MANGO_DATA_API_URL } from 'utils/constants'
 
-const fetchAllHiddenMangoAccounts = async () => {
-  // returns Promise<string[]>
+const fetchAllHiddenMangoAccounts = async (): Promise<string[]> => {
   try {
     const hideResponse = await fetch(
       `${MANGO_DATA_API_URL}/user-data/private-accounts`,
@@ -10,7 +9,8 @@ const fetchAllHiddenMangoAccounts = async () => {
     const res = await hideResponse.json()
     return res?.private_accounts ?? []
   } catch (e) {
-    console.log('Failed to fetch spot volume', e)
+    console.error('Failed to fetch private mango accounts', e)
+    return []
   }
 }
 

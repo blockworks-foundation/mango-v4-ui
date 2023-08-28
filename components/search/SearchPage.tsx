@@ -10,6 +10,7 @@ import {
   UserIcon,
 } from '@heroicons/react/20/solid'
 import { PublicKey } from '@solana/web3.js'
+import { useHiddenMangoAccounts } from 'hooks/useHiddenMangoAccounts'
 import { useTranslation } from 'next-i18next'
 import { ChangeEvent, useState } from 'react'
 import { MANGO_DATA_API_URL } from 'utils/constants'
@@ -32,6 +33,7 @@ const SearchPage = () => {
   const [searchType, setSearchType] = useState('mango-account')
   const [showNoResults, setShowNoResults] = useState(false)
   const [isAccountSearch, setIsAccountSearch] = useState(true)
+  const { hiddenAccounts } = useHiddenMangoAccounts()
 
   const handleSearch = async () => {
     if (
@@ -48,7 +50,25 @@ const SearchPage = () => {
       const response = await fetch(
         `${MANGO_DATA_API_URL}/user-data/profile-search?search-string=${searchString}&search-method=${searchType}`,
       )
-      const data = await response.json()
+      let data = await response.json()
+      if (isAccountSearch && hiddenAccounts) {
+        data = data.filter(
+          (d: MangoAccountItem) => !hiddenAccounts.includes(d.mango_account_pk),
+        )
+      } else if (hiddenAccounts) {
+        data = data
+          .map((d: WalletItem) => {
+            const visibleMangoAccounts = d.mango_accounts.filter(
+              (m) => !hiddenAccounts.includes(m.mango_account_pk),
+            )
+            return {
+              owner: d.owner,
+              profile_name: d.profile_name,
+              mango_accounts: visibleMangoAccounts,
+            }
+          })
+          .filter((d: WalletItem) => d.mango_accounts.length > 0)
+      }
       setSearchResults(data)
       if (!data.length) {
         setShowNoResults(true)

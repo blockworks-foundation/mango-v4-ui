@@ -14,7 +14,7 @@ const fetchMangoAccountHidden = async (mangoAccountAddress: string) => {
     const res = await hideResponse.json()
     return res?.hidden ?? false
   } catch (e) {
-    console.log('Failed to fetch spot volume', e)
+    console.error('Failed to fetch mango account privacy', e)
   }
 }
 
