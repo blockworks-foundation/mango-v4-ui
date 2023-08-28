@@ -67,6 +67,8 @@
     "perp-positions": "Perp Positions",
     "placing-order": "Placing Order...",
     "preferred-explorer": "首选探索器",
+    "privacy-disable": "Disable Privacy Mode",
+    "privacy-enable": "Enable Privacy Mode",
     "recent-trades": "最近交易",
     "rpc": "RPC",
     "rpc-provider": "RPC提供者",

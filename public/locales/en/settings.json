@@ -68,6 +68,8 @@
     "perp-positions": "Perp Positions",
     "placing-order": "Placing Order...",
     "preferred-explorer": "Preferred Explorer",
+    "privacy-disable": "Disable Privacy Mode",
+    "privacy-enable": "Enable Privacy Mode",
     "recent-trades": "Recent Trades",
     "rpc": "RPC",
     "rpc-provider": "RPC Provider",
