@@ -42,6 +42,11 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useTokenMax } from './useTokenMax'
 import DepositWithdrawModal from '@components/modals/DepositWithdrawModal'
+import useRemainingBorrowsInPeriod from 'hooks/useRemainingBorrowsInPeriod'
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+
+dayjs.extend(relativeTime)
 
 type LimitSwapFormProps = {
   showTokenSelect: 'input' | 'output' | undefined
@@ -104,6 +109,8 @@ const LimitSwapForm = ({
   const [submitting, setSubmitting] = useState(false)
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const [formErrors, setFormErrors] = useState<FormErrors>({})
+  const { remainingBorrowsInPeriod, timeToNextPeriod } =
+    useRemainingBorrowsInPeriod(true)
 
   const {
     inputBank,
@@ -243,6 +250,25 @@ const LimitSwapForm = ({
     ).toNumber()
     return balance && balance < 0 ? Math.abs(roundedBalance) : 0
   }, [mangoAccount, orderType, outputBank])
+
+  // check if the borrowed amount exceeds the net borrow limit in the current period
+  const borrowExceedsLimitInPeriod = useMemo(() => {
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+    if (!mangoAccount || !inputBank) return false
+
+    const balance = mangoAccount.getTokenDepositsUi(inputBank)
+    const remainingBalance = balance - amountInAsDecimal.toNumber()
+    const borrowAmount = remainingBalance < 0 ? Math.abs(remainingBalance) : 0
+
+    return remainingBorrowsInPeriod
+      ? borrowAmount > remainingBorrowsInPeriod
+      : false
+  }, [
+    amountInAsDecimal,
+    inputBank,
+    mangoAccountAddress,
+    remainingBorrowsInPeriod,
+  ])
 
   const isFormValid = useCallback(
     (form: LimitSwapForm) => {
@@ -887,6 +913,7 @@ const LimitSwapForm = ({
       }
       {ipAllowed ? (
         <Button
+          disabled={borrowExceedsLimitInPeriod}
           onClick={onClick}
           className="mb-4 mt-6 flex w-full items-center justify-center text-base"
           size="large"
@@ -920,6 +947,16 @@ const LimitSwapForm = ({
           })}
         </Button>
       )}
+      {borrowExceedsLimitInPeriod && timeToNextPeriod ? (
+        <div className="mb-4">
+          <InlineNotification
+            type="error"
+            desc={t('error-borrow-exceeds-limit', {
+              resetTime: dayjs().to(dayjs().add(timeToNextPeriod, 'second')),
+            })}
+          />
+        </div>
+      ) : null}
       {showDepositModal ? (
         <DepositWithdrawModal
           action="deposit"
