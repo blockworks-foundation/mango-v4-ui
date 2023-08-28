@@ -37,6 +37,7 @@ import SecondaryConnectButton from '@components/shared/SecondaryConnectButton'
 import useRemainingBorrowsInPeriod from 'hooks/useRemainingBorrowsInPeriod'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
+import { formatCurrencyValue } from 'utils/numbers'
 
 dayjs.extend(relativeTime)
 
@@ -440,11 +441,14 @@ const SwapFormSubmitButton = ({
           />
         </div>
       ) : null}
-      {borrowExceedsLimitInPeriod && timeToNextPeriod ? (
+      {borrowExceedsLimitInPeriod &&
+      remainingBorrowsInPeriod &&
+      timeToNextPeriod ? (
         <div className="mb-4">
           <InlineNotification
             type="error"
             desc={t('error-borrow-exceeds-limit', {
+              remaining: formatCurrencyValue(remainingBorrowsInPeriod),
               resetTime: dayjs().to(dayjs().add(timeToNextPeriod, 'second')),
             })}
           />

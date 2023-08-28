@@ -11,6 +11,7 @@ import {
 export default function useRemainingBorrowsInPeriod(isSwap?: boolean) {
   const { selectedMarket } = useSelectedMarket()
   const { inputBank } = mangoStore((s) => s.swap)
+  const { side } = mangoStore((s) => s.tradeForm)
 
   const bank = useMemo(() => {
     if (isSwap && inputBank) {
@@ -18,14 +19,21 @@ export default function useRemainingBorrowsInPeriod(isSwap?: boolean) {
     } else {
       if (selectedMarket instanceof Serum3Market) {
         const group = mangoStore.getState().group
-        const baseBank = group?.getFirstBankByTokenIndex(
-          selectedMarket.baseTokenIndex,
-        )
-        return baseBank
+        let balanceBank
+        if (side === 'buy') {
+          balanceBank = group?.getFirstBankByTokenIndex(
+            selectedMarket.baseTokenIndex,
+          )
+        } else {
+          balanceBank = group?.getFirstBankByTokenIndex(
+            selectedMarket.quoteTokenIndex,
+          )
+        }
+        return balanceBank
       }
     }
     return
-  }, [inputBank, isSwap, selectedMarket])
+  }, [inputBank, isSwap, selectedMarket, side])
 
   const [remainingBorrowsInPeriod, timeToNextPeriod] = useMemo(() => {
     if (!bank) return [undefined, undefined]

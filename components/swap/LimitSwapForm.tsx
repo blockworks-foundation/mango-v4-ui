@@ -24,7 +24,7 @@ import { SIZE_INPUT_UI_KEY } from '../../utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import SwapSlider from './SwapSlider'
 import PercentageSelectButtons from './PercentageSelectButtons'
-import { floorToDecimal } from 'utils/numbers'
+import { floorToDecimal, formatCurrencyValue } from 'utils/numbers'
 import { withValueLimit } from './MarketSwapForm'
 import SellTokenInput from './SellTokenInput'
 import BuyTokenInput from './BuyTokenInput'
@@ -947,11 +947,14 @@ const LimitSwapForm = ({
           })}
         </Button>
       )}
-      {borrowExceedsLimitInPeriod && timeToNextPeriod ? (
+      {borrowExceedsLimitInPeriod &&
+      remainingBorrowsInPeriod &&
+      timeToNextPeriod ? (
         <div className="mb-4">
           <InlineNotification
             type="error"
             desc={t('error-borrow-exceeds-limit', {
+              remaining: formatCurrencyValue(remainingBorrowsInPeriod),
               resetTime: dayjs().to(dayjs().add(timeToNextPeriod, 'second')),
             })}
           />

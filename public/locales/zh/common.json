@@ -75,7 +75,7 @@
   "edit": "编辑",
   "edit-account": "编辑帐户标签",
   "edit-profile-image": "切换头像",
-  "error-borrow-exceeds-limit": "Borrowed amount exceeds the limit for the current period. New period starts {{resetTime}}",
+  "error-borrow-exceeds-limit": "Maximum borrow for the current period is {{remaining}}. New period starts {{resetTime}}",
   "error-token-positions-full": "No token positions available in your account.",
   "explorer": "浏览器",
   "fee": "费用",
