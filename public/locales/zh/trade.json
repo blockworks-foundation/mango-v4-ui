@@ -11,6 +11,8 @@
     "cancel-all": "Cancel All",
     "cancel-order": "Cancel Order",
     "cancel-order-error": "取消订单失败",
+    "close-all": "Close All",
+    "close-all-positions": "Close All Positions",
     "close-confirm": "市场平仓 {{config_name}}",
     "close-position": "平仓",
     "connect-orders": "连接以查看未结订单",

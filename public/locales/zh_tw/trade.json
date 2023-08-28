@@ -11,6 +11,8 @@
     "cancel-all": "Cancel All",
     "cancel-order": "Cancel Order",
     "cancel-order-error": "取消訂單失敗",
+    "close-all": "Close All",
+    "close-all-positions": "Close All Positions",
     "close-confirm": "市場平倉 {{config_name}}",
     "close-position": "平倉",
     "connect-orders": "連接以查看未結訂單",

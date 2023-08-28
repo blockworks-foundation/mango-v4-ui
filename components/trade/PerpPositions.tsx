@@ -26,11 +26,14 @@ import { Disclosure, Transition } from '@headlessui/react'
 import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
 import PnlTooltipContent from '@components/shared/PnlTooltipContent'
 import PerpSideBadge from './PerpSideBadge'
+import CloseAllPositionsModal from './CloseAllPositionsModal'
+import NukeIcon from '@components/icons/NukeIcon'
 
 const PerpPositions = () => {
   const { t } = useTranslation(['common', 'trade'])
   const { group } = useMangoGroup()
   const [showMarketCloseModal, setShowMarketCloseModal] = useState(false)
+  const [showCloseAllModal, setShowCloseAllModal] = useState(false)
   const [positionToClose, setPositionToClose] = useState<PerpPosition | null>(
     null,
   )
@@ -147,7 +150,22 @@ const PerpPositions = () => {
                     </div>
                   </Th>
                   <Th className="text-right">{t('trade:unrealized-pnl')}</Th>
-                  {!isUnownedAccount ? <Th /> : null}
+                  {!isUnownedAccount ? (
+                    <Th>
+                      {openPerpPositions?.length > 1 ? (
+                        <div className="flex justify-end">
+                          <div className="flex items-center">
+                            <NukeIcon className="mr-1.5 h-4 w-4 text-th-active" />
+                            <LinkButton
+                              onClick={() => setShowCloseAllModal(true)}
+                            >
+                              {t('trade:close-all')}
+                            </LinkButton>
+                          </div>
+                        </div>
+                      ) : null}
+                    </Th>
+                  ) : null}
                 </TrHead>
               </thead>
               <tbody>
@@ -300,7 +318,7 @@ const PerpPositions = () => {
                               size="small"
                               onClick={() => showClosePositionModal(position)}
                             >
-                              Close
+                              {t('close')}
                             </Button>
                             <IconButton
                               hideBg
@@ -613,14 +631,26 @@ const PerpPositions = () => {
                             </div>
                             <div className="col-span-2 mt-3 flex space-x-3">
                               <Button
-                                className="w-1/2"
+                                className="w-full text-xs sm:text-sm"
                                 secondary
                                 onClick={() => showClosePositionModal(position)}
                               >
-                                {t('trade:close-position')}
+                                {t('close')}
                               </Button>
+                              {openPerpPositions?.length > 1 ? (
+                                <Button
+                                  className="w-full text-xs sm:text-sm"
+                                  secondary
+                                  onClick={() => setShowCloseAllModal(true)}
+                                >
+                                  <div className="flex items-center justify-center">
+                                    <NukeIcon className="mr-2 h-4 w-4 flex-shrink-0 text-th-active" />
+                                    {t('trade:close-all')}
+                                  </div>
+                                </Button>
+                              ) : null}
                               <Button
-                                className="w-1/2"
+                                className="w-full text-xs sm:text-sm"
                                 secondary
                                 onClick={() =>
                                   handleShowShare(openPerpPositions[i])
@@ -732,6 +762,12 @@ const PerpPositions = () => {
           isOpen={showMarketCloseModal}
           onClose={hideClosePositionModal}
           position={positionToClose}
+        />
+      ) : null}
+      {showCloseAllModal ? (
+        <CloseAllPositionsModal
+          isOpen={showCloseAllModal}
+          onClose={() => setShowCloseAllModal(false)}
         />
       ) : null}
     </>
