@@ -4,10 +4,11 @@ import { Keypair, PublicKey } from '@solana/web3.js'
 import { useRouter } from 'next/router'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useInterval from './shared/useInterval'
-import { LAST_WALLET_NAME, SECONDS } from 'utils/constants'
+import { LAST_WALLET_NAME, PRIORITY_FEE_KEY, SECONDS } from 'utils/constants'
 import useNetworkSpeed from 'hooks/useNetworkSpeed'
 import { useWallet } from '@solana/wallet-adapter-react'
 import useLocalStorageState from 'hooks/useLocalStorageState'
+import { DEFAULT_PRIORITY_FEE_LEVEL } from './settings/RpcSettings'
 
 const set = mangoStore.getState().set
 const actions = mangoStore.getState().actions
@@ -70,6 +71,20 @@ const HydrateStore = () => {
       actions.loadMarketFills()
     },
     (slowNetwork ? 60 : 20) * SECONDS,
+  )
+
+  // estimate the priority fee every 30 seconds
+  useInterval(
+    async () => {
+      if (mangoAccountAddress) {
+        const priorityFeeMultiplier = Number(
+          localStorage.getItem(PRIORITY_FEE_KEY) ??
+            DEFAULT_PRIORITY_FEE_LEVEL.value,
+        )
+        actions.estimatePriorityFee(priorityFeeMultiplier)
+      }
+    },
+    (slowNetwork ? 60 : 10) * SECONDS,
   )
 
   // The websocket library solana/web3.js uses closes its websocket connection when the subscription list
