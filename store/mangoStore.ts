@@ -3,7 +3,13 @@ import produce from 'immer'
 import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { AnchorProvider, BN, Wallet, web3 } from '@coral-xyz/anchor'
-import { ConfirmOptions, Connection, Keypair, PublicKey } from '@solana/web3.js'
+import {
+  ConfirmOptions,
+  Connection,
+  Keypair,
+  PublicKey,
+  RecentPrioritizationFees,
+} from '@solana/web3.js'
 import { OpenOrders, Order } from '@project-serum/serum/lib/market'
 import { Orderbook } from '@project-serum/serum'
 import { Wallet as WalletAdapter } from '@solana/wallet-adapter-react'
@@ -36,6 +42,7 @@ import {
   INPUT_TOKEN_DEFAULT,
   LAST_ACCOUNT_KEY,
   MANGO_DATA_API_URL,
+  MAX_PRIORITY_FEE_KEYS,
   OUTPUT_TOKEN_DEFAULT,
   PAGINATION_PAGE_LENGTH,
   PRIORITY_FEE_KEY,
@@ -75,6 +82,10 @@ import {
   IOrderLineAdapter,
 } from '@public/charting_library/charting_library'
 import { nftThemeMeta } from 'utils/theme'
+import maxBy from 'lodash/maxBy'
+import mapValues from 'lodash/mapValues'
+import groupBy from 'lodash/groupBy'
+import sampleSize from 'lodash/sampleSize'
 
 const GROUP = new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX')
 
@@ -104,7 +115,7 @@ export const emptyWallet = new EmptyWallet(Keypair.generate())
 
 const initMangoClient = (
   provider: AnchorProvider,
-  opts = { prioritizationFee: DEFAULT_PRIORITY_FEE.value },
+  opts = { prioritizationFee: DEFAULT_PRIORITY_FEE },
 ): MangoClient => {
   return MangoClient.connect(provider, CLUSTER, MANGO_V4_ID[CLUSTER], {
     prioritizationFee: opts.prioritizationFee,
@@ -184,6 +195,7 @@ export type MangoStore = {
     details: ProfileDetails | null
     loadDetails: boolean
   }
+  priorityFee: number
   selectedMarket: {
     name: string | undefined
     current: Serum3Market | PerpMarket | undefined
@@ -269,6 +281,7 @@ export type MangoStore = {
     connectMangoClientWithWallet: (wallet: WalletAdapter) => Promise<void>
     loadMarketFills: () => Promise<void>
     updateConnection: (url: string) => void
+    estimatePriorityFee: (feeMultiplier: number) => Promise<void>
   }
 }
 
@@ -342,6 +355,7 @@ const mangoStore = create<MangoStore>()(
         loadDetails: false,
         details: { profile_name: '', trader_category: '', wallet_pk: '' },
       },
+      priorityFee: DEFAULT_PRIORITY_FEE,
       selectedMarket: {
         name: 'SOL/USDC',
         current: undefined,
@@ -1004,11 +1018,10 @@ const mangoStore = create<MangoStore>()(
               options,
             )
             provider.opts.skipPreflight = true
-            const prioritizationFee = Number(
-              localStorage.getItem(PRIORITY_FEE_KEY) ??
-                DEFAULT_PRIORITY_FEE.value,
-            )
-            const client = initMangoClient(provider, { prioritizationFee })
+            const priorityFee = get().priorityFee ?? DEFAULT_PRIORITY_FEE
+            const client = initMangoClient(provider, {
+              prioritizationFee: priorityFee,
+            })
 
             set((s) => {
               s.client = client
@@ -1121,6 +1134,58 @@ const mangoStore = create<MangoStore>()(
           const newClient = initMangoClient(newProvider)
           set((state) => {
             state.connection = newConnection
+            state.client = newClient
+          })
+        },
+        estimatePriorityFee: async (feeMultiplier) => {
+          const set = get().set
+          const group = mangoStore.getState().group
+          const client = mangoStore.getState().client
+
+          const mangoAccount = get().mangoAccount.current
+          if (!mangoAccount || !group || !client) return
+
+          const altResponse = await connection.getAddressLookupTable(
+            group.addressLookupTables[0],
+          )
+          const altKeys = altResponse.value?.state.addresses
+          if (!altKeys) return
+
+          const addresses = sampleSize(altKeys, MAX_PRIORITY_FEE_KEYS)
+          const fees = await connection.getRecentPrioritizationFees({
+            lockedWritableAccounts: addresses,
+          })
+
+          if (fees.length < 1) return
+
+          // get max priority fee per slot (and sort by slot from old to new)
+          const maxFeeBySlot = mapValues(groupBy(fees, 'slot'), (items) =>
+            maxBy(items, 'prioritizationFee'),
+          )
+          const maximumFees = Object.values(maxFeeBySlot).sort(
+            (a, b) => a!.slot - b!.slot,
+          ) as RecentPrioritizationFees[]
+
+          // get median of last 20 fees
+          const recentFees = maximumFees.slice(
+            Math.max(maximumFees.length - 20, 0),
+          )
+          const mid = Math.floor(recentFees.length / 2)
+          const medianFee =
+            recentFees.length % 2 !== 0
+              ? recentFees[mid].prioritizationFee
+              : (recentFees[mid - 1].prioritizationFee +
+                  recentFees[mid].prioritizationFee) /
+                2
+          const feeEstimate = Math.ceil(medianFee * feeMultiplier)
+
+          const provider = client.program.provider as AnchorProvider
+          provider.opts.skipPreflight = true
+          const newClient = initMangoClient(provider, {
+            prioritizationFee: feeEstimate,
+          })
+          set((state) => {
+            state.priorityFee = feeEstimate
             state.client = newClient
           })
         },
