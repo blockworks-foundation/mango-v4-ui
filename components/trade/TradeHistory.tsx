@@ -31,7 +31,10 @@ import MarketLogos from './MarketLogos'
 import PerpSideBadge from './PerpSideBadge'
 import TableMarketName from './TableMarketName'
 import { useSortableData } from 'hooks/useSortableData'
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
+import { ModalProps } from 'types/modal'
+import Modal from '@components/shared/Modal'
+import { CombinedTradeHistory } from 'types'
 
 const TradeHistory = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -46,6 +49,7 @@ const TradeHistory = () => {
   const { width } = useViewport()
   const { connected } = useWallet()
   const showTableView = width ? width > breakpoints.md : false
+  const [showFills, setShowFills] = useState(null)
 
   const formattedTableData = useCallback(() => {
     const formatted = []
@@ -69,241 +73,333 @@ const TradeHistory = () => {
 
   if (!selectedMarket || !group) return null
 
-  return mangoAccountAddress &&
-    (combinedTradeHistory.length || loadingTradeHistory) ? (
+  return (
     <>
-      {showTableView ? (
-        <div className="thin-scroll overflow-x-auto">
-          <Table>
-            <thead>
-              <TrHead>
-                <Th className="text-left">
-                  <SortableColumnHeader
-                    sortKey="marketName"
-                    sort={() => requestSort('marketName')}
-                    sortConfig={sortConfig}
-                    title={t('market')}
-                  />
-                </Th>
-                <Th>
-                  <div className="flex justify-end">
-                    <SortableColumnHeader
-                      sortKey="size"
-                      sort={() => requestSort('size')}
-                      sortConfig={sortConfig}
-                      title={t('trade:size')}
-                    />
-                  </div>
-                </Th>
-                <Th>
-                  <div className="flex justify-end">
-                    <SortableColumnHeader
-                      sortKey="price"
-                      sort={() => requestSort('price')}
-                      sortConfig={sortConfig}
-                      title={t('price')}
-                    />
-                  </div>
-                </Th>
-                <Th>
-                  <div className="flex justify-end">
-                    <SortableColumnHeader
-                      sortKey="value"
-                      sort={() => requestSort('value')}
-                      sortConfig={sortConfig}
-                      title={t('value')}
-                    />
-                  </div>
-                </Th>
-                <Th>
-                  <div className="flex justify-end">
-                    <SortableColumnHeader
-                      sortKey="feeCost"
-                      sort={() => requestSort('feeCost')}
-                      sortConfig={sortConfig}
-                      title={t('fee')}
-                    />
-                  </div>
-                </Th>
-                <Th>
-                  <div className="flex justify-end">
-                    <SortableColumnHeader
-                      sortKey="sortTime"
-                      sort={() => requestSort('sortTime')}
-                      sortConfig={sortConfig}
-                      title={t('date')}
-                    />
-                  </div>
-                </Th>
-                <Th />
-              </TrHead>
-            </thead>
-            <tbody>
-              {tableData.map((trade, index: number) => {
-                const { side, price, market, size, feeCost, liquidity, value } =
-                  trade
-                return (
-                  <TrBody
-                    key={`${side}${size}${price}${index}`}
-                    className="my-1 p-2"
-                  >
-                    <Td>
-                      <TableMarketName
-                        market={market}
-                        side={
-                          market instanceof PerpMarket
-                            ? side === 'buy'
-                              ? 'long'
-                              : 'short'
-                            : side
-                        }
+      {mangoAccountAddress &&
+      (combinedTradeHistory.length || loadingTradeHistory) ? (
+        <>
+          {showTableView ? (
+            <div className="thin-scroll overflow-x-auto">
+              <Table>
+                <thead>
+                  <TrHead>
+                    <Th className="text-left">
+                      <SortableColumnHeader
+                        sortKey="marketName"
+                        sort={() => requestSort('marketName')}
+                        sortConfig={sortConfig}
+                        title={t('market')}
                       />
-                    </Td>
-                    <Td className="text-right font-mono">{size}</Td>
-                    <Td className="text-right font-mono">
-                      <p>{price}</p>
-                    </Td>
-                    <Td className="text-right font-mono">
-                      <FormatNumericValue value={value} decimals={2} isUsd />
-                    </Td>
-                    <Td className="text-right">
-                      <span className="font-mono">
-                        <FormatNumericValue roundUp value={feeCost} />
-                      </span>
-                      <p className="font-body text-xs text-th-fgd-4">
-                        {liquidity}
+                    </Th>
+                    <Th>
+                      <div className="flex justify-end">
+                        <SortableColumnHeader
+                          sortKey="size"
+                          sort={() => requestSort('size')}
+                          sortConfig={sortConfig}
+                          title={t('trade:size')}
+                        />
+                      </div>
+                    </Th>
+                    <Th>
+                      <div className="flex justify-end">
+                        <SortableColumnHeader
+                          sortKey="price"
+                          sort={() => requestSort('price')}
+                          sortConfig={sortConfig}
+                          title={t('price')}
+                        />
+                      </div>
+                    </Th>
+                    <Th>
+                      <div className="flex justify-end">
+                        <SortableColumnHeader
+                          sortKey="value"
+                          sort={() => requestSort('value')}
+                          sortConfig={sortConfig}
+                          title={t('value')}
+                        />
+                      </div>
+                    </Th>
+                    <Th>
+                      <div className="flex justify-end">
+                        <SortableColumnHeader
+                          sortKey="feeCost"
+                          sort={() => requestSort('feeCost')}
+                          sortConfig={sortConfig}
+                          title={t('fee')}
+                        />
+                      </div>
+                    </Th>
+                    <Th>
+                      <div className="flex justify-end">
+                        <SortableColumnHeader
+                          sortKey="sortTime"
+                          sort={() => requestSort('sortTime')}
+                          sortConfig={sortConfig}
+                          title={t('date')}
+                        />
+                      </div>
+                    </Th>
+                    <Th className="text-right">{t('trade:fills')}</Th>
+                    <Th />
+                  </TrHead>
+                </thead>
+                <tbody>
+                  {tableData.map((trade, index: number) => {
+                    const {
+                      side,
+                      price,
+                      market,
+                      size,
+                      feeCost,
+                      liquidity,
+                      value,
+                    } = trade
+                    return (
+                      <TrBody
+                        key={`${side}${size}${price}${index}`}
+                        className="my-1 p-2"
+                      >
+                        <Td>
+                          <TableMarketName
+                            market={market}
+                            side={
+                              market instanceof PerpMarket
+                                ? side === 'buy'
+                                  ? 'long'
+                                  : 'short'
+                                : side
+                            }
+                          />
+                        </Td>
+                        <Td className="text-right font-mono">{size}</Td>
+                        <Td className="text-right font-mono">
+                          <p>{price}</p>
+                        </Td>
+                        <Td className="text-right font-mono">
+                          <FormatNumericValue
+                            value={value}
+                            decimals={2}
+                            isUsd
+                          />
+                        </Td>
+                        <Td className="text-right">
+                          <span className="font-mono">
+                            <FormatNumericValue roundUp value={feeCost} />
+                          </span>
+                          <p className="font-body text-xs text-th-fgd-4">
+                            {liquidity}
+                          </p>
+                        </Td>
+                        <Td className="whitespace-nowrap text-right">
+                          {trade?.time ? (
+                            <TableDateDisplay date={trade.time} showSeconds />
+                          ) : (
+                            'Recent'
+                          )}
+                        </Td>
+                        <Td className="whitespace-nowrap text-right">
+                          {trade.fills?.length ? (
+                            <div className="flex justify-end">
+                              <LinkButton
+                                onClick={() => setShowFills(trade.fills)}
+                              >
+                                {trade.fills.length}
+                              </LinkButton>
+                            </div>
+                          ) : (
+                            '–'
+                          )}
+                        </Td>
+                        <Td className="xl:!pl-0">
+                          {'taker' in trade ? (
+                            <div className="flex justify-end">
+                              <Tooltip
+                                content={`View Counterparty ${abbreviateAddress(
+                                  trade.liquidity === 'Taker'
+                                    ? new PublicKey(trade.maker)
+                                    : new PublicKey(trade.taker),
+                                )}`}
+                                delay={0}
+                              >
+                                <a
+                                  className=""
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  href={`/?address=${
+                                    trade.liquidity === 'Taker'
+                                      ? trade.maker
+                                      : trade.taker
+                                  }`}
+                                >
+                                  <IconButton size="small">
+                                    <UsersIcon className="h-4 w-4" />
+                                  </IconButton>
+                                </a>
+                              </Tooltip>
+                            </div>
+                          ) : null}
+                        </Td>
+                      </TrBody>
+                    )
+                  })}
+                </tbody>
+              </Table>
+            </div>
+          ) : (
+            <div>
+              {combinedTradeHistory.map((trade, index: number) => {
+                const { side, price, market, size, liquidity } = trade
+                return (
+                  <div
+                    className="flex items-center justify-between border-b border-th-bkg-3 p-4"
+                    key={`${price}${size}${side}${index}`}
+                  >
+                    <div>
+                      <p className="text-sm text-th-fgd-1">
+                        {dayjs(trade?.time ? trade.time : Date.now()).format(
+                          'ddd D MMM',
+                        )}
                       </p>
-                    </Td>
-                    <Td className="whitespace-nowrap text-right">
-                      {trade?.time ? (
-                        <TableDateDisplay date={trade.time} showSeconds />
-                      ) : (
-                        'Recent'
-                      )}
-                    </Td>
-                    <Td className="xl:!pl-0">
-                      {'taker' in trade ? (
-                        <div className="flex justify-end">
-                          <Tooltip
-                            content={`View Counterparty ${abbreviateAddress(
-                              trade.liquidity === 'Taker'
-                                ? new PublicKey(trade.maker)
-                                : new PublicKey(trade.taker),
-                            )}`}
-                            delay={0}
-                          >
-                            <a
-                              className=""
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              href={`/?address=${
-                                trade.liquidity === 'Taker'
-                                  ? trade.maker
-                                  : trade.taker
-                              }`}
-                            >
-                              <IconButton size="small">
-                                <UsersIcon className="h-4 w-4" />
-                              </IconButton>
-                            </a>
-                          </Tooltip>
+                      <p className="text-xs text-th-fgd-3">
+                        {trade?.time
+                          ? dayjs(trade.time).format('h:mma')
+                          : 'Recent'}
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="flex flex-col items-end">
+                        <div className="flex items-center">
+                          <MarketLogos market={market} size="small" />
+                          <span className="mr-1 whitespace-nowrap">
+                            {market.name}
+                          </span>
+                          {market instanceof PerpMarket ? (
+                            <PerpSideBadge
+                              basePosition={side === 'buy' ? 1 : -1}
+                            />
+                          ) : (
+                            <SideBadge side={side} />
+                          )}
                         </div>
+                        <div className="mt-0.5 flex space-x-1 leading-none text-th-fgd-2">
+                          <p className="text-th-fgd-4">
+                            <span className="font-mono text-th-fgd-2">
+                              {size}
+                            </span>
+                            {' at '}
+                            <span className="font-mono text-th-fgd-2">
+                              <FormatNumericValue value={price} />
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+                      {'taker' in trade ? (
+                        <a
+                          className=""
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          href={`/?address=${
+                            liquidity === 'Taker' ? trade.maker : trade.taker
+                          }`}
+                        >
+                          <IconButton size="small">
+                            <UsersIcon className="h-4 w-4" />
+                          </IconButton>
+                        </a>
                       ) : null}
-                    </Td>
-                  </TrBody>
+                    </div>
+                  </div>
                 )
               })}
-            </tbody>
-          </Table>
+            </div>
+          )}
+          {loadingTradeHistory ? (
+            <div className="mt-4 space-y-1.5">
+              {[...Array(4)].map((x, i) => (
+                <SheenLoader className="mx-4 flex flex-1 md:mx-6" key={i}>
+                  <div className="h-16 w-full bg-th-bkg-2" />
+                </SheenLoader>
+              ))}
+            </div>
+          ) : null}
+          {combinedTradeHistory.length &&
+          combinedTradeHistory.length % PAGINATION_PAGE_LENGTH === 0 ? (
+            <div className="flex justify-center py-6">
+              <LinkButton onClick={() => fetchNextPage()}>Show More</LinkButton>
+            </div>
+          ) : null}
+        </>
+      ) : mangoAccountAddress || connected ? (
+        <div className="flex flex-col items-center p-8">
+          <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
+          <p>No trade history</p>
         </div>
       ) : (
-        <div>
-          {combinedTradeHistory.map((trade, index: number) => {
-            const { side, price, market, size, liquidity } = trade
-            return (
-              <div
-                className="flex items-center justify-between border-b border-th-bkg-3 p-4"
-                key={`${price}${size}${side}${index}`}
-              >
-                <div>
-                  <p className="text-sm text-th-fgd-1">
-                    {dayjs(trade?.time ? trade.time : Date.now()).format(
-                      'ddd D MMM',
-                    )}
-                  </p>
-                  <p className="text-xs text-th-fgd-3">
-                    {trade?.time ? dayjs(trade.time).format('h:mma') : 'Recent'}
-                  </p>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="flex flex-col items-end">
-                    <div className="flex items-center">
-                      <MarketLogos market={market} size="small" />
-                      <span className="mr-1 whitespace-nowrap">
-                        {market.name}
-                      </span>
-                      {market instanceof PerpMarket ? (
-                        <PerpSideBadge basePosition={side === 'buy' ? 1 : -1} />
-                      ) : (
-                        <SideBadge side={side} />
-                      )}
-                    </div>
-                    <div className="mt-0.5 flex space-x-1 leading-none text-th-fgd-2">
-                      <p className="text-th-fgd-4">
-                        <span className="font-mono text-th-fgd-2">{size}</span>
-                        {' at '}
-                        <span className="font-mono text-th-fgd-2">
-                          <FormatNumericValue value={price} />
-                        </span>
-                      </p>
-                    </div>
-                  </div>
-                  {'taker' in trade ? (
-                    <a
-                      className=""
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      href={`/?address=${
-                        liquidity === 'Taker' ? trade.maker : trade.taker
-                      }`}
-                    >
-                      <IconButton size="small">
-                        <UsersIcon className="h-4 w-4" />
-                      </IconButton>
-                    </a>
-                  ) : null}
-                </div>
-              </div>
-            )
-          })}
+        <div className="p-8">
+          <ConnectEmptyState text={t('trade:connect-trade-history')} />
         </div>
       )}
-      {loadingTradeHistory ? (
-        <div className="mt-4 space-y-1.5">
-          {[...Array(4)].map((x, i) => (
-            <SheenLoader className="mx-4 flex flex-1 md:mx-6" key={i}>
-              <div className="h-16 w-full bg-th-bkg-2" />
-            </SheenLoader>
-          ))}
-        </div>
-      ) : null}
-      {combinedTradeHistory.length &&
-      combinedTradeHistory.length % PAGINATION_PAGE_LENGTH === 0 ? (
-        <div className="flex justify-center py-6">
-          <LinkButton onClick={() => fetchNextPage()}>Show More</LinkButton>
-        </div>
+      {showFills ? (
+        <SpotFillsModal
+          isOpen={!!showFills}
+          onClose={() => setShowFills(null)}
+          fills={showFills}
+        />
       ) : null}
     </>
-  ) : mangoAccountAddress || connected ? (
-    <div className="flex flex-col items-center p-8">
-      <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
-      <p>No trade history</p>
-    </div>
-  ) : (
-    <div className="p-8">
-      <ConnectEmptyState text={t('trade:connect-trade-history')} />
-    </div>
   )
 }
 
 export default TradeHistory
+
+type SpotFillsModalProps = {
+  fills: CombinedTradeHistory
+}
+
+type ModalCombinedProps = SpotFillsModalProps & ModalProps
+
+const SpotFillsModal = ({ isOpen, onClose, fills }: ModalCombinedProps) => {
+  const { t } = useTranslation(['common', 'trade'])
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <div className="hide-scroll max-h-[calc(100vh-200px)] overflow-y-auto">
+        <h2 className="flex items-center justify-center space-x-2 text-lg">
+          <SideBadge side={fills[0].side} />
+          <span>
+            {fills[0].market.name} {t('trade:fills')}
+          </span>
+        </h2>
+        <Table>
+          <thead>
+            <TrHead>
+              <Th className="text-left">{t('date')}</Th>
+              <Th className="text-right">{t('trade:size')}</Th>
+              <Th className="text-right">{t('price')}</Th>
+            </TrHead>
+          </thead>
+          <tbody>
+            {fills.map((fill, index: number) => {
+              const { price, time, size } = fill
+              return (
+                <TrBody key={`${size}${price}${index}`} className="my-1 p-2">
+                  <Td className="whitespace-nowrap">
+                    <TableDateDisplay date={time} showSeconds />
+                  </Td>
+                  <Td className="text-right">
+                    <p>{size}</p>
+                  </Td>
+                  <Td className="text-right">
+                    <p>{price}</p>
+                  </Td>
+                </TrBody>
+              )
+            })}
+          </tbody>
+        </Table>
+      </div>
+    </Modal>
+  )
+}

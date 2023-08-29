@@ -22,6 +22,8 @@ import {
 import { MANGO_DATA_API_URL, PAGINATION_PAGE_LENGTH } from 'utils/constants'
 import useMangoAccount from './useMangoAccount'
 import useSelectedMarket from './useSelectedMarket'
+import Decimal from 'decimal.js'
+import { getDecimalCount } from 'utils/numbers'
 
 const parsePerpEvent = (mangoAccountAddress: string, event: PerpFillEvent) => {
   const maker = event.maker.toString() === mangoAccountAddress
@@ -100,16 +102,16 @@ export const formatTradeHistory = (
   mangoAccountAddress: string,
   tradeHistory: Array<CombinedTradeHistoryTypes>,
 ) => {
-  return tradeHistory.flat().map((event) => {
+  const flattenedHistory = tradeHistory.flat().map((event) => {
     let trade
     let market = selectedMarket
     let time: string | number = ''
+
     if (isSerumFillEvent(event)) {
       trade = parseSerumEvent(event)
     } else if (isPerpFillEvent(event)) {
       trade = parsePerpEvent(mangoAccountAddress, event)
       market = selectedMarket
-
       time = trade.timestamp.toNumber() * 1000
     } else {
       trade = parseApiTradeHistory(mangoAccountAddress, event)
@@ -129,6 +131,65 @@ export const formatTradeHistory = (
       time,
     }
   })
+
+  const clientOrderIdMap = new Map()
+
+  for (const trade of flattenedHistory) {
+    if ('client_order_id' in trade) {
+      const { client_order_id, size, price, feeCost } = trade
+
+      if (!clientOrderIdMap.has(client_order_id)) {
+        clientOrderIdMap.set(client_order_id, {
+          fee: feeCost,
+          size: size,
+          totalPrice: size * price,
+          totalCount: 1,
+          trades: [trade],
+        })
+      } else {
+        const orderInfo = clientOrderIdMap.get(client_order_id)
+        const orderFee = new Decimal(orderInfo.fee)
+        const orderSize = new Decimal(orderInfo.size)
+        const feeToAdd = new Decimal(feeCost)
+        const sizeToAdd = new Decimal(size)
+        orderInfo.fee = orderFee.plus(feeToAdd).toNumber()
+        orderInfo.size = orderSize.plus(sizeToAdd).toNumber()
+        orderInfo.totalPrice += size * price
+        orderInfo.totalCount++
+        orderInfo.trades.push(trade)
+      }
+    }
+  }
+
+  const updatedFlattenedHistory = []
+
+  for (const trade of flattenedHistory) {
+    if ('client_order_id' in trade) {
+      const orderInfo = clientOrderIdMap.get(trade.client_order_id)
+
+      if (orderInfo.trades[0] === trade) {
+        const averagePrice = orderInfo.totalPrice / orderInfo.size
+        const market = trade.market as Serum3Market
+        const externalMarket = group.getSerum3ExternalMarket(
+          market.serumMarketExternal,
+        )
+        const updatedTrade = {
+          ...trade,
+          price: +averagePrice.toFixed(
+            getDecimalCount(externalMarket.tickSize),
+          ),
+          size: orderInfo.size,
+          feeCost: orderInfo.fee,
+          fills: orderInfo.trades,
+        }
+        updatedFlattenedHistory.push(updatedTrade)
+      }
+    } else {
+      updatedFlattenedHistory.push(trade)
+    }
+  }
+
+  return updatedFlattenedHistory
 }
 
 const filterNewFills = (
@@ -251,12 +312,14 @@ export default function useTradeHistory() {
         : []
 
     const combinedHistory = [...newFills, ...apiTradeHistory]
-    return formatTradeHistory(
+    const formattedHistory = formatTradeHistory(
       group,
       selectedMarket,
       mangoAccountAddress,
       combinedHistory,
     )
+
+    return formattedHistory
   }, [eventQueueFillsForOwner, mangoAccountAddress, response, selectedMarket])
 
   return { ...response, data: combinedTradeHistory }

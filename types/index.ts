@@ -42,6 +42,7 @@ export interface SpotTradeHistory {
   open_orders_owner: string
   base_symbol: string
   quote_symbol: string
+  fills?: Array<CombinedTradeHistoryTypes>
 }
 
 export interface PerpTradeHistory {
@@ -61,6 +62,7 @@ export interface PerpTradeHistory {
   price: number
   quantity: number
   seq_num: number
+  fills?: Array<CombinedTradeHistoryTypes>
 }
 
 export const isApiSpotTradeHistory = (
@@ -101,6 +103,7 @@ export type SerumEvent = Modify<
     size: number
     side: string
     feeCost: number
+    fills?: Array<CombinedTradeHistoryTypes>
   }
 >
 
