@@ -486,3 +486,13 @@ export interface ContributionDetails {
   perpMarketContributions: PerpMarketContribution[]
   spotUi: number
 }
+
+export interface FilledOrdersApiResponseType {
+  fills: FilledOrder[]
+}
+
+export interface FilledOrder {
+  order_id: string
+  order_type: 'spot' | 'perp'
+  quantity: number
+}
