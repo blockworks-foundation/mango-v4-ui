@@ -13,6 +13,7 @@ import { IconButton } from '@components/shared/Button'
 import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import Loading from '@components/shared/Loading'
+import SheenLoader from '@components/shared/SheenLoader'
 import SideBadge from '@components/shared/SideBadge'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import Tooltip from '@components/shared/Tooltip'
@@ -30,6 +31,7 @@ import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import useUnownedAccount from 'hooks/useUnownedAccount'
+import useFilledOrders from 'hooks/useFilledOrders'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import Link from 'next/link'
@@ -77,6 +79,7 @@ const OpenOrders = () => {
   const { connected } = useWallet()
   const { isUnownedAccount } = useUnownedAccount()
   const { selectedMarket } = useSelectedMarket()
+  const { filledOrders, fetchingFilledOrders } = useFilledOrders()
 
   const handleCancelSerumOrder = useCallback(
     async (o: Order) => {
@@ -249,12 +252,13 @@ const OpenOrders = () => {
       <Table>
         <thead>
           <TrHead>
-            <Th className="w-[16.67%] text-left">{t('market')}</Th>
-            <Th className="w-[16.67%] text-right">{t('trade:size')}</Th>
-            <Th className="w-[16.67%] text-right">{t('price')}</Th>
-            <Th className="w-[16.67%] text-right">{t('value')}</Th>
+            <Th className="w-[14.28%] text-left">{t('market')}</Th>
+            <Th className="w-[14.28%] text-right">{t('trade:size')}</Th>
+            <Th className="w-[14.28%] text-right">{t('trade:filled-size')}</Th>
+            <Th className="w-[14.28%] text-right">{t('price')}</Th>
+            <Th className="w-[14.28%] text-right">{t('value')}</Th>
             {!isUnownedAccount ? (
-              <Th className="w-[16.67%] text-right" />
+              <Th className="w-[14.28%] text-right" />
             ) : null}
           </TrHead>
         </thead>
@@ -269,6 +273,7 @@ const OpenOrders = () => {
                 let minOrderSize: number
                 let expiryTimestamp: number | undefined
                 let value: number
+                let filledQuantity = 0
                 if (o instanceof PerpOrder) {
                   market = group.getPerpMarketByMarketIndex(o.perpMarketIndex)
                   tickSize = market.tickSize
@@ -278,6 +283,20 @@ const OpenOrders = () => {
                       ? 0
                       : o.expiryTimestamp.toNumber()
                   value = o.size * o.price
+
+                  // Find the filled perp order,
+                  // the api returns client order ids for perps, but PerpOrder[] only has orderId
+                  const mangoAccount =
+                    mangoStore.getState().mangoAccount.current
+                  const perpClientId = mangoAccount?.perpOpenOrders?.find((p) =>
+                    p.id.eq(o.orderId),
+                  )?.clientId
+                  if (perpClientId) {
+                    const filledOrder = filledOrders?.fills?.find(
+                      (f) => f.order_id == perpClientId.toString(),
+                    )
+                    filledQuantity = filledOrder ? filledOrder.quantity : 0
+                  }
                 } else {
                   market = group.getSerum3MarketByExternalMarket(
                     new PublicKey(marketPk),
@@ -291,6 +310,10 @@ const OpenOrders = () => {
                   tickSize = serumMarket.tickSize
                   minOrderSize = serumMarket.minOrderSize
                   value = o.size * o.price * quoteBank.uiPrice
+                  const filledOrder = filledOrders?.fills?.find(
+                    (f) => o.orderId.toString() === f.order_id,
+                  )
+                  filledQuantity = filledOrder ? filledOrder.quantity : 0
                 }
                 const side =
                   o instanceof PerpOrder
@@ -303,18 +326,32 @@ const OpenOrders = () => {
                     key={`${o.side}${o.size}${o.price}${o.orderId.toString()}`}
                     className="my-1 p-2"
                   >
-                    <Td className="w-[16.67%]">
+                    <Td className="w-[14.28%]">
                       <TableMarketName market={market} side={side} />
                     </Td>
                     {modifyOrderId !== o.orderId.toString() ? (
                       <>
-                        <Td className="w-[16.67%] text-right font-mono">
+                        <Td className="w-[14.28%] text-right font-mono">
                           <FormatNumericValue
                             value={o.size}
                             decimals={getDecimalCount(minOrderSize)}
                           />
                         </Td>
-                        <Td className="w-[16.67%] whitespace-nowrap text-right font-mono">
+                        <Td className="w-[14.28%] text-right font-mono">
+                          {fetchingFilledOrders ? (
+                            <div className="items flex justify-end">
+                              <SheenLoader className="flex justify-end">
+                                <div className="h-7 w-16 bg-th-bkg-2" />
+                              </SheenLoader>
+                            </div>
+                          ) : (
+                            <FormatNumericValue
+                              value={filledQuantity}
+                              decimals={getDecimalCount(minOrderSize)}
+                            />
+                          )}
+                        </Td>
+                        <Td className="w-[14.28%] whitespace-nowrap text-right font-mono">
                           <FormatNumericValue
                             value={o.price}
                             decimals={getDecimalCount(tickSize)}
@@ -323,7 +360,7 @@ const OpenOrders = () => {
                       </>
                     ) : (
                       <>
-                        <Td className="w-[16.67%]">
+                        <Td className="w-[14.28%]">
                           <input
                             className="h-8 w-full rounded-l-none rounded-r-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono text-sm hover:border-th-fgd-3 focus:border-th-fgd-3 focus:outline-none"
                             type="text"
@@ -333,7 +370,21 @@ const OpenOrders = () => {
                             }
                           />
                         </Td>
-                        <Td className="w-[16.67%]">
+                        <Td className="w-[14.28%] text-right font-mono">
+                          {fetchingFilledOrders ? (
+                            <div className="items flex justify-end">
+                              <SheenLoader className="flex justify-end">
+                                <div className="h-7 w-16 bg-th-bkg-2" />
+                              </SheenLoader>
+                            </div>
+                          ) : (
+                            <FormatNumericValue
+                              value={filledQuantity}
+                              decimals={getDecimalCount(minOrderSize)}
+                            />
+                          )}
+                        </Td>
+                        <Td className="w-[14.28%]">
                           <input
                             autoFocus
                             className="h-8 w-full rounded-l-none rounded-r-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono text-sm hover:border-th-fgd-3 focus:border-th-fgd-3 focus:outline-none"
@@ -346,7 +397,7 @@ const OpenOrders = () => {
                         </Td>
                       </>
                     )}
-                    <Td className="w-[16.67%] text-right font-mono">
+                    <Td className="w-[14.28%] text-right font-mono">
                       <FormatNumericValue value={value} isUsd />
                       {expiryTimestamp ? (
                         <div className="h-min text-xxs leading-tight text-th-fgd-4">{`Expires ${new Date(
@@ -355,7 +406,7 @@ const OpenOrders = () => {
                       ) : null}
                     </Td>
                     {!isUnownedAccount ? (
-                      <Td className="w-[16.67%]">
+                      <Td className="w-[14.28%]">
                         <div className="flex justify-end space-x-2">
                           {modifyOrderId !== o.orderId.toString() ? (
                             <>
