@@ -215,14 +215,20 @@ const TradeHistory = () => {
                         </Td>
                         <Td className="whitespace-nowrap text-right">
                           {fills.length ? (
-                            <div className="flex items-center justify-end">
-                              <LinkButton
-                                className="mr-1"
-                                onClick={() => setShowFills(trade.fills)}
-                              >
-                                {trade.fills.length}
-                              </LinkButton>
-                              <ArrowsPointingOutIcon className="h-3 w-3" />
+                            <div className="flex justify-end">
+                              {fills.length > 1 ? (
+                                <LinkButton
+                                  className="flex items-center"
+                                  onClick={() => setShowFills(trade.fills)}
+                                >
+                                  <span className="mr-1 font-mono font-normal">
+                                    {trade.fills.length}
+                                  </span>
+                                  <ArrowsPointingOutIcon className="h-3 w-3" />
+                                </LinkButton>
+                              ) : (
+                                <p>1</p>
+                              )}
                             </div>
                           ) : (
                             '–'
