@@ -111,7 +111,6 @@ export const formatTradeHistory = (
       trade = parseSerumEvent(event)
     } else if (isPerpFillEvent(event)) {
       trade = parsePerpEvent(mangoAccountAddress, event)
-      market = selectedMarket
       time = trade.timestamp.toNumber() * 1000
     } else {
       trade = parseApiTradeHistory(mangoAccountAddress, event)

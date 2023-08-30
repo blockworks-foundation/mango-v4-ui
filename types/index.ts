@@ -9,7 +9,6 @@ import {
 import { Modify } from '@blockworks-foundation/mango-v4'
 import { Event } from '@project-serum/serum/lib/queue'
 import { PublicKey } from '@solana/web3.js'
-import { formatTradeHistory } from 'hooks/useTradeHistory'
 
 export type EmptyObject = { [K in keyof never]?: never }
 export interface OrderbookL2 {
@@ -22,7 +21,7 @@ export type SpotBalances = Record<
   { inOrders: number; unsettled: number }
 >
 
-export interface SpotTradeHistory {
+export type SpotTradeHistory = {
   signature: string
   block_datetime: string
   market: string
@@ -45,7 +44,7 @@ export interface SpotTradeHistory {
   fills?: Array<CombinedTradeHistoryTypes>
 }
 
-export interface PerpTradeHistory {
+export type PerpTradeHistory = {
   signature: string
   slot: number
   block_datetime: string
@@ -65,6 +64,50 @@ export interface PerpTradeHistory {
   fills?: Array<CombinedTradeHistoryTypes>
 }
 
+type FormattedSpotTradeHistory = SpotTradeHistory & {
+  feeCost: number
+  liquidity: 'Maker' | 'Taker'
+  market: Serum3Market
+  time: string | number
+  fills: FormattedTrade[] | undefined
+}
+
+type FormattedPerpTradeHistory = PerpTradeHistory & {
+  feeCost: number
+  liquidity: 'Maker' | 'Taker'
+  side: 'buy' | 'sell'
+  size: number
+  market: PerpMarket
+  time: string | number
+  fills: undefined
+}
+
+type FormattedSerum3Event = SerumEvent & {
+  feeCost: number
+  liquidity: 'Maker' | 'Taker'
+  side: 'buy' | 'sell'
+  size: number
+  market: Serum3Market
+  time: undefined
+  fills: undefined
+}
+
+type FormattedPerpFillEvent = PerpFillEvent & {
+  feeCost: number
+  liquidity: 'Maker' | 'Taker'
+  side: 'buy' | 'sell'
+  size: number
+  market: PerpMarket
+  time: undefined
+  fills: undefined
+}
+
+export type FormattedTrade =
+  | FormattedSpotTradeHistory
+  | FormattedPerpTradeHistory
+  | FormattedSerum3Event
+  | FormattedPerpFillEvent
+
 export const isApiSpotTradeHistory = (
   t: SpotTradeHistory | PerpTradeHistory,
 ): t is SpotTradeHistory => {
@@ -73,8 +116,6 @@ export const isApiSpotTradeHistory = (
 }
 
 export type PerpFillEvent = ParsedFillEvent
-
-export type CombinedTradeHistory = ReturnType<typeof formatTradeHistory>
 
 export type CombinedTradeHistoryTypes =
   | SpotTradeHistory

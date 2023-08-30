@@ -38,7 +38,7 @@ import { useSortableData } from 'hooks/useSortableData'
 import { useCallback, useState } from 'react'
 import { ModalProps } from 'types/modal'
 import Modal from '@components/shared/Modal'
-import { CombinedTradeHistory } from 'types'
+import { FormattedTrade } from 'types'
 
 const TradeHistory = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -53,17 +53,26 @@ const TradeHistory = () => {
   const { width } = useViewport()
   const { connected } = useWallet()
   const showTableView = width ? width > breakpoints.md : false
-  const [showFills, setShowFills] = useState(null)
+  const [showFills, setShowFills] = useState<FormattedTrade[] | undefined>(
+    undefined,
+  )
 
   const formattedTableData = useCallback(() => {
     const formatted = []
-    for (const trade of combinedTradeHistory) {
+    const history = combinedTradeHistory as FormattedTrade[]
+    for (const trade of history) {
       const marketName = trade.market.name
       const value = trade.price * trade.size
       const sortTime = trade?.time
         ? trade.time
         : dayjs().format('YYYY-MM-DDTHH:mm:ss')
-      const data = { ...trade, marketName, value, sortTime }
+      const data = {
+        ...trade,
+        marketName,
+        value,
+        sortTime,
+        fills: trade?.fills ? trade.fills : [],
+      }
       formatted.push(data)
     }
     return formatted
@@ -159,6 +168,7 @@ const TradeHistory = () => {
                       feeCost,
                       liquidity,
                       value,
+                      fills,
                     } = trade
                     return (
                       <TrBody
@@ -204,7 +214,7 @@ const TradeHistory = () => {
                           )}
                         </Td>
                         <Td className="whitespace-nowrap text-right">
-                          {trade.fills?.length ? (
+                          {fills.length ? (
                             <div className="flex items-center justify-end">
                               <LinkButton
                                 className="mr-1"
@@ -350,7 +360,7 @@ const TradeHistory = () => {
       {showFills ? (
         <SpotFillsModal
           isOpen={!!showFills}
-          onClose={() => setShowFills(null)}
+          onClose={() => setShowFills(undefined)}
           fills={showFills}
         />
       ) : null}
@@ -361,7 +371,7 @@ const TradeHistory = () => {
 export default TradeHistory
 
 type SpotFillsModalProps = {
-  fills: CombinedTradeHistory
+  fills: FormattedTrade[]
 }
 
 type ModalCombinedProps = SpotFillsModalProps & ModalProps
@@ -388,11 +398,15 @@ const SpotFillsModal = ({ isOpen, onClose, fills }: ModalCombinedProps) => {
           </thead>
           <tbody>
             {fills.map((fill, index: number) => {
-              const { price, time, size } = fill
+              const { price, size } = fill
               return (
                 <TrBody key={`${size}${price}${index}`} className="my-1 p-2">
                   <Td className="whitespace-nowrap">
-                    <TableDateDisplay date={time} showSeconds />
+                    {fill.time ? (
+                      <TableDateDisplay date={fill.time} showSeconds />
+                    ) : (
+                      <span>Recent</span>
+                    )}
                   </Td>
                   <Td className="text-right">
                     <p>{size}</p>

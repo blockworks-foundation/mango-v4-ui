@@ -36,7 +36,7 @@ import { formatNumericValue, getDecimalCount } from 'utils/numbers'
 import { BN } from '@coral-xyz/anchor'
 import Datafeed from 'apis/datafeed'
 // import PerpDatafeed from 'apis/mngo/datafeed'
-import { CombinedTradeHistory, isMangoError } from 'types'
+import { FormattedTrade, isMangoError } from 'types'
 import { formatPrice } from 'apis/birdeye/helpers'
 import useTradeHistory from 'hooks/useTradeHistory'
 import dayjs from 'dayjs'
@@ -732,10 +732,10 @@ const TradingViewChart = () => {
   }, [chartReady, deleteLines, drawLinesForMarket, showOrderLines])
 
   const drawTradeExecutions = useCallback(
-    (trades: CombinedTradeHistory) => {
+    (trades: FormattedTrade[]) => {
       const newTradeExecutions = new Map()
       const filteredTrades = trades
-        .filter((trade) => {
+        .filter((trade: FormattedTrade) => {
           return trade.market.name === selectedMarketName
         })
         .slice()
@@ -813,7 +813,9 @@ const TradingViewChart = () => {
     ) {
       const set = mangoStore.getState().set
       set((s) => {
-        s.tradingView.tradeExecutions = drawTradeExecutions(cachedTradeHistory)
+        s.tradingView.tradeExecutions = drawTradeExecutions(
+          cachedTradeHistory as FormattedTrade[],
+        )
       })
     }
   }, [cachedTradeHistory, selectedMarketName, showTradeExecutions])
