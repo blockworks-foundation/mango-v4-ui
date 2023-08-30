@@ -14,7 +14,11 @@ import {
   TrHead,
 } from '@components/shared/TableElements'
 import Tooltip from '@components/shared/Tooltip'
-import { NoSymbolIcon, UsersIcon } from '@heroicons/react/20/solid'
+import {
+  ArrowsPointingOutIcon,
+  NoSymbolIcon,
+  UsersIcon,
+} from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
@@ -201,12 +205,14 @@ const TradeHistory = () => {
                         </Td>
                         <Td className="whitespace-nowrap text-right">
                           {trade.fills?.length ? (
-                            <div className="flex justify-end">
+                            <div className="flex items-center justify-end">
                               <LinkButton
+                                className="mr-1"
                                 onClick={() => setShowFills(trade.fills)}
                               >
                                 {trade.fills.length}
                               </LinkButton>
+                              <ArrowsPointingOutIcon className="h-3 w-3" />
                             </div>
                           ) : (
                             '–'
