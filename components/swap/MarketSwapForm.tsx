@@ -34,6 +34,12 @@ import DepositWithdrawModal from '@components/modals/DepositWithdrawModal'
 import useMangoAccountAccounts from 'hooks/useMangoAccountAccounts'
 import Link from 'next/link'
 import SecondaryConnectButton from '@components/shared/SecondaryConnectButton'
+import useRemainingBorrowsInPeriod from 'hooks/useRemainingBorrowsInPeriod'
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+import { formatCurrencyValue } from 'utils/numbers'
+
+dayjs.extend(relativeTime)
 
 type MarketSwapFormProps = {
   setShowTokenSelect: Dispatch<SetStateAction<'input' | 'output' | undefined>>
@@ -333,6 +339,8 @@ const SwapFormSubmitButton = ({
   const [showDepositModal, setShowDepositModal] = useState(false)
   const { usedTokens, totalTokens } = useMangoAccountAccounts()
   const { inputBank, outputBank } = mangoStore((s) => s.swap)
+  const { remainingBorrowsInPeriod, timeToNextPeriod } =
+    useRemainingBorrowsInPeriod(true)
 
   const tokenPositionsFull = useMemo(() => {
     if (!inputBank || !outputBank || !usedTokens.length || !totalTokens.length)
@@ -363,11 +371,29 @@ const SwapFormSubmitButton = ({
     ? amountWithBorrow.lt(amountIn) || amountWithBorrow.eq(0)
     : tokenMax.lt(amountIn) || tokenMax.eq(0)
 
+  // check if the borrowed amount exceeds the net borrow limit in the current period
+  const borrowExceedsLimitInPeriod = useMemo(() => {
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+    if (!mangoAccount || !inputBank) return false
+
+    const balance = mangoAccount.getTokenDepositsUi(inputBank)
+    const remainingBalance = balance - amountIn.toNumber()
+    const borrowAmount = remainingBalance < 0 ? Math.abs(remainingBalance) : 0
+
+    return remainingBorrowsInPeriod
+      ? borrowAmount > remainingBorrowsInPeriod
+      : false
+  }, [amountIn, inputBank, mangoAccountAddress, remainingBorrowsInPeriod])
+
   const disabled =
     connected &&
     !showInsufficientBalance &&
     freeCollateral > 0 &&
-    (!amountIn.toNumber() || !amountOut || !selectedRoute || tokenPositionsFull)
+    (!amountIn.toNumber() ||
+      !amountOut ||
+      !selectedRoute ||
+      tokenPositionsFull ||
+      borrowExceedsLimitInPeriod)
 
   const onClick =
     showInsufficientBalance || freeCollateral <= 0
@@ -412,6 +438,19 @@ const SwapFormSubmitButton = ({
                 </Link>
               </>
             }
+          />
+        </div>
+      ) : null}
+      {borrowExceedsLimitInPeriod &&
+      remainingBorrowsInPeriod &&
+      timeToNextPeriod ? (
+        <div className="mb-4">
+          <InlineNotification
+            type="error"
+            desc={t('error-borrow-exceeds-limit', {
+              remaining: formatCurrencyValue(remainingBorrowsInPeriod),
+              resetTime: dayjs().to(dayjs().add(timeToNextPeriod, 'second')),
+            })}
           />
         </div>
       ) : null}
