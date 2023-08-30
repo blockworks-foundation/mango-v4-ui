@@ -339,7 +339,7 @@ const OpenOrders = () => {
                         </Td>
                         <Td className="w-[14.28%] text-right font-mono">
                           {fetchingFilledOrders ? (
-                            <div className="flex items justify-end">
+                            <div className="items flex justify-end">
                               <SheenLoader className="flex justify-end">
                                 <div className="h-7 w-16 bg-th-bkg-2" />
                               </SheenLoader>
@@ -372,7 +372,7 @@ const OpenOrders = () => {
                         </Td>
                         <Td className="w-[14.28%] text-right font-mono">
                           {fetchingFilledOrders ? (
-                            <div className="flex items justify-end">
+                            <div className="items flex justify-end">
                               <SheenLoader className="flex justify-end">
                                 <div className="h-7 w-16 bg-th-bkg-2" />
                               </SheenLoader>
