@@ -788,8 +788,11 @@ const VaultData = ({ bank }: { bank: Bank }) => {
   const client = mangoStore((s) => s.client)
 
   const getVaultData = useCallback(async () => {
-    const account = await Token.getAccount(client.program.provider.connection, bank.vault);
-  
+    const account = await Token.getAccount(
+      client.program.provider.connection,
+      bank.vault,
+    )
+
     setVault({ amount: new BN(account.amount.toString()) })
   }, [bank.vault])
 

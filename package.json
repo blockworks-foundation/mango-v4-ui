@@ -108,8 +108,7 @@
     "typescript": "4.9.4"
   },
   "resolutions": {
-    "@coral-xyz/anchor": "0.28.0",
-    "@blockworks-foundation/mango-v4/**/@coral-xyz/anchor": "0.28.1-beta.2",
+    "@blockworks-foundation/mango-v4/@coral-xyz/anchor": "0.28.1-beta.2",
     "@switchboard-xyz/solana.js/**/@coral-xyz/anchor": "0.28.0",
     "eslint-config-next/eslint-import-resolver-typescript/tsconfig-paths/json5": "1.0.2"
   },
