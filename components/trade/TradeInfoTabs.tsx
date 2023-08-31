@@ -51,7 +51,7 @@ const TradeInfoTabs = () => {
   return (
     <div className="hide-scroll h-full overflow-y-scroll">
       <div className="hide-scroll flex items-center overflow-x-auto border-b border-th-bkg-3">
-        <div className="md:border-r md:border-th-bkg-3 lg:w-full">
+        <div className="w-full md:w-auto md:border-r md:border-th-bkg-3 lg:w-full">
           <TabButtons
             activeValue={selectedTab}
             onChange={(tab: string) => setSelectedTab(tab)}
