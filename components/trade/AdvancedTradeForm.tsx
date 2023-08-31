@@ -45,7 +45,11 @@ import SpotButtonGroup from './SpotButtonGroup'
 import PerpButtonGroup from './PerpButtonGroup'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useSelectedMarket from 'hooks/useSelectedMarket'
-import { floorToDecimal, getDecimalCount } from 'utils/numbers'
+import {
+  floorToDecimal,
+  formatCurrencyValue,
+  getDecimalCount,
+} from 'utils/numbers'
 import LogoWithFallback from '@components/shared/LogoWithFallback'
 import useIpAddress from 'hooks/useIpAddress'
 import ButtonGroup from '@components/forms/ButtonGroup'
@@ -59,6 +63,11 @@ import { isMangoError } from 'types'
 import InlineNotification from '@components/shared/InlineNotification'
 import SpotMarketOrderSwapForm from './SpotMarketOrderSwapForm'
 import SecondaryConnectButton from '@components/shared/SecondaryConnectButton'
+import useRemainingBorrowsInPeriod from 'hooks/useRemainingBorrowsInPeriod'
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+
+dayjs.extend(relativeTime)
 
 const set = mangoStore.getState().set
 
@@ -103,6 +112,8 @@ const AdvancedTradeForm = () => {
     quoteSymbol,
     serumOrPerpMarket,
   } = useSelectedMarket()
+  const { remainingBorrowsInPeriod, timeToNextPeriod } =
+    useRemainingBorrowsInPeriod()
 
   const setTradeType = useCallback((tradeType: 'Limit' | 'Market') => {
     set((s) => {
@@ -480,11 +491,42 @@ const AdvancedTradeForm = () => {
     handlePlaceOrder()
   }
 
+  const balanceBank = useMemo(() => {
+    const { group } = mangoStore.getState()
+    if (
+      !group ||
+      !selectedMarket ||
+      selectedMarket instanceof PerpMarket ||
+      !savedCheckboxSettings.margin
+    )
+      return
+    if (tradeForm.side === 'buy') {
+      return group.getFirstBankByTokenIndex(selectedMarket.quoteTokenIndex)
+    } else {
+      return group.getFirstBankByTokenIndex(selectedMarket.baseTokenIndex)
+    }
+  }, [savedCheckboxSettings, selectedMarket, tradeForm.side])
+
+  // check if the borrowed amount exceeds the net borrow limit in the current period
+  const borrowExceedsLimitInPeriod = useMemo(() => {
+    if (!mangoAccount || !balanceBank) return false
+    const size =
+      tradeForm.side === 'buy' ? tradeForm.baseSize : tradeForm.quoteSize
+    const balance = mangoAccount.getTokenDepositsUi(balanceBank)
+    const remainingBalance = balance - parseFloat(size)
+    const borrowAmount = remainingBalance < 0 ? Math.abs(remainingBalance) : 0
+
+    return remainingBorrowsInPeriod
+      ? borrowAmount > remainingBorrowsInPeriod
+      : false
+  }, [balanceBank, mangoAccount, remainingBorrowsInPeriod, tradeForm])
+
   const disabled =
     (connected && (!tradeForm.baseSize || !tradeForm.price)) ||
     !serumOrPerpMarket ||
     parseFloat(tradeForm.baseSize) < serumOrPerpMarket.minOrderSize ||
-    !isMarketEnabled
+    !isMarketEnabled ||
+    borrowExceedsLimitInPeriod
 
   return (
     <div>
@@ -795,10 +837,22 @@ const AdvancedTradeForm = () => {
               )}
             </div>
           </form>
-          <TradeSummary
-            mangoAccount={mangoAccount}
-            useMargin={savedCheckboxSettings.margin}
-          />
+          {borrowExceedsLimitInPeriod &&
+          remainingBorrowsInPeriod &&
+          timeToNextPeriod ? (
+            <div className="mb-4 px-4">
+              <InlineNotification
+                type="error"
+                desc={t('error-borrow-exceeds-limit', {
+                  remaining: formatCurrencyValue(remainingBorrowsInPeriod),
+                  resetTime: dayjs().to(
+                    dayjs().add(timeToNextPeriod, 'second'),
+                  ),
+                })}
+              />
+            </div>
+          ) : null}
+          <TradeSummary balanceBank={balanceBank} mangoAccount={mangoAccount} />
         </>
       )}
     </div>

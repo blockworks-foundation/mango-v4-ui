@@ -24,7 +24,7 @@ const AccountTabs = () => {
   const unsettledPerpPositions = useUnsettledPerpPositions()
   const openPerpPositions = useOpenPerpPositions()
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
-  const isMobile = width ? width < breakpoints.lg : false
+  const isMobile = width ? width < breakpoints.md : false
   const { data: isWhiteListed } = useIsWhiteListed()
 
   const tabsWithCount: [string, number][] = useMemo(() => {
@@ -66,7 +66,7 @@ const AccountTabs = () => {
           fillWidth={isMobile}
         />
         <ManualRefresh
-          classNames="fixed bottom-16 right-4 lg:relative lg:bottom-0 md:bottom-6 md:right-6 z-10 shadow-lg lg:shadow-none bg-th-bkg-3 lg:bg-transparent"
+          classNames="fixed bottom-16 right-4 md:relative md:px-2 lg:px-0 lg:pr-6 md:bottom-0 md:right-0 z-10 shadow-lg md:shadow-none bg-th-bkg-3 md:bg-transparent"
           hideBg={isMobile}
           size={isMobile ? 'large' : 'small'}
         />

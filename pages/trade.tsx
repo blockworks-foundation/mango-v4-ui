@@ -88,7 +88,7 @@ const Trade: NextPage = () => {
   }, [marketName])
 
   return (
-    <div className="pb-16 md:pb-0">
+    <div className="pb-32 md:pb-0">
       <TradeAdvancedPage />
     </div>
   )

@@ -241,6 +241,7 @@ const BalancesTable = () => {
               {({ open }) => (
                 <>
                   <Disclosure.Button
+                    as="div"
                     className={`w-full border-t border-th-bkg-3 p-4 text-left focus:outline-none ${
                       i === 0 ? 'border-t-0' : ''
                     }`}

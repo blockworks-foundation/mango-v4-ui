@@ -1,4 +1,5 @@
 import {
+  Bank,
   HealthType,
   MangoAccount,
   PerpMarket,
@@ -24,11 +25,11 @@ import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
 import { calculateEstPriceForBaseSize } from 'utils/tradeForm'
 
 const TradeSummary = ({
+  balanceBank,
   mangoAccount,
-  useMargin,
 }: {
+  balanceBank: Bank | undefined
   mangoAccount: MangoAccount | undefined
-  useMargin: boolean
 }) => {
   const { t } = useTranslation(['common', 'trade'])
   const { group } = useMangoGroup()
@@ -139,21 +140,6 @@ const TradeSummary = ({
       ? 0
       : Math.trunc(simulatedHealthRatio)
   }, [group, mangoAccount, selectedMarket, tradeForm])
-
-  const balanceBank = useMemo(() => {
-    if (
-      !group ||
-      !selectedMarket ||
-      selectedMarket instanceof PerpMarket ||
-      !useMargin
-    )
-      return
-    if (tradeForm.side === 'buy') {
-      return group.getFirstBankByTokenIndex(selectedMarket.quoteTokenIndex)
-    } else {
-      return group.getFirstBankByTokenIndex(selectedMarket.baseTokenIndex)
-    }
-  }, [group, selectedMarket, tradeForm.side])
 
   const [balance, borrowAmount] = useMemo(() => {
     if (!balanceBank || !mangoAccount) return [0, 0]
