@@ -34,7 +34,7 @@ import LeaderboardIcon from './icons/LeaderboardIcon'
 import { sideBarAnimationDuration } from './Layout'
 import { CUSTOM_SKINS, breakpoints } from 'utils/theme'
 import { NFT } from 'types'
-import { useViewport } from 'hooks/useViewport'
+import { useViewport } from '@components/ViewportProvider'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { SIDEBAR_COLLAPSE_KEY } from 'utils/constants'
 

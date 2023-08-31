@@ -1,7 +1,7 @@
 import { Disclosure, Transition } from '@headlessui/react'
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
-import { useViewport } from '../../../hooks/useViewport'
+import { useViewport } from '@components/ViewportProvider'
 import { breakpoints } from '../../../utils/theme'
 import { LinkButton } from '../../shared/Button'
 import ContentBox from '../../shared/ContentBox'

@@ -16,12 +16,10 @@ import { useTranslation } from 'next-i18next'
 import Decimal from 'decimal.js'
 import Tooltip from '@components/shared/Tooltip'
 import GroupSize from './GroupSize'
-// import { useViewport } from 'hooks/useViewport'
 import { BookSide, Serum3Market } from '@blockworks-foundation/mango-v4'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import { OrderbookFeed } from '@blockworks-foundation/mango-feeds'
-// import { breakpoints } from 'utils/theme'
 import {
   decodeBook,
   decodeBookL2,
@@ -32,7 +30,7 @@ import {
 } from 'utils/orderbook'
 import { OrderbookData, OrderbookL2 } from 'types'
 import isEqual from 'lodash/isEqual'
-import { useViewport } from 'hooks/useViewport'
+import { useViewport } from '@components/ViewportProvider'
 import { breakpoints } from 'utils/theme'
 
 const sizeCompacter = Intl.NumberFormat('en', {

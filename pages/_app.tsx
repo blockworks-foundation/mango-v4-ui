@@ -43,6 +43,7 @@ import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { getDecimalCount } from 'utils/numbers'
 import { AUTO_CONNECT_WALLET, THEME_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
+import { ViewportProvider } from '@components/ViewportProvider'
 
 // init react-query
 export const queryClient = new QueryClient()
@@ -133,11 +134,13 @@ function MyApp({ Component, pageProps }: AppProps) {
           >
             <MangoProvider />
             <ThemeProvider defaultTheme="Mango Classic" storageKey={THEME_KEY}>
-              <PageTitle />
-              <Layout>
-                <Component {...pageProps} />
-              </Layout>
-              <TransactionNotification />
+              <ViewportProvider>
+                <PageTitle />
+                <Layout>
+                  <Component {...pageProps} />
+                </Layout>
+                <TransactionNotification />
+              </ViewportProvider>
             </ThemeProvider>
           </WalletProvider>
         </ConnectionProvider>

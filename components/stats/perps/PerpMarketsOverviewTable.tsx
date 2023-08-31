@@ -1,6 +1,6 @@
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
-import { useViewport } from '../../../hooks/useViewport'
+import { useViewport } from '@components/ViewportProvider'
 import { COLORS } from '../../../styles/colors'
 import { breakpoints } from '../../../utils/theme'
 import ContentBox from '../../shared/ContentBox'

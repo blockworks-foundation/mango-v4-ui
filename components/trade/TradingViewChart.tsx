@@ -17,7 +17,7 @@ import {
   Direction,
 } from '@public/charting_library'
 import mangoStore from '@store/mangoStore'
-import { useViewport } from 'hooks/useViewport'
+import { useViewport } from '@components/ViewportProvider'
 import { SHOW_ORDER_LINES_KEY, TV_USER_ID_KEY } from 'utils/constants'
 import { breakpoints } from 'utils/theme'
 import { COLORS } from 'styles/colors'

@@ -6,7 +6,7 @@ import {
   NoSymbolIcon,
 } from '@heroicons/react/20/solid'
 import useMangoAccount from 'hooks/useMangoAccount'
-import { useViewport } from 'hooks/useViewport'
+import { useViewport } from '@components/ViewportProvider'
 import { useTranslation } from 'next-i18next'
 import { formatNumericValue } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'

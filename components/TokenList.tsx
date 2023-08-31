@@ -8,7 +8,7 @@ import {
 import { useTranslation } from 'next-i18next'
 import { useRouter } from 'next/router'
 import { Fragment, useCallback, useMemo, useState } from 'react'
-import { useViewport } from '../hooks/useViewport'
+import { useViewport } from '@components/ViewportProvider'
 import mangoStore from '@store/mangoStore'
 import { breakpoints } from '../utils/theme'
 import Switch from './forms/Switch'

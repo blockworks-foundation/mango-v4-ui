@@ -5,7 +5,7 @@ import {
   ChevronRightIcon,
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
-import { useViewport } from '../../../hooks/useViewport'
+import { useViewport } from '@components/ViewportProvider'
 import { breakpoints } from '../../../utils/theme'
 import ContentBox from '../../shared/ContentBox'
 import Tooltip from '@components/shared/Tooltip'

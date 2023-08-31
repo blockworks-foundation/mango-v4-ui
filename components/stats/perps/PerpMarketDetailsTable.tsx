@@ -15,7 +15,7 @@ import { goToPerpMarketDetails } from './PerpMarketsOverviewTable'
 import { useRouter } from 'next/router'
 import { LinkButton } from '@components/shared/Button'
 import SoonBadge from '@components/shared/SoonBadge'
-import { useViewport } from 'hooks/useViewport'
+import { useViewport } from '@components/ViewportProvider'
 import { breakpoints } from 'utils/theme'
 
 const PerpMarketDetailsTable = () => {

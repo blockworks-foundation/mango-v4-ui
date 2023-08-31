@@ -22,7 +22,6 @@ import dayjs from 'dayjs'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import useTradeHistory from 'hooks/useTradeHistory'
-import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import { PAGINATION_PAGE_LENGTH } from 'utils/constants'
 import { abbreviateAddress } from 'utils/formatting'
@@ -32,6 +31,7 @@ import PerpSideBadge from './PerpSideBadge'
 import TableMarketName from './TableMarketName'
 import { useSortableData } from 'hooks/useSortableData'
 import { useCallback } from 'react'
+import { useViewport } from '@components/ViewportProvider'
 
 const TradeHistory = () => {
   const { t } = useTranslation(['common', 'trade'])

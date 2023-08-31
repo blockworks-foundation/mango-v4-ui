@@ -1,6 +1,6 @@
 import { useTranslation } from 'next-i18next'
 import { useCallback } from 'react'
-import { useViewport } from '../../../hooks/useViewport'
+import { useViewport } from '@components/ViewportProvider'
 import { COLORS } from '../../../styles/colors'
 import { breakpoints } from '../../../utils/theme'
 import ContentBox from '../../shared/ContentBox'

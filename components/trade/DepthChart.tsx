@@ -1,7 +1,7 @@
 import Slider from '@components/forms/Slider'
 import useMarkPrice from 'hooks/useMarkPrice'
 import useSelectedMarket from 'hooks/useSelectedMarket'
-import { useViewport } from 'hooks/useViewport'
+import { useViewport } from '@components/ViewportProvider'
 import { useCallback, useMemo, useState } from 'react'
 import {
   XAxis,

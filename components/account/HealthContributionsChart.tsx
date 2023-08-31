@@ -10,7 +10,7 @@ import {
 import { COLORS } from 'styles/colors'
 import { useMemo } from 'react'
 import { formatCurrencyValue } from 'utils/numbers'
-import { useViewport } from 'hooks/useViewport'
+import { useViewport } from '@components/ViewportProvider'
 import { breakpoints } from 'utils/theme'
 import { HealthContribution } from 'types'
 import useThemeWrapper from 'hooks/useThemeWrapper'

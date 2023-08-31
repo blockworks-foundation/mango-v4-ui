@@ -1,4 +1,4 @@
-import { useViewport } from 'hooks/useViewport'
+import { useViewport } from '@components/ViewportProvider'
 import AnimationSettings from './AnimationSettings'
 import DisplaySettings from './DisplaySettings'
 import HotKeysSettings from './HotKeysSettings'

@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import mangoStore from '@store/mangoStore'
 import klinecharts, { init, dispose } from 'klinecharts'
-import { useViewport } from 'hooks/useViewport'
+import { useViewport } from '@components/ViewportProvider'
 import usePrevious from '@components/shared/usePrevious'
 import Modal from '@components/shared/Modal'
 import Switch from '@components/forms/Switch'

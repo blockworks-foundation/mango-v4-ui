@@ -1,7 +1,7 @@
 import MedalIcon from '@components/icons/MedalIcon'
 import ProfileImage from '@components/profile/ProfileImage'
 import { ArrowLeftIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
-import { useViewport } from 'hooks/useViewport'
+import { useViewport } from '@components/ViewportProvider'
 import { breakpoints } from 'utils/theme'
 import {
   Badge,
