@@ -1,6 +1,6 @@
 import { Bank, toUiDecimals, I80F48 } from '@blockworks-foundation/mango-v4'
 import ExplorerLink from '@components/shared/ExplorerLink'
-import { splTokenProgram } from '@coral-xyz/spl-token'
+import * as Token from '@solana/spl-token'
 import mangoStore from '@store/mangoStore'
 import useMangoGroup from 'hooks/useMangoGroup'
 import type { NextPage } from 'next'
@@ -788,14 +788,9 @@ const VaultData = ({ bank }: { bank: Bank }) => {
   const client = mangoStore((s) => s.client)
 
   const getVaultData = useCallback(async () => {
-    const res = await client.program.provider.connection.getAccountInfo(
-      bank.vault,
-    )
-    const v = res?.data
-      ? splTokenProgram().coder.accounts.decode('token', res.data)
-      : undefined
-
-    setVault(v)
+    const account = await Token.getAccount(client.program.provider.connection, bank.vault);
+  
+    setVault({ amount: new BN(account.amount.toString()) })
   }, [bank.vault])
 
   useEffect(() => {
