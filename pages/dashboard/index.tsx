@@ -22,6 +22,10 @@ import GovernancePageWrapper from '@components/governance/GovernancePageWrapper'
 import TokenLogo from '@components/shared/TokenLogo'
 import DashboardSuggestedValues from '@components/modals/DashboardSuggestedValuesModal'
 import { USDC_MINT } from 'utils/constants'
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+
+dayjs.extend(relativeTime)
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -306,7 +310,12 @@ const Dashboard: NextPage = () => {
                                     value={`${formattedBankValues.minVaultToDepositsRatio}%`}
                                   />
                                   <KeyValuePair
-                                    label="Net borrows in window / Net borrow limit per window quote"
+                                    label={`Net borrows in window (next window starts ${dayjs().to(
+                                      dayjs().add(
+                                        bank.getTimeToNextBorrowLimitWindowStartsTs(),
+                                        'second',
+                                      ),
+                                    )})`}
                                     value={`$${formattedBankValues.minVaultToDepositsRatio} / $${formattedBankValues.netBorrowLimitPerWindowQuote}`}
                                   />
                                   <KeyValuePair

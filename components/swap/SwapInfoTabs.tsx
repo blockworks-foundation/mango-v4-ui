@@ -14,7 +14,7 @@ const SwapInfoTabs = () => {
   const { mangoAccount } = useMangoAccount()
   const { width } = useViewport()
   const { data: isWhiteListed } = useIsWhiteListed()
-  const isMobile = width ? width < breakpoints.lg : false
+  const isMobile = width ? width < breakpoints.md : false
 
   const tabsWithCount: [string, number][] = useMemo(() => {
     const tabs: [string, number][] = [
@@ -33,14 +33,16 @@ const SwapInfoTabs = () => {
   return (
     <div className="hide-scroll h-full overflow-y-scroll">
       <div className="flex items-center border-b border-th-bkg-3">
-        <TabButtons
-          activeValue={selectedTab}
-          onChange={(tab: string) => setSelectedTab(tab)}
-          values={tabsWithCount}
-          showBorders
-        />
+        <div className="w-full md:border-r md:border-th-bkg-3">
+          <TabButtons
+            activeValue={selectedTab}
+            onChange={(tab: string) => setSelectedTab(tab)}
+            values={tabsWithCount}
+            showBorders
+          />
+        </div>
         <ManualRefresh
-          classNames="fixed bottom-16 right-4 lg:relative lg:bottom-0 md:bottom-6 md:right-6 z-10 shadow-lg lg:shadow-none bg-th-bkg-3 lg:bg-transparent"
+          classNames="fixed bottom-16 right-4 md:relative md:px-2 md:bottom-0 md:right-0 z-10 shadow-lg md:shadow-none bg-th-bkg-3 md:bg-transparent"
           hideBg={isMobile}
           size={isMobile ? 'large' : 'small'}
         />

@@ -49,9 +49,9 @@ export const FAVORITE_SWAPS_KEY = 'favoriteSwaps-0.1'
 
 export const THEME_KEY = 'theme-0.1'
 
-export const RPC_PROVIDER_KEY = 'rpcProviderKey-0.7'
+export const RPC_PROVIDER_KEY = 'rpcProviderKey-0.8'
 
-export const PRIORITY_FEE_KEY = 'priorityFeeKey-0.1'
+export const PRIORITY_FEE_KEY = 'priorityFeeKey-0.2'
 
 export const SHOW_ORDER_LINES_KEY = 'showOrderLines-0.1'
 
@@ -97,6 +97,8 @@ export const MANGO_DATA_OPENBOOK_URL = 'https://api.mngo.cloud/openbook/v1'
 export const DEFAULT_MARKET_NAME = 'SOL/USDC'
 
 export const MIN_SOL_BALANCE = 0.001
+
+export const MAX_PRIORITY_FEE_KEYS = 128
 
 export const ACCOUNT_ACTION_MODAL_HEIGHT = '462px'
 

@@ -72,7 +72,7 @@ function hexToRgb(hex: string) {
 }
 
 const TradingViewChart = () => {
-  const { t } = useTranslation(['tv-chart', 'trade'])
+  const { t } = useTranslation(['common', 'tv-chart', 'trade'])
   const { theme } = useThemeWrapper()
   const { width } = useViewport()
   const [chartReady, setChartReady] = useState(false)
@@ -741,17 +741,31 @@ const TradingViewChart = () => {
         .slice()
       for (let i = 0; i < filteredTrades.length; i++) {
         const trade = filteredTrades[i]
+        const { side, size, price, market, liquidity, time } = trade
+        let baseSymbol
+        let quoteSymbol
+        if (market instanceof Serum3Market) {
+          baseSymbol = market.name.split('/')[0]
+          quoteSymbol = market.name.split('/')[1]
+        } else {
+          baseSymbol = market.name.split('-')[0]
+        }
+        const orderType = liquidity === 'Taker' ? t('market') : t('trade:limit')
         try {
           const arrowID = tvWidgetRef
             .current!.chart()
             .createExecutionShape()
-            .setTime(dayjs(trade.time).unix())
-            .setDirection(trade.side as Direction)
+            .setTime(dayjs(time).unix())
+            .setDirection(side as Direction)
             .setArrowHeight(6)
             .setArrowColor(
-              trade.side === 'buy' ? COLORS.UP[theme] : COLORS.DOWN[theme],
+              side === 'buy' ? COLORS.UP[theme] : COLORS.DOWN[theme],
             )
-            .setTooltip(`${trade.size} at ${trade.price}`)
+            .setTooltip(
+              `${t(side)} ${orderType} ${size} ${baseSymbol} @ ${price}${
+                quoteSymbol ? ` ${quoteSymbol}` : ''
+              }`,
+            )
           if (arrowID) {
             try {
               newTradeExecutions.set(`${trade.time}${i}`, arrowID)
@@ -769,7 +783,7 @@ const TradingViewChart = () => {
       }
       return newTradeExecutions
     },
-    [selectedMarketName, theme],
+    [selectedMarketName, t, theme],
   )
 
   const removeTradeExecutions = useCallback(

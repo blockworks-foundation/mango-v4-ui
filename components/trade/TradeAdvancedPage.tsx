@@ -47,7 +47,7 @@ const ResponsiveGridLayout = WidthProvider(Responsive)
 const TradeAdvancedPage = () => {
   const { height, width } = useViewport()
   const { uiLocked } = mangoStore((s) => s.settings)
-  const showMobileView = width <= breakpoints.md
+  const showMobileView = width < breakpoints.md
   // const tourSettings = mangoStore((s) => s.settings.tours)
   // const { connected } = useWallet()
   // const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
@@ -59,7 +59,14 @@ const TradeAdvancedPage = () => {
 
   const minPageHeight = 1000
   const topnavbarHeight = 64
+  const statusBarHeight = 27
+  const marketHeaderHeight = 48
   const totalCols = 24
+
+  const innerHeight = useMemo(() => {
+    return Math.max(height - topnavbarHeight - statusBarHeight, minPageHeight)
+  }, [height])
+
   const gridBreakpoints = useMemo(() => {
     const sidebarWidth = isCollapsed ? 64 : 200
     return {
@@ -72,9 +79,6 @@ const TradeAdvancedPage = () => {
   }, [isCollapsed])
 
   const defaultLayouts: ReactGridLayout.Layouts = useMemo(() => {
-    const innerHeight = Math.max(height - topnavbarHeight, minPageHeight)
-    const marketHeaderHeight = 48
-
     const balancesXPos = {
       chartLeft: { xxxl: 0, xxl: 0, xl: 0, lg: 0 },
       chartMiddleOBRight: { xxxl: 4, xxl: 5, xl: 5, lg: 6 },
@@ -145,14 +149,14 @@ const TradeAdvancedPage = () => {
           x: formXPos[tradeLayout].xxxl,
           y: 1,
           w: 4,
-          h: getHeight(innerHeight, 0, 0),
+          h: getHeight(innerHeight, 0, marketHeaderHeight),
         },
         {
           i: 'balances',
           x: balancesXPos[tradeLayout].xxxl,
           y: 2,
           w: 20,
-          h: getHeight(innerHeight, 0, 640),
+          h: getHeight(innerHeight, 0, 640 + marketHeaderHeight),
         },
       ],
       xxl: [
@@ -176,14 +180,14 @@ const TradeAdvancedPage = () => {
           x: formXPos[tradeLayout].xxl,
           y: 1,
           w: 5,
-          h: getHeight(innerHeight, 0, 0),
+          h: getHeight(innerHeight, 0, marketHeaderHeight),
         },
         {
           i: 'balances',
           x: balancesXPos[tradeLayout].xxl,
           y: 2,
           w: 19,
-          h: getHeight(innerHeight, 0, 552),
+          h: getHeight(innerHeight, 0, 552 + marketHeaderHeight),
         },
       ],
       xl: [
@@ -262,7 +266,7 @@ const TradeAdvancedPage = () => {
         },
       ],
     }
-  }, [height, tradeLayout])
+  }, [innerHeight, tradeLayout])
 
   const [layouts, setLayouts] = useState<Layouts>(defaultLayouts)
   const [breakpoint, setBreakpoint] = useState('')
@@ -303,7 +307,7 @@ const TradeAdvancedPage = () => {
           margin={[0, 0]}
           useCSSTransforms
           onLayoutChange={handleLayoutChange}
-          measureBeforeMount
+          // measureBeforeMount
         >
           <div key="market-header" className="z-10">
             <AdvancedMarketHeader />

@@ -1,4 +1,4 @@
-import { BookSide, PerpMarket } from '@blockworks-foundation/mango-v4'
+import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { useQuery } from '@tanstack/react-query'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
@@ -6,8 +6,6 @@ import { useMemo } from 'react'
 import { MANGO_DATA_API_URL } from 'utils/constants'
 import Tooltip from '@components/shared/Tooltip'
 import { useTranslation } from 'next-i18next'
-import mangoStore from '@store/mangoStore'
-import { OrderbookL2 } from 'types'
 import Link from 'next/link'
 
 const fetchFundingRate = async (groupPk: string | undefined) => {
@@ -39,63 +37,10 @@ export const formatFunding = Intl.NumberFormat('en', {
   style: 'percent',
 })
 
-function getImpactPriceL2(
-  bookside: number[][],
-  baseDepth: number,
-): number | undefined {
-  let total = 0
-  for (const level of bookside) {
-    total += level[1]
-    if (total >= baseDepth) {
-      return level[0]
-    }
-  }
-  return undefined
-}
-
-function getInstantaneousFundingRateL2(
-  market: PerpMarket,
-  orderbook: OrderbookL2,
-) {
-  const MIN_FUNDING = market.minFunding.toNumber()
-  const MAX_FUNDING = market.maxFunding.toNumber()
-
-  const bid = getImpactPriceL2(
-    orderbook.bids,
-    market.baseLotsToUi(market.impactQuantity),
-  )
-  const ask = getImpactPriceL2(
-    orderbook.asks,
-    market.baseLotsToUi(market.impactQuantity),
-  )
-  const indexPrice = market._uiPrice
-
-  let funding
-  if (bid !== undefined && ask !== undefined) {
-    const bookPrice = (bid + ask) / 2
-    funding = Math.min(
-      Math.max(bookPrice / indexPrice - 1, MIN_FUNDING),
-      MAX_FUNDING,
-    )
-  } else if (bid !== undefined) {
-    funding = MAX_FUNDING
-  } else if (ask !== undefined) {
-    funding = MIN_FUNDING
-  } else {
-    funding = 0
-  }
-
-  return funding
-}
-
 const PerpFundingRate = () => {
   const { selectedMarket } = useSelectedMarket()
   const rate = usePerpFundingRate()
   const { t } = useTranslation(['common', 'trade'])
-
-  const bids = mangoStore((s) => s.selectedMarket.bidsAccount)
-  const asks = mangoStore((s) => s.selectedMarket.asksAccount)
-  const orderbook = mangoStore((s) => s.selectedMarket.orderbook)
 
   const fundingRate = useMemo(() => {
     if (rate.isSuccess && selectedMarket instanceof PerpMarket) {
@@ -106,21 +51,6 @@ const PerpFundingRate = () => {
       return typeof funding === 'number' ? funding : undefined
     }
   }, [rate, selectedMarket])
-
-  const instantaneousRate = useMemo(() => {
-    if (!(selectedMarket instanceof PerpMarket)) return undefined
-    if (bids instanceof BookSide && asks instanceof BookSide) {
-      return selectedMarket.getInstantaneousFundingRateUi(bids, asks).toFixed(4)
-    }
-
-    if (orderbook.asks.length && orderbook.bids.length) {
-      return (
-        getInstantaneousFundingRateL2(selectedMarket, orderbook) * 100
-      ).toFixed(4)
-    }
-
-    return undefined
-  }, [orderbook, bids, asks, selectedMarket])
 
   return (
     <>
@@ -138,17 +68,9 @@ const PerpFundingRate = () => {
               </div>
               {typeof fundingRate === 'number' ? (
                 <div className="mt-2">
-                  The 1hr rate as an APR is{' '}
+                  The annualized funding rate is{' '}
                   <span className="font-mono text-th-fgd-2">
                     {formatFunding.format(fundingRate * 8760)}
-                  </span>
-                </div>
-              ) : null}
-              {instantaneousRate ? (
-                <div className="mt-2">
-                  The latest instantaneous rate is{' '}
-                  <span className="font-mono text-th-fgd-2">
-                    {instantaneousRate}%
                   </span>
                 </div>
               ) : null}

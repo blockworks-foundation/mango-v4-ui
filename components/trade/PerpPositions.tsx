@@ -150,6 +150,7 @@ const PerpPositions = () => {
                     </div>
                   </Th>
                   <Th className="text-right">{t('trade:unrealized-pnl')}</Th>
+                  <Th className="text-right">ROE</Th>
                   {!isUnownedAccount ? (
                     <Th>
                       {openPerpPositions?.length > 1 ? (
@@ -280,7 +281,7 @@ const PerpPositions = () => {
                         )}
                       </Td>
                       <Td className="text-right font-mono">
-                        <div className="flex flex-col items-end ">
+                        <div className="flex flex-col items-end">
                           <Tooltip
                             content={
                               <PnlTooltipContent
@@ -288,7 +289,6 @@ const PerpPositions = () => {
                                 realizedPnl={realizedPnl}
                                 totalPnl={totalPnl}
                                 unsettledPnl={unsettledPnl}
-                                roe={roe}
                               />
                             }
                             delay={100}
@@ -308,6 +308,13 @@ const PerpPositions = () => {
                             </span>
                           </Tooltip>
                         </div>
+                      </Td>
+                      <Td className="text-right font-mono">
+                        <span
+                          className={roe >= 0 ? 'text-th-up' : 'text-th-down'}
+                        >
+                          <FormatNumericValue value={roe} decimals={2} />%
+                        </span>
                       </Td>
                       {!isUnownedAccount ? (
                         <Td>
@@ -364,7 +371,6 @@ const PerpPositions = () => {
                               realizedPnl={totalPnlStats.realized}
                               totalPnl={totalPnlStats.total}
                               unsettledPnl={totalPnlStats.unsettled}
-                              roe={totalPnlStats.roe}
                             />
                           }
                           delay={100}
@@ -385,6 +391,19 @@ const PerpPositions = () => {
                           </div>
                         </Tooltip>
                       </div>
+                    </Td>
+                    <Td className="text-right font-mono">
+                      <span
+                        className={
+                          totalPnlStats.roe >= 0 ? 'text-th-up' : 'text-th-down'
+                        }
+                      >
+                        <FormatNumericValue
+                          value={totalPnlStats.roe}
+                          decimals={2}
+                        />
+                        %
+                      </span>
                     </Td>
                     {!isUnownedAccount ? (
                       <Td className="text-right font-mono">
@@ -599,7 +618,6 @@ const PerpPositions = () => {
                                     realizedPnl={realizedPnl}
                                     totalPnl={totalPnl}
                                     unsettledPnl={unsettledPnl}
-                                    roe={roe}
                                   />
                                 }
                                 delay={100}
@@ -672,70 +690,42 @@ const PerpPositions = () => {
               )
             })}
             {openPerpPositions.length > 0 ? (
-              <>
-                <Disclosure>
-                  {({ open }) => (
-                    <>
-                      <Disclosure.Button
-                        className={`flex w-full justify-end border-t border-th-bkg-3 p-1 text-right focus:outline-none`}
-                      >
-                        <div className="ml-auto mt-1 flex flex-col justify-end">
-                          <div className="flex flex-row">
-                            <span className="text-md mr-3 font-body text-th-fgd-3">
-                              Total Unrealized PnL:
-                            </span>
-                            <span
-                              className={`mr-2 font-mono ${
-                                totalPnlStats.unrealized > 0
-                                  ? 'text-th-up'
-                                  : 'text-th-down'
-                              }`}
-                            >
-                              <FormatNumericValue
-                                value={totalPnlStats.unrealized}
-                                isUsd
-                                decimals={2}
-                              />
-                            </span>
-                          </div>
-
-                          <div className="flex flex-row justify-end">
-                            <Transition
-                              enter="transition ease-in duration-200"
-                              enterFrom="opacity-0"
-                              enterTo="opacity-100"
-                            >
-                              <Disclosure.Panel className="mt-1">
-                                <span className="text-md mr-3 text-right font-body text-th-fgd-3">
-                                  Total ROE:
-                                </span>
-                                <span
-                                  className={`mr-1.5 font-mono ${
-                                    totalPnlStats.roe >= 0
-                                      ? 'text-th-up'
-                                      : 'text-th-down'
-                                  }`}
-                                >
-                                  <FormatNumericValue
-                                    value={totalPnlStats.roe}
-                                    decimals={2}
-                                  />
-                                  %{' '}
-                                </span>
-                              </Disclosure.Panel>
-                            </Transition>
-                          </div>
-                        </div>
-                        <ChevronDownIcon
-                          className={`${
-                            open ? 'rotate-180' : 'rotate-360'
-                          } mr-3 mt-1 h-6 w-6 flex-shrink-0 text-th-fgd-3`}
-                        />
-                      </Disclosure.Button>
-                    </>
-                  )}
-                </Disclosure>
-              </>
+              <div className="flex items-center justify-end space-x-3 border-t border-th-bkg-3 px-4 py-2">
+                <span>
+                  <span className="text-md font-body text-xs text-th-fgd-3">
+                    Total Unrealized PnL:{' '}
+                  </span>
+                  <span
+                    className={`font-mono ${
+                      totalPnlStats.unrealized >= 0
+                        ? 'text-th-up'
+                        : 'text-th-down'
+                    }`}
+                  >
+                    <FormatNumericValue
+                      value={totalPnlStats.unrealized}
+                      isUsd
+                      decimals={2}
+                    />
+                  </span>
+                </span>
+                <span>
+                  <span className="text-md font-body text-xs text-th-fgd-3">
+                    ROE:{' '}
+                  </span>
+                  <span
+                    className={`font-mono ${
+                      totalPnlStats.roe >= 0 ? 'text-th-up' : 'text-th-down'
+                    }`}
+                  >
+                    <FormatNumericValue
+                      value={totalPnlStats.roe}
+                      decimals={2}
+                    />
+                    %
+                  </span>
+                </span>
+              </div>
             ) : null}
           </div>
         )
