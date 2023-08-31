@@ -7,7 +7,7 @@ import {
   TrashIcon,
   XMarkIcon,
 } from '@heroicons/react/20/solid'
-import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes'
+import { bs58 } from '@coral-xyz/anchor/dist/cjs/utils/bytes'
 import { WalletContextState, useWallet } from '@solana/wallet-adapter-react'
 import { Payload, SIWS } from '@web3auth/sign-in-with-solana'
 import { useHeaders } from 'hooks/notifications/useHeaders'

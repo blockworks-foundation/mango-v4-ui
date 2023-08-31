@@ -8,7 +8,7 @@ import {
   PencilIcon,
   PlusIcon,
 } from '@heroicons/react/20/solid'
-import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes'
+import { bs58 } from '@coral-xyz/anchor/dist/cjs/utils/bytes'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import startCase from 'lodash/startCase'

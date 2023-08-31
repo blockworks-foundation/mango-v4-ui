@@ -1,6 +1,6 @@
 import { Bank, toUiDecimals, I80F48 } from '@blockworks-foundation/mango-v4'
 import ExplorerLink from '@components/shared/ExplorerLink'
-import { coder } from '@project-serum/anchor/dist/cjs/spl/token'
+import { splTokenProgram } from '@coral-xyz/spl-token'
 import mangoStore from '@store/mangoStore'
 import useMangoGroup from 'hooks/useMangoGroup'
 import type { NextPage } from 'next'
@@ -43,7 +43,6 @@ export async function getStaticProps({ locale }: { locale: string }) {
 const Dashboard: NextPage = () => {
   const { group } = useMangoGroup()
   const connection = mangoStore((s) => s.connection)
-
   const [isOpenSuggestionModal, setIsOpenSuggestionModal] = useState(false)
   const [priceImpacts, setPriceImapcts] = useState<PriceImpactResp[]>([])
 
@@ -792,7 +791,9 @@ const VaultData = ({ bank }: { bank: Bank }) => {
     const res = await client.program.provider.connection.getAccountInfo(
       bank.vault,
     )
-    const v = res?.data ? coder().accounts.decode('token', res.data) : undefined
+    const v = res?.data
+      ? splTokenProgram().coder.accounts.decode('token', res.data)
+      : undefined
 
     setVault(v)
   }, [bank.vault])
