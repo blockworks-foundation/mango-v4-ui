@@ -254,8 +254,8 @@ const OpenOrders = () => {
           <TrHead>
             <Th className="w-[14.28%] text-left">{t('market')}</Th>
             <Th className="w-[14.28%] text-right">{t('trade:size')}</Th>
-            <Th className="w-[14.28%] text-right">{t('trade:filled-size')}</Th>
             <Th className="w-[14.28%] text-right">{t('price')}</Th>
+            <Th className="w-[14.28%] text-right">{t('trade:filled')}</Th>
             <Th className="w-[14.28%] text-right">{t('value')}</Th>
             {!isUnownedAccount ? (
               <Th className="w-[14.28%] text-right" />
@@ -337,20 +337,6 @@ const OpenOrders = () => {
                             decimals={getDecimalCount(minOrderSize)}
                           />
                         </Td>
-                        <Td className="w-[14.28%] text-right font-mono">
-                          {fetchingFilledOrders ? (
-                            <div className="items flex justify-end">
-                              <SheenLoader className="flex justify-end">
-                                <div className="h-7 w-16 bg-th-bkg-2" />
-                              </SheenLoader>
-                            </div>
-                          ) : (
-                            <FormatNumericValue
-                              value={filledQuantity}
-                              decimals={getDecimalCount(minOrderSize)}
-                            />
-                          )}
-                        </Td>
                         <Td className="w-[14.28%] whitespace-nowrap text-right font-mono">
                           <FormatNumericValue
                             value={o.price}
@@ -370,20 +356,6 @@ const OpenOrders = () => {
                             }
                           />
                         </Td>
-                        <Td className="w-[14.28%] text-right font-mono">
-                          {fetchingFilledOrders ? (
-                            <div className="items flex justify-end">
-                              <SheenLoader className="flex justify-end">
-                                <div className="h-7 w-16 bg-th-bkg-2" />
-                              </SheenLoader>
-                            </div>
-                          ) : (
-                            <FormatNumericValue
-                              value={filledQuantity}
-                              decimals={getDecimalCount(minOrderSize)}
-                            />
-                          )}
-                        </Td>
                         <Td className="w-[14.28%]">
                           <input
                             autoFocus
@@ -397,6 +369,20 @@ const OpenOrders = () => {
                         </Td>
                       </>
                     )}
+                    <Td className="w-[14.28%] text-right font-mono">
+                      {fetchingFilledOrders ? (
+                        <div className="items flex justify-end">
+                          <SheenLoader className="flex justify-end">
+                            <div className="h-4 w-8 bg-th-bkg-2" />
+                          </SheenLoader>
+                        </div>
+                      ) : (
+                        <FormatNumericValue
+                          value={filledQuantity}
+                          decimals={getDecimalCount(minOrderSize)}
+                        />
+                      )}
+                    </Td>
                     <Td className="w-[14.28%] text-right font-mono">
                       <FormatNumericValue value={value} isUsd />
                       {expiryTimestamp ? (

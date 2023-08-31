@@ -66,18 +66,33 @@ const TradeInfoTabs = () => {
           size={isMobile ? 'large' : 'small'}
         />
       </div>
-      {selectedTab === 'balances' ? <SwapTradeBalances /> : null}
-      {selectedTab === 'trade:orders' ? <OpenOrders /> : null}
-      {selectedTab === 'trade:unsettled' ? (
-        <UnsettledTrades
-          unsettledSpotBalances={unsettledSpotBalances}
-          unsettledPerpPositions={unsettledPerpPositions}
-        />
-      ) : null}
-      {selectedTab === 'trade:positions' ? <PerpPositions /> : null}
-      {selectedTab === 'trade-history' ? <TradeHistory /> : null}
+      <TabContent selectedTab={selectedTab} />
     </div>
   )
 }
 
 export default TradeInfoTabs
+
+const TabContent = ({ selectedTab }: { selectedTab: string }) => {
+  const unsettledSpotBalances = useUnsettledSpotBalances()
+  const unsettledPerpPositions = useUnsettledPerpPositions()
+  switch (selectedTab) {
+    case 'balances':
+      return <SwapTradeBalances />
+    case 'trade:orders':
+      return <OpenOrders />
+    case 'trade:unsettled':
+      return (
+        <UnsettledTrades
+          unsettledSpotBalances={unsettledSpotBalances}
+          unsettledPerpPositions={unsettledPerpPositions}
+        />
+      )
+    case 'trade:positions':
+      return <PerpPositions />
+    case 'trade-history':
+      return <TradeHistory />
+    default:
+      return <SwapTradeBalances />
+  }
+}
