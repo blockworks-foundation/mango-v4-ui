@@ -13,6 +13,7 @@ import { ArrowLeftIcon } from '@heroicons/react/20/solid'
 import useSolBalance from 'hooks/useSolBalance'
 import { isMangoError } from 'types'
 import { MAX_ACCOUNTS } from 'utils/constants'
+import Switch from '@components/forms/Switch'
 
 const getNextAccountNumber = (accounts: MangoAccount[]): number => {
   if (accounts.length > 1) {
@@ -39,6 +40,7 @@ const CreateAccountForm = ({
   const { t } = useTranslation('common')
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState('')
+  const [usingLedger, setUsingLedger] = useState(false)
   const { wallet } = useWallet()
   const { maxSolDeposit } = useSolBalance()
 
@@ -135,6 +137,14 @@ const CreateAccountForm = ({
       </div>
       <div className="space-y-4">
         <InlineNotification type="info" desc={t('insufficient-sol')} />
+        <div className="flex items-center justify-between rounded-md bg-th-bkg-3 p-3">
+          <p>{t('common:using-ledger')}</p>
+          <Switch
+            className="text-th-fgd-3"
+            checked={usingLedger}
+            onChange={(checked) => setUsingLedger(checked)}
+          />
+        </div>
         <Button
           className="w-full"
           disabled={maxSolDeposit <= 0}
