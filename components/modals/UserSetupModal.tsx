@@ -22,7 +22,11 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { notify } from 'utils/notifications'
+import {
+  createLedgerMessage,
+  createSolanaMessage,
+  notify,
+} from 'utils/notifications'
 import ActionTokenList from '../account/ActionTokenList'
 import ButtonGroup from '../forms/ButtonGroup'
 import Input from '../forms/Input'
@@ -46,6 +50,8 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { ACCEPT_TERMS_KEY, MAX_ACCOUNTS } from 'utils/constants'
 import { ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES } from '@components/BorrowForm'
 import { WalletReadyState } from '@solana/wallet-adapter-base'
+import Switch from '@components/forms/Switch'
+import NotificationCookieStore from '@store/notificationCookieStore'
 
 const UserSetupModal = ({
   isOpen,
@@ -65,6 +71,8 @@ const UserSetupModal = ({
   const [depositAmount, setDepositAmount] = useState('')
   const [submitDeposit, setSubmitDeposit] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
+  const [usingLedger, setUsingLedger] = useState(false)
+  const [singToNotifications, setSignToNotifications] = useState(true)
   // const [showEditProfilePic, setShowEditProfilePic] = useState(false)
   const { maxSolDeposit } = useSolBalance()
   const banks = useBanksWithBalances('walletBalance')
@@ -72,6 +80,10 @@ const UserSetupModal = ({
   const [walletsToDisplay, setWalletstoDisplay] = useState<'default' | 'all'>(
     'default',
   )
+  //used to sign txes
+  const walletContext = useWallet()
+  const setCookie = NotificationCookieStore((s) => s.setCookie)
+  const connection = mangoStore((s) => s.connection)
 
   const walletsDisplayed = useMemo(() => {
     const firstFive = wallets.slice(0, 5)
@@ -114,6 +126,13 @@ const UserSetupModal = ({
       )
       actions.fetchMangoAccounts(publicKey)
       if (tx) {
+        if (singToNotifications) {
+          if (usingLedger) {
+            createLedgerMessage(walletContext, setCookie, connection)
+          } else {
+            createSolanaMessage(walletContext, setCookie)
+          }
+        }
         actions.fetchWalletTokens(publicKey) // need to update sol balance after account rent
         setShowSetupStep(3)
         notify({
@@ -376,11 +395,29 @@ const UserSetupModal = ({
                   />
                 </div>
                 <SolBalanceWarnings className="mt-4" />
-                <div className="mt-2">
+                <div className="mt-2 space-y-3">
                   <InlineNotification
                     type="info"
                     desc={t('insufficient-sol')}
                   />
+                  <div className="flex items-center justify-between rounded-md bg-th-bkg-3 p-3">
+                    <p>{t('common:sign-to-in-app-notifications')}</p>
+                    <Switch
+                      className="text-th-fgd-3"
+                      checked={singToNotifications}
+                      onChange={(checked) => setSignToNotifications(checked)}
+                    />
+                  </div>
+                  {singToNotifications && (
+                    <div className="flex items-center justify-between rounded-md bg-th-bkg-3 p-3">
+                      <p>{t('common:using-ledger')}</p>
+                      <Switch
+                        className="text-th-fgd-3"
+                        checked={usingLedger}
+                        onChange={(checked) => setUsingLedger(checked)}
+                      />
+                    </div>
+                  )}
                   <div className="mt-10">
                     <Button
                       className="mb-6 flex items-center justify-center"

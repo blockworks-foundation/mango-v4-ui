@@ -1,7 +1,11 @@
 import { ChangeEvent, useState } from 'react'
 import { useTranslation } from 'next-i18next'
 import mangoStore from '@store/mangoStore'
-import { notify } from '../../utils/notifications'
+import {
+  createLedgerMessage,
+  createSolanaMessage,
+  notify,
+} from '../../utils/notifications'
 import Button, { IconButton } from '../shared/Button'
 import BounceLoader from '../shared/BounceLoader'
 import Input from '../forms/Input'
@@ -14,6 +18,7 @@ import useSolBalance from 'hooks/useSolBalance'
 import { isMangoError } from 'types'
 import { MAX_ACCOUNTS } from 'utils/constants'
 import Switch from '@components/forms/Switch'
+import NotificationCookieStore from '@store/notificationCookieStore'
 
 const getNextAccountNumber = (accounts: MangoAccount[]): number => {
   if (accounts.length > 1) {
@@ -41,15 +46,19 @@ const CreateAccountForm = ({
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState('')
   const [usingLedger, setUsingLedger] = useState(false)
-  const { wallet } = useWallet()
+  const [singToNotifications, setSignToNotifications] = useState(true)
+  //whole context needed to sign msgs
+  const walletContext = useWallet()
   const { maxSolDeposit } = useSolBalance()
+  const setCookie = NotificationCookieStore((s) => s.setCookie)
+  const connection = mangoStore((s) => s.connection)
 
   const handleNewAccount = async () => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     const mangoAccounts = mangoStore.getState().mangoAccounts
     const set = mangoStore.getState().set
-    if (!group || !wallet) return
+    if (!group || !walletContext.wallet) return
     setLoading(true)
     try {
       const newAccountNum = getNextAccountNumber(mangoAccounts)
@@ -63,7 +72,14 @@ const CreateAccountForm = ({
         parseInt(MAX_ACCOUNTS.perpOpenOrders), // perp Oo
       )
       if (tx) {
-        const pk = wallet.adapter.publicKey
+        if (singToNotifications) {
+          if (usingLedger) {
+            createLedgerMessage(walletContext, setCookie, connection)
+          } else {
+            createSolanaMessage(walletContext, setCookie)
+          }
+        }
+        const pk = walletContext.wallet.adapter.publicKey
         const mangoAccounts = await client.getMangoAccountsForOwner(group, pk!)
         const reloadedMangoAccounts = await Promise.all(
           mangoAccounts.map((ma) => ma.reloadSerum3OpenOrders(client)),
@@ -138,13 +154,23 @@ const CreateAccountForm = ({
       <div className="space-y-4">
         <InlineNotification type="info" desc={t('insufficient-sol')} />
         <div className="flex items-center justify-between rounded-md bg-th-bkg-3 p-3">
-          <p>{t('common:using-ledger')}</p>
+          <p>{t('common:sign-to-in-app-notifications')}</p>
           <Switch
             className="text-th-fgd-3"
-            checked={usingLedger}
-            onChange={(checked) => setUsingLedger(checked)}
+            checked={singToNotifications}
+            onChange={(checked) => setSignToNotifications(checked)}
           />
         </div>
+        {singToNotifications && (
+          <div className="flex items-center justify-between rounded-md bg-th-bkg-3 p-3">
+            <p>{t('common:using-ledger')}</p>
+            <Switch
+              className="text-th-fgd-3"
+              checked={usingLedger}
+              onChange={(checked) => setUsingLedger(checked)}
+            />
+          </div>
+        )}
         <Button
           className="w-full"
           disabled={maxSolDeposit <= 0}

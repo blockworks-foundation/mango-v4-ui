@@ -7,9 +7,7 @@ import {
   TrashIcon,
   XMarkIcon,
 } from '@heroicons/react/20/solid'
-import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes'
-import { WalletContextState, useWallet } from '@solana/wallet-adapter-react'
-import { Payload, SIWS } from '@web3auth/sign-in-with-solana'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { useHeaders } from 'hooks/notifications/useHeaders'
 import { useIsAuthorized } from 'hooks/notifications/useIsAuthorized'
 import { useNotifications } from 'hooks/notifications/useNotifications'
@@ -18,128 +16,13 @@ import { NOTIFICATION_API } from 'utils/constants'
 import NotificationCookieStore from '@store/notificationCookieStore'
 import dayjs from 'dayjs'
 import { useTranslation } from 'next-i18next'
-import { notify } from 'utils/notifications'
 import {
-  Connection,
-  PublicKey,
-  Transaction,
-  TransactionInstruction,
-} from '@solana/web3.js'
+  createLedgerMessage,
+  createSolanaMessage,
+  notify,
+} from 'utils/notifications'
 import mangoStore from '@store/mangoStore'
 import { ttCommons, ttCommonsExpanded, ttCommonsMono } from 'utils/fonts'
-const MEMO_PROGRAM_ID = new PublicKey(
-  'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr',
-)
-
-const PAYLOAD_STATEMENT = 'Login to Mango Notifications'
-const PAYLOAD_VERSION = '1'
-const PAYLOAD_CHAIN_ID = 1
-
-export const createSolanaMessage = async (
-  wallet: WalletContextState,
-  setCookie: (wallet: string, token: string) => void,
-) => {
-  const payload = new Payload()
-  payload.domain = window.location.host
-  payload.address = wallet.publicKey!.toBase58()
-  payload.uri = window.location.origin
-  payload.statement = PAYLOAD_STATEMENT
-  payload.version = PAYLOAD_VERSION
-  payload.chainId = PAYLOAD_CHAIN_ID
-
-  const message = new SIWS({ payload })
-
-  const messageText = message.prepareMessage()
-  const messageEncoded = new TextEncoder().encode(messageText)
-  wallet.signMessage!(messageEncoded)
-    .then(async (resp) => {
-      const tokenResp = await fetch(`${NOTIFICATION_API}auth`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...payload,
-          signatureString: bs58.encode(resp),
-        }),
-      })
-      const body = await tokenResp.json()
-      const token = body.token
-      const error = body.error
-      if (error) {
-        notify({
-          type: 'error',
-          title: 'Error',
-          description: error,
-        })
-        return
-      }
-      setCookie(payload.address, token)
-    })
-    .catch((e) => {
-      notify({
-        type: 'error',
-        title: 'Error',
-        description: e.message ? e.message : `${e}`,
-      })
-    })
-}
-
-export const createLedgerMessage = async (
-  wallet: WalletContextState,
-  setCookie: (wallet: string, token: string) => void,
-  connection: Connection,
-) => {
-  const payload = new Payload()
-  payload.domain = window.location.host
-  payload.address = wallet.publicKey!.toBase58()
-  payload.uri = window.location.origin
-  payload.statement = PAYLOAD_STATEMENT
-  payload.version = PAYLOAD_VERSION
-  payload.chainId = PAYLOAD_CHAIN_ID
-
-  const message = new SIWS({ payload })
-
-  const messageText = message.prepareMessage()
-  const tx = new Transaction()
-
-  tx.add(
-    new TransactionInstruction({
-      programId: MEMO_PROGRAM_ID,
-      keys: [],
-      data: Buffer.from(messageText),
-    }),
-  )
-  tx.feePayer = wallet.publicKey!
-  tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash
-
-  const signedTx = await wallet.signTransaction!(tx)
-  const serializedTx = signedTx.serialize()
-
-  const tokenResp = await fetch(`${NOTIFICATION_API}auth`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      ...payload,
-      isLedger: true,
-      serializedTx: Array.from(serializedTx),
-    }),
-  })
-  const body = await tokenResp.json()
-  const token = body.token
-  const error = body.error
-  if (error) {
-    notify({
-      type: 'error',
-      title: 'Error',
-      description: error,
-    })
-    return
-  }
-  setCookie(payload.address, token)
-}
 
 const NotificationsDrawer = ({
   isOpen,

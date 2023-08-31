@@ -54,7 +54,7 @@ const TopBar = () => {
   const isMobile = width ? width < breakpoints.sm : false
 
   const { isUnownedAccount } = useUnownedAccount()
-  const showUserSetup = mangoStore((s) => s.showUserSetup)
+  const showUserSetup = true
   const [, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
 
   const handleCloseSetup = useCallback(() => {
