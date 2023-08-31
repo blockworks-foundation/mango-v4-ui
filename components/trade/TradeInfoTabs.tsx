@@ -11,6 +11,7 @@ import { breakpoints } from 'utils/theme'
 import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
 import TradeHistory from './TradeHistory'
 import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
+import ManualRefresh from '@components/shared/ManualRefresh'
 
 const TradeInfoTabs = () => {
   const [selectedTab, setSelectedTab] = useState('balances')
@@ -20,7 +21,8 @@ const TradeInfoTabs = () => {
   const unsettledPerpPositions = useUnsettledPerpPositions()
   const openPerpPositions = useOpenPerpPositions()
   const { width } = useViewport()
-  const isMobile = width ? width < breakpoints['2xl'] : false
+  const isMobile = width ? width < breakpoints.md : false
+  const fillTabWidth = width ? width < breakpoints['2xl'] : false
 
   useEffect(() => {
     if (selectedMarketName && selectedMarketName.includes('PERP')) {
@@ -48,13 +50,20 @@ const TradeInfoTabs = () => {
 
   return (
     <div className="hide-scroll h-full overflow-y-scroll">
-      <div className="hide-scroll overflow-x-auto border-b border-th-bkg-3">
-        <TabButtons
-          activeValue={selectedTab}
-          onChange={(tab: string) => setSelectedTab(tab)}
-          values={tabsWithCount}
-          showBorders
-          fillWidth={isMobile}
+      <div className="hide-scroll flex items-center overflow-x-auto border-b border-th-bkg-3">
+        <div className="md:border-r md:border-th-bkg-3 lg:w-full">
+          <TabButtons
+            activeValue={selectedTab}
+            onChange={(tab: string) => setSelectedTab(tab)}
+            values={tabsWithCount}
+            showBorders
+            fillWidth={fillTabWidth}
+          />
+        </div>
+        <ManualRefresh
+          classNames="fixed bottom-16 right-4 md:relative md:px-2 md:bottom-0 md:right-0 z-10 shadow-lg md:shadow-none bg-th-bkg-3 md:bg-transparent"
+          hideBg={isMobile}
+          size={isMobile ? 'large' : 'small'}
         />
       </div>
       {selectedTab === 'balances' ? <SwapTradeBalances /> : null}
