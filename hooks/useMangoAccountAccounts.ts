@@ -96,14 +96,17 @@ export default function useMangoAccountAccounts() {
       .map((s) => mangoAccount.serum3OosMapByMarketIndex.get(s.marketIndex))
       .filter((o) => o !== undefined) as OpenOrders[]
     const maxFreeSlotBits = new BN(2).pow(new BN(128)).sub(new BN(1)) // 2^128 - 1
-    const emptySerum3 = usedOpenOrders
+    const emptySerum3Keys = usedOpenOrders
       .filter(
         (o) =>
           o.baseTokenTotal.isZero() &&
           o.quoteTokenTotal.isZero() &&
           o.freeSlotBits.eq(maxFreeSlotBits),
       )
-      .map((f) => f.market)
+      .map((f) => f.address)
+    const emptySerum3 = usedSerum3.filter((s) =>
+      emptySerum3Keys.includes(s.openOrders),
+    )
 
     return [
       usedTokens,
