@@ -45,7 +45,6 @@ import {
   MAX_PRIORITY_FEE_KEYS,
   OUTPUT_TOKEN_DEFAULT,
   PAGINATION_PAGE_LENGTH,
-  PRIORITY_FEE_KEY,
   RPC_PROVIDER_KEY,
   SWAP_MARGIN_KEY,
 } from '../utils/constants'
@@ -253,6 +252,10 @@ export type MangoStore = {
       loading: boolean
     }
   }
+  window: {
+    width: number
+    height: number
+  }
   actions: {
     fetchAccountInterestTotals: (mangoAccountPk: string) => Promise<void>
     fetchActivityFeed: (
@@ -420,6 +423,10 @@ const mangoStore = create<MangoStore>()(
           data: [],
           loading: false,
         },
+      },
+      window: {
+        width: 0,
+        height: 0,
       },
       actions: {
         fetchAccountInterestTotals: async (mangoAccountPk: string) => {

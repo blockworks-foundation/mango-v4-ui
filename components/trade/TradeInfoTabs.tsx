@@ -20,8 +20,7 @@ const TradeInfoTabs = () => {
   const unsettledSpotBalances = useUnsettledSpotBalances()
   const unsettledPerpPositions = useUnsettledPerpPositions()
   const openPerpPositions = useOpenPerpPositions()
-  const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.md : false
+  const { isMobile, width } = useViewport()
   const fillTabWidth = width ? width < breakpoints['2xl'] : false
 
   useEffect(() => {

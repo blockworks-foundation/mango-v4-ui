@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 import mangoStore from '@store/mangoStore'
 import { Keypair, PublicKey } from '@solana/web3.js'
 import { useRouter } from 'next/router'
@@ -22,6 +22,21 @@ const HydrateStore = () => {
   const { wallet } = useWallet()
 
   const [, setLastWalletName] = useLocalStorageState(LAST_WALLET_NAME, '')
+
+  const handleWindowResize = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      set((s) => {
+        s.window.width = window.innerWidth
+        s.window.height = window.innerHeight
+      })
+    }
+  }, [])
+  // store the window width and height on resize
+  useEffect(() => {
+    handleWindowResize()
+    window.addEventListener('resize', handleWindowResize)
+    return () => window.removeEventListener('resize', handleWindowResize)
+  }, [handleWindowResize])
 
   useEffect(() => {
     if (wallet?.adapter) {

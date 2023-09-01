@@ -1,21 +1,14 @@
-import { useCallback, useEffect, useState } from 'react'
+import mangoStore from '@store/mangoStore'
+import { useMemo } from 'react'
+import { breakpoints } from 'utils/theme'
 
 export const useViewport = () => {
-  const [width, setWidth] = useState<number>(0)
-  const [height, setHeight] = useState<number>(0)
+  const width = mangoStore((s) => s.window.width)
+  const height = mangoStore((s) => s.window.height)
 
-  const handleWindowResize = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      setWidth(window.innerWidth)
-      setHeight(window.innerHeight)
-    }
-  }, [])
+  const isMobile = useMemo(() => {
+    return width ? width < breakpoints.sm : false
+  }, [width])
 
-  useEffect(() => {
-    handleWindowResize()
-    window.addEventListener('resize', handleWindowResize)
-    return () => window.removeEventListener('resize', handleWindowResize)
-  }, [handleWindowResize])
-
-  return { width, height }
+  return { width, height, isMobile }
 }
