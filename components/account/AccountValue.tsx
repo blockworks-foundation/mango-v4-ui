@@ -17,7 +17,6 @@ import { PerformanceDataItem } from 'types'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'next-i18next'
 import { useViewport } from 'hooks/useViewport'
-import { breakpoints } from 'utils/theme'
 import { ViewToShow } from './AccountPage'
 import useAccountPerformanceData from 'hooks/useAccountPerformanceData'
 import useThemeWrapper from 'hooks/useThemeWrapper'
@@ -42,9 +41,8 @@ const AccountValue = ({
     ANIMATION_SETTINGS_KEY,
     INITIAL_ANIMATION_SETTINGS,
   )
-  const { width } = useViewport()
+  const { isTablet } = useViewport()
   const { performanceLoading: loading } = useAccountPerformanceData()
-  const isMobile = width ? width < breakpoints.md : false
 
   const accountValueChange = useMemo(() => {
     if (!accountValue || !rollingDailyData.length) return 0
@@ -118,7 +116,7 @@ const AccountValue = ({
             <Transition
               appear={true}
               className="absolute bottom-2 right-2"
-              show={showExpandChart || isMobile}
+              show={showExpandChart || isTablet}
               enter="transition ease-in duration-300"
               enterFrom="opacity-0 scale-75"
               enterTo="opacity-100 scale-100"

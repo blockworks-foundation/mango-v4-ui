@@ -20,7 +20,7 @@ const TradeInfoTabs = () => {
   const unsettledSpotBalances = useUnsettledSpotBalances()
   const unsettledPerpPositions = useUnsettledPerpPositions()
   const openPerpPositions = useOpenPerpPositions()
-  const { isMobile, width } = useViewport()
+  const { isMobile, isTablet, width } = useViewport()
   const fillTabWidth = width ? width < breakpoints['2xl'] : false
 
   useEffect(() => {
@@ -61,8 +61,8 @@ const TradeInfoTabs = () => {
         </div>
         <ManualRefresh
           classNames="fixed bottom-16 right-4 md:relative md:px-2 md:bottom-0 md:right-0 z-10 shadow-lg md:shadow-none bg-th-bkg-3 md:bg-transparent"
-          hideBg={isMobile}
-          size={isMobile ? 'large' : 'small'}
+          hideBg={isMobile || isTablet}
+          size={isTablet ? 'large' : 'small'}
         />
       </div>
       <TabContent selectedTab={selectedTab} />

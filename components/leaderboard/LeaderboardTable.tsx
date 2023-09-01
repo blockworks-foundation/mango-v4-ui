@@ -4,7 +4,6 @@ import SheenLoader from '@components/shared/SheenLoader'
 import { ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useViewport } from 'hooks/useViewport'
 import { formatCurrencyValue } from 'utils/numbers'
-import { breakpoints } from 'utils/theme'
 import { LeaderboardRes } from './LeaderboardPage'
 
 const LeaderboardTable = ({
@@ -16,17 +15,6 @@ const LeaderboardTable = ({
 }) => {
   return (
     <>
-      {/* <div className="grid grid-cols-12 px-4 pb-2">
-        <div className="col-span-2 md:col-span-1">
-          <p className="text-xs text-th-fgd-4">{t('rank')}</p>
-        </div>
-        <div className="col-span-4 md:col-span-5">
-          <p className="text-xs text-th-fgd-4">{t('trader')}</p>
-        </div>
-        <div className="col-span-5 flex justify-end">
-          <p className="text-xs text-th-fgd-4">{t('pnl')}</p>
-        </div>
-      </div> */}
       <div className="space-y-2">
         {data.map((d, i) => (
           <LeaderboardRow
@@ -54,8 +42,7 @@ const LeaderboardRow = ({
 }) => {
   const { profile_name, profile_image_url, mango_account, pnl, wallet_pk } =
     item
-  const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.md : false
+  const { isTablet } = useViewport()
 
   return !loading ? (
     <a
@@ -80,9 +67,9 @@ const LeaderboardRow = ({
           {rank < 4 ? <MedalIcon className="absolute" rank={rank} /> : null}
         </div>
         <ProfileImage
-          imageSize={isMobile ? '32' : '40'}
+          imageSize={isTablet ? '32' : '40'}
           imageUrl={profile_image_url}
-          placeholderSize={isMobile ? '20' : '24'}
+          placeholderSize={isTablet ? '20' : '24'}
         />
         <div className="text-left">
           <p className="capitalize text-th-fgd-2 md:text-base">
