@@ -22,11 +22,7 @@ import {
   useMemo,
   useState,
 } from 'react'
-import {
-  createLedgerMessage,
-  createSolanaMessage,
-  notify,
-} from 'utils/notifications'
+import { createSolanaMessage, notify } from 'utils/notifications'
 import ActionTokenList from '../account/ActionTokenList'
 import ButtonGroup from '../forms/ButtonGroup'
 import Input from '../forms/Input'
@@ -71,7 +67,6 @@ const UserSetupModal = ({
   const [depositAmount, setDepositAmount] = useState('')
   const [submitDeposit, setSubmitDeposit] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
-  const [usingLedger, setUsingLedger] = useState(false)
   const [singToNotifications, setSignToNotifications] = useState(true)
   // const [showEditProfilePic, setShowEditProfilePic] = useState(false)
   const { maxSolDeposit } = useSolBalance()
@@ -83,7 +78,6 @@ const UserSetupModal = ({
   //used to sign txes
   const walletContext = useWallet()
   const setCookie = NotificationCookieStore((s) => s.setCookie)
-  const connection = mangoStore((s) => s.connection)
 
   const walletsDisplayed = useMemo(() => {
     const firstFive = wallets.slice(0, 5)
@@ -127,11 +121,7 @@ const UserSetupModal = ({
       actions.fetchMangoAccounts(publicKey)
       if (tx) {
         if (singToNotifications) {
-          if (usingLedger) {
-            createLedgerMessage(walletContext, setCookie, connection)
-          } else {
-            createSolanaMessage(walletContext, setCookie)
-          }
+          createSolanaMessage(walletContext, setCookie)
         }
         actions.fetchWalletTokens(publicKey) // need to update sol balance after account rent
         setShowSetupStep(3)
@@ -408,16 +398,6 @@ const UserSetupModal = ({
                       onChange={(checked) => setSignToNotifications(checked)}
                     />
                   </div>
-                  {singToNotifications && (
-                    <div className="flex items-center justify-between rounded-md bg-th-bkg-3 p-3">
-                      <p>{t('common:using-ledger')}</p>
-                      <Switch
-                        className="text-th-fgd-3"
-                        checked={usingLedger}
-                        onChange={(checked) => setUsingLedger(checked)}
-                      />
-                    </div>
-                  )}
                   <div className="mt-10">
                     <Button
                       className="mb-6 flex items-center justify-center"

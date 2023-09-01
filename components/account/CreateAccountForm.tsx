@@ -1,11 +1,7 @@
 import { ChangeEvent, useState } from 'react'
 import { useTranslation } from 'next-i18next'
 import mangoStore from '@store/mangoStore'
-import {
-  createLedgerMessage,
-  createSolanaMessage,
-  notify,
-} from '../../utils/notifications'
+import { createSolanaMessage, notify } from '../../utils/notifications'
 import Button, { IconButton } from '../shared/Button'
 import BounceLoader from '../shared/BounceLoader'
 import Input from '../forms/Input'
@@ -45,13 +41,11 @@ const CreateAccountForm = ({
   const { t } = useTranslation('common')
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState('')
-  const [usingLedger, setUsingLedger] = useState(false)
   const [singToNotifications, setSignToNotifications] = useState(true)
   //whole context needed to sign msgs
   const walletContext = useWallet()
   const { maxSolDeposit } = useSolBalance()
   const setCookie = NotificationCookieStore((s) => s.setCookie)
-  const connection = mangoStore((s) => s.connection)
 
   const handleNewAccount = async () => {
     const client = mangoStore.getState().client
@@ -73,11 +67,7 @@ const CreateAccountForm = ({
       )
       if (tx) {
         if (singToNotifications) {
-          if (usingLedger) {
-            createLedgerMessage(walletContext, setCookie, connection)
-          } else {
-            createSolanaMessage(walletContext, setCookie)
-          }
+          createSolanaMessage(walletContext, setCookie)
         }
         const pk = walletContext.wallet.adapter.publicKey
         const mangoAccounts = await client.getMangoAccountsForOwner(group, pk!)
@@ -161,16 +151,6 @@ const CreateAccountForm = ({
             onChange={(checked) => setSignToNotifications(checked)}
           />
         </div>
-        {singToNotifications && (
-          <div className="flex items-center justify-between rounded-md bg-th-bkg-3 p-3">
-            <p>{t('common:using-ledger')}</p>
-            <Switch
-              className="text-th-fgd-3"
-              checked={usingLedger}
-              onChange={(checked) => setUsingLedger(checked)}
-            />
-          </div>
-        )}
         <Button
           className="w-full"
           disabled={maxSolDeposit <= 0}
