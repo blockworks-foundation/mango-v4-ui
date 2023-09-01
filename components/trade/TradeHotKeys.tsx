@@ -13,7 +13,7 @@ import { HotKey } from '@components/settings/HotKeysSettings'
 import mangoStore from '@store/mangoStore'
 import { ReactNode, useCallback } from 'react'
 import { GenericMarket, isMangoError } from 'types'
-import { HOT_KEYS_KEY, SOUND_SETTINGS_KEY } from 'utils/constants'
+import { SOUND_SETTINGS_KEY } from 'utils/constants'
 import { notify } from 'utils/notifications'
 import { calculateLimitPriceForMarketOrder } from 'utils/tradeForm'
 import { successSound } from './AdvancedTradeForm'
@@ -168,7 +168,6 @@ const calcPerpMax = (
 const TradeHotKeys = ({ children }: { children: ReactNode }) => {
   const { t } = useTranslation(['common', 'settings', 'trade'])
   const { price: oraclePrice, serumOrPerpMarket } = useSelectedMarket()
-  const [hotKeys] = useLocalStorageState(HOT_KEYS_KEY, [])
   const [soundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,
     INITIAL_SOUND_SETTINGS,
@@ -354,7 +353,7 @@ const TradeHotKeys = ({ children }: { children: ReactNode }) => {
     [serumOrPerpMarket],
   )
 
-  useCustomHotkeys(hotKeys, handlePlaceOrder)
+  useCustomHotkeys(handlePlaceOrder)
 
   return <>{children}</>
 }
