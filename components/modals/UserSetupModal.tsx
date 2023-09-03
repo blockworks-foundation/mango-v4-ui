@@ -31,7 +31,6 @@ import Label from '../forms/Label'
 // import EditNftProfilePic from '../profile/EditNftProfilePic'
 // import EditProfileForm from '../profile/EditProfileForm'
 import Button, { LinkButton } from '../shared/Button'
-import InlineNotification from '../shared/InlineNotification'
 import Loading from '../shared/Loading'
 import MaxAmountButton from '../shared/MaxAmountButton'
 import SolBalanceWarnings from '../shared/SolBalanceWarnings'
@@ -366,9 +365,7 @@ const UserSetupModal = ({
                   <h2 className="mb-4 font-display text-3xl tracking-normal md:text-5xl lg:text-6xl">
                     {t('onboarding:create-account')}
                   </h2>
-                  <p className="text-base">
-                    {t('onboarding:create-account-desc')}
-                  </p>
+                  <p className="text-base">{t('insufficient-sol')}</p>
                 </div>
                 <div className="mb-4">
                   <Label text={t('account-name')} optional />
@@ -385,19 +382,18 @@ const UserSetupModal = ({
                   />
                 </div>
                 <SolBalanceWarnings className="mt-4" />
-                <div className="mt-2 space-y-3">
-                  <InlineNotification
-                    type="info"
-                    desc={t('insufficient-sol')}
-                  />
-                  <div className="flex items-center justify-between rounded-md bg-th-bkg-3 p-3">
-                    <p>{t('common:sign-to-in-app-notifications')}</p>
-                    <Switch
-                      className="text-th-fgd-3"
-                      checked={singToNotifications}
-                      onChange={(checked) => setSignToNotifications(checked)}
-                    />
+                <div className="flex items-center justify-between rounded-md border border-th-bkg-3 px-3 py-2">
+                  <div>
+                    <p className="text-th-fgd-2">{t('enable-notifications')}</p>
+                    <p className="text-xs">{t('asked-sign-transaction')}</p>
                   </div>
+                  <Switch
+                    className="text-th-fgd-3"
+                    checked={singToNotifications}
+                    onChange={(checked) => setSignToNotifications(checked)}
+                  />
+                </div>
+                <div className="space-y-3">
                   <div className="mt-10">
                     <Button
                       className="mb-6 flex items-center justify-center"
