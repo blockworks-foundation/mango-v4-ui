@@ -19,8 +19,6 @@ import Change from '@components/shared/Change'
 import SheenLoader from '@components/shared/SheenLoader'
 import { PerformanceDataItem } from 'types'
 import useAccountHourlyVolumeStats from 'hooks/useAccountHourlyVolumeStats'
-import { useHiddenMangoAccounts } from 'hooks/useHiddenMangoAccounts'
-import { useWallet } from '@solana/wallet-adapter-react'
 
 const AccountHeroStats = ({
   accountPnl,
@@ -40,12 +38,6 @@ const AccountHeroStats = ({
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const { hourlyVolumeData, loadingHourlyVolume } =
     useAccountHourlyVolumeStats()
-  const { hiddenAccounts } = useHiddenMangoAccounts()
-  const { connected } = useWallet()
-  const accountHidden =
-    !connected &&
-    mangoAccountAddress &&
-    hiddenAccounts?.includes(mangoAccountAddress)
 
   const totalInterestData = mangoStore(
     (s) => s.mangoAccount.interestTotals.data,
@@ -322,7 +314,7 @@ const AccountHeroStats = ({
               >
                 <p className="tooltip-underline">{t('pnl')}</p>
               </Tooltip>
-              {mangoAccountAddress && !accountHidden ? (
+              {mangoAccountAddress ? (
                 <div className="flex items-center space-x-3">
                   <Tooltip
                     className="hidden md:block"
@@ -353,35 +345,17 @@ const AccountHeroStats = ({
                 </div>
               ) : null}
             </div>
-            {!accountHidden ? (
-              <>
-                <p className="mb-0.5 mt-1 text-left text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
-                  <FormatNumericValue
-                    value={accountPnl}
-                    decimals={2}
-                    isUsd={true}
-                  />
-                </p>
-                <div className="flex space-x-1.5">
-                  <Change
-                    change={rollingDailyPnlChange}
-                    prefix="$"
-                    size="small"
-                  />
-                  <p className="text-xs text-th-fgd-4">{t('rolling-change')}</p>
-                </div>
-              </>
-            ) : (
-              <>
-                <p className="mb-0.5 mt-1 text-left text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
-                  <FormatNumericValue value={0} decimals={2} isUsd={true} />
-                </p>
-                <div className="flex space-x-1.5">
-                  <Change change={0} prefix="$" size="small" />
-                  <p className="text-xs text-th-fgd-4">{t('rolling-change')}</p>
-                </div>
-              </>
-            )}
+            <p className="mb-0.5 mt-1 text-left text-2xl font-bold text-th-fgd-1 lg:text-xl xl:text-2xl">
+              <FormatNumericValue
+                value={accountPnl}
+                decimals={2}
+                isUsd={true}
+              />
+            </p>
+            <div className="flex space-x-1.5">
+              <Change change={rollingDailyPnlChange} prefix="$" size="small" />
+              <p className="text-xs text-th-fgd-4">{t('rolling-change')}</p>
+            </div>
           </div>
         </div>
         <div className="col-span-6 border-t border-th-bkg-3 py-3 pl-6 pr-4 md:col-span-3 md:border-l lg:col-span-2 lg:border-l-0 2xl:col-span-1 2xl:border-l 2xl:border-t-0">

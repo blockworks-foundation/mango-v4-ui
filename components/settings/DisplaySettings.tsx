@@ -27,6 +27,7 @@ import {
 import mangoStore from '@store/mangoStore'
 import Switch from '@components/forms/Switch'
 import { CUSTOM_SKINS } from 'utils/theme'
+import HideMangoAccount from '@components/account/HideMangoAccount'
 
 const NOTIFICATION_POSITIONS = [
   'bottom-left',

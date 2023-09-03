@@ -14,6 +14,24 @@ const HideMangoAccount = () => {
   const { accountHidden, refetch } = useMangoAccountHidden()
   const [signingForHide, setSigningForHide] = useState(false)
 
+  const handleHideMangoAccount = async () => {
+    if (!publicKey || !mangoAccountPk || !signMessage) return
+    setSigningForHide(true)
+    try {
+      await toggleMangoAccountHidden(
+        mangoAccountPk,
+        publicKey,
+        !(accountHidden ?? false),
+        signMessage,
+      )
+      refetch()
+      setSigningForHide(false)
+    } catch (e) {
+      console.error('Error toggling account visibility', e)
+      setSigningForHide(false)
+    }
+  }
+
   return (
     <>
       <div className="flex items-center justify-between border-t border-th-bkg-3 p-4">
@@ -23,21 +41,7 @@ const HideMangoAccount = () => {
         ) : (
           <Switch
             checked={accountHidden ?? false}
-            onChange={async () => {
-              if (!publicKey) throw new Error('Wallet not connected!')
-              if (!mangoAccountPk) throw new Error('MangoAccount not found!')
-              if (!signMessage)
-                throw new Error('Wallet does not support message signing!')
-              setSigningForHide(true)
-              await toggleMangoAccountHidden(
-                mangoAccountPk,
-                publicKey,
-                !(accountHidden ?? false),
-                signMessage,
-              )
-              setSigningForHide(false)
-              refetch()
-            }}
+            onChange={handleHideMangoAccount}
           />
         )}
       </div>

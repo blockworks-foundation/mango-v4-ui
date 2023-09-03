@@ -1,9 +1,7 @@
 import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes'
 import { PublicKey } from '@solana/web3.js'
 import { useQuery } from '@tanstack/react-query'
-import { isMangoError } from 'types'
 import { MANGO_DATA_API_URL } from 'utils/constants'
-import { notify } from 'utils/notifications'
 import useMangoAccount from './useMangoAccount'
 
 const fetchMangoAccountHidden = async (mangoAccountAddress: string) => {
@@ -73,13 +71,6 @@ export const toggleMangoAccountHidden = async (
       requestOptions,
     )
   } catch (e) {
-    if (isMangoError(e)) {
-      notify({
-        title: 'idk',
-        description: e.message,
-        txid: e.txid,
-        type: 'error',
-      })
-    }
+    console.error('Failed to toggle mango account privacy', e)
   }
 }

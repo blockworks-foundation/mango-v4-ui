@@ -9,6 +9,7 @@ import useNetworkSpeed from 'hooks/useNetworkSpeed'
 import { useWallet } from '@solana/wallet-adapter-react'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { DEFAULT_PRIORITY_FEE_LEVEL } from './settings/RpcSettings'
+import { useHiddenMangoAccounts } from 'hooks/useHiddenMangoAccounts'
 
 const set = mangoStore.getState().set
 const actions = mangoStore.getState().actions
@@ -143,6 +144,7 @@ const ReadOnlyMangoAccount = () => {
   const router = useRouter()
   const groupLoaded = mangoStore((s) => s.groupLoaded)
   const ma = router.query?.address
+  const { hiddenAccounts } = useHiddenMangoAccounts()
 
   useEffect(() => {
     if (!groupLoaded) return
@@ -151,7 +153,7 @@ const ReadOnlyMangoAccount = () => {
 
     async function loadUnownedMangoAccount() {
       try {
-        if (!ma || !group) return
+        if (!ma || !group || hiddenAccounts?.includes(ma as string)) return
 
         const client = mangoStore.getState().client
         const pk = new PublicKey(ma)
