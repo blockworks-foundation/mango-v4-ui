@@ -43,6 +43,9 @@ import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { getDecimalCount } from 'utils/numbers'
 import { AUTO_CONNECT_WALLET, THEME_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
+import { initializeWhenDetected } from '@solflare-wallet/metamask-wallet-standard'
+
+initializeWhenDetected()
 
 // init react-query
 export const queryClient = new QueryClient()
