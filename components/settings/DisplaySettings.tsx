@@ -231,7 +231,9 @@ const DisplaySettings = () => {
         />
       </div>
       <div className="flex items-center justify-between border-t border-th-bkg-3 p-4">
-        <p className="">Privacy Mode</p>
+        <Tooltip content={t('settings:tooltip-privacy-mode')}>
+          <p className="tooltip-underline">{t('settings:privacy-mode')}</p>
+        </Tooltip>
         <Switch
           checked={privacyMode}
           onChange={() => setPrivacyMode(!privacyMode)}
