@@ -56,13 +56,13 @@ const Orderbook = () => {
   //     ? localStorage.getItem(USE_ORDERBOOK_FEED_KEY) === 'true'
   //     : true
   // )
-  const { isTablet } = useViewport()
+  const { isDesktop } = useViewport()
   const [orderbookData, setOrderbookData] = useState<OrderbookData | null>(null)
   const currentOrderbookData = useRef<OrderbookL2>()
 
   const depth = useMemo(() => {
-    return isTablet ? 12 : 30
-  }, [isTablet])
+    return isDesktop ? 30 : 12
+  }, [isDesktop])
 
   const depthArray: number[] = useMemo(() => {
     return Array(depth).fill(0)
