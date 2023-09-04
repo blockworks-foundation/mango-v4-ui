@@ -7,8 +7,11 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import Switch from '@components/forms/Switch'
 import { useState } from 'react'
 import Loading from '@components/shared/Loading'
+import Tooltip from '@components/shared/Tooltip'
+import { useTranslation } from 'react-i18next'
 
 const HideMangoAccount = () => {
+  const { t } = useTranslation('settings')
   const { publicKey, signMessage } = useWallet()
   const { mangoAccountPk } = useMangoAccount()
   const { accountHidden, refetch } = useMangoAccountHidden()
@@ -34,8 +37,10 @@ const HideMangoAccount = () => {
 
   return (
     <>
-      <div className="flex items-center justify-between border-t border-th-bkg-3 p-4">
-        <p className="">Hide Mango Account From Search</p>
+      <div className="flex items-center justify-between border-y border-th-bkg-3 p-4">
+        <Tooltip content={t('settings:tooltip-private-account')}>
+          <p className="tooltip-underline">{t('settings:private-account')}</p>
+        </Tooltip>
         {signingForHide ? (
           <Loading />
         ) : (

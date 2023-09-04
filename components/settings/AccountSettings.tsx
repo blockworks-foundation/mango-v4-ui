@@ -35,6 +35,9 @@ const AccountSettings = () => {
   return mangoAccountAddress && group ? (
     <>
       <h2 className="mb-4 text-base">{t('account')}</h2>
+      <div className="pb-6">
+        <HideMangoAccount />
+      </div>
       <div className="mb-4 flex items-center justify-between md:px-4">
         <h3 className="text-sm text-th-fgd-2">{t('settings:account-size')}</h3>
         {!isAccountFull ? (
@@ -287,7 +290,6 @@ const AccountSettings = () => {
         </Tooltip>
         <p className="font-mono text-th-fgd-2">{availablePerpOo}</p>
       </div> */}
-      <HideMangoAccount />
       {showAccountSizeModal ? (
         <MangoAccountSizeModal
           isOpen={showAccountSizeModal}
