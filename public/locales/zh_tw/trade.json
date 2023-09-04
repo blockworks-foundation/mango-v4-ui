@@ -106,6 +106,7 @@
     "tooltip-insured": "如果發生破產，{{tokenOrMarket}}損失是否可以從保險基金中歸還",
     "tooltip-ioc": "IOC交易若不吃單就會被取消。任何無法立刻成交的部分將被取消",
     "tooltip-post": "Post交易若不掛單就會被取消。",
+    "tooltip-size-base-quote": "Show size in {{token}}",
     "tooltip-slippage": "當前價格與您的交易將執行的價格之間的差值的估計",
     "tooltip-stable-price": "穩定價格用於一個安全機制。此機制可以限制用戶在預言機價格快速波動時下風險高的訂單",
     "tooltip-volume-alert": "交易量警報設定",
