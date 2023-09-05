@@ -58,7 +58,7 @@ const HydrateStore = () => {
     () => {
       actions.fetchGroup()
     },
-    (slowNetwork ? 40 : 20) * SECONDS,
+    (slowNetwork ? 60 : 30) * SECONDS,
   )
 
   // refetches open orders every 30 seconds
