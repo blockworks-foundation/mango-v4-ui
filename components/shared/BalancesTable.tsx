@@ -345,8 +345,7 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
   const { selectedMarket } = useSelectedMarket()
   const { asPath } = useRouter()
   const { isUnownedAccount } = useUnownedAccount()
-  const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.md : false
+  const { isDesktop } = useViewport()
 
   const tokenBank = bank.bank
 
@@ -456,7 +455,7 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
 
   return (
     <p className="font-mono text-th-fgd-2 md:flex md:justify-end">
-      {!isUnownedAccount && !isMobile ? (
+      {!isUnownedAccount && isDesktop ? (
         asPath.includes('/trade') && isBaseOrQuote ? (
           <LinkButton
             className="font-normal underline underline-offset-2 md:underline-offset-4 md:hover:no-underline"

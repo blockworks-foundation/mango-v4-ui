@@ -8,7 +8,6 @@ import useMangoAccount from '../../hooks/useMangoAccount'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import dayjs from 'dayjs'
 import { useViewport } from 'hooks/useViewport'
-import { breakpoints } from 'utils/theme'
 import useMangoGroup from 'hooks/useMangoGroup'
 import PnlHistoryModal from '@components/modals/PnlHistoryModal'
 import AssetsLiabilities from './AssetsLiabilities'
@@ -38,8 +37,7 @@ const AccountPage = () => {
   const { group } = useMangoGroup()
   const { mangoAccount } = useMangoAccount()
   const [showPnlHistory, setShowPnlHistory] = useState<boolean>(false)
-  const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.md : false
+  const { isTablet } = useViewport()
   const [activeTab, setActiveTab] = useLocalStorageState(
     'accountHeroKey-0.1',
     'account-value',
@@ -127,7 +125,7 @@ const AccountPage = () => {
               />
             ) : null}
             {activeTab === 'account:assets-liabilities' ? (
-              <AssetsLiabilities isMobile={isMobile} />
+              <AssetsLiabilities isMobile={isTablet} />
             ) : null}
           </div>
         </div>

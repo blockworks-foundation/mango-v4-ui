@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@blockworks-foundation/mango-feeds": "0.1.7",
-    "@blockworks-foundation/mango-v4": "^0.19.12",
+    "@blockworks-foundation/mango-v4": "^0.19.13",
     "@blockworks-foundation/mango-v4-settings": "0.2.6",
     "@headlessui/react": "1.6.6",
     "@heroicons/react": "2.0.10",
@@ -63,7 +63,7 @@
     "react-dom": "18.2.0",
     "react-flip-numbers": "3.0.5",
     "react-grid-layout": "1.3.4",
-    "react-hot-keys": "2.7.2",
+    "react-hotkeys-hook": "4.4.1",
     "react-i18next": "13.0.2",
     "react-nice-dates": "3.1.0",
     "react-number-format": "4.9.2",

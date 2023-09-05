@@ -20,8 +20,7 @@ const TradeInfoTabs = () => {
   const unsettledSpotBalances = useUnsettledSpotBalances()
   const unsettledPerpPositions = useUnsettledPerpPositions()
   const openPerpPositions = useOpenPerpPositions()
-  const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.md : false
+  const { isMobile, isTablet, width } = useViewport()
   const fillTabWidth = width ? width < breakpoints['2xl'] : false
 
   useEffect(() => {
@@ -51,7 +50,7 @@ const TradeInfoTabs = () => {
   return (
     <div className="hide-scroll h-full overflow-y-scroll">
       <div className="hide-scroll flex items-center overflow-x-auto border-b border-th-bkg-3">
-        <div className="md:border-r md:border-th-bkg-3 lg:w-full">
+        <div className="w-full md:w-auto md:border-r md:border-th-bkg-3 lg:w-full">
           <TabButtons
             activeValue={selectedTab}
             onChange={(tab: string) => setSelectedTab(tab)}
@@ -62,22 +61,37 @@ const TradeInfoTabs = () => {
         </div>
         <ManualRefresh
           classNames="fixed bottom-16 right-4 md:relative md:px-2 md:bottom-0 md:right-0 z-10 shadow-lg md:shadow-none bg-th-bkg-3 md:bg-transparent"
-          hideBg={isMobile}
-          size={isMobile ? 'large' : 'small'}
+          hideBg={isMobile || isTablet}
+          size={isTablet ? 'large' : 'small'}
         />
       </div>
-      {selectedTab === 'balances' ? <SwapTradeBalances /> : null}
-      {selectedTab === 'trade:orders' ? <OpenOrders /> : null}
-      {selectedTab === 'trade:unsettled' ? (
-        <UnsettledTrades
-          unsettledSpotBalances={unsettledSpotBalances}
-          unsettledPerpPositions={unsettledPerpPositions}
-        />
-      ) : null}
-      {selectedTab === 'trade:positions' ? <PerpPositions /> : null}
-      {selectedTab === 'trade-history' ? <TradeHistory /> : null}
+      <TabContent selectedTab={selectedTab} />
     </div>
   )
 }
 
 export default TradeInfoTabs
+
+const TabContent = ({ selectedTab }: { selectedTab: string }) => {
+  const unsettledSpotBalances = useUnsettledSpotBalances()
+  const unsettledPerpPositions = useUnsettledPerpPositions()
+  switch (selectedTab) {
+    case 'balances':
+      return <SwapTradeBalances />
+    case 'trade:orders':
+      return <OpenOrders />
+    case 'trade:unsettled':
+      return (
+        <UnsettledTrades
+          unsettledSpotBalances={unsettledSpotBalances}
+          unsettledPerpPositions={unsettledPerpPositions}
+        />
+      )
+    case 'trade:positions':
+      return <PerpPositions />
+    case 'trade-history':
+      return <TradeHistory />
+    default:
+      return <SwapTradeBalances />
+  }
+}

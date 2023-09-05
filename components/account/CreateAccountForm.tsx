@@ -30,18 +30,16 @@ const getNextAccountNumber = (accounts: MangoAccount[]): number => {
 }
 
 const CreateAccountForm = ({
-  isFirstAccount,
   customClose,
   handleBack,
 }: {
-  isFirstAccount?: boolean
   customClose?: () => void
   handleBack?: () => void
 }) => {
   const { t } = useTranslation('common')
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState('')
-  const [singToNotifications, setSignToNotifications] = useState(true)
+  const [signToNotifications, setSignToNotifications] = useState(true)
   //whole context needed to sign msgs
   const walletContext = useWallet()
   const { maxSolDeposit } = useSolBalance()
@@ -66,7 +64,7 @@ const CreateAccountForm = ({
         parseInt(MAX_ACCOUNTS.perpOpenOrders), // perp Oo
       )
       if (tx) {
-        if (singToNotifications) {
+        if (signToNotifications) {
           createSolanaMessage(walletContext, setCookie)
         }
         const pk = walletContext.wallet.adapter.publicKey
@@ -111,7 +109,7 @@ const CreateAccountForm = ({
     </div>
   ) : (
     <div className="flex h-full flex-col justify-between">
-      <div className="pb-4">
+      <div className="pb-3">
         <div className="flex items-center">
           {handleBack ? (
             <IconButton className="mr-3" onClick={handleBack} size="small">
@@ -121,11 +119,7 @@ const CreateAccountForm = ({
           <h2 className="w-full text-center">{t('create-account')}</h2>
           {handleBack ? <div className="h-5 w-5" /> : null}
         </div>
-        {isFirstAccount ? (
-          <p className="mt-1 text-center">
-            You need a Mango Account to get started.
-          </p>
-        ) : null}
+        <p className="mt-1 text-center">{t('insufficient-sol')}</p>
         <div className="pt-4">
           <Label optional text={t('account-name')} />
         </div>
@@ -140,29 +134,29 @@ const CreateAccountForm = ({
           }
           maxLength={30}
         />
-      </div>
-      <div className="space-y-4">
-        <InlineNotification type="info" desc={t('insufficient-sol')} />
-        <div className="flex items-center justify-between rounded-md bg-th-bkg-3 p-3">
-          <p>{t('common:sign-to-in-app-notifications')}</p>
+        <div className="my-3 flex items-center justify-between rounded-md border border-th-bkg-3 px-3 py-2">
+          <div>
+            <p className="text-th-fgd-2">{t('enable-notifications')}</p>
+            <p className="text-xs">{t('asked-sign-transaction')}</p>
+          </div>
           <Switch
             className="text-th-fgd-3"
-            checked={singToNotifications}
+            checked={signToNotifications}
             onChange={(checked) => setSignToNotifications(checked)}
           />
         </div>
-        <Button
-          className="w-full"
-          disabled={maxSolDeposit <= 0}
-          onClick={handleNewAccount}
-          size="large"
-        >
-          {t('create-account')}
-        </Button>
         {maxSolDeposit <= 0 ? (
           <InlineNotification type="error" desc={t('deposit-more-sol')} />
         ) : null}
       </div>
+      <Button
+        className="mt-6 w-full"
+        disabled={maxSolDeposit <= 0}
+        onClick={handleNewAccount}
+        size="large"
+      >
+        {t('create-account')}
+      </Button>
     </div>
   )
 }

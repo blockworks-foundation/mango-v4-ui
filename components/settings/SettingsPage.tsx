@@ -6,16 +6,14 @@ import NotificationSettings from './NotificationSettings'
 import PreferredExplorerSettings from './PreferredExplorerSettings'
 import RpcSettings from './RpcSettings'
 import SoundSettings from './SoundSettings'
-import { breakpoints } from 'utils/theme'
 import AccountSettings from './AccountSettings'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 
 const SettingsPage = () => {
-  const { width } = useViewport()
+  const { isDesktop } = useViewport()
   const { mangoAccountAddress } = useMangoAccount()
   const { isUnownedAccount } = useUnownedAccount()
-  const isMobile = width ? width < breakpoints.lg : false
   return (
     <div className="grid grid-cols-12">
       <div className="col-span-12 border-b border-th-bkg-3 lg:col-span-10 lg:col-start-2 xl:col-span-8 xl:col-start-3">
@@ -32,7 +30,7 @@ const SettingsPage = () => {
       <div className="col-span-12 pt-8 lg:col-span-10 lg:col-start-2 xl:col-span-8 xl:col-start-3">
         <NotificationSettings />
       </div>
-      {!isMobile ? (
+      {isDesktop ? (
         <div className="col-span-12 pt-8 lg:col-span-10 lg:col-start-2 xl:col-span-8 xl:col-start-3">
           <HotKeysSettings />
         </div>

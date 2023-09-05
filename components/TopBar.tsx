@@ -21,7 +21,6 @@ import useOnlineStatus from 'hooks/useOnlineStatus'
 import { abbreviateAddress } from 'utils/formatting'
 import DepositWithdrawModal from './modals/DepositWithdrawModal'
 import { useViewport } from 'hooks/useViewport'
-import { breakpoints } from 'utils/theme'
 import AccountsButton from './AccountsButton'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import NotificationsButton from './notifications/NotificationsButton'
@@ -50,8 +49,7 @@ const TopBar = () => {
   const router = useRouter()
   const { query } = router
 
-  const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.sm : false
+  const { isMobile } = useViewport()
 
   const { isUnownedAccount } = useUnownedAccount()
   const showUserSetup = mangoStore((s) => s.showUserSetup)

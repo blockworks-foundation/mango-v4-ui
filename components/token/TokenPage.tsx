@@ -1,7 +1,6 @@
 import Change from '@components/shared/Change'
 import DailyRange from '@components/shared/DailyRange'
 import { useTranslation } from 'next-i18next'
-import Image from 'next/legacy/image'
 import { useRouter } from 'next/router'
 import { useMemo, useState } from 'react'
 import FlipNumbers from 'react-flip-numbers'
@@ -22,6 +21,7 @@ import FormatNumericValue from '@components/shared/FormatNumericValue'
 import TopTokenAccounts from './TopTokenAccounts'
 import TokenParams from './TokenParams'
 import { formatTokenSymbol } from 'utils/tokens'
+import TokenLogo from '@components/shared/TokenLogo'
 
 const DEFAULT_COINGECKO_VALUES = {
   ath: 0,
@@ -94,13 +94,6 @@ const TokenPage = () => {
     }
   }, [group, bankName])
 
-  const logoURI = useMemo(() => {
-    if (bank && mangoTokens.length) {
-      return mangoTokens.find((t) => t.address === bank.mint.toString())
-        ?.logoURI
-    }
-  }, [bank, mangoTokens])
-
   const coingeckoId = useMemo(() => {
     if (bank && mangoTokens.length) {
       return mangoTokens.find((t) => t.address === bank.mint.toString())
@@ -133,7 +126,7 @@ const TokenPage = () => {
           <div className="flex flex-col border-b border-th-bkg-3 px-6 py-5 md:flex-row md:items-center md:justify-between">
             <div className="mb-4 md:mb-1">
               <div className="mb-1.5 flex items-center space-x-2">
-                <Image src={logoURI!} height="20" width="20" />
+                <TokenLogo bank={bank} />
                 {coingeckoTokenInfo ? (
                   <h1 className="text-base font-normal">
                     {coingeckoTokenInfo.name}{' '}

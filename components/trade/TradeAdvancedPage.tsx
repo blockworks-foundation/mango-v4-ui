@@ -47,7 +47,7 @@ const ResponsiveGridLayout = WidthProvider(Responsive)
 const TradeAdvancedPage = () => {
   const { height, width } = useViewport()
   const { uiLocked } = mangoStore((s) => s.settings)
-  const showMobileView = width <= breakpoints.md
+  const showMobileView = width < breakpoints.md
   // const tourSettings = mangoStore((s) => s.settings.tours)
   // const { connected } = useWallet()
   // const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
