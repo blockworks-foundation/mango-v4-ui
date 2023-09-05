@@ -66,7 +66,7 @@ const UserSetupModal = ({
   const [depositAmount, setDepositAmount] = useState('')
   const [submitDeposit, setSubmitDeposit] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
-  const [singToNotifications, setSignToNotifications] = useState(true)
+  const [signToNotifications, setSignToNotifications] = useState(true)
   // const [showEditProfilePic, setShowEditProfilePic] = useState(false)
   const { maxSolDeposit } = useSolBalance()
   const banks = useBanksWithBalances('walletBalance')
@@ -119,7 +119,7 @@ const UserSetupModal = ({
       )
       actions.fetchMangoAccounts(publicKey)
       if (tx) {
-        if (singToNotifications) {
+        if (signToNotifications) {
           createSolanaMessage(walletContext, setCookie)
         }
         actions.fetchWalletTokens(publicKey) // need to update sol balance after account rent
@@ -389,7 +389,7 @@ const UserSetupModal = ({
                   </div>
                   <Switch
                     className="text-th-fgd-3"
-                    checked={singToNotifications}
+                    checked={signToNotifications}
                     onChange={(checked) => setSignToNotifications(checked)}
                   />
                 </div>

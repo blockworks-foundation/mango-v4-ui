@@ -39,7 +39,7 @@ const CreateAccountForm = ({
   const { t } = useTranslation('common')
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState('')
-  const [singToNotifications, setSignToNotifications] = useState(true)
+  const [signToNotifications, setSignToNotifications] = useState(true)
   //whole context needed to sign msgs
   const walletContext = useWallet()
   const { maxSolDeposit } = useSolBalance()
@@ -64,7 +64,7 @@ const CreateAccountForm = ({
         parseInt(MAX_ACCOUNTS.perpOpenOrders), // perp Oo
       )
       if (tx) {
-        if (singToNotifications) {
+        if (signToNotifications) {
           createSolanaMessage(walletContext, setCookie)
         }
         const pk = walletContext.wallet.adapter.publicKey
@@ -141,7 +141,7 @@ const CreateAccountForm = ({
           </div>
           <Switch
             className="text-th-fgd-3"
-            checked={singToNotifications}
+            checked={signToNotifications}
             onChange={(checked) => setSignToNotifications(checked)}
           />
         </div>
