@@ -6,7 +6,6 @@ import {
   ChevronDownIcon,
   CurrencyDollarIcon,
   ChartBarIcon,
-  Cog8ToothIcon,
   ArrowsRightLeftIcon,
   ArrowTrendingUpIcon,
   MagnifyingGlassIcon,
@@ -195,13 +194,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               icon={<LeaderboardIcon className="h-5 w-5" />}
               title={t('leaderboard')}
               pagePath="/leaderboard"
-            />
-            <MenuItem
-              active={pathname === '/settings'}
-              collapsed={collapsed}
-              icon={<Cog8ToothIcon className="h-5 w-5" />}
-              title={t('settings')}
-              pagePath="/settings"
             />
             <ExpandableMenuItem
               collapsed={collapsed}

@@ -43,9 +43,6 @@ const NotificationSettings = () => {
   }
   return (
     <>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-base">{t('settings:notifications')}</h2>
-      </div>
       {isAuth ? (
         <div className="flex items-center justify-between border-y border-th-bkg-3 p-4">
           <p>{t('settings:limit-order-filled')}</p>

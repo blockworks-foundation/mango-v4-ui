@@ -33,8 +33,7 @@ const AccountSettings = () => {
   } = useMangoAccountAccounts()
 
   return mangoAccountAddress && group ? (
-    <>
-      <h2 className="mb-4 text-base">{t('account')}</h2>
+    <div className="border-b border-th-bkg-3">
       <div className="pb-6">
         <HideMangoAccount />
       </div>
@@ -296,7 +295,7 @@ const AccountSettings = () => {
           onClose={() => setShowAccountSizeModal(false)}
         />
       ) : null}
-    </>
+    </div>
   ) : null
 }
 
