@@ -28,7 +28,6 @@ import { Popover, Transition } from '@headlessui/react'
 import ActionsLinkButton from './ActionsLinkButton'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import { useViewport } from 'hooks/useViewport'
-import { breakpoints } from 'utils/theme'
 import MangoAccountSizeModal from '@components/modals/MangoAccountSizeModal'
 import useMangoAccountAccounts from 'hooks/useMangoAccountAccounts'
 import useLocalStorageState from 'hooks/useLocalStorageState'
@@ -58,8 +57,7 @@ const AccountActions = () => {
   const [privacyMode, setPrivacyMode] = useLocalStorageState(PRIVACY_MODE)
   const { connected } = useWallet()
   const { isDelegatedAccount, isUnownedAccount } = useUnownedAccount()
-  const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.sm : false
+  const { isMobile } = useViewport()
   const { isAccountFull } = useMangoAccountAccounts()
 
   const handleBorrowModal = () => {

@@ -11,7 +11,6 @@ import { COLORS } from 'styles/colors'
 import { useMemo } from 'react'
 import { formatCurrencyValue } from 'utils/numbers'
 import { useViewport } from 'hooks/useViewport'
-import { breakpoints } from 'utils/theme'
 import { HealthContribution } from 'types'
 import useThemeWrapper from 'hooks/useThemeWrapper'
 
@@ -26,8 +25,7 @@ const HealthContributionsChart = ({
 }) => {
   const { t } = useTranslation(['common', 'account'])
   const { theme } = useThemeWrapper()
-  const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.sm : false
+  const { isMobile } = useViewport()
 
   const handleClick = (index: number) => {
     setActiveIndex(index)

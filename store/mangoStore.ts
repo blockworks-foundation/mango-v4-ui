@@ -45,7 +45,6 @@ import {
   MAX_PRIORITY_FEE_KEYS,
   OUTPUT_TOKEN_DEFAULT,
   PAGINATION_PAGE_LENGTH,
-  PRIORITY_FEE_KEY,
   RPC_PROVIDER_KEY,
   SWAP_MARGIN_KEY,
 } from '../utils/constants'
@@ -119,7 +118,7 @@ const initMangoClient = (
 ): MangoClient => {
   return MangoClient.connect(provider, CLUSTER, MANGO_V4_ID[CLUSTER], {
     prioritizationFee: opts.prioritizationFee,
-    idsSource: 'get-program-accounts',
+    idsSource: 'api',
     postSendTxCallback: ({ txid }: { txid: string }) => {
       notify({
         title: 'Transaction sent',
@@ -131,7 +130,6 @@ const initMangoClient = (
   })
 }
 
-let mangoGroupRetryAttempt = 0
 export const DEFAULT_TRADE_FORM: TradeForm = {
   side: 'buy',
   price: undefined,
@@ -252,6 +250,10 @@ export type MangoStore = {
       data: NFT[] | []
       loading: boolean
     }
+  }
+  window: {
+    width: number
+    height: number
   }
   actions: {
     fetchAccountInterestTotals: (mangoAccountPk: string) => Promise<void>
@@ -421,6 +423,10 @@ const mangoStore = create<MangoStore>()(
           loading: false,
         },
       },
+      window: {
+        width: 0,
+        height: 0,
+      },
       actions: {
         fetchAccountInterestTotals: async (mangoAccountPk: string) => {
           const set = get().set
@@ -574,15 +580,9 @@ const mangoStore = create<MangoStore>()(
                 )
               }
             })
-            mangoGroupRetryAttempt = 0
           } catch (e) {
-            if (mangoGroupRetryAttempt < 2) {
-              // get().actions.fetchGroup()
-              mangoGroupRetryAttempt++
-            } else {
-              notify({ type: 'info', title: 'Unable to refresh data' })
-              console.error('Error fetching group', e)
-            }
+            notify({ type: 'info', title: 'Unable to refresh data' })
+            console.error('Error fetching group', e)
           }
         },
         reloadMangoAccount: async (confirmationSlot) => {

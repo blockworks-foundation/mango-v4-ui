@@ -20,6 +20,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
         'notifications',
         'onboarding',
         'onboarding-tours',
+        'profile',
         'trade',
         'close-account',
         'tv-chart',

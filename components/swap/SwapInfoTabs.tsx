@@ -5,16 +5,14 @@ import SwapHistoryTable from './SwapHistoryTable'
 import useMangoAccount from 'hooks/useMangoAccount'
 import ManualRefresh from '@components/shared/ManualRefresh'
 import { useViewport } from 'hooks/useViewport'
-import { breakpoints } from 'utils/theme'
 import SwapOrders from './SwapOrders'
 import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
 
 const SwapInfoTabs = () => {
   const [selectedTab, setSelectedTab] = useState('balances')
   const { mangoAccount } = useMangoAccount()
-  const { width } = useViewport()
+  const { isMobile, isTablet } = useViewport()
   const { data: isWhiteListed } = useIsWhiteListed()
-  const isMobile = width ? width < breakpoints.md : false
 
   const tabsWithCount: [string, number][] = useMemo(() => {
     const tabs: [string, number][] = [
@@ -43,8 +41,8 @@ const SwapInfoTabs = () => {
         </div>
         <ManualRefresh
           classNames="fixed bottom-16 right-4 md:relative md:px-2 md:bottom-0 md:right-0 z-10 shadow-lg md:shadow-none bg-th-bkg-3 md:bg-transparent"
-          hideBg={isMobile}
-          size={isMobile ? 'large' : 'small'}
+          hideBg={isMobile || isTablet}
+          size={isTablet ? 'large' : 'small'}
         />
       </div>
       {selectedTab === 'balances' ? <SwapTradeBalances /> : null}

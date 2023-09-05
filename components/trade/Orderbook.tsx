@@ -33,7 +33,6 @@ import {
 import { OrderbookData, OrderbookL2 } from 'types'
 import isEqual from 'lodash/isEqual'
 import { useViewport } from 'hooks/useViewport'
-import { breakpoints } from 'utils/theme'
 
 const sizeCompacter = Intl.NumberFormat('en', {
   maximumFractionDigits: 6,
@@ -57,14 +56,13 @@ const Orderbook = () => {
   //     ? localStorage.getItem(USE_ORDERBOOK_FEED_KEY) === 'true'
   //     : true
   // )
-  const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.md : false
+  const { isDesktop } = useViewport()
   const [orderbookData, setOrderbookData] = useState<OrderbookData | null>(null)
   const currentOrderbookData = useRef<OrderbookL2>()
 
   const depth = useMemo(() => {
-    return isMobile ? 12 : 30
-  }, [isMobile])
+    return isDesktop ? 30 : 12
+  }, [isDesktop])
 
   const depthArray: number[] = useMemo(() => {
     return Array(depth).fill(0)

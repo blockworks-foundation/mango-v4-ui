@@ -34,10 +34,10 @@
     bn.js "^5.2.1"
     eslint-config-prettier "^9.0.0"
 
-"@blockworks-foundation/mango-v4@^0.19.11":
-  version "0.19.11"
-  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.19.11.tgz#ca9787512526e335baad070110232ba4c178859b"
-  integrity sha512-XHIt5kUu6YVo6bNjmmatU4tYmZNDaKAQROv+HEQSTFeQOK/Y5j65PqwG6pGAWY/yDa6adSaARKHP3DqcfwppuQ==
+"@blockworks-foundation/mango-v4@^0.19.13":
+  version "0.19.13"
+  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.19.13.tgz#9bfbdacb2f11edf7fbd4d2e15347b793a7ee48bd"
+  integrity sha512-kNijRYbTAS7V19R50MLTvZCWpRqjgmtL9c7PA1vNF/BmfLTo3e8pDtx44ER8PkPIX6Mjet56iHf81bk7Yyjr/Q==
   dependencies:
     "@coral-xyz/anchor" "^0.27.0"
     "@project-serum/serum" "0.13.65"
@@ -5574,11 +5574,6 @@ hoist-non-react-statics@^3.3.0, hoist-non-react-statics@^3.3.2:
   dependencies:
     react-is "^16.7.0"
 
-hotkeys-js@^3.8.1:
-  version "3.10.2"
-  resolved "https://registry.yarnpkg.com/hotkeys-js/-/hotkeys-js-3.10.2.tgz#cf52661904f5a13a973565cb97085fea2f5ae257"
-  integrity sha512-Z6vLmJTYzkbZZXlBkhrYB962Q/rZGc/WHQiyEGu9ZZVF7bAeFDjjDa31grWREuw9Ygb4zmlov2bTkPYqj0aFnQ==
-
 howler@2.2.3:
   version "2.2.3"
   resolved "https://registry.yarnpkg.com/howler/-/howler-2.2.3.tgz#a2eff9b08b586798e7a2ee17a602a90df28715da"
@@ -7324,13 +7319,10 @@ react-grid-layout@1.3.4:
     react-draggable "^4.0.0"
     react-resizable "^3.0.4"
 
-react-hot-keys@2.7.2:
-  version "2.7.2"
-  resolved "https://registry.yarnpkg.com/react-hot-keys/-/react-hot-keys-2.7.2.tgz#7d2b02b7e2cf69182ea71ca01885446ebfae01d2"
-  integrity sha512-Z7eSh7SU6s52+zP+vkfFoNk0x4kgEmnwqDiyACKv53crK2AZ7FUaBLnf+vxLor3dvtId9murLmKOsrJeYgeHWw==
-  dependencies:
-    hotkeys-js "^3.8.1"
-    prop-types "^15.7.2"
+react-hotkeys-hook@4.4.1:
+  version "4.4.1"
+  resolved "https://registry.yarnpkg.com/react-hotkeys-hook/-/react-hotkeys-hook-4.4.1.tgz#1f7a7a1c9c21d4fa3280bf340fcca8fd77d81994"
+  integrity sha512-sClBMBioFEgFGYLTWWRKvhxcCx1DRznd+wkFHwQZspnRBkHTgruKIHptlK/U/2DPX8BhHoRGzpMVWUXMmdZlmw==
 
 react-i18next@13.0.2:
   version "13.0.2"

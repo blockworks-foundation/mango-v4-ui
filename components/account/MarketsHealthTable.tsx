@@ -7,7 +7,6 @@ import { useTranslation } from 'next-i18next'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useViewport } from 'hooks/useViewport'
-import { breakpoints } from 'utils/theme'
 import { MouseEventHandler } from 'react'
 import MarketLogos from '@components/trade/MarketLogos'
 import { HealthContribution } from 'types'
@@ -28,8 +27,7 @@ const MarketsHealthTable = ({
   const { t } = useTranslation(['common', 'account', 'trade'])
   const { group } = useMangoGroup()
   const { mangoAccount } = useMangoAccount()
-  const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.sm : false
+  const { isMobile } = useViewport()
   return group && mangoAccount ? (
     !isMobile ? (
       <Table>
