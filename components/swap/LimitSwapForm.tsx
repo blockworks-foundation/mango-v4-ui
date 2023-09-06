@@ -26,8 +26,8 @@ import SwapSlider from './SwapSlider'
 import PercentageSelectButtons from './PercentageSelectButtons'
 import { floorToDecimal, formatCurrencyValue } from 'utils/numbers'
 import { withValueLimit } from './MarketSwapForm'
-import SellTokenInput from './SellTokenInput'
-import BuyTokenInput from './BuyTokenInput'
+import ReduceInputTokenInput from './ReduceInputTokenInput'
+import ReduceOutputTokenInput from './ReduceOutputTokenInput'
 import { notify } from 'utils/notifications'
 import * as sentry from '@sentry/nextjs'
 import { isMangoError } from 'types'
@@ -45,12 +45,13 @@ import DepositWithdrawModal from '@components/modals/DepositWithdrawModal'
 import useRemainingBorrowsInPeriod from 'hooks/useRemainingBorrowsInPeriod'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
+import { SwapFormTokenListType } from './SwapFormTokenList'
 
 dayjs.extend(relativeTime)
 
 type LimitSwapFormProps = {
-  showTokenSelect: 'input' | 'output' | undefined
-  setShowTokenSelect: Dispatch<SetStateAction<'input' | 'output' | undefined>>
+  showTokenSelect: SwapFormTokenListType
+  setShowTokenSelect: Dispatch<SetStateAction<SwapFormTokenListType>>
 }
 
 type LimitSwapForm = {
@@ -230,11 +231,19 @@ const LimitSwapForm = ({
     return triggerDifference
   }, [quotePrice, triggerPrice])
 
-  const handleTokenSelect = (type: 'input' | 'output') => {
+  const handleTokenSelect = (type: SwapFormTokenListType) => {
     setShowTokenSelect(type)
     setFormErrors({})
     setTriggerPrice('')
   }
+
+  useLayoutEffect(() => {
+    if (!mangoAccount || !inputBank) {
+      return
+    }
+    const inputPos = mangoAccount.getTokenBalanceUi(inputBank)
+    setAnimateSwitchArrow(() => (inputPos > 0 ? 0 : 1))
+  }, [inputBank, mangoAccount])
 
   const hasBorrowToRepay = useMemo(() => {
     if (
@@ -480,47 +489,6 @@ const LimitSwapForm = ({
     [amountInFormValue, flipPrices, setFormErrors, setTriggerPrice],
   )
 
-  const handleSwitchTokens = useCallback(() => {
-    if (!inputBank || !outputBank) return
-    setFormErrors({})
-    set((s) => {
-      s.swap.inputBank = outputBank
-      s.swap.outputBank = inputBank
-    })
-    const multiplier = getOrderTypeMultiplier(orderType, flipPrices)
-    const price = flipPrices
-      ? floorToDecimal(
-          (inputBank.uiPrice / outputBank.uiPrice) * multiplier,
-          outputBank.mintDecimals,
-        ).toString()
-      : floorToDecimal(
-          (outputBank.uiPrice / inputBank.uiPrice) * multiplier,
-          inputBank.mintDecimals,
-        ).toString()
-    setTriggerPrice(price)
-
-    if (amountInAsDecimal?.gt(0)) {
-      const amountOut = getAmountOut(
-        amountInAsDecimal.toString(),
-        flipPrices,
-        price,
-      )
-      setAmountOutFormValue(amountOut.toString())
-    }
-    setAnimateSwitchArrow(
-      (prevanimateSwitchArrow) => prevanimateSwitchArrow + 1,
-    )
-  }, [
-    amountInAsDecimal,
-    flipPrices,
-    inputBank,
-    orderType,
-    outputBank,
-    setAmountInFormValue,
-    setFormErrors,
-    triggerPrice,
-  ])
-
   const handlePlaceStopLoss = useCallback(async () => {
     const invalidFields = isFormValid({
       amountIn: amountInAsDecimal.toNumber(),
@@ -760,11 +728,11 @@ const LimitSwapForm = ({
 
   return (
     <>
-      <SellTokenInput
+      <ReduceInputTokenInput
         className="rounded-b-none"
         error={formErrors.amountIn}
         handleAmountInChange={handleAmountInChange}
-        setShowTokenSelect={() => handleTokenSelect('input')}
+        setShowTokenSelect={() => handleTokenSelect('reduce-input')}
         handleMax={handleMax}
         isTriggerOrder
       />
@@ -867,24 +835,19 @@ const LimitSwapForm = ({
         ) : null}
       </div>
       <div className="my-2 flex justify-center">
-        <button
-          className="rounded-full border border-th-fgd-4 p-1.5 text-th-fgd-3 focus-visible:border-th-active md:hover:border-th-active md:hover:text-th-active"
-          onClick={handleSwitchTokens}
-        >
-          <ArrowDownIcon
-            className="h-5 w-5"
-            style={
-              animateSwitchArrow % 2 == 0
-                ? { transform: 'rotate(0deg)' }
-                : { transform: 'rotate(360deg)' }
-            }
-          />
-        </button>
+        <ArrowDownIcon
+          className="h-5 w-5"
+          style={
+            animateSwitchArrow % 2 == 0
+              ? { transform: 'rotate(0deg)' }
+              : { transform: 'rotate(180deg)' }
+          }
+        />
       </div>
-      <BuyTokenInput
+      <ReduceOutputTokenInput
         error={formErrors.hasBorrows}
         handleAmountOutChange={handleAmountOutChange}
-        setShowTokenSelect={() => handleTokenSelect('output')}
+        setShowTokenSelect={() => handleTokenSelect('reduce-output')}
         handleRepay={
           // orderType === OrderTypes.REPAY_BORROW ?
           handleRepay

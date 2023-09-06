@@ -3,22 +3,20 @@ import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
 import { floorToDecimal } from 'utils/numbers'
-import { useTokenMax } from './useTokenMax'
+import { TokenMaxResults } from './useTokenMax'
 
 const MaxSwapAmount = ({
   setAmountIn,
   useMargin,
+  maxAmount,
 }: {
   setAmountIn: (x: string) => void
   useMargin: boolean
+  maxAmount: (useMargin: boolean) => TokenMaxResults
 }) => {
   const { t } = useTranslation('common')
   const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
-  const {
-    amount: tokenMax,
-    amountWithBorrow,
-    decimals,
-  } = useTokenMax(useMargin)
+  const { amount: tokenMax, amountWithBorrow, decimals } = maxAmount(useMargin)
 
   if (mangoAccountLoading) return null
 

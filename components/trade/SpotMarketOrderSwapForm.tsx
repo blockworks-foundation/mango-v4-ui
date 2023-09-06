@@ -352,6 +352,7 @@ export default function SpotMarketOrderSwapForm() {
             <MaxSwapAmount
               useMargin={savedCheckboxSettings.margin}
               setAmountIn={setAmountFromSlider}
+              maxAmount={useTokenMax}
             />
           ) : null}
           <div className="flex flex-col">

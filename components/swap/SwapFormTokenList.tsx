@@ -15,6 +15,13 @@ import { formatTokenSymbol } from 'utils/tokens'
 import TokenLogo from '@components/shared/TokenLogo'
 import Input from '@components/forms/Input'
 
+export type SwapFormTokenListType =
+  | 'input'
+  | 'output'
+  | 'reduce-input'
+  | 'reduce-output'
+  | undefined
+
 const generateSearchTerm = (item: Token, searchValue: string) => {
   const normalizedSearchValue = searchValue.toLowerCase()
   const values = `${item.symbol} ${item.name}`.toLowerCase()
@@ -50,7 +57,7 @@ const TokenItem = ({
   token: TokenInfoWithAmounts
   onSubmit: (x: string) => void
   useMargin: boolean
-  type: 'input' | 'output' | undefined
+  type: SwapFormTokenListType
 }) => {
   const { t } = useTranslation('trade')
   const { address, symbol, name } = token
@@ -92,7 +99,7 @@ const TokenItem = ({
             </p>
           </div>
         </div>
-        {type === 'input' &&
+        {(type === 'input' || type === 'reduce-input') &&
         token.amount &&
         token.amountWithBorrow &&
         token.decimals ? (
@@ -128,7 +135,7 @@ const SwapFormTokenList = ({
 }: {
   onClose: () => void
   onTokenSelect: (x: string) => void
-  type: 'input' | 'output' | undefined
+  type: SwapFormTokenListType
   useMargin: boolean
 }) => {
   const { t } = useTranslation(['common', 'search', 'swap'])
@@ -178,6 +185,37 @@ const SwapFormTokenList = ({
         )
 
       return filteredSortedTokens
+    } else if (
+      mangoTokens?.length &&
+      group &&
+      mangoAccount &&
+      outputBank &&
+      inputBank &&
+      type === 'reduce-input'
+    ) {
+      const filteredSortedTokens = mangoTokens
+        .map((token) => {
+          const tokenBank = group.getFirstBankByMint(
+            new PublicKey(token.address),
+          )
+          const uiAmount = mangoAccount.getTokenBalanceUi(tokenBank)
+          const uiDollarValue = uiAmount * tokenBank.uiPrice
+          console.log(tokenBank)
+          return {
+            ...token,
+            amount: new Decimal(uiAmount),
+            amountWithBorrow: new Decimal(uiAmount),
+            absDollarValue: Math.abs(uiDollarValue),
+            decimals: inputBank.mintDecimals,
+          }
+        })
+        .filter(
+          (token) =>
+            token.symbol !== outputBank?.name && token.absDollarValue > 0.0001,
+        )
+        .sort((a, b) => b.absDollarValue - a.absDollarValue)
+
+      return filteredSortedTokens
     } else if (mangoTokens?.length) {
       const filteredTokens = mangoTokens
         .map((token) => ({
@@ -212,6 +250,8 @@ const SwapFormTokenList = ({
           ? t('swap:you-sell')
           : type === 'output'
           ? t('swap:you-buy')
+          : type === 'reduce-input'
+          ? t('swap:you-reduce')
           : ''}
       </p>
       <IconButton

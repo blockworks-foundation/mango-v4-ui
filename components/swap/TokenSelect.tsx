@@ -4,17 +4,30 @@ import { Bank } from '@blockworks-foundation/mango-v4'
 import { Dispatch, SetStateAction } from 'react'
 import { formatTokenSymbol } from 'utils/tokens'
 import TokenLogo from '@components/shared/TokenLogo'
+import { SwapFormTokenListType } from './SwapFormTokenList'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 type TokenSelectProps = {
   bank: Bank | undefined
-  showTokenList: Dispatch<SetStateAction<'input' | 'output' | undefined>>
-  type: 'input' | 'output'
+  showTokenList: Dispatch<SetStateAction<SwapFormTokenListType>>
+  type: SwapFormTokenListType
 }
 
 const TokenSelect = ({ bank, showTokenList, type }: TokenSelectProps) => {
   const { group } = useMangoGroup()
+  const { mangoAccount } = useMangoAccount()
 
   if (!group) return null
+
+  let posType = ''
+  if (type === 'reduce-input' && mangoAccount && bank) {
+    const uiPos = mangoAccount.getTokenBalanceUi(bank)
+    if (uiPos > 0) {
+      posType = 'long'
+    } else if (uiPos < 0) {
+      posType = 'short'
+    }
+  }
 
   return (
     <button
@@ -26,7 +39,7 @@ const TokenSelect = ({ bank, showTokenList, type }: TokenSelectProps) => {
       </div>
       <div className="flex w-full items-center justify-between">
         <div className="text-xl font-bold text-th-fgd-1">
-          {formatTokenSymbol(bank!.name)}
+          {formatTokenSymbol(bank!.name)} {posType}
         </div>
         <ChevronDownIcon className="h-6 w-6" />
       </div>

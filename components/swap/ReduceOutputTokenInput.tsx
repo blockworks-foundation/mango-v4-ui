@@ -16,7 +16,7 @@ import InlineNotification from '@components/shared/InlineNotification'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { SwapFormTokenListType } from './SwapFormTokenList'
 
-const BuyTokenInput = ({
+const ReduceOutputTokenInput = ({
   error,
   handleAmountOutChange,
   loading,
@@ -32,9 +32,16 @@ const BuyTokenInput = ({
   const { t } = useTranslation('common')
   const { mangoAccount } = useMangoAccount()
   const { group } = useMangoGroup()
-  const { outputBank, amountOut: amountOutFormValue } = mangoStore(
-    (s) => s.swap,
-  )
+  const {
+    inputBank,
+    outputBank,
+    amountOut: amountOutFormValue,
+  } = mangoStore((s) => s.swap)
+
+  const reducingLong =
+    mangoAccount && inputBank
+      ? mangoAccount.getTokenBalanceUi(inputBank) > 0
+      : false
 
   const outputTokenBalanceBorrow = useMemo(() => {
     if (!outputBank || !mangoAccount) return 0
@@ -49,7 +56,9 @@ const BuyTokenInput = ({
   return (
     <div className="mb-2 grid grid-cols-2 rounded-xl bg-th-bkg-2 p-3">
       <div className="col-span-2 mb-2 flex items-end justify-between">
-        <p className="text-th-fgd-2">{t('buy')}</p>
+        <p className="text-th-fgd-2">
+          {reducingLong ? t('producing') : t('by-selling')}
+        </p>
         {handleRepay && outputTokenBalanceBorrow ? (
           <MaxAmountButton
             className="mb-0.5 text-xs"
@@ -66,7 +75,7 @@ const BuyTokenInput = ({
             outputBank || group?.banksMapByName.get(OUTPUT_TOKEN_DEFAULT)?.[0]
           }
           showTokenList={setShowTokenSelect}
-          type="output"
+          type="reduce-output"
         />
       </div>
       <div className="relative col-span-1">
@@ -115,4 +124,4 @@ const BuyTokenInput = ({
   )
 }
 
-export default BuyTokenInput
+export default ReduceOutputTokenInput

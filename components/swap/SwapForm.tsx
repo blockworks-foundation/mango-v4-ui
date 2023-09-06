@@ -20,13 +20,15 @@ import LimitSwapForm from './LimitSwapForm'
 import Switch from '@components/forms/Switch'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
+import { SwapFormTokenListType } from './SwapFormTokenList'
 
 const set = mangoStore.getState().set
 
 const SwapForm = () => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
   const { data: isWhiteListed } = useIsWhiteListed()
-  const [showTokenSelect, setShowTokenSelect] = useState<'input' | 'output'>()
+  const [showTokenSelect, setShowTokenSelect] =
+    useState<SwapFormTokenListType>()
   const [showSettings, setShowSettings] = useState(false)
   const [swapOrLimit, setSwapOrLimit] = useState('swap')
   const [, setSavedSwapMargin] = useLocalStorageState<boolean>(
@@ -149,7 +151,7 @@ const SwapForm = () => {
           <SwapFormTokenList
             onClose={() => setShowTokenSelect(undefined)}
             onTokenSelect={
-              showTokenSelect === 'input'
+              showTokenSelect === 'input' || showTokenSelect === 'reduce-input'
                 ? handleTokenInSelect
                 : handleTokenOutSelect
             }

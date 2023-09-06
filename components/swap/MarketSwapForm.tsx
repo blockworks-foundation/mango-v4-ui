@@ -38,11 +38,12 @@ import useRemainingBorrowsInPeriod from 'hooks/useRemainingBorrowsInPeriod'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { formatCurrencyValue } from 'utils/numbers'
+import { SwapFormTokenListType } from './SwapFormTokenList'
 
 dayjs.extend(relativeTime)
 
 type MarketSwapFormProps = {
-  setShowTokenSelect: Dispatch<SetStateAction<'input' | 'output' | undefined>>
+  setShowTokenSelect: Dispatch<SetStateAction<SwapFormTokenListType>>
 }
 
 const MAX_DIGITS = 11

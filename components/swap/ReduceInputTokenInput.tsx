@@ -16,9 +16,32 @@ import InlineNotification from '@components/shared/InlineNotification'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import { SwapFormTokenListType } from './SwapFormTokenList'
-import { useTokenMax } from './useTokenMax'
+import { TokenMaxResults } from './useTokenMax'
+import Decimal from 'decimal.js'
 
-const SellTokenInput = ({
+const useAbsInputPosition = (): TokenMaxResults => {
+  const { mangoAccount } = useMangoAccount()
+  const { inputBank } = mangoStore((s) => s.swap)
+
+  if (!mangoAccount || !inputBank) {
+    return {
+      amount: new Decimal(0),
+      amountWithBorrow: new Decimal(0),
+      decimals: 6,
+    }
+  }
+
+  const amount = new Decimal(
+    Math.abs(mangoAccount.getTokenBalanceUi(inputBank)),
+  )
+  return {
+    decimals: inputBank.mintDecimals,
+    amount: amount,
+    amountWithBorrow: amount,
+  }
+}
+
+const ReduceInputTokenInput = ({
   handleAmountInChange,
   setShowTokenSelect,
   handleMax,
@@ -56,22 +79,22 @@ const SellTokenInput = ({
       className={`grid grid-cols-2 rounded-t-xl bg-th-bkg-2 p-3 pb-2 ${className}`}
     >
       <div className="col-span-2 mb-2 flex items-center justify-between">
-        <p className="text-th-fgd-2">{t('sell')}</p>
+        <p className="text-th-fgd-2">{t('reduce')}</p>
         {!isUnownedAccount ? (
           <MaxSwapAmount
             useMargin={isTriggerOrder ? false : useMargin}
             setAmountIn={(v) => handleMax(v)}
-            maxAmount={useTokenMax}
+            maxAmount={useAbsInputPosition}
           />
         ) : null}
       </div>
       <div className="col-span-1">
         <TokenSelect
           bank={
-            inputBank || group?.banksMapByName.get(INPUT_TOKEN_DEFAULT)?.[0]
+            inputBank || group?.banksMapByName.get(INPUT_TOKEN_DEFAULT)?.[0] // default to a user position
           }
           showTokenList={setShowTokenSelect}
-          type="input"
+          type="reduce-input"
         />
       </div>
       <div className="relative col-span-1">
@@ -123,4 +146,4 @@ const SellTokenInput = ({
   )
 }
 
-export default SellTokenInput
+export default ReduceInputTokenInput

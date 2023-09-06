@@ -105,7 +105,7 @@ export const getTokenInMax = (
   }
 }
 
-interface TokenMaxResults {
+export interface TokenMaxResults {
   amount: Decimal
   amountWithBorrow: Decimal
   decimals: number
