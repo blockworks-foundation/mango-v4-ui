@@ -37,6 +37,8 @@ import { NFT } from 'types'
 import { useViewport } from 'hooks/useViewport'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { SIDEBAR_COLLAPSE_KEY } from 'utils/constants'
+import { createTransferInstruction } from '@solana/spl-token'
+import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 
 const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation(['common', 'search'])
@@ -46,6 +48,10 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const themeData = mangoStore((s) => s.themeData)
   const nfts = mangoStore((s) => s.wallet.nfts.data)
   const { mangoAccount } = useMangoAccount()
+  const setPrependedGlobalAdditionalInstructions = mangoStore(
+    (s) => s.actions.setPrependedGlobalAdditionalInstructions,
+  )
+
   const router = useRouter()
   const { pathname } = router
 
@@ -87,6 +93,28 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
     }
     return mangoNfts
   }, [nfts])
+
+  //mark transactions with used nfts
+  useEffect(() => {
+    let newInstruction: TransactionInstruction[] = []
+    if (mangoNfts.length && theme) {
+      const collectionAddress = CUSTOM_SKINS[theme.toLowerCase()]
+      const usedNft = mangoNfts.find(
+        (nft) => nft.collectionAddress === collectionAddress,
+      )
+      if (usedNft && publicKey && collectionAddress) {
+        newInstruction = [
+          createTransferInstruction(
+            new PublicKey(usedNft.tokenAccount),
+            new PublicKey(usedNft.tokenAccount),
+            publicKey,
+            1,
+          ),
+        ]
+      }
+    }
+    setPrependedGlobalAdditionalInstructions(newInstruction)
+  }, [mangoNfts, theme, themeData])
 
   // find sidebar image url from skin nft for theme
   const sidebarImageUrl = useMemo(() => {
