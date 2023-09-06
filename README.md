@@ -51,6 +51,53 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
 
+## Contributor's Guide
+
+### Code quality
+
+- Avoid duplication
+- Consider performance (use useMemo and useCallback where appropriate)
+- Create logical components and give them descriptive names
+- Destructure objects and arrays
+- Define constants for event functions unless they are very simple e.g. a single state update
+- Create hooks for shared logic
+- Add translation keys in alphabetical order
+
+### Branching
+
+Prefix your branches with your Git username and give them concise and descriptive names
+e.g. username/branch-name
+
+### Commits
+
+Add commits for each self-contained change and give your commits clear messages that describe the change. Smaller commits that encompass a specific change are preferred over large commits with many changes
+
+### PRs
+
+All PRs should have a meaningful name and include a description of what the changes are.
+
+If there are visual changes, include screenshots in the description.
+
+If the PR is unfinished include a "TODO" section with work not yet completed. If there are known issues/bugs include a section outlining what they are.
+
+#### Drafts
+
+Opening draft PRs is a good way for other contributors to know a feature is being worked on. This is most useful for larger/complex features and is not a requirement. When your feature is at a point where you'd like to gather feedback or it's close to completion open a draft PR and share the preview link in the relevant Discord channel
+
+Prefix "WIP:" to your draft PR name
+
+### Reviews
+
+When your changes are finished, who you request review from depends on the type of changes.
+
+For complex changes e.g. new transactions, large features, lots of client or backend interactions you should at a minimum include @tlrsssss in your review
+
+For changes that affect visual elements of the app (including text changes), request a review from @saml33 at a minimum
+
+If you're unsure, request a review from @tlrssss and @saml33
+
+If your work involves other parts of the stack (backend, client, etc.) request a review from the relevant person in that area
+
 ## Creating Color Themes
 
 1. Copy one of the other color themes in [tailwind.config.js](https://github.com/blockworks-foundation/mango-v4-ui/blob/main/tailwind.config.js) (starting line 25)
