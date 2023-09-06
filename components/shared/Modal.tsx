@@ -50,7 +50,7 @@ function Modal({
             themeData.fonts.display.variable
           } ${
             themeData.fonts.mono.variable
-          } font-sans h-full w-full bg-th-bkg-1 font-body ${
+          } h-full w-full bg-th-bkg-1 font-body ${
             fullScreen
               ? ''
               : 'p-4 pt-6 sm:h-auto sm:max-w-md sm:rounded-lg sm:border sm:border-th-bkg-3 sm:p-6'
