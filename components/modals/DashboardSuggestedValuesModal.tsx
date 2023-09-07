@@ -196,6 +196,9 @@ const DashboardSuggestedValues = ({
           bank.reduceOnly ? 0 : null,
           null,
           null,
+          getNullOrVal(fieldsToChange.tokenConditionalSwapTakerFeeRate),
+          getNullOrVal(fieldsToChange.tokenConditionalSwapMakerFeeRate),
+          getNullOrVal(fieldsToChange.loanFeeRate),
         )
         .accounts({
           group: group!.publicKey,
