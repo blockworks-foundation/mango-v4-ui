@@ -99,9 +99,9 @@ const getOrderTypeMultiplier = (
   // xor of the flip reasons
   const shouldFlip = flipPrices !== reducingShort
   if (orderType === OrderTypes.STOP_LOSS) {
-    return shouldFlip ? 0.9 : 1.1
-  } else if (orderType === OrderTypes.TAKE_PROFIT) {
     return shouldFlip ? 1.1 : 0.9
+  } else if (orderType === OrderTypes.TAKE_PROFIT) {
+    return shouldFlip ? 0.9 : 1.1
   } else {
     return 1
   }
@@ -677,14 +677,16 @@ const LimitSwapForm = ({
     } else {
       const action = isReducingShort ? t('trade:buying') : t('trade:selling')
 
+      // xor of two flip flags
+      const shouldFlip = flipPrices !== isReducingShort
       const orderTypeString =
         orderType === OrderTypes.STOP_LOSS
-          ? !flipPrices
-            ? t('trade:falls-to')
-            : t('trade:rises-to')
-          : !flipPrices
-          ? t('trade:rises-to')
-          : t('trade:falls-to')
+          ? shouldFlip
+            ? t('trade:rises-to')
+            : t('trade:falls-to')
+          : shouldFlip
+          ? t('trade:falls-to')
+          : t('trade:rises-to')
 
       return t('trade:trigger-order-desc', {
         action: action,
