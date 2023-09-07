@@ -246,6 +246,13 @@ const TradeHistory = () => {
         <div>
           {combinedTradeHistory.map((trade, index: number) => {
             const { side, price, market, size, liquidity } = trade
+            let counterpartyAddress = ''
+            if ('taker' in trade) {
+              counterpartyAddress =
+                trade.liquidity === 'Taker'
+                  ? trade.maker.toString()
+                  : trade.taker.toString()
+            }
             return (
               <div
                 className="flex items-center justify-between border-b border-th-bkg-3 p-4"
@@ -285,18 +292,41 @@ const TradeHistory = () => {
                     </div>
                   </div>
                   {'taker' in trade ? (
-                    <a
-                      className=""
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      href={`/?address=${
-                        liquidity === 'Taker' ? trade.maker : trade.taker
-                      }`}
-                    >
-                      <IconButton size="small">
-                        <UsersIcon className="h-4 w-4" />
-                      </IconButton>
-                    </a>
+                    !hiddenAccounts?.includes(counterpartyAddress) ? (
+                      <Tooltip
+                        content={t('trade:tooltip-view-counterparty', {
+                          pk: abbreviateAddress(
+                            liquidity === 'Taker'
+                              ? new PublicKey(trade.maker)
+                              : new PublicKey(trade.taker),
+                          ),
+                        })}
+                        delay={0}
+                      >
+                        <a
+                          className=""
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          href={`/?address=${counterpartyAddress}`}
+                        >
+                          <IconButton size="small">
+                            <UsersIcon className="h-4 w-4" />
+                          </IconButton>
+                        </a>
+                      </Tooltip>
+                    ) : (
+                      <Tooltip
+                        content={t('trade:tooltip-private-counterparty')}
+                      >
+                        <IconButton
+                          className="bg-th-bkg-1"
+                          disabled
+                          size="small"
+                        >
+                          <EyeSlashIcon className="h-4 w-4" />
+                        </IconButton>
+                      </Tooltip>
+                    )
                   ) : null}
                 </div>
               </div>
