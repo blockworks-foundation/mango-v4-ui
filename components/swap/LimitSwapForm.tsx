@@ -23,7 +23,11 @@ import { SIZE_INPUT_UI_KEY } from '../../utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import SwapSlider from './SwapSlider'
 import PercentageSelectButtons from './PercentageSelectButtons'
-import { floorToDecimal, formatCurrencyValue } from 'utils/numbers'
+import {
+  floorToDecimal,
+  floorToDecimalSignificance,
+  formatCurrencyValue,
+} from 'utils/numbers'
 import { withValueLimit } from './MarketSwapForm'
 import ReduceInputTokenInput from './ReduceInputTokenInput'
 import ReduceOutputTokenInput from './ReduceOutputTokenInput'
@@ -47,6 +51,11 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import { SwapFormTokenListType } from './SwapFormTokenList'
 
 dayjs.extend(relativeTime)
+
+const priceToDisplayString = (price: number | Decimal | string): string => {
+  const val = floorToDecimalSignificance(price, 6)
+  return val.toFixed(val.dp())
+}
 
 type LimitSwapFormProps = {
   showTokenSelect: SwapFormTokenListType
@@ -80,10 +89,6 @@ const getSellTokenBalance = (inputBank: Bank | undefined) => {
   if (!inputBank || !mangoAccount) return 0
   const balance = mangoAccount.getTokenBalanceUi(inputBank)
   return balance
-}
-
-const isReducingShort = (inputBank: Bank | undefined) => {
-  return getSellTokenBalance(inputBank) < 0
 }
 
 const getOrderTypeMultiplier = (
@@ -183,50 +188,36 @@ const LimitSwapForm = ({
 
   const quotePrice = useMemo(() => {
     if (!inputBank || !outputBank) return 0
-    const quote = flipPrices
-      ? floorToDecimal(
-          outputBank.uiPrice / inputBank.uiPrice,
-          inputBank.mintDecimals,
-        ).toNumber()
-      : floorToDecimal(
-          inputBank.uiPrice / outputBank.uiPrice,
-          outputBank.mintDecimals,
-        ).toNumber()
-    return quote
+    return flipPrices
+      ? outputBank.uiPrice / inputBank.uiPrice
+      : inputBank.uiPrice / outputBank.uiPrice
   }, [flipPrices, inputBank, outputBank])
+
+  const isReducingShort = useMemo(() => {
+    if (!mangoAccount || !inputBank) return false
+    return mangoAccount.getTokenBalanceUi(inputBank) < 0
+  }, [inputBank])
 
   // set default trigger price
   useEffect(() => {
     if (!quotePrice || triggerPrice || showTokenSelect) return
-    const reducingShort = isReducingShort(inputBank)
     const multiplier = getOrderTypeMultiplier(
       OrderTypes.STOP_LOSS,
       flipPrices,
-      reducingShort,
+      isReducingShort,
     )
-    const decimals = !flipPrices ? inputBankDecimals : outputBankDecimals
-    setTriggerPrice((quotePrice * multiplier).toFixed(decimals))
-  }, [
-    flipPrices,
-    inputBankDecimals,
-    outputBankDecimals,
-    quotePrice,
-    showTokenSelect,
-    triggerPrice,
-    inputBank,
-  ])
+    setTriggerPrice(priceToDisplayString(quotePrice * multiplier))
+  }, [flipPrices, quotePrice, showTokenSelect, triggerPrice, isReducingShort])
 
   // flip trigger price and set amount out when chart direction is flipped
   useLayoutEffect(() => {
     if (!quotePrice) return
-    const reducingShort = isReducingShort(inputBank)
     const multiplier = getOrderTypeMultiplier(
       orderType,
       flipPrices,
-      reducingShort,
+      isReducingShort,
     )
-    const decimals = flipPrices ? inputBankDecimals : outputBankDecimals
-    const price = (quotePrice * multiplier).toFixed(decimals)
+    const price = priceToDisplayString(quotePrice * multiplier)
     setTriggerPrice(price)
     if (amountInAsDecimal?.gt(0)) {
       const amountOut = getAmountOut(
@@ -236,7 +227,7 @@ const LimitSwapForm = ({
       )
       setAmountOutFormValue(amountOut.toString())
     }
-  }, [flipPrices, inputBankDecimals, orderType, outputBankDecimals, inputBank])
+  }, [flipPrices, orderType, isReducingShort])
 
   const triggerPriceDifference = useMemo(() => {
     if (!quotePrice) return 0
@@ -253,18 +244,21 @@ const LimitSwapForm = ({
   }
 
   const hasBorrowToRepay = useMemo(() => {
-    if (
-      // orderType !== OrderTypes.REPAY_BORROW ||
-      !outputBank ||
-      !mangoAccount
-    )
-      return
-    const balance = mangoAccount.getTokenBalanceUi(outputBank)
-    const roundedBalance = floorToDecimal(
-      balance,
-      outputBank.mintDecimals,
-    ).toNumber()
-    return balance && balance < 0 ? Math.abs(roundedBalance) : 0
+    //     if (
+    //       // orderType !== OrderTypes.REPAY_BORROW ||
+    //       !outputBank ||
+    //       !mangoAccount
+    //     )
+    //       return
+    //     const balance = mangoAccount.getTokenBalanceUi(outputBank)
+    //     const roundedBalance = floorToDecimal(
+    //       balance,
+    //       outputBank.mintDecimals,
+    //     ).toNumber()
+    //     return balance && balance < 0 ? Math.abs(roundedBalance) : 0
+
+    // TODO: not sure if this concept is still needed
+    return 0
   }, [mangoAccount, orderType, outputBank])
 
   // check if the borrowed amount exceeds the net borrow limit in the current period
@@ -511,8 +505,7 @@ const LimitSwapForm = ({
 
       const amountIn = amountInAsDecimal.toNumber()
 
-      const isReduceLong =
-        mangoAccount.getTokenBalanceUi(inputBank) > 0 ? true : false
+      const isReduceLong = !isReducingShort
 
       try {
         let tx
@@ -636,6 +629,7 @@ const LimitSwapForm = ({
     triggerPrice,
     amountInAsDecimal,
     amountOutFormValue,
+    isReducingShort,
   ])
 
   const orderDescription = useMemo(() => {
@@ -665,7 +659,7 @@ const LimitSwapForm = ({
           amount: amountOut,
           priceUnit: quoteString,
           symbol: outputBankName,
-          triggerPrice: floorToDecimal(triggerPrice, inputBankDecimals),
+          triggerPrice: priceToDisplayString(triggerPrice),
         })
       } else {
         const depositAmount = floorToDecimal(
@@ -677,10 +671,12 @@ const LimitSwapForm = ({
           depositAmount: depositAmount,
           priceUnit: quoteString,
           symbol: outputBankName,
-          triggerPrice: floorToDecimal(triggerPrice, inputBankDecimals),
+          triggerPrice: priceToDisplayString(triggerPrice),
         })
       }
     } else {
+      const action = isReducingShort ? t('trade:buying') : t('trade:selling')
+
       const orderTypeString =
         orderType === OrderTypes.STOP_LOSS
           ? !flipPrices
@@ -691,11 +687,12 @@ const LimitSwapForm = ({
           : t('trade:falls-to')
 
       return t('trade:trigger-order-desc', {
+        action: action,
         amount: floorToDecimal(amountInFormValue, inputBankDecimals),
         orderType: orderTypeString,
         priceUnit: quoteString,
         symbol: inputBankName,
-        triggerPrice: floorToDecimal(triggerPrice, inputBankDecimals),
+        triggerPrice: priceToDisplayString(triggerPrice),
       })
     }
   }, [
@@ -709,6 +706,7 @@ const LimitSwapForm = ({
     outputBankDecimals,
     outputBankName,
     triggerPrice,
+    isReducingShort,
   ])
 
   const triggerPriceSuffix = useMemo(() => {
@@ -736,13 +734,14 @@ const LimitSwapForm = ({
       setFormErrors({})
       const newType = type as OrderTypes
       setOrderType(newType)
-      const reducingShort = isReducingShort(inputBank)
       const triggerMultiplier = getOrderTypeMultiplier(
         newType,
         flipPrices,
-        reducingShort,
+        isReducingShort,
       )
-      const trigger = (quotePrice * triggerMultiplier).toString()
+      const trigger = priceToDisplayString(
+        quotePrice * triggerMultiplier,
+      ).toString()
       setTriggerPrice(trigger)
       if (amountInAsDecimal.gt(0)) {
         const amountOut = getAmountOut(
@@ -753,7 +752,7 @@ const LimitSwapForm = ({
         setAmountOutFormValue(amountOut)
       }
     },
-    [flipPrices, quotePrice, setFormErrors, inputBank],
+    [flipPrices, quotePrice, setFormErrors, isReducingShort],
   )
 
   const onClick = !connected
@@ -832,9 +831,6 @@ const LimitSwapForm = ({
                 thousandSeparator=","
                 allowNegative={false}
                 isNumericString={true}
-                decimalScale={
-                  flipPrices ? inputBankDecimals : outputBankDecimals || 6
-                }
                 name="triggerPrice"
                 id="triggerPrice"
                 className="h-10 w-full rounded-lg bg-th-input-bkg p-3 pl-8 font-mono text-sm text-th-fgd-1 focus:outline-none md:hover:bg-th-bkg-1"
@@ -884,7 +880,8 @@ const LimitSwapForm = ({
       />
       {
         // orderType === OrderTypes.REPAY_BORROW &&
-        !hasBorrowToRepay ? null : orderDescription ? (
+        //!hasBorrowToRepay ? null : orderDescription ? (
+        orderDescription ? (
           <div className="mt-4">
             <InlineNotification
               desc={

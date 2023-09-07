@@ -114,7 +114,7 @@
     "trades": "Trades",
     "trigger-price": "Trigger Price",
     "trigger-order": "Trigger Order",
-    "trigger-order-desc": "{{amount}} {{symbol}} if the oracle price {{orderType}} {{triggerPrice}} {{priceUnit}}",
+    "trigger-order-desc": "{{action}} {{amount}} {{symbol}} if the oracle price {{orderType}} {{triggerPrice}} {{priceUnit}}",
     "trigger-orders": "Trigger Orders",
     "tweet-position": "Tweet",
     "unrealized-pnl": "Unrealized PnL",
