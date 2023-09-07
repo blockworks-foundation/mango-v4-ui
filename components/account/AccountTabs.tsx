@@ -13,7 +13,7 @@ import HistoryTabs from './HistoryTabs'
 import ManualRefresh from '@components/shared/ManualRefresh'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
-import SwapOrders from '@components/swap/SwapOrders'
+import SwapTriggerOrders from '@components/swap/SwapTriggerOrders'
 
 const AccountTabs = () => {
   const [activeTab, setActiveTab] = useState('balances')
@@ -85,7 +85,7 @@ const TabContent = ({ activeTab }: { activeTab: string }) => {
     case 'trade:orders':
       return <OpenOrders />
     case 'trade:trigger-orders':
-      return <SwapOrders />
+      return <SwapTriggerOrders />
     case 'trade:unsettled':
       return (
         <UnsettledTrades

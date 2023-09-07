@@ -502,6 +502,9 @@ const LimitSwapForm = ({
 
       const amountIn = amountInAsDecimal.toNumber()
 
+      const isReduceLong =
+        mangoAccount.getTokenBalanceUi(inputBank) > 0 ? true : false
+
       try {
         let tx
         // if (orderType === OrderTypes.REPAY_BORROW) {
@@ -536,30 +539,60 @@ const LimitSwapForm = ({
         //   }
         // }
         if (orderType === OrderTypes.STOP_LOSS) {
-          tx = await client.tcsStopLossOnDeposit(
-            group,
-            mangoAccount,
-            inputBank,
-            outputBank,
-            parseFloat(triggerPrice),
-            flipPrices,
-            amountIn,
-            null,
-            null,
-          )
+          if (isReduceLong) {
+            tx = await client.tcsStopLossOnDeposit(
+              group,
+              mangoAccount,
+              inputBank,
+              outputBank,
+              parseFloat(triggerPrice),
+              flipPrices,
+              amountIn,
+              null,
+              null,
+            )
+          } else {
+            tx = await client.tcsStopLossOnBorrow(
+              group,
+              mangoAccount,
+              outputBank,
+              inputBank,
+              parseFloat(triggerPrice),
+              flipPrices,
+              amountIn,
+              null,
+              null,
+              null,
+            )
+          }
         }
         if (orderType === OrderTypes.TAKE_PROFIT) {
-          tx = await client.tcsTakeProfitOnDeposit(
-            group,
-            mangoAccount,
-            inputBank,
-            outputBank,
-            parseFloat(triggerPrice),
-            flipPrices,
-            amountIn,
-            null,
-            null,
-          )
+          if (isReduceLong) {
+            tx = await client.tcsTakeProfitOnDeposit(
+              group,
+              mangoAccount,
+              inputBank,
+              outputBank,
+              parseFloat(triggerPrice),
+              flipPrices,
+              amountIn,
+              null,
+              null,
+            )
+          } else {
+            tx = await client.tcsTakeProfitOnBorrow(
+              group,
+              mangoAccount,
+              outputBank,
+              inputBank,
+              parseFloat(triggerPrice),
+              flipPrices,
+              amountIn,
+              null,
+              null,
+              null,
+            )
+          }
         }
         notify({
           title: 'Transaction confirmed',

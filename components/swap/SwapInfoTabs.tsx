@@ -5,7 +5,7 @@ import SwapHistoryTable from './SwapHistoryTable'
 import useMangoAccount from 'hooks/useMangoAccount'
 import ManualRefresh from '@components/shared/ManualRefresh'
 import { useViewport } from 'hooks/useViewport'
-import SwapOrders from './SwapOrders'
+import SwapTriggerOrders from './SwapTriggerOrders'
 import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
 
 const SwapInfoTabs = () => {
@@ -46,7 +46,7 @@ const SwapInfoTabs = () => {
         />
       </div>
       {selectedTab === 'balances' ? <SwapTradeBalances /> : null}
-      {selectedTab === 'trade:trigger-orders' ? <SwapOrders /> : null}
+      {selectedTab === 'trade:trigger-orders' ? <SwapTriggerOrders /> : null}
       {selectedTab === 'swap:swap-history' ? <SwapHistoryTable /> : null}
     </div>
   )
