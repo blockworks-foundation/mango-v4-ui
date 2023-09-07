@@ -295,7 +295,7 @@ const SwapFormTokenList = ({
       </div>
       <div className="flex justify-between rounded bg-th-bkg-2 p-2">
         <p className="text-xs text-th-fgd-4">{t('token')}</p>
-        {type !== 'output' ? (
+        {!type?.includes('output') ? (
           <p className="text-xs text-th-fgd-4">{t('max')}</p>
         ) : null}
       </div>

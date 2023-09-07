@@ -54,6 +54,7 @@ const priceToDisplayString = (price: number | Decimal | string): string => {
 }
 
 type LimitSwapFormProps = {
+  showTokenSelect: SwapFormTokenListType
   setShowTokenSelect: Dispatch<SetStateAction<SwapFormTokenListType>>
 }
 
@@ -94,7 +95,10 @@ const getOrderTypeMultiplier = (
   }
 }
 
-const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
+const LimitSwapForm = ({
+  showTokenSelect,
+  setShowTokenSelect,
+}: LimitSwapFormProps) => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
   const { mangoAccountAddress } = useMangoAccount()
   const { ipAllowed, ipCountry } = useIpAddress()
@@ -166,14 +170,21 @@ const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
 
   // set default trigger price
   useEffect(() => {
-    if (!quotePrice || triggerPrice) return
+    if (!quotePrice || triggerPrice || showTokenSelect) return
     const multiplier = getOrderTypeMultiplier(
-      OrderTypes.STOP_LOSS,
+      orderType,
       flipPrices,
       isReducingShort,
     )
     setTriggerPrice(priceToDisplayString(quotePrice * multiplier))
-  }, [flipPrices, quotePrice, triggerPrice, isReducingShort])
+  }, [
+    flipPrices,
+    isReducingShort,
+    orderType,
+    quotePrice,
+    showTokenSelect,
+    triggerPrice,
+  ])
 
   // flip trigger price and set amount out when chart direction is flipped
   useLayoutEffect(() => {
