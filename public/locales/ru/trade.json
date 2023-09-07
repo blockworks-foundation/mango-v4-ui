@@ -106,9 +106,11 @@
     "tooltip-ioc": "Immediate-Or-Cancel (IOC) orders are guaranteed to be the taker and must be executed immediately. Any portion of the order that can't be filled immediately will be cancelled",
     "tooltip-insured": "Whether or not {{tokenOrMarket}} losses can be recovered from the insurance fund in the event of bankruptcies.",
     "tooltip-post": "Post orders are guaranteed to be the maker or they will be canceled",
+    "tooltip-private-counterparty": "Counterparty has Private Account enabled",
     "tooltip-slippage": "An estimate of the difference between the current price and the price your trade will be executed at",
-    "tooltip-volume-alert": "Volume Alert Settings",
     "tooltip-stable-price": "Stable price is used in a safety mechanism that limits a user's ability to enter risky positions when the oracle price is changing rapidly",
+    "tooltip-view-counterparty": "View counterparty {{pk}}",
+    "tooltip-volume-alert": "Volume Alert Settings",
     "total-pnl": "Total PnL",
     "trade-sounds-tooltip": "Play a sound alert for every new trade",
     "trades": "Trades",
@@ -119,6 +121,7 @@
     "tweet-position": "Tweet",
     "unrealized-pnl": "Unrealized PnL",
     "unsettled": "Unsettled",
+    "view-counterparty": "View counterparty {{pk}}",
     "volume-alert": "Volume Alert",
     "volume-alert-desc": "Play a sound whenever volume exceeds your alert threshold"
 }
