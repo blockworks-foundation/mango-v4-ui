@@ -13,7 +13,14 @@ import {
 } from '@heroicons/react/20/solid'
 // import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
-import { ReactNode, RefObject, useEffect, useRef, useState } from 'react'
+import {
+  ReactNode,
+  RefObject,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 import Particles from 'react-tsparticles'
 import { ModalProps } from 'types/modal'
 import Leaderboards from './Leaderboards'
@@ -27,6 +34,16 @@ import { PublicKey } from '@solana/web3.js'
 import { useTranslation } from 'next-i18next'
 import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
 import InlineNotification from '@components/shared/InlineNotification'
+import { useRewards } from 'hooks/useRewards'
+import mangoStore from '@store/mangoStore'
+import {
+  TransactionInstructionWithType,
+  sendSignAndConfirmTransactions,
+} from '@blockworks-foundation/mangolana/lib/transactions'
+import {
+  SequenceType,
+  TransactionInstructionWithSigners,
+} from '@blockworks-foundation/mangolana/lib/globalTypes'
 
 const FAQS = [
   {
@@ -143,7 +160,7 @@ const RewardsPage = () => {
           </div>
         </div>
       </div>
-      {!showClaim ? (
+      {showClaim ? (
         <Claim />
       ) : (
         <Season
@@ -442,6 +459,72 @@ const Season = ({
 const Claim = () => {
   const [showWinModal, setShowWinModal] = useState(false)
   const [showLossModal, setShowLossModal] = useState(false)
+  const [isClaiming, setIsClaiming] = useState(false)
+  const [claimProgress, setClaimProgress] = useState(0)
+  const rewards = useRewards()
+  const state = mangoStore.getState()
+  const connection = state.client.program.provider.connection
+  const wallet = useWallet()
+
+  const handleClaimRewards = useCallback(async () => {
+    const transactionInstructions: TransactionInstructionWithType[] = []
+    // todo: claim account not idempotent
+    try {
+      for (const claim of rewards.claims) {
+        const ixs = (
+          await rewards.distribution!.makeClaimInstructions(
+            wallet.publicKey!,
+            claim.mint,
+          )
+        ).map((ix) => new TransactionInstructionWithSigners(ix))
+
+        transactionInstructions.push({
+          instructionsSet: ixs,
+          sequenceType: SequenceType.Sequential,
+        })
+      }
+
+      setIsClaiming(true)
+      setClaimProgress(10)
+
+      await sendSignAndConfirmTransactions({
+        connection,
+        wallet,
+        transactionInstructions,
+        callbacks: {
+          afterFirstBatchSign: (signedCount) => {
+            console.log('afterFirstBatchSign', signedCount)
+          },
+          afterBatchSign: (signedCount) => {
+            console.log('afterBatchSign', signedCount)
+          },
+          afterAllTxConfirmed: () => {
+            console.log('afterAllTxConfirmed')
+            setClaimProgress(100)
+          },
+          afterEveryTxConfirmation: () => {
+            console.log('afterEveryTxConfirmation')
+            setClaimProgress(
+              claimProgress + 90 / transactionInstructions.length,
+            )
+          },
+          onError: (e, notProcessedTransactions, originalProps) => {
+            console.log('error', e, notProcessedTransactions, originalProps)
+          },
+        },
+        config: {
+          maxTxesInBatch: 10,
+          autoRetry: false,
+          logFlowInfo: true,
+        },
+      })
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setIsClaiming(false)
+    }
+  }, [])
+
   return (
     <>
       <div className="flex items-center justify-center bg-th-bkg-3 px-4 py-3">
@@ -455,57 +538,52 @@ const Claim = () => {
         <div className="col-span-12">
           <div className="mb-6 text-center md:mb-12">
             <h2 className="mb-2 text-5xl">Congratulations!</h2>
-            <p className="text-lg">You earnt 3 boxes in Season 1</p>
+            <p className="text-lg">
+              You earned {rewards.claims.length} boxes in Season 1
+            </p>
           </div>
-          <div className="flex flex-col space-y-2 md:flex-row md:items-center md:justify-center md:space-x-6 md:space-y-0">
-            <div className="flex w-full flex-col items-center rounded-lg border border-th-bkg-3 p-6 md:w-1/3">
-              <Image
-                className="md:-mt-10"
-                src="/images/rewards/cube.png"
-                width={140}
-                height={140}
-                alt="Reward"
-                style={{ width: 'auto', maxWidth: '140px' }}
-              />
-              <Button className="mt-8" size="large">
-                Open Box
-              </Button>
+          {rewards.claims.map((c) => {
+            return rewards.claimed.includes(c.mint) ? undefined : (
+              <div className="flex space-y-2 md:flex-row md:items-center md:justify-center md:space-x-3 md:space-y-0">
+                <div className="flex flex-col items-center p-6 md:w-1/3">
+                  <Image
+                    className="md:-mt-10"
+                    src="/images/rewards/cube.png"
+                    width={140}
+                    height={140}
+                    alt="Reward"
+                    style={{ width: 'auto', maxWidth: '140px' }}
+                  />
+                  <div className="mt-5 text-lg">
+                    {c.quantity.toString()} {c.mintProperties['name']}
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+          {isClaiming ? (
+            <div>
+              <div className="mt-2.5 flex h-2 w-full flex-grow rounded bg-th-bkg-4">
+                <div
+                  style={{
+                    width: `${claimProgress}%`,
+                  }}
+                  className={`flex rounded bg-th-up`}
+                ></div>
+              </div>
+              <div className="mx-auto mt-5 text-center text-lg">
+                Claiming rewards...
+              </div>
             </div>
-            <div className="flex w-full flex-col items-center rounded-lg border border-th-bkg-3 p-6 md:w-1/3">
-              <Image
-                className="md:-mt-10"
-                src="/images/rewards/cube.png"
-                width={140}
-                height={140}
-                alt="Reward"
-                style={{ width: 'auto', maxWidth: '140px' }}
-              />
-              <Button
-                className="mt-8"
-                size="large"
-                onClick={() => setShowLossModal(true)}
-              >
-                Open Box
-              </Button>
-            </div>
-            <div className="flex w-full flex-col items-center rounded-lg border border-th-bkg-3 p-6 md:w-1/3">
-              <Image
-                className="md:-mt-10"
-                src="/images/rewards/cube.png"
-                width={140}
-                height={140}
-                alt="Reward"
-                style={{ width: 'auto', maxWidth: '140px' }}
-              />
-              <Button
-                className="mt-8"
-                onClick={() => setShowWinModal(true)}
-                size="large"
-              >
-                Open Box
-              </Button>
-            </div>
-          </div>
+          ) : (
+            <Button
+              className="mx-auto mt-8 block"
+              onClick={() => handleClaimRewards()}
+              size="large"
+            >
+              Claim Rewards
+            </Button>
+          )}
         </div>
       </div>
       {showWinModal ? (
