@@ -8,7 +8,6 @@ import {
   useLayoutEffect,
 } from 'react'
 import {
-  ArrowDownIcon,
   ArrowDownTrayIcon,
   ArrowsRightLeftIcon,
   LinkIcon,
@@ -102,7 +101,6 @@ const LimitSwapForm = ({
   const { t } = useTranslation(['common', 'swap', 'trade'])
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const { ipAllowed, ipCountry } = useIpAddress()
-  const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
   const [triggerPrice, setTriggerPrice] = useState('')
   const [orderType, setOrderType] = useState(ORDER_TYPES[0])
   const [orderTypeMultiplier, setOrderTypeMultiplier] =
@@ -236,14 +234,6 @@ const LimitSwapForm = ({
     setFormErrors({})
     setTriggerPrice('')
   }
-
-  useLayoutEffect(() => {
-    if (!mangoAccount || !inputBank) {
-      return
-    }
-    const inputPos = mangoAccount.getTokenBalanceUi(inputBank)
-    setAnimateSwitchArrow(() => (inputPos > 0 ? 0 : 1))
-  }, [inputBank, mangoAccount])
 
   const hasBorrowToRepay = useMemo(() => {
     if (
@@ -755,7 +745,7 @@ const LimitSwapForm = ({
         )}
       </div>
       <div
-        className={`grid grid-cols-2 gap-2 rounded-b-xl bg-th-bkg-2 p-3 pt-1`}
+        className={`grid grid-cols-2 gap-2 bg-th-bkg-2 p-3 pt-1`}
         id="swap-step-two"
       >
         <div className="col-span-1">
@@ -833,16 +823,6 @@ const LimitSwapForm = ({
             />
           </div>
         ) : null}
-      </div>
-      <div className="my-2 flex justify-center">
-        <ArrowDownIcon
-          className="h-5 w-5"
-          style={
-            animateSwitchArrow % 2 == 0
-              ? { transform: 'rotate(0deg)' }
-              : { transform: 'rotate(180deg)' }
-          }
-        />
       </div>
       <ReduceOutputTokenInput
         error={formErrors.hasBorrows}

@@ -56,7 +56,7 @@ const ReduceInputTokenInput = ({
   error?: string
   isTriggerOrder?: boolean
 }) => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'swap'])
   const { mangoAccountAddress } = useMangoAccount()
   const { group } = useMangoGroup()
   const { isUnownedAccount } = useUnownedAccount()
@@ -79,7 +79,7 @@ const ReduceInputTokenInput = ({
       className={`grid grid-cols-2 rounded-t-xl bg-th-bkg-2 p-3 pb-2 ${className}`}
     >
       <div className="col-span-2 mb-2 flex items-center justify-between">
-        <p className="text-th-fgd-2">{t('reduce')}</p>
+        <p className="text-th-fgd-2">{t('swap:reduce-position')}</p>
         {!isUnownedAccount ? (
           <MaxSwapAmount
             useMargin={isTriggerOrder ? false : useMargin}

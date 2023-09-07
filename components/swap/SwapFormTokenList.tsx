@@ -87,8 +87,17 @@ const TokenItem = ({
           <div className="ml-2.5">
             <p className="text-left text-th-fgd-2">
               {bank?.name ? formatTokenSymbol(bank.name) : symbol || 'unknown'}
+              {type === 'reduce-input' && token.amount ? (
+                <span
+                  className={`ml-1 rounded px-1 text-xxs uppercase ${
+                    token.amount.gt(0) ? 'text-th-up' : 'text-th-down'
+                  }`}
+                >
+                  {t(`trade:${token.amount.gt(0) ? 'long' : 'short'}`)}
+                </span>
+              ) : null}
               {isReduceOnly ? (
-                <span className="ml-1.5 text-xxs text-th-warning">
+                <span className="ml-1 text-xxs text-th-warning">
                   {t('reduce-only')}
                 </span>
               ) : null}
@@ -243,17 +252,28 @@ const SwapFormTokenList = ({
     }
   }, [focusRef])
 
+  const listTitle = useMemo(() => {
+    if (!type) return ''
+    if (type === 'input') {
+      return t('swap:you-sell')
+    } else if (type === 'output') {
+      return t('swap:you-buy')
+    } else if (type === 'reduce-input') {
+      return t('swap:reduce-position')
+    } else {
+      if (!mangoAccount || !inputBank) return ''
+      const uiPos = mangoAccount.getTokenBalanceUi(inputBank)
+      if (uiPos > 0) {
+        return t('swap:reduce-position-buy')
+      } else if (uiPos < 0) {
+        return t('swap:reduce-position-sell')
+      }
+    }
+  }, [inputBank, mangoAccount, type])
+
   return (
     <>
-      <p className="mb-3">
-        {type === 'input'
-          ? t('swap:you-sell')
-          : type === 'output'
-          ? t('swap:you-buy')
-          : type === 'reduce-input'
-          ? t('swap:you-reduce')
-          : ''}
-      </p>
+      <p className="mb-3">{listTitle}</p>
       <IconButton
         className="absolute right-2 top-2 text-th-fgd-3 hover:text-th-fgd-2"
         onClick={onClose}
@@ -275,7 +295,7 @@ const SwapFormTokenList = ({
       </div>
       <div className="flex justify-between rounded bg-th-bkg-2 p-2">
         <p className="text-xs text-th-fgd-4">{t('token')}</p>
-        {type === 'input' ? (
+        {type !== 'output' ? (
           <p className="text-xs text-th-fgd-4">{t('max')}</p>
         ) : null}
       </div>

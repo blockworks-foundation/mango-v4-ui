@@ -54,11 +54,9 @@ const ReduceOutputTokenInput = ({
   }, [mangoAccount, outputBank])
 
   return (
-    <div className="mb-2 grid grid-cols-2 rounded-xl bg-th-bkg-2 p-3">
+    <div className="mb-2 grid grid-cols-2 rounded-b-xl border-t border-th-bkg-4 bg-th-bkg-2 p-3">
       <div className="col-span-2 mb-2 flex items-end justify-between">
-        <p className="text-th-fgd-2">
-          {reducingLong ? t('producing') : t('by-selling')}
-        </p>
+        <p className="text-th-fgd-2">{reducingLong ? t('buy') : t('sell')}</p>
         {handleRepay && outputTokenBalanceBorrow ? (
           <MaxAmountButton
             className="mb-0.5 text-xs"
