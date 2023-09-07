@@ -468,9 +468,18 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           Number(tierPreset.maintLiabWeight),
           Number(tierPreset.initLiabWeight),
           Number(tierPreset.liquidationFee),
+          0, // FIXME
+          0, // FIXME
+          0, // FIXME
           Number(tierPreset.minVaultToDepositsRatio),
           new BN(tierPreset.netBorrowLimitWindowSizeTs),
           new BN(tierPreset.netBorrowLimitPerWindowQuote),
+          0, // FIXME
+          0, // FIXME
+          0, // FIXME
+          0, // FIXME
+          0, // FIXME
+          0, // FIXME
         )
         .accounts({
           admin: MANGO_DAO_WALLET,
@@ -509,6 +518,9 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           null,
           null,
           null,
+          0, // FIXME
+          0, // FIXME
+          0, // FIXME
         )
         .accounts({
           oracle: new PublicKey(advForm.oraclePk),

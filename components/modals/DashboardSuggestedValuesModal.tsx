@@ -196,6 +196,9 @@ const DashboardSuggestedValues = ({
           bank.reduceOnly ? 0 : null,
           null,
           null,
+          0, // FIXME
+          0, // FIXME
+          0, // FIXME
         )
         .accounts({
           group: group!.publicKey,
