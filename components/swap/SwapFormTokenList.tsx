@@ -14,6 +14,7 @@ import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { formatTokenSymbol } from 'utils/tokens'
 import TokenLogo from '@components/shared/TokenLogo'
 import Input from '@components/forms/Input'
+import { getInputTokenBalance } from './LimitSwapForm'
 
 export type SwapFormTokenListType =
   | 'input'
@@ -153,7 +154,7 @@ const SwapFormTokenList = ({
   const inputBank = mangoStore((s) => s.swap.inputBank)
   const outputBank = mangoStore((s) => s.swap.outputBank)
   const { group } = useMangoGroup()
-  const { mangoAccount } = useMangoAccount()
+  const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const focusRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -209,7 +210,6 @@ const SwapFormTokenList = ({
           )
           const uiAmount = mangoAccount.getTokenBalanceUi(tokenBank)
           const uiDollarValue = uiAmount * tokenBank.uiPrice
-          console.log(tokenBank)
           return {
             ...token,
             amount: new Decimal(uiAmount),
@@ -261,15 +261,15 @@ const SwapFormTokenList = ({
     } else if (type === 'reduce-input') {
       return t('swap:reduce-position')
     } else {
-      if (!mangoAccount || !inputBank) return ''
-      const uiPos = mangoAccount.getTokenBalanceUi(inputBank)
+      if (!mangoAccountAddress || !inputBank) return ''
+      const uiPos = getInputTokenBalance(inputBank)
       if (uiPos > 0) {
         return t('swap:reduce-position-buy')
       } else if (uiPos < 0) {
         return t('swap:reduce-position-sell')
       }
     }
-  }, [inputBank, mangoAccount, type])
+  }, [inputBank, mangoAccountAddress, type])
 
   return (
     <>

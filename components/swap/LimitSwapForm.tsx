@@ -64,7 +64,6 @@ type LimitSwapFormProps = {
 
 type LimitSwapForm = {
   amountIn: number
-  hasBorrows: number | undefined
   triggerPrice: string
 }
 
@@ -73,18 +72,13 @@ type FormErrors = Partial<Record<keyof LimitSwapForm, string>>
 enum OrderTypes {
   STOP_LOSS = 'trade:stop-loss',
   TAKE_PROFIT = 'trade:take-profit',
-  // REPAY_BORROW = 'repay-borrow',
 }
 
-const ORDER_TYPES = [
-  OrderTypes.STOP_LOSS,
-  OrderTypes.TAKE_PROFIT,
-  // OrderTypes.REPAY_BORROW,
-]
+const ORDER_TYPES = [OrderTypes.STOP_LOSS, OrderTypes.TAKE_PROFIT]
 
 const set = mangoStore.getState().set
 
-const getSellTokenBalance = (inputBank: Bank | undefined) => {
+export const getInputTokenBalance = (inputBank: Bank | undefined) => {
   const mangoAccount = mangoStore.getState().mangoAccount.current
   if (!inputBank || !mangoAccount) return 0
   const balance = mangoAccount.getTokenBalanceUi(inputBank)
@@ -110,7 +104,7 @@ const LimitSwapForm = ({
   setShowTokenSelect,
 }: LimitSwapFormProps) => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
-  const { mangoAccount, mangoAccountAddress } = useMangoAccount()
+  const { mangoAccountAddress } = useMangoAccount()
   const { ipAllowed, ipCountry } = useIpAddress()
   const [triggerPrice, setTriggerPrice] = useState('')
   const [orderType, setOrderType] = useState(ORDER_TYPES[0])
@@ -149,12 +143,6 @@ const LimitSwapForm = ({
       : new Decimal(0)
   }, [amountInFormValue])
 
-  // const amountOutAsDecimal: Decimal | null = useMemo(() => {
-  //   return Number(amountOutFormValue)
-  //     ? new Decimal(amountOutFormValue)
-  //     : new Decimal(0)
-  // }, [amountOutFormValue])
-
   const freeCollateral = useMemo(() => {
     const group = mangoStore.getState().group
     const mangoAccount = mangoStore.getState().mangoAccount.current
@@ -192,9 +180,10 @@ const LimitSwapForm = ({
   }, [flipPrices, inputBank, outputBank])
 
   const isReducingShort = useMemo(() => {
-    if (!mangoAccount || !inputBank) return false
-    return mangoAccount.getTokenBalanceUi(inputBank) < 0
-  }, [inputBank])
+    if (!mangoAccountAddress || !inputBank) return false
+    const inputBalance = getInputTokenBalance(inputBank)
+    return inputBalance < 0
+  }, [inputBank, mangoAccountAddress])
 
   // set default trigger price
   useEffect(() => {
@@ -241,24 +230,6 @@ const LimitSwapForm = ({
     setTriggerPrice('')
   }
 
-  const hasBorrowToRepay = useMemo(() => {
-    //     if (
-    //       // orderType !== OrderTypes.REPAY_BORROW ||
-    //       !outputBank ||
-    //       !mangoAccount
-    //     )
-    //       return
-    //     const balance = mangoAccount.getTokenBalanceUi(outputBank)
-    //     const roundedBalance = floorToDecimal(
-    //       balance,
-    //       outputBank.mintDecimals,
-    //     ).toNumber()
-    //     return balance && balance < 0 ? Math.abs(roundedBalance) : 0
-
-    // TODO: not sure if this concept is still needed
-    return 0
-  }, [mangoAccount, orderType, outputBank])
-
   // check if the borrowed amount exceeds the net borrow limit in the current period
   const borrowExceedsLimitInPeriod = useMemo(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
@@ -287,7 +258,7 @@ const LimitSwapForm = ({
         'triggerPrice',
       ]
       const triggerPriceNumber = parseFloat(form.triggerPrice)
-      const sellTokenBalance = getSellTokenBalance(inputBank)
+      const inputTokenBalance = getInputTokenBalance(inputBank)
       for (const key of requiredFields) {
         const value = form[key] as string
         if (!value) {
@@ -314,13 +285,7 @@ const LimitSwapForm = ({
             'Trigger price must be above oracle price'
         }
       }
-      if (
-        // orderType === OrderTypes.REPAY_BORROW &&
-        !hasBorrowToRepay
-      ) {
-        invalidFields.hasBorrows = t('swap:no-borrow')
-      }
-      if (form.amountIn > sellTokenBalance) {
+      if (form.amountIn > inputTokenBalance) {
         invalidFields.amountIn = t('swap:insufficient-balance', {
           symbol: inputBank?.name,
         })
@@ -330,14 +295,7 @@ const LimitSwapForm = ({
       }
       return invalidFields
     },
-    [
-      flipPrices,
-      hasBorrowToRepay,
-      inputBank,
-      orderType,
-      quotePrice,
-      setFormErrors,
-    ],
+    [flipPrices, inputBank, orderType, quotePrice, setFormErrors],
   )
 
   // get the out amount from the in amount and trigger or limit price
@@ -385,23 +343,6 @@ const LimitSwapForm = ({
     [
       flipPrices,
       getAmountOut,
-      setAmountInFormValue,
-      setAmountOutFormValue,
-      triggerPrice,
-    ],
-  )
-
-  const handleRepay = useCallback(
-    (amountOut: string) => {
-      setAmountOutFormValue(amountOut)
-      if (parseFloat(amountOut) > 0 && triggerPrice) {
-        const amountIn = getAmountIn(amountOut, flipPrices, triggerPrice)
-        setAmountInFormValue(amountIn.toString())
-      }
-    },
-    [
-      flipPrices,
-      getAmountIn,
       setAmountInFormValue,
       setAmountOutFormValue,
       triggerPrice,
@@ -483,7 +424,6 @@ const LimitSwapForm = ({
   const handlePlaceStopLoss = useCallback(async () => {
     const invalidFields = isFormValid({
       amountIn: amountInAsDecimal.toNumber(),
-      hasBorrows: hasBorrowToRepay,
       triggerPrice,
     })
     if (Object.keys(invalidFields).length) {
@@ -507,37 +447,6 @@ const LimitSwapForm = ({
 
       try {
         let tx
-        // if (orderType === OrderTypes.REPAY_BORROW) {
-        //   const amountOut = amountOutAsDecimal.toNumber()
-        //   const orderPrice = parseFloat(triggerPrice)
-        //   if (quotePrice > orderPrice) {
-        //     tx = await client.tcsStopLossOnBorrow(
-        //       group,
-        //       mangoAccount,
-        //       inputBank,
-        //       outputBank,
-        //       orderPrice,
-        //       flipPrices,
-        //       amountOut,
-        //       null,
-        //       false,
-        //       null,
-        //     )
-        //   } else {
-        //     tx = await client.tcsTakeProfitOnBorrow(
-        //       group,
-        //       mangoAccount,
-        //       inputBank,
-        //       outputBank,
-        //       orderPrice,
-        //       flipPrices,
-        //       amountOut,
-        //       null,
-        //       false,
-        //       null,
-        //     )
-        //   }
-        // }
         if (orderType === OrderTypes.STOP_LOSS) {
           if (isReduceLong) {
             tx = await client.tcsStopLossOnDeposit(
@@ -620,7 +529,6 @@ const LimitSwapForm = ({
       setSubmitting(false)
     }
   }, [
-    hasBorrowToRepay,
     flipPrices,
     orderType,
     quotePrice,
@@ -644,62 +552,31 @@ const LimitSwapForm = ({
       ? `${inputBankName} per ${outputBankName}`
       : `${outputBankName} per ${inputBankName}`
 
-    if (
-      hasBorrowToRepay
-      // && orderType === OrderTypes.REPAY_BORROW
-    ) {
-      const amountOut = floorToDecimal(
-        amountOutFormValue,
-        outputBankDecimals,
-      ).toNumber()
-      if (amountOut <= hasBorrowToRepay) {
-        return t('trade:repay-borrow-order-desc', {
-          amount: amountOut,
-          priceUnit: quoteString,
-          symbol: outputBankName,
-          triggerPrice: priceToDisplayString(triggerPrice),
-        })
-      } else {
-        const depositAmount = floorToDecimal(
-          amountOut - hasBorrowToRepay,
-          outputBankDecimals,
-        ).toNumber()
-        return t('trade:repay-borrow-deposit-order-desc', {
-          borrowAmount: hasBorrowToRepay,
-          depositAmount: depositAmount,
-          priceUnit: quoteString,
-          symbol: outputBankName,
-          triggerPrice: priceToDisplayString(triggerPrice),
-        })
-      }
-    } else {
-      const action = isReducingShort ? t('trade:buying') : t('trade:selling')
+    const action = isReducingShort ? t('trade:buying') : t('trade:selling')
 
-      // xor of two flip flags
-      const shouldFlip = flipPrices !== isReducingShort
-      const orderTypeString =
-        orderType === OrderTypes.STOP_LOSS
-          ? shouldFlip
-            ? t('trade:rises-to')
-            : t('trade:falls-to')
-          : shouldFlip
-          ? t('trade:falls-to')
-          : t('trade:rises-to')
+    // xor of two flip flags
+    const shouldFlip = flipPrices !== isReducingShort
+    const orderTypeString =
+      orderType === OrderTypes.STOP_LOSS
+        ? shouldFlip
+          ? t('trade:rises-to')
+          : t('trade:falls-to')
+        : shouldFlip
+        ? t('trade:falls-to')
+        : t('trade:rises-to')
 
-      return t('trade:trigger-order-desc', {
-        action: action,
-        amount: floorToDecimal(amountInFormValue, inputBankDecimals),
-        orderType: orderTypeString,
-        priceUnit: quoteString,
-        symbol: inputBankName,
-        triggerPrice: priceToDisplayString(triggerPrice),
-      })
-    }
+    return t('trade:trigger-order-desc', {
+      action: action,
+      amount: floorToDecimal(amountInFormValue, inputBankDecimals),
+      orderType: orderTypeString,
+      priceUnit: quoteString,
+      symbol: inputBankName,
+      triggerPrice: priceToDisplayString(triggerPrice),
+    })
   }, [
     amountInFormValue,
     amountOutFormValue,
     flipPrices,
-    hasBorrowToRepay,
     inputBankDecimals,
     inputBankName,
     orderType,
@@ -869,36 +746,14 @@ const LimitSwapForm = ({
         ) : null}
       </div>
       <ReduceOutputTokenInput
-        error={formErrors.hasBorrows}
         handleAmountOutChange={handleAmountOutChange}
         setShowTokenSelect={() => handleTokenSelect('reduce-output')}
-        handleRepay={
-          // orderType === OrderTypes.REPAY_BORROW ?
-          handleRepay
-          // : undefined
-        }
       />
-      {
-        // orderType === OrderTypes.REPAY_BORROW &&
-        //!hasBorrowToRepay ? null : orderDescription ? (
-        orderDescription ? (
-          <div className="mt-4">
-            <InlineNotification
-              desc={
-                <>
-                  {/* {orderType !== OrderTypes.REPAY_BORROW ? (
-                  <>
-                    <span className="text-th-down">{t('sell')}</span>{' '}
-                  </>
-                ) : null} */}
-                  {orderDescription}
-                </>
-              }
-              type="info"
-            />
-          </div>
-        ) : null
-      }
+      {orderDescription ? (
+        <div className="mt-4">
+          <InlineNotification desc={orderDescription} type="info" />
+        </div>
+      ) : null}
       {ipAllowed ? (
         <Button
           disabled={borrowExceedsLimitInPeriod}

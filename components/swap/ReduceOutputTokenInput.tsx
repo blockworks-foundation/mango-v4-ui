@@ -1,11 +1,10 @@
-import MaxAmountButton from '@components/shared/MaxAmountButton'
 import TokenSelect from './TokenSelect'
 import Loading from '@components/shared/Loading'
 import NumberFormat, {
   NumberFormatValues,
   SourceInfo,
 } from 'react-number-format'
-import { floorToDecimal, formatCurrencyValue } from 'utils/numbers'
+import { formatCurrencyValue } from 'utils/numbers'
 import { useTranslation } from 'react-i18next'
 import { Dispatch, SetStateAction, useMemo } from 'react'
 import mangoStore from '@store/mangoStore'
@@ -15,22 +14,21 @@ import { NUMBER_FORMAT_CLASSNAMES } from './MarketSwapForm'
 import InlineNotification from '@components/shared/InlineNotification'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { SwapFormTokenListType } from './SwapFormTokenList'
+import { getInputTokenBalance } from './LimitSwapForm'
 
 const ReduceOutputTokenInput = ({
   error,
   handleAmountOutChange,
   loading,
   setShowTokenSelect,
-  handleRepay,
 }: {
   error?: string
   handleAmountOutChange: (e: NumberFormatValues, info: SourceInfo) => void
   loading?: boolean
   setShowTokenSelect: Dispatch<SetStateAction<SwapFormTokenListType>>
-  handleRepay?: (amountOut: string) => void
 }) => {
   const { t } = useTranslation('common')
-  const { mangoAccount } = useMangoAccount()
+  const { mangoAccountAddress } = useMangoAccount()
   const { group } = useMangoGroup()
   const {
     inputBank,
@@ -38,35 +36,17 @@ const ReduceOutputTokenInput = ({
     amountOut: amountOutFormValue,
   } = mangoStore((s) => s.swap)
 
-  const reducingLong =
-    mangoAccount && inputBank
-      ? mangoAccount.getTokenBalanceUi(inputBank) > 0
-      : false
-
-  const outputTokenBalanceBorrow = useMemo(() => {
-    if (!outputBank || !mangoAccount) return 0
-    const balance = mangoAccount.getTokenBalanceUi(outputBank)
-    const roundedBalance = floorToDecimal(
-      balance,
-      outputBank.mintDecimals,
-    ).toNumber()
-    return balance && balance < 0 ? Math.abs(roundedBalance).toString() : 0
-  }, [mangoAccount, outputBank])
+  const reducingLong = useMemo(() => {
+    if (!inputBank || !mangoAccountAddress) return false
+    const inputBalance = getInputTokenBalance(inputBank)
+    return inputBalance > 0
+  }, [inputBank, mangoAccountAddress])
 
   return (
     <div className="mb-2 grid grid-cols-2 rounded-b-xl border-t border-th-bkg-4 bg-th-bkg-2 p-3">
-      <div className="col-span-2 mb-2 flex items-end justify-between">
-        <p className="text-th-fgd-2">{reducingLong ? t('buy') : t('sell')}</p>
-        {handleRepay && outputTokenBalanceBorrow ? (
-          <MaxAmountButton
-            className="mb-0.5 text-xs"
-            decimals={outputBank?.mintDecimals || 9}
-            label={t('repay')}
-            onClick={() => handleRepay(outputTokenBalanceBorrow)}
-            value={outputTokenBalanceBorrow}
-          />
-        ) : null}
-      </div>
+      <p className="col-span-2 mb-2 text-th-fgd-2">
+        {reducingLong ? t('buy') : t('sell')}
+      </p>
       <div className="col-span-1">
         <TokenSelect
           bank={
