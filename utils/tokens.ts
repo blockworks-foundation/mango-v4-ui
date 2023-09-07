@@ -86,6 +86,7 @@ export async function getTokenAccountsByOwnerWithWrappedSol(
 }
 
 const enhanceNFT = (nft: NftWithATA) => {
+  console.log(nft)
   return {
     image: nft.json?.image || '',
     name: nft.json?.name || '',
@@ -93,6 +94,7 @@ const enhanceNFT = (nft: NftWithATA) => {
     collectionAddress: nft.collection?.address.toBase58(),
     mint: nft.mint.address.toBase58(),
     tokenAccount: nft.tokenAccountAddress?.toBase58() || '',
+    json: nft.json,
   }
 }
 

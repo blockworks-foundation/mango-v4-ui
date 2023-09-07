@@ -121,9 +121,12 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
     if (!theme) return themeData.sideImagePath
     const collectionAddress = CUSTOM_SKINS[theme.toLowerCase()]
     if (collectionAddress && mangoNfts.length) {
-      const sidebarImageUrl =
-        mangoNfts.find((nft) => nft.collectionAddress === collectionAddress)
-          ?.image || themeData.sideImagePath
+      const attributes = mangoNfts.find(
+        (nft) => nft.collectionAddress === collectionAddress,
+      )?.json?.attributes
+      const sidebarImageUrl = attributes
+        ? attributes[0].value || themeData.sideImagePath
+        : ''
       return sidebarImageUrl
     }
     return themeData.sideImagePath
