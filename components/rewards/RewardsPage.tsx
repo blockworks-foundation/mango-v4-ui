@@ -44,6 +44,7 @@ import {
   SequenceType,
   TransactionInstructionWithSigners,
 } from '@blockworks-foundation/mangolana/lib/globalTypes'
+import { web3 } from '@project-serum/anchor'
 
 const FAQS = [
   {
@@ -468,7 +469,31 @@ const Claim = () => {
 
   const handleClaimRewards = useCallback(async () => {
     const transactionInstructions: TransactionInstructionWithType[] = []
-    // todo: claim account not idempotent
+
+    // Create claim account if it doesn't exist
+    if (rewards.claimed === undefined) {
+      transactionInstructions.push({
+        instructionsSet: [
+          new TransactionInstructionWithSigners(
+            await rewards.client.program.methods
+              .claimAccountCreate()
+              .accounts({
+                distribution: rewards.distribution!.publicKey,
+                claimAccount: rewards.distribution!.findClaimAccountAddress(
+                  wallet.publicKey!,
+                ),
+                claimant: wallet.publicKey!,
+                payer: wallet.publicKey!,
+                systemProgram: web3.SystemProgram.programId,
+                rent: web3.SYSVAR_RENT_PUBKEY,
+              })
+              .instruction(),
+          ),
+        ],
+        sequenceType: SequenceType.StopOnFailure,
+      })
+    }
+
     try {
       for (const claim of rewards.claims) {
         const ixs = (
