@@ -7,11 +7,7 @@ import {
   SetStateAction,
   useLayoutEffect,
 } from 'react'
-import {
-  ArrowDownTrayIcon,
-  ArrowsRightLeftIcon,
-  LinkIcon,
-} from '@heroicons/react/20/solid'
+import { ArrowsRightLeftIcon, LinkIcon } from '@heroicons/react/20/solid'
 import NumberFormat, {
   NumberFormatValues,
   SourceInfo,
@@ -40,15 +36,15 @@ import TokenLogo from '@components/shared/TokenLogo'
 import InlineNotification from '@components/shared/InlineNotification'
 import Select from '@components/forms/Select'
 import useIpAddress from 'hooks/useIpAddress'
-import { Bank, toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
+import { Bank } from '@blockworks-foundation/mango-v4'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { useTokenMax, useAbsInputPosition } from './useTokenMax'
-import DepositWithdrawModal from '@components/modals/DepositWithdrawModal'
+import { useAbsInputPosition } from './useTokenMax'
 import useRemainingBorrowsInPeriod from 'hooks/useRemainingBorrowsInPeriod'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { SwapFormTokenListType } from './SwapFormTokenList'
+import { formatTokenSymbol } from 'utils/tokens'
 
 dayjs.extend(relativeTime)
 
@@ -58,7 +54,6 @@ const priceToDisplayString = (price: number | Decimal | string): string => {
 }
 
 type LimitSwapFormProps = {
-  showTokenSelect: SwapFormTokenListType
   setShowTokenSelect: Dispatch<SetStateAction<SwapFormTokenListType>>
 }
 
@@ -99,10 +94,7 @@ const getOrderTypeMultiplier = (
   }
 }
 
-const LimitSwapForm = ({
-  showTokenSelect,
-  setShowTokenSelect,
-}: LimitSwapFormProps) => {
+const LimitSwapForm = ({ setShowTokenSelect }: LimitSwapFormProps) => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
   const { mangoAccountAddress } = useMangoAccount()
   const { ipAllowed, ipCountry } = useIpAddress()
@@ -123,8 +115,6 @@ const LimitSwapForm = ({
   } = mangoStore((s) => s.swap)
 
   const { connected, connect } = useWallet()
-  const { amount: tokenMax } = useTokenMax()
-  const [showDepositModal, setShowDepositModal] = useState(false)
 
   const [inputBankName, outputBankName, inputBankDecimals, outputBankDecimals] =
     useMemo(() => {
@@ -142,17 +132,6 @@ const LimitSwapForm = ({
       ? new Decimal(amountInFormValue)
       : new Decimal(0)
   }, [amountInFormValue])
-
-  const freeCollateral = useMemo(() => {
-    const group = mangoStore.getState().group
-    const mangoAccount = mangoStore.getState().mangoAccount.current
-    return group && mangoAccount
-      ? toUiDecimalsForQuote(mangoAccount.getCollateralValue(group))
-      : 0
-  }, [mangoAccountAddress])
-
-  const showInsufficientBalance =
-    tokenMax.lt(amountInAsDecimal) || tokenMax.eq(0)
 
   const setAmountInFormValue = useCallback((amountIn: string) => {
     set((s) => {
@@ -187,14 +166,14 @@ const LimitSwapForm = ({
 
   // set default trigger price
   useEffect(() => {
-    if (!quotePrice || triggerPrice || showTokenSelect) return
+    if (!quotePrice || triggerPrice) return
     const multiplier = getOrderTypeMultiplier(
       OrderTypes.STOP_LOSS,
       flipPrices,
       isReducingShort,
     )
     setTriggerPrice(priceToDisplayString(quotePrice * multiplier))
-  }, [flipPrices, quotePrice, showTokenSelect, triggerPrice, isReducingShort])
+  }, [flipPrices, quotePrice, triggerPrice, isReducingShort])
 
   // flip trigger price and set amount out when chart direction is flipped
   useLayoutEffect(() => {
@@ -259,6 +238,7 @@ const LimitSwapForm = ({
       ]
       const triggerPriceNumber = parseFloat(form.triggerPrice)
       const inputTokenBalance = getInputTokenBalance(inputBank)
+      const shouldFlip = flipPrices !== isReducingShort
       for (const key of requiredFields) {
         const value = form[key] as string
         if (!value) {
@@ -266,26 +246,26 @@ const LimitSwapForm = ({
         }
       }
       if (orderType === OrderTypes.STOP_LOSS) {
-        if (flipPrices && triggerPriceNumber <= quotePrice) {
+        if (shouldFlip && triggerPriceNumber <= quotePrice) {
           invalidFields.triggerPrice =
             'Trigger price must be above oracle price'
         }
-        if (!flipPrices && triggerPriceNumber >= quotePrice) {
+        if (!shouldFlip && triggerPriceNumber >= quotePrice) {
           invalidFields.triggerPrice =
             'Trigger price must be below oracle price'
         }
       }
       if (orderType === OrderTypes.TAKE_PROFIT) {
-        if (flipPrices && triggerPriceNumber >= quotePrice) {
+        if (shouldFlip && triggerPriceNumber >= quotePrice) {
           invalidFields.triggerPrice =
             'Trigger price must be below oracle price'
         }
-        if (!flipPrices && triggerPriceNumber <= quotePrice) {
+        if (!shouldFlip && triggerPriceNumber <= quotePrice) {
           invalidFields.triggerPrice =
             'Trigger price must be above oracle price'
         }
       }
-      if (form.amountIn > inputTokenBalance) {
+      if (form.amountIn > Math.abs(inputTokenBalance)) {
         invalidFields.amountIn = t('swap:insufficient-balance', {
           symbol: inputBank?.name,
         })
@@ -295,7 +275,14 @@ const LimitSwapForm = ({
       }
       return invalidFields
     },
-    [flipPrices, inputBank, orderType, quotePrice, setFormErrors],
+    [
+      flipPrices,
+      inputBank,
+      isReducingShort,
+      orderType,
+      quotePrice,
+      setFormErrors,
+    ],
   )
 
   // get the out amount from the in amount and trigger or limit price
@@ -548,11 +535,14 @@ const LimitSwapForm = ({
     )
       return
 
-    const quoteString = flipPrices
-      ? `${inputBankName} per ${outputBankName}`
-      : `${outputBankName} per ${inputBankName}`
+    const formattedInputTokenName = formatTokenSymbol(inputBankName)
+    const formattedOutputTokenName = formatTokenSymbol(outputBankName)
 
-    const action = isReducingShort ? t('trade:buying') : t('trade:selling')
+    const quoteString = flipPrices
+      ? `${formattedInputTokenName} per ${formattedOutputTokenName}`
+      : `${formattedOutputTokenName} per ${formattedInputTokenName}`
+
+    const action = isReducingShort ? t('buy') : t('sell')
 
     // xor of two flip flags
     const shouldFlip = flipPrices !== isReducingShort
@@ -570,7 +560,7 @@ const LimitSwapForm = ({
       amount: floorToDecimal(amountInFormValue, inputBankDecimals),
       orderType: orderTypeString,
       priceUnit: quoteString,
-      symbol: inputBankName,
+      symbol: formattedInputTokenName,
       triggerPrice: priceToDisplayString(triggerPrice),
     })
   }, [
@@ -632,11 +622,7 @@ const LimitSwapForm = ({
     [flipPrices, quotePrice, setFormErrors, isReducingShort],
   )
 
-  const onClick = !connected
-    ? connect
-    : showInsufficientBalance || freeCollateral <= 0
-    ? () => setShowDepositModal(true)
-    : handlePlaceStopLoss
+  const onClick = !connected ? connect : handlePlaceStopLoss
 
   return (
     <>
@@ -762,12 +748,7 @@ const LimitSwapForm = ({
           size="large"
         >
           {connected ? (
-            showInsufficientBalance || freeCollateral <= 0 ? (
-              <div className="flex items-center">
-                <ArrowDownTrayIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-                {t('swap:deposit-funds')}
-              </div>
-            ) : submitting ? (
+            submitting ? (
               <Loading />
             ) : (
               <span>{t('swap:place-limit-order')}</span>
@@ -802,14 +783,6 @@ const LimitSwapForm = ({
             })}
           />
         </div>
-      ) : null}
-      {showDepositModal ? (
-        <DepositWithdrawModal
-          action="deposit"
-          isOpen={showDepositModal}
-          onClose={() => setShowDepositModal(false)}
-          token={freeCollateral > 0 ? inputBankName : ''}
-        />
       ) : null}
     </>
   )

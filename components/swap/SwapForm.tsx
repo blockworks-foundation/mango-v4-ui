@@ -178,10 +178,7 @@ const SwapForm = () => {
           {swapOrLimit === 'swap' ? (
             <MarketSwapForm setShowTokenSelect={setShowTokenSelect} />
           ) : (
-            <LimitSwapForm
-              showTokenSelect={showTokenSelect}
-              setShowTokenSelect={setShowTokenSelect}
-            />
+            <LimitSwapForm setShowTokenSelect={setShowTokenSelect} />
           )}
           {inputBank ? (
             <TokenVaultWarnings bank={inputBank} type="swap" />
