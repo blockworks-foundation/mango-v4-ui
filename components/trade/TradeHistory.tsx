@@ -14,7 +14,11 @@ import {
   TrHead,
 } from '@components/shared/TableElements'
 import Tooltip from '@components/shared/Tooltip'
-import { NoSymbolIcon, UsersIcon } from '@heroicons/react/20/solid'
+import {
+  EyeSlashIcon,
+  NoSymbolIcon,
+  UsersIcon,
+} from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
@@ -32,6 +36,7 @@ import PerpSideBadge from './PerpSideBadge'
 import TableMarketName from './TableMarketName'
 import { useSortableData } from 'hooks/useSortableData'
 import { useCallback } from 'react'
+import { useHiddenMangoAccounts } from 'hooks/useHiddenMangoAccounts'
 
 const TradeHistory = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -45,6 +50,7 @@ const TradeHistory = () => {
   } = useTradeHistory()
   const { width } = useViewport()
   const { connected } = useWallet()
+  const { hiddenAccounts } = useHiddenMangoAccounts()
   const showTableView = width ? width > breakpoints.md : false
 
   const formattedTableData = useCallback(() => {
@@ -142,6 +148,14 @@ const TradeHistory = () => {
               {tableData.map((trade, index: number) => {
                 const { side, price, market, size, feeCost, liquidity, value } =
                   trade
+
+                let counterpartyAddress = ''
+                if ('taker' in trade) {
+                  counterpartyAddress =
+                    trade.liquidity === 'Taker'
+                      ? trade.maker.toString()
+                      : trade.taker.toString()
+                }
                 return (
                   <TrBody
                     key={`${side}${size}${price}${index}`}
@@ -184,29 +198,41 @@ const TradeHistory = () => {
                     <Td className="xl:!pl-0">
                       {'taker' in trade ? (
                         <div className="flex justify-end">
-                          <Tooltip
-                            content={`View Counterparty ${abbreviateAddress(
-                              trade.liquidity === 'Taker'
-                                ? new PublicKey(trade.maker)
-                                : new PublicKey(trade.taker),
-                            )}`}
-                            delay={0}
-                          >
-                            <a
-                              className=""
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              href={`/?address=${
-                                trade.liquidity === 'Taker'
-                                  ? trade.maker
-                                  : trade.taker
-                              }`}
+                          {!hiddenAccounts?.includes(counterpartyAddress) ? (
+                            <Tooltip
+                              content={t('trade:tooltip-view-counterparty', {
+                                pk: abbreviateAddress(
+                                  trade.liquidity === 'Taker'
+                                    ? new PublicKey(trade.maker)
+                                    : new PublicKey(trade.taker),
+                                ),
+                              })}
+                              delay={0}
                             >
-                              <IconButton size="small">
-                                <UsersIcon className="h-4 w-4" />
+                              <a
+                                className=""
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                href={`/?address=${counterpartyAddress}`}
+                              >
+                                <IconButton size="small">
+                                  <UsersIcon className="h-4 w-4" />
+                                </IconButton>
+                              </a>
+                            </Tooltip>
+                          ) : (
+                            <Tooltip
+                              content={t('trade:tooltip-private-counterparty')}
+                            >
+                              <IconButton
+                                className="bg-th-bkg-1"
+                                disabled
+                                size="small"
+                              >
+                                <EyeSlashIcon className="h-4 w-4" />
                               </IconButton>
-                            </a>
-                          </Tooltip>
+                            </Tooltip>
+                          )}
                         </div>
                       ) : null}
                     </Td>
