@@ -433,6 +433,7 @@ export default function SpotMarketOrderSwapForm() {
                 }
                 onChange={setAmountFromSlider}
                 step={1 / 10 ** (inputBank?.mintDecimals || 6)}
+                maxAmount={useTokenMax}
               />
             </div>
           ) : (

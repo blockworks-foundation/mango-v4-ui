@@ -39,7 +39,7 @@ import useIpAddress from 'hooks/useIpAddress'
 import { Bank, toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { useTokenMax } from './useTokenMax'
+import { useTokenMax, useAbsInputPosition } from './useTokenMax'
 import DepositWithdrawModal from '@components/modals/DepositWithdrawModal'
 import useRemainingBorrowsInPeriod from 'hooks/useRemainingBorrowsInPeriod'
 import dayjs from 'dayjs'
@@ -766,6 +766,7 @@ const LimitSwapForm = ({
             amount={amountInAsDecimal.toNumber()}
             onChange={(v) => handleAmountInUi(v)}
             step={1 / 10 ** (inputBankDecimals || 6)}
+            maxAmount={useAbsInputPosition}
           />
         ) : (
           <div className="-mt-2">

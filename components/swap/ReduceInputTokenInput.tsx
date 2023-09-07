@@ -16,30 +16,7 @@ import InlineNotification from '@components/shared/InlineNotification'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import { SwapFormTokenListType } from './SwapFormTokenList'
-import { TokenMaxResults } from './useTokenMax'
-import Decimal from 'decimal.js'
-
-const useAbsInputPosition = (): TokenMaxResults => {
-  const { mangoAccount } = useMangoAccount()
-  const { inputBank } = mangoStore((s) => s.swap)
-
-  if (!mangoAccount || !inputBank) {
-    return {
-      amount: new Decimal(0),
-      amountWithBorrow: new Decimal(0),
-      decimals: 6,
-    }
-  }
-
-  const amount = new Decimal(
-    Math.abs(mangoAccount.getTokenBalanceUi(inputBank)),
-  )
-  return {
-    decimals: inputBank.mintDecimals,
-    amount: amount,
-    amountWithBorrow: amount,
-  }
-}
+import { useAbsInputPosition } from './useTokenMax'
 
 const ReduceInputTokenInput = ({
   handleAmountInChange,

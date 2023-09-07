@@ -257,6 +257,7 @@ const MarketSwapForm = ({ setShowTokenSelect }: MarketSwapFormProps) => {
             amount={amountInAsDecimal.toNumber()}
             onChange={(v) => setAmountInFormValue(v, true)}
             step={1 / 10 ** (inputBank?.mintDecimals || 6)}
+            maxAmount={useTokenMax}
           />
         ) : (
           <div className="-mt-2">
