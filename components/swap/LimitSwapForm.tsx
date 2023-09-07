@@ -61,8 +61,6 @@ type LimitSwapForm = {
 
 type FormErrors = Partial<Record<keyof LimitSwapForm, string>>
 
-type OrderTypeMultiplier = 0.9 | 1 | 1.1
-
 enum OrderTypes {
   STOP_LOSS = 'trade:stop-loss',
   TAKE_PROFIT = 'trade:take-profit',
@@ -84,11 +82,21 @@ const getSellTokenBalance = (inputBank: Bank | undefined) => {
   return balance
 }
 
-const getOrderTypeMultiplier = (orderType: OrderTypes, flipPrices: boolean) => {
+const isReducingShort = (inputBank: Bank | undefined) => {
+  return getSellTokenBalance(inputBank) < 0
+}
+
+const getOrderTypeMultiplier = (
+  orderType: OrderTypes,
+  flipPrices: boolean,
+  reducingShort: boolean,
+) => {
+  // xor of the flip reasons
+  const shouldFlip = flipPrices !== reducingShort
   if (orderType === OrderTypes.STOP_LOSS) {
-    return flipPrices ? 1.1 : 0.9
+    return shouldFlip ? 0.9 : 1.1
   } else if (orderType === OrderTypes.TAKE_PROFIT) {
-    return flipPrices ? 0.9 : 1.1
+    return shouldFlip ? 1.1 : 0.9
   } else {
     return 1
   }
@@ -103,8 +111,6 @@ const LimitSwapForm = ({
   const { ipAllowed, ipCountry } = useIpAddress()
   const [triggerPrice, setTriggerPrice] = useState('')
   const [orderType, setOrderType] = useState(ORDER_TYPES[0])
-  const [orderTypeMultiplier, setOrderTypeMultiplier] =
-    useState<OrderTypeMultiplier | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const [formErrors, setFormErrors] = useState<FormErrors>({})
@@ -192,7 +198,12 @@ const LimitSwapForm = ({
   // set default trigger price
   useEffect(() => {
     if (!quotePrice || triggerPrice || showTokenSelect) return
-    const multiplier = getOrderTypeMultiplier(OrderTypes.STOP_LOSS, flipPrices)
+    const reducingShort = isReducingShort(inputBank)
+    const multiplier = getOrderTypeMultiplier(
+      OrderTypes.STOP_LOSS,
+      flipPrices,
+      reducingShort,
+    )
     const decimals = !flipPrices ? inputBankDecimals : outputBankDecimals
     setTriggerPrice((quotePrice * multiplier).toFixed(decimals))
   }, [
@@ -202,12 +213,18 @@ const LimitSwapForm = ({
     quotePrice,
     showTokenSelect,
     triggerPrice,
+    inputBank,
   ])
 
   // flip trigger price and set amount out when chart direction is flipped
   useLayoutEffect(() => {
     if (!quotePrice) return
-    const multiplier = getOrderTypeMultiplier(orderType, flipPrices)
+    const reducingShort = isReducingShort(inputBank)
+    const multiplier = getOrderTypeMultiplier(
+      orderType,
+      flipPrices,
+      reducingShort,
+    )
     const decimals = flipPrices ? inputBankDecimals : outputBankDecimals
     const price = (quotePrice * multiplier).toFixed(decimals)
     setTriggerPrice(price)
@@ -219,7 +236,7 @@ const LimitSwapForm = ({
       )
       setAmountOutFormValue(amountOut.toString())
     }
-  }, [flipPrices, inputBankDecimals, orderType, outputBankDecimals])
+  }, [flipPrices, inputBankDecimals, orderType, outputBankDecimals, inputBank])
 
   const triggerPriceDifference = useMemo(() => {
     if (!quotePrice) return 0
@@ -330,14 +347,6 @@ const LimitSwapForm = ({
       setFormErrors,
     ],
   )
-
-  // set order type multiplier on page load
-  useEffect(() => {
-    if (!orderTypeMultiplier) {
-      const multiplier = getOrderTypeMultiplier(orderType, flipPrices)
-      setOrderTypeMultiplier(multiplier)
-    }
-  }, [flipPrices, orderType, orderTypeMultiplier])
 
   // get the out amount from the in amount and trigger or limit price
   const getAmountOut = useCallback(
@@ -727,8 +736,12 @@ const LimitSwapForm = ({
       setFormErrors({})
       const newType = type as OrderTypes
       setOrderType(newType)
-      const triggerMultiplier = getOrderTypeMultiplier(newType, flipPrices)
-      setOrderTypeMultiplier(triggerMultiplier)
+      const reducingShort = isReducingShort(inputBank)
+      const triggerMultiplier = getOrderTypeMultiplier(
+        newType,
+        flipPrices,
+        reducingShort,
+      )
       const trigger = (quotePrice * triggerMultiplier).toString()
       setTriggerPrice(trigger)
       if (amountInAsDecimal.gt(0)) {
@@ -740,7 +753,7 @@ const LimitSwapForm = ({
         setAmountOutFormValue(amountOut)
       }
     },
-    [flipPrices, quotePrice, setFormErrors, setOrderTypeMultiplier],
+    [flipPrices, quotePrice, setFormErrors, inputBank],
   )
 
   const onClick = !connected
@@ -806,7 +819,8 @@ const LimitSwapForm = ({
               }`}
             >
               {triggerPriceDifference
-                ? triggerPriceDifference.toFixed(2)
+                ? (triggerPriceDifference > 0 ? '+' : '') +
+                  triggerPriceDifference.toFixed(2)
                 : '0.00'}
               %
             </p>
