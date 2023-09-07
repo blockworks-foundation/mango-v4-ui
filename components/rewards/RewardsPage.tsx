@@ -501,7 +501,10 @@ const Claim = () => {
             wallet.publicKey!,
             claim.mint,
           )
-        ).map((ix) => new TransactionInstructionWithSigners(ix))
+        ).map(
+          (ix: web3.TransactionInstruction) =>
+            new TransactionInstructionWithSigners(ix),
+        )
 
         transactionInstructions.push({
           instructionsSet: ixs,

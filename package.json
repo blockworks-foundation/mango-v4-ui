@@ -131,7 +131,8 @@
       "next-i18next>core-js": false,
       "react-tsparticles": true,
       "tsparticles>tsparticles-engine": true,
-      "@sentry/nextjs>@sentry/webpack-plugin>@sentry/cli": true
+      "@sentry/nextjs>@sentry/webpack-plugin>@sentry/cli": true,
+      "@blockworks-foundation/mango-mints-redemption>keccak256>keccak": true
     }
   }
 }

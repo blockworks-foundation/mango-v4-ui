@@ -2,11 +2,10 @@ import { useQuery } from '@tanstack/react-query'
 import mangoStore from '@store/mangoStore'
 import { AnchorProvider } from '@coral-xyz/anchor'
 import { PublicKey } from '@solana/web3.js'
-import { MangoMintsRedemptionClient } from '../../mango-mints-redemption/dist/client/src'
+import { MangoMintsRedemptionClient, Distribution } from '@blockworks-foundation/mango-mints-redemption/dist/client/src'
 import {
   Claim,
-  Distribution,
-} from '../../mango-mints-redemption/dist/client/src/accounts/distribution'
+} from '@blockworks-foundation/mango-mints-redemption/dist/client/src/accounts/distribution'
 
 type FetchClaimsResponse = {
   claims: Claim[]
