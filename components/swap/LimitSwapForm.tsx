@@ -96,12 +96,10 @@ const getOrderTypeMultiplier = (
   flipPrices: boolean,
   reducingShort: boolean,
 ) => {
-  // xor of the flip reasons
-  const shouldFlip = flipPrices !== reducingShort
   if (orderType === OrderTypes.STOP_LOSS) {
-    return shouldFlip ? 1.1 : 0.9
+    return reducingShort ? (flipPrices ? 0.9 : 1.1) : flipPrices ? 1.1 : 0.9
   } else if (orderType === OrderTypes.TAKE_PROFIT) {
-    return shouldFlip ? 0.9 : 1.1
+    return reducingShort ? (flipPrices ? 1.1 : 0.9) : flipPrices ? 0.9 : 1.1
   } else {
     return 1
   }
