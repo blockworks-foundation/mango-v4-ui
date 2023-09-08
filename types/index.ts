@@ -498,3 +498,5 @@ export interface FilledOrder {
   order_type: 'spot' | 'perp'
   quantity: number
 }
+
+export type TriggerOrderTypes = 'swap' | 'trade:trigger-order'

@@ -37,12 +37,13 @@ import useRemainingBorrowsInPeriod from 'hooks/useRemainingBorrowsInPeriod'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { formatCurrencyValue } from 'utils/numbers'
+import { SwapFormTokenListType } from './SwapFormTokenList'
 import useTokenPositionsFull from 'hooks/useTokenPositionsFull'
 
 dayjs.extend(relativeTime)
 
 type MarketSwapFormProps = {
-  setShowTokenSelect: Dispatch<SetStateAction<'input' | 'output' | undefined>>
+  setShowTokenSelect: Dispatch<SetStateAction<SwapFormTokenListType>>
 }
 
 const MAX_DIGITS = 11
@@ -256,6 +257,7 @@ const MarketSwapForm = ({ setShowTokenSelect }: MarketSwapFormProps) => {
             amount={amountInAsDecimal.toNumber()}
             onChange={(v) => setAmountInFormValue(v, true)}
             step={1 / 10 ** (inputBank?.mintDecimals || 6)}
+            maxAmount={useTokenMax}
           />
         ) : (
           <div className="-mt-2">
@@ -301,7 +303,7 @@ const MarketSwapForm = ({ setShowTokenSelect }: MarketSwapFormProps) => {
       ) : (
         <Button
           disabled
-          className="mb-4 mt-6 w-full leading-tight"
+          className="mb-4 mt-6 flex w-full items-center justify-center text-base"
           size="large"
         >
           {t('country-not-allowed', {

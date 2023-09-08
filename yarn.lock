@@ -34,10 +34,10 @@
     bn.js "^5.2.1"
     eslint-config-prettier "^9.0.0"
 
-"@blockworks-foundation/mango-v4@^0.19.20":
-  version "0.19.20"
-  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.19.20.tgz#5932b98bfc94eed1f7cdffdef535afe19c1cce03"
-  integrity sha512-UGPmJ/NPDdIHM7BcYSOOZHDYDse6mefTGI2IK9MRxaqAVpqfFj3Kjk8mM12O+CW1cySaMl3NUAyR/Ul0jGY+jg==
+"@blockworks-foundation/mango-v4@^0.19.27":
+  version "0.19.27"
+  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.19.27.tgz#73203fecd7cca5ceea658ede8788b72974778d48"
+  integrity sha512-UEGTcxWLe0wga+RSTdBzoUUev2oCXV2az0s3RCcU7BlQ2UPnQDWSfbO/rmxPmveKYFSBGW+RsiSzLlXAmm9hPQ==
   dependencies:
     "@coral-xyz/anchor" "^0.27.0"
     "@project-serum/serum" "0.13.65"
@@ -50,6 +50,7 @@
     bs58 "^5.0.0"
     cross-fetch "^3.1.5"
     dotenv "^16.0.3"
+    lodash "^4.17.21"
     node-kraken-api "^2.2.2"
 
 "@blocto/sdk@^0.2.22":
