@@ -514,7 +514,7 @@ const Claim = () => {
 
       setIsClaiming(true)
       setClaimProgress(10)
-
+      console.log(transactionInstructions)
       await sendSignAndConfirmTransactions({
         connection,
         wallet,
@@ -540,6 +540,7 @@ const Claim = () => {
             console.log('error', e, notProcessedTransactions, originalProps)
           },
         },
+
         config: {
           maxTxesInBatch: 10,
           autoRetry: false,
@@ -570,10 +571,10 @@ const Claim = () => {
               You earned {rewards.claims.length} boxes in Season 1
             </p>
           </div>
-          {rewards.claims.map((c) => {
-            return rewards.claimed.includes(c.mint) ? undefined : (
-              <div className="flex space-y-2 md:flex-row md:items-center md:justify-center md:space-x-3 md:space-y-0">
-                <div className="flex flex-col items-center p-6 md:w-1/3">
+          <div className="flex flex-row space-y-6 md:items-center md:justify-center md:space-x-3">
+            {rewards.claims.map((c) => {
+              return rewards.claimed.includes(c.mint) ? undefined : (
+                <div className="flex flex-col items-center p-6">
                   <Image
                     className="md:-mt-10"
                     src="/images/rewards/cube.png"
@@ -586,9 +587,9 @@ const Claim = () => {
                     {c.quantity.toString()} {c.mintProperties['name']}
                   </div>
                 </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
           {isClaiming ? (
             <div>
               <div className="mt-2.5 flex h-2 w-full flex-grow rounded bg-th-bkg-4">

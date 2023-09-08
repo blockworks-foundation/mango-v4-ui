@@ -2,10 +2,11 @@ import { useQuery } from '@tanstack/react-query'
 import mangoStore from '@store/mangoStore'
 import { AnchorProvider } from '@coral-xyz/anchor'
 import { PublicKey } from '@solana/web3.js'
-import { MangoMintsRedemptionClient, Distribution } from '@blockworks-foundation/mango-mints-redemption/dist/client/src'
 import {
-  Claim,
-} from '@blockworks-foundation/mango-mints-redemption/dist/client/src/accounts/distribution'
+  MangoMintsRedemptionClient,
+  Distribution,
+} from '@blockworks-foundation/mango-mints-redemption/dist/client/src'
+import { Claim } from '@blockworks-foundation/mango-mints-redemption/dist/client/src/accounts/distribution'
 
 type FetchClaimsResponse = {
   claims: Claim[]
@@ -33,7 +34,7 @@ export const useRewards = () => {
   const provider = state.client.program.provider as AnchorProvider
   const client = new MangoMintsRedemptionClient(provider)
   const res = useQuery<FetchClaimsResponse, Error>(['rewards-claims'], () =>
-    fetchClaims(client, 1337),
+    fetchClaims(client, 9),
   ).data
 
   return {
