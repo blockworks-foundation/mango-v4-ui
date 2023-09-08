@@ -78,7 +78,7 @@
   "edit-profile-image": "切换头像",
   "enable-notifications": "Enable Notifications",
   "error-borrow-exceeds-limit": "Maximum borrow for the current period is {{remaining}}. New period starts {{resetTime}}",
-  "error-token-positions-full": "No token positions available in your account.",
+  "error-token-positions-full": "Not enough token positions available in your account.",
   "explorer": "浏览器",
   "fee": "费用",
   "feedback-survey": "反馈调查",
