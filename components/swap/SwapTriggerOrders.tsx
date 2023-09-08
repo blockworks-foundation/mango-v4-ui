@@ -47,8 +47,6 @@ const SwapOrders = () => {
     return mangoAccount.tokenConditionalSwaps.filter((tcs) => tcs.hasData)
   }, [mangoAccount])
 
-  console.log(orders)
-
   const formattedTableData = useCallback(() => {
     if (!group) return []
     const formatted = []
@@ -299,21 +297,10 @@ const SwapOrders = () => {
             const formattedSellTokenName = formatTokenSymbol(sellBank.name)
             const formattedBaseName =
               side === 'buy' ? formattedBuyTokenName : formattedSellTokenName
-            let formattedQuoteName
+            const formattedQuoteName = !sellTokenPerBuyToken
+              ? formattedBuyTokenName
+              : formattedSellTokenName
 
-            if (side === 'buy') {
-              if (!sellTokenPerBuyToken) {
-                formattedQuoteName = formattedSellTokenName
-              } else {
-                formattedQuoteName = formattedBuyTokenName
-              }
-            } else {
-              if (!sellTokenPerBuyToken) {
-                formattedQuoteName = formattedBuyTokenName
-              } else {
-                formattedQuoteName = formattedSellTokenName
-              }
-            }
             return (
               <TrBody key={i} className="text-sm">
                 <Td>{pair}</Td>
@@ -398,27 +385,16 @@ const SwapOrders = () => {
             filled,
             triggerPrice,
             sellTokenPerBuyToken,
+            triggerDirection,
           } = data
 
           const formattedBuyTokenName = formatTokenSymbol(buyBank.name)
           const formattedSellTokenName = formatTokenSymbol(sellBank.name)
           const formattedBaseName =
             side === 'buy' ? formattedBuyTokenName : formattedSellTokenName
-          let formattedQuoteName = ''
-
-          if (side === 'buy') {
-            if (!sellTokenPerBuyToken) {
-              formattedQuoteName = formattedSellTokenName
-            } else {
-              formattedQuoteName = formattedBuyTokenName
-            }
-          } else {
-            if (!sellTokenPerBuyToken) {
-              formattedQuoteName = formattedBuyTokenName
-            } else {
-              formattedQuoteName = formattedSellTokenName
-            }
-          }
+          const formattedQuoteName = !sellTokenPerBuyToken
+            ? formattedBuyTokenName
+            : formattedSellTokenName
           return (
             <Disclosure key={i}>
               {({ open }) => (
@@ -503,6 +479,9 @@ const SwapOrders = () => {
                             {t('trade:trigger-price')}
                           </p>
                           <p className="font-mono text-th-fgd-1">
+                            <span className="font-body text-th-fgd-4">
+                              {triggerDirection}{' '}
+                            </span>
                             {triggerPrice}
                             <span className="font-body text-th-fgd-3">
                               {' '}
