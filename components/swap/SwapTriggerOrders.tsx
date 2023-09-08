@@ -83,6 +83,11 @@ const SwapOrders = () => {
       const pricePremium = order.getPricePremium()
       const filled = order.getSoldUi(group)
       const currentPrice = order.getCurrentPairPriceUi(group)
+      const sellTokenPerBuyToken = !!Object.prototype.hasOwnProperty.call(
+        order.priceDisplayStyle,
+        'sellTokenPerBuyToken',
+      )
+      const triggerDirection = triggerPrice < currentPrice ? '<=' : '>='
 
       const data = {
         ...order,
@@ -95,6 +100,8 @@ const SwapOrders = () => {
         filled,
         triggerPrice,
         fee: pricePremium,
+        sellTokenPerBuyToken,
+        triggerDirection,
       }
       formatted.push(data)
     }
@@ -284,14 +291,29 @@ const SwapOrders = () => {
               size,
               filled,
               triggerPrice,
+              sellTokenPerBuyToken,
+              triggerDirection,
             } = data
 
             const formattedBuyTokenName = formatTokenSymbol(buyBank.name)
             const formattedSellTokenName = formatTokenSymbol(sellBank.name)
             const formattedBaseName =
               side === 'buy' ? formattedBuyTokenName : formattedSellTokenName
-            const formattedQuoteName =
-              side === 'buy' ? formattedSellTokenName : formattedBuyTokenName
+            let formattedQuoteName
+
+            if (side === 'buy') {
+              if (!sellTokenPerBuyToken) {
+                formattedQuoteName = formattedSellTokenName
+              } else {
+                formattedQuoteName = formattedBuyTokenName
+              }
+            } else {
+              if (!sellTokenPerBuyToken) {
+                formattedQuoteName = formattedBuyTokenName
+              } else {
+                formattedQuoteName = formattedSellTokenName
+              }
+            }
             return (
               <TrBody key={i} className="text-sm">
                 <Td>{pair}</Td>
@@ -329,6 +351,9 @@ const SwapOrders = () => {
                 </Td>
                 <Td>
                   <p className="text-right">
+                    <span className="font-body text-th-fgd-4">
+                      {triggerDirection}{' '}
+                    </span>
                     {triggerPrice}
                     <span className="font-body text-th-fgd-3">
                       {' '}
@@ -372,14 +397,28 @@ const SwapOrders = () => {
             size,
             filled,
             triggerPrice,
+            sellTokenPerBuyToken,
           } = data
 
           const formattedBuyTokenName = formatTokenSymbol(buyBank.name)
           const formattedSellTokenName = formatTokenSymbol(sellBank.name)
           const formattedBaseName =
             side === 'buy' ? formattedBuyTokenName : formattedSellTokenName
-          const formattedQuoteName =
-            side === 'buy' ? formattedSellTokenName : formattedBuyTokenName
+          let formattedQuoteName = ''
+
+          if (side === 'buy') {
+            if (!sellTokenPerBuyToken) {
+              formattedQuoteName = formattedSellTokenName
+            } else {
+              formattedQuoteName = formattedBuyTokenName
+            }
+          } else {
+            if (!sellTokenPerBuyToken) {
+              formattedQuoteName = formattedBuyTokenName
+            } else {
+              formattedQuoteName = formattedSellTokenName
+            }
+          }
           return (
             <Disclosure key={i}>
               {({ open }) => (

@@ -488,7 +488,7 @@ const LimitSwapForm = ({
               flipPrices,
               amountIn,
               null,
-              null,
+              true,
               null,
             )
           }
@@ -516,7 +516,7 @@ const LimitSwapForm = ({
               flipPrices,
               amountIn,
               null,
-              null,
+              true,
               null,
             )
           }
@@ -584,7 +584,10 @@ const LimitSwapForm = ({
           .sub(new Decimal(amountOutFormValue))
           .toNumber()
         borrowToReduceShort = Math.abs(amount)
-      } else borrowToReduceShort = parseFloat(amountOutFormValue)
+      }
+      if (balance < 0) {
+        borrowToReduceShort = parseFloat(amountOutFormValue)
+      }
     }
 
     // xor of two flip flags
