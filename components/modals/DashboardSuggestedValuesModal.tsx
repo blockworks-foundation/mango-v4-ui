@@ -189,8 +189,8 @@ const DashboardSuggestedValues = ({
           getNullOrVal(fieldsToChange.netBorrowLimitWindowSizeTs)
             ? new BN(fieldsToChange.netBorrowLimitWindowSizeTs!)
             : null,
-          getNullOrVal(fieldsToChange.borrowWeightScale),
-          getNullOrVal(fieldsToChange.depositWeightScale),
+          getNullOrVal(fieldsToChange.borrowWeightScaleStartQuote),
+          getNullOrVal(fieldsToChange.depositWeightScaleStartQuote),
           false,
           false,
           bank.reduceOnly ? 0 : null,
