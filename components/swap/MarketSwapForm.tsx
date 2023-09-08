@@ -351,11 +351,17 @@ const SwapFormSubmitButton = ({
     const hasOutputTokenPosition = usedTokens.find(
       (token) => token.tokenIndex === outputBank.tokenIndex,
     )
+    const availableTokenPositions = totalTokens.length - usedTokens.length
     if (
       (hasInputTokenPosition && hasOutputTokenPosition) ||
-      totalTokens.length - usedTokens.length >= 2
+      availableTokenPositions >= 2
     ) {
       return false
+    } else if (
+      (hasInputTokenPosition && !hasOutputTokenPosition) ||
+      (!hasInputTokenPosition && hasOutputTokenPosition)
+    ) {
+      return availableTokenPositions >= 1 ? false : true
     } else return true
   }, [inputBank, outputBank, usedTokens, totalTokens])
 
