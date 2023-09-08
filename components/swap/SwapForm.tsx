@@ -19,7 +19,6 @@ import MarketSwapForm from './MarketSwapForm'
 import LimitSwapForm from './LimitSwapForm'
 import Switch from '@components/forms/Switch'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
 import { SwapFormTokenListType } from './SwapFormTokenList'
 import { TriggerOrderTypes } from 'types'
 
@@ -27,7 +26,6 @@ const set = mangoStore.getState().set
 
 const SwapForm = () => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
-  const { data: isWhiteListed } = useIsWhiteListed()
   const [showTokenSelect, setShowTokenSelect] =
     useState<SwapFormTokenListType>()
   const [showSettings, setShowSettings] = useState(false)
@@ -167,15 +165,13 @@ const SwapForm = () => {
           <SwapSettings onClose={() => setShowSettings(false)} />
         </EnterBottomExitBottom>
         <div className="relative p-6">
-          {isWhiteListed ? (
-            <div className="relative mb-6">
-              <TabUnderline
-                activeValue={swapOrTrigger}
-                values={['swap', 'trade:trigger-order']}
-                onChange={(v) => handleSwapOrTrigger(v)}
-              />
-            </div>
-          ) : null}
+          <div className="relative mb-6">
+            <TabUnderline
+              activeValue={swapOrTrigger}
+              values={['swap', 'trade:trigger-order']}
+              onChange={(v) => handleSwapOrTrigger(v)}
+            />
+          </div>
           {swapOrTrigger === 'swap' ? (
             <MarketSwapForm setShowTokenSelect={setShowTokenSelect} />
           ) : (
