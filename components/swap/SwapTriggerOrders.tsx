@@ -31,6 +31,7 @@ import Loading from '@components/shared/Loading'
 import SideBadge from '@components/shared/SideBadge'
 import { Disclosure, Transition } from '@headlessui/react'
 import SheenLoader from '@components/shared/SheenLoader'
+import { formatTokenSymbol } from 'utils/tokens'
 
 const SwapOrders = () => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
@@ -46,13 +47,14 @@ const SwapOrders = () => {
     return mangoAccount.tokenConditionalSwaps.filter((tcs) => tcs.hasData)
   }, [mangoAccount])
 
+  console.log(orders)
+
   const formattedTableData = useCallback(() => {
     if (!group) return []
     const formatted = []
     for (const order of orders) {
       const buyBank = group.getFirstBankByTokenIndex(order.buyTokenIndex)
       const sellBank = group.getFirstBankByTokenIndex(order.sellTokenIndex)
-      const pair = `${sellBank.name}/${buyBank.name}`
       const maxBuy = floorToDecimal(
         order.getMaxBuyUi(group),
         buyBank.mintDecimals,
@@ -70,6 +72,12 @@ const SwapOrders = () => {
         size = maxBuy
         side = 'buy'
       }
+      const buyTokenName = formatTokenSymbol(buyBank.name)
+      const sellTokenName = formatTokenSymbol(sellBank.name)
+      const pair =
+        side === 'sell'
+          ? `${sellTokenName}/${buyTokenName}`
+          : `${buyTokenName}/${sellTokenName}`
 
       const triggerPrice = order.getThresholdPriceUi(group)
       const pricePremium = order.getPricePremium()
@@ -278,7 +286,12 @@ const SwapOrders = () => {
               triggerPrice,
             } = data
 
-            const bank = side === 'buy' ? buyBank : sellBank
+            const formattedBuyTokenName = formatTokenSymbol(buyBank.name)
+            const formattedSellTokenName = formatTokenSymbol(sellBank.name)
+            const formattedBaseName =
+              side === 'buy' ? formattedBuyTokenName : formattedSellTokenName
+            const formattedQuoteName =
+              side === 'buy' ? formattedSellTokenName : formattedBuyTokenName
             return (
               <TrBody key={i} className="text-sm">
                 <Td>{pair}</Td>
@@ -292,7 +305,7 @@ const SwapOrders = () => {
                     {size}
                     <span className="font-body text-th-fgd-3">
                       {' '}
-                      {bank.name}
+                      {formattedBaseName}
                     </span>
                   </p>
                 </Td>
@@ -301,7 +314,7 @@ const SwapOrders = () => {
                     {filled}/{size}
                     <span className="font-body text-th-fgd-3">
                       {' '}
-                      {bank.name}
+                      {formattedBaseName}
                     </span>
                   </p>
                 </Td>
@@ -310,7 +323,7 @@ const SwapOrders = () => {
                     {currentPrice}
                     <span className="font-body text-th-fgd-3">
                       {' '}
-                      {buyBank.name}
+                      {formattedQuoteName}
                     </span>
                   </p>
                 </Td>
@@ -319,7 +332,7 @@ const SwapOrders = () => {
                     {triggerPrice}
                     <span className="font-body text-th-fgd-3">
                       {' '}
-                      {side === 'buy' ? sellBank.name : buyBank.name}
+                      {formattedQuoteName}
                     </span>
                   </p>
                 </Td>
@@ -361,7 +374,12 @@ const SwapOrders = () => {
             triggerPrice,
           } = data
 
-          const bank = side === 'buy' ? buyBank : sellBank
+          const formattedBuyTokenName = formatTokenSymbol(buyBank.name)
+          const formattedSellTokenName = formatTokenSymbol(sellBank.name)
+          const formattedBaseName =
+            side === 'buy' ? formattedBuyTokenName : formattedSellTokenName
+          const formattedQuoteName =
+            side === 'buy' ? formattedSellTokenName : formattedBuyTokenName
           return (
             <Disclosure key={i}>
               {({ open }) => (
@@ -379,7 +397,7 @@ const SwapOrders = () => {
                           {size}
                           <span className="font-body text-th-fgd-3">
                             {' '}
-                            {bank.name}
+                            {formattedBaseName}
                           </span>
                           <span className="font-body text-th-fgd-3">
                             {' at '}
@@ -387,7 +405,7 @@ const SwapOrders = () => {
                           {triggerPrice}
                           <span className="font-body text-th-fgd-3">
                             {' '}
-                            {side === 'buy' ? sellBank.name : buyBank.name}
+                            {formattedQuoteName}
                           </span>
                         </p>
                       </div>
@@ -413,7 +431,7 @@ const SwapOrders = () => {
                             {size}
                             <span className="font-body text-th-fgd-3">
                               {' '}
-                              {bank.name}
+                              {formattedBaseName}
                             </span>
                           </p>
                         </div>
@@ -425,7 +443,7 @@ const SwapOrders = () => {
                             {filled}/{size}
                             <span className="font-body text-th-fgd-3">
                               {' '}
-                              {bank.name}
+                              {formattedBaseName}
                             </span>
                           </p>
                         </div>
@@ -437,7 +455,7 @@ const SwapOrders = () => {
                             {currentPrice}
                             <span className="font-body text-th-fgd-3">
                               {' '}
-                              {buyBank.name}
+                              {formattedQuoteName}
                             </span>
                           </p>
                         </div>
@@ -449,7 +467,9 @@ const SwapOrders = () => {
                             {triggerPrice}
                             <span className="font-body text-th-fgd-3">
                               {' '}
-                              {side === 'buy' ? sellBank.name : buyBank.name}
+                              {side === 'buy'
+                                ? formattedSellTokenName
+                                : formattedBuyTokenName}
                             </span>
                           </p>
                         </div>

@@ -117,6 +117,7 @@
     "trigger-price": "Trigger Price",
     "trigger-order": "Trigger Order",
     "trigger-order-desc": "{{amount}} {{symbol}} if the oracle price {{orderType}} {{triggerPrice}} {{priceUnit}}",
+    "trigger-order-desc-with-borrow": "{{action}} {{amount}} {{symbol}} if the oracle price {{orderType}} {{triggerPrice}} {{priceUnit}}. You'll borrow ~{{borrowAmount}} {{quoteSymbol}} to execute this trade",
     "trigger-orders": "Trigger Orders",
     "tweet-position": "Tweet",
     "unrealized-pnl": "Unrealized PnL",

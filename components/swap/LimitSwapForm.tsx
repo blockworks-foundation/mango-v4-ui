@@ -81,6 +81,13 @@ export const getInputTokenBalance = (inputBank: Bank | undefined) => {
   return balance
 }
 
+const getOutputTokenBalance = (outputBank: Bank | undefined) => {
+  const mangoAccount = mangoStore.getState().mangoAccount.current
+  if (!outputBank || !mangoAccount) return 0
+  const balance = mangoAccount.getTokenBalanceUi(outputBank)
+  return balance
+}
+
 const getOrderTypeMultiplier = (
   orderType: OrderTypes,
   flipPrices: boolean,
@@ -555,6 +562,18 @@ const LimitSwapForm = ({
 
     const action = isReducingShort ? t('buy') : t('sell')
 
+    // calc borrowed amount when reducing short
+    let borrowToReduceShort = 0
+    if (isReducingShort && mangoAccountAddress) {
+      const balance = getOutputTokenBalance(outputBank)
+      if (balance >= 0 && parseFloat(amountOutFormValue) > balance) {
+        const amount = new Decimal(balance)
+          .sub(new Decimal(amountOutFormValue))
+          .toNumber()
+        borrowToReduceShort = Math.abs(amount)
+      } else borrowToReduceShort = parseFloat(amountOutFormValue)
+    }
+
     // xor of two flip flags
     const shouldFlip = flipPrices !== isReducingShort
     const orderTypeString =
@@ -566,20 +585,32 @@ const LimitSwapForm = ({
         ? t('trade:falls-to')
         : t('trade:rises-to')
 
-    return t('trade:trigger-order-desc', {
-      action: action,
-      amount: floorToDecimal(amountInFormValue, inputBankDecimals),
-      orderType: orderTypeString,
-      priceUnit: quoteString,
-      symbol: formattedInputTokenName,
-      triggerPrice: priceToDisplayString(triggerPrice),
-    })
+    return borrowToReduceShort
+      ? t('trade:trigger-order-desc-with-borrow', {
+          action: action,
+          amount: floorToDecimal(amountInFormValue, inputBankDecimals),
+          borrowAmount: borrowToReduceShort,
+          orderType: orderTypeString,
+          priceUnit: quoteString,
+          quoteSymbol: formattedOutputTokenName,
+          symbol: formattedInputTokenName,
+          triggerPrice: priceToDisplayString(triggerPrice),
+        })
+      : t('trade:trigger-order-desc', {
+          action: action,
+          amount: floorToDecimal(amountInFormValue, inputBankDecimals),
+          orderType: orderTypeString,
+          priceUnit: quoteString,
+          symbol: formattedInputTokenName,
+          triggerPrice: priceToDisplayString(triggerPrice),
+        })
   }, [
     amountInFormValue,
     amountOutFormValue,
     flipPrices,
     inputBankDecimals,
     inputBankName,
+    mangoAccountAddress,
     orderType,
     outputBankDecimals,
     outputBankName,
