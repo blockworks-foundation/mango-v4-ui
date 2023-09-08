@@ -69,6 +69,7 @@ import {
   ThemeData,
   PositionStat,
   OrderbookTooltip,
+  TriggerOrderTypes,
 } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
@@ -240,6 +241,8 @@ export type MangoStore = {
     amountIn: string
     amountOut: string
     flipPrices: boolean
+    swapOrTrigger: TriggerOrderTypes
+    triggerPrice: string
   }
   set: (x: (x: MangoStore) => void) => void
   themeData: ThemeData
@@ -417,6 +420,8 @@ const mangoStore = create<MangoStore>()(
         amountIn: '',
         amountOut: '',
         flipPrices: false,
+        swapOrTrigger: 'swap',
+        triggerPrice: '',
       },
       themeData: nftThemeMeta.default,
       tokenStats: {

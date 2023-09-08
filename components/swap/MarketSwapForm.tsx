@@ -303,7 +303,7 @@ const MarketSwapForm = ({ setShowTokenSelect }: MarketSwapFormProps) => {
       ) : (
         <Button
           disabled
-          className="mb-4 mt-6 w-full leading-tight"
+          className="mb-4 mt-6 flex w-full items-center justify-center text-base"
           size="large"
         >
           {t('country-not-allowed', {

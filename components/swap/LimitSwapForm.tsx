@@ -109,7 +109,7 @@ const LimitSwapForm = ({
   const { t } = useTranslation(['common', 'swap', 'trade'])
   const { mangoAccountAddress } = useMangoAccount()
   const { ipAllowed, ipCountry } = useIpAddress()
-  const [triggerPrice, setTriggerPrice] = useState('')
+  // const [triggerPrice, setTriggerPrice] = useState('')
   const [orderType, setOrderType] = useState(ORDER_TYPES[0])
   const [submitting, setSubmitting] = useState(false)
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
@@ -123,6 +123,7 @@ const LimitSwapForm = ({
     amountIn: amountInFormValue,
     amountOut: amountOutFormValue,
     flipPrices,
+    triggerPrice,
   } = mangoStore((s) => s.swap)
 
   const { connected, connect } = useWallet()
@@ -183,7 +184,11 @@ const LimitSwapForm = ({
       flipPrices,
       isReducingShort,
     )
-    setTriggerPrice(priceToDisplayString(quotePrice * multiplier))
+    set((state) => {
+      state.swap.triggerPrice = priceToDisplayString(
+        new Decimal(quotePrice).mul(new Decimal(multiplier)),
+      )
+    })
   }, [
     flipPrices,
     isReducingShort,
@@ -201,8 +206,12 @@ const LimitSwapForm = ({
       flipPrices,
       isReducingShort,
     )
-    const price = priceToDisplayString(quotePrice * multiplier)
-    setTriggerPrice(price)
+    const price = priceToDisplayString(
+      new Decimal(quotePrice).mul(new Decimal(multiplier)),
+    )
+    set((state) => {
+      state.swap.triggerPrice = price
+    })
     if (amountInAsDecimal?.gt(0)) {
       const amountOut = getAmountOut(
         amountInAsDecimal.toString(),
@@ -224,7 +233,9 @@ const LimitSwapForm = ({
   const handleTokenSelect = (type: SwapFormTokenListType) => {
     setShowTokenSelect(type)
     setFormErrors({})
-    setTriggerPrice('')
+    set((state) => {
+      state.swap.triggerPrice = ''
+    })
   }
 
   // check if the borrowed amount exceeds the net borrow limit in the current period
@@ -417,13 +428,15 @@ const LimitSwapForm = ({
     (e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
       setFormErrors({})
-      setTriggerPrice(e.value)
+      set((state) => {
+        state.swap.triggerPrice = e.value
+      })
       if (parseFloat(e.value) > 0 && parseFloat(amountInFormValue) > 0) {
         const amountOut = getAmountOut(amountInFormValue, flipPrices, e.value)
         setAmountOutFormValue(amountOut.toString())
       }
     },
-    [amountInFormValue, flipPrices, setFormErrors, setTriggerPrice],
+    [amountInFormValue, flipPrices, setFormErrors],
   )
 
   const handlePlaceStopLoss = useCallback(async () => {
@@ -651,7 +664,9 @@ const LimitSwapForm = ({
       const trigger = priceToDisplayString(
         quotePrice * triggerMultiplier,
       ).toString()
-      setTriggerPrice(trigger)
+      set((state) => {
+        state.swap.triggerPrice = trigger
+      })
       if (amountInAsDecimal.gt(0)) {
         const amountOut = getAmountOut(
           amountInAsDecimal.toString(),
