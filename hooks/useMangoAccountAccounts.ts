@@ -50,7 +50,9 @@ export default function useMangoAccountAccounts() {
     const mangoAccount = mangoStore.getState().mangoAccount.current
     if (!mangoAccountAddress || !mangoAccount) return [[], [], [], []]
     const { tokens, serum3, perps, perpOpenOrders } = mangoAccount
-    const usedTokens: TokenPosition[] = tokens.filter((t) => t.inUseCount)
+    const usedTokens: TokenPosition[] = tokens.filter(
+      (t) => t.tokenIndex !== 65535,
+    )
     const usedSerum3: Serum3Orders[] = serum3.filter(
       (s) => s.marketIndex !== 65535,
     )

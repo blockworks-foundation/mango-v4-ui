@@ -31,13 +31,13 @@ import InlineNotification from '@components/shared/InlineNotification'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import DepositWithdrawModal from '@components/modals/DepositWithdrawModal'
-import useMangoAccountAccounts from 'hooks/useMangoAccountAccounts'
 import Link from 'next/link'
 import SecondaryConnectButton from '@components/shared/SecondaryConnectButton'
 import useRemainingBorrowsInPeriod from 'hooks/useRemainingBorrowsInPeriod'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { formatCurrencyValue } from 'utils/numbers'
+import useTokenPositionsFull from 'hooks/useTokenPositionsFull'
 
 dayjs.extend(relativeTime)
 
@@ -337,33 +337,10 @@ const SwapFormSubmitButton = ({
   const { connected } = useWallet()
   const { amount: tokenMax, amountWithBorrow } = useTokenMax(useMargin)
   const [showDepositModal, setShowDepositModal] = useState(false)
-  const { usedTokens, totalTokens } = useMangoAccountAccounts()
   const { inputBank, outputBank } = mangoStore((s) => s.swap)
   const { remainingBorrowsInPeriod, timeToNextPeriod } =
     useRemainingBorrowsInPeriod(true)
-
-  const tokenPositionsFull = useMemo(() => {
-    if (!inputBank || !outputBank || !usedTokens.length || !totalTokens.length)
-      return false
-    const hasInputTokenPosition = usedTokens.find(
-      (token) => token.tokenIndex === inputBank.tokenIndex,
-    )
-    const hasOutputTokenPosition = usedTokens.find(
-      (token) => token.tokenIndex === outputBank.tokenIndex,
-    )
-    const availableTokenPositions = totalTokens.length - usedTokens.length
-    if (
-      (hasInputTokenPosition && hasOutputTokenPosition) ||
-      availableTokenPositions >= 2
-    ) {
-      return false
-    } else if (
-      (hasInputTokenPosition && !hasOutputTokenPosition) ||
-      (!hasInputTokenPosition && hasOutputTokenPosition)
-    ) {
-      return availableTokenPositions >= 1 ? false : true
-    } else return true
-  }, [inputBank, outputBank, usedTokens, totalTokens])
+  const tokenPositionsFull = useTokenPositionsFull(outputBank, inputBank)
 
   const freeCollateral = useMemo(() => {
     const group = mangoStore.getState().group
