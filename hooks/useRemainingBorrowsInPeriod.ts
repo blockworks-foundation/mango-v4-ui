@@ -22,11 +22,11 @@ export default function useRemainingBorrowsInPeriod(isSwap?: boolean) {
         let balanceBank
         if (side === 'buy') {
           balanceBank = group?.getFirstBankByTokenIndex(
-            selectedMarket.baseTokenIndex,
+            selectedMarket.quoteTokenIndex,
           )
         } else {
           balanceBank = group?.getFirstBankByTokenIndex(
-            selectedMarket.quoteTokenIndex,
+            selectedMarket.baseTokenIndex,
           )
         }
         return balanceBank

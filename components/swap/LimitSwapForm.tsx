@@ -145,6 +145,12 @@ const LimitSwapForm = ({
       : new Decimal(0)
   }, [amountInFormValue])
 
+  const amountOutAsDecimal: Decimal | null = useMemo(() => {
+    return Number(amountOutFormValue)
+      ? new Decimal(amountOutFormValue)
+      : new Decimal(0)
+  }, [amountOutFormValue])
+
   const setAmountInFormValue = useCallback((amountIn: string) => {
     set((s) => {
       s.swap.amountIn = amountIn
@@ -238,21 +244,26 @@ const LimitSwapForm = ({
     })
   }
 
-  // check if the borrowed amount exceeds the net borrow limit in the current period
+  // check if the borrowed amount exceeds the net borrow limit in the current period. Only currently applies to reducing shorts
   const borrowExceedsLimitInPeriod = useMemo(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
-    if (!mangoAccount || !inputBank) return false
+    if (
+      !mangoAccount ||
+      !outputBank ||
+      !isReducingShort ||
+      !remainingBorrowsInPeriod
+    )
+      return false
 
-    const balance = mangoAccount.getTokenDepositsUi(inputBank)
-    const remainingBalance = balance - amountInAsDecimal.toNumber()
+    const balance = mangoAccount.getTokenDepositsUi(outputBank)
+    const remainingBalance = balance - amountOutAsDecimal.toNumber()
     const borrowAmount = remainingBalance < 0 ? Math.abs(remainingBalance) : 0
 
-    return remainingBorrowsInPeriod
-      ? borrowAmount > remainingBorrowsInPeriod
-      : false
+    return borrowAmount > remainingBorrowsInPeriod
   }, [
-    amountInAsDecimal,
-    inputBank,
+    amountOutAsDecimal,
+    outputBank,
+    isReducingShort,
     mangoAccountAddress,
     remainingBorrowsInPeriod,
   ])

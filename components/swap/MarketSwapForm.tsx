@@ -359,15 +359,13 @@ const SwapFormSubmitButton = ({
   // check if the borrowed amount exceeds the net borrow limit in the current period
   const borrowExceedsLimitInPeriod = useMemo(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
-    if (!mangoAccount || !inputBank) return false
+    if (!mangoAccount || !inputBank || !remainingBorrowsInPeriod) return false
 
     const balance = mangoAccount.getTokenDepositsUi(inputBank)
     const remainingBalance = balance - amountIn.toNumber()
     const borrowAmount = remainingBalance < 0 ? Math.abs(remainingBalance) : 0
 
-    return remainingBorrowsInPeriod
-      ? borrowAmount > remainingBorrowsInPeriod
-      : false
+    return borrowAmount > remainingBorrowsInPeriod
   }, [amountIn, inputBank, mangoAccountAddress, remainingBorrowsInPeriod])
 
   const disabled =
