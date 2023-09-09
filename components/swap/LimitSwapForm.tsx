@@ -45,6 +45,7 @@ import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { SwapFormTokenListType } from './SwapFormTokenList'
 import { formatTokenSymbol } from 'utils/tokens'
+import Tooltip from '@components/shared/Tooltip'
 
 dayjs.extend(relativeTime)
 
@@ -697,6 +698,42 @@ const LimitSwapForm = ({
 
   return (
     <>
+      <div className="mb-3">
+        <InlineNotification
+          desc={
+            <div className="flex">
+              <span className="mr-1">{t('swap:trigger-beta')}</span>
+              <Tooltip
+                content={
+                  <ul className="ml-4 list-disc space-y-2">
+                    <li>
+                      Trigger orders on long-tail assets could be susceptible to
+                      oracle manipulation.
+                    </li>
+                    <li>
+                      Trigger orders rely on a sufficient amount of well
+                      collateralized liquidators.
+                    </li>
+                    <li>
+                      The slippage on existing orders could be higher/lower than
+                      what&apos;s estimated.
+                    </li>
+                    <li>
+                      The amount of tokens used to fill your order can vary and
+                      depends on the final execution price.
+                    </li>
+                  </ul>
+                }
+              >
+                <span className="tooltip-underline">
+                  {t('swap:important-info')}
+                </span>
+              </Tooltip>
+            </div>
+          }
+          type="info"
+        />
+      </div>
       <ReduceInputTokenInput
         className="rounded-b-none"
         error={formErrors.amountIn}
