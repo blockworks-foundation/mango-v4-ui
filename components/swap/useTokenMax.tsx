@@ -105,7 +105,7 @@ export const getTokenInMax = (
   }
 }
 
-interface TokenMaxResults {
+export interface TokenMaxResults {
   amount: Decimal
   amountWithBorrow: Decimal
   decimals: number
@@ -139,4 +139,26 @@ export const useTokenMax = (useMargin = true): TokenMaxResults => {
   }, [mangoAccount, group, useMargin, inputBank, outputBank])
 
   return tokenInMax
+}
+
+export const useAbsInputPosition = (): TokenMaxResults => {
+  const { mangoAccount } = useMangoAccount()
+  const { inputBank } = mangoStore((s) => s.swap)
+
+  if (!mangoAccount || !inputBank) {
+    return {
+      amount: new Decimal(0),
+      amountWithBorrow: new Decimal(0),
+      decimals: 6,
+    }
+  }
+
+  const amount = new Decimal(
+    Math.abs(mangoAccount.getTokenBalanceUi(inputBank)),
+  )
+  return {
+    decimals: inputBank.mintDecimals,
+    amount: amount,
+    amountWithBorrow: amount,
+  }
 }

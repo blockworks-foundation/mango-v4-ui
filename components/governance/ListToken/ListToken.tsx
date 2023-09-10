@@ -468,9 +468,18 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           Number(tierPreset.maintLiabWeight),
           Number(tierPreset.initLiabWeight),
           Number(tierPreset.liquidationFee),
+          Number(tierPreset.stablePriceDelayIntervalSeconds),
+          Number(tierPreset.stablePriceDelayGrowthLimit),
+          Number(tierPreset.stablePriceGrowthLimit),
           Number(tierPreset.minVaultToDepositsRatio),
           new BN(tierPreset.netBorrowLimitWindowSizeTs),
           new BN(tierPreset.netBorrowLimitPerWindowQuote),
+          Number(tierPreset.borrowWeightScaleStartQuote),
+          Number(tierPreset.depositWeightScaleStartQuote),
+          Number(tierPreset.reduceOnly),
+          Number(tierPreset.tokenConditionalSwapTakerFeeRate),
+          Number(tierPreset.tokenConditionalSwapMakerFeeRate),
+          Number(tierPreset.flashLoanDepositFeeRate),
         )
         .accounts({
           admin: MANGO_DAO_WALLET,
@@ -502,10 +511,13 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           null,
           null,
           null,
-          tierPreset.borrowWeightScale,
-          tierPreset.depositWeightScale,
+          null,
+          null,
           false,
           false,
+          null,
+          null,
+          null,
           null,
           null,
           null,
@@ -524,7 +536,9 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           } as AccountMeta,
         ])
         .instruction()
-      proposalTx.push(editIx)
+      if (!tierPreset.insuranceFound) {
+        proposalTx.push(editIx)
+      }
     } else {
       const trustlessIx = await client!.program.methods
         .tokenRegisterTrustless(Number(advForm.tokenIndex), advForm.name)

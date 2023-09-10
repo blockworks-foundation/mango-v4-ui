@@ -8,7 +8,6 @@ import {
   closeSocket,
   // isOpen,
   subscribeOnStream as subscribeOnSpotStream,
-  unsubscribeFromStream,
 } from './birdeye/streaming'
 import {
   closeSocket as closePerpSocket,
@@ -116,11 +115,11 @@ export const queryPerpBars = async (
   },
 ): Promise<Bar[]> => {
   const { from, to } = periodParams
-
+  if (tokenAddress === 'Loading') return []
   const urlParameters = {
     'perp-market': tokenAddress,
     resolution: parsePerpResolution(resolution),
-    start_datetime: new Date(from * 1000).toISOString(),
+    start_datetime: new Date((from - 3_000_000) * 1000).toISOString(),
     end_datetime: new Date(to * 1000).toISOString(),
   }
 
@@ -135,21 +134,19 @@ export const queryPerpBars = async (
   let previousBar: Bar | undefined = undefined
   for (const bar of data) {
     const timestamp = new Date(bar.candle_start).getTime()
-    if (timestamp >= from * 1000 && timestamp < to * 1000) {
-      bars = [
-        ...bars,
-        {
-          time: timestamp,
-          low: bar.low,
-          high: bar.high,
-          open: previousBar ? previousBar.close : bar.open,
-          close: bar.close,
-          volume: bar.volume,
-          timestamp,
-        },
-      ]
-      previousBar = bar
-    }
+    bars = [
+      ...bars,
+      {
+        time: timestamp,
+        low: bar.low,
+        high: bar.high,
+        open: previousBar ? previousBar.close : bar.open,
+        close: bar.close,
+        volume: bar.volume,
+        timestamp,
+      },
+    ]
+    previousBar = bar
   }
   return bars
 }

@@ -189,13 +189,16 @@ const DashboardSuggestedValues = ({
           getNullOrVal(fieldsToChange.netBorrowLimitWindowSizeTs)
             ? new BN(fieldsToChange.netBorrowLimitWindowSizeTs!)
             : null,
-          getNullOrVal(fieldsToChange.borrowWeightScale),
-          getNullOrVal(fieldsToChange.depositWeightScale),
+          getNullOrVal(fieldsToChange.borrowWeightScaleStartQuote),
+          getNullOrVal(fieldsToChange.depositWeightScaleStartQuote),
           false,
           false,
           bank.reduceOnly ? 0 : null,
           null,
           null,
+          getNullOrVal(fieldsToChange.tokenConditionalSwapTakerFeeRate),
+          getNullOrVal(fieldsToChange.tokenConditionalSwapMakerFeeRate),
+          getNullOrVal(fieldsToChange.loanFeeRate),
         )
         .accounts({
           group: group!.publicKey,

@@ -7,6 +7,7 @@ import {
   Serum3Market,
 } from '@blockworks-foundation/mango-v4'
 import { Modify } from '@blockworks-foundation/mango-v4'
+import { JsonMetadata } from '@metaplex-foundation/js'
 import { Event } from '@project-serum/serum/lib/queue'
 import { PublicKey } from '@solana/web3.js'
 import { formatTradeHistory } from 'hooks/useTradeHistory'
@@ -305,6 +306,7 @@ export interface NFT {
   name: string
   mint: string
   tokenAccount: string
+  json: JsonMetadata | null
 }
 
 export interface PerpStatsItem {
@@ -496,3 +498,5 @@ export interface FilledOrder {
   order_type: 'spot' | 'perp'
   quantity: number
 }
+
+export type TriggerOrderTypes = 'swap' | 'trade:trigger-order'
