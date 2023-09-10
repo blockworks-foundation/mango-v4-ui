@@ -26,6 +26,9 @@ import NftMarketButton from './NftMarketButton'
 import { abbreviateAddress } from 'utils/formatting'
 import EmptyState from './EmptyState'
 import { formatNumericValue } from 'utils/numbers'
+import Loading from '@components/shared/Loading'
+import { notify } from 'utils/notifications'
+import SheenLoader from '@components/shared/SheenLoader'
 
 const AllBidsView = () => {
   const { publicKey } = useWallet()
@@ -34,9 +37,16 @@ const AllBidsView = () => {
   // const { t } = useTranslation(['nft-market'])
   const [showBidModal, setShowBidModal] = useState(false)
   const [bidListing, setBidListing] = useState<null | Listing>(null)
+  const [buying, setBuying] = useState('')
+  const [cancellingBid, setCancellingBid] = useState('')
+  const [accepting, setAccepting] = useState('')
   const { data: bids, refetch } = useBids()
   const bidsToLoad = bids ? bids : []
-  const { data: loadedBids } = useLoadBids(bidsToLoad)
+  const {
+    data: loadedBids,
+    isLoading: loadingBids,
+    isFetching: fetchingBids,
+  } = useLoadBids(bidsToLoad)
   const connection = mangoStore((s) => s.connection)
   const fetchNfts = mangoStore((s) => s.actions.fetchNfts)
   const nfts = mangoStore((s) => s.wallet.nfts.data)
@@ -49,33 +59,74 @@ const AllBidsView = () => {
   }, [publicKey])
 
   const cancelBid = async (bid: Bid) => {
-    await metaplex!.auctionHouse().cancelBid({
-      auctionHouse: auctionHouse!,
-      bid,
-    })
-    refetch()
+    setCancellingBid(bid.asset.mint.address.toString())
+    try {
+      const { response } = await metaplex!.auctionHouse().cancelBid({
+        auctionHouse: auctionHouse!,
+        bid,
+      })
+      refetch()
+      if (response) {
+        notify({
+          title: 'Transaction confirmed',
+          type: 'success',
+          txid: response.signature,
+        })
+      }
+    } catch (e) {
+      console.log('error cancelling bid', e)
+    } finally {
+      setCancellingBid('')
+    }
   }
 
   const sellAsset = async (bid: Bid, tokenAccountPk: string) => {
-    console.log(tokenAccountPk)
-    const tokenAccount = await metaplex
-      ?.tokens()
-      .findTokenByAddress({ address: new PublicKey(tokenAccountPk) })
+    setAccepting(bid.asset.mint.address.toString())
+    try {
+      const tokenAccount = await metaplex
+        ?.tokens()
+        .findTokenByAddress({ address: new PublicKey(tokenAccountPk) })
 
-    await metaplex!.auctionHouse().sell({
-      auctionHouse: auctionHouse!,
-      bid: bid as PublicBid,
-      sellerToken: tokenAccount!,
-    })
-    refetch()
+      const { response } = await metaplex!.auctionHouse().sell({
+        auctionHouse: auctionHouse!,
+        bid: bid as PublicBid,
+        sellerToken: tokenAccount!,
+      })
+      refetch()
+      if (response) {
+        notify({
+          title: 'Transaction confirmed',
+          type: 'success',
+          txid: response.signature,
+        })
+      }
+    } catch (e) {
+      console.log('error accepting offer', e)
+    } finally {
+      setAccepting('')
+    }
   }
 
   const buyAsset = async (listing: Listing) => {
-    await metaplex!.auctionHouse().buy({
-      auctionHouse: auctionHouse!,
-      listing,
-    })
-    refetch()
+    setBuying(listing.asset.mint.address.toString())
+    try {
+      const { response } = await metaplex!.auctionHouse().buy({
+        auctionHouse: auctionHouse!,
+        listing,
+      })
+      refetch()
+      if (response) {
+        notify({
+          title: 'Transaction confirmed',
+          type: 'success',
+          txid: response.signature,
+        })
+      }
+    } catch (e) {
+      console.log('error buying nft', e)
+    } finally {
+      setBuying('')
+    }
   }
 
   const openBidModal = (listing: Listing) => {
@@ -83,15 +134,17 @@ const AllBidsView = () => {
     setShowBidModal(true)
   }
 
+  const loading = loadingBids || fetchingBids
+
   return (
     <>
       <div className="flex flex-col">
-        {loadedBids?.length ? (
+        {loadedBids && loadedBids?.length ? (
           <Table>
             <thead>
               <TrHead>
                 <Th className="text-left">Date</Th>
-                <Th className="text-right">NFT</Th>
+                <Th className="text-left">NFT</Th>
                 <Th className="text-right">Offer</Th>
                 <Th className="text-right">Buy Now Price</Th>
                 <Th className="text-right">Buyer</Th>
@@ -104,23 +157,32 @@ const AllBidsView = () => {
                 .map((x, idx) => {
                   const listing = listings?.results?.find(
                     (nft: Listing) =>
-                      nft.asset.mint.toString() === x.asset.mint.toString(),
+                      nft.asset.mint.address.toString() ===
+                      x.asset.mint.address.toString(),
                   )
                   return (
                     <TrBody key={idx}>
                       <Td>
                         <TableDateDisplay
-                          date={x.createdAt.toNumber()}
+                          date={x.createdAt.toNumber() * 1000}
                           showSeconds
                         />
                       </Td>
                       <Td>
-                        <div className="flex justify-end">
+                        <div className="flex items-center justify-start">
                           <ImgWithLoader
-                            className="w-12 rounded-md"
+                            className="mr-2 w-12 rounded-md"
                             alt={x.asset.name}
                             src={x.asset.json!.image!}
                           />
+                          <div>
+                            <p className="font-body">
+                              {x.asset.json?.name || 'Unknown'}
+                            </p>
+                            <p className="font-body text-xs text-th-fgd-3">
+                              {x.asset.json?.collection?.family || 'Unknown'}
+                            </p>
+                          </div>
                         </div>
                       </Td>
                       <Td>
@@ -178,14 +240,28 @@ const AllBidsView = () => {
                                 )
                               }
                               colorClass="fgd-3"
-                              text="Accept Offer"
+                              text={
+                                accepting ===
+                                x.asset.mint.address.toString() ? (
+                                  <Loading />
+                                ) : (
+                                  'Accept Offer'
+                                )
+                              }
                             />
                           ) : (
                             <>
                               {publicKey && x.buyerAddress.equals(publicKey) ? (
                                 <NftMarketButton
                                   colorClass="error"
-                                  text="Cancel Offer"
+                                  text={
+                                    cancellingBid ===
+                                    x.asset.mint.address.toString() ? (
+                                      <Loading />
+                                    ) : (
+                                      'Cancel Offer'
+                                    )
+                                  }
                                   onClick={() => cancelBid(x)}
                                 />
                               ) : listing ? (
@@ -198,7 +274,14 @@ const AllBidsView = () => {
                               {listing ? (
                                 <NftMarketButton
                                   colorClass="success"
-                                  text="Buy Now"
+                                  text={
+                                    buying ===
+                                    listing.asset.mint.address.toString() ? (
+                                      <Loading />
+                                    ) : (
+                                      'Buy Now'
+                                    )
+                                  }
                                   onClick={() => buyAsset(listing)}
                                 />
                               ) : null}
@@ -211,6 +294,14 @@ const AllBidsView = () => {
                 })}
             </tbody>
           </Table>
+        ) : loading ? (
+          <div className="mt-4 space-y-1.5">
+            {[...Array(4)].map((x, i) => (
+              <SheenLoader className="mx-4 flex flex-1 md:mx-6" key={i}>
+                <div className="h-16 w-full bg-th-bkg-2" />
+              </SheenLoader>
+            ))}
+          </div>
         ) : (
           <EmptyState text="No offers to display..." />
         )}

@@ -7,9 +7,7 @@ import {
   TrashIcon,
   XMarkIcon,
 } from '@heroicons/react/20/solid'
-import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes'
-import { WalletContextState, useWallet } from '@solana/wallet-adapter-react'
-import { Payload, SIWS } from '@web3auth/sign-in-with-solana'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { useHeaders } from 'hooks/notifications/useHeaders'
 import { useIsAuthorized } from 'hooks/notifications/useIsAuthorized'
 import { useNotifications } from 'hooks/notifications/useNotifications'
@@ -18,58 +16,13 @@ import { NOTIFICATION_API } from 'utils/constants'
 import NotificationCookieStore from '@store/notificationCookieStore'
 import dayjs from 'dayjs'
 import { useTranslation } from 'next-i18next'
-import { notify } from 'utils/notifications'
-
-export const createSolanaMessage = (
-  wallet: WalletContextState,
-  setCookie: (wallet: string, token: string) => void,
-) => {
-  const payload = new Payload()
-  payload.domain = window.location.host
-  payload.address = wallet.publicKey!.toString()
-  payload.uri = window.location.origin
-  payload.statement = 'Login to Mango Notifications Admin App'
-  payload.version = '1'
-  payload.chainId = 1
-
-  const message = new SIWS({ payload })
-
-  const messageText = message.prepareMessage()
-  const messageEncoded = new TextEncoder().encode(messageText)
-
-  wallet.signMessage!(messageEncoded)
-    .then(async (resp) => {
-      const tokenResp = await fetch(`${NOTIFICATION_API}auth`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...payload,
-          signatureString: bs58.encode(resp),
-        }),
-      })
-      const body = await tokenResp.json()
-      const token = body.token
-      const error = body.error
-      if (error) {
-        notify({
-          type: 'error',
-          title: 'Error',
-          description: error,
-        })
-        return
-      }
-      setCookie(payload.address, token)
-    })
-    .catch((e) => {
-      notify({
-        type: 'error',
-        title: 'Error',
-        description: e.message ? e.message : `${e}`,
-      })
-    })
-}
+import {
+  createLedgerMessage,
+  createSolanaMessage,
+  notify,
+} from 'utils/notifications'
+import mangoStore from '@store/mangoStore'
+import { ttCommons, ttCommonsExpanded, ttCommonsMono } from 'utils/fonts'
 
 const NotificationsDrawer = ({
   isOpen,
@@ -80,6 +33,7 @@ const NotificationsDrawer = ({
 }) => {
   const { t } = useTranslation('notifications')
   const { data, refetch } = useNotifications()
+  const connection = mangoStore((s) => s.connection)
   const wallet = useWallet()
   const isAuth = useIsAuthorized()
   const headers = useHeaders()
@@ -192,7 +146,7 @@ const NotificationsDrawer = ({
           as={Fragment}
         >
           <Dialog.Panel
-            className={`thin-scroll absolute right-0 z-40 h-full w-full overflow-y-auto bg-th-bkg-1 text-left md:w-96`}
+            className={`thin-scroll absolute right-0 z-40 h-full w-full overflow-y-auto bg-th-bkg-1 text-left font-body md:w-96 ${ttCommons.variable} ${ttCommonsExpanded.variable} ${ttCommonsMono.variable}`}
           >
             <div className="flex h-16 items-center justify-between border-b border-th-bkg-3 pl-6">
               <h2 className="text-lg">{t('notifications')}</h2>
@@ -268,13 +222,22 @@ const NotificationsDrawer = ({
                 <div className="flex flex-col items-center justify-center text-center">
                   <InboxIcon className="mb-2 h-7 w-7 text-th-fgd-2" />
                   <h3 className="mb-1 text-base">{t('unauth-title')}</h3>
-                  <p>{t('unauth-desc')}</p>
+                  <p className="mb-3">{t('unauth-desc')}</p>
                   <Button
                     className="mt-6"
                     onClick={() => createSolanaMessage(wallet, setCookie)}
                   >
                     {t('sign-message')}
                   </Button>
+                  <LinkButton
+                    className="mt-6 text-th-fgd-2"
+                    secondary
+                    onClick={() =>
+                      createLedgerMessage(wallet, setCookie, connection)
+                    }
+                  >
+                    {t('sign-using-ledger')}
+                  </LinkButton>
                 </div>
               </div>
             )}

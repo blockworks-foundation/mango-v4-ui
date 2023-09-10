@@ -49,9 +49,9 @@ export const FAVORITE_SWAPS_KEY = 'favoriteSwaps-0.1'
 
 export const THEME_KEY = 'theme-0.1'
 
-export const RPC_PROVIDER_KEY = 'rpcProviderKey-0.7'
+export const RPC_PROVIDER_KEY = 'rpcProviderKey-0.9'
 
-export const PRIORITY_FEE_KEY = 'priorityFeeKey-0.1'
+export const PRIORITY_FEE_KEY = 'priorityFeeKey-0.2'
 
 export const SHOW_ORDER_LINES_KEY = 'showOrderLines-0.1'
 
@@ -72,6 +72,8 @@ export const HOT_KEYS_KEY = 'hotKeys-0.1'
 export const AUTO_CONNECT_WALLET = 'auto-connect-0.1'
 
 export const LAST_WALLET_NAME = 'lastWalletName'
+
+export const PRIVACY_MODE = 'privacy-mode-0.1'
 
 // Unused
 export const PROFILE_CATEGORIES = [
@@ -95,6 +97,8 @@ export const MANGO_DATA_OPENBOOK_URL = 'https://api.mngo.cloud/openbook/v1'
 export const DEFAULT_MARKET_NAME = 'SOL/USDC'
 
 export const MIN_SOL_BALANCE = 0.001
+
+export const MAX_PRIORITY_FEE_KEYS = 128
 
 export const ACCOUNT_ACTION_MODAL_HEIGHT = '462px'
 
@@ -141,6 +145,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   sol: true,
   stsol: true,
   usdc: true,
+  usdh: true,
   usdt: true,
   wbtcpo: true,
   'wbtc (portal)': true,
@@ -156,3 +161,12 @@ export const DEFAULT_FAVORITE_MKTS = [
 export const WHITE_LIST_API = 'https://api.mngo.cloud/whitelist/v1/'
 export const DAILY_SECONDS = 86400
 export const DAILY_MILLISECONDS = 86400000
+
+// max slot numbers for mango account
+export const MAX_ACCOUNTS = {
+  tokenAccounts: '8',
+  spotOpenOrders: '4',
+  perpAccounts: '4',
+  perpOpenOrders: '64',
+  tcsOrders: '64',
+}

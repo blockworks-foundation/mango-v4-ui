@@ -97,8 +97,27 @@ export const floorToDecimal = (
   decimals: number,
 ): Decimal => {
   const decimal = value instanceof Decimal ? value : new Decimal(value)
-
   return decimal.toDecimalPlaces(decimals, Decimal.ROUND_FLOOR)
+}
+
+// Significant digits before the dot count against the number of decimals
+// to show. When maxSignificantDecimals is 2:
+//    0.012345 ->   0.012
+//    0.12345 ->    0.12
+//    1.12345 ->    1.1
+//   12.345   ->   12.3
+//  123.456   ->  123
+// 1234.567   -> 1234
+export const floorToDecimalSignificance = (
+  value: number | string | Decimal,
+  maxSignificantDecimals: number,
+): Decimal => {
+  const number = Number(value)
+  const log = Math.log10(Math.abs(number))
+  const decimal = new Decimal(value)
+  return decimal.toDecimalPlaces(
+    Math.max(0, Math.floor(-log + maxSignificantDecimals - Number.EPSILON)),
+  )
 }
 
 const usdFormatter0 = Intl.NumberFormat('en', {

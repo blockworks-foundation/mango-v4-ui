@@ -176,12 +176,12 @@ const PageTitle = () => {
     market && selectedMarket && router.pathname == '/trade'
       ? `${price?.toFixed(getDecimalCount(market.tickSize))} ${
           selectedMarket.name
-        } - `
-      : ''
+        } - Mango`
+      : 'Mango Markets'
 
   return (
     <Head>
-      <title>{marketTitleString}Mango Markets</title>
+      <title>{marketTitleString}</title>
     </Head>
   )
 }

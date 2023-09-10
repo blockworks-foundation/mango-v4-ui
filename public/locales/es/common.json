@@ -19,6 +19,7 @@
   "all": "All",
   "amount": "Amount",
   "amount-owed": "Amount Owed",
+  "asked-sign-transaction": "You'll be asked to sign a transaction",
   "asset-liability-weight": "Asset/Liability Weights",
   "asset-liability-weight-desc": "Asset weight applies a haircut to the value of the collateral in your account health calculation. The lower the asset weight, the less the asset counts towards collateral. Liability weight does the opposite (adds to the value of the liability in your health calculation).",
   "asset-weight": "Asset Weight",
@@ -75,7 +76,9 @@
   "edit": "Edit",
   "edit-account": "Edit Account Name",
   "edit-profile-image": "Edit Profile Image",
-  "error-token-positions-full": "No token positions available in your account.",
+  "enable-notifications": "Enable Notifications",
+  "error-borrow-exceeds-limit": "Maximum borrow for the current period is {{remaining}}. New period starts {{resetTime}}",
+  "error-token-positions-full": "Not enough token positions available in your account.",
   "explorer": "Explorer",
   "fee": "Fee",
   "feedback-survey": "Feedback Survey",
@@ -193,6 +196,8 @@
   "list-market-token": "List Market/Token",
   "vote": "Vote",
   "yes": "Yes",
-  "you": "You"
+  "you": "You",
+  "using-ledger": "Using Ledger",
+  "sign-to-in-app-notifications": "Sign to in app notifications"
  }
  

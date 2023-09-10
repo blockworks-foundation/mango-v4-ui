@@ -8,7 +8,7 @@ import SwapFormTokenList from './SwapFormTokenList'
 import { LinkButton } from '../shared/Button'
 import { EnterBottomExitBottom } from '../shared/Transitions'
 import { HealthType } from '@blockworks-foundation/mango-v4'
-import { SWAP_MARGIN_KEY } from '../../utils/constants'
+import { OUTPUT_TOKEN_DEFAULT, SWAP_MARGIN_KEY } from '../../utils/constants'
 import HealthImpact from '@components/shared/HealthImpact'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import SwapSettings from './SwapSettings'
@@ -19,16 +19,16 @@ import MarketSwapForm from './MarketSwapForm'
 import LimitSwapForm from './LimitSwapForm'
 import Switch from '@components/forms/Switch'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
+import { SwapFormTokenListType } from './SwapFormTokenList'
+import { TriggerOrderTypes } from 'types'
 
 const set = mangoStore.getState().set
 
 const SwapForm = () => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
-  const { data: isWhiteListed } = useIsWhiteListed()
-  const [showTokenSelect, setShowTokenSelect] = useState<'input' | 'output'>()
+  const [showTokenSelect, setShowTokenSelect] =
+    useState<SwapFormTokenListType>()
   const [showSettings, setShowSettings] = useState(false)
-  const [swapOrLimit, setSwapOrLimit] = useState('swap')
   const [, setSavedSwapMargin] = useLocalStorageState<boolean>(
     SWAP_MARGIN_KEY,
     true,
@@ -41,6 +41,7 @@ const SwapForm = () => {
     outputBank,
     amountIn: amountInFormValue,
     amountOut: amountOutFormValue,
+    swapOrTrigger,
   } = mangoStore((s) => s.swap)
 
   const handleTokenInSelect = useCallback((mintAddress: string) => {
@@ -100,11 +101,18 @@ const SwapForm = () => {
       : Math.trunc(simulatedHealthRatio)
   }, [inputBank, outputBank, amountInFormValue, amountOutFormValue])
 
-  const handleSwapOrLimit = useCallback(
-    (orderType: string) => {
-      setSwapOrLimit(orderType)
+  const handleSwapOrTrigger = useCallback(
+    (orderType: TriggerOrderTypes) => {
+      set((state) => {
+        state.swap.swapOrTrigger = orderType
+        if (orderType !== 'swap' && outputBank?.name === OUTPUT_TOKEN_DEFAULT) {
+          const { group } = mangoStore.getState()
+          const outputBankName = inputBank?.name === 'USDC' ? 'SOL' : 'USDC'
+          state.swap.outputBank = group?.banksMapByName.get(outputBankName)?.[0]
+        }
+      })
     },
-    [outputBank, set, setSwapOrLimit],
+    [inputBank, outputBank, set],
   )
 
   const handleSetMargin = () => {
@@ -142,12 +150,12 @@ const SwapForm = () => {
           <SwapFormTokenList
             onClose={() => setShowTokenSelect(undefined)}
             onTokenSelect={
-              showTokenSelect === 'input'
+              showTokenSelect === 'input' || showTokenSelect === 'reduce-input'
                 ? handleTokenInSelect
                 : handleTokenOutSelect
             }
             type={showTokenSelect}
-            useMargin={useMargin}
+            useMargin={swapOrTrigger === 'swap' ? useMargin : false}
           />
         </EnterBottomExitBottom>
         <EnterBottomExitBottom
@@ -157,16 +165,14 @@ const SwapForm = () => {
           <SwapSettings onClose={() => setShowSettings(false)} />
         </EnterBottomExitBottom>
         <div className="relative p-6">
-          {isWhiteListed ? (
-            <div className="relative mb-6">
-              <TabUnderline
-                activeValue={swapOrLimit}
-                values={['swap', 'trade:trigger-order']}
-                onChange={(v) => handleSwapOrLimit(v)}
-              />
-            </div>
-          ) : null}
-          {swapOrLimit === 'swap' ? (
+          <div className="relative mb-6">
+            <TabUnderline
+              activeValue={swapOrTrigger}
+              values={['swap', 'trade:trigger-order']}
+              onChange={(v) => handleSwapOrTrigger(v)}
+            />
+          </div>
+          {swapOrTrigger === 'swap' ? (
             <MarketSwapForm setShowTokenSelect={setShowTokenSelect} />
           ) : (
             <LimitSwapForm
@@ -205,7 +211,7 @@ const SwapForm = () => {
             <div id="swap-step-four">
               <HealthImpact maintProjectedHealth={maintProjectedHealth} />
             </div>
-            {swapOrLimit === 'swap' ? (
+            {swapOrTrigger === 'swap' ? (
               <>
                 <div className="flex items-center justify-between">
                   <Tooltip content={t('swap:tooltip-margin')}>

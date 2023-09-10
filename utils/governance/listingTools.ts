@@ -297,8 +297,14 @@ export const formatSuggestedValues = (
       suggestedParams.netBorrowLimitPerWindowQuote,
       6,
     ),
-    borrowWeightScale: toUiDecimals(suggestedParams.borrowWeightScale, 6),
-    depositWeightScale: toUiDecimals(suggestedParams.depositWeightScale, 6),
+    borrowWeightScale: toUiDecimals(
+      suggestedParams.borrowWeightScaleStartQuote,
+      6,
+    ),
+    depositWeightScale: toUiDecimals(
+      suggestedParams.depositWeightScaleStartQuote,
+      6,
+    ),
   }
 }
 

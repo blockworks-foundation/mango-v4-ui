@@ -4,6 +4,7 @@
     "empty-state-title": "Nothing to see here",
     "notifications": "Notifications",
     "sign-message": "Sign Message",
+    "sign-using-ledger": "Sign with Ledger",
     "unauth-desc": "Sign with your wallet to start receiving notifications",
     "unauth-title": "Notifications Inbox"
 }

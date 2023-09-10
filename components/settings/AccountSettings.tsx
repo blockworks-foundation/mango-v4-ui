@@ -1,16 +1,11 @@
-import MangoAccountSizeModal, {
-  MAX_ACCOUNTS,
-} from '@components/modals/MangoAccountSizeModal'
+import HideMangoAccount from '@components/account/HideMangoAccount'
+import MangoAccountSizeModal from '@components/modals/MangoAccountSizeModal'
 import { LinkButton } from '@components/shared/Button'
 import TokenLogo from '@components/shared/TokenLogo'
 import Tooltip from '@components/shared/Tooltip'
 import MarketLogos from '@components/trade/MarketLogos'
 import { Disclosure } from '@headlessui/react'
-import {
-  ChevronDownIcon,
-  ExclamationCircleIcon,
-  SquaresPlusIcon,
-} from '@heroicons/react/20/solid'
+import { ChevronDownIcon, SquaresPlusIcon } from '@heroicons/react/20/solid'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoAccountAccounts, {
   getAvaialableAccountsColor,
@@ -18,6 +13,7 @@ import useMangoAccountAccounts, {
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
 import { useState } from 'react'
+import { MAX_ACCOUNTS } from 'utils/constants'
 
 const AccountSettings = () => {
   const { t } = useTranslation(['common', 'settings'])
@@ -38,8 +34,12 @@ const AccountSettings = () => {
 
   return mangoAccountAddress && group ? (
     <>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-base">{t('account')}</h2>
+      <h2 className="mb-4 text-base">{t('account')}</h2>
+      <div className="pb-6">
+        <HideMangoAccount />
+      </div>
+      <div className="mb-4 flex items-center justify-between md:px-4">
+        <h3 className="text-sm text-th-fgd-2">{t('settings:account-size')}</h3>
         {!isAccountFull ? (
           <LinkButton
             className="flex items-center"
@@ -48,14 +48,7 @@ const AccountSettings = () => {
             <SquaresPlusIcon className="mr-1.5 h-4 w-4" />
             {t('settings:increase-account-size')}
           </LinkButton>
-        ) : (
-          <div className="flex items-center">
-            <ExclamationCircleIcon className="mr-1.5 h-4 w-4 text-th-error" />
-            <p className="text-th-error">
-              {t('settings:error-account-size-full')}
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
       <Disclosure>
         {({ open }) => (

@@ -1,6 +1,5 @@
 import Switch from '@components/forms/Switch'
-import { createSolanaMessage } from '@components/notifications/NotificationsDrawer'
-import Button from '@components/shared/Button'
+import Button, { LinkButton } from '@components/shared/Button'
 import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import { BellIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
@@ -10,6 +9,8 @@ import { useNotificationSettings } from 'hooks/notifications/useNotificationSett
 import { useTranslation } from 'next-i18next'
 import { NOTIFICATION_API } from 'utils/constants'
 import NotificationCookieStore from '@store/notificationCookieStore'
+import mangoStore from '@store/mangoStore'
+import { createLedgerMessage, createSolanaMessage } from 'utils/notifications'
 
 const NotificationSettings = () => {
   const { t } = useTranslation(['common', 'notifications', 'settings'])
@@ -19,6 +20,7 @@ const NotificationSettings = () => {
   const setCookie = NotificationCookieStore((s) => s.setCookie)
   const headers = useHeaders()
   const isAuth = useIsAuthorized()
+  const connection = mangoStore((s) => s.connection)
 
   const handleSettingChange = async (key: string, val: boolean) => {
     if (data) {
@@ -60,11 +62,23 @@ const NotificationSettings = () => {
             <div className="flex flex-col items-center">
               <BellIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
               <p className="mb-4">{t('notifications:unauth-desc')}</p>
-              <Button onClick={() => createSolanaMessage(wallet, setCookie)}>
+              <Button
+                className="mt-3"
+                onClick={() => createSolanaMessage(wallet, setCookie)}
+              >
                 <div className="flex items-center">
                   {t('notifications:sign-message')}
                 </div>
               </Button>
+              <LinkButton
+                className="mt-4 text-th-fgd-2"
+                secondary
+                onClick={() =>
+                  createLedgerMessage(wallet, setCookie, connection)
+                }
+              >
+                {t('notifications:sign-using-ledger')}
+              </LinkButton>
             </div>
           ) : (
             <ConnectEmptyState text={t('settings:connect-notifications')} />

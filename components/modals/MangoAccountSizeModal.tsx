@@ -18,14 +18,9 @@ import Label from '@components/forms/Label'
 import useMangoAccountAccounts, {
   getAvaialableAccountsColor,
 } from 'hooks/useMangoAccountAccounts'
+import { MAX_ACCOUNTS } from 'utils/constants'
 
 const MIN_ACCOUNTS = 8
-export const MAX_ACCOUNTS: AccountSizeForm = {
-  tokenAccounts: '10',
-  spotOpenOrders: '8',
-  perpAccounts: '8',
-  perpOpenOrders: '64',
-}
 
 const INPUT_CLASSES =
   'h-10 rounded-md rounded-r-none border w-full border-th-input-border bg-th-input-bkg px-3 font-mono text-base text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover disabled:text-th-fgd-4 disabled:bg-th-bkg-2 disabled:hover:border-th-input-border'
@@ -132,9 +127,10 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
 
   const handleMax = (propertyName: keyof AccountSizeForm) => {
     setFormErrors({})
+    const defaultSizes = MAX_ACCOUNTS as AccountSizeForm
     setAccountSizeForm((prevState) => ({
       ...prevState,
-      [propertyName]: MAX_ACCOUNTS[propertyName],
+      [propertyName]: defaultSizes[propertyName],
     }))
   }
 

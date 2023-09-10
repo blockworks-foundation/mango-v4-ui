@@ -1,13 +1,15 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 import mangoStore from '@store/mangoStore'
 import { Keypair, PublicKey } from '@solana/web3.js'
 import { useRouter } from 'next/router'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useInterval from './shared/useInterval'
-import { LAST_WALLET_NAME, SECONDS } from 'utils/constants'
+import { LAST_WALLET_NAME, PRIORITY_FEE_KEY, SECONDS } from 'utils/constants'
 import useNetworkSpeed from 'hooks/useNetworkSpeed'
 import { useWallet } from '@solana/wallet-adapter-react'
 import useLocalStorageState from 'hooks/useLocalStorageState'
+import { DEFAULT_PRIORITY_FEE_LEVEL } from './settings/RpcSettings'
+import { useHiddenMangoAccounts } from 'hooks/useHiddenMangoAccounts'
 
 const set = mangoStore.getState().set
 const actions = mangoStore.getState().actions
@@ -21,6 +23,21 @@ const HydrateStore = () => {
   const { wallet } = useWallet()
 
   const [, setLastWalletName] = useLocalStorageState(LAST_WALLET_NAME, '')
+
+  const handleWindowResize = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      set((s) => {
+        s.window.width = window.innerWidth
+        s.window.height = window.innerHeight
+      })
+    }
+  }, [])
+  // store the window width and height on resize
+  useEffect(() => {
+    handleWindowResize()
+    window.addEventListener('resize', handleWindowResize)
+    return () => window.removeEventListener('resize', handleWindowResize)
+  }, [handleWindowResize])
 
   useEffect(() => {
     if (wallet?.adapter) {
@@ -41,7 +58,7 @@ const HydrateStore = () => {
     () => {
       actions.fetchGroup()
     },
-    (slowNetwork ? 40 : 20) * SECONDS,
+    (slowNetwork ? 60 : 30) * SECONDS,
   )
 
   // refetches open orders every 30 seconds
@@ -70,6 +87,20 @@ const HydrateStore = () => {
       actions.loadMarketFills()
     },
     (slowNetwork ? 60 : 20) * SECONDS,
+  )
+
+  // estimate the priority fee every 30 seconds
+  useInterval(
+    async () => {
+      if (mangoAccountAddress) {
+        const priorityFeeMultiplier = Number(
+          localStorage.getItem(PRIORITY_FEE_KEY) ??
+            DEFAULT_PRIORITY_FEE_LEVEL.value,
+        )
+        actions.estimatePriorityFee(priorityFeeMultiplier)
+      }
+    },
+    (slowNetwork ? 60 : 10) * SECONDS,
   )
 
   // The websocket library solana/web3.js uses closes its websocket connection when the subscription list
@@ -128,6 +159,7 @@ const ReadOnlyMangoAccount = () => {
   const router = useRouter()
   const groupLoaded = mangoStore((s) => s.groupLoaded)
   const ma = router.query?.address
+  const { hiddenAccounts } = useHiddenMangoAccounts()
 
   useEffect(() => {
     if (!groupLoaded) return
@@ -136,7 +168,7 @@ const ReadOnlyMangoAccount = () => {
 
     async function loadUnownedMangoAccount() {
       try {
-        if (!ma || !group) return
+        if (!ma || !group || hiddenAccounts?.includes(ma as string)) return
 
         const client = mangoStore.getState().client
         const pk = new PublicKey(ma)

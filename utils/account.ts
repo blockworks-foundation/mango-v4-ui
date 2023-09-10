@@ -2,6 +2,7 @@ import {
   AccountPerformanceData,
   AccountVolumeTotalData,
   EmptyObject,
+  FilledOrdersApiResponseType,
   FormattedHourlyAccountVolumeData,
   HourlyAccountVolumeData,
   PerformanceDataItem,
@@ -148,5 +149,22 @@ export const fetchHourlyVolume = async (mangoAccountPk: string) => {
     return formatHourlyVolumeData(hourlyVolume)
   } catch (e) {
     console.log('Failed to fetch spot volume', e)
+  }
+}
+
+export const fetchFilledOrders = async (
+  mangoAccountPk: string,
+  orderIds: string[],
+) => {
+  try {
+    const idString = orderIds.map((i) => `&id=${i}`).join('')
+    const resp = await fetch(
+      `https://api.mngo.cloud/data/v4/user-data/filled-orders?mango-account=${mangoAccountPk}` +
+        idString,
+    )
+    const response: FilledOrdersApiResponseType = await resp.json()
+    return response
+  } catch (e) {
+    console.log('Failed to fetch filled orders', e)
   }
 }

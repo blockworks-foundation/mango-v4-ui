@@ -241,6 +241,7 @@ const BalancesTable = () => {
               {({ open }) => (
                 <>
                   <Disclosure.Button
+                    as="div"
                     className={`w-full border-t border-th-bkg-3 p-4 text-left focus:outline-none ${
                       i === 0 ? 'border-t-0' : ''
                     }`}
@@ -344,8 +345,7 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
   const { selectedMarket } = useSelectedMarket()
   const { asPath } = useRouter()
   const { isUnownedAccount } = useUnownedAccount()
-  const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.md : false
+  const { isDesktop } = useViewport()
 
   const tokenBank = bank.bank
 
@@ -422,16 +422,27 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
             s.swap.outputBank =
               swap.outputBank.name === 'USDC' ? solBank : usdcBank
           }
+          s.swap.triggerPrice = ''
         })
       } else {
         set((s) => {
-          s.swap.outputBank = tokenBank
-          s.swap.amountIn = ''
-          s.swap.amountOut = Math.abs(balance).toString()
-          s.swap.swapMode = 'ExactOut'
-          if (tokenBank.name === swap.inputBank?.name) {
-            s.swap.inputBank =
-              swap.inputBank.name === 'USDC' ? solBank : usdcBank
+          if (swap.swapOrTrigger === 'swap') {
+            s.swap.outputBank = tokenBank
+            s.swap.amountIn = ''
+            s.swap.amountOut = Math.abs(balance).toString()
+            s.swap.swapMode = 'ExactOut'
+            if (tokenBank.name === swap.inputBank?.name) {
+              s.swap.inputBank =
+                swap.inputBank.name === 'USDC' ? solBank : usdcBank
+            }
+          } else {
+            s.swap.inputBank = tokenBank
+            s.swap.amountIn = Math.abs(balance).toString()
+            s.swap.amountOut = ''
+            if (tokenBank.name === swap.outputBank?.name) {
+              s.swap.outputBank =
+                swap.outputBank.name === 'USDC' ? solBank : usdcBank
+            }
           }
         })
       }
@@ -455,7 +466,7 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
 
   return (
     <p className="font-mono text-th-fgd-2 md:flex md:justify-end">
-      {!isUnownedAccount && !isMobile ? (
+      {!isUnownedAccount && isDesktop ? (
         asPath.includes('/trade') && isBaseOrQuote ? (
           <LinkButton
             className="font-normal underline underline-offset-2 md:underline-offset-4 md:hover:no-underline"

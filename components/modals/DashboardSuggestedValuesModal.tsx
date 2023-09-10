@@ -1,4 +1,4 @@
-import { ReactNode, useCallback, useEffect, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { ModalProps } from '../../types/modal'
 import Modal from '../shared/Modal'
 import mangoStore from '@store/mangoStore'
@@ -54,28 +54,42 @@ const DashboardSuggestedValues = ({
   const [suggestedTier, setSuggstedTier] =
     useState<LISTING_PRESETS_KEYS>('SHIT')
 
+  const getApiTokenName = (bankName: string) => {
+    if (bankName === 'ETH (Portal)') {
+      return 'ETH'
+    }
+    return bankName
+  }
+
+  const priceImpactsFiltered = useMemo(
+    () =>
+      priceImpacts
+        .reduce((acc: PriceImpactRespWithoutSide[], val: PriceImpactResp) => {
+          if (val.side === 'ask') {
+            const bidSide = priceImpacts.find(
+              (x) =>
+                x.symbol === val.symbol &&
+                x.target_amount === val.target_amount &&
+                x.side === 'bid',
+            )
+            acc.push({
+              target_amount: val.target_amount,
+              avg_price_impact_percent: bidSide
+                ? (bidSide.avg_price_impact_percent +
+                    val.avg_price_impact_percent) /
+                  2
+                : val.avg_price_impact_percent,
+              symbol: val.symbol,
+            })
+          }
+          return acc
+        }, [])
+        .filter((x) => x.symbol === getApiTokenName(bank.name)),
+    [priceImpacts, bank.name],
+  )
+
   const getSuggestedTierForListedTokens = useCallback(async () => {
-    const filteredResp = priceImpacts
-      .reduce((acc: PriceImpactRespWithoutSide[], val: PriceImpactResp) => {
-        if (val.side === 'ask') {
-          const bidSide = priceImpacts.find(
-            (x) =>
-              x.symbol === val.symbol &&
-              x.target_amount === val.target_amount &&
-              x.side === 'bid',
-          )
-          acc.push({
-            target_amount: val.target_amount,
-            avg_price_impact_percent: bidSide
-              ? (bidSide.avg_price_impact_percent +
-                  val.avg_price_impact_percent) /
-                2
-              : val.avg_price_impact_percent,
-            symbol: val.symbol,
-          })
-        }
-        return acc
-      }, [])
+    const filteredResp = priceImpactsFiltered
       .filter((x) => x.avg_price_impact_percent < 1)
       .reduce(
         (
@@ -110,7 +124,7 @@ const DashboardSuggestedValues = ({
         : liqudityTier
 
     setSuggstedTier(listingTier as LISTING_PRESETS_KEYS)
-  }, [priceImpacts])
+  }, [priceImpactsFiltered])
 
   const proposeNewSuggestedValues = useCallback(
     async (
@@ -175,13 +189,16 @@ const DashboardSuggestedValues = ({
           getNullOrVal(fieldsToChange.netBorrowLimitWindowSizeTs)
             ? new BN(fieldsToChange.netBorrowLimitWindowSizeTs!)
             : null,
-          getNullOrVal(fieldsToChange.borrowWeightScale),
-          getNullOrVal(fieldsToChange.depositWeightScale),
+          getNullOrVal(fieldsToChange.borrowWeightScaleStartQuote),
+          getNullOrVal(fieldsToChange.depositWeightScaleStartQuote),
           false,
           false,
           bank.reduceOnly ? 0 : null,
           null,
           null,
+          getNullOrVal(fieldsToChange.tokenConditionalSwapTakerFeeRate),
+          getNullOrVal(fieldsToChange.tokenConditionalSwapMakerFeeRate),
+          getNullOrVal(fieldsToChange.loanFeeRate),
         )
         .accounts({
           group: group!.publicKey,
@@ -226,6 +243,7 @@ const DashboardSuggestedValues = ({
       }
     },
     [
+      PRESETS,
       client,
       connection,
       group,
@@ -235,13 +253,6 @@ const DashboardSuggestedValues = ({
       wallet,
     ],
   )
-
-  const getApiTokenName = (bankName: string) => {
-    if (bankName === 'ETH (Portal)') {
-      return 'ETH'
-    }
-    return bankName
-  }
 
   useEffect(() => {
     getSuggestedTierForListedTokens()
@@ -443,6 +454,21 @@ const DashboardSuggestedValues = ({
               `${suggestedFields.liquidationFee}%`
             }
           />
+          <div>
+            <h3 className="mb-4 pl-6">Price impacts</h3>
+            {priceImpactsFiltered.map((x) => (
+              <div className="flex pl-6" key={x.target_amount}>
+                <p className="mr-4 w-[150px] space-x-4">
+                  <span>Amount:</span>
+                  <span>${x.target_amount}</span>
+                </p>
+                <p className="space-x-4">
+                  <span>Price impact:</span>{' '}
+                  <span>{x.avg_price_impact_percent.toFixed(3)}%</span>
+                </p>
+              </div>
+            ))}
+          </div>
         </Disclosure.Panel>
 
         {invalidKeys.length && (

@@ -4,6 +4,8 @@ import {
   ArrowDownRightIcon,
   ArrowUpLeftIcon,
   DocumentDuplicateIcon,
+  EyeIcon,
+  EyeSlashIcon,
   PencilIcon,
   SquaresPlusIcon,
   TrashIcon,
@@ -26,9 +28,10 @@ import { Popover, Transition } from '@headlessui/react'
 import ActionsLinkButton from './ActionsLinkButton'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import { useViewport } from 'hooks/useViewport'
-import { breakpoints } from 'utils/theme'
 import MangoAccountSizeModal from '@components/modals/MangoAccountSizeModal'
 import useMangoAccountAccounts from 'hooks/useMangoAccountAccounts'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import { PRIVACY_MODE } from 'utils/constants'
 
 export const handleCopyAddress = (
   mangoAccount: MangoAccount,
@@ -51,10 +54,10 @@ const AccountActions = () => {
   const [showDelegateModal, setShowDelegateModal] = useState(false)
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
   const [showAccountSizeModal, setShowAccountSizeModal] = useState(false)
+  const [privacyMode, setPrivacyMode] = useLocalStorageState(PRIVACY_MODE)
   const { connected } = useWallet()
   const { isDelegatedAccount, isUnownedAccount } = useUnownedAccount()
-  const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.sm : false
+  const { isMobile } = useViewport()
   const { isAccountFull } = useMangoAccountAccounts()
 
   const handleBorrowModal = () => {
@@ -168,6 +171,26 @@ const AccountActions = () => {
                     >
                       <TrashIcon className="h-4 w-4" />
                       <span className="ml-2">{t('close-account')}</span>
+                    </ActionsLinkButton>
+                    <ActionsLinkButton
+                      mangoAccount={mangoAccount!}
+                      onClick={() => setPrivacyMode(!privacyMode)}
+                    >
+                      {privacyMode ? (
+                        <>
+                          <EyeIcon className="h-4 w-4" />
+                          <span className="ml-2">
+                            {t('settings:privacy-disable')}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <EyeSlashIcon className="h-4 w-4" />
+                          <span className="ml-2">
+                            {t('settings:privacy-enable')}
+                          </span>
+                        </>
+                      )}
                     </ActionsLinkButton>
                   </Popover.Panel>
                 </Transition>

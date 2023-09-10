@@ -34,13 +34,14 @@ const RPC_URLS = [
   { label: 'Custom', value: '' },
 ]
 
-export const PRIORITY_FEES = [
+export const PRIORITY_FEE_LEVELS = [
   { label: 'None', value: 0 },
-  { label: 'Low', value: 50000 },
-  { label: 'High', value: 100000 },
+  { label: 'Low', value: 1.2 }, //  +20%
+  { label: 'High', value: 2 }, // +100%
 ]
 
-export const DEFAULT_PRIORITY_FEE = PRIORITY_FEES[1]
+export const DEFAULT_PRIORITY_FEE = 1
+export const DEFAULT_PRIORITY_FEE_LEVEL = PRIORITY_FEE_LEVELS[1]
 
 const RpcSettings = () => {
   const { t } = useTranslation('settings')
@@ -52,10 +53,8 @@ const RpcSettings = () => {
     RPC_PROVIDER_KEY,
     RPC_URLS[0].value,
   )
-  const [storedPriorityFee, setStoredPriorityFee] = useLocalStorageState(
-    PRIORITY_FEE_KEY,
-    DEFAULT_PRIORITY_FEE.value,
-  )
+  const [storedPriorityFeeLevel, setStoredPriorityFeeLevel] =
+    useLocalStorageState(PRIORITY_FEE_KEY, DEFAULT_PRIORITY_FEE_LEVEL)
   const [storedUseOrderbookFeed, setStoredUseOrderbookFeed] =
     useLocalStorageState(USE_ORDERBOOK_FEED_KEY, true)
 
@@ -70,10 +69,11 @@ const RpcSettings = () => {
 
   const priorityFee = useMemo(() => {
     return (
-      PRIORITY_FEES.find((node) => node.value === storedPriorityFee) ||
-      DEFAULT_PRIORITY_FEE
+      PRIORITY_FEE_LEVELS.find(
+        (node) => node.value === storedPriorityFeeLevel,
+      ) || DEFAULT_PRIORITY_FEE_LEVEL
     )
-  }, [storedPriorityFee])
+  }, [storedPriorityFeeLevel])
 
   const handleSetEndpointProvider = (provider: string) => {
     const endpointProvider = RPC_URLS.find(
@@ -88,15 +88,15 @@ const RpcSettings = () => {
 
   const handlePriorityFee = useCallback(
     (label: string) => {
-      const fee = PRIORITY_FEES.find((fee) => fee.label === label)
+      const fee = PRIORITY_FEE_LEVELS.find((fee) => fee.label === label)
       if (fee) {
-        setStoredPriorityFee(fee?.value)
+        setStoredPriorityFeeLevel(fee?.value)
         if (wallet) {
           actions.connectMangoClientWithWallet(wallet)
         }
       }
     },
-    [setStoredPriorityFee, actions, wallet],
+    [setStoredPriorityFeeLevel, actions, wallet],
   )
 
   useEffect(() => {
@@ -154,7 +154,7 @@ const RpcSettings = () => {
           <ButtonGroup
             activeValue={priorityFee.label}
             onChange={(v) => handlePriorityFee(v)}
-            values={PRIORITY_FEES.map((val) => val.label)}
+            values={PRIORITY_FEE_LEVELS.map((val) => val.label)}
           />
           {/* {showCustomForm ? (
             <div className="mt-2">

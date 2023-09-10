@@ -13,9 +13,6 @@ import PerpMarketDetailsModal from '@components/modals/PerpMarketDetailsModal'
 import OraclePrice from './OraclePrice'
 import SpotMarketDetailsModal from '@components/modals/SpotMarketDetailsModal'
 import { MarketData } from 'types'
-import ManualRefresh from '@components/shared/ManualRefresh'
-import { useViewport } from 'hooks/useViewport'
-import { breakpoints } from 'utils/theme'
 import MarketChange from '@components/shared/MarketChange'
 import useMarketsData from 'hooks/useMarketsData'
 
@@ -30,8 +27,6 @@ const AdvancedMarketHeader = ({
   const { serumOrPerpMarket, selectedMarket } = useSelectedMarket()
   const selectedMarketName = mangoStore((s) => s.selectedMarket.name)
   const [showMarketDetails, setShowMarketDetails] = useState(false)
-  const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.md : false
   const { data: marketsData, isLoading, isFetching } = useMarketsData()
 
   const volume = useMemo(() => {
@@ -142,10 +137,6 @@ const AdvancedMarketHeader = ({
             )}
           </div>
           <div className="ml-6 flex items-center space-x-4">
-            <ManualRefresh
-              hideBg={isMobile}
-              size={isMobile ? undefined : 'small'}
-            />
             <LinkButton
               className="flex items-center whitespace-nowrap text-th-fgd-3"
               onClick={() => setShowMarketDetails(true)}

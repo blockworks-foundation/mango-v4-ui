@@ -15,6 +15,7 @@ import { token } from '@metaplex-foundation/js'
 import metaplexStore from '@store/metaplexStore'
 import { useAuctionHouse, useLazyListings } from 'hooks/market/useAuctionHouse'
 import Loading from '@components/shared/Loading'
+import { notify } from 'utils/notifications'
 
 const SellNftModal = ({ isOpen, onClose }: ModalProps) => {
   const { publicKey } = useWallet()
@@ -49,12 +50,19 @@ const SellNftModal = ({ isOpen, onClose }: ModalProps) => {
       if (isCurrentlyListed) {
         throw 'Item is currently listed by you'
       }
-      await metaplex!.auctionHouse().list({
+      const { response } = await metaplex!.auctionHouse().list({
         auctionHouse: auctionHouse!, // A model of the Auction House related to this listing
         mintAccount: new PublicKey(mint), // The mint account to create a listing for, used to find the metadata
         price: token(price, MANGO_MINT_DECIMALS), // The listing price
       })
       refetch()
+      if (response) {
+        notify({
+          title: 'Transaction confirmed',
+          type: 'success',
+          txid: response.signature,
+        })
+      }
       onClose()
     } catch (e) {
       console.log('error listing nft', e)

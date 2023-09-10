@@ -14,6 +14,14 @@ import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { formatTokenSymbol } from 'utils/tokens'
 import TokenLogo from '@components/shared/TokenLogo'
 import Input from '@components/forms/Input'
+import { getInputTokenBalance } from './LimitSwapForm'
+
+export type SwapFormTokenListType =
+  | 'input'
+  | 'output'
+  | 'reduce-input'
+  | 'reduce-output'
+  | undefined
 
 const generateSearchTerm = (item: Token, searchValue: string) => {
   const normalizedSearchValue = searchValue.toLowerCase()
@@ -50,7 +58,7 @@ const TokenItem = ({
   token: TokenInfoWithAmounts
   onSubmit: (x: string) => void
   useMargin: boolean
-  type: 'input' | 'output' | undefined
+  type: SwapFormTokenListType
 }) => {
   const { t } = useTranslation('trade')
   const { address, symbol, name } = token
@@ -80,8 +88,17 @@ const TokenItem = ({
           <div className="ml-2.5">
             <p className="text-left text-th-fgd-2">
               {bank?.name ? formatTokenSymbol(bank.name) : symbol || 'unknown'}
+              {type === 'reduce-input' && token.amount ? (
+                <span
+                  className={`ml-1 rounded px-1 text-xxs uppercase ${
+                    token.amount.gt(0) ? 'text-th-up' : 'text-th-down'
+                  }`}
+                >
+                  {t(`trade:${token.amount.gt(0) ? 'long' : 'short'}`)}
+                </span>
+              ) : null}
               {isReduceOnly ? (
-                <span className="ml-1.5 text-xxs text-th-warning">
+                <span className="ml-1 text-xxs text-th-warning">
                   {t('reduce-only')}
                 </span>
               ) : null}
@@ -92,7 +109,7 @@ const TokenItem = ({
             </p>
           </div>
         </div>
-        {type === 'input' &&
+        {(type === 'input' || type === 'reduce-input') &&
         token.amount &&
         token.amountWithBorrow &&
         token.decimals ? (
@@ -128,7 +145,7 @@ const SwapFormTokenList = ({
 }: {
   onClose: () => void
   onTokenSelect: (x: string) => void
-  type: 'input' | 'output' | undefined
+  type: SwapFormTokenListType
   useMargin: boolean
 }) => {
   const { t } = useTranslation(['common', 'search', 'swap'])
@@ -137,7 +154,7 @@ const SwapFormTokenList = ({
   const inputBank = mangoStore((s) => s.swap.inputBank)
   const outputBank = mangoStore((s) => s.swap.outputBank)
   const { group } = useMangoGroup()
-  const { mangoAccount } = useMangoAccount()
+  const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const focusRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -178,6 +195,36 @@ const SwapFormTokenList = ({
         )
 
       return filteredSortedTokens
+    } else if (
+      mangoTokens?.length &&
+      group &&
+      mangoAccount &&
+      outputBank &&
+      inputBank &&
+      type === 'reduce-input'
+    ) {
+      const filteredSortedTokens = mangoTokens
+        .map((token) => {
+          const tokenBank = group.getFirstBankByMint(
+            new PublicKey(token.address),
+          )
+          const uiAmount = mangoAccount.getTokenBalanceUi(tokenBank)
+          const uiDollarValue = uiAmount * tokenBank.uiPrice
+          return {
+            ...token,
+            amount: new Decimal(uiAmount),
+            amountWithBorrow: new Decimal(uiAmount),
+            absDollarValue: Math.abs(uiDollarValue),
+            decimals: inputBank.mintDecimals,
+          }
+        })
+        .filter(
+          (token) =>
+            token.symbol !== outputBank?.name && token.absDollarValue > 0.0001,
+        )
+        .sort((a, b) => b.absDollarValue - a.absDollarValue)
+
+      return filteredSortedTokens
     } else if (mangoTokens?.length) {
       const filteredTokens = mangoTokens
         .map((token) => ({
@@ -205,15 +252,28 @@ const SwapFormTokenList = ({
     }
   }, [focusRef])
 
+  const listTitle = useMemo(() => {
+    if (!type) return ''
+    if (type === 'input') {
+      return t('swap:you-sell')
+    } else if (type === 'output') {
+      return t('swap:you-buy')
+    } else if (type === 'reduce-input') {
+      return t('swap:reduce-position')
+    } else {
+      if (!mangoAccountAddress || !inputBank) return ''
+      const uiPos = getInputTokenBalance(inputBank)
+      if (uiPos > 0) {
+        return t('swap:reduce-position-buy')
+      } else if (uiPos < 0) {
+        return t('swap:reduce-position-sell')
+      }
+    }
+  }, [inputBank, mangoAccountAddress, type])
+
   return (
     <>
-      <p className="mb-3">
-        {type === 'input'
-          ? t('swap:you-sell')
-          : type === 'output'
-          ? t('swap:you-buy')
-          : ''}
-      </p>
+      <p className="mb-3">{listTitle}</p>
       <IconButton
         className="absolute right-2 top-2 text-th-fgd-3 hover:text-th-fgd-2"
         onClick={onClose}
@@ -235,7 +295,7 @@ const SwapFormTokenList = ({
       </div>
       <div className="flex justify-between rounded bg-th-bkg-2 p-2">
         <p className="text-xs text-th-fgd-4">{t('token')}</p>
-        {type === 'input' ? (
+        {!type?.includes('output') ? (
           <p className="text-xs text-th-fgd-4">{t('max')}</p>
         ) : null}
       </div>

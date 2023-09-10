@@ -125,7 +125,6 @@ const PerpPositionsStatsTable = ({
                           realizedPnl={realizedPnl}
                           totalPnl={totalPnl}
                           unsettledPnl={unsettledPnl}
-                          roe={roe}
                         />
                       }
                       delay={100}
@@ -316,7 +315,6 @@ const PerpPositionsStatsTable = ({
                                 realizedPnl={realizedPnl}
                                 totalPnl={totalPnl}
                                 unsettledPnl={unsettledPnl}
-                                roe={roe}
                               />
                             }
                             delay={100}

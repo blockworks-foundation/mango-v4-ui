@@ -36,7 +36,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
 const Market: NextPage = () => {
   // const { t } = useTranslation('nft-market')
   useMetaplex()
-  const [activeTab, setActiveTab] = useState('Listings')
+  const [activeTab, setActiveTab] = useState(LISTINGS)
   const [sellNftModal, setSellNftModal] = useState(false)
   const [myBidsModal, setMyBidsModal] = useState(false)
   const { data: isWhiteListed } = useIsWhiteListed()

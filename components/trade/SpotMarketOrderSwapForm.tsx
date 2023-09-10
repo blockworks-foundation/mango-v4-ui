@@ -14,7 +14,7 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useWallet } from '@solana/wallet-adapter-react'
 import useIpAddress from 'hooks/useIpAddress'
 import { useTranslation } from 'next-i18next'
-import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
+import { FormEvent, useCallback, useMemo, useState } from 'react'
 import Loading from '@components/shared/Loading'
 import Button from '@components/shared/Button'
 import Image from 'next/image'
@@ -32,20 +32,16 @@ import useUnownedAccount from 'hooks/useUnownedAccount'
 import HealthImpact from '@components/shared/HealthImpact'
 import Tooltip from '@components/shared/Tooltip'
 import Checkbox from '@components/forms/Checkbox'
-import MaxMarketSwapAmount from './MaxMarketSwapAmount'
+// import MaxMarketSwapAmount from './MaxMarketSwapAmount'
 import { floorToDecimal, formatNumericValue } from 'utils/numbers'
 import { formatTokenSymbol } from 'utils/tokens'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { useTokenMax } from '@components/swap/useTokenMax'
 import SheenLoader from '@components/shared/SheenLoader'
 import { fetchJupiterTransaction } from '@components/swap/SwapReviewRouteInfo'
-import {
-  AddressLookupTableAccount,
-  TransactionInstruction,
-} from '@solana/web3.js'
+import MaxSwapAmount from '@components/swap/MaxSwapAmount'
 
 const set = mangoStore.getState().set
-const slippage = 100
 
 function stringToNumberOrZero(s: string): number {
   const n = parseFloat(s)
@@ -53,11 +49,6 @@ function stringToNumberOrZero(s: string): number {
     return 0
   }
   return n
-}
-
-type PreloadedTransaction = {
-  data: [TransactionInstruction[], AddressLookupTableAccount[]]
-  timestamp: number
 }
 
 export default function SpotMarketOrderSwapForm() {
@@ -70,7 +61,6 @@ export default function SpotMarketOrderSwapForm() {
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const [savedCheckboxSettings, setSavedCheckboxSettings] =
     useLocalStorageState(TRADE_CHECKBOXES_KEY, DEFAULT_CHECKBOX_SETTINGS)
-  const [swapTx, setSwapTx] = useState<PreloadedTransaction>()
   const {
     selectedMarket,
     price: oraclePrice,
@@ -167,7 +157,9 @@ export default function SpotMarketOrderSwapForm() {
     }
   }, [selectedMarket, side])
 
-  const { bestRoute: selectedRoute, isLoading } = useQuoteRoutes({
+  const slippage = mangoStore.getState().swap.slippage
+
+  const { bestRoute: selectedRoute, isLoading: loadingRoute } = useQuoteRoutes({
     inputMint: inputBank?.mint.toString() || '',
     outputMint: outputBank?.mint.toString() || '',
     amount: side === 'buy' ? quoteSize : baseSize,
@@ -177,12 +169,13 @@ export default function SpotMarketOrderSwapForm() {
     mode: 'JUPITER',
   })
 
-  const fetchTransaction = useCallback(async () => {
+  const handlePlaceOrder = useCallback(async () => {
+    const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     const mangoAccount = mangoStore.getState().mangoAccount.current
+    const { baseSize, quoteSize, side } = mangoStore.getState().tradeForm
+    const actions = mangoStore.getState().actions
     const connection = mangoStore.getState().connection
-
-    if (!group || !mangoAccount) return
 
     if (
       !mangoAccount ||
@@ -194,6 +187,8 @@ export default function SpotMarketOrderSwapForm() {
     )
       return
 
+    setPlacingOrder(true)
+
     const [ixs, alts] = await fetchJupiterTransaction(
       connection,
       selectedRoute,
@@ -203,37 +198,7 @@ export default function SpotMarketOrderSwapForm() {
       outputBank.mint,
     )
 
-    setSwapTx({ data: [ixs, alts], timestamp: Date.now() })
-
-    return [ixs, alts]
-  }, [selectedRoute, inputBank, outputBank, publicKey])
-
-  useEffect(() => {
-    if (selectedRoute) fetchTransaction()
-  }, [selectedRoute, fetchTransaction])
-
-  const handlePlaceOrder = useCallback(async () => {
-    const client = mangoStore.getState().client
-    const group = mangoStore.getState().group
-    const mangoAccount = mangoStore.getState().mangoAccount.current
-    const { baseSize, quoteSize, side } = mangoStore.getState().tradeForm
-    const actions = mangoStore.getState().actions
-
-    if (
-      !mangoAccount ||
-      !group ||
-      !inputBank ||
-      !outputBank ||
-      !publicKey ||
-      !selectedRoute ||
-      !swapTx
-    )
-      return
-
-    setPlacingOrder(true)
-
     try {
-      const [ixs, alts] = swapTx.data
       const { signature: tx, slot } = await client.marginTrade({
         group,
         mangoAccount,
@@ -280,7 +245,7 @@ export default function SpotMarketOrderSwapForm() {
     } finally {
       setPlacingOrder(false)
     }
-  }, [inputBank, outputBank, publicKey, selectedRoute, swapTx])
+  }, [inputBank, outputBank, publicKey, selectedRoute])
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -376,7 +341,7 @@ export default function SpotMarketOrderSwapForm() {
   const disabled =
     (connected && (!baseSize || !oraclePrice)) ||
     !serumOrPerpMarket ||
-    isLoading ||
+    loadingRoute ||
     tooMuchSize
 
   return (
@@ -384,9 +349,10 @@ export default function SpotMarketOrderSwapForm() {
       <form onSubmit={(e) => handleSubmit(e)}>
         <div className="mt-3 px-3 md:px-4">
           {!isUnownedAccount ? (
-            <MaxMarketSwapAmount
+            <MaxSwapAmount
               useMargin={savedCheckboxSettings.margin}
               setAmountIn={setAmountFromSlider}
+              maxAmount={useTokenMax}
             />
           ) : null}
           <div className="flex flex-col">
@@ -448,7 +414,7 @@ export default function SpotMarketOrderSwapForm() {
                 }
                 name="quote"
                 id="quote"
-                className="-mt-[1px] flex w-full items-center rounded-md rounded-t-none border border-th-input-border bg-th-input-bkg p-2 pl-9 font-mono text-sm font-bold text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover md:hover:focus:border-th-fgd-4 lg:text-base"
+                className="mt-[-1px] flex w-full items-center rounded-md rounded-t-none border border-th-input-border bg-th-input-bkg p-2 pl-9 font-mono text-sm font-bold text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover md:hover:focus:border-th-fgd-4 lg:text-base"
                 placeholder="0.00"
                 value={quoteSize}
                 onValueChange={handleQuoteSizeChange}
@@ -467,6 +433,7 @@ export default function SpotMarketOrderSwapForm() {
                 }
                 onChange={setAmountFromSlider}
                 step={1 / 10 ** (inputBank?.mintDecimals || 6)}
+                maxAmount={useTokenMax}
               />
             </div>
           ) : (
@@ -497,7 +464,7 @@ export default function SpotMarketOrderSwapForm() {
               </Checkbox>
             </Tooltip>
           </div>
-          <div className="mb-4 mt-6 flex" onMouseEnter={fetchTransaction}>
+          <div className="mb-4 mt-6 flex">
             {ipAllowed ? (
               <Button
                 className={`flex w-full items-center justify-center ${
@@ -511,7 +478,7 @@ export default function SpotMarketOrderSwapForm() {
                 size="large"
                 type="submit"
               >
-                {isLoading ? (
+                {loadingRoute ? (
                   <div className="flex items-center space-x-2">
                     <Loading />
                     <span className="hidden sm:block">
@@ -582,7 +549,7 @@ export default function SpotMarketOrderSwapForm() {
               >
                 <p className="tooltip-underline">{t('swap:price-impact')}</p>
               </Tooltip>
-              {isLoading ? (
+              {loadingRoute ? (
                 <SheenLoader>
                   <div className="h-3.5 w-12 bg-th-bkg-2" />
                 </SheenLoader>
@@ -664,7 +631,7 @@ export default function SpotMarketOrderSwapForm() {
             ) : null}
             <div className="flex items-center justify-between text-xs">
               <p className="pr-2 text-th-fgd-3">{t('common:route')}</p>
-              {isLoading ? (
+              {loadingRoute ? (
                 <SheenLoader>
                   <div className="h-3.5 w-20 bg-th-bkg-2" />
                 </SheenLoader>

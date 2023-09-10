@@ -20,6 +20,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
         'notifications',
         'onboarding',
         'onboarding-tours',
+        'profile',
         'trade',
         'close-account',
         'tv-chart',
@@ -88,7 +89,7 @@ const Trade: NextPage = () => {
   }, [marketName])
 
   return (
-    <div className="pb-16 md:pb-0">
+    <div className="pb-32 md:pb-0">
       <TradeAdvancedPage />
     </div>
   )

@@ -19,6 +19,7 @@
   "all": "全部",
   "amount": "数量",
   "amount-owed": "欠款",
+  "asked-sign-transaction": "You'll be asked to sign a transaction",
   "asset-liability-weight": "资产/债务权重",
   "asset-liability-weight-desc": "资产权重在账户健康计算中对质押品价值进行扣减。资产权重越低，资产对质押品的影响越小。债务权重恰恰相反（在健康计算中增加债务价值）。",
   "asset-weight": "资产权重",
@@ -75,6 +76,8 @@
   "edit": "编辑",
   "edit-account": "编辑帐户标签",
   "edit-profile-image": "切换头像",
+  "enable-notifications": "Enable Notifications",
+  "error-borrow-exceeds-limit": "Maximum borrow for the current period is {{remaining}}. New period starts {{resetTime}}",
   "error-token-positions-full": "你帐户的币种位置已占满",
   "explorer": "浏览器",
   "fee": "费用",
@@ -192,5 +195,8 @@
   "list-market-token": "上架市场／币种",
   "vote": "投票",
   "yes": "是",
-  "you": "你"
-}
+  "you": "你",
+  "using-ledger": "Using Ledger",
+  "sign-to-in-app-notifications": "Sign to in app notifications"
+ }
+ 

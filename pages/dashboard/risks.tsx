@@ -124,14 +124,17 @@ const RiskDashboard: NextPage = () => {
                         <tbody>
                           {table.data.map((rowData, index: number) => {
                             return (
-                              <TrBody key={index}>
+                              <TrBody
+                                className={index % 2 === 0 ? 'bg-th-bkg-2' : ''}
+                                key={index}
+                              >
                                 {Object.values(rowData).map(
                                   (val, idx: number) => {
                                     return (
                                       <Td
                                         xBorder
                                         className={`${
-                                          val?.highlight ? 'bg-th-bkg-2' : ''
+                                          val?.highlight ? 'bg-th-bkg-4' : ''
                                         }`}
                                         key={idx}
                                       >

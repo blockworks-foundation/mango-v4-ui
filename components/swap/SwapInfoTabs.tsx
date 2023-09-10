@@ -5,16 +5,14 @@ import SwapHistoryTable from './SwapHistoryTable'
 import useMangoAccount from 'hooks/useMangoAccount'
 import ManualRefresh from '@components/shared/ManualRefresh'
 import { useViewport } from 'hooks/useViewport'
-import { breakpoints } from 'utils/theme'
-import SwapOrders from './SwapOrders'
+import SwapTriggerOrders from './SwapTriggerOrders'
 import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
 
 const SwapInfoTabs = () => {
   const [selectedTab, setSelectedTab] = useState('balances')
   const { mangoAccount } = useMangoAccount()
-  const { width } = useViewport()
+  const { isMobile, isTablet } = useViewport()
   const { data: isWhiteListed } = useIsWhiteListed()
-  const isMobile = width ? width < breakpoints.lg : false
 
   const tabsWithCount: [string, number][] = useMemo(() => {
     const tabs: [string, number][] = [
@@ -33,20 +31,22 @@ const SwapInfoTabs = () => {
   return (
     <div className="hide-scroll h-full overflow-y-scroll">
       <div className="flex items-center border-b border-th-bkg-3">
-        <TabButtons
-          activeValue={selectedTab}
-          onChange={(tab: string) => setSelectedTab(tab)}
-          values={tabsWithCount}
-          showBorders
-        />
+        <div className="w-full md:border-r md:border-th-bkg-3">
+          <TabButtons
+            activeValue={selectedTab}
+            onChange={(tab: string) => setSelectedTab(tab)}
+            values={tabsWithCount}
+            showBorders
+          />
+        </div>
         <ManualRefresh
-          classNames="fixed bottom-16 right-4 lg:relative lg:bottom-0 md:bottom-6 md:right-6 z-10 shadow-lg lg:shadow-none bg-th-bkg-3 lg:bg-transparent"
-          hideBg={isMobile}
-          size={isMobile ? 'large' : 'small'}
+          classNames="fixed bottom-16 right-4 md:relative md:px-2 md:bottom-0 md:right-0 z-10 shadow-lg md:shadow-none bg-th-bkg-3 md:bg-transparent"
+          hideBg={isMobile || isTablet}
+          size={isTablet ? 'large' : 'small'}
         />
       </div>
       {selectedTab === 'balances' ? <SwapTradeBalances /> : null}
-      {selectedTab === 'trade:trigger-orders' ? <SwapOrders /> : null}
+      {selectedTab === 'trade:trigger-orders' ? <SwapTriggerOrders /> : null}
       {selectedTab === 'swap:swap-history' ? <SwapHistoryTable /> : null}
     </div>
   )
