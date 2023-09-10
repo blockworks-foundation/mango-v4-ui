@@ -16,11 +16,11 @@ import InlineNotification from '@components/shared/InlineNotification'
 import Tooltip from '@components/shared/Tooltip'
 import TabUnderline from '@components/shared/TabUnderline'
 import MarketSwapForm from './MarketSwapForm'
-import LimitSwapForm from './LimitSwapForm'
 import Switch from '@components/forms/Switch'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { SwapFormTokenListType } from './SwapFormTokenList'
 import { TriggerOrderTypes } from 'types'
+import TriggerSwapForm from './TriggerSwapForm'
 
 const set = mangoStore.getState().set
 
@@ -175,7 +175,7 @@ const SwapForm = () => {
           {swapOrTrigger === 'swap' ? (
             <MarketSwapForm setShowTokenSelect={setShowTokenSelect} />
           ) : (
-            <LimitSwapForm
+            <TriggerSwapForm
               showTokenSelect={showTokenSelect}
               setShowTokenSelect={setShowTokenSelect}
             />

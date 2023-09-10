@@ -342,7 +342,7 @@ const SwapFormSubmitButton = ({
   const { inputBank, outputBank } = mangoStore((s) => s.swap)
   const { remainingBorrowsInPeriod, timeToNextPeriod } =
     useRemainingBorrowsInPeriod(true)
-  const tokenPositionsFull = useTokenPositionsFull(outputBank, inputBank)
+  const tokenPositionsFull = useTokenPositionsFull([outputBank, inputBank])
 
   const freeCollateral = useMemo(() => {
     const group = mangoStore.getState().group

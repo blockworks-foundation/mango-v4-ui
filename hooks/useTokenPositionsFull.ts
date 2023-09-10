@@ -2,33 +2,39 @@ import { Bank } from '@blockworks-foundation/mango-v4'
 import useMangoAccountAccounts from './useMangoAccountAccounts'
 import { useMemo } from 'react'
 
-export default function useTokenPositionsFull(
-  buyBank: Bank | undefined,
-  sellBank: Bank | undefined,
-) {
+export default function useTokenPositionsFull(banks: Array<Bank | undefined>) {
   const { usedTokens, totalTokens } = useMangoAccountAccounts()
   const tokenPositionsFull = useMemo(() => {
-    if (!buyBank || !sellBank || !usedTokens.length || !totalTokens.length)
+    if (
+      banks.every((bank) => bank === undefined) ||
+      !usedTokens.length ||
+      !totalTokens.length
+    )
       return false
-    const hasInputTokenPosition = usedTokens.find(
-      (token) => token.tokenIndex === buyBank.tokenIndex,
-    )
-    const hasOutputTokenPosition = usedTokens.find(
-      (token) => token.tokenIndex === sellBank.tokenIndex,
-    )
+    let alreadyHasPositionCount = 0
+    for (const bank of banks) {
+      const hasPosition = usedTokens.find(
+        (token) => token.tokenIndex === bank?.tokenIndex,
+      )
+      if (hasPosition) {
+        alreadyHasPositionCount += 1
+      }
+    }
     const availableTokenPositions = totalTokens.length - usedTokens.length
     if (
-      (hasInputTokenPosition && hasOutputTokenPosition) ||
-      availableTokenPositions >= 2
+      banks.length === 2 &&
+      (alreadyHasPositionCount === 2 || availableTokenPositions >= 2)
     ) {
       return false
-    } else if (
-      (hasInputTokenPosition && !hasOutputTokenPosition) ||
-      (!hasInputTokenPosition && hasOutputTokenPosition)
+    }
+    if (
+      banks.length === 1 &&
+      (alreadyHasPositionCount === 1 || availableTokenPositions >= 1)
     ) {
-      return availableTokenPositions >= 1 ? false : true
-    } else return true
-  }, [buyBank, sellBank, usedTokens, totalTokens])
+      return false
+    }
+    return true
+  }, [banks, usedTokens, totalTokens])
 
   return tokenPositionsFull
 }

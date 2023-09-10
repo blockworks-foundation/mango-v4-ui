@@ -14,7 +14,7 @@ import { NUMBER_FORMAT_CLASSNAMES } from './MarketSwapForm'
 import InlineNotification from '@components/shared/InlineNotification'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { SwapFormTokenListType } from './SwapFormTokenList'
-import { getInputTokenBalance } from './LimitSwapForm'
+import { getInputTokenBalance } from './TriggerSwapForm'
 
 const ReduceOutputTokenInput = ({
   error,
