@@ -10,6 +10,7 @@ import {
 } from 'types'
 import { MANGO_DATA_API_URL } from './constants'
 import dayjs from 'dayjs'
+import Decimal from 'decimal.js'
 
 export const fetchAccountPerformance = async (
   mangoAccountPk: string,
@@ -117,12 +118,16 @@ const formatHourlyVolumeData = (data: HourlyAccountVolumeData[]) => {
           entry = { time: timestamp, total_volume_usd: 0, markets: {} }
           formattedData.push(entry)
         }
+        const objVolumeDecimal = new Decimal(obj[market][timestamp].volume_usd)
+        if (objVolumeDecimal.gt(0)) {
+          // Increment the total_volume_usd by the volume_usd value
+          entry.total_volume_usd = new Decimal(entry.total_volume_usd)
+            .plus(objVolumeDecimal)
+            .toNumber()
 
-        // Increment the total_volume_usd by the volume_usd value
-        entry.total_volume_usd += obj[market][timestamp].volume_usd
-
-        // Add or update the market entry in the markets object
-        entry.markets[market] = obj[market][timestamp].volume_usd
+          // Add or update the market entry in the markets object
+          entry.markets[market] = objVolumeDecimal.toNumber()
+        }
       }
     }
   }
@@ -145,7 +150,10 @@ export const fetchHourlyVolume = async (mangoAccountPk: string) => {
       perpHourly.json(),
       spotHourly.json(),
     ])
-    const hourlyVolume = [perpHourlyData, spotHourlyData]
+    const hourlyVolume = []
+
+    hourlyVolume.push(perpHourlyData)
+    hourlyVolume.push(spotHourlyData)
     return formatHourlyVolumeData(hourlyVolume)
   } catch (e) {
     console.log('Failed to fetch spot volume', e)
