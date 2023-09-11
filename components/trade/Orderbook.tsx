@@ -17,7 +17,11 @@ import Decimal from 'decimal.js'
 import Tooltip from '@components/shared/Tooltip'
 import GroupSize from './GroupSize'
 // import { useViewport } from 'hooks/useViewport'
-import { BookSide, Serum3Market } from '@blockworks-foundation/mango-v4'
+import {
+  BookSide,
+  PerpMarket,
+  Serum3Market,
+} from '@blockworks-foundation/mango-v4'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import { OrderbookFeed } from '@blockworks-foundation/mango-feeds'
@@ -33,6 +37,7 @@ import {
 import { OrderbookData, OrderbookL2 } from 'types'
 import isEqual from 'lodash/isEqual'
 import { useViewport } from 'hooks/useViewport'
+import TokenLogo from '@components/shared/TokenLogo'
 
 const sizeCompacter = Intl.NumberFormat('en', {
   maximumFractionDigits: 6,
@@ -51,6 +56,7 @@ const Orderbook = () => {
   const [useOrderbookFeed, setUseOrderbookFeed] = useState(false)
   const orderbookElRef = useRef<HTMLDivElement>(null)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [sizeInBase, setSizeInBase] = useState(true)
   // const [useOrderbookFeed, setUseOrderbookFeed] = useState(
   //   localStorage.getItem(USE_ORDERBOOK_FEED_KEY) !== null
   //     ? localStorage.getItem(USE_ORDERBOOK_FEED_KEY) === 'true'
@@ -59,6 +65,23 @@ const Orderbook = () => {
   const { isDesktop } = useViewport()
   const [orderbookData, setOrderbookData] = useState<OrderbookData | null>(null)
   const currentOrderbookData = useRef<OrderbookL2>()
+
+  const [baseBank, quoteBank] = useMemo(() => {
+    const { group } = mangoStore.getState()
+    if (!market || !group) return [undefined, undefined]
+    if (market instanceof PerpMarket) {
+      const baseTokenName = market.name.split('-')[0]
+      const base = group.banksMapByName.get(baseTokenName)?.[0]
+      const quote = group.getFirstBankByTokenIndex(market.settleTokenIndex)
+      return [base, quote]
+    } else {
+      const base = group.getFirstBankByMint(market.baseMintAddress)
+      const quote = group.getFirstBankByMint(market.quoteMintAddress)
+      return [base, quote]
+    }
+  }, [market])
+
+  console.log(baseBank, quoteBank)
 
   const depth = useMemo(() => {
     return isDesktop ? 30 : 12
@@ -454,7 +477,7 @@ const Orderbook = () => {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex h-10 items-center justify-between border-b border-th-bkg-3 px-4">
+      <div className="flex h-8 items-center justify-between border-b border-th-bkg-3 px-4">
         {market ? (
           <>
             <p className="text-xs">{t('trade:grouping')}:</p>
@@ -475,9 +498,43 @@ const Orderbook = () => {
           </>
         ) : null}
       </div>
-      <div className="grid grid-cols-2 px-2 py-0.5 text-xxs text-th-fgd-4">
+      <div className="grid grid-cols-2 px-2 pb-1 pt-1.5 text-xxs text-th-fgd-4">
         <div className="col-span-1">{t('price')}</div>
-        <div className="col-span-1 text-right">{t('trade:size')}</div>
+        <div className="col-span-1 flex items-center justify-end space-x-2">
+          <span className="text-right">{t('trade:size')}</span>
+          {baseBank && quoteBank ? (
+            <div className="flex h-[18px] space-x-1">
+              <Tooltip
+                content={t('trade:tooltip-size-base-quote', {
+                  token: baseBank.name,
+                })}
+              >
+                <button
+                  className={`rounded border p-0.5 ${
+                    sizeInBase ? 'border-th-fgd-2' : 'border-th-bkg-4'
+                  } focus:outline-none focus-visible:border-th-active md:hover:border-th-fgd-2`}
+                  onClick={() => setSizeInBase(true)}
+                >
+                  <TokenLogo bank={baseBank} size={12} />
+                </button>
+              </Tooltip>
+              <Tooltip
+                content={t('trade:tooltip-size-base-quote', {
+                  token: quoteBank.name,
+                })}
+              >
+                <button
+                  className={`rounded border p-0.5 ${
+                    !sizeInBase ? 'border-th-fgd-2' : 'border-th-bkg-4'
+                  } focus:outline-none focus-visible:border-th-active md:hover:border-th-fgd-2`}
+                  onClick={() => setSizeInBase(false)}
+                >
+                  <TokenLogo bank={quoteBank} size={12} />
+                </button>
+              </Tooltip>
+            </div>
+          ) : null}
+        </div>
       </div>
       <div
         className="hide-scroll relative h-full overflow-y-scroll"
@@ -511,6 +568,7 @@ const Orderbook = () => {
                     orderbookData?.asks[index].cumulativeSizePercent
                   }
                   grouping={grouping}
+                  sizeInBase={sizeInBase}
                 />
               ) : null}
             </div>
@@ -559,6 +617,7 @@ const Orderbook = () => {
                   orderbookData?.bids[index].cumulativeSizePercent
                 }
                 grouping={grouping}
+                sizeInBase={sizeInBase}
               />
             ) : null}
           </div>
@@ -582,6 +641,7 @@ const OrderbookRow = ({
   cumulativeSizePercent,
   tickSize,
   grouping,
+  sizeInBase,
 }: {
   side: 'buy' | 'sell'
   price: number
@@ -596,6 +656,7 @@ const OrderbookRow = ({
   grouping: number
   minOrderSize: number
   tickSize: number
+  sizeInBase: boolean
 }) => {
   const element = useRef<HTMLDivElement>(null)
   const [animationSettings] = useLocalStorageState(
@@ -618,10 +679,21 @@ const OrderbookRow = ({
   }, [price, size])
 
   const formattedSize = useMemo(() => {
-    return minOrderSize && !isNaN(size)
-      ? floorToDecimal(size, getDecimalCount(minOrderSize))
-      : new Decimal(size ?? -1)
-  }, [size, minOrderSize])
+    if (!minOrderSize || isNaN(size)) return new Decimal(size ?? -1)
+    const sizeToShow = sizeInBase
+      ? size
+      : new Decimal(size).mul(new Decimal(price)).toNumber()
+    const decimals = sizeInBase
+      ? getDecimalCount(minOrderSize)
+      : getDecimalCount(tickSize)
+    return floorToDecimal(sizeToShow, decimals)
+  }, [minOrderSize, price, size, sizeInBase, tickSize])
+
+  // const formattedSize = useMemo(() => {
+  //   return minOrderSize && !isNaN(size)
+  //     ? floorToDecimal(size, getDecimalCount(minOrderSize))
+  //     : new Decimal(size ?? -1)
+  // }, [size, minOrderSize, sizeInBase, tickSize])
 
   const formattedPrice = useMemo(() => {
     return tickSize && !isNaN(price)
@@ -647,16 +719,28 @@ const OrderbookRow = ({
   const handleSizeClick = useCallback(() => {
     const set = mangoStore.getState().set
     set((state) => {
-      state.tradeForm.baseSize = formattedSize.toString()
+      if (sizeInBase) {
+        state.tradeForm.baseSize = formattedSize.toString()
+      } else {
+        state.tradeForm.quoteSize = formattedSize.toString()
+      }
       if (formattedSize && state.tradeForm.price) {
-        const quoteSize = floorToDecimal(
-          formattedSize.mul(new Decimal(state.tradeForm.price)),
-          getDecimalCount(tickSize),
-        )
-        state.tradeForm.quoteSize = quoteSize.toString()
+        if (sizeInBase) {
+          const quoteSize = floorToDecimal(
+            formattedSize.mul(new Decimal(state.tradeForm.price)),
+            getDecimalCount(tickSize),
+          )
+          state.tradeForm.quoteSize = quoteSize.toString()
+        } else {
+          const baseSize = floorToDecimal(
+            formattedSize.div(new Decimal(state.tradeForm.price)),
+            getDecimalCount(minOrderSize),
+          )
+          state.tradeForm.baseSize = baseSize.toString()
+        }
       }
     })
-  }, [formattedSize, tickSize])
+  }, [formattedSize, minOrderSize, size, sizeInBase, tickSize])
 
   const groupingDecimalCount = useMemo(
     () => getDecimalCount(grouping),
