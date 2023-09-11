@@ -195,7 +195,7 @@ const MarketSelectDropdown = () => {
               {spotOrPerp === 'perp' && perpMarketsToShow.length ? (
                 <>
                   <div className="mb-2 grid grid-cols-3 border-b border-th-bkg-3 pb-1 pl-4 pr-14 text-xxs md:grid-cols-4">
-                    <div className="col-span-1 flex-1 ">
+                    <div className="col-span-1 flex-1">
                       <SortableColumnHeader
                         sortKey="name"
                         sort={() => requestPerpSort('name')}
@@ -338,7 +338,7 @@ const MarketSelectDropdown = () => {
                     </div>
                   </div>
                   <div className="mb-2 grid grid-cols-3 border-b border-th-bkg-3 pb-1 pl-4 pr-14 text-xxs md:grid-cols-4">
-                    <p className="col-span-1 flex justify-end">
+                    <p className="col-span-1 flex">
                       <SortableColumnHeader
                         sortKey="name"
                         sort={() => requestSerumSort('name')}
