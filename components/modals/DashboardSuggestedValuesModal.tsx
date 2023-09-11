@@ -352,18 +352,18 @@ const DashboardSuggestedValues = ({
           />
           <KeyValuePair
             label="Deposit weight scale start quote"
-            value={`$${formattedBankValues.depositWeightScale}`}
+            value={`$${formattedBankValues.depositWeightScaleStartQuote}`}
             proposedValue={
-              suggestedFields.depositWeightScale &&
-              `$${suggestedFields.depositWeightScale}`
+              suggestedFields.depositWeightScaleStartQuote &&
+              `$${suggestedFields.depositWeightScaleStartQuote}`
             }
           />
           <KeyValuePair
             label="Borrow weight scale start quote"
-            value={`$${formattedBankValues.borrowWeightScale}`}
+            value={`$${formattedBankValues.borrowWeightScaleStartQuote}`}
             proposedValue={
-              suggestedFields.borrowWeightScale &&
-              `$${suggestedFields.borrowWeightScale}`
+              suggestedFields.borrowWeightScaleStartQuote &&
+              `$${suggestedFields.borrowWeightScaleStartQuote}`
             }
           />
           <KeyValuePair
