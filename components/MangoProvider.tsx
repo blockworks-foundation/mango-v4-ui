@@ -10,6 +10,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { DEFAULT_PRIORITY_FEE_LEVEL } from './settings/RpcSettings'
 import { useHiddenMangoAccounts } from 'hooks/useHiddenMangoAccounts'
+import { notify } from 'utils/notifications'
 
 const set = mangoStore.getState().set
 const actions = mangoStore.getState().actions
@@ -174,6 +175,7 @@ const ReadOnlyMangoAccount = () => {
         const pk = new PublicKey(ma)
         const readOnlyMangoAccount = await client.getMangoAccount(pk)
         await readOnlyMangoAccount.reloadSerum3OpenOrders(client)
+        console.log(readOnlyMangoAccount)
         set((state) => {
           state.mangoAccount.current = readOnlyMangoAccount
           state.mangoAccount.initialLoad = false
@@ -181,6 +183,11 @@ const ReadOnlyMangoAccount = () => {
         await actions.fetchOpenOrders()
       } catch (error) {
         console.error('error', error)
+        notify({
+          title: 'No account found',
+          description: 'Account closed or invalid address',
+          type: 'error',
+        })
       }
     }
 
