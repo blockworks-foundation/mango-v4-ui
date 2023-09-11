@@ -81,8 +81,6 @@ const Orderbook = () => {
     }
   }, [market])
 
-  console.log(baseBank, quoteBank)
-
   const depth = useMemo(() => {
     return isDesktop ? 30 : 12
   }, [isDesktop])
