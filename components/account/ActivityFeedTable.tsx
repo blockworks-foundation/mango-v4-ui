@@ -19,19 +19,23 @@ import PerpSideBadge from '@components/trade/PerpSideBadge'
 import { ChevronDownIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
-import dayjs from 'dayjs'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
 import { useCallback, useState } from 'react'
-import { isLiquidationFeedItem, isPerpTradeFeedItem } from 'types'
 import { PAGINATION_PAGE_LENGTH, PREFERRED_EXPLORER_KEY } from 'utils/constants'
 import { formatNumericValue } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
-import LiquidationDetails from './LiquidationDetails'
-import PerpTradeDetails from './PerpTradeDetails'
+import LiquidationActivityDetails from './LiquidationActivityDetails'
+import PerpTradeActivityDetails from './PerpTradeActivityDetails'
+import {
+  isLiquidationActivityFeedItem,
+  isPerpTradeActivityFeedItem,
+  isSpotTradeActivityFeedItem,
+} from 'types'
+import SpotTradeActivityDetails from './SpotTradeActivityDetails'
 
 export const formatFee = (value: number) => {
   return value.toLocaleString(undefined, {
@@ -326,7 +330,9 @@ const ActivityFeedTable = () => {
               const value = getValue(activity, mangoAccountAddress)
               const fee = getFee(activity, mangoAccountAddress)
               const isExpandable =
-                isLiquidationFeedItem(activity) || isPerpTradeFeedItem(activity)
+                isLiquidationActivityFeedItem(activity) ||
+                isPerpTradeActivityFeedItem(activity) ||
+                isSpotTradeActivityFeedItem(activity)
               return isExpandable ? (
                 <Disclosure key={`${signature}${index}`}>
                   {({ open }) => (
@@ -355,13 +361,17 @@ const ActivityFeedTable = () => {
                         </Td>
                       </Disclosure.Button>
                       <Disclosure.Panel as={TrBody}>
-                        {isLiquidationFeedItem(activity) ? (
+                        {isLiquidationActivityFeedItem(activity) ? (
                           <td className="p-6" colSpan={7}>
-                            <LiquidationDetails activity={activity} />
+                            <LiquidationActivityDetails activity={activity} />
                           </td>
-                        ) : isPerpTradeFeedItem(activity) ? (
+                        ) : isPerpTradeActivityFeedItem(activity) ? (
                           <td className="p-6" colSpan={7}>
-                            <PerpTradeDetails activity={activity} />
+                            <PerpTradeActivityDetails activity={activity} />
+                          </td>
+                        ) : isSpotTradeActivityFeedItem(activity) ? (
+                          <td className="p-6" colSpan={7}>
+                            <SpotTradeActivityDetails activity={activity} />
                           </td>
                         ) : null}
                       </Disclosure.Panel>
@@ -525,14 +535,14 @@ const MobileActivityFeedItem = ({
   const { activity_type, block_datetime } = activity
   const { signature } = activity.activity_details
   const isSwap = activity_type === 'swap'
-  const isOpenbook = activity_type === 'openbook_trade'
-  const isPerp = activity_type === 'perp_trade'
   const value = getValue(activity, mangoAccountAddress)
   const isExpandable =
-    isLiquidationFeedItem(activity) || isPerpTradeFeedItem(activity)
+    isLiquidationActivityFeedItem(activity) ||
+    isPerpTradeActivityFeedItem(activity) ||
+    isSpotTradeActivityFeedItem(activity)
 
   const isPerpTaker =
-    isPerpTradeFeedItem(activity) &&
+    isPerpTradeActivityFeedItem(activity) &&
     activity.activity_details.taker === mangoAccountAddress
 
   const perpTradeSide = isPerpTaker
@@ -550,23 +560,18 @@ const MobileActivityFeedItem = ({
               <Disclosure.Button className="w-full p-4 text-left focus:outline-none">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-th-fgd-1">
-                      {dayjs(block_datetime).format('ddd D MMM')}
-                    </p>
-                    <p className="text-xs text-th-fgd-3">
-                      {dayjs(block_datetime).format('h:mma')}
-                    </p>
+                    <TableDateDisplay date={block_datetime} showSeconds />
                   </div>
                   <div className="flex items-center space-x-6 pr-2">
                     <div>
                       <p className="text-right text-xs">
                         {t(`activity:${activity_type}`)}
                       </p>
-                      {isLiquidationFeedItem(activity) ? (
+                      {isLiquidationActivityFeedItem(activity) ? (
                         <p className="text-right font-mono text-sm text-th-fgd-1">
                           <FormatNumericValue value={value} isUsd />
                         </p>
-                      ) : (
+                      ) : isPerpTradeActivityFeedItem(activity) ? (
                         <p className="font-mono text-th-fgd-1">
                           <span className="mr-1">
                             {activity.activity_details.quantity}
@@ -581,7 +586,20 @@ const MobileActivityFeedItem = ({
                             />
                           </span>
                         </p>
-                      )}
+                      ) : isSpotTradeActivityFeedItem(activity) ? (
+                        <p className="font-mono text-th-fgd-1">
+                          <span className="mr-1">
+                            {activity.activity_details.size}
+                          </span>
+                          <span className="font-body text-th-fgd-3">
+                            {`${activity.activity_details.base_symbol}/${activity.activity_details.quote_symbol}`}
+                          </span>
+                          <span className="font-body">
+                            {' '}
+                            <SideBadge side={activity.activity_details.side} />
+                          </span>
+                        </p>
+                      ) : null}
                     </div>
                     <ChevronDownIcon
                       className={`${
@@ -598,11 +616,13 @@ const MobileActivityFeedItem = ({
               >
                 <Disclosure.Panel>
                   <div className="border-t border-th-bkg-3 px-4 py-4">
-                    {isLiquidationFeedItem(activity) ? (
-                      <LiquidationDetails activity={activity} />
-                    ) : (
-                      <PerpTradeDetails activity={activity} />
-                    )}
+                    {isLiquidationActivityFeedItem(activity) ? (
+                      <LiquidationActivityDetails activity={activity} />
+                    ) : isPerpTradeActivityFeedItem(activity) ? (
+                      <PerpTradeActivityDetails activity={activity} />
+                    ) : isSpotTradeActivityFeedItem(activity) ? (
+                      <SpotTradeActivityDetails activity={activity} />
+                    ) : null}
                   </div>
                 </Disclosure.Panel>
               </Transition>
@@ -612,12 +632,7 @@ const MobileActivityFeedItem = ({
       ) : (
         <div className="flex items-center justify-between p-4">
           <div>
-            <p className="text-sm text-th-fgd-1">
-              {dayjs(block_datetime).format('ddd D MMM')}
-            </p>
-            <p className="text-xs text-th-fgd-3">
-              {dayjs(block_datetime).format('h:mma')}
-            </p>
+            <TableDateDisplay date={block_datetime} showSeconds />
           </div>
           <div className="flex items-center space-x-4">
             <div>
@@ -645,38 +660,6 @@ const MobileActivityFeedItem = ({
                     </span>
                     <span className="font-body text-th-fgd-3">
                       {activity.activity_details.swap_out_symbol}
-                    </span>
-                  </>
-                ) : isPerp ? (
-                  <>
-                    <span className="mr-1">
-                      {activity.activity_details.quantity}
-                    </span>
-                    <span className="font-body text-th-fgd-3">
-                      {activity.activity_details.perp_market_name}
-                    </span>
-                    <span className="font-body">
-                      {' '}
-                      <PerpSideBadge
-                        basePosition={
-                          activity.activity_details.taker_side === 'bid'
-                            ? 1
-                            : -1
-                        }
-                      />
-                    </span>
-                  </>
-                ) : isOpenbook ? (
-                  <>
-                    <span className="mr-1">
-                      {activity.activity_details.size}
-                    </span>
-                    <span className="font-body text-th-fgd-3">
-                      {activity.activity_details.base_symbol}
-                    </span>
-                    <span className="font-body">
-                      {' '}
-                      <SideBadge side={activity.activity_details.side} />
                     </span>
                   </>
                 ) : (
