@@ -524,7 +524,8 @@ const AdvancedTradeForm = () => {
     !serumOrPerpMarket ||
     parseFloat(tradeForm.baseSize) < serumOrPerpMarket.minOrderSize ||
     !isMarketEnabled ||
-    borrowExceedsLimitInPeriod
+    borrowExceedsLimitInPeriod ||
+    (selectedMarket instanceof Serum3Market && tradeForm.tradeType === 'Limit')
 
   return (
     <div>
