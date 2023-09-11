@@ -12,7 +12,7 @@ import { useTranslation } from 'next-i18next'
 import { useCallback, useState } from 'react'
 import { MAX_ACCOUNTS } from 'utils/constants'
 import mangoStore from '@store/mangoStore'
-import { PublicKey, TransactionInstruction } from '@solana/web3.js'
+import { TransactionInstruction } from '@solana/web3.js'
 import { notify } from 'utils/notifications'
 import { isMangoError } from 'types'
 
@@ -62,25 +62,34 @@ const AccountSettings = () => {
         if (closeType == CLOSE_TYPE.TOKEN) {
           // No instruction yet
         } else if (closeType === CLOSE_TYPE.PERP) {
-          ixs = await Promise.all(
-            emptyPerps.map((p) =>
-              client.perpDeactivatePositionIx(
-                group,
-                mangoAccount,
-                p.marketIndex,
+          try {
+            ixs = await Promise.all(
+              emptyPerps.map((p) =>
+                client.perpDeactivatePositionIx(
+                  group,
+                  mangoAccount,
+                  p.marketIndex,
+                ),
               ),
-            ),
-          )
+            )
+          } catch (e) {
+            console.log('error closing unused perp positions', e)
+          }
         } else if (closeType === CLOSE_TYPE.SERUMOO) {
-          ixs = await Promise.all(
-            emptySerum3.map((s) =>
-              client.serum3CloseOpenOrdersIx(
-                group,
-                mangoAccount,
-                new PublicKey(s),
-              ),
-            ),
-          )
+          try {
+            ixs = await Promise.all(
+              emptySerum3.map((s) => {
+                const market = group.getSerum3MarketByMarketIndex(s.marketIndex)
+                return client.serum3CloseOpenOrdersIx(
+                  group,
+                  mangoAccount,
+                  market.serumMarketExternal,
+                )
+              }),
+            )
+          } catch (e) {
+            console.log('error closing unused serum open orders', e)
+          }
         } else if (closeType === CLOSE_TYPE.PERPOO) {
           // No instruction yet
         }
