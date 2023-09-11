@@ -177,6 +177,16 @@ const TopBar = () => {
             )
           ) : null}
         </span>
+
+        {/* Openbook warning */}
+        <div className="absolute left-1/2 top-3 z-10 flex h-10 w-max -translate-x-1/2 items-center rounded-full bg-th-down px-4 py-2 md:top-8">
+          <ExclamationTriangleIcon className="h-5 w-5 flex-shrink-0 text-th-fgd-1" />
+          <p className="ml-2 text-th-fgd-1">
+            Placing orders on Openbook is currently disabled for security
+            reasons.
+          </p>
+        </div>
+
         {!isOnline ? (
           <div className="absolute left-1/2 top-3 z-10 flex h-10 w-max -translate-x-1/2 items-center rounded-full bg-th-down px-4 py-2 md:top-8">
             <ExclamationTriangleIcon className="h-5 w-5 flex-shrink-0 text-th-fgd-1" />
