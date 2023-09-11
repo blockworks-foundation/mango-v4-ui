@@ -107,7 +107,8 @@
   },
   "resolutions": {
     "@coral-xyz/anchor": "^0.27.0",
-    "eslint-config-next/eslint-import-resolver-typescript/tsconfig-paths/json5": "1.0.2"
+    "eslint-config-next/eslint-import-resolver-typescript/tsconfig-paths/json5": "1.0.2",
+    "@solana/wallet-adapter-solflare": "0.6.27"
   },
   "lavamoat": {
     "allowScripts": {
