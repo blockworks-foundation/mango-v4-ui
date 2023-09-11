@@ -5,7 +5,14 @@ import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import SheenLoader from '@components/shared/SheenLoader'
 import SideBadge from '@components/shared/SideBadge'
-import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
+import {
+  Table,
+  TableDateDisplay,
+  Td,
+  Th,
+  TrBody,
+  TrHead,
+} from '@components/shared/TableElements'
 import Tooltip from '@components/shared/Tooltip'
 import { Disclosure, Transition } from '@headlessui/react'
 import PerpSideBadge from '@components/trade/PerpSideBadge'
@@ -469,10 +476,7 @@ const SharedTableBody = ({
   return (
     <>
       <Td>
-        <p className="font-body">{dayjs(block_datetime).format('ddd D MMM')}</p>
-        <p className="text-xs text-th-fgd-3">
-          {dayjs(block_datetime).format('h:mma')}
-        </p>
+        <TableDateDisplay date={block_datetime} showSeconds />
       </Td>
       <Td className="text-right">{t(`activity:${activity_type}`)}</Td>
       <Td className="text-right font-mono">
