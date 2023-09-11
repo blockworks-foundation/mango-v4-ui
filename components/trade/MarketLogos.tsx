@@ -12,7 +12,7 @@ const MarketLogos = ({
   size = 'medium',
 }: {
   market: Serum3Market | PerpMarket
-  size?: 'small' | 'medium' | 'large'
+  size?: 'xs' | 'small' | 'medium' | 'large'
 }) => {
   const { group } = useMangoGroup()
   const { mangoTokens } = useJupiterMints()
@@ -61,23 +61,36 @@ const MarketLogos = ({
     }
   }, [group, mangoTokens, market])
 
-  const pxSize = size === 'small' ? '16' : size === 'large' ? '24' : '20'
+  const pxSize =
+    size === 'xs'
+      ? '12'
+      : size === 'small'
+      ? '16'
+      : size === 'large'
+      ? '24'
+      : '20'
 
   return (
     <div
       className={`relative ${
-        size === 'small'
+        size === 'xs'
+          ? 'h-[12px]'
+          : size === 'small'
           ? 'mr-1.5 h-4'
           : size === 'large'
           ? 'mr-2.5 h-6'
           : 'mr-2 h-5'
       } ${
         market instanceof Serum3Market
-          ? size === 'small'
+          ? size === 'xs'
+            ? 'w-[23px]'
+            : size === 'small'
             ? 'w-[27px]'
             : size === 'large'
             ? 'w-[40px]'
             : 'w-[34px]'
+          : size === 'xs'
+          ? 'w-[12px]'
           : size === 'small'
           ? 'w-[16px]'
           : size === 'large'
@@ -114,7 +127,11 @@ const MarketLogos = ({
 
 export default MarketLogos
 
-const FallbackIcon = ({ size }: { size: 'small' | 'medium' | 'large' }) => {
+const FallbackIcon = ({
+  size,
+}: {
+  size: 'xs' | 'small' | 'medium' | 'large'
+}) => {
   return (
     <QuestionMarkCircleIcon
       className={`${

@@ -38,6 +38,7 @@ import { OrderbookData, OrderbookL2 } from 'types'
 import isEqual from 'lodash/isEqual'
 import { useViewport } from 'hooks/useViewport'
 import TokenLogo from '@components/shared/TokenLogo'
+import MarketLogos from './MarketLogos'
 
 const sizeCompacter = Intl.NumberFormat('en', {
   maximumFractionDigits: 6,
@@ -70,10 +71,8 @@ const Orderbook = () => {
     const { group } = mangoStore.getState()
     if (!market || !group) return [undefined, undefined]
     if (market instanceof PerpMarket) {
-      const baseTokenName = market.name.split('-')[0]
-      const base = group.banksMapByName.get(baseTokenName)?.[0]
       const quote = group.getFirstBankByTokenIndex(market.settleTokenIndex)
-      return [base, quote]
+      return [undefined, quote]
     } else {
       const base = group.getFirstBankByMint(market.baseMintAddress)
       const quote = group.getFirstBankByMint(market.quoteMintAddress)
@@ -500,11 +499,14 @@ const Orderbook = () => {
         <div className="col-span-1">{t('price')}</div>
         <div className="col-span-1 flex items-center justify-end space-x-2">
           <span className="text-right">{t('trade:size')}</span>
-          {baseBank && quoteBank ? (
+          {quoteBank && market ? (
             <div className="flex h-[18px] space-x-1">
               <Tooltip
                 content={t('trade:tooltip-size-base-quote', {
-                  token: baseBank.name,
+                  token:
+                    market instanceof PerpMarket
+                      ? market.name.split('-')[0]
+                      : baseBank?.name,
                 })}
               >
                 <button
@@ -513,7 +515,11 @@ const Orderbook = () => {
                   } focus:outline-none focus-visible:border-th-active md:hover:border-th-fgd-2`}
                   onClick={() => setSizeInBase(true)}
                 >
-                  <TokenLogo bank={baseBank} size={12} />
+                  {market instanceof PerpMarket ? (
+                    <MarketLogos market={market} size="xs" />
+                  ) : (
+                    <TokenLogo bank={baseBank} size={12} />
+                  )}
                 </button>
               </Tooltip>
               <Tooltip
@@ -676,16 +682,21 @@ const OrderbookRow = ({
     return () => clearTimeout(id)
   }, [price, size])
 
+  const minOrderSizeDecimals = useMemo(
+    () => getDecimalCount(minOrderSize),
+    [minOrderSize],
+  )
+
+  const tickSizeDecimals = useMemo(() => getDecimalCount(tickSize), [tickSize])
+
   const formattedSize = useMemo(() => {
     if (!minOrderSize || isNaN(size)) return new Decimal(size ?? -1)
     const sizeToShow = sizeInBase
       ? size
       : new Decimal(size).mul(new Decimal(price)).toNumber()
-    const decimals = sizeInBase
-      ? getDecimalCount(minOrderSize)
-      : getDecimalCount(tickSize)
+    const decimals = sizeInBase ? minOrderSizeDecimals : tickSizeDecimals
     return floorToDecimal(sizeToShow, decimals)
-  }, [minOrderSize, price, size, sizeInBase, tickSize])
+  }, [minOrderSizeDecimals, price, size, sizeInBase, tickSizeDecimals])
 
   // const formattedSize = useMemo(() => {
   //   return minOrderSize && !isNaN(size)
@@ -694,10 +705,10 @@ const OrderbookRow = ({
   // }, [size, minOrderSize, sizeInBase, tickSize])
 
   const formattedPrice = useMemo(() => {
-    return tickSize && !isNaN(price)
-      ? floorToDecimal(price, getDecimalCount(tickSize))
+    return tickSizeDecimals && !isNaN(price)
+      ? floorToDecimal(price, tickSizeDecimals)
       : new Decimal(price)
-  }, [price, tickSize])
+  }, [price, tickSizeDecimals])
 
   const handlePriceClick = useCallback(() => {
     const set = mangoStore.getState().set
@@ -707,12 +718,12 @@ const OrderbookRow = ({
       if (state.tradeForm.baseSize) {
         const quoteSize = floorToDecimal(
           formattedPrice.mul(new Decimal(state.tradeForm.baseSize)),
-          getDecimalCount(tickSize),
+          tickSizeDecimals,
         )
         state.tradeForm.quoteSize = quoteSize.toFixed()
       }
     })
-  }, [formattedPrice, tickSize])
+  }, [formattedPrice, tickSizeDecimals])
 
   const handleSizeClick = useCallback(() => {
     const set = mangoStore.getState().set
@@ -726,27 +737,23 @@ const OrderbookRow = ({
         if (sizeInBase) {
           const quoteSize = floorToDecimal(
             formattedSize.mul(new Decimal(state.tradeForm.price)),
-            getDecimalCount(tickSize),
+            tickSizeDecimals,
           )
           state.tradeForm.quoteSize = quoteSize.toString()
         } else {
           const baseSize = floorToDecimal(
             formattedSize.div(new Decimal(state.tradeForm.price)),
-            getDecimalCount(minOrderSize),
+            minOrderSizeDecimals,
           )
           state.tradeForm.baseSize = baseSize.toString()
         }
       }
     })
-  }, [formattedSize, minOrderSize, size, sizeInBase, tickSize])
+  }, [formattedSize, minOrderSizeDecimals, size, sizeInBase, tickSizeDecimals])
 
   const groupingDecimalCount = useMemo(
     () => getDecimalCount(grouping),
     [grouping],
-  )
-  const minOrderSizeDecimals = useMemo(
-    () => getDecimalCount(minOrderSize),
-    [minOrderSize],
   )
 
   const handleMouseOver = useCallback(() => {
@@ -786,7 +793,7 @@ const OrderbookRow = ({
             onClick={handlePriceClick}
           >
             <span className="w-full font-mono text-xs">
-              {price < SHOW_EXPONENTIAL_THRESHOLD
+              {formattedPrice.lt(SHOW_EXPONENTIAL_THRESHOLD)
                 ? formattedPrice.toExponential()
                 : formattedPrice.toFixed(groupingDecimalCount)}
             </span>
@@ -801,9 +808,9 @@ const OrderbookRow = ({
                 hasOpenOrder ? 'text-th-active' : ''
               }`}
             >
-              {size >= 1000000
-                ? sizeCompacter.format(size)
-                : formattedSize.toFixed(minOrderSizeDecimals)}
+              {formattedSize.toNumber() >= 1000000
+                ? sizeCompacter.format(formattedSize.toNumber())
+                : formattedSize.toNumber()}
             </div>
           </div>
         </div>
