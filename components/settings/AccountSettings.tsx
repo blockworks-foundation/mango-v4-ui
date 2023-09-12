@@ -10,12 +10,14 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoAccountAccounts from 'hooks/useMangoAccountAccounts'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { MAX_ACCOUNTS } from 'utils/constants'
 import mangoStore from '@store/mangoStore'
-import { TransactionInstruction } from '@solana/web3.js'
+import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 import { notify } from 'utils/notifications'
 import { isMangoError } from 'types'
+import { getMaxWithdrawForBank } from '@components/swap/useTokenMax'
+import Decimal from 'decimal.js'
 
 enum CLOSE_TYPE {
   TOKEN,
@@ -35,12 +37,13 @@ const AccountSettings = () => {
   const { mangoAccountAddress } = useMangoAccount()
   const { group } = useMangoGroup()
   const [showAccountSizeModal, setShowAccountSizeModal] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const {
     usedTokens,
     usedSerum3,
     usedPerps,
     usedPerpOo,
-    emptyTokens,
+    // emptyTokens,
     emptySerum3,
     emptyPerps,
     // emptyPerpOo,
@@ -51,6 +54,59 @@ const AccountSettings = () => {
     isAccountFull,
   } = useMangoAccountAccounts()
 
+  const tokenStatus = useMemo(() => {
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+    if (!group || !mangoAccount || !usedTokens.length) return []
+    const tokens = []
+    for (const token of usedTokens) {
+      const bank = group.getFirstBankByTokenIndex(token.tokenIndex)
+      const tokenMax = getMaxWithdrawForBank(group, bank, mangoAccount)
+      const balance = mangoAccount.getTokenBalanceUi(bank)
+      const isClosable = tokenMax.eq(new Decimal(balance))
+      tokens.push({ isClosable, balance, tokenIndex: token.tokenIndex })
+    }
+    return tokens
+  }, [group, mangoAccountAddress, usedTokens])
+
+  const handleCloseToken = useCallback(
+    async (tokenMint: PublicKey) => {
+      const client = mangoStore.getState().client
+      const group = mangoStore.getState().group
+      const mangoAccount = mangoStore.getState().mangoAccount.current
+      const actions = mangoStore.getState().actions
+      if (!mangoAccount || !group) return
+
+      setSubmitting(true)
+
+      try {
+        const { signature: tx, slot } =
+          await client.tokenWithdrawAllDepositForMint(
+            group,
+            mangoAccount,
+            tokenMint,
+          )
+        notify({
+          title: 'Transaction confirmed',
+          type: 'success',
+          txid: tx,
+        })
+        await actions.reloadMangoAccount(slot)
+        setSubmitting(false)
+      } catch (e) {
+        console.error(e)
+        setSubmitting(false)
+        if (!isMangoError(e)) return
+        notify({
+          title: 'Transaction failed',
+          description: e.message,
+          txid: e?.txid,
+          type: 'error',
+        })
+      }
+    },
+    [setSubmitting],
+  )
+
   const handleCloseSlots = useCallback(
     async (closeType: CLOSE_TYPE) => {
       const client = mangoStore.getState().client
@@ -58,11 +114,10 @@ const AccountSettings = () => {
       const mangoAccount = mangoStore.getState().mangoAccount.current
       const actions = mangoStore.getState().actions
       if (!mangoAccount || !group) return
+      setSubmitting(true)
       try {
         let ixs: TransactionInstruction[] = []
-        if (closeType == CLOSE_TYPE.TOKEN) {
-          // No instruction yet
-        } else if (closeType === CLOSE_TYPE.PERP) {
+        if (closeType === CLOSE_TYPE.PERP) {
           try {
             ixs = await Promise.all(
               emptyPerps.map((p) =>
@@ -106,6 +161,7 @@ const AccountSettings = () => {
         await actions.reloadMangoAccount()
       } catch (e) {
         console.error(e)
+        setSubmitting(false)
         if (!isMangoError(e)) return
         notify({
           title: 'Transaction failed',
@@ -157,20 +213,25 @@ const AccountSettings = () => {
             </Disclosure.Button>
             <Disclosure.Panel className="pb-2 md:px-4">
               <div className={CLOSE_WRAPPER_CLASSNAMES}>
-                <p className="font-bold text-th-fgd-2">
-                  {t('settings:slots-used', {
-                    used: usedTokens.length,
-                    total: totalTokens.length,
-                    type: t('tokens').toLowerCase(),
-                  })}
-                </p>
+                <div>
+                  <p className="font-bold text-th-fgd-2">
+                    {t('settings:slots-used', {
+                      used: usedTokens.length,
+                      total: totalTokens.length,
+                      type: t('tokens').toLowerCase(),
+                    })}
+                  </p>
+                  <p className="mt-1">
+                    {t('settings:close-token-positions-desc')}
+                  </p>
+                </div>
               </div>
               {usedTokens.length ? (
                 usedTokens.map((token, i) => {
                   const tokenBank = group.getFirstBankByTokenIndex(
                     token.tokenIndex,
                   )
-                  const isUnused = !!emptyTokens.find(
+                  const status = tokenStatus.find(
                     (t) => t.tokenIndex === token.tokenIndex,
                   )
                   return (
@@ -178,9 +239,23 @@ const AccountSettings = () => {
                       <div className="flex items-center">
                         <p className="mr-3 text-th-fgd-4">{i + 1}.</p>
                         <TokenLogo bank={tokenBank} size={20} />
-                        <p className="ml-2 text-th-fgd-2">{tokenBank.name}</p>
+                        <div className="ml-2">
+                          <p className="text-th-fgd-2">{tokenBank.name}</p>
+                          <p className="font-mono text-xs text-th-fgd-4">
+                            {status?.balance}
+                          </p>
+                        </div>
                       </div>
-                      <IsUnusedBadge isUnused={isUnused} />
+                      {status?.isClosable ? (
+                        <Button
+                          disabled={submitting}
+                          onClick={() => handleCloseToken(tokenBank.mint)}
+                          secondary
+                          size="small"
+                        >
+                          {t('close')}
+                        </Button>
+                      ) : null}
                     </div>
                   )
                 })
@@ -228,7 +303,7 @@ const AccountSettings = () => {
                 </div>
                 <Button
                   className="mt-4 whitespace-nowrap md:ml-4 md:mt-0"
-                  disabled={!emptySerum3.length}
+                  disabled={!emptySerum3.length || submitting}
                   onClick={() => handleCloseSlots(CLOSE_TYPE.SERUMOO)}
                   secondary
                   size="small"
@@ -299,7 +374,7 @@ const AccountSettings = () => {
                 </div>
                 <Button
                   className="mt-4 whitespace-nowrap md:ml-4 md:mt-0"
-                  disabled={!emptyPerps.length}
+                  disabled={!emptyPerps.length || submitting}
                   onClick={() => handleCloseSlots(CLOSE_TYPE.PERP)}
                   secondary
                   size="small"
