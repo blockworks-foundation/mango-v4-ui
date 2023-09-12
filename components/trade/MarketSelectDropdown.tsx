@@ -20,7 +20,6 @@ import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import Loading from '@components/shared/Loading'
 import MarketChange from '@components/shared/MarketChange'
 import SheenLoader from '@components/shared/SheenLoader'
-// import Select from '@components/forms/Select'
 import useListedMarketsWithMarketData, {
   SerumMarketWithMarketData,
 } from 'hooks/useListedMarketsWithMarketData'
@@ -30,17 +29,10 @@ import { useSortableData } from 'hooks/useSortableData'
 import { SortableColumnHeader } from '@components/shared/TableElements'
 
 const MARKET_LINK_CLASSES =
-  'grid grid-cols-3 md:grid-cols-4 flex items-center w-full py-2 px-4 rounded-r-md focus:outline-none focus-visible:text-th-active md:hover:cursor-pointer md:hover:bg-th-bkg-3 md:hover:text-th-fgd-1'
+  'grid grid-cols-3 sm:grid-cols-4 flex items-center w-full py-2 px-4 rounded-r-md focus:outline-none focus-visible:text-th-active md:hover:cursor-pointer md:hover:bg-th-bkg-3 md:hover:text-th-fgd-1'
 
 const MARKET_LINK_DISABLED_CLASSES =
   'flex w-full items-center justify-between py-2 px-4 md:hover:cursor-not-allowed'
-
-// const SORT_KEYS = [
-//   'quote_volume_24h',
-//   'quote_volume_1h',
-//   'change_24h',
-//   'change_1h',
-// ]
 
 const generateSearchTerm = (
   item: SerumMarketWithMarketData,
@@ -179,7 +171,7 @@ const MarketSelectDropdown = () => {
               } ml-2 mt-0.5 h-6 w-6 flex-shrink-0 text-th-fgd-2`}
             />
           </Popover.Button>
-          <Popover.Panel className="absolute -left-4 top-12 z-40 w-screen border-y border-th-bkg-3 bg-th-bkg-2 md:w-[560px] md:border-r">
+          <Popover.Panel className="absolute -left-4 top-12 z-40 w-screen border-y border-th-bkg-3 bg-th-bkg-2 md:w-[580px] md:border-r">
             <div className="border-b border-th-bkg-3">
               <TabButtons
                 activeValue={spotOrPerp}
@@ -191,10 +183,10 @@ const MarketSelectDropdown = () => {
                 fillWidth
               />
             </div>
-            <div className="thin-scroll max-h-[calc(100vh-160px)] overflow-auto py-3">
+            <div className="thin-scroll max-h-[calc(100vh-188px)] overflow-auto py-3">
               {spotOrPerp === 'perp' && perpMarketsToShow.length ? (
                 <>
-                  <div className="mb-2 grid grid-cols-3 border-b border-th-bkg-3 pb-1 pl-4 pr-14 text-xxs md:grid-cols-4">
+                  <div className="mb-2 grid grid-cols-3 border-b border-th-bkg-3 pb-1 pl-4 pr-14 text-xxs sm:grid-cols-4">
                     <div className="col-span-1 flex-1">
                       <SortableColumnHeader
                         sortKey="name"
@@ -219,7 +211,7 @@ const MarketSelectDropdown = () => {
                         title={t('rolling-change')}
                       />
                     </p>
-                    <p className="col-span-1 flex justify-end">
+                    <p className="col-span-1 hidden sm:flex sm:justify-end">
                       <SortableColumnHeader
                         sortKey="marketData.quote_volume_24h"
                         sort={() =>
@@ -236,6 +228,8 @@ const MarketSelectDropdown = () => {
                     const volumeData = m?.marketData?.quote_volume_24h
 
                     const volume = volumeData ? volumeData : 0
+
+                    const leverage = 1 / (m.maintBaseLiabWeight.toNumber() - 1)
 
                     return (
                       <div className="flex w-full items-center" key={m.name}>
@@ -254,10 +248,15 @@ const MarketSelectDropdown = () => {
                               shallow={true}
                             >
                               <div className="col-span-1 flex items-center">
-                                <MarketLogos market={m} size="small" />
-                                <span className="text-xs text-th-fgd-2">
+                                <div className="hidden sm:block">
+                                  <MarketLogos market={m} size="small" />
+                                </div>
+                                <span className="mr-1.5 whitespace-nowrap text-xs text-th-fgd-2">
                                   {m.name}
                                 </span>
+                                {leverage ? (
+                                  <LeverageBadge leverage={leverage} />
+                                ) : null}
                               </div>
                               <div className="col-span-1 flex justify-end">
                                 <span className="font-mono text-xs text-th-fgd-2">
@@ -270,7 +269,7 @@ const MarketSelectDropdown = () => {
                               <div className="col-span-1 flex justify-end">
                                 <MarketChange market={m} size="small" />
                               </div>
-                              <div className="col-span-1 hidden justify-end md:flex">
+                              <div className="col-span-1 hidden sm:flex sm:justify-end">
                                 {loadingMarketData ? (
                                   <SheenLoader className="mt-0.5">
                                     <div className="h-3.5 w-12 bg-th-bkg-2" />
@@ -337,7 +336,7 @@ const MarketSelectDropdown = () => {
                       ))}
                     </div>
                   </div>
-                  <div className="mb-2 grid grid-cols-3 border-b border-th-bkg-3 pb-1 pl-4 pr-14 text-xxs md:grid-cols-4">
+                  <div className="mb-2 grid grid-cols-3 border-b border-th-bkg-3 pb-1 pl-4 pr-14 text-xxs sm:grid-cols-4">
                     <p className="col-span-1 flex">
                       <SortableColumnHeader
                         sortKey="name"
@@ -362,7 +361,7 @@ const MarketSelectDropdown = () => {
                         title={t('rolling-change')}
                       />
                     </p>
-                    <p className="col-span-1 flex justify-end">
+                    <p className="col-span-1 hidden sm:flex sm:justify-end">
                       <SortableColumnHeader
                         sortKey="marketData.quote_volume_24h"
                         sort={() =>
@@ -383,6 +382,10 @@ const MarketSelectDropdown = () => {
                     const market = group?.getSerum3ExternalMarket(
                       m.serumMarketExternal,
                     )
+                    let leverage
+                    if (group) {
+                      leverage = m.maxBidLeverage(group)
+                    }
                     let price
                     if (baseBank && market && quoteBank) {
                       price = floorToDecimal(
@@ -410,10 +413,15 @@ const MarketSelectDropdown = () => {
                           shallow={true}
                         >
                           <div className="col-span-1 flex items-center">
-                            <MarketLogos market={m} size="small" />
-                            <span className="text-xs text-th-fgd-2">
+                            <div className="hidden sm:block">
+                              <MarketLogos market={m} size="small" />
+                            </div>
+                            <span className="mr-1.5 text-xs text-th-fgd-2">
                               {m.name}
                             </span>
+                            {leverage ? (
+                              <LeverageBadge leverage={leverage} />
+                            ) : null}
                           </div>
                           <div className="col-span-1 flex justify-end">
                             {price && market?.tickSize ? (
@@ -437,7 +445,7 @@ const MarketSelectDropdown = () => {
                           <div className="col-span-1 flex justify-end">
                             <MarketChange market={m} size="small" />
                           </div>
-                          <div className="col-span-1 hidden justify-end md:flex">
+                          <div className="col-span-1 hidden sm:flex sm:justify-end">
                             {loadingMarketData ? (
                               <SheenLoader className="mt-0.5">
                                 <div className="h-3.5 w-12 bg-th-bkg-2" />
@@ -473,3 +481,11 @@ const MarketSelectDropdown = () => {
 }
 
 export default MarketSelectDropdown
+
+const LeverageBadge = ({ leverage }: { leverage: number }) => {
+  return (
+    <div className="rounded border border-th-fgd-4 px-1 py-0.5 text-xxs leading-none text-th-fgd-4">
+      <span>{leverage < 1 ? leverage.toFixed(1) : leverage.toFixed()}x</span>
+    </div>
+  )
+}

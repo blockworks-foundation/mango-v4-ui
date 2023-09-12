@@ -96,7 +96,7 @@ const MarketLogos = ({
           : size === 'large'
           ? 'w-[24px]'
           : 'w-[20px]'
-      }`}
+      } flex-shrink-0`}
     >
       <div className="absolute left-0 top-0 z-10 rounded-full bg-th-bkg-2">
         <LogoWithFallback
