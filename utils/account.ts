@@ -88,7 +88,12 @@ export const fetchVolumeTotals = async (mangoAccountPk: string) => {
       return combinedData.reduce((a, c) => {
         const entries: AccountVolumeTotalData[] = Object.entries(c)
         const marketVol = entries.reduce((a, c) => {
-          return a + c[1].volume_usd
+          let volumeUsd = c[1].volume_usd
+          if (!c[0].includes('PERP')) {
+            // The spot API reports volume by token so volume needs to be divided by 2
+            volumeUsd = volumeUsd / 2
+          }
+          return a + volumeUsd
         }, 0)
         return a + marketVol
       }, 0)
@@ -118,7 +123,11 @@ const formatHourlyVolumeData = (data: HourlyAccountVolumeData[]) => {
           entry = { time: timestamp, total_volume_usd: 0, markets: {} }
           formattedData.push(entry)
         }
-        const objVolumeDecimal = new Decimal(obj[market][timestamp].volume_usd)
+        let objVolumeDecimal = new Decimal(obj[market][timestamp].volume_usd)
+        if (!market.includes('PERP')) {
+          // The spot API reports volume by token so volume needs to be divided by 2
+          objVolumeDecimal = objVolumeDecimal.div(2)
+        }
         if (objVolumeDecimal.gt(0)) {
           // Increment the total_volume_usd by the volume_usd value
           entry.total_volume_usd = new Decimal(entry.total_volume_usd)
