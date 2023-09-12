@@ -1,6 +1,7 @@
 import { HealthType } from '@blockworks-foundation/mango-v4'
 import {
   ArrowUpTrayIcon,
+  ExclamationCircleIcon,
   // ExclamationCircleIcon,
 } from '@heroicons/react/20/solid'
 import Decimal from 'decimal.js'
@@ -90,7 +91,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
           bank.mintDecimals,
         )
       }
-      setInputAmount(amount.toString())
+      setInputAmount(amount.toFixed())
     },
     [bank, adjustedTokenMax],
   )
@@ -109,15 +110,28 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
     const actions = mangoStore.getState().actions
     const withdrawAmount = parseFloat(inputAmount)
     if (!mangoAccount || !group || !bank) return
+
     setSubmitting(true)
+
+    const withdrawAll =
+      floorToDecimal(adjustedTokenMax, bank.mintDecimals).eq(
+        new Decimal(inputAmount),
+      ) || sizePercentage === '100'
+
     try {
-      const { signature: tx, slot } = await client.tokenWithdraw(
-        group,
-        mangoAccount,
-        bank.mint,
-        withdrawAmount,
-        false,
-      )
+      const { signature: tx, slot } = withdrawAll
+        ? await client.tokenWithdrawAllDepositForMint(
+            group,
+            mangoAccount,
+            bank.mint,
+          )
+        : await client.tokenWithdraw(
+            group,
+            mangoAccount,
+            bank.mint,
+            withdrawAmount,
+            false,
+          )
       notify({
         title: 'Transaction confirmed',
         type: 'success',
@@ -137,7 +151,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
         type: 'error',
       })
     }
-  }, [bank, inputAmount])
+  }, [adjustedTokenMax, bank, inputAmount, sizePercentage])
 
   const handleSelectToken = useCallback((token: string) => {
     setSelectedToken(token)
@@ -150,10 +164,9 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
       : 100
   }, [mangoAccount])
 
-  const showInsufficientBalance = Number(inputAmount)
-    ? tokenMax.lt(inputAmount)
+  const showInsufficientBalance = inputAmount
+    ? tokenMax.lt(new Decimal(inputAmount))
     : false
-  console.log(showInsufficientBalance)
 
   return (
     <>
@@ -264,22 +277,19 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
               size="large"
               disabled={
                 connected &&
-                (!inputAmount ||
-                  // showInsufficientBalance ||
-                  initHealth <= 0)
+                (!inputAmount || showInsufficientBalance || initHealth <= 0)
               }
             >
               {submitting ? (
                 <Loading className="mr-2 h-5 w-5" />
+              ) : showInsufficientBalance ? (
+                <div className="flex items-center">
+                  <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+                  {t('swap:insufficient-balance', {
+                    symbol: selectedToken,
+                  })}
+                </div>
               ) : (
-                // showInsufficientBalance ? (
-                //   <div className="flex items-center">
-                //     <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-                //     {t('swap:insufficient-balance', {
-                //       symbol: selectedToken,
-                //     })}
-                //   </div>
-                // ) :
                 <div className="flex items-center">
                   <ArrowUpTrayIcon className="mr-2 h-5 w-5" />
                   {t('withdraw')}
