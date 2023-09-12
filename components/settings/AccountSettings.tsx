@@ -43,10 +43,8 @@ const AccountSettings = () => {
     usedSerum3,
     usedPerps,
     usedPerpOo,
-    // emptyTokens,
     emptySerum3,
     emptyPerps,
-    // emptyPerpOo,
     totalTokens,
     totalSerum3,
     totalPerps,
@@ -62,7 +60,7 @@ const AccountSettings = () => {
       const bank = group.getFirstBankByTokenIndex(token.tokenIndex)
       const tokenMax = getMaxWithdrawForBank(group, bank, mangoAccount)
       const balance = mangoAccount.getTokenBalanceUi(bank)
-      const isClosable = tokenMax.eq(new Decimal(balance))
+      const isClosable = tokenMax.eq(new Decimal(balance)) && !token.inUseCount
       tokens.push({ isClosable, balance, tokenIndex: token.tokenIndex })
     }
     return tokens
@@ -159,6 +157,7 @@ const AccountSettings = () => {
           txid: tx.signature,
         })
         await actions.reloadMangoAccount()
+        setSubmitting(false)
       } catch (e) {
         console.error(e)
         setSubmitting(false)
@@ -234,6 +233,11 @@ const AccountSettings = () => {
                   const status = tokenStatus.find(
                     (t) => t.tokenIndex === token.tokenIndex,
                   )
+
+                  const isCollateral =
+                    tokenBank
+                      .scaledInitAssetWeight(tokenBank.price)
+                      .toNumber() > 0
                   return (
                     <div className={SLOT_ROW_CLASSNAMES} key={token.tokenIndex}>
                       <div className="flex items-center">
@@ -255,7 +259,28 @@ const AccountSettings = () => {
                         >
                           {t('close')}
                         </Button>
-                      ) : null}
+                      ) : (
+                        <Tooltip
+                          content={
+                            tokenBank.name === 'USDC'
+                              ? t('settings:tooltip-close-usdc-instructions')
+                              : isCollateral
+                              ? t(
+                                  'settings:tooltip-close-collateral-token-instructions',
+                                  {
+                                    token: tokenBank.name,
+                                  },
+                                )
+                              : t('settings:tooltip-close-token-instructions', {
+                                  token: tokenBank.name,
+                                })
+                          }
+                        >
+                          <p className="tooltip-underline">
+                            {t('settings:close-instructions')}
+                          </p>
+                        </Tooltip>
+                      )}
                     </div>
                   )
                 })
