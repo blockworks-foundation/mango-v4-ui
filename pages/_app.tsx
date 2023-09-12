@@ -15,7 +15,6 @@ import {
 } from '@solana/wallet-adapter-react'
 import {
   PhantomWalletAdapter,
-  SolflareWalletAdapter,
   GlowWalletAdapter,
   BackpackWalletAdapter,
   BraveWalletAdapter,
@@ -27,6 +26,7 @@ import {
   ExodusWalletAdapter,
   WalletConnectWalletAdapter,
 } from '@solana/wallet-adapter-wallets'
+import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare'
 import { clusterApiUrl } from '@solana/web3.js'
 import TransactionNotification from '@components/notifications/TransactionNotification'
 import { ThemeProvider } from 'next-themes'
