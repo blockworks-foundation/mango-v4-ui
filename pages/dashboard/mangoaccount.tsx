@@ -190,7 +190,7 @@ const MangoAccountDashboard: NextPage = () => {
                     />
                     <KeyValuePair
                       label="In Use Count"
-                      value={`$${token.inUseCount}`}
+                      value={`${token.inUseCount}`}
                     />
                   </div>
                 )
