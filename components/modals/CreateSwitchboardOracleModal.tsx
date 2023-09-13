@@ -122,7 +122,7 @@ const CreateSwitchboardOracleModal = ({
           minRequiredOracleResults: 3,
           minRequiredJobResults: 2,
           minUpdateDelaySeconds: 6,
-          forceReportPeriod: 24 * 60 * 60,
+          forceReportPeriod: 60 * 60,
           withdrawAuthority: MANGO_DAO_WALLET,
           authority: payer,
           crankDataBuffer: crankAccount.dataBuffer?.publicKey,

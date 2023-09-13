@@ -96,6 +96,7 @@
     "trigger-price": "Trigger Price",
     "trigger-order": "Trigger Order",
     "trigger-order-desc": "{{amount}} {{symbol}} if the oracle price {{orderType}} {{triggerPrice}} {{priceUnit}}",
+    "trigger-order-desc-with-borrow": "{{action}} {{amount}} {{symbol}} if the oracle price {{orderType}} {{triggerPrice}} {{priceUnit}}. You'll borrow ~{{borrowAmount}} {{quoteSymbol}} to execute this trade",
     "trigger-orders": "Trigger Orders",
     "size": "数量",
     "spread": "差价",
@@ -110,8 +111,11 @@
     "tooltip-insured": "如果发生破产，{{tokenOrMarket}}损失是否可以从保险基金中归还",
     "tooltip-ioc": "IOC交易若不吃单就会被取消。任何无法立刻成交的部分将被取消",
     "tooltip-post": "Post交易若不挂单就会被取消。",
+    "tooltip-size-base-quote": "Show size in {{token}}",
+    "tooltip-private-counterparty": "Counterparty has Private Account enabled",
     "tooltip-slippage": "当前价格与您的交易将执行的价格之间的差值的估计",
     "tooltip-stable-price": "稳定价格用于一个安全机制。此机制可以限制用户在预言机价格快速波动时下风险高的订单",
+    "tooltip-view-counterparty": "View counterparty {{pk}}",
     "tooltip-volume-alert": "交易量警报设定",
     "total-pnl": "总盈亏",
     "trade-sounds-tooltip": "为每笔新交易播放警报声音",
@@ -119,6 +123,7 @@
     "tweet-position": "分享至Twitter",
     "unrealized-pnl": "未实现盈亏",
     "unsettled": "未结清",
+    "view-counterparty": "View counterparty {{pk}}",
     "volume-alert": "交易量警报",
     "volume-alert-desc": "交易量超过警报设定时播放声音"
 }

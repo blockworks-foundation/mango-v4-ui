@@ -422,16 +422,27 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
             s.swap.outputBank =
               swap.outputBank.name === 'USDC' ? solBank : usdcBank
           }
+          s.swap.triggerPrice = ''
         })
       } else {
         set((s) => {
-          s.swap.outputBank = tokenBank
-          s.swap.amountIn = ''
-          s.swap.amountOut = Math.abs(balance).toString()
-          s.swap.swapMode = 'ExactOut'
-          if (tokenBank.name === swap.inputBank?.name) {
-            s.swap.inputBank =
-              swap.inputBank.name === 'USDC' ? solBank : usdcBank
+          if (swap.swapOrTrigger === 'swap') {
+            s.swap.outputBank = tokenBank
+            s.swap.amountIn = ''
+            s.swap.amountOut = Math.abs(balance).toString()
+            s.swap.swapMode = 'ExactOut'
+            if (tokenBank.name === swap.inputBank?.name) {
+              s.swap.inputBank =
+                swap.inputBank.name === 'USDC' ? solBank : usdcBank
+            }
+          } else {
+            s.swap.inputBank = tokenBank
+            s.swap.amountIn = Math.abs(balance).toString()
+            s.swap.amountOut = ''
+            if (tokenBank.name === swap.outputBank?.name) {
+              s.swap.outputBank =
+                swap.outputBank.name === 'USDC' ? solBank : usdcBank
+            }
           }
         })
       }

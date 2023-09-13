@@ -16,9 +16,9 @@ import InlineNotification from '@components/shared/InlineNotification'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import { SwapFormTokenListType } from './SwapFormTokenList'
-import { useTokenMax } from './useTokenMax'
+import { useAbsInputPosition } from './useTokenMax'
 
-const SellTokenInput = ({
+const ReduceInputTokenInput = ({
   handleAmountInChange,
   setShowTokenSelect,
   handleMax,
@@ -33,7 +33,7 @@ const SellTokenInput = ({
   error?: string
   isTriggerOrder?: boolean
 }) => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'swap'])
   const { mangoAccountAddress } = useMangoAccount()
   const { group } = useMangoGroup()
   const { isUnownedAccount } = useUnownedAccount()
@@ -56,22 +56,22 @@ const SellTokenInput = ({
       className={`grid grid-cols-2 rounded-t-xl bg-th-bkg-2 p-3 pb-2 ${className}`}
     >
       <div className="col-span-2 mb-2 flex items-center justify-between">
-        <p className="text-th-fgd-2">{t('sell')}</p>
+        <p className="text-th-fgd-2">{t('swap:reduce-position')}</p>
         {!isUnownedAccount ? (
           <MaxSwapAmount
             useMargin={isTriggerOrder ? false : useMargin}
             setAmountIn={(v) => handleMax(v)}
-            maxAmount={useTokenMax}
+            maxAmount={useAbsInputPosition}
           />
         ) : null}
       </div>
       <div className="col-span-1">
         <TokenSelect
           bank={
-            inputBank || group?.banksMapByName.get(INPUT_TOKEN_DEFAULT)?.[0]
+            inputBank || group?.banksMapByName.get(INPUT_TOKEN_DEFAULT)?.[0] // default to a user position
           }
           showTokenList={setShowTokenSelect}
-          type="input"
+          type="reduce-input"
         />
       </div>
       <div className="relative col-span-1">
@@ -123,4 +123,4 @@ const SellTokenInput = ({
   )
 }
 
-export default SellTokenInput
+export default ReduceInputTokenInput

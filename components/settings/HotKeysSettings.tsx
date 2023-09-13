@@ -36,7 +36,6 @@ const HotKeysSettings = () => {
     <>
       <div className="mb-4 flex items-center justify-between">
         <div className="pr-6">
-          <h2 className="mb-1 text-base">{t('settings:hot-keys')}</h2>
           <p>{t('settings:hot-keys-desc')}</p>
         </div>
         {hotKeys.length ? (
@@ -105,7 +104,7 @@ const HotKeysSettings = () => {
               }
 
               return (
-                <TrBody key={keySequence} className="text-right">
+                <TrBody key={keySequence} className="text-right text-th-fgd-2">
                   <Td className="text-left">{keySequence}</Td>
                   <Td className="text-right">{t(`trade:${orderType}`)}</Td>
                   <Td className="text-right">{t(orderSide)}</Td>

@@ -1,8 +1,4 @@
 import Switch from '@components/forms/Switch'
-import {
-  createLedgerMessage,
-  createSolanaMessage,
-} from '@components/notifications/NotificationsDrawer'
 import Button, { LinkButton } from '@components/shared/Button'
 import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import { BellIcon } from '@heroicons/react/20/solid'
@@ -14,6 +10,7 @@ import { useTranslation } from 'next-i18next'
 import { NOTIFICATION_API } from 'utils/constants'
 import NotificationCookieStore from '@store/notificationCookieStore'
 import mangoStore from '@store/mangoStore'
+import { createLedgerMessage, createSolanaMessage } from 'utils/notifications'
 
 const NotificationSettings = () => {
   const { t } = useTranslation(['common', 'notifications', 'settings'])
@@ -43,9 +40,6 @@ const NotificationSettings = () => {
   }
   return (
     <>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-base">{t('settings:notifications')}</h2>
-      </div>
       {isAuth ? (
         <div className="flex items-center justify-between border-y border-th-bkg-3 p-4">
           <p>{t('settings:limit-order-filled')}</p>

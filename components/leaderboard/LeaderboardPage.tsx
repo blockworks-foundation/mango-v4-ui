@@ -3,6 +3,7 @@ import { LinkButton } from '@components/shared/Button'
 import SheenLoader from '@components/shared/SheenLoader'
 import { NoSymbolIcon } from '@heroicons/react/20/solid'
 import { useInfiniteQuery } from '@tanstack/react-query'
+import { useHiddenMangoAccounts } from 'hooks/useHiddenMangoAccounts'
 import { useTranslation } from 'next-i18next'
 import { useMemo, useState } from 'react'
 import { EmptyObject } from 'types'
@@ -51,6 +52,7 @@ const fetchLeaderboard = async (
 const LeaderboardPage = () => {
   const { t } = useTranslation(['common', 'leaderboard'])
   const [daysToShow, setDaysToShow] = useState<DaysToShow>('ALLTIME')
+  const { hiddenAccounts } = useHiddenMangoAccounts()
 
   const { data, isLoading, isFetching, isFetchingNextPage, fetchNextPage } =
     useInfiniteQuery(
@@ -68,7 +70,13 @@ const LeaderboardPage = () => {
 
   const leaderboardData = useMemo(() => {
     if (data?.pages.length) {
-      return data.pages.flat()
+      if (hiddenAccounts) {
+        return data.pages
+          .flat()
+          .filter((d) => !hiddenAccounts.includes(d.mango_account))
+      } else {
+        return data.pages.flat()
+      }
     }
     return []
   }, [data, daysToShow])

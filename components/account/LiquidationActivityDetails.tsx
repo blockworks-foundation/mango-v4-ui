@@ -14,7 +14,7 @@ import {
 import { PREFERRED_EXPLORER_KEY } from 'utils/constants'
 import { abbreviateAddress } from 'utils/formatting'
 
-const LiquidationDetails = ({
+const LiquidationActivityDetails = ({
   activity,
 }: {
   activity: LiquidationActivity
@@ -240,4 +240,4 @@ const LiquidationDetails = ({
   )
 }
 
-export default LiquidationDetails
+export default LiquidationActivityDetails

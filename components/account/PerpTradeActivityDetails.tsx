@@ -13,8 +13,13 @@ import { PREFERRED_EXPLORER_KEY } from 'utils/constants'
 import { abbreviateAddress } from 'utils/formatting'
 import { getDecimalCount } from 'utils/numbers'
 import { formatFee } from './ActivityFeedTable'
+import Decimal from 'decimal.js'
 
-const PerpTradeDetails = ({ activity }: { activity: PerpTradeActivity }) => {
+const PerpTradeActivityDetails = ({
+  activity,
+}: {
+  activity: PerpTradeActivity
+}) => {
   const { t } = useTranslation(['common', 'activity', 'settings', 'trade'])
   const { mangoAccountAddress } = useMangoAccount()
   const [preferredExplorer] = useLocalStorageState(
@@ -37,16 +42,21 @@ const PerpTradeDetails = ({ activity }: { activity: PerpTradeActivity }) => {
 
   const side = isTaker ? taker_side : taker_side === 'bid' ? 'ask' : 'bid'
 
-  const notional = quantity * price
-
-  const fee = isTaker ? taker_fee * notional : maker_fee * notional
-
-  const totalPrice = (notional + fee) / quantity
+  const quantityDecimal = new Decimal(quantity)
+  const notional = quantityDecimal.mul(new Decimal(price))
+  const fee = isTaker
+    ? notional.mul(new Decimal(taker_fee))
+    : notional.mul(new Decimal(maker_fee))
+  const totalPrice = notional.plus(fee).div(quantityDecimal)
 
   const counterpartyPk = isTaker ? maker : taker
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="col-span-1">
+        <p className="mb-0.5 font-body text-sm text-th-fgd-3">{t('market')}</p>
+        <p className="font-body text-th-fgd-1">{perp_market_name}</p>
+      </div>
       <div className="col-span-1">
         <p className="mb-0.5 font-body text-sm text-th-fgd-3">
           {t('trade:side')}
@@ -80,7 +90,8 @@ const PerpTradeDetails = ({ activity }: { activity: PerpTradeActivity }) => {
       <div className="col-span-1">
         <p className="mb-0.5 font-body text-sm text-th-fgd-3">{t('fee')}</p>
         <p className="font-mono text-th-fgd-1">
-          {formatFee(fee)} <span className="font-body text-th-fgd-3">USDC</span>
+          {formatFee(fee.toNumber())}{' '}
+          <span className="font-body text-th-fgd-3">USDC</span>
         </p>
         <p className="font-body text-xs text-th-fgd-3">
           {isTaker ? t('trade:taker') : t('trade:maker')}
@@ -141,4 +152,4 @@ const PerpTradeDetails = ({ activity }: { activity: PerpTradeActivity }) => {
   )
 }
 
-export default PerpTradeDetails
+export default PerpTradeActivityDetails

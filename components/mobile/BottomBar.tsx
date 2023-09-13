@@ -10,7 +10,6 @@ import {
   ChevronRightIcon,
   ArrowsRightLeftIcon,
   CurrencyDollarIcon,
-  Cog8ToothIcon,
   BuildingLibraryIcon,
   ArrowTrendingUpIcon,
   MagnifyingGlassIcon,
@@ -125,11 +124,6 @@ const MoreMenuPanel = ({
         className="border-b border-th-bkg-4"
         onClick={() => setShowPanel(false)}
       >
-        <MoreMenuItem
-          title={t('settings')}
-          path="/settings"
-          icon={<Cog8ToothIcon className="h-5 w-5" />}
-        />
         <MoreMenuItem
           title={t('stats')}
           path="/stats"

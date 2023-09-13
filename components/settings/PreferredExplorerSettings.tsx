@@ -19,7 +19,9 @@ const PreferredExplorerSettings = () => {
   )
   return (
     <>
-      <h2 className="mb-4 text-base">{t('settings:preferred-explorer')}</h2>
+      <h3 className="mb-4 text-sm font-normal text-th-fgd-1">
+        {t('settings:preferred-explorer')}
+      </h3>
       <div className="space-y-2">
         {EXPLORERS.map((ex) => (
           <button
