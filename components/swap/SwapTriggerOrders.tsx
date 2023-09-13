@@ -33,6 +33,48 @@ import { Disclosure, Transition } from '@headlessui/react'
 import SheenLoader from '@components/shared/SheenLoader'
 import { formatTokenSymbol } from 'utils/tokens'
 
+export const handleCancelAll = async (
+  setCancelId: (id: '' | 'all') => void,
+) => {
+  try {
+    const client = mangoStore.getState().client
+    const group = mangoStore.getState().group
+    const actions = mangoStore.getState().actions
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+
+    if (!mangoAccount || !group) return
+    setCancelId('all')
+
+    try {
+      const { signature: tx, slot } =
+        await client.tokenConditionalSwapCancelAll(group, mangoAccount)
+      notify({
+        title: 'Transaction confirmed',
+        type: 'success',
+        txid: tx,
+        noSound: true,
+      })
+      actions.fetchGroup()
+      await actions.reloadMangoAccount(slot)
+    } catch (e) {
+      console.error('failed to cancel trigger orders', e)
+      sentry.captureException(e)
+      if (isMangoError(e)) {
+        notify({
+          title: 'Transaction failed',
+          description: e.message,
+          txid: e?.txid,
+          type: 'error',
+        })
+      }
+    }
+  } catch (e) {
+    console.error('failed to cancel swap order', e)
+  } finally {
+    setCancelId('')
+  }
+}
+
 const SwapOrders = () => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
   const { width } = useViewport()
@@ -163,46 +205,6 @@ const SwapOrders = () => {
     }
   }
 
-  const handleCancelAll = async () => {
-    try {
-      const client = mangoStore.getState().client
-      const group = mangoStore.getState().group
-      const actions = mangoStore.getState().actions
-      const mangoAccount = mangoStore.getState().mangoAccount.current
-
-      if (!mangoAccount || !group) return
-      setCancelId('all')
-
-      try {
-        const { signature: tx, slot } =
-          await client.tokenConditionalSwapCancelAll(group, mangoAccount)
-        notify({
-          title: 'Transaction confirmed',
-          type: 'success',
-          txid: tx,
-          noSound: true,
-        })
-        actions.fetchGroup()
-        await actions.reloadMangoAccount(slot)
-      } catch (e) {
-        console.error('failed to cancel trigger orders', e)
-        sentry.captureException(e)
-        if (isMangoError(e)) {
-          notify({
-            title: 'Transaction failed',
-            description: e.message,
-            txid: e?.txid,
-            type: 'error',
-          })
-        }
-      }
-    } catch (e) {
-      console.error('failed to cancel swap order', e)
-    } finally {
-      setCancelId('')
-    }
-  }
-
   return orders.length ? (
     showTableView ? (
       <Table>
@@ -278,7 +280,7 @@ const SwapOrders = () => {
             </Th>
             <Th>
               <div className="flex justify-end">
-                <LinkButton onClick={handleCancelAll}>
+                <LinkButton onClick={() => handleCancelAll(setCancelId)}>
                   {t('trade:cancel-all')}
                 </LinkButton>
               </div>
