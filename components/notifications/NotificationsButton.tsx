@@ -6,6 +6,7 @@ import { useIsAuthorized } from 'hooks/notifications/useIsAuthorized'
 import { useCookies } from 'hooks/notifications/useCookies'
 import { useNotificationSocket } from 'hooks/notifications/useNotificationSocket'
 import { formatNumericValue } from 'utils/numbers'
+import { TOPBAR_ICON_BUTTON_CLASSES } from '@components/TopBar'
 
 const NotificationsButton = () => {
   useCookies()
@@ -30,7 +31,7 @@ const NotificationsButton = () => {
   return (
     <>
       <button
-        className="relative flex h-16 w-16 items-center justify-center border-l border-r border-th-bkg-3 focus-visible:bg-th-bkg-3 md:border-r-0 md:hover:bg-th-bkg-2"
+        className={TOPBAR_ICON_BUTTON_CLASSES}
         onClick={() => toggleModal()}
       >
         <BellIcon className="h-5 w-5" />
