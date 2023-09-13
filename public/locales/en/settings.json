@@ -99,9 +99,9 @@
     "swap-success": "Swap/Trade Success",
     "swap-trade-size-selector": "Swap/Trade Size Selector",
     "theme": "Theme",
-    "tooltip-close-collateral-token-instructions": "Close all spot open orders slots that use {{token}} and make sure you have enough free collateral to withdraw your total {{token}} balance.",
-    "tooltip-close-token-instructions": "Close all spot open orders slots that use {{token}}",
-    "tooltip-close-usdc-instructions": "Close all spot open orders slots that use USDC, close all perp position slots and make sure you have enough free collateral to withdraw your total USDC balance.",
+    "tooltip-close-collateral-token-instructions": "Close spot open orders slots and cancel trigger orders with {{token}} in the pair. Make sure you have enough free collateral to withdraw your total {{token}} balance.",
+    "tooltip-close-token-instructions": "Close spot open orders slots and cancel trigger orders with {{token}} in the pair.",
+    "tooltip-close-usdc-instructions": "Close spot open orders slots and cancel trigger orders with USDC in the pair. Close all perp position slots and make sure you have enough free collateral to withdraw your total USDC balance.",
     "tooltip-hot-key-notional-size": "Set size as a USD value.",
     "tooltip-hot-key-percentage-size": "Set size as a percentage of your max leverage.",
     "tooltip-hot-key-price": "Set a price as a percentage change from the oracle price.",
@@ -120,5 +120,6 @@
     "trade-chart": "Trade Chart",
     "trading-view": "Trading View",
     "trigger-key": "Trigger Key",
+    "trigger-orders-used": "You have {{orders}} active trigger orders.",
     "unused": "Unused"
 }

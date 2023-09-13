@@ -46,7 +46,7 @@ const getIsAccountSizeFull = () => {
 }
 
 export default function useMangoAccountAccounts() {
-  const { mangoAccountAddress } = useMangoAccount()
+  const { mangoAccount } = useMangoAccount()
 
   const [
     usedTokens,
@@ -55,11 +55,12 @@ export default function useMangoAccountAccounts() {
     usedPerpOo,
     emptySerum3,
     emptyPerps,
+    usedTcs,
   ] = useMemo(() => {
-    const mangoAccount = mangoStore.getState().mangoAccount.current
-    if (!mangoAccount) return [[], [], [], [], [], []]
+    if (!mangoAccount) return [[], [], [], [], [], [], []]
 
-    const { tokens, serum3, perps, perpOpenOrders } = mangoAccount
+    const { tokens, serum3, perps, perpOpenOrders, tokenConditionalSwaps } =
+      mangoAccount
     const usedTokens: TokenPosition[] = tokens.filter(
       (t) => t.tokenIndex !== 65535,
     )
@@ -72,6 +73,7 @@ export default function useMangoAccountAccounts() {
     const usedPerpOo: PerpOo[] = perpOpenOrders.filter(
       (p) => p.orderMarket !== 65535,
     )
+    const usedTcs = tokenConditionalSwaps.filter((tcs) => tcs.hasData)
 
     const emptyPerps = usedPerps.filter(
       (p) =>
@@ -106,12 +108,12 @@ export default function useMangoAccountAccounts() {
       usedPerpOo,
       emptySerum3,
       emptyPerps,
+      usedTcs,
     ]
-  }, [mangoAccountAddress])
+  }, [mangoAccount])
 
   const [totalTokens, totalSerum3, totalPerps, totalPerpOpenOrders] =
     useMemo(() => {
-      const mangoAccount = mangoStore.getState().mangoAccount.current
       if (!mangoAccount) return [[], [], [], []]
       const { tokens, serum3, perps, perpOpenOrders } = mangoAccount
       const totalTokens = tokens
@@ -119,19 +121,19 @@ export default function useMangoAccountAccounts() {
       const totalPerps = perps
       const totalPerpOpenOrders = perpOpenOrders
       return [totalTokens, totalSerum3, totalPerps, totalPerpOpenOrders]
-    }, [mangoAccountAddress])
+    }, [mangoAccount])
 
   const isAccountFull = useMemo(() => {
-    const mangoAccount = mangoStore.getState().mangoAccount.current
     if (!mangoAccount) return true
     return getIsAccountSizeFull()
-  }, [mangoAccountAddress])
+  }, [mangoAccount])
 
   return {
     usedTokens,
     usedSerum3,
     usedPerps,
     usedPerpOo,
+    usedTcs,
     emptySerum3,
     emptyPerps,
     totalTokens,

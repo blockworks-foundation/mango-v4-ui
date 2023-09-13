@@ -99,9 +99,9 @@
     "swap-success": "換幣/交易成功",
     "swap-trade-size-selector": "換幣/交易大小選擇器",
     "theme": "模式",
-    "tooltip-close-collateral-token-instructions": "Close all spot open orders slots that use {{token}} and make sure you have enough free collateral to withdraw your total {{token}} balance.",
-    "tooltip-close-token-instructions": "Close all spot open orders slots that use {{token}}",
-    "tooltip-close-usdc-instructions": "Close all spot open orders slots that use USDC, close all perp position slots and make sure you have enough free collateral to withdraw your total USDC balance.",
+    "tooltip-close-collateral-token-instructions": "Close spot open orders slots and cancel trigger orders with {{token}} in the pair. Make sure you have enough free collateral to withdraw your total {{token}} balance.",
+    "tooltip-close-token-instructions": "Close spot open orders slots and cancel trigger orders with {{token}} in the pair.",
+    "tooltip-close-usdc-instructions": "Close spot open orders slots and cancel trigger orders with USDC in the pair. Close all perp position slots and make sure you have enough free collateral to withdraw your total USDC balance.",
     "tooltip-hot-key-notional-size": "Set size as a USD value.",
     "tooltip-hot-key-percentage-size": "Set size as a percentage of your max leverage.",
     "tooltip-hot-key-price": "Set a price as a percentage change from the oracle price.",
@@ -121,5 +121,6 @@
     "transaction-success": "交易成功",
     "orderbook-bandwidth-saving": "節省掛單薄頻寬",
     "tooltip-orderbook-bandwidth-saving": "使用鏈下服務進行掛單簿更新，將數據使用量減少約 1000 倍。如果未結訂單在掛單簿中不正確顯示，請禁用此選項。",
+    "trigger-orders-used": "You have {{orders}} active trigger orders.",
     "unused": "Unused"
 }

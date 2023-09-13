@@ -18,6 +18,8 @@ import { notify } from 'utils/notifications'
 import { isMangoError } from 'types'
 import { getMaxWithdrawForBank } from '@components/swap/useTokenMax'
 import Decimal from 'decimal.js'
+import { formatTokenSymbol } from 'utils/tokens'
+import { handleCancelAll } from '@components/swap/SwapTriggerOrders'
 
 enum CLOSE_TYPE {
   TOKEN,
@@ -33,16 +35,18 @@ const SLOT_ROW_CLASSNAMES =
   'flex items-center justify-between border-t border-th-bkg-3 py-3'
 
 const AccountSettings = () => {
-  const { t } = useTranslation(['common', 'settings'])
+  const { t } = useTranslation(['common', 'settings', 'trade'])
   const { mangoAccountAddress } = useMangoAccount()
   const { group } = useMangoGroup()
   const [showAccountSizeModal, setShowAccountSizeModal] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [cancelTcs, setCancelTcs] = useState('')
   const {
     usedTokens,
     usedSerum3,
     usedPerps,
     usedPerpOo,
+    usedTcs,
     emptySerum3,
     emptyPerps,
     totalTokens,
@@ -303,7 +307,7 @@ const AccountSettings = () => {
                     max: MAX_ACCOUNTS.spotOpenOrders,
                   })}
                 >
-                  <p className="tooltip-underline mb-2 md:mb-0">
+                  <p className="tooltip-underline">
                     {t('settings:spot-open-orders')}
                   </p>
                 </Tooltip>
@@ -374,7 +378,7 @@ const AccountSettings = () => {
                     max: MAX_ACCOUNTS.perpAccounts,
                   })}
                 >
-                  <p className="tooltip-underline mb-2 md:mb-0">
+                  <p className="tooltip-underline">
                     {t('settings:perp-positions')}
                   </p>
                 </Tooltip>
@@ -445,7 +449,7 @@ const AccountSettings = () => {
                     max: MAX_ACCOUNTS.perpOpenOrders,
                   })}
                 >
-                  <p className="tooltip-underline mb-2 md:mb-0">
+                  <p className="tooltip-underline">
                     {t('settings:perp-open-orders')}
                   </p>
                 </Tooltip>
@@ -491,19 +495,79 @@ const AccountSettings = () => {
           </>
         )}
       </Disclosure>
-      {/* 
-      <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
-        <Tooltip
-          content={t('settings:tooltip-perp-open-orders', {
-            max: MAX_ACCOUNTS.perpOpenOrders,
-          })}
-        >
-          <p className="tooltip-underline mb-2 md:mb-0">
-            {t('settings:perp-open-orders')}
-          </p>
-        </Tooltip>
-        <p className="font-mono text-th-fgd-2">{availablePerpOo}</p>
-      </div> */}
+      <Disclosure>
+        {({ open }) => (
+          <>
+            <Disclosure.Button className="w-full border-t border-th-bkg-3 py-4 md:px-4">
+              <div className="flex items-center justify-between">
+                <p>{t('trade:trigger-orders')}</p>
+                <ChevronDownIcon
+                  className={`${
+                    open ? 'rotate-180' : 'rotate-360'
+                  } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                />
+              </div>
+            </Disclosure.Button>
+            <Disclosure.Panel className="pb-2 md:px-4">
+              <div className={CLOSE_WRAPPER_CLASSNAMES}>
+                <p className="font-bold text-th-fgd-2">
+                  {t('settings:trigger-orders-used', {
+                    orders: usedTcs.length,
+                  })}
+                </p>
+                <Button
+                  className="mt-4 whitespace-nowrap md:ml-4 md:mt-0"
+                  disabled={!usedTcs.length || !!cancelTcs}
+                  onClick={() => handleCancelAll(setCancelTcs)}
+                  secondary
+                  size="small"
+                >
+                  {t('trade:cancel-all')}
+                </Button>
+              </div>
+              {usedTcs.length ? (
+                usedTcs.map((tcs, i) => {
+                  const buyBank = group.getFirstBankByTokenIndex(
+                    tcs.buyTokenIndex,
+                  )
+                  const sellBank = group.getFirstBankByTokenIndex(
+                    tcs.sellTokenIndex,
+                  )
+                  const maxBuy = tcs.getMaxBuyUi(group)
+                  const maxSell = tcs.getMaxSellUi(group)
+                  let side
+                  if (maxBuy === 0 || maxBuy > maxSell) {
+                    side = 'sell'
+                  } else {
+                    side = 'buy'
+                  }
+                  const formattedBuyTokenName = formatTokenSymbol(buyBank.name)
+                  const formattedSellTokenName = formatTokenSymbol(
+                    sellBank.name,
+                  )
+                  const pair =
+                    side === 'sell'
+                      ? `${formattedSellTokenName}/${formattedBuyTokenName}`
+                      : `${formattedBuyTokenName}/${formattedSellTokenName}`
+                  return (
+                    <div
+                      className="mb-2 flex items-center"
+                      key={tcs.id.toString()}
+                    >
+                      <p className="mr-3 text-th-fgd-4">{i + 1}.</p>
+                      <p className="text-th-fgd-2">{pair}</p>
+                    </div>
+                  )
+                })
+              ) : (
+                <p className="mb-2 text-center">
+                  {t('notifications:empty-state-title')}...
+                </p>
+              )}
+            </Disclosure.Panel>
+          </>
+        )}
+      </Disclosure>
       {showAccountSizeModal ? (
         <MangoAccountSizeModal
           isOpen={showAccountSizeModal}
