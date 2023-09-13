@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 import { IDL } from '@blockworks-foundation/mango-v4'
 import RpcPing from './RpcPing'
 import Tooltip from './shared/Tooltip'
+import { useRouter } from 'next/router'
 
 const DEFAULT_LATEST_COMMIT = { sha: '', url: '' }
 
@@ -34,6 +35,7 @@ const getLatestCommit = async () => {
 const StatusBar = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation('common')
   const [latestCommit, setLatestCommit] = useState(DEFAULT_LATEST_COMMIT)
+  const router = useRouter()
 
   useEffect(() => {
     const { sha } = latestCommit
@@ -79,6 +81,16 @@ const StatusBar = ({ collapsed }: { collapsed: boolean }) => {
         ) : null}
       </div>
       <div className="col-span-1 flex items-center justify-end space-x-4 text-xs">
+        {router.asPath.includes('/trade') ? (
+          <a
+            className="flex items-center text-th-fgd-3 focus:outline-none md:hover:text-th-fgd-2"
+            href="https://www.tradingview.com/"
+            rel="noreferrer noopener"
+            target="_blank"
+          >
+            <span>Powered by Trading View</span>
+          </a>
+        ) : null}
         <a
           className="flex items-center text-th-fgd-3 focus:outline-none md:hover:text-th-fgd-2"
           href="https://docs.mango.markets"
