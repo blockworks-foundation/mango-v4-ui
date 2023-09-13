@@ -64,7 +64,6 @@ const SettingsModal = ({ isOpen, onClose }: ModalProps) => {
       isOpen={isOpen}
       onClose={onClose}
       fullScreen
-      disableOutsideClose
       panelClassNames="overflow-y-auto hide-scroll"
     >
       <div className="mx-auto max-w-[1140px] px-6 py-8 md:py-12">
