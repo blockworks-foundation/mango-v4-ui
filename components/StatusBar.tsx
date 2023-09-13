@@ -88,7 +88,7 @@ const StatusBar = ({ collapsed }: { collapsed: boolean }) => {
             rel="noreferrer noopener"
             target="_blank"
           >
-            <span>Powered by Trading View</span>
+            <span>Powered by TradingView</span>
           </a>
         ) : null}
         <a

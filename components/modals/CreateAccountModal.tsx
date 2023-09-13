@@ -15,7 +15,7 @@ const CreateAccountModal = ({ isOpen, onClose }: ModalProps) => {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="flex min-h-[400px] flex-col items-center justify-center">
+      <div className="flex min-h-[338px] flex-col justify-between">
         <CreateAccountForm customClose={handleClose} />
       </div>
     </Modal>
