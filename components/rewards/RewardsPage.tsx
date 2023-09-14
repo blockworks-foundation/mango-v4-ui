@@ -469,8 +469,8 @@ const Claim = () => {
   const state = mangoStore.getState()
   const provider = state.client.program.provider
   const connection = provider.connection
+  //used to sing tx do not deconstruct
   const wallet = useWallet()
-  console.log('pubkey', wallet.publicKey?.toString())
 
   useEffect(() => {
     if (!wallet.publicKey) return
@@ -539,7 +539,7 @@ const Claim = () => {
 
       setIsClaiming(true)
       setClaimProgress(10)
-      console.log(transactionInstructions)
+
       await sendSignAndConfirmTransactions({
         connection,
         wallet,
@@ -576,7 +576,7 @@ const Claim = () => {
     } finally {
       setIsClaiming(false)
     }
-  }, [distribution, wallet, claims, rewardsClient])
+  }, [distribution, wallet, claims, rewardsClient, connection])
 
   return claims === undefined ? (
     <span>Loading...</span>
