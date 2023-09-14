@@ -19,7 +19,7 @@ import { MagnifyingGlassIcon } from '@heroicons/react/20/solid'
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
     props: {
-      ...(await serverSideTranslations(locale, ['common'])),
+      ...(await serverSideTranslations(locale, ['common', 'settings'])),
     },
   }
 }

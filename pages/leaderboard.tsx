@@ -11,6 +11,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
         'notifications',
         'profile',
         'search',
+        'settings',
       ])),
     },
   }

@@ -15,7 +15,6 @@ export async function getStaticProps({ locale }: { locale: string }) {
         'search',
         'settings',
         'swap',
-        'settings',
         'trade',
         'close-account',
       ])),
