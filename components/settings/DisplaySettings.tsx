@@ -107,9 +107,13 @@ const DisplaySettings = () => {
           }
         }
       }
-      if (customThemes.length) {
-        setThemes([...customThemes, ...DEFAULT_THEMES])
-      }
+      setThemes(
+        customThemes.length
+          ? [...customThemes, ...DEFAULT_THEMES]
+          : [...DEFAULT_THEMES],
+      )
+    } else {
+      setThemes([...DEFAULT_THEMES])
     }
   }, [nfts])
 
