@@ -35,6 +35,7 @@ import {
   Claim,
 } from '@blockworks-foundation/mango-mints-redemption'
 import useMangoAccount from 'hooks/useMangoAccount'
+import { chunk } from 'lodash'
 
 const FAQS = [
   {
@@ -519,6 +520,7 @@ const Claim = () => {
     }
 
     try {
+      const claimIxes: TransactionInstructionWithSigners[] = []
       for (const claim of claims) {
         if (claimed !== undefined && claimed.includes(claim.mint)) {
           continue
@@ -534,11 +536,14 @@ const Claim = () => {
             new TransactionInstructionWithSigners(ix),
         )
 
-        transactionInstructions.push({
-          instructionsSet: ixs,
-          sequenceType: SequenceType.Parallel,
-        })
+        claimIxes.push(...ixs)
       }
+      chunk(claimIxes, 4).map((x) =>
+        transactionInstructions.push({
+          instructionsSet: x,
+          sequenceType: SequenceType.Parallel,
+        }),
+      )
 
       setIsClaiming(true)
       setClaimProgress(10)
