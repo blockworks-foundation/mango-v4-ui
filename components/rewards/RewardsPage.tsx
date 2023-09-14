@@ -520,7 +520,10 @@ const Claim = () => {
 
     try {
       for (const claim of claims) {
-        console.log('claim', claim)
+        if (claimed !== undefined && claimed.includes(claim.mint)) {
+          continue
+        }
+
         const ixs = (
           await distribution.makeClaimInstructions(
             wallet.publicKey!,
