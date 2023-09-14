@@ -297,8 +297,14 @@ export const formatSuggestedValues = (
       suggestedParams.netBorrowLimitPerWindowQuote,
       6,
     ),
-    borrowWeightScale: toUiDecimals(suggestedParams.borrowWeightScale, 6),
-    depositWeightScale: toUiDecimals(suggestedParams.depositWeightScale, 6),
+    borrowWeightScaleStartQuote: toUiDecimals(
+      suggestedParams.borrowWeightScaleStartQuote,
+      6,
+    ),
+    depositWeightScaleStartQuote: toUiDecimals(
+      suggestedParams.depositWeightScaleStartQuote,
+      6,
+    ),
   }
 }
 
@@ -362,8 +368,12 @@ export const getFormattedBankValues = (group: Group, bank: Bank) => {
     initLiabWeight: bank.initLiabWeight.toFixed(2),
     scaledInitAssetWeight: bank.scaledInitAssetWeight(bank.price).toFixed(2),
     scaledInitLiabWeight: bank.scaledInitLiabWeight(bank.price).toFixed(2),
-    depositWeightScale: toUiDecimalsForQuote(bank.depositWeightScaleStartQuote),
-    borrowWeightScale: toUiDecimalsForQuote(bank.borrowWeightScaleStartQuote),
+    depositWeightScaleStartQuote: toUiDecimalsForQuote(
+      bank.depositWeightScaleStartQuote,
+    ),
+    borrowWeightScaleStartQuote: toUiDecimalsForQuote(
+      bank.borrowWeightScaleStartQuote,
+    ),
     rate0: (100 * bank.rate0.toNumber()).toFixed(2),
     util0: (100 * bank.util0.toNumber()).toFixed(),
     rate1: (100 * bank.rate1.toNumber()).toFixed(2),

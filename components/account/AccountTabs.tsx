@@ -4,7 +4,6 @@ import TokenList from '../TokenList'
 import UnsettledTrades from '@components/trade/UnsettledTrades'
 import { useUnsettledSpotBalances } from 'hooks/useUnsettledSpotBalances'
 import { useViewport } from 'hooks/useViewport'
-import { breakpoints } from 'utils/theme'
 import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
 import mangoStore from '@store/mangoStore'
 import PerpPositions from '@components/trade/PerpPositions'
@@ -14,17 +13,16 @@ import HistoryTabs from './HistoryTabs'
 import ManualRefresh from '@components/shared/ManualRefresh'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
-import SwapOrders from '@components/swap/SwapOrders'
+import SwapTriggerOrders from '@components/swap/SwapTriggerOrders'
 
 const AccountTabs = () => {
   const [activeTab, setActiveTab] = useState('balances')
   const { mangoAccount } = useMangoAccount()
-  const { width } = useViewport()
+  const { isMobile, isTablet } = useViewport()
   const unsettledSpotBalances = useUnsettledSpotBalances()
   const unsettledPerpPositions = useUnsettledPerpPositions()
   const openPerpPositions = useOpenPerpPositions()
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
-  const isMobile = width ? width < breakpoints.md : false
   const { data: isWhiteListed } = useIsWhiteListed()
 
   const tabsWithCount: [string, number][] = useMemo(() => {
@@ -63,12 +61,12 @@ const AccountTabs = () => {
           onChange={(v) => setActiveTab(v)}
           values={tabsWithCount}
           showBorders
-          fillWidth={isMobile}
+          fillWidth={isMobile || isTablet}
         />
         <ManualRefresh
           classNames="fixed bottom-16 right-4 md:relative md:px-2 lg:px-0 lg:pr-6 md:bottom-0 md:right-0 z-10 shadow-lg md:shadow-none bg-th-bkg-3 md:bg-transparent"
-          hideBg={isMobile}
-          size={isMobile ? 'large' : 'small'}
+          hideBg={isMobile || isTablet}
+          size={isTablet ? 'large' : 'small'}
         />
       </div>
       <TabContent activeTab={activeTab} />
@@ -87,7 +85,7 @@ const TabContent = ({ activeTab }: { activeTab: string }) => {
     case 'trade:orders':
       return <OpenOrders />
     case 'trade:trigger-orders':
-      return <SwapOrders />
+      return <SwapTriggerOrders />
     case 'trade:unsettled':
       return (
         <UnsettledTrades

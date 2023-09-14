@@ -74,9 +74,8 @@ const DepthChart = () => {
   const markPrice = useMarkPrice()
   const orderbook = mangoStore((s) => s.selectedMarket.orderbook)
   const [priceRangePercent, setPriceRangePercentPercent] = useState('10')
-  const { width } = useViewport()
+  const { isTablet, width } = useViewport()
   const increaseHeight = width ? width > breakpoints['3xl'] : false
-  const isMobile = width ? width < breakpoints.md : false
 
   const formatOrderbookData = (orderbook: RawOrderbook, markPrice: number) => {
     const maxPrice = markPrice * 4
@@ -318,7 +317,7 @@ const DepthChart = () => {
       </div>
       <div
         className={
-          increaseHeight ? 'h-[570px]' : isMobile ? 'h-[538px]' : 'h-[482px]'
+          increaseHeight ? 'h-[570px]' : isTablet ? 'h-[538px]' : 'h-[482px]'
         }
       >
         <ResponsiveContainer width="100%" height="100%">

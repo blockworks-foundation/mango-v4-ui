@@ -32,9 +32,11 @@ const AnimationSettings = () => {
   }
 
   return (
-    <>
+    <div className="border-b border-th-bkg-3 pt-6">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-base">{t('settings:animations')}</h2>
+        <h3 className="text-sm font-normal text-th-fgd-1">
+          {t('settings:animations')}
+        </h3>
         <Switch
           checked={!Object.values(animationSettings).includes(false)}
           onChange={() => handleToggleAnimationSetting('all')}
@@ -61,7 +63,7 @@ const AnimationSettings = () => {
           onChange={() => handleToggleAnimationSetting('swap-success')}
         />
       </div>
-    </>
+    </div>
   )
 }
 

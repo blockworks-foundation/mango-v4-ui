@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMemo, useState } from 'react'
+import get from 'lodash/get'
 
 type Direction = 'ascending' | 'descending'
 
@@ -22,15 +23,15 @@ export function useSortableData<T extends Record<string, any>>(
     const sortableItems = items ? [...items] : []
     if (sortConfig !== null) {
       sortableItems.sort((a, b) => {
-        if (!isNaN(a[sortConfig.key])) {
+        if (!isNaN(get(a, sortConfig.key))) {
           return sortConfig.direction === 'ascending'
-            ? a[sortConfig.key] - b[sortConfig.key]
-            : b[sortConfig.key] - a[sortConfig.key]
+            ? get(a, sortConfig.key) - get(b, sortConfig.key)
+            : get(b, sortConfig.key) - get(a, sortConfig.key)
         }
-        if (a[sortConfig.key] < b[sortConfig.key]) {
+        if (get(a, sortConfig.key) < get(b, sortConfig.key)) {
           return sortConfig.direction === 'ascending' ? -1 : 1
         }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
+        if (get(a, sortConfig.key) > get(b, sortConfig.key)) {
           return sortConfig.direction === 'ascending' ? 1 : -1
         }
         return 0

@@ -31,18 +31,19 @@ import InlineNotification from '@components/shared/InlineNotification'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import DepositWithdrawModal from '@components/modals/DepositWithdrawModal'
-import useMangoAccountAccounts from 'hooks/useMangoAccountAccounts'
 import Link from 'next/link'
 import SecondaryConnectButton from '@components/shared/SecondaryConnectButton'
 import useRemainingBorrowsInPeriod from 'hooks/useRemainingBorrowsInPeriod'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { formatCurrencyValue } from 'utils/numbers'
+import { SwapFormTokenListType } from './SwapFormTokenList'
+import useTokenPositionsFull from 'hooks/useTokenPositionsFull'
 
 dayjs.extend(relativeTime)
 
 type MarketSwapFormProps = {
-  setShowTokenSelect: Dispatch<SetStateAction<'input' | 'output' | undefined>>
+  setShowTokenSelect: Dispatch<SetStateAction<SwapFormTokenListType>>
 }
 
 const MAX_DIGITS = 11
@@ -256,6 +257,7 @@ const MarketSwapForm = ({ setShowTokenSelect }: MarketSwapFormProps) => {
             amount={amountInAsDecimal.toNumber()}
             onChange={(v) => setAmountInFormValue(v, true)}
             step={1 / 10 ** (inputBank?.mintDecimals || 6)}
+            maxAmount={useTokenMax}
           />
         ) : (
           <div className="-mt-2">
@@ -301,7 +303,7 @@ const MarketSwapForm = ({ setShowTokenSelect }: MarketSwapFormProps) => {
       ) : (
         <Button
           disabled
-          className="mb-4 mt-6 w-full leading-tight"
+          className="mb-4 mt-6 flex w-full items-center justify-center text-base"
           size="large"
         >
           {t('country-not-allowed', {
@@ -337,27 +339,10 @@ const SwapFormSubmitButton = ({
   const { connected } = useWallet()
   const { amount: tokenMax, amountWithBorrow } = useTokenMax(useMargin)
   const [showDepositModal, setShowDepositModal] = useState(false)
-  const { usedTokens, totalTokens } = useMangoAccountAccounts()
   const { inputBank, outputBank } = mangoStore((s) => s.swap)
   const { remainingBorrowsInPeriod, timeToNextPeriod } =
     useRemainingBorrowsInPeriod(true)
-
-  const tokenPositionsFull = useMemo(() => {
-    if (!inputBank || !outputBank || !usedTokens.length || !totalTokens.length)
-      return false
-    const hasInputTokenPosition = usedTokens.find(
-      (token) => token.tokenIndex === inputBank.tokenIndex,
-    )
-    const hasOutputTokenPosition = usedTokens.find(
-      (token) => token.tokenIndex === outputBank.tokenIndex,
-    )
-    if (
-      (hasInputTokenPosition && hasOutputTokenPosition) ||
-      totalTokens.length - usedTokens.length >= 2
-    ) {
-      return false
-    } else return true
-  }, [inputBank, outputBank, usedTokens, totalTokens])
+  const tokenPositionsFull = useTokenPositionsFull([outputBank, inputBank])
 
   const freeCollateral = useMemo(() => {
     const group = mangoStore.getState().group
@@ -374,15 +359,13 @@ const SwapFormSubmitButton = ({
   // check if the borrowed amount exceeds the net borrow limit in the current period
   const borrowExceedsLimitInPeriod = useMemo(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
-    if (!mangoAccount || !inputBank) return false
+    if (!mangoAccount || !inputBank || !remainingBorrowsInPeriod) return false
 
     const balance = mangoAccount.getTokenDepositsUi(inputBank)
     const remainingBalance = balance - amountIn.toNumber()
     const borrowAmount = remainingBalance < 0 ? Math.abs(remainingBalance) : 0
 
-    return remainingBorrowsInPeriod
-      ? borrowAmount > remainingBorrowsInPeriod
-      : false
+    return borrowAmount > remainingBorrowsInPeriod
   }, [amountIn, inputBank, mangoAccountAddress, remainingBorrowsInPeriod])
 
   const disabled =

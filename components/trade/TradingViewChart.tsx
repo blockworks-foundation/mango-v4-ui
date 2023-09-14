@@ -19,7 +19,6 @@ import {
 import mangoStore from '@store/mangoStore'
 import { useViewport } from 'hooks/useViewport'
 import { SHOW_ORDER_LINES_KEY, TV_USER_ID_KEY } from 'utils/constants'
-import { breakpoints } from 'utils/theme'
 import { COLORS } from 'styles/colors'
 import { useTranslation } from 'next-i18next'
 import { notify } from 'utils/notifications'
@@ -74,7 +73,7 @@ function hexToRgb(hex: string) {
 const TradingViewChart = () => {
   const { t } = useTranslation(['common', 'tv-chart', 'trade'])
   const { theme } = useThemeWrapper()
-  const { width } = useViewport()
+  const { isMobile } = useViewport()
   const [chartReady, setChartReady] = useState(false)
   const [headerReady, setHeaderReady] = useState(false)
   const [orderToModify, setOrderToModify] = useState<Order | PerpOrder | null>(
@@ -96,7 +95,6 @@ const TradingViewChart = () => {
     useState(combinedTradeHistory)
   const [userId] = useLocalStorageState(TV_USER_ID_KEY, '')
   const selectedMarketName = mangoStore((s) => s.selectedMarket.current?.name)
-  const isMobile = width ? width < breakpoints.sm : false
 
   const defaultProps = useMemo(() => {
     const initialMktName = mangoStore.getState().selectedMarket.current?.name

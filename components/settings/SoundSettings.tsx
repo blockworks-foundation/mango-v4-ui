@@ -33,9 +33,11 @@ const SoundSettings = () => {
   }
 
   return (
-    <>
+    <div className="border-b border-th-bkg-3 pt-6">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-base">{t('settings:sounds')}</h2>
+        <h3 className="text-sm font-normal text-th-fgd-1">
+          {t('settings:sounds')}
+        </h3>
         <Switch
           checked={!Object.values(soundSettings).includes(false)}
           onChange={() => handleToggleSoundSetting('all')}
@@ -69,7 +71,7 @@ const SoundSettings = () => {
           onChange={() => handleToggleSoundSetting('transaction-fail')}
         />
       </div>
-    </>
+    </div>
   )
 }
 
