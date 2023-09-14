@@ -15,6 +15,8 @@ import useUnownedAccount from 'hooks/useUnownedAccount'
 import InlineNotification from '@components/shared/InlineNotification'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
+import { SwapFormTokenListType } from './SwapFormTokenList'
+import { useTokenMax } from './useTokenMax'
 
 const SellTokenInput = ({
   handleAmountInChange,
@@ -25,7 +27,7 @@ const SellTokenInput = ({
   isTriggerOrder,
 }: {
   handleAmountInChange: (e: NumberFormatValues, info: SourceInfo) => void
-  setShowTokenSelect: Dispatch<SetStateAction<'input' | 'output' | undefined>>
+  setShowTokenSelect: Dispatch<SetStateAction<SwapFormTokenListType>>
   handleMax: (amountIn: string) => void
   className?: string
   error?: string
@@ -59,6 +61,7 @@ const SellTokenInput = ({
           <MaxSwapAmount
             useMargin={isTriggerOrder ? false : useMargin}
             setAmountIn={(v) => handleMax(v)}
+            maxAmount={useTokenMax}
           />
         ) : null}
       </div>

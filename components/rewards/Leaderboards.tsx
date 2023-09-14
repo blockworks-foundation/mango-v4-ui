@@ -2,7 +2,6 @@ import MedalIcon from '@components/icons/MedalIcon'
 import ProfileImage from '@components/profile/ProfileImage'
 import { ArrowLeftIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useViewport } from 'hooks/useViewport'
-import { breakpoints } from 'utils/theme'
 import {
   Badge,
   RewardsLeaderboardItem,
@@ -126,8 +125,7 @@ const LeaderboardCard = ({
   rank: number
   wallet: RewardsLeaderboardItem
 }) => {
-  const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.md : false
+  const { isTablet } = useViewport()
   return (
     <a
       className="flex w-full items-center justify-between rounded-md border border-th-bkg-3 px-3 py-3 md:px-4 md:hover:bg-th-bkg-2"
@@ -151,9 +149,9 @@ const LeaderboardCard = ({
           {rank < 4 ? <MedalIcon className="absolute" rank={rank} /> : null}
         </div>
         <ProfileImage
-          imageSize={isMobile ? '32' : '40'}
+          imageSize={isTablet ? '32' : '40'}
           imageUrl={''}
-          placeholderSize={isMobile ? '20' : '24'}
+          placeholderSize={isTablet ? '20' : '24'}
         />
         <div className="text-left">
           <p className="capitalize text-th-fgd-2 md:text-base">

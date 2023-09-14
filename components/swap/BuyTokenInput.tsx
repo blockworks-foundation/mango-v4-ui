@@ -14,6 +14,7 @@ import { OUTPUT_TOKEN_DEFAULT } from 'utils/constants'
 import { NUMBER_FORMAT_CLASSNAMES } from './MarketSwapForm'
 import InlineNotification from '@components/shared/InlineNotification'
 import useMangoAccount from 'hooks/useMangoAccount'
+import { SwapFormTokenListType } from './SwapFormTokenList'
 
 const BuyTokenInput = ({
   error,
@@ -25,7 +26,7 @@ const BuyTokenInput = ({
   error?: string
   handleAmountOutChange: (e: NumberFormatValues, info: SourceInfo) => void
   loading?: boolean
-  setShowTokenSelect: Dispatch<SetStateAction<'input' | 'output' | undefined>>
+  setShowTokenSelect: Dispatch<SetStateAction<SwapFormTokenListType>>
   handleRepay?: (amountOut: string) => void
 }) => {
   const { t } = useTranslation('common')

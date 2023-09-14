@@ -3,6 +3,7 @@ import {
   ArrowLeftIcon,
   ArrowRightIcon,
   CheckCircleIcon,
+  Cog8ToothIcon,
   DocumentDuplicateIcon,
   ExclamationTriangleIcon,
   EyeIcon,
@@ -21,7 +22,6 @@ import useOnlineStatus from 'hooks/useOnlineStatus'
 import { abbreviateAddress } from 'utils/formatting'
 import DepositWithdrawModal from './modals/DepositWithdrawModal'
 import { useViewport } from 'hooks/useViewport'
-import { breakpoints } from 'utils/theme'
 import AccountsButton from './AccountsButton'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import NotificationsButton from './notifications/NotificationsButton'
@@ -31,6 +31,11 @@ import mangoStore from '@store/mangoStore'
 import UserSetupModal from './modals/UserSetupModal'
 import { IS_ONBOARDED_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
+import SettingsModal from './modals/SettingsModal'
+import DepositWithdrawIcon from './icons/DepositWithdrawIcon'
+
+export const TOPBAR_ICON_BUTTON_CLASSES =
+  'relative flex h-16 w-16 items-center justify-center border-l border-r border-th-bkg-3 focus-visible:bg-th-bkg-3 md:border-r-0 md:hover:bg-th-bkg-2'
 
 const set = mangoStore.getState().set
 
@@ -45,13 +50,13 @@ const TopBar = () => {
   const [showDepositWithdrawModal, setShowDepositWithdrawModal] =
     useState(false)
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
+  const [showSettingsModal, setShowSettingsModal] = useState(false)
   const isOnline = useOnlineStatus()
 
   const router = useRouter()
   const { query } = router
 
-  const { width } = useViewport()
-  const isMobile = width ? width < breakpoints.sm : false
+  const { isMobile } = useViewport()
 
   const { isUnownedAccount } = useUnownedAccount()
   const showUserSetup = mangoStore((s) => s.showUserSetup)
@@ -191,8 +196,10 @@ const TopBar = () => {
           {isUnownedAccount || (!connected && isMobile) ? null : isMobile ? (
             <button
               onClick={() => handleDepositWithdrawModal('deposit')}
-              className="h-[63px] border-l border-th-bkg-3 bg-th-bkg-1 px-4 text-center font-display text-th-fgd-1"
-            >{`${t('deposit')} / ${t('withdraw')}`}</button>
+              className={TOPBAR_ICON_BUTTON_CLASSES}
+            >
+              <DepositWithdrawIcon className="h-6 w-6" />
+            </button>
           ) : (
             <Button
               onClick={() => handleDepositWithdrawModal('deposit')}
@@ -200,6 +207,15 @@ const TopBar = () => {
               className="mr-4"
             >{`${t('deposit')} / ${t('withdraw')}`}</Button>
           )}
+          <div className="h-[63px]">
+            <button
+              className={TOPBAR_ICON_BUTTON_CLASSES}
+              onClick={() => setShowSettingsModal(true)}
+            >
+              <Cog8ToothIcon className="h-5 w-5" />
+              <span className="sr-only">Settings</span>
+            </button>
+          </div>
           {connected ? (
             <div className="flex h-[63px] items-center bg-th-bkg-1">
               {mangoAccountAddress && <NotificationsButton />}
@@ -225,6 +241,12 @@ const TopBar = () => {
         <CreateAccountModal
           isOpen={showCreateAccountModal}
           onClose={() => setShowCreateAccountModal(false)}
+        />
+      ) : null}
+      {showSettingsModal ? (
+        <SettingsModal
+          isOpen={showSettingsModal}
+          onClose={() => setShowSettingsModal(false)}
         />
       ) : null}
     </div>

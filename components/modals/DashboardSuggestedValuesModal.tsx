@@ -189,13 +189,16 @@ const DashboardSuggestedValues = ({
           getNullOrVal(fieldsToChange.netBorrowLimitWindowSizeTs)
             ? new BN(fieldsToChange.netBorrowLimitWindowSizeTs!)
             : null,
-          getNullOrVal(fieldsToChange.borrowWeightScale),
-          getNullOrVal(fieldsToChange.depositWeightScale),
+          getNullOrVal(fieldsToChange.borrowWeightScaleStartQuote),
+          getNullOrVal(fieldsToChange.depositWeightScaleStartQuote),
           false,
           false,
           bank.reduceOnly ? 0 : null,
           null,
           null,
+          getNullOrVal(fieldsToChange.tokenConditionalSwapTakerFeeRate),
+          getNullOrVal(fieldsToChange.tokenConditionalSwapMakerFeeRate),
+          getNullOrVal(fieldsToChange.loanFeeRate),
         )
         .accounts({
           group: group!.publicKey,
@@ -349,18 +352,18 @@ const DashboardSuggestedValues = ({
           />
           <KeyValuePair
             label="Deposit weight scale start quote"
-            value={`$${formattedBankValues.depositWeightScale}`}
+            value={`$${formattedBankValues.depositWeightScaleStartQuote}`}
             proposedValue={
-              suggestedFields.depositWeightScale &&
-              `$${suggestedFields.depositWeightScale}`
+              suggestedFields.depositWeightScaleStartQuote &&
+              `$${suggestedFields.depositWeightScaleStartQuote}`
             }
           />
           <KeyValuePair
             label="Borrow weight scale start quote"
-            value={`$${formattedBankValues.borrowWeightScale}`}
+            value={`$${formattedBankValues.borrowWeightScaleStartQuote}`}
             proposedValue={
-              suggestedFields.borrowWeightScale &&
-              `$${suggestedFields.borrowWeightScale}`
+              suggestedFields.borrowWeightScaleStartQuote &&
+              `$${suggestedFields.borrowWeightScaleStartQuote}`
             }
           />
           <KeyValuePair

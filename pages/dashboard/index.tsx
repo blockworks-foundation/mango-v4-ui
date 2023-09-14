@@ -258,11 +258,11 @@ const Dashboard: NextPage = () => {
                                   />
                                   <KeyValuePair
                                     label="Deposit weight scale start quote"
-                                    value={`$${formattedBankValues.depositWeightScale}`}
+                                    value={`$${formattedBankValues.depositWeightScaleStartQuote}`}
                                   />
                                   <KeyValuePair
                                     label="Borrow weight scale start quote"
-                                    value={`$${formattedBankValues.borrowWeightScale}`}
+                                    value={`$${formattedBankValues.borrowWeightScaleStartQuote}`}
                                   />
                                   <KeyValuePair
                                     label="Rate params"

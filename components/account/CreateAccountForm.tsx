@@ -1,7 +1,7 @@
 import { ChangeEvent, useState } from 'react'
 import { useTranslation } from 'next-i18next'
 import mangoStore from '@store/mangoStore'
-import { notify } from '../../utils/notifications'
+import { createSolanaMessage, notify } from '../../utils/notifications'
 import Button, { IconButton } from '../shared/Button'
 import BounceLoader from '../shared/BounceLoader'
 import Input from '../forms/Input'
@@ -13,6 +13,8 @@ import { ArrowLeftIcon } from '@heroicons/react/20/solid'
 import useSolBalance from 'hooks/useSolBalance'
 import { isMangoError } from 'types'
 import { MAX_ACCOUNTS } from 'utils/constants'
+import Switch from '@components/forms/Switch'
+import NotificationCookieStore from '@store/notificationCookieStore'
 
 const getNextAccountNumber = (accounts: MangoAccount[]): number => {
   if (accounts.length > 1) {
@@ -28,26 +30,27 @@ const getNextAccountNumber = (accounts: MangoAccount[]): number => {
 }
 
 const CreateAccountForm = ({
-  isFirstAccount,
   customClose,
   handleBack,
 }: {
-  isFirstAccount?: boolean
   customClose?: () => void
   handleBack?: () => void
 }) => {
   const { t } = useTranslation('common')
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState('')
-  const { wallet } = useWallet()
+  const [signToNotifications, setSignToNotifications] = useState(true)
+  //whole context needed to sign msgs
+  const walletContext = useWallet()
   const { maxSolDeposit } = useSolBalance()
+  const setCookie = NotificationCookieStore((s) => s.setCookie)
 
   const handleNewAccount = async () => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     const mangoAccounts = mangoStore.getState().mangoAccounts
     const set = mangoStore.getState().set
-    if (!group || !wallet) return
+    if (!group || !walletContext.wallet) return
     setLoading(true)
     try {
       const newAccountNum = getNextAccountNumber(mangoAccounts)
@@ -61,7 +64,10 @@ const CreateAccountForm = ({
         parseInt(MAX_ACCOUNTS.perpOpenOrders), // perp Oo
       )
       if (tx) {
-        const pk = wallet.adapter.publicKey
+        if (signToNotifications) {
+          createSolanaMessage(walletContext, setCookie)
+        }
+        const pk = walletContext.wallet.adapter.publicKey
         const mangoAccounts = await client.getMangoAccountsForOwner(group, pk!)
         const reloadedMangoAccounts = await Promise.all(
           mangoAccounts.map((ma) => ma.reloadSerum3OpenOrders(client)),
@@ -103,7 +109,7 @@ const CreateAccountForm = ({
     </div>
   ) : (
     <div className="flex h-full flex-col justify-between">
-      <div className="pb-4">
+      <div className="pb-3">
         <div className="flex items-center">
           {handleBack ? (
             <IconButton className="mr-3" onClick={handleBack} size="small">
@@ -113,11 +119,7 @@ const CreateAccountForm = ({
           <h2 className="w-full text-center">{t('create-account')}</h2>
           {handleBack ? <div className="h-5 w-5" /> : null}
         </div>
-        {isFirstAccount ? (
-          <p className="mt-1 text-center">
-            You need a Mango Account to get started.
-          </p>
-        ) : null}
+        <p className="mt-1 text-center">{t('insufficient-sol')}</p>
         <div className="pt-4">
           <Label optional text={t('account-name')} />
         </div>
@@ -132,21 +134,29 @@ const CreateAccountForm = ({
           }
           maxLength={30}
         />
-      </div>
-      <div className="space-y-4">
-        <InlineNotification type="info" desc={t('insufficient-sol')} />
-        <Button
-          className="w-full"
-          disabled={maxSolDeposit <= 0}
-          onClick={handleNewAccount}
-          size="large"
-        >
-          {t('create-account')}
-        </Button>
+        <div className="my-3 flex items-center justify-between rounded-md border border-th-bkg-3 px-3 py-2">
+          <div>
+            <p className="text-th-fgd-2">{t('enable-notifications')}</p>
+            <p className="text-xs">{t('asked-sign-transaction')}</p>
+          </div>
+          <Switch
+            className="text-th-fgd-3"
+            checked={signToNotifications}
+            onChange={(checked) => setSignToNotifications(checked)}
+          />
+        </div>
         {maxSolDeposit <= 0 ? (
           <InlineNotification type="error" desc={t('deposit-more-sol')} />
         ) : null}
       </div>
+      <Button
+        className="mt-6 w-full"
+        disabled={maxSolDeposit <= 0}
+        onClick={handleNewAccount}
+        size="large"
+      >
+        {t('create-account')}
+      </Button>
     </div>
   )
 }

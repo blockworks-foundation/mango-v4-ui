@@ -9,6 +9,7 @@ import {
   Keypair,
   PublicKey,
   RecentPrioritizationFees,
+  TransactionInstruction,
 } from '@solana/web3.js'
 import { OpenOrders, Order } from '@project-serum/serum/lib/market'
 import { Orderbook } from '@project-serum/serum'
@@ -45,7 +46,6 @@ import {
   MAX_PRIORITY_FEE_KEYS,
   OUTPUT_TOKEN_DEFAULT,
   PAGINATION_PAGE_LENGTH,
-  PRIORITY_FEE_KEY,
   RPC_PROVIDER_KEY,
   SWAP_MARGIN_KEY,
 } from '../utils/constants'
@@ -69,6 +69,7 @@ import {
   ThemeData,
   PositionStat,
   OrderbookTooltip,
+  TriggerOrderTypes,
 } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
@@ -115,11 +116,19 @@ export const emptyWallet = new EmptyWallet(Keypair.generate())
 
 const initMangoClient = (
   provider: AnchorProvider,
-  opts = { prioritizationFee: DEFAULT_PRIORITY_FEE },
+  opts: {
+    prioritizationFee: number
+    prependedGlobalAdditionalInstructions: TransactionInstruction[]
+  } = {
+    prioritizationFee: DEFAULT_PRIORITY_FEE,
+    prependedGlobalAdditionalInstructions: [],
+  },
 ): MangoClient => {
   return MangoClient.connect(provider, CLUSTER, MANGO_V4_ID[CLUSTER], {
     prioritizationFee: opts.prioritizationFee,
-    idsSource: 'get-program-accounts',
+    prependedGlobalAdditionalInstructions:
+      opts.prependedGlobalAdditionalInstructions,
+    idsSource: 'api',
     postSendTxCallback: ({ txid }: { txid: string }) => {
       notify({
         title: 'Transaction sent',
@@ -131,7 +140,6 @@ const initMangoClient = (
   })
 }
 
-let mangoGroupRetryAttempt = 0
 export const DEFAULT_TRADE_FORM: TradeForm = {
   side: 'buy',
   price: undefined,
@@ -195,6 +203,7 @@ export type MangoStore = {
     details: ProfileDetails | null
     loadDetails: boolean
   }
+  prependedGlobalAdditionalInstructions: TransactionInstruction[]
   priorityFee: number
   selectedMarket: {
     name: string | undefined
@@ -232,6 +241,8 @@ export type MangoStore = {
     amountIn: string
     amountOut: string
     flipPrices: boolean
+    swapOrTrigger: TriggerOrderTypes
+    triggerPrice: string
   }
   set: (x: (x: MangoStore) => void) => void
   themeData: ThemeData
@@ -252,6 +263,10 @@ export type MangoStore = {
       data: NFT[] | []
       loading: boolean
     }
+  }
+  window: {
+    width: number
+    height: number
   }
   actions: {
     fetchAccountInterestTotals: (mangoAccountPk: string) => Promise<void>
@@ -281,6 +296,9 @@ export type MangoStore = {
     connectMangoClientWithWallet: (wallet: WalletAdapter) => Promise<void>
     loadMarketFills: () => Promise<void>
     updateConnection: (url: string) => void
+    setPrependedGlobalAdditionalInstructions: (
+      instructions: TransactionInstruction[],
+    ) => void
     estimatePriorityFee: (feeMultiplier: number) => Promise<void>
   }
 }
@@ -356,6 +374,7 @@ const mangoStore = create<MangoStore>()(
         details: { profile_name: '', trader_category: '', wallet_pk: '' },
       },
       priorityFee: DEFAULT_PRIORITY_FEE,
+      prependedGlobalAdditionalInstructions: [],
       selectedMarket: {
         name: 'SOL/USDC',
         current: undefined,
@@ -401,6 +420,8 @@ const mangoStore = create<MangoStore>()(
         amountIn: '',
         amountOut: '',
         flipPrices: false,
+        swapOrTrigger: 'swap',
+        triggerPrice: '',
       },
       themeData: nftThemeMeta.default,
       tokenStats: {
@@ -420,6 +441,10 @@ const mangoStore = create<MangoStore>()(
           data: [],
           loading: false,
         },
+      },
+      window: {
+        width: 0,
+        height: 0,
       },
       actions: {
         fetchAccountInterestTotals: async (mangoAccountPk: string) => {
@@ -574,15 +599,9 @@ const mangoStore = create<MangoStore>()(
                 )
               }
             })
-            mangoGroupRetryAttempt = 0
           } catch (e) {
-            if (mangoGroupRetryAttempt < 2) {
-              // get().actions.fetchGroup()
-              mangoGroupRetryAttempt++
-            } else {
-              notify({ type: 'info', title: 'Unable to refresh data' })
-              console.error('Error fetching group', e)
-            }
+            notify({ type: 'info', title: 'Unable to refresh data' })
+            console.error('Error fetching group', e)
           }
         },
         reloadMangoAccount: async (confirmationSlot) => {
@@ -1016,8 +1035,11 @@ const mangoStore = create<MangoStore>()(
             )
             provider.opts.skipPreflight = true
             const priorityFee = get().priorityFee ?? DEFAULT_PRIORITY_FEE
+
             const client = initMangoClient(provider, {
               prioritizationFee: priorityFee,
+              prependedGlobalAdditionalInstructions:
+                get().prependedGlobalAdditionalInstructions,
             })
 
             set((s) => {
@@ -1032,6 +1054,25 @@ const mangoStore = create<MangoStore>()(
               })
             }
           }
+        },
+        async setPrependedGlobalAdditionalInstructions(
+          instructions: TransactionInstruction[],
+        ) {
+          const set = get().set
+          const client = mangoStore.getState().client
+
+          const provider = client.program.provider as AnchorProvider
+          provider.opts.skipPreflight = true
+
+          const newClient = initMangoClient(provider, {
+            prioritizationFee: get().priorityFee,
+            prependedGlobalAdditionalInstructions: instructions,
+          })
+
+          set((s) => {
+            s.client = newClient
+            s.prependedGlobalAdditionalInstructions = instructions
+          })
         },
         async fetchProfileDetails(walletPk: string) {
           const set = get().set
@@ -1128,7 +1169,11 @@ const mangoStore = create<MangoStore>()(
             options,
           )
           newProvider.opts.skipPreflight = true
-          const newClient = initMangoClient(newProvider)
+          const newClient = initMangoClient(newProvider, {
+            prependedGlobalAdditionalInstructions:
+              get().prependedGlobalAdditionalInstructions,
+            prioritizationFee: DEFAULT_PRIORITY_FEE,
+          })
           set((state) => {
             state.connection = newConnection
             state.client = newClient
@@ -1180,6 +1225,8 @@ const mangoStore = create<MangoStore>()(
           provider.opts.skipPreflight = true
           const newClient = initMangoClient(provider, {
             prioritizationFee: feeEstimate,
+            prependedGlobalAdditionalInstructions:
+              get().prependedGlobalAdditionalInstructions,
           })
           set((state) => {
             state.priorityFee = feeEstimate

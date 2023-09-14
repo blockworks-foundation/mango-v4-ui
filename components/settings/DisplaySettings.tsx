@@ -107,9 +107,13 @@ const DisplaySettings = () => {
           }
         }
       }
-      if (customThemes.length) {
-        setThemes([...customThemes, ...DEFAULT_THEMES])
-      }
+      setThemes(
+        customThemes.length
+          ? [...customThemes, ...DEFAULT_THEMES]
+          : [...DEFAULT_THEMES],
+      )
+    } else {
+      setThemes([...DEFAULT_THEMES])
     }
   }, [nfts])
 
@@ -123,8 +127,7 @@ const DisplaySettings = () => {
   )
 
   return (
-    <>
-      <h2 className="mb-4 text-base">{t('settings:display')}</h2>
+    <div className="border-b border-th-bkg-3">
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
         <p className="mb-2 md:mb-0">{t('settings:theme')}</p>
         <div className="w-full min-w-[140px] md:w-auto">
@@ -231,13 +234,15 @@ const DisplaySettings = () => {
         />
       </div>
       <div className="flex items-center justify-between border-t border-th-bkg-3 p-4">
-        <p className="">Privacy Mode</p>
+        <Tooltip content={t('settings:tooltip-privacy-mode')}>
+          <p className="tooltip-underline">{t('settings:privacy-mode')}</p>
+        </Tooltip>
         <Switch
           checked={privacyMode}
           onChange={() => setPrivacyMode(!privacyMode)}
         />
       </div>
-    </>
+    </div>
   )
 }
 

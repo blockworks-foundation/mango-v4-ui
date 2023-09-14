@@ -7,6 +7,7 @@ import {
   Serum3Market,
 } from '@blockworks-foundation/mango-v4'
 import { Modify } from '@blockworks-foundation/mango-v4'
+import { JsonMetadata } from '@metaplex-foundation/js'
 import { Event } from '@project-serum/serum/lib/queue'
 import { PublicKey } from '@solana/web3.js'
 import { formatTradeHistory } from 'hooks/useTradeHistory'
@@ -187,7 +188,7 @@ export interface DepositWithdrawFeedItem {
   wallet_pk: string
 }
 
-export interface PerpTradeFeedItem {
+interface PerpTradeActivityFeedItem {
   block_datetime: string
   maker: string
   maker_fee: number
@@ -205,6 +206,28 @@ export interface PerpTradeFeedItem {
   taker_fee: number
   taker_order_id: string | null
   taker_side: string
+}
+
+interface SpotTradeActivityFeedItem {
+  base_symbol: string
+  bid: boolean
+  block_datetime: string
+  client_order_id: string
+  fee_cost: number
+  fee_tier: number
+  instruction_num: number
+  maker: boolean
+  mango_account: string
+  market: string
+  open_orders: string
+  open_orders_owner: string
+  order_id: string
+  price: number
+  quote_symbol: string
+  referrer_rebate: null
+  side: 'buy' | 'sell'
+  signature: string
+  size: number
 }
 
 export interface SpotLiquidationFeedItem {
@@ -249,13 +272,20 @@ export interface LiquidationActivity {
 }
 
 export interface PerpTradeActivity {
-  activity_details: PerpTradeFeedItem
+  activity_details: PerpTradeActivityFeedItem
   block_datetime: string
   activity_type: string
   symbol: string
 }
 
-export function isLiquidationFeedItem(
+export interface SpotTradeActivity {
+  activity_details: SpotTradeActivityFeedItem
+  block_datetime: string
+  activity_type: string
+  symbol: string
+}
+
+export function isLiquidationActivityFeedItem(
   item: ActivityFeed,
 ): item is LiquidationActivity {
   if (item.activity_type.includes('liquidate')) {
@@ -264,10 +294,19 @@ export function isLiquidationFeedItem(
   return false
 }
 
-export function isPerpTradeFeedItem(
+export function isPerpTradeActivityFeedItem(
   item: ActivityFeed,
 ): item is PerpTradeActivity {
   if (item.activity_type === 'perp_trade') {
+    return true
+  }
+  return false
+}
+
+export function isSpotTradeActivityFeedItem(
+  item: ActivityFeed,
+): item is SpotTradeActivity {
+  if (item.activity_type === 'openbook_trade') {
     return true
   }
   return false
@@ -305,6 +344,7 @@ export interface NFT {
   name: string
   mint: string
   tokenAccount: string
+  json: JsonMetadata | null
 }
 
 export interface PerpStatsItem {
@@ -341,7 +381,7 @@ export type ActivityFeed = {
     | SpotLiquidationFeedItem
     | PerpLiquidationFeedItem
     | SwapHistoryItem
-    | PerpTradeFeedItem
+    | PerpTradeActivityFeedItem
     | SpotTradeHistory
 }
 
@@ -496,3 +536,5 @@ export interface FilledOrder {
   order_type: 'spot' | 'perp'
   quantity: number
 }
+
+export type TriggerOrderTypes = 'swap' | 'trade:trigger-order'

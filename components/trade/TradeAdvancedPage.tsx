@@ -23,6 +23,9 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { SIDEBAR_COLLAPSE_KEY, TRADE_LAYOUT_KEY } from 'utils/constants'
 import TradeHotKeys from './TradeHotKeys'
 import OrderbookTooltip from './OrderbookTooltip'
+import { ExclamationTriangleIcon } from '@heroicons/react/20/solid'
+import useSelectedMarket from 'hooks/useSelectedMarket'
+import { PerpMarket } from '@blockworks-foundation/mango-v4'
 
 export type TradeLayout =
   | 'chartLeft'
@@ -56,6 +59,8 @@ const TradeAdvancedPage = () => {
     'chartLeft',
   )
   const [isCollapsed] = useLocalStorageState(SIDEBAR_COLLAPSE_KEY, false)
+  const { serumOrPerpMarket } = useSelectedMarket()
+  const { tradeType } = mangoStore((s) => s.tradeForm)
 
   const minPageHeight = 1000
   const topnavbarHeight = 64
@@ -282,85 +287,105 @@ const TradeAdvancedPage = () => {
     handleLayoutChange(undefined, defaultLayouts)
   }, [breakpoint, tradeLayout])
 
-  return showMobileView ? (
-    <MobileTradeAdvancedPage />
-  ) : (
-    <TradeHotKeys>
-      <div className="pb-[27px]">
-        <FavoriteMarketsBar />
-        <ResponsiveGridLayout
-          layouts={layouts}
-          breakpoints={gridBreakpoints}
-          onBreakpointChange={(bp) => setBreakpoint(bp)}
-          cols={{
-            xxxl: totalCols,
-            xxl: totalCols,
-            xl: totalCols,
-            lg: totalCols,
-            md: totalCols,
-            sm: totalCols,
-          }}
-          rowHeight={1}
-          isDraggable={!uiLocked}
-          isResizable={!uiLocked}
-          containerPadding={[0, 0]}
-          margin={[0, 0]}
-          useCSSTransforms
-          onLayoutChange={handleLayoutChange}
-          // measureBeforeMount
-        >
-          <div key="market-header" className="z-10">
-            <AdvancedMarketHeader />
+  return (
+    <>
+      {/* Openbook warning */}
+      {serumOrPerpMarket instanceof PerpMarket ||
+      tradeType === 'Market' ? null : (
+        <div className="fixed bottom-16 left-1/2 z-20 w-[90%] -translate-x-1/2 rounded-full bg-th-down px-4 py-2 sm:w-max md:bottom-12">
+          <div className="flex items-center">
+            <ExclamationTriangleIcon className="h-5 w-5 flex-shrink-0 text-th-fgd-1" />
+            <p className="ml-2 text-th-fgd-1">
+              Placing limit orders is currently disabled for security reasons.
+            </p>
           </div>
-          <div
-            key="tv-chart"
-            className="h-full border border-x-0 border-th-bkg-3"
-          >
-            <div className={`relative h-full overflow-auto`}>
-              <OrderbookTooltip />
-              <TradingChartContainer />
-            </div>
-          </div>
-          <div
-            className={`${
-              tradeLayout === 'chartLeft'
-                ? 'lg:border-r lg:border-th-bkg-3'
-                : ''
-            }`}
-            key="balances"
-          >
-            <TradeInfoTabs />
-          </div>
-          <div
-            className={`border-y border-l border-th-bkg-3 lg:border-b-0 ${
-              tradeLayout === 'chartMiddleOBRight'
-                ? 'lg:border-l-0 lg:border-r'
-                : ''
-            } ${
-              tradeLayout === 'chartRight' ? 'lg:border-l-0 lg:border-r' : ''
-            } ${tradeLayout === 'chartLeft' ? 'lg:border-l-0' : ''}`}
-            key="trade-form"
-          >
-            <AdvancedTradeForm />
-          </div>
-          <div
-            key="orderbook"
-            className={`overflow-hidden border-l border-th-bkg-3 lg:border-y ${
-              tradeLayout === 'chartRight' ? 'lg:border-l-0 lg:border-r' : ''
-            } ${
-              tradeLayout === 'chartMiddleOBLeft'
-                ? 'lg:border-l-0 lg:border-r'
-                : ''
-            } ${tradeLayout === 'chartLeft' ? 'lg:border-r' : ''}`}
-          >
-            <OrderbookAndTrades />
-          </div>
-        </ResponsiveGridLayout>
-        {/* {!tourSettings?.trade_tour_seen && isOnboarded && connected ? (
+        </div>
+      )}
+      {showMobileView ? (
+        <MobileTradeAdvancedPage />
+      ) : (
+        <TradeHotKeys>
+          <div className="pb-[27px]">
+            <FavoriteMarketsBar />
+            <ResponsiveGridLayout
+              layouts={layouts}
+              breakpoints={gridBreakpoints}
+              onBreakpointChange={(bp) => setBreakpoint(bp)}
+              cols={{
+                xxxl: totalCols,
+                xxl: totalCols,
+                xl: totalCols,
+                lg: totalCols,
+                md: totalCols,
+                sm: totalCols,
+              }}
+              rowHeight={1}
+              isDraggable={!uiLocked}
+              isResizable={!uiLocked}
+              containerPadding={[0, 0]}
+              margin={[0, 0]}
+              useCSSTransforms
+              onLayoutChange={handleLayoutChange}
+              // measureBeforeMount
+            >
+              <div key="market-header" className="z-10">
+                <AdvancedMarketHeader />
+              </div>
+              <div
+                key="tv-chart"
+                className="h-full border border-x-0 border-th-bkg-3"
+              >
+                <div className={`relative h-full overflow-auto`}>
+                  <OrderbookTooltip />
+                  <TradingChartContainer />
+                </div>
+              </div>
+              <div
+                className={`${
+                  tradeLayout === 'chartLeft'
+                    ? 'lg:border-r lg:border-th-bkg-3'
+                    : ''
+                }`}
+                key="balances"
+              >
+                <TradeInfoTabs />
+              </div>
+              <div
+                className={`border-y border-l border-th-bkg-3 lg:border-b-0 ${
+                  tradeLayout === 'chartMiddleOBRight'
+                    ? 'lg:border-l-0 lg:border-r'
+                    : ''
+                } ${
+                  tradeLayout === 'chartRight'
+                    ? 'lg:border-l-0 lg:border-r'
+                    : ''
+                } ${tradeLayout === 'chartLeft' ? 'lg:border-l-0' : ''}`}
+                key="trade-form"
+              >
+                <AdvancedTradeForm />
+              </div>
+              <div
+                key="orderbook"
+                className={`overflow-hidden border-l border-th-bkg-3 lg:border-y ${
+                  tradeLayout === 'chartRight'
+                    ? 'lg:border-l-0 lg:border-r'
+                    : ''
+                } ${
+                  tradeLayout === 'chartMiddleOBLeft'
+                    ? 'lg:border-l-0 lg:border-r'
+                    : ''
+                } ${tradeLayout === 'chartLeft' ? 'lg:border-r' : ''}`}
+              >
+                <OrderbookAndTrades />
+              </div>
+            </ResponsiveGridLayout>
+            {/* {!tourSettings?.trade_tour_seen && isOnboarded && connected ? (
         <TradeOnboardingTour />
       ) : null} */}
-      </div>
-    </TradeHotKeys>
+          </div>
+        </TradeHotKeys>
+      )}
+    </>
   )
 }
 

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 import mangoStore from '@store/mangoStore'
 import { Keypair, PublicKey } from '@solana/web3.js'
 import { useRouter } from 'next/router'
@@ -9,6 +9,8 @@ import useNetworkSpeed from 'hooks/useNetworkSpeed'
 import { useWallet } from '@solana/wallet-adapter-react'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { DEFAULT_PRIORITY_FEE_LEVEL } from './settings/RpcSettings'
+import { useHiddenMangoAccounts } from 'hooks/useHiddenMangoAccounts'
+import { notify } from 'utils/notifications'
 
 const set = mangoStore.getState().set
 const actions = mangoStore.getState().actions
@@ -22,6 +24,21 @@ const HydrateStore = () => {
   const { wallet } = useWallet()
 
   const [, setLastWalletName] = useLocalStorageState(LAST_WALLET_NAME, '')
+
+  const handleWindowResize = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      set((s) => {
+        s.window.width = window.innerWidth
+        s.window.height = window.innerHeight
+      })
+    }
+  }, [])
+  // store the window width and height on resize
+  useEffect(() => {
+    handleWindowResize()
+    window.addEventListener('resize', handleWindowResize)
+    return () => window.removeEventListener('resize', handleWindowResize)
+  }, [handleWindowResize])
 
   useEffect(() => {
     if (wallet?.adapter) {
@@ -42,7 +59,7 @@ const HydrateStore = () => {
     () => {
       actions.fetchGroup()
     },
-    (slowNetwork ? 40 : 20) * SECONDS,
+    (slowNetwork ? 60 : 30) * SECONDS,
   )
 
   // refetches open orders every 30 seconds
@@ -143,6 +160,7 @@ const ReadOnlyMangoAccount = () => {
   const router = useRouter()
   const groupLoaded = mangoStore((s) => s.groupLoaded)
   const ma = router.query?.address
+  const { hiddenAccounts } = useHiddenMangoAccounts()
 
   useEffect(() => {
     if (!groupLoaded) return
@@ -151,7 +169,7 @@ const ReadOnlyMangoAccount = () => {
 
     async function loadUnownedMangoAccount() {
       try {
-        if (!ma || !group) return
+        if (!ma || !group || hiddenAccounts?.includes(ma as string)) return
 
         const client = mangoStore.getState().client
         const pk = new PublicKey(ma)
@@ -164,6 +182,11 @@ const ReadOnlyMangoAccount = () => {
         await actions.fetchOpenOrders()
       } catch (error) {
         console.error('error', error)
+        notify({
+          title: 'No account found',
+          description: 'Account closed or invalid address',
+          type: 'error',
+        })
       }
     }
 

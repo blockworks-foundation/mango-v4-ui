@@ -12,9 +12,8 @@ import {
 import { HotKey } from '@components/settings/HotKeysSettings'
 import mangoStore from '@store/mangoStore'
 import { ReactNode, useCallback } from 'react'
-import Hotkeys from 'react-hot-keys'
 import { GenericMarket, isMangoError } from 'types'
-import { HOT_KEYS_KEY, SOUND_SETTINGS_KEY } from 'utils/constants'
+import { SOUND_SETTINGS_KEY } from 'utils/constants'
 import { notify } from 'utils/notifications'
 import { calculateLimitPriceForMarketOrder } from 'utils/tradeForm'
 import { successSound } from './AdvancedTradeForm'
@@ -22,11 +21,9 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { floorToDecimal, getDecimalCount } from 'utils/numbers'
-import useMangoAccount from 'hooks/useMangoAccount'
 import { Market } from '@project-serum/serum'
-import { useRouter } from 'next/router'
-import useUnownedAccount from 'hooks/useUnownedAccount'
 import { useTranslation } from 'next-i18next'
+import { useCustomHotkeys } from 'hooks/useCustomHotKeys'
 
 const set = mangoStore.getState().set
 
@@ -169,12 +166,8 @@ const calcPerpMax = (
 }
 
 const TradeHotKeys = ({ children }: { children: ReactNode }) => {
-  const { t } = useTranslation(['common', 'settings'])
+  const { t } = useTranslation(['common', 'settings', 'trade'])
   const { price: oraclePrice, serumOrPerpMarket } = useSelectedMarket()
-  const { mangoAccountAddress } = useMangoAccount()
-  const { isUnownedAccount } = useUnownedAccount()
-  const { asPath } = useRouter()
-  const [hotKeys] = useLocalStorageState(HOT_KEYS_KEY, [])
   const [soundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,
     INITIAL_SOUND_SETTINGS,
@@ -270,7 +263,7 @@ const TradeHotKeys = ({ children }: { children: ReactNode }) => {
 
         notify({
           type: 'info',
-          title: t('settings:placing-order'),
+          title: t('trade:placing-order'),
           description: `${t(orderSide)} ${baseSize} ${selectedMarket.name} ${
             orderType === 'limit'
               ? `${t('settings:at')} ${price}`
@@ -360,34 +353,9 @@ const TradeHotKeys = ({ children }: { children: ReactNode }) => {
     [serumOrPerpMarket],
   )
 
-  const onKeyDown = useCallback(
-    (keyName: string) => {
-      const orderDetails = hotKeys.find(
-        (hk: HotKey) => hk.keySequence === keyName,
-      )
-      if (orderDetails) {
-        handlePlaceOrder(orderDetails)
-      }
-    },
-    [handlePlaceOrder, hotKeys],
-  )
+  useCustomHotkeys(handlePlaceOrder)
 
-  const showHotKeys =
-    hotKeys.length &&
-    asPath.includes('/trade') &&
-    mangoAccountAddress &&
-    !isUnownedAccount
-
-  return showHotKeys ? (
-    <Hotkeys
-      keyName={hotKeys.map((k: HotKey) => k.keySequence).toString()}
-      onKeyDown={onKeyDown}
-    >
-      {children}
-    </Hotkeys>
-  ) : (
-    <>{children}</>
-  )
+  return <>{children}</>
 }
 
 export default TradeHotKeys

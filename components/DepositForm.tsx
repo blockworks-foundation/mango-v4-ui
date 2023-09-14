@@ -36,9 +36,9 @@ import TokenListButton from './shared/TokenListButton'
 import { ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES, BackButton } from './BorrowForm'
 import TokenLogo from './shared/TokenLogo'
 import SecondaryConnectButton from './shared/SecondaryConnectButton'
-import useMangoAccountAccounts from 'hooks/useMangoAccountAccounts'
 import InlineNotification from './shared/InlineNotification'
 import Link from 'next/link'
+import useTokenPositionsFull from 'hooks/useTokenPositionsFull'
 
 interface DepositFormProps {
   onSuccess: () => void
@@ -78,20 +78,13 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
   const [refreshingWalletTokens, setRefreshingWalletTokens] = useState(false)
   const { maxSolDeposit } = useSolBalance()
   const banks = useBanksWithBalances('walletBalance')
-  const { usedTokens, totalTokens } = useMangoAccountAccounts()
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
     return group?.banksMapByName.get(selectedToken)?.[0]
   }, [selectedToken])
 
-  const tokenPositionsFull = useMemo(() => {
-    if (!bank || !usedTokens.length || !totalTokens.length) return false
-    const hasTokenPosition = usedTokens.find(
-      (token) => token.tokenIndex === bank.tokenIndex,
-    )
-    return hasTokenPosition ? false : usedTokens.length >= totalTokens.length
-  }, [bank, usedTokens, totalTokens])
+  const tokenPositionsFull = useTokenPositionsFull([bank])
 
   const { connected, publicKey } = useWallet()
   const walletTokens = mangoStore((s) => s.wallet.tokens)
@@ -331,17 +324,19 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
             />
           )}
           {tokenPositionsFull ? (
-            <InlineNotification
-              type="error"
-              desc={
-                <>
-                  {t('error-token-positions-full')}{' '}
-                  <Link href="/settings" onClick={() => onSuccess()} shallow>
-                    {t('manage')}
-                  </Link>
-                </>
-              }
-            />
+            <div className="mt-4">
+              <InlineNotification
+                type="error"
+                desc={
+                  <>
+                    {t('error-token-positions-full')}{' '}
+                    <Link href="/settings" onClick={() => onSuccess()} shallow>
+                      {t('manage')}
+                    </Link>
+                  </>
+                }
+              />
+            </div>
           ) : null}
         </div>
       </FadeInFadeOut>

@@ -509,16 +509,14 @@ const AdvancedTradeForm = () => {
 
   // check if the borrowed amount exceeds the net borrow limit in the current period
   const borrowExceedsLimitInPeriod = useMemo(() => {
-    if (!mangoAccount || !balanceBank) return false
+    if (!mangoAccount || !balanceBank || !remainingBorrowsInPeriod) return false
     const size =
-      tradeForm.side === 'buy' ? tradeForm.baseSize : tradeForm.quoteSize
+      tradeForm.side === 'buy' ? tradeForm.quoteSize : tradeForm.baseSize
     const balance = mangoAccount.getTokenDepositsUi(balanceBank)
     const remainingBalance = balance - parseFloat(size)
     const borrowAmount = remainingBalance < 0 ? Math.abs(remainingBalance) : 0
 
-    return remainingBorrowsInPeriod
-      ? borrowAmount > remainingBorrowsInPeriod
-      : false
+    return borrowAmount > remainingBorrowsInPeriod
   }, [balanceBank, mangoAccount, remainingBorrowsInPeriod, tradeForm])
 
   const disabled =
@@ -526,7 +524,8 @@ const AdvancedTradeForm = () => {
     !serumOrPerpMarket ||
     parseFloat(tradeForm.baseSize) < serumOrPerpMarket.minOrderSize ||
     !isMarketEnabled ||
-    borrowExceedsLimitInPeriod
+    borrowExceedsLimitInPeriod ||
+    (selectedMarket instanceof Serum3Market && tradeForm.tradeType === 'Limit')
 
   return (
     <div>

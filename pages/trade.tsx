@@ -16,14 +16,16 @@ export async function getStaticProps({ locale }: { locale: string }) {
     props: {
       ...(await serverSideTranslations(locale, [
         'account',
+        'close-account',
         'common',
         'notifications',
         'onboarding',
         'onboarding-tours',
-        'trade',
-        'close-account',
-        'tv-chart',
+        'profile',
+        'settings',
         'swap',
+        'trade',
+        'tv-chart',
       ])),
     },
   }

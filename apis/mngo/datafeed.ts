@@ -114,7 +114,7 @@ export const queryBars = async (
   return bars
 }
 
-export default {
+const datafeed = {
   onReady: (callback: (configuration: DatafeedConfiguration) => void) => {
     setTimeout(() => callback(configurationData as any))
   },
@@ -251,3 +251,5 @@ export default {
   name: 'mngo',
   isSocketOpen: isOpen,
 }
+
+export default datafeed
