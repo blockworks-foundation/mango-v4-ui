@@ -514,7 +514,7 @@ const Claim = () => {
               .instruction(),
           ),
         ],
-        sequenceType: SequenceType.StopOnFailure,
+        sequenceType: SequenceType.Sequential,
       })
     }
 
@@ -536,7 +536,7 @@ const Claim = () => {
 
         transactionInstructions.push({
           instructionsSet: ixs,
-          sequenceType: SequenceType.Sequential,
+          sequenceType: SequenceType.Parallel,
         })
       }
 
