@@ -529,8 +529,13 @@ const Claim = () => {
 
     try {
       for (const claim of claims) {
-        if (claimed !== undefined && claimed.includes(claim.mint)) {
-          continue
+        if (claimed !== undefined) {
+          const alreadyClaimed =
+            claimed.find((c) => c.equals(claim.mint)) !== undefined
+          if (alreadyClaimed) {
+            console.log('already claimed', claim.mint.toBase58())
+            continue
+          }
         }
 
         const ixs = (
@@ -611,9 +616,11 @@ const Claim = () => {
           </div>
           <div className="flex flex-row space-y-6 md:items-center md:justify-center md:space-x-3">
             {claims.map((c) => {
-              return claimed !== undefined &&
-                claimed.includes(c.mint) ? undefined : (
-                <div className="flex flex-col items-center p-6">
+              return (
+                <div
+                  className="flex flex-col items-center p-6"
+                  key={c.mint.toBase58()}
+                >
                   <Image
                     className="md:-mt-10"
                     src="/images/rewards/cube.png"
@@ -625,6 +632,10 @@ const Claim = () => {
                   <div className="mt-5 text-lg">
                     {c.quantity.toString()} {c.mintProperties['name']}
                   </div>
+                  {claimed !== undefined &&
+                  claimed.find((cl) => cl.equals(c.mint)) !== undefined ? (
+                    <div className="mt-5 text-lg">Claimed!</div>
+                  ) : undefined}
                 </div>
               )
             })}
