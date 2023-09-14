@@ -34,7 +34,6 @@ import { PublicKey } from '@solana/web3.js'
 import { useTranslation } from 'next-i18next'
 import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
 import InlineNotification from '@components/shared/InlineNotification'
-import { useRewards } from 'hooks/useRewards'
 import mangoStore from '@store/mangoStore'
 import {
   TransactionInstructionWithType,
@@ -44,7 +43,12 @@ import {
   SequenceType,
   TransactionInstructionWithSigners,
 } from '@blockworks-foundation/mangolana/lib/globalTypes'
-import { web3 } from '@project-serum/anchor'
+import { AnchorProvider, web3 } from '@coral-xyz/anchor'
+import {
+  Distribution,
+  MangoMintsRedemptionClient,
+  Claim,
+} from '@blockworks-foundation/mango-mints-redemption'
 
 const FAQS = [
   {
@@ -462,24 +466,53 @@ const Claim = () => {
   const [showLossModal, setShowLossModal] = useState(false)
   const [isClaiming, setIsClaiming] = useState(false)
   const [claimProgress, setClaimProgress] = useState(0)
-  const rewards = useRewards()
+  const [distribution, setDistribution] = useState<Distribution | undefined>(
+    undefined,
+  )
+  const [claims, setClaims] = useState<Claim[] | undefined>([])
+  const [claimed, setClaimed] = useState<PublicKey[] | undefined>([])
+  const [rewardsClient, setRewardsClient] = useState<
+    MangoMintsRedemptionClient | undefined
+  >(undefined)
+
   const state = mangoStore.getState()
-  const connection = state.client.program.provider.connection
+  const provider = state.client.program.provider
+  const connection = provider.connection
   const wallet = useWallet()
+  console.log('pubkey', wallet.publicKey?.toString())
+
+  useEffect(() => {
+    if (!wallet.publicKey) return
+    const fetchRewards = async () => {
+      console.log('fetchRewards')
+      const client = new MangoMintsRedemptionClient(provider as AnchorProvider)
+      const d = await client.loadDistribution(25)
+      setDistribution(d)
+      setClaims(d.getClaims(wallet.publicKey!))
+      setClaimed(await d.getClaimed())
+      setRewardsClient(client)
+    }
+
+    fetchRewards().catch((e) => {
+      console.error('Failed to fetch prize distribution', e)
+    })
+  }, [provider, connection, wallet])
 
   const handleClaimRewards = useCallback(async () => {
+    if (!distribution || !wallet.publicKey || !claims || !rewardsClient) return
     const transactionInstructions: TransactionInstructionWithType[] = []
-
+    console.log('distribution', distribution)
+    console.log('claims', claims)
     // Create claim account if it doesn't exist
-    if (rewards.claimed === undefined) {
+    if (claimed === undefined) {
       transactionInstructions.push({
         instructionsSet: [
           new TransactionInstructionWithSigners(
-            await rewards.client.program.methods
+            await rewardsClient.program.methods
               .claimAccountCreate()
               .accounts({
-                distribution: rewards.distribution!.publicKey,
-                claimAccount: rewards.distribution!.findClaimAccountAddress(
+                distribution: distribution.publicKey,
+                claimAccount: distribution.findClaimAccountAddress(
                   wallet.publicKey!,
                 ),
                 claimant: wallet.publicKey!,
@@ -495,9 +528,10 @@ const Claim = () => {
     }
 
     try {
-      for (const claim of rewards.claims) {
+      for (const claim of claims) {
+        console.log('claim', claim)
         const ixs = (
-          await rewards.distribution!.makeClaimInstructions(
+          await distribution.makeClaimInstructions(
             wallet.publicKey!,
             claim.mint,
           )
@@ -540,7 +574,6 @@ const Claim = () => {
             console.log('error', e, notProcessedTransactions, originalProps)
           },
         },
-
         config: {
           maxTxesInBatch: 10,
           autoRetry: false,
@@ -552,9 +585,11 @@ const Claim = () => {
     } finally {
       setIsClaiming(false)
     }
-  }, [])
+  }, [distribution, wallet, claims, rewardsClient])
 
-  return (
+  return claims === undefined ? (
+    <span>Loading...</span>
+  ) : (
     <>
       <div className="flex items-center justify-center bg-th-bkg-3 px-4 py-3">
         <ClockIcon className="mr-2 h-5 w-5 text-th-active" />
@@ -568,12 +603,13 @@ const Claim = () => {
           <div className="mb-6 text-center md:mb-12">
             <h2 className="mb-2 text-5xl">Congratulations!</h2>
             <p className="text-lg">
-              You earned {rewards.claims.length} boxes in Season 1
+              You earned {claims.length} boxes in Season 1
             </p>
           </div>
           <div className="flex flex-row space-y-6 md:items-center md:justify-center md:space-x-3">
-            {rewards.claims.map((c) => {
-              return rewards.claimed.includes(c.mint) ? undefined : (
+            {claims.map((c) => {
+              return claimed !== undefined &&
+                claimed.includes(c.mint) ? undefined : (
                 <div className="flex flex-col items-center p-6">
                   <Image
                     className="md:-mt-10"

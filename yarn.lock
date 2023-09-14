@@ -33,10 +33,10 @@
   dependencies:
     ws "^8.13.0"
 
-"@blockworks-foundation/mango-mints-redemption@^0.0.2":
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-mints-redemption/-/mango-mints-redemption-0.0.2.tgz#a30c977853109b64d27a74f2157fc02b00980e62"
-  integrity sha512-TWvVigQJ4rJQ7Y8kJWgeuKQPx1xN4+zdLLlF/Biz9VY55cWK2jnMpTJ3aekKMy0jpgWJ/EWdsf/FhShjcmhuUQ==
+"@blockworks-foundation/mango-mints-redemption@^0.0.8":
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-mints-redemption/-/mango-mints-redemption-0.0.8.tgz#6b02f3e81c9be14fa95ba8da5f156167ac1b971b"
+  integrity sha512-P0F+e6I/TcCGunqZlTaKvH5YbTbqBxx6EyMV4Av2h6VFlwFmJBF2RoUwF27JCpD3F1VzY8nMKGILrLhiTqyWPQ==
   dependencies:
     "@coral-xyz/anchor" "^0.28.0"
     "@solana/spl-token" "^0.3.8"
