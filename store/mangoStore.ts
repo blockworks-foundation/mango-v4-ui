@@ -261,6 +261,7 @@ export type MangoStore = {
     tokens: TokenAccount[]
     nfts: {
       data: NFT[] | []
+      initialLoad: boolean
       loading: boolean
     }
   }
@@ -440,6 +441,7 @@ const mangoStore = create<MangoStore>()(
         nfts: {
           data: [],
           loading: false,
+          initialLoad: true,
         },
       },
       window: {
@@ -728,8 +730,12 @@ const mangoStore = create<MangoStore>()(
           } catch (error) {
             console.warn('Error: unable to fetch nfts.', error)
           } finally {
+            const notLoaded = mangoStore.getState().wallet.nfts.initialLoad
             set((state) => {
               state.wallet.nfts.loading = false
+              if (notLoaded) {
+                state.wallet.nfts.initialLoad = false
+              }
             })
           }
         },
