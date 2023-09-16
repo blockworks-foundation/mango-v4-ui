@@ -1,19 +1,11 @@
 import Select from '@components/forms/Select'
-import AcornIcon from '@components/icons/AcornIcon'
-import MangoIcon from '@components/icons/MangoIcon'
-import RobotIcon from '@components/icons/RobotIcon'
-import WhaleIcon from '@components/icons/WhaleIcon'
 import Button, { LinkButton } from '@components/shared/Button'
 import Modal from '@components/shared/Modal'
 import { Disclosure } from '@headlessui/react'
-import {
-  ChevronDownIcon,
-  ChevronRightIcon,
-  ClockIcon,
-} from '@heroicons/react/20/solid'
+import { ChevronDownIcon, ClockIcon } from '@heroicons/react/20/solid'
 // import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
-import { ReactNode, RefObject, useEffect, useRef, useState } from 'react'
+import { RefObject, useEffect, useRef, useState } from 'react'
 import Particles from 'react-tsparticles'
 import { ModalProps } from 'types/modal'
 import Leaderboards from './Leaderboards'
@@ -27,6 +19,7 @@ import { PublicKey } from '@solana/web3.js'
 import { useTranslation } from 'next-i18next'
 import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
 import InlineNotification from '@components/shared/InlineNotification'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 const FAQS = [
   {
@@ -61,15 +54,18 @@ export type RewardsLeaderboardItem = {
   wallet_pk: string
 }
 
-export const tiers = ['seed', 'mango', 'whale', 'bot']
+export const tiers = ['whale', 'mango']
 
-const fetchRewardsPoints = async (walletPk: string | undefined) => {
+const fetchRewardsPoints = async (mangoAccountPk: string | undefined) => {
   try {
     const data = await fetch(
-      `${MANGO_DATA_API_URL}/user-data/campaign-total-points-wallet?wallet-pk=${walletPk}`,
+      `${MANGO_DATA_API_URL}/user-data/campaign-total-points-account?mango-account=${mangoAccountPk}`,
     )
     const res = await data.json()
-    return res
+    return res.reduce(
+      (partialSum: number, a: { points: number }) => partialSum + a.points,
+      0,
+    )
   } catch (e) {
     console.log('Failed to fetch points', e)
   }
@@ -180,21 +176,23 @@ const Season = ({
 }) => {
   const { t } = useTranslation(['common', 'rewards'])
   const { wallet } = useWallet()
-  const [topAccountsTier, setTopAccountsTier] = useState('seed')
+  const [topAccountsTier, setTopAccountsTier] = useState('whale')
+  const { mangoAccountAddress } = useMangoAccount()
   const { data: isWhiteListed } = useIsWhiteListed()
   const {
-    data: walletRewardsData,
+    data: walletPoints,
     isFetching: fetchingWalletRewardsData,
     isLoading: loadingWalletRewardsData,
+    refetch,
   } = useQuery(
-    ['rewards-points', wallet?.adapter.publicKey],
-    () => fetchRewardsPoints(wallet?.adapter.publicKey?.toString()),
+    ['rewards-points', mangoAccountAddress],
+    () => fetchRewardsPoints(mangoAccountAddress),
     {
       cacheTime: 1000 * 60 * 10,
       staleTime: 1000 * 60,
       retry: 3,
       refetchOnWindowFocus: false,
-      enabled: !!wallet?.adapter,
+      enabled: !!wallet?.adapter && !!mangoAccountAddress,
     },
   )
 
@@ -213,17 +211,17 @@ const Season = ({
     },
   )
 
-  useEffect(() => {
-    if (walletRewardsData?.tier) {
-      setTopAccountsTier(walletRewardsData.tier)
-    }
-  }, [walletRewardsData])
-
   const isLoadingWalletData =
     fetchingWalletRewardsData || loadingWalletRewardsData
 
   const isLoadingLeaderboardData =
     fetchingTopAccountsLeaderboardData || loadingTopAccountsLeaderboardData
+
+  useEffect(() => {
+    if (mangoAccountAddress) {
+      refetch()
+    }
+  }, [mangoAccountAddress])
 
   return (
     <>
@@ -255,10 +253,10 @@ const Season = ({
           </div>
         ) : null}
         <div className="col-span-12 lg:col-span-8">
-          <div className="mb-2 rounded-lg border border-th-bkg-3 p-4">
+          {/* <div className="mb-2 rounded-lg border border-th-bkg-3 p-4">
             <h2 className="mb-4">Rewards Tiers</h2>
-            <div className="mb-6 space-y-2">
-              <RewardsTierCard
+            <div className="mb-6 space-y-2"> */}
+          {/* <RewardsTierCard
                 icon={<AcornIcon className="h-8 w-8 text-th-fgd-2" />}
                 name="seed"
                 desc="All new participants start here"
@@ -285,9 +283,9 @@ const Season = ({
                 desc="All bots"
                 showLeaderboard={showLeaderboard}
                 status={walletRewardsData?.tier === 'bot' ? 'Qualified' : ''}
-              />
-            </div>
-          </div>
+              /> */}
+          {/* </div>
+          </div> */}
           <div ref={faqRef}>
             <Faqs />
           </div>
@@ -307,8 +305,8 @@ const Season = ({
             <div className="mb-4 flex h-14 w-full items-center rounded-md bg-th-bkg-2 px-3">
               <span className="w-full font-display text-3xl text-th-fgd-1">
                 {!isLoadingWalletData ? (
-                  walletRewardsData?.points ? (
-                    formatNumericValue(walletRewardsData.points)
+                  walletPoints ? (
+                    formatNumericValue(walletPoints)
                   ) : wallet?.adapter.publicKey ? (
                     0
                   ) : (
@@ -328,8 +326,8 @@ const Season = ({
                 <p>Points Earned</p>
                 <p className="font-mono text-th-fgd-2">
                   {!isLoadingWalletData ? (
-                    walletRewardsData?.points ? (
-                      formatNumericValue(walletRewardsData.points)
+                    walletPoints ? (
+                      formatNumericValue(walletPoints)
                     ) : wallet?.adapter.publicKey ? (
                       0
                     ) : (
@@ -346,7 +344,7 @@ const Season = ({
                 <p>Streak Bonus</p>
                 <p className="font-mono text-th-fgd-2">0x</p>
               </div>
-              <div className="flex justify-between">
+              {/* <div className="flex justify-between">
                 <p>Rewards Tier</p>
                 <p className="text-th-fgd-2">
                   {!isLoadingWalletData ? (
@@ -363,7 +361,7 @@ const Season = ({
                     </SheenLoader>
                   )}
                 </p>
-              </div>
+              </div> */}
               <div className="flex justify-between">
                 <p>Rank</p>
                 <p className="text-th-fgd-2">–</p>
@@ -524,49 +522,49 @@ const Claim = () => {
   )
 }
 
-const RewardsTierCard = ({
-  desc,
-  icon,
-  name,
-  showLeaderboard,
-  status,
-}: {
-  desc: string
-  icon: ReactNode
-  name: string
-  showLeaderboard: (x: string) => void
-  status?: string
-}) => {
-  const { t } = useTranslation('rewards')
-  return (
-    <button
-      className="w-full rounded-lg bg-th-bkg-2 p-4 text-left focus:outline-none md:hover:bg-th-bkg-3"
-      onClick={() => showLeaderboard(name)}
-    >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center">
-          <div className="mr-4 flex h-14 w-14 items-center justify-center rounded-full bg-th-bkg-1">
-            {icon}
-          </div>
-          <div>
-            <h3>{t(name)}</h3>
-            <p>{desc}</p>
-          </div>
-        </div>
-        <div className="flex items-center pl-4">
-          {status ? (
-            <Badge
-              label={status}
-              borderColor="var(--success)"
-              shadowColor="var(--success)"
-            />
-          ) : null}
-          <ChevronRightIcon className="ml-4 h-6 w-6 text-th-fgd-3" />
-        </div>
-      </div>
-    </button>
-  )
-}
+// const RewardsTierCard = ({
+//   desc,
+//   icon,
+//   name,
+//   showLeaderboard,
+//   status,
+// }: {
+//   desc: string
+//   icon: ReactNode
+//   name: string
+//   showLeaderboard: (x: string) => void
+//   status?: string
+// }) => {
+//   const { t } = useTranslation('rewards')
+//   return (
+//     <button
+//       className="w-full rounded-lg bg-th-bkg-2 p-4 text-left focus:outline-none md:hover:bg-th-bkg-3"
+//       onClick={() => showLeaderboard(name)}
+//     >
+//       <div className="flex items-center justify-between">
+//         <div className="flex items-center">
+//           <div className="mr-4 flex h-14 w-14 items-center justify-center rounded-full bg-th-bkg-1">
+//             {icon}
+//           </div>
+//           <div>
+//             <h3>{t(name)}</h3>
+//             <p>{desc}</p>
+//           </div>
+//         </div>
+//         <div className="flex items-center pl-4">
+//           {status ? (
+//             <Badge
+//               label={status}
+//               borderColor="var(--success)"
+//               shadowColor="var(--success)"
+//             />
+//           ) : null}
+//           <ChevronRightIcon className="ml-4 h-6 w-6 text-th-fgd-3" />
+//         </div>
+//       </div>
+//     </button>
+//   )
+// }
 
 export const Badge = ({
   label,

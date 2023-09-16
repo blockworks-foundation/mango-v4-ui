@@ -6,7 +6,6 @@ import {
   ChevronDownIcon,
   CurrencyDollarIcon,
   ChartBarIcon,
-  Cog8ToothIcon,
   ArrowsRightLeftIcon,
   ArrowTrendingUpIcon,
   MagnifyingGlassIcon,
@@ -40,13 +39,16 @@ import { SIDEBAR_COLLAPSE_KEY } from 'utils/constants'
 import { createTransferInstruction } from '@solana/spl-token'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 
+const set = mangoStore.getState().set
+
 const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation(['common', 'search'])
   const { connected, publicKey } = useWallet()
-  const { theme } = useTheme()
+  const { theme, setTheme } = useTheme()
   const group = mangoStore.getState().group
   const themeData = mangoStore((s) => s.themeData)
   const nfts = mangoStore((s) => s.wallet.nfts.data)
+  const loadingNfts = mangoStore((s) => s.wallet.nfts.initialLoad)
   const { mangoAccount } = useMangoAccount()
   const setPrependedGlobalAdditionalInstructions = mangoStore(
     (s) => s.actions.setPrependedGlobalAdditionalInstructions,
@@ -73,6 +75,9 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   // fetch nfts when pk changes
   useEffect(() => {
     if (publicKey) {
+      set((state) => {
+        state.wallet.nfts.initialLoad = true
+      })
       const actions = mangoStore.getState().actions
       const connection = mangoStore.getState().connection
       actions.fetchNfts(connection, publicKey)
@@ -131,6 +136,19 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
     }
     return themeData.sideImagePath
   }, [mangoNfts, theme, themeData])
+
+  // change theme if switching to wallet without nft
+  useEffect(() => {
+    if (loadingNfts || !theme) return
+    if (theme.toLowerCase() in CUSTOM_SKINS) {
+      const hasSkin = mangoNfts.find(
+        (nft) => nft.collectionAddress === CUSTOM_SKINS[theme.toLowerCase()],
+      )
+      if (!hasSkin) {
+        setTheme(t('settings:mango-classic'))
+      }
+    }
+  }, [loadingNfts, mangoNfts, publicKey, theme])
 
   return (
     <div
@@ -226,13 +244,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               icon={<LeaderboardIcon className="h-5 w-5" />}
               title={t('leaderboard')}
               pagePath="/leaderboard"
-            />
-            <MenuItem
-              active={pathname === '/settings'}
-              collapsed={collapsed}
-              icon={<Cog8ToothIcon className="h-5 w-5" />}
-              title={t('settings')}
-              pagePath="/settings"
             />
             <ExpandableMenuItem
               collapsed={collapsed}

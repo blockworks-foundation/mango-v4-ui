@@ -211,12 +211,12 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <>
-        <h2 className="mb-2 text-center">{t('settings:account-size')}</h2>
+        <h2 className="mb-2 text-center">{t('settings:account-slots')}</h2>
         {/* <LinkButton className="font-normal mb-0.5" onClick={handleMaxAll}>
             {t('settings:max-all')}
           </LinkButton> */}
         <p className="mb-4 text-center text-xs">
-          {t('settings:account-size-desc')}
+          {t('settings:account-slots-desc')}
         </p>
         <div className="mb-4">
           <AccountSizeFormInput
@@ -323,7 +323,7 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
           onClick={handleUpdateAccountSize}
           size="large"
         >
-          {submitting ? <Loading /> : t('settings:increase-account-size')}
+          {submitting ? <Loading /> : t('settings:increase-account-slots')}
         </Button>
         <LinkButton className="mx-auto" onClick={onClose}>
           {t('cancel')}

@@ -8,14 +8,19 @@ import {
   toUiDecimalsForQuote,
 } from '@blockworks-foundation/mango-v4'
 
-export default function useRemainingBorrowsInPeriod(isSwap?: boolean) {
+export default function useRemainingBorrowsInPeriod(
+  isSwap?: boolean,
+  isSwapTrigger?: boolean,
+) {
   const { selectedMarket } = useSelectedMarket()
-  const { inputBank } = mangoStore((s) => s.swap)
+  const { inputBank, outputBank } = mangoStore((s) => s.swap)
   const { side } = mangoStore((s) => s.tradeForm)
 
   const bank = useMemo(() => {
     if (isSwap && inputBank) {
       return inputBank
+    } else if (isSwapTrigger && outputBank) {
+      return outputBank
     } else {
       if (selectedMarket instanceof Serum3Market) {
         const group = mangoStore.getState().group
@@ -33,7 +38,7 @@ export default function useRemainingBorrowsInPeriod(isSwap?: boolean) {
       }
     }
     return
-  }, [inputBank, isSwap, selectedMarket, side])
+  }, [inputBank, isSwap, isSwapTrigger, outputBank, selectedMarket, side])
 
   const [remainingBorrowsInPeriod, timeToNextPeriod] = useMemo(() => {
     if (!bank) return [undefined, undefined]

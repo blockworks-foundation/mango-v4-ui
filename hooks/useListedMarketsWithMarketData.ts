@@ -8,9 +8,17 @@ type ApiData = {
   marketData: MarketsDataItem | undefined
 }
 
-export type SerumMarketWithMarketData = Serum3Market & ApiData
+type MarketRollingChange = {
+  rollingChange: number | undefined
+}
 
-export type PerpMarketWithMarketData = PerpMarket & ApiData
+export type SerumMarketWithMarketData = Serum3Market &
+  ApiData &
+  MarketRollingChange
+
+export type PerpMarketWithMarketData = PerpMarket &
+  ApiData &
+  MarketRollingChange
 
 export default function useListedMarketsWithMarketData() {
   const { data: marketsData, isLoading, isFetching } = useMarketsData()
@@ -27,6 +35,29 @@ export default function useListedMarketsWithMarketData() {
     return marketsData?.spotData || []
   }, [marketsData])
 
+  const currentPrices = useMemo(() => {
+    let prices: { [key: string]: number } = {}
+    const group = mangoStore.getState().group
+    serumMarkets.forEach((market) => {
+      if (!group || !market || market instanceof PerpMarket) {
+        prices[market.name] = 0
+        return
+      }
+      const baseBank = group.getFirstBankByTokenIndex(market.baseTokenIndex)
+      const quoteBank = group.getFirstBankByTokenIndex(market.quoteTokenIndex)
+      if (!baseBank || !quoteBank) {
+        prices[market.name] = 0
+        return
+      }
+      prices[market.name] = baseBank.uiPrice / quoteBank.uiPrice
+    })
+
+    perpMarkets.forEach((market) => {
+      prices[market.name] = market.uiPrice
+    })
+    return prices
+  }, [serumMarkets, perpMarkets])
+
   const serumMarketsWithData = useMemo(() => {
     if (!serumMarkets || !serumMarkets.length) return []
     const allSpotMarkets: SerumMarketWithMarketData[] =
@@ -36,6 +67,17 @@ export default function useListedMarketsWithMarketData() {
         const spotEntries = Object.entries(spotData).find(
           (e) => e[0].toLowerCase() === market.name.toLowerCase(),
         )
+
+        // calculate price change
+        const pastPrice = spotEntries ? spotEntries[1][0]?.price_24h : 0
+        const dailyVolume = spotEntries
+          ? spotEntries[1][0]?.quote_volume_24h
+          : 0
+        const currentPrice = currentPrices[market.name]
+        const change =
+          dailyVolume > 0 ? ((currentPrice - pastPrice) / pastPrice) * 100 : 0
+
+        market.rollingChange = change
         market.marketData = spotEntries ? spotEntries[1][0] : undefined
       }
     }
@@ -51,7 +93,11 @@ export default function useListedMarketsWithMarketData() {
         const perpEntries = Object.entries(perpData).find(
           (e) => e[0].toLowerCase() === market.name.toLowerCase(),
         )
+        const pastPrice = perpEntries ? perpEntries[1][0]?.price_24h : 0
+        const currentPrice = currentPrices[market.name]
+
         market.marketData = perpEntries ? perpEntries[1][0] : undefined
+        market.rollingChange = ((currentPrice - pastPrice) / pastPrice) * 100
       }
     }
     return allPerpMarkets

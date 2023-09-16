@@ -212,7 +212,7 @@ const OpenOrders = () => {
           o.perpMarketIndex,
           o.orderId,
         )
-        actions.fetchOpenOrders()
+        actions.fetchOpenOrders(true)
         notify({
           type: 'success',
           title: 'Transaction successful',

@@ -160,7 +160,7 @@ const AccountActions = () => {
                       >
                         <SquaresPlusIcon className="h-4 w-4" />
                         <span className="ml-2">
-                          {t('settings:increase-account-size')}
+                          {t('settings:increase-account-slots')}
                         </span>
                       </ActionsLinkButton>
                     ) : null}

@@ -19,7 +19,11 @@ import Loading from '@components/shared/Loading'
 import Button from '@components/shared/Button'
 import Image from 'next/image'
 import useQuoteRoutes from '@components/swap/useQuoteRoutes'
-import { HealthType, Serum3Market } from '@blockworks-foundation/mango-v4'
+import {
+  HealthType,
+  PerpMarket,
+  Serum3Market,
+} from '@blockworks-foundation/mango-v4'
 import Decimal from 'decimal.js'
 import { notify } from 'utils/notifications'
 import * as sentry from '@sentry/nextjs'
@@ -33,13 +37,17 @@ import HealthImpact from '@components/shared/HealthImpact'
 import Tooltip from '@components/shared/Tooltip'
 import Checkbox from '@components/forms/Checkbox'
 // import MaxMarketSwapAmount from './MaxMarketSwapAmount'
-import { floorToDecimal, formatNumericValue } from 'utils/numbers'
+import {
+  floorToDecimal,
+  formatNumericValue,
+  getDecimalCount,
+} from 'utils/numbers'
 import { formatTokenSymbol } from 'utils/tokens'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { useTokenMax } from '@components/swap/useTokenMax'
 import SheenLoader from '@components/shared/SheenLoader'
 import { fetchJupiterTransaction } from '@components/swap/SwapReviewRouteInfo'
-import MaxSwapAmount from '@components/swap/MaxSwapAmount'
+import MaxMarketTradeAmount from './MaxMarketTradeAmount'
 
 const set = mangoStore.getState().set
 
@@ -77,6 +85,7 @@ export default function SpotMarketOrderSwapForm() {
   const handleBaseSizeChange = useCallback(
     (e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
+      console.log(e.value)
       set((s) => {
         const price =
           s.tradeForm.tradeType === 'Market'
@@ -112,6 +121,38 @@ export default function SpotMarketOrderSwapForm() {
       })
     },
     [oraclePrice],
+  )
+
+  const handleMaxAmount = useCallback(
+    (useMargin: boolean) => {
+      const group = mangoStore.getState().group
+      if (
+        !group ||
+        !serumOrPerpMarket ||
+        serumOrPerpMarket instanceof PerpMarket
+      )
+        return { max: new Decimal(0), decimals: 6 }
+
+      const max = useMargin ? amountWithBorrow : tokenMax
+      const decimals = getDecimalCount(serumOrPerpMarket.minOrderSize)
+      if (side === 'sell') {
+        return { max, decimals }
+      } else {
+        const baseMax = max.div(new Decimal(oraclePrice))
+        return { max: baseMax, decimals }
+      }
+    },
+    [amountWithBorrow, oraclePrice, serumOrPerpMarket, side, tokenMax],
+  )
+
+  const setMaxFromButton = useCallback(
+    (amount: string) => {
+      handleBaseSizeChange(
+        { value: amount } as NumberFormatValues,
+        { source: 'event' } as SourceInfo,
+      )
+    },
+    [handleBaseSizeChange],
   )
 
   const setAmountFromSlider = useCallback(
@@ -348,13 +389,16 @@ export default function SpotMarketOrderSwapForm() {
     <>
       <form onSubmit={(e) => handleSubmit(e)}>
         <div className="mt-3 px-3 md:px-4">
-          {!isUnownedAccount ? (
-            <MaxSwapAmount
-              useMargin={savedCheckboxSettings.margin}
-              setAmountIn={setAmountFromSlider}
-              maxAmount={useTokenMax}
-            />
-          ) : null}
+          <div className="mb-2 mt-3 flex items-center justify-between">
+            <p className="text-xs text-th-fgd-3">{t('trade:size')}</p>
+            {!isUnownedAccount ? (
+              <MaxMarketTradeAmount
+                useMargin={savedCheckboxSettings.margin}
+                setAmountIn={setMaxFromButton}
+                maxAmount={handleMaxAmount}
+              />
+            ) : null}
+          </div>
           <div className="flex flex-col">
             <div className="relative">
               <NumberFormat

@@ -19,7 +19,7 @@ import { MagnifyingGlassIcon } from '@heroicons/react/20/solid'
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
     props: {
-      ...(await serverSideTranslations(locale, ['common'])),
+      ...(await serverSideTranslations(locale, ['common', 'settings'])),
     },
   }
 }
@@ -188,6 +188,10 @@ const MangoAccountDashboard: NextPage = () => {
                       label="Value at oracle price"
                       value={`$${token.balanceUi(bank) * bank.uiPrice}`}
                     />
+                    <KeyValuePair
+                      label="In Use Count"
+                      value={`${token.inUseCount}`}
+                    />
                   </div>
                 )
               })}
@@ -220,6 +224,10 @@ const MangoAccountDashboard: NextPage = () => {
                     <KeyValuePair
                       label="Market Index"
                       value={serum.marketIndex}
+                    />
+                    <KeyValuePair
+                      label="Open Orders"
+                      value={serum.openOrders.toBase58()}
                     />
                   </div>
                 )

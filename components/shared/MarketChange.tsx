@@ -4,9 +4,7 @@ import FormatNumericValue from './FormatNumericValue'
 import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
 import { useMemo } from 'react'
 import SheenLoader from './SheenLoader'
-import useMarketsData from 'hooks/useMarketsData'
-import mangoStore from '@store/mangoStore'
-import { MarketData } from 'types'
+import useListedMarketsWithMarketData from 'hooks/useListedMarketsWithMarketData'
 
 const MarketChange = ({
   market,
@@ -15,44 +13,24 @@ const MarketChange = ({
   market: PerpMarket | Serum3Market | undefined
   size?: 'small'
 }) => {
-  const { data: marketsData, isLoading, isFetching } = useMarketsData()
-
-  const currentSpotPrice = useMemo(() => {
-    const group = mangoStore.getState().group
-    if (!group || !market || market instanceof PerpMarket) return 0
-    const baseBank = group.getFirstBankByTokenIndex(market.baseTokenIndex)
-    const quoteBank = group.getFirstBankByTokenIndex(market.quoteTokenIndex)
-    if (!baseBank || !quoteBank) return 0
-    return baseBank.uiPrice / quoteBank.uiPrice
-  }, [market])
+  const { perpMarketsWithData, serumMarketsWithData, isLoading, isFetching } =
+    useListedMarketsWithMarketData()
 
   const change = useMemo(() => {
-    if (!market || !marketsData) return
+    if (!market || !perpMarketsWithData || !serumMarketsWithData) return 0
     const isPerp = market instanceof PerpMarket
-    let pastPrice = 0
-    let dailyVolume = 0
     if (isPerp) {
-      const perpData: MarketData = marketsData?.perpData
-      const perpEntries = Object.entries(perpData).find(
-        (e) => e[0].toLowerCase() === market.name.toLowerCase(),
+      const perpMarket = perpMarketsWithData.find(
+        (m) => m.name.toLowerCase() === market.name.toLowerCase(),
       )
-      pastPrice = perpEntries ? perpEntries[1][0]?.price_24h : 0
-      dailyVolume = perpEntries ? perpEntries[1][0]?.quote_volume_24h : 0
+      return perpMarket ? perpMarket.rollingChange : 0
     } else {
-      const spotData: MarketData = marketsData?.spotData
-      const spotEntries = Object.entries(spotData).find(
-        (e) => e[0].toLowerCase() === market.name.toLowerCase(),
+      const spotMarket = serumMarketsWithData.find(
+        (m) => m.name.toLowerCase() === market.name.toLowerCase(),
       )
-      pastPrice = spotEntries ? spotEntries[1][0]?.price_24h : 0
-      dailyVolume = spotEntries ? spotEntries[1][0]?.quote_volume_24h : 0
+      return spotMarket ? spotMarket.rollingChange : 0
     }
-    const currentPrice = isPerp ? market.uiPrice : currentSpotPrice
-    const change =
-      dailyVolume > 0 || isPerp
-        ? ((currentPrice - pastPrice) / pastPrice) * 100
-        : 0
-    return change
-  }, [marketsData, currentSpotPrice])
+  }, [perpMarketsWithData, serumMarketsWithData])
 
   const loading = isLoading || isFetching
 

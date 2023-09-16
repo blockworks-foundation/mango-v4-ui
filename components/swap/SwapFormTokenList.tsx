@@ -14,7 +14,7 @@ import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { formatTokenSymbol } from 'utils/tokens'
 import TokenLogo from '@components/shared/TokenLogo'
 import Input from '@components/forms/Input'
-import { getInputTokenBalance } from './LimitSwapForm'
+import { getInputTokenBalance } from './TriggerSwapForm'
 
 export type SwapFormTokenListType =
   | 'input'

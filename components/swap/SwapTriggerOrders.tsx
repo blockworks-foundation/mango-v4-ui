@@ -23,7 +23,7 @@ import { useViewport } from 'hooks/useViewport'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { notify } from 'utils/notifications'
-import { floorToDecimal } from 'utils/numbers'
+import { floorToDecimal, formatNumericValue } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 import * as sentry from '@sentry/nextjs'
 import { isMangoError } from 'types'
@@ -32,6 +32,48 @@ import SideBadge from '@components/shared/SideBadge'
 import { Disclosure, Transition } from '@headlessui/react'
 import SheenLoader from '@components/shared/SheenLoader'
 import { formatTokenSymbol } from 'utils/tokens'
+
+export const handleCancelAll = async (
+  setCancelId: (id: '' | 'all') => void,
+) => {
+  try {
+    const client = mangoStore.getState().client
+    const group = mangoStore.getState().group
+    const actions = mangoStore.getState().actions
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+
+    if (!mangoAccount || !group) return
+    setCancelId('all')
+
+    try {
+      const { signature: tx, slot } =
+        await client.tokenConditionalSwapCancelAll(group, mangoAccount)
+      notify({
+        title: 'Transaction confirmed',
+        type: 'success',
+        txid: tx,
+        noSound: true,
+      })
+      actions.fetchGroup()
+      await actions.reloadMangoAccount(slot)
+    } catch (e) {
+      console.error('failed to cancel trigger orders', e)
+      sentry.captureException(e)
+      if (isMangoError(e)) {
+        notify({
+          title: 'Transaction failed',
+          description: e.message,
+          txid: e?.txid,
+          type: 'error',
+        })
+      }
+    }
+  } catch (e) {
+    console.error('failed to cancel swap order', e)
+  } finally {
+    setCancelId('')
+  }
+}
 
 const SwapOrders = () => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
@@ -70,12 +112,12 @@ const SwapOrders = () => {
         size = maxBuy
         side = 'buy'
       }
-      const buyTokenName = formatTokenSymbol(buyBank.name)
-      const sellTokenName = formatTokenSymbol(sellBank.name)
+      const formattedBuyTokenName = formatTokenSymbol(buyBank.name)
+      const formattedSellTokenName = formatTokenSymbol(sellBank.name)
       const pair =
         side === 'sell'
-          ? `${sellTokenName}/${buyTokenName}`
-          : `${buyTokenName}/${sellTokenName}`
+          ? `${formattedSellTokenName}/${formattedBuyTokenName}`
+          : `${formattedBuyTokenName}/${formattedSellTokenName}`
 
       const triggerPrice = order.getThresholdPriceUi(group)
       const pricePremium = order.getPricePremium()
@@ -85,21 +127,29 @@ const SwapOrders = () => {
         order.priceDisplayStyle,
         'sellTokenPerBuyToken',
       )
+      const baseTokenName =
+        side === 'buy' ? formattedBuyTokenName : formattedSellTokenName
+      const quoteTokenName = !sellTokenPerBuyToken
+        ? formattedBuyTokenName
+        : formattedSellTokenName
+      const quoteDecimals = !sellTokenPerBuyToken
+        ? buyBank.mintDecimals
+        : sellBank.mintDecimals
       const triggerDirection = triggerPrice < currentPrice ? '<=' : '>='
 
       const data = {
         ...order,
-        buyBank,
+        baseTokenName,
         currentPrice,
-        sellBank,
+        fee: pricePremium,
+        filled,
         pair,
+        quoteDecimals,
+        quoteTokenName,
         side,
         size,
-        filled,
-        triggerPrice,
-        fee: pricePremium,
-        sellTokenPerBuyToken,
         triggerDirection,
+        triggerPrice,
       }
       formatted.push(data)
     }
@@ -150,46 +200,6 @@ const SwapOrders = () => {
       }
     } catch (e) {
       console.error('failed to cancel trigger order', e)
-    } finally {
-      setCancelId('')
-    }
-  }
-
-  const handleCancelAll = async () => {
-    try {
-      const client = mangoStore.getState().client
-      const group = mangoStore.getState().group
-      const actions = mangoStore.getState().actions
-      const mangoAccount = mangoStore.getState().mangoAccount.current
-
-      if (!mangoAccount || !group) return
-      setCancelId('all')
-
-      try {
-        const { signature: tx, slot } =
-          await client.tokenConditionalSwapCancelAll(group, mangoAccount)
-        notify({
-          title: 'Transaction confirmed',
-          type: 'success',
-          txid: tx,
-          noSound: true,
-        })
-        actions.fetchGroup()
-        await actions.reloadMangoAccount(slot)
-      } catch (e) {
-        console.error('failed to cancel trigger orders', e)
-        sentry.captureException(e)
-        if (isMangoError(e)) {
-          notify({
-            title: 'Transaction failed',
-            description: e.message,
-            txid: e?.txid,
-            type: 'error',
-          })
-        }
-      }
-    } catch (e) {
-      console.error('failed to cancel swap order', e)
     } finally {
       setCancelId('')
     }
@@ -270,7 +280,7 @@ const SwapOrders = () => {
             </Th>
             <Th>
               <div className="flex justify-end">
-                <LinkButton onClick={handleCancelAll}>
+                <LinkButton onClick={() => handleCancelAll(setCancelId)}>
                   {t('trade:cancel-all')}
                 </LinkButton>
               </div>
@@ -280,26 +290,18 @@ const SwapOrders = () => {
         <tbody>
           {tableData.map((data, i) => {
             const {
-              buyBank,
+              baseTokenName,
               currentPrice,
               fee,
+              filled,
               pair,
-              sellBank,
+              quoteDecimals,
+              quoteTokenName,
               side,
               size,
-              filled,
-              triggerPrice,
-              sellTokenPerBuyToken,
               triggerDirection,
+              triggerPrice,
             } = data
-
-            const formattedBuyTokenName = formatTokenSymbol(buyBank.name)
-            const formattedSellTokenName = formatTokenSymbol(sellBank.name)
-            const formattedBaseName =
-              side === 'buy' ? formattedBuyTokenName : formattedSellTokenName
-            const formattedQuoteName = !sellTokenPerBuyToken
-              ? formattedBuyTokenName
-              : formattedSellTokenName
 
             return (
               <TrBody key={i} className="text-sm">
@@ -314,7 +316,7 @@ const SwapOrders = () => {
                     {size}
                     <span className="font-body text-th-fgd-3">
                       {' '}
-                      {formattedBaseName}
+                      {baseTokenName}
                     </span>
                   </p>
                 </Td>
@@ -323,16 +325,16 @@ const SwapOrders = () => {
                     {filled}/{size}
                     <span className="font-body text-th-fgd-3">
                       {' '}
-                      {formattedBaseName}
+                      {baseTokenName}
                     </span>
                   </p>
                 </Td>
                 <Td>
                   <p className="text-right">
-                    {currentPrice}
+                    {formatNumericValue(currentPrice, quoteDecimals)}
                     <span className="font-body text-th-fgd-3">
                       {' '}
-                      {formattedQuoteName}
+                      {quoteTokenName}
                     </span>
                   </p>
                 </Td>
@@ -341,10 +343,10 @@ const SwapOrders = () => {
                     <span className="font-body text-th-fgd-4">
                       {triggerDirection}{' '}
                     </span>
-                    {triggerPrice}
+                    {formatNumericValue(triggerPrice, quoteDecimals)}
                     <span className="font-body text-th-fgd-3">
                       {' '}
-                      {formattedQuoteName}
+                      {quoteTokenName}
                     </span>
                   </p>
                 </Td>
@@ -375,26 +377,19 @@ const SwapOrders = () => {
       <div className="border-b border-th-bkg-3">
         {tableData.map((data, i) => {
           const {
-            buyBank,
+            baseTokenName,
             currentPrice,
             fee,
+            filled,
             pair,
-            sellBank,
+            quoteDecimals,
+            quoteTokenName,
             side,
             size,
-            filled,
-            triggerPrice,
-            sellTokenPerBuyToken,
             triggerDirection,
+            triggerPrice,
           } = data
 
-          const formattedBuyTokenName = formatTokenSymbol(buyBank.name)
-          const formattedSellTokenName = formatTokenSymbol(sellBank.name)
-          const formattedBaseName =
-            side === 'buy' ? formattedBuyTokenName : formattedSellTokenName
-          const formattedQuoteName = !sellTokenPerBuyToken
-            ? formattedBuyTokenName
-            : formattedSellTokenName
           return (
             <Disclosure key={i}>
               {({ open }) => (
@@ -412,15 +407,15 @@ const SwapOrders = () => {
                           {size}
                           <span className="font-body text-th-fgd-3">
                             {' '}
-                            {formattedBaseName}
+                            {baseTokenName}
                           </span>
                           <span className="font-body text-th-fgd-3">
                             {' at '}
                           </span>
-                          {triggerPrice}
+                          {formatNumericValue(triggerPrice, quoteDecimals)}
                           <span className="font-body text-th-fgd-3">
                             {' '}
-                            {formattedQuoteName}
+                            {quoteTokenName}
                           </span>
                         </p>
                       </div>
@@ -446,7 +441,7 @@ const SwapOrders = () => {
                             {size}
                             <span className="font-body text-th-fgd-3">
                               {' '}
-                              {formattedBaseName}
+                              {baseTokenName}
                             </span>
                           </p>
                         </div>
@@ -458,7 +453,7 @@ const SwapOrders = () => {
                             {filled}/{size}
                             <span className="font-body text-th-fgd-3">
                               {' '}
-                              {formattedBaseName}
+                              {baseTokenName}
                             </span>
                           </p>
                         </div>
@@ -467,10 +462,10 @@ const SwapOrders = () => {
                             {t('trade:current-price')}
                           </p>
                           <p className="font-mono text-th-fgd-1">
-                            {currentPrice}
+                            {formatNumericValue(currentPrice, quoteDecimals)}
                             <span className="font-body text-th-fgd-3">
                               {' '}
-                              {formattedQuoteName}
+                              {quoteTokenName}
                             </span>
                           </p>
                         </div>
@@ -482,12 +477,10 @@ const SwapOrders = () => {
                             <span className="font-body text-th-fgd-4">
                               {triggerDirection}{' '}
                             </span>
-                            {triggerPrice}
+                            {formatNumericValue(triggerPrice, quoteDecimals)}
                             <span className="font-body text-th-fgd-3">
                               {' '}
-                              {side === 'buy'
-                                ? formattedSellTokenName
-                                : formattedBuyTokenName}
+                              {quoteTokenName}
                             </span>
                           </p>
                         </div>

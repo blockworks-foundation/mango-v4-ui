@@ -46,6 +46,8 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import { SwapFormTokenListType } from './SwapFormTokenList'
 import { formatTokenSymbol } from 'utils/tokens'
 import Tooltip from '@components/shared/Tooltip'
+import Link from 'next/link'
+import useTokenPositionsFull from 'hooks/useTokenPositionsFull'
 
 dayjs.extend(relativeTime)
 
@@ -54,17 +56,17 @@ const priceToDisplayString = (price: number | Decimal | string): string => {
   return val.toFixed(val.dp())
 }
 
-type LimitSwapFormProps = {
+type TriggerSwapFormProps = {
   showTokenSelect: SwapFormTokenListType
   setShowTokenSelect: Dispatch<SetStateAction<SwapFormTokenListType>>
 }
 
-type LimitSwapForm = {
+type TriggerSwapForm = {
   amountIn: number
   triggerPrice: string
 }
 
-type FormErrors = Partial<Record<keyof LimitSwapForm, string>>
+type FormErrors = Partial<Record<keyof TriggerSwapForm, string>>
 
 enum OrderTypes {
   STOP_LOSS = 'trade:stop-loss',
@@ -103,10 +105,10 @@ const getOrderTypeMultiplier = (
   }
 }
 
-const LimitSwapForm = ({
+const TriggerSwapForm = ({
   showTokenSelect,
   setShowTokenSelect,
-}: LimitSwapFormProps) => {
+}: TriggerSwapFormProps) => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
   const { mangoAccountAddress } = useMangoAccount()
   const { ipAllowed, ipCountry } = useIpAddress()
@@ -116,7 +118,7 @@ const LimitSwapForm = ({
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const [formErrors, setFormErrors] = useState<FormErrors>({})
   const { remainingBorrowsInPeriod, timeToNextPeriod } =
-    useRemainingBorrowsInPeriod(true)
+    useRemainingBorrowsInPeriod(false, true)
 
   const {
     inputBank,
@@ -126,6 +128,8 @@ const LimitSwapForm = ({
     flipPrices,
     triggerPrice,
   } = mangoStore((s) => s.swap)
+
+  const tokenPositionsFull = useTokenPositionsFull([outputBank])
 
   const { connected, connect } = useWallet()
 
@@ -270,10 +274,10 @@ const LimitSwapForm = ({
   ])
 
   const isFormValid = useCallback(
-    (form: LimitSwapForm) => {
+    (form: TriggerSwapForm) => {
       const invalidFields: FormErrors = {}
       setFormErrors({})
-      const requiredFields: (keyof LimitSwapForm)[] = [
+      const requiredFields: (keyof TriggerSwapForm)[] = [
         'amountIn',
         'triggerPrice',
       ]
@@ -850,7 +854,7 @@ const LimitSwapForm = ({
       ) : null}
       {ipAllowed ? (
         <Button
-          disabled={borrowExceedsLimitInPeriod}
+          disabled={borrowExceedsLimitInPeriod || tokenPositionsFull}
           onClick={onClick}
           className="mb-4 mt-6 flex w-full items-center justify-center text-base"
           size="large"
@@ -879,6 +883,21 @@ const LimitSwapForm = ({
           })}
         </Button>
       )}
+      {tokenPositionsFull ? (
+        <div className="pb-4">
+          <InlineNotification
+            type="error"
+            desc={
+              <>
+                {t('error-token-positions-full')}{' '}
+                <Link href="/settings" shallow>
+                  {t('manage')}
+                </Link>
+              </>
+            }
+          />
+        </div>
+      ) : null}
       {borrowExceedsLimitInPeriod &&
       remainingBorrowsInPeriod &&
       timeToNextPeriod ? (
@@ -896,4 +915,4 @@ const LimitSwapForm = ({
   )
 }
 
-export default LimitSwapForm
+export default TriggerSwapForm

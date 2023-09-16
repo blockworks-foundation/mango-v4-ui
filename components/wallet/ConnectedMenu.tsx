@@ -24,7 +24,7 @@ const actions = mangoStore.getState().actions
 const ConnectedMenu = () => {
   const { t } = useTranslation('common')
   const { publicKey, disconnect, wallet } = useWallet()
-  const { isTablet, isDesktop } = useViewport()
+  const { isDesktop } = useViewport()
   const [tvUserId, setTvUserId] = useLocalStorageState(TV_USER_ID_KEY, '')
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)
   const [showMangoAccountsModal, setShowMangoAccountsModal] = useState(false)
@@ -112,6 +112,15 @@ const ConnectedMenu = () => {
             leaveTo="opacity-0"
           >
             <Popover.Panel className="absolute right-0 top-[61px] z-20 mt-1 w-48 space-y-1.5 rounded-md rounded-t-none bg-th-bkg-2 px-4 py-2.5 focus:outline-none md:rounded-r-none">
+              {!isDesktop ? (
+                <button
+                  className="flex w-full flex-row items-center rounded-none py-0.5 font-normal focus:outline-none focus-visible:text-th-active"
+                  onClick={() => setShowMangoAccountsModal(true)}
+                >
+                  <CurrencyDollarIcon className="h-4 w-4" />
+                  <div className="pl-2 text-left">{t('accounts')}</div>
+                </button>
+              ) : null}
               <button
                 className="flex w-full flex-row items-center rounded-none py-0.5 font-normal focus:outline-none focus-visible:text-th-active md:hover:cursor-pointer md:hover:text-th-fgd-1"
                 onClick={() => setShowEditProfileModal(true)}
@@ -121,15 +130,6 @@ const ConnectedMenu = () => {
                   {t('profile:edit-profile-pic')}
                 </div>
               </button>
-              {isTablet ? (
-                <button
-                  className="flex w-full flex-row items-center rounded-none py-0.5 font-normal focus:outline-none focus-visible:text-th-active"
-                  onClick={() => setShowMangoAccountsModal(true)}
-                >
-                  <CurrencyDollarIcon className="h-4 w-4" />
-                  <div className="pl-2 text-left">{t('accounts')}</div>
-                </button>
-              ) : null}
               <button
                 className="flex w-full flex-row items-center rounded-none py-0.5 font-normal focus:outline-none focus-visible:text-th-active md:hover:cursor-pointer md:hover:text-th-fgd-1"
                 onClick={handleDisconnect}

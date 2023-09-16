@@ -107,6 +107,7 @@
     "tooltip-insured": "如果发生破产，{{tokenOrMarket}}损失是否可以从保险基金中归还",
     "tooltip-ioc": "IOC交易若不吃单就会被取消。任何无法立刻成交的部分将被取消",
     "tooltip-post": "Post交易若不挂单就会被取消。",
+    "tooltip-size-base-quote": "Show size in {{token}}",
     "tooltip-private-counterparty": "Counterparty has Private Account enabled",
     "tooltip-slippage": "当前价格与您的交易将执行的价格之间的差值的估计",
     "tooltip-stable-price": "稳定价格用于一个安全机制。此机制可以限制用户在预言机价格快速波动时下风险高的订单",
