@@ -78,7 +78,7 @@
   "edit-profile-image": "切换头像",
   "enable-notifications": "Enable Notifications",
   "error-borrow-exceeds-limit": "Maximum borrow for the current period is {{remaining}}. New period starts {{resetTime}}",
-  "error-token-positions-full": "你帐户的币种位置已占满",
+  "error-token-positions-full": "你帐户的币位已占满",
   "explorer": "浏览器",
   "fee": "费用",
   "feedback-survey": "反馈调查",

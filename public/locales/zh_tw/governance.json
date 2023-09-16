@@ -9,7 +9,6 @@
     "before-listing-2": "新幣種需要有",
     "before-listing-3": "是否有足夠相對USDC與SOL的流動性？",
     "before-listing-4": "新幣種由DAO確認。過程需要3天的時間。",
-    "before-you-list": "提出幣種上架之前:",
     "cancel": "取消",
     "cant-find-token-for-mint": "查不到該鑄幣地址的幣種",
     "cant-list-no-openbook-market": "找不到Openbook市場。繼續之前請創建Openbook市場。",
