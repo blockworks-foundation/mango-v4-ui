@@ -377,7 +377,7 @@ const mangoStore = create<MangoStore>()(
       priorityFee: DEFAULT_PRIORITY_FEE,
       prependedGlobalAdditionalInstructions: [],
       selectedMarket: {
-        name: 'SOL/USDC',
+        name: 'SOL-PERP',
         current: undefined,
         fills: [],
         bidsAccount: undefined,
