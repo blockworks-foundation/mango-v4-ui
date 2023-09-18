@@ -29,8 +29,6 @@ import { useTokenMax } from './useTokenMax'
 import Loading from '@components/shared/Loading'
 import InlineNotification from '@components/shared/InlineNotification'
 import useMangoAccount from 'hooks/useMangoAccount'
-import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
-import DepositWithdrawModal from '@components/modals/DepositWithdrawModal'
 import Link from 'next/link'
 import SecondaryConnectButton from '@components/shared/SecondaryConnectButton'
 import useRemainingBorrowsInPeriod from 'hooks/useRemainingBorrowsInPeriod'
@@ -320,7 +318,6 @@ export default MarketSwapForm
 const SwapFormSubmitButton = ({
   amountIn,
   amountOut,
-  inputSymbol,
   loadingSwapDetails,
   selectedRoute,
   setShowConfirm,
@@ -338,19 +335,12 @@ const SwapFormSubmitButton = ({
   const { mangoAccountAddress } = useMangoAccount()
   const { connected } = useWallet()
   const { amount: tokenMax, amountWithBorrow } = useTokenMax(useMargin)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showDepositModal, setShowDepositModal] = useState(false)
   const { inputBank, outputBank } = mangoStore((s) => s.swap)
   const { remainingBorrowsInPeriod, timeToNextPeriod } =
     useRemainingBorrowsInPeriod(true)
   const tokenPositionsFull = useTokenPositionsFull([outputBank, inputBank])
-
-  const freeCollateral = useMemo(() => {
-    const group = mangoStore.getState().group
-    const mangoAccount = mangoStore.getState().mangoAccount.current
-    return group && mangoAccount
-      ? toUiDecimalsForQuote(mangoAccount.getCollateralValue(group))
-      : 0
-  }, [mangoAccountAddress])
 
   const showInsufficientBalance = useMargin
     ? amountWithBorrow.lt(amountIn) || amountWithBorrow.eq(0)
@@ -377,10 +367,9 @@ const SwapFormSubmitButton = ({
       tokenPositionsFull ||
       borrowExceedsLimitInPeriod)
 
-  const onClick =
-    showInsufficientBalance || freeCollateral <= 0
-      ? () => setShowDepositModal(true)
-      : () => setShowConfirm(true)
+  const onClick = showInsufficientBalance
+    ? () => setShowDepositModal(true)
+    : () => setShowConfirm(true)
 
   return (
     <>
@@ -391,7 +380,7 @@ const SwapFormSubmitButton = ({
           disabled={disabled}
           size="large"
         >
-          {showInsufficientBalance || freeCollateral <= 0 ? (
+          {showInsufficientBalance ? (
             <div className="flex items-center">
               <ArrowDownTrayIcon className="mr-2 h-5 w-5 flex-shrink-0" />
               {t('swap:deposit-funds')}
@@ -440,14 +429,6 @@ const SwapFormSubmitButton = ({
         <div className="mb-4">
           <InlineNotification type="error" desc={t('swap:no-swap-found')} />
         </div>
-      ) : null}
-      {showDepositModal ? (
-        <DepositWithdrawModal
-          action="deposit"
-          isOpen={showDepositModal}
-          onClose={() => setShowDepositModal(false)}
-          token={freeCollateral > 0 ? inputSymbol : ''}
-        />
       ) : null}
     </>
   )
