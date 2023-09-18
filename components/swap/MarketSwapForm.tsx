@@ -6,7 +6,7 @@ import {
   Dispatch,
   SetStateAction,
 } from 'react'
-import { ArrowDownIcon, ArrowDownTrayIcon } from '@heroicons/react/20/solid'
+import { ArrowDownIcon } from '@heroicons/react/20/solid'
 import { NumberFormatValues, SourceInfo } from 'react-number-format'
 import Decimal from 'decimal.js'
 import mangoStore from '@store/mangoStore'
@@ -317,6 +317,7 @@ export default MarketSwapForm
 
 const SwapFormSubmitButton = ({
   amountIn,
+  amountOut,
   loadingSwapDetails,
   selectedRoute,
   setShowConfirm,
@@ -333,14 +334,10 @@ const SwapFormSubmitButton = ({
   const { mangoAccountAddress } = useMangoAccount()
   const { connected } = useWallet()
   // const { amount: tokenMax, amountWithBorrow } = useTokenMax(useMargin)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [showDepositModal, setShowDepositModal] = useState(false)
   const { inputBank, outputBank } = mangoStore((s) => s.swap)
   const { remainingBorrowsInPeriod, timeToNextPeriod } =
     useRemainingBorrowsInPeriod(true)
   const tokenPositionsFull = useTokenPositionsFull([outputBank, inputBank])
-
-  const showInsufficientBalance = false
 
   // check if the borrowed amount exceeds the net borrow limit in the current period
   const borrowExceedsLimitInPeriod = useMemo(() => {
@@ -354,34 +351,18 @@ const SwapFormSubmitButton = ({
     return borrowAmount > remainingBorrowsInPeriod
   }, [amountIn, inputBank, mangoAccountAddress, remainingBorrowsInPeriod])
 
-  // const disabled =
-  //   connected &&
-  //   !showInsufficientBalance &&
-  //   (!amountIn.toNumber() ||
-  //     !amountOut ||
-  //     !selectedRoute ||
-  //     tokenPositionsFull ||
-  //     borrowExceedsLimitInPeriod)
-
-  const onClick = showInsufficientBalance
-    ? () => setShowDepositModal(true)
-    : () => setShowConfirm(true)
+  const disabled = !amountIn.toNumber() || !amountOut || !selectedRoute
 
   return (
     <>
       {connected ? (
         <Button
-          onClick={onClick}
+          onClick={() => setShowConfirm(true)}
           className="mb-4 mt-6 flex w-full items-center justify-center text-base"
-          disabled={false}
+          disabled={disabled}
           size="large"
         >
-          {showInsufficientBalance ? (
-            <div className="flex items-center">
-              <ArrowDownTrayIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-              {t('swap:deposit-funds')}
-            </div>
-          ) : loadingSwapDetails ? (
+          {loadingSwapDetails ? (
             <Loading />
           ) : (
             <span>{t('swap:review-swap')}</span>
