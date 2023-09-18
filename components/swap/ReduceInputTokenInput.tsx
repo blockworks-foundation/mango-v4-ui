@@ -5,7 +5,7 @@ import NumberFormat, {
 } from 'react-number-format'
 import { formatCurrencyValue } from 'utils/numbers'
 import { useTranslation } from 'react-i18next'
-import { Dispatch, SetStateAction, useMemo } from 'react'
+import { Dispatch, SetStateAction } from 'react'
 import mangoStore from '@store/mangoStore'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { INPUT_TOKEN_DEFAULT } from 'utils/constants'
@@ -14,7 +14,6 @@ import MaxSwapAmount from './MaxSwapAmount'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import InlineNotification from '@components/shared/InlineNotification'
 import useMangoAccount from 'hooks/useMangoAccount'
-import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import { SwapFormTokenListType } from './SwapFormTokenList'
 import { useAbsInputPosition } from './useTokenMax'
 
@@ -42,14 +41,6 @@ const ReduceInputTokenInput = ({
     inputBank,
     amountIn: amountInFormValue,
   } = mangoStore((s) => s.swap)
-
-  const freeCollateral = useMemo(() => {
-    const group = mangoStore.getState().group
-    const mangoAccount = mangoStore.getState().mangoAccount.current
-    return group && mangoAccount
-      ? toUiDecimalsForQuote(mangoAccount.getCollateralValue(group))
-      : 10
-  }, [mangoAccountAddress])
 
   return (
     <div
@@ -99,7 +90,7 @@ const ReduceInputTokenInput = ({
           </span>
         ) : null}
       </div>
-      {mangoAccountAddress && freeCollateral <= 0 ? (
+      {mangoAccountAddress ? (
         <div className="col-span-2 mt-1 flex justify-center">
           <InlineNotification
             type="warning"

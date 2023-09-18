@@ -371,7 +371,6 @@ const SwapFormSubmitButton = ({
   const disabled =
     connected &&
     !showInsufficientBalance &&
-    freeCollateral > 0 &&
     (!amountIn.toNumber() ||
       !amountOut ||
       !selectedRoute ||
