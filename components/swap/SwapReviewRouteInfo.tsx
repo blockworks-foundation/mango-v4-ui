@@ -125,6 +125,7 @@ export const fetchJupiterTransaction = async (
   slippage: number,
   inputMint: PublicKey,
   outputMint: PublicKey,
+  isDirectWalletSwap = false,
 ): Promise<[TransactionInstruction[], AddressLookupTableAccount[]]> => {
   const transactions = await (
     await fetch('https://quote-api.jup.ag/v4/swap', {
@@ -165,9 +166,10 @@ export const fetchJupiterTransaction = async (
     )
   }
 
+  //if its in wallet swap we need ATA creation
   const filtered_jup_ixs = ixs
-    .filter((ix) => !isSetupIx(ix.programId))
-    .filter((ix) => !isDuplicateAta(ix))
+    .filter((ix) => (!isDirectWalletSwap ? !isSetupIx(ix.programId) : true))
+    .filter((ix) => (!isDirectWalletSwap ? !isDuplicateAta(ix) : true))
 
   return [filtered_jup_ixs, alts]
 }
@@ -263,7 +265,9 @@ const SwapReviewRouteInfo = ({
         slippage,
         inputBank.mint,
         outputBank.mint,
+        true,
       )
+
       const tx = await client.sendAndConfirmTransaction(ixs)
       notify({
         title: 'Transaction confirmed',
