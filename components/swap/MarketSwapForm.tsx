@@ -317,11 +317,9 @@ export default MarketSwapForm
 
 const SwapFormSubmitButton = ({
   amountIn,
-  amountOut,
   loadingSwapDetails,
   selectedRoute,
   setShowConfirm,
-  useMargin,
 }: {
   amountIn: Decimal
   amountOut: number | undefined
@@ -334,7 +332,7 @@ const SwapFormSubmitButton = ({
   const { t } = useTranslation('common')
   const { mangoAccountAddress } = useMangoAccount()
   const { connected } = useWallet()
-  const { amount: tokenMax, amountWithBorrow } = useTokenMax(useMargin)
+  // const { amount: tokenMax, amountWithBorrow } = useTokenMax(useMargin)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showDepositModal, setShowDepositModal] = useState(false)
   const { inputBank, outputBank } = mangoStore((s) => s.swap)
@@ -342,9 +340,7 @@ const SwapFormSubmitButton = ({
     useRemainingBorrowsInPeriod(true)
   const tokenPositionsFull = useTokenPositionsFull([outputBank, inputBank])
 
-  const showInsufficientBalance = useMargin
-    ? amountWithBorrow.lt(amountIn) || amountWithBorrow.eq(0)
-    : tokenMax.lt(amountIn) || tokenMax.eq(0)
+  const showInsufficientBalance = false
 
   // check if the borrowed amount exceeds the net borrow limit in the current period
   const borrowExceedsLimitInPeriod = useMemo(() => {
@@ -358,14 +354,14 @@ const SwapFormSubmitButton = ({
     return borrowAmount > remainingBorrowsInPeriod
   }, [amountIn, inputBank, mangoAccountAddress, remainingBorrowsInPeriod])
 
-  const disabled =
-    connected &&
-    !showInsufficientBalance &&
-    (!amountIn.toNumber() ||
-      !amountOut ||
-      !selectedRoute ||
-      tokenPositionsFull ||
-      borrowExceedsLimitInPeriod)
+  // const disabled =
+  //   connected &&
+  //   !showInsufficientBalance &&
+  //   (!amountIn.toNumber() ||
+  //     !amountOut ||
+  //     !selectedRoute ||
+  //     tokenPositionsFull ||
+  //     borrowExceedsLimitInPeriod)
 
   const onClick = showInsufficientBalance
     ? () => setShowDepositModal(true)
@@ -377,7 +373,7 @@ const SwapFormSubmitButton = ({
         <Button
           onClick={onClick}
           className="mb-4 mt-6 flex w-full items-center justify-center text-base"
-          disabled={disabled}
+          disabled={false}
           size="large"
         >
           {showInsufficientBalance ? (
