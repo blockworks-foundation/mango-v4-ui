@@ -13,7 +13,6 @@ import { NUMBER_FORMAT_CLASSNAMES, withValueLimit } from './MarketSwapForm'
 import MaxSwapAmount from './MaxSwapAmount'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import InlineNotification from '@components/shared/InlineNotification'
-import useMangoAccount from 'hooks/useMangoAccount'
 import { SwapFormTokenListType } from './SwapFormTokenList'
 import { useAbsInputPosition } from './useTokenMax'
 
@@ -33,7 +32,6 @@ const ReduceInputTokenInput = ({
   isTriggerOrder?: boolean
 }) => {
   const { t } = useTranslation(['common', 'swap'])
-  const { mangoAccountAddress } = useMangoAccount()
   const { group } = useMangoGroup()
   const { isUnownedAccount } = useUnownedAccount()
   const {
@@ -90,7 +88,7 @@ const ReduceInputTokenInput = ({
           </span>
         ) : null}
       </div>
-      {mangoAccountAddress ? (
+      {/* {mangoAccountAddress ? (
         <div className="col-span-2 mt-1 flex justify-center">
           <InlineNotification
             type="warning"
@@ -99,7 +97,7 @@ const ReduceInputTokenInput = ({
             hidePadding
           />
         </div>
-      ) : null}
+      ) : null} */}
       {error ? (
         <div className="col-span-2 mt-1 flex justify-center">
           <InlineNotification
