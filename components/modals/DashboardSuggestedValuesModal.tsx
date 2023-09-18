@@ -141,35 +141,72 @@ const DashboardSuggestedValues = ({
         {},
       ) as Partial<typeof preset>
 
+      const oracleConfFilter =
+        fieldsToChange.oracleConfFilter === undefined
+          ? null
+          : fieldsToChange.oracleConfFilter
+      const maxStalenessSlots =
+        fieldsToChange.maxStalenessSlots === undefined
+          ? null
+          : fieldsToChange.maxStalenessSlots
+
       const isThereNeedOfSendingOracleConfig =
-        fieldsToChange.oracleConfFilter !== undefined ||
-        fieldsToChange.maxStalenessSlots !== undefined
-      const isThereNeedOfSendingRateConfigs =
-        fieldsToChange.adjustmentFactor !== undefined ||
-        fieldsToChange.util0 !== undefined ||
-        fieldsToChange.rate0 !== undefined ||
-        fieldsToChange.util1 !== undefined ||
-        fieldsToChange.rate1 !== undefined ||
-        fieldsToChange.maxRate !== undefined
+        bank.oracleConfig.confFilter.toNumber() !== oracleConfFilter ||
+        bank.oracleConfig.maxStalenessSlots.toNumber() !== maxStalenessSlots
+      const rateConfigs = {
+        adjustmentFactor: getNullOrVal(fieldsToChange.adjustmentFactor),
+        util0: getNullOrVal(fieldsToChange.util0),
+        rate0: getNullOrVal(fieldsToChange.rate0),
+        util1: getNullOrVal(fieldsToChange.util1),
+        rate1: getNullOrVal(fieldsToChange.rate1),
+        maxRate: getNullOrVal(fieldsToChange.maxRate),
+      }
+      const isThereNeedOfSendingRateConfigs = Object.values(rateConfigs).filter(
+        (x) => x !== null,
+      ).length
 
       const ix = await client!.program.methods
         .tokenEdit(
           null,
           isThereNeedOfSendingOracleConfig
             ? {
-                confFilter: fieldsToChange.oracleConfFilter!,
-                maxStalenessSlots: fieldsToChange.maxStalenessSlots!,
+                confFilter:
+                  fieldsToChange.oracleConfFilter === undefined
+                    ? bank.oracleConfig.confFilter.toNumber()
+                    : fieldsToChange.oracleConfFilter,
+                maxStalenessSlots:
+                  fieldsToChange.maxStalenessSlots === undefined
+                    ? bank.oracleConfig.maxStalenessSlots.toNumber()
+                    : fieldsToChange.maxStalenessSlots,
               }
             : null,
           null,
           isThereNeedOfSendingRateConfigs
             ? {
-                adjustmentFactor: fieldsToChange.adjustmentFactor!,
-                util0: fieldsToChange.util0!,
-                rate0: fieldsToChange.rate0!,
-                util1: fieldsToChange.util1!,
-                rate1: fieldsToChange.rate1!,
-                maxRate: fieldsToChange.maxRate!,
+                adjustmentFactor:
+                  fieldsToChange.adjustmentFactor === undefined
+                    ? bank.adjustmentFactor.toNumber()
+                    : fieldsToChange.adjustmentFactor,
+                util0:
+                  fieldsToChange.util0 === undefined
+                    ? bank.util0.toNumber()
+                    : fieldsToChange.util0,
+                rate0:
+                  fieldsToChange.rate0 === undefined
+                    ? bank.rate0.toNumber()
+                    : fieldsToChange.rate0,
+                util1:
+                  fieldsToChange.util1 === undefined
+                    ? bank.util1.toNumber()
+                    : fieldsToChange.util1,
+                rate1:
+                  fieldsToChange.rate1 === undefined
+                    ? bank.rate1.toNumber()
+                    : fieldsToChange.rate1,
+                maxRate:
+                  fieldsToChange.maxRate === undefined
+                    ? bank.maxRate.toNumber()
+                    : fieldsToChange.maxRate,
               }
             : null,
           getNullOrVal(fieldsToChange.loanFeeRate),
