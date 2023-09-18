@@ -50,6 +50,7 @@ import TokenLogo from '@components/shared/TokenLogo'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
+  isWalletSwap?: boolean
   onClose: () => void
   routes: RouteInfo[] | undefined
   selectedRoute: RouteInfo | undefined | null
@@ -183,6 +184,7 @@ const successSound = new Howl({
 
 const SwapReviewRouteInfo = ({
   amountIn,
+  isWalletSwap,
   onClose,
   routes,
   selectedRoute,
@@ -247,6 +249,41 @@ const SwapReviewRouteInfo = ({
       fetchTokenPrices()
     }
   }, [inputTokenInfo, outputTokenInfo])
+
+  const onWalletSwap = useCallback(async () => {
+    if (!selectedRoute || !inputBank || !outputBank || !wallet.publicKey) return
+    const client = mangoStore.getState().client
+    const connection = mangoStore.getState().connection
+    setSubmitting(true)
+    try {
+      const [ixs] = await fetchJupiterTransaction(
+        connection,
+        selectedRoute,
+        wallet.publicKey,
+        slippage,
+        inputBank.mint,
+        outputBank.mint,
+      )
+      const tx = await client.sendAndConfirmTransaction(ixs)
+      notify({
+        title: 'Transaction confirmed',
+        type: 'success',
+        txid: tx.signature,
+      })
+    } catch (e) {
+      console.log('error swapping wallet tokens', e)
+    } finally {
+      setSubmitting(false)
+      onClose()
+    }
+  }, [
+    inputBank,
+    outputBank,
+    onClose,
+    selectedRoute,
+    slippage,
+    wallet.publicKey,
+  ])
 
   const onSwap = useCallback(async () => {
     if (!selectedRoute) return
@@ -333,12 +370,16 @@ const SwapReviewRouteInfo = ({
     }
   }, [
     amountIn,
+    inputBank,
+    outputBank,
     onClose,
     selectedRoute,
     slippage,
     soundSettings,
     wallet.publicKey,
   ])
+
+  const onClick = isWalletSwap ? onWalletSwap : onSwap
 
   const [balance, borrowAmount] = useMemo(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
@@ -596,7 +637,7 @@ const SwapReviewRouteInfo = ({
       <div className="p-6">
         <div className="mb-4 flex items-center justify-center">
           <Button
-            onClick={onSwap}
+            onClick={onClick}
             className="flex w-full items-center justify-center text-base"
             size="large"
           >

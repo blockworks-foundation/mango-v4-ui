@@ -51,6 +51,8 @@
     "tooltip-max-slippage": "如果價格下滑超過您的最大滑點，換幣交易將不會被執行",
     "trigger-beta": "Trigger orders are in beta. Use with caution.",
     "use-margin": "允許槓桿",
+    "wallet-swap": "Wallet Swap",
+    "wallet-swap-desc": "Swap tokens within your wallet",
     "warning-no-collateral": "你沒有可用質押品",
     "you-buy": "你正在買",
     "you-sell": "你正在賣"

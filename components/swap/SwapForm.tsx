@@ -21,6 +21,7 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { SwapFormTokenListType } from './SwapFormTokenList'
 import { TriggerOrderTypes } from 'types'
 import TriggerSwapForm from './TriggerSwapForm'
+import WalletSwapForm from './WalletSwapForm'
 
 const set = mangoStore.getState().set
 
@@ -29,6 +30,7 @@ const SwapForm = () => {
   const [showTokenSelect, setShowTokenSelect] =
     useState<SwapFormTokenListType>()
   const [showSettings, setShowSettings] = useState(false)
+  const [walletSwap, setWalletSwap] = useState(false)
   const [, setSavedSwapMargin] = useLocalStorageState<boolean>(
     SWAP_MARGIN_KEY,
     true,
@@ -150,7 +152,9 @@ const SwapForm = () => {
           <SwapFormTokenList
             onClose={() => setShowTokenSelect(undefined)}
             onTokenSelect={
-              showTokenSelect === 'input' || showTokenSelect === 'reduce-input'
+              showTokenSelect === 'input' ||
+              showTokenSelect === 'reduce-input' ||
+              showTokenSelect === 'wallet-input'
                 ? handleTokenInSelect
                 : handleTokenOutSelect
             }
@@ -164,26 +168,44 @@ const SwapForm = () => {
         >
           <SwapSettings onClose={() => setShowSettings(false)} />
         </EnterBottomExitBottom>
-        <div className="relative p-6">
-          <div className="relative mb-6">
-            <TabUnderline
-              activeValue={swapOrTrigger}
-              values={['swap', 'trade:trigger-order']}
-              onChange={(v) => handleSwapOrTrigger(v)}
-            />
-          </div>
-          {swapOrTrigger === 'swap' ? (
-            <MarketSwapForm setShowTokenSelect={setShowTokenSelect} />
+        <div className="border-b border-th-bkg-3 px-6 py-3">
+          <Switch
+            checked={walletSwap}
+            onChange={() => setWalletSwap(!walletSwap)}
+            small
+          >
+            {t('swap:wallet-swap')}
+          </Switch>
+        </div>
+        <div className="relative p-6 pt-0">
+          {walletSwap ? (
+            <div className="pt-4">
+              <WalletSwapForm setShowTokenSelect={setShowTokenSelect} />
+            </div>
           ) : (
-            <TriggerSwapForm
-              showTokenSelect={showTokenSelect}
-              setShowTokenSelect={setShowTokenSelect}
-            />
+            <>
+              <div className="relative pb-2 pt-6">
+                <TabUnderline
+                  activeValue={swapOrTrigger}
+                  values={['swap', 'trade:trigger-order']}
+                  onChange={(v) => handleSwapOrTrigger(v)}
+                />
+              </div>
+              {swapOrTrigger === 'swap' ? (
+                <MarketSwapForm setShowTokenSelect={setShowTokenSelect} />
+              ) : (
+                <TriggerSwapForm
+                  showTokenSelect={showTokenSelect}
+                  setShowTokenSelect={setShowTokenSelect}
+                />
+              )}
+            </>
           )}
-          {inputBank ? (
+          {inputBank && !walletSwap ? (
             <TokenVaultWarnings bank={inputBank} type="swap" />
           ) : null}
           {inputBank &&
+          !walletSwap &&
           inputBank.areBorrowsReduceOnly() &&
           inputBank.areDepositsReduceOnly() ? (
             <div className="pb-4">
@@ -196,6 +218,7 @@ const SwapForm = () => {
             </div>
           ) : null}
           {outputBank &&
+          !walletSwap &&
           outputBank.areBorrowsReduceOnly() &&
           outputBank.areDepositsReduceOnly() ? (
             <div className="pb-4">
@@ -208,24 +231,26 @@ const SwapForm = () => {
             </div>
           ) : null}
           <div className="space-y-2">
-            <div id="swap-step-four">
+            {!walletSwap ? (
               <HealthImpact maintProjectedHealth={maintProjectedHealth} />
-            </div>
+            ) : null}
             {swapOrTrigger === 'swap' ? (
               <>
-                <div className="flex items-center justify-between">
-                  <Tooltip content={t('swap:tooltip-margin')}>
-                    <p className="tooltip-underline text-sm text-th-fgd-3">
-                      {t('swap:margin')}
-                    </p>
-                  </Tooltip>
-                  <Switch
-                    className="text-th-fgd-3"
-                    checked={useMargin}
-                    onChange={handleSetMargin}
-                    small
-                  />
-                </div>
+                {!walletSwap ? (
+                  <div className="flex items-center justify-between">
+                    <Tooltip content={t('swap:tooltip-margin')}>
+                      <p className="tooltip-underline text-sm text-th-fgd-3">
+                        {t('swap:margin')}
+                      </p>
+                    </Tooltip>
+                    <Switch
+                      className="text-th-fgd-3"
+                      checked={useMargin}
+                      onChange={handleSetMargin}
+                      small
+                    />
+                  </div>
+                ) : null}
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-th-fgd-3">
                     {t('swap:max-slippage')}

@@ -7,14 +7,17 @@ import { CUSTOM_TOKEN_ICONS } from 'utils/constants'
 
 const TokenLogo = ({
   bank,
+  logoUrl,
   size,
 }: {
   bank: Bank | undefined
+  logoUrl?: string
   size?: number
 }) => {
   const { mangoTokens } = useJupiterMints()
 
   const logoUri = useMemo(() => {
+    if (logoUrl) return logoUrl
     if (!bank) return ''
     const tokenSymbol = bank.name.toLowerCase()
     const hasCustomIcon = CUSTOM_TOKEN_ICONS[tokenSymbol]
@@ -26,7 +29,7 @@ const TokenLogo = ({
       )?.logoURI
     }
     return jupiterLogoURI
-  }, [mangoTokens, bank])
+  }, [mangoTokens, bank, logoUrl])
 
   const logoSize = size ? size : 24
 

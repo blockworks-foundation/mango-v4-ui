@@ -70,7 +70,7 @@ const TabUnderline = <T extends Values>({
             <span className="relative">
               {names ? names[i] : t(`${value}`)}
               {value === 'trade:trigger-order' ? (
-                <span className="absolute -right-5 -top-3 ml-2 rounded bg-th-active px-1 py-0.5 text-xxs font-bold uppercase leading-none text-th-bkg-1">
+                <span className="absolute -right-5 -top-2.5 ml-2 rounded bg-th-active px-1 py-0.5 text-xxs font-bold uppercase leading-none text-th-bkg-1">
                   beta
                 </span>
               ) : null}
