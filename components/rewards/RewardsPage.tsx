@@ -36,6 +36,7 @@ import {
 } from '@blockworks-foundation/mango-mints-redemption'
 import useMangoAccount from 'hooks/useMangoAccount'
 
+const DISTRIBUTION_NUMBER_PREFIX = 420
 const FAQS = [
   {
     q: 'What is Mango Mints?',
@@ -95,6 +96,18 @@ export const fetchLeaderboard = async (tier: string | undefined) => {
     return res
   } catch (e) {
     console.log('Failed to top accounts leaderboard', e)
+  }
+}
+
+export const fetchCurrentSeason = async () => {
+  try {
+    const data = await fetch(
+      `${MANGO_DATA_API_URL}/seasons/season-id?timestamp=${new Date().toISOString()}`,
+    )
+    const res = await data.json()
+    return res
+  } catch (e) {
+    console.log('Failed to load current season', e)
   }
 }
 
@@ -470,14 +483,28 @@ const Claim = () => {
   const provider = state.client.program.provider
   const connection = provider.connection
   const wallet = useWallet()
-  console.log('pubkey', wallet.publicKey?.toString())
+
+  const {
+    data: currentSeasonData,
+    // isFetching: fetchingCurrentSeasonData,
+    // isLoading: loadingCurrentSeasonData,
+  } = useQuery(['current-season-data'], () => fetchCurrentSeason(), {
+    cacheTime: 1000 * 60 * 10,
+    staleTime: 1000 * 60,
+    retry: 3,
+    refetchOnWindowFocus: false,
+  })
 
   useEffect(() => {
-    if (!wallet.publicKey) return
+    if (!wallet.publicKey || !currentSeasonData) return
     const fetchRewards = async () => {
       console.log('fetchRewards')
       const client = new MangoMintsRedemptionClient(provider as AnchorProvider)
-      const d = await client.loadDistribution(25)
+      const d = await client.loadDistribution(
+        parseInt(
+          `${DISTRIBUTION_NUMBER_PREFIX}${currentSeasonData['season_id']}`,
+        ),
+      )
       setDistribution(d)
       setClaims(d.getClaims(wallet.publicKey!))
       setClaimed(await d.getClaimed())
@@ -496,6 +523,7 @@ const Claim = () => {
     console.log('claims', claims)
     // Create claim account if it doesn't exist
     if (claimed === undefined) {
+      console.log('create claim account')
       transactionInstructions.push({
         instructionsSet: [
           new TransactionInstructionWithSigners(
