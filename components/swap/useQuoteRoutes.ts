@@ -3,7 +3,7 @@ import { PublicKey } from '@solana/web3.js'
 import { useQuery } from '@tanstack/react-query'
 import Decimal from 'decimal.js'
 import { RouteInfo } from 'types/jupiter'
-import { MANGO_ROUTER_API_URL } from 'utils/constants'
+// import { MANGO_ROUTER_API_URL } from 'utils/constants'
 import useJupiterSwapData from './useJupiterSwapData'
 import useDebounce from '@components/shared/useDebounce'
 import { useMemo } from 'react'
@@ -53,62 +53,62 @@ const fetchJupiterRoutes = async (
   }
 }
 
-const fetchMangoRoutes = async (
-  inputMint = 'So11111111111111111111111111111111111111112',
-  outputMint = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-  amount = 0,
-  slippage = 50,
-  swapMode = 'ExactIn',
-  feeBps = 0,
-  wallet = PublicKey.default.toBase58(),
-) => {
-  {
-    const defaultOtherAmount =
-      swapMode === 'ExactIn' ? 0 : Number.MAX_SAFE_INTEGER
+// const fetchMangoRoutes = async (
+//   inputMint = 'So11111111111111111111111111111111111111112',
+//   outputMint = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+//   amount = 0,
+//   slippage = 50,
+//   swapMode = 'ExactIn',
+//   feeBps = 0,
+//   wallet = PublicKey.default.toBase58(),
+// ) => {
+//   {
+//     const defaultOtherAmount =
+//       swapMode === 'ExactIn' ? 0 : Number.MAX_SAFE_INTEGER
 
-    const paramsString = new URLSearchParams({
-      inputMint: inputMint.toString(),
-      outputMint: outputMint.toString(),
-      amount: amount.toString(),
-      slippage: ((slippage * 1) / 100).toString(),
-      feeBps: feeBps.toString(),
-      mode: swapMode,
-      wallet: wallet,
-      otherAmountThreshold: defaultOtherAmount.toString(),
-    }).toString()
+//     const paramsString = new URLSearchParams({
+//       inputMint: inputMint.toString(),
+//       outputMint: outputMint.toString(),
+//       amount: amount.toString(),
+//       slippage: ((slippage * 1) / 100).toString(),
+//       feeBps: feeBps.toString(),
+//       mode: swapMode,
+//       wallet: wallet,
+//       otherAmountThreshold: defaultOtherAmount.toString(),
+//     }).toString()
 
-    const response = await fetch(`${MANGO_ROUTER_API_URL}/swap?${paramsString}`)
+//     const response = await fetch(`${MANGO_ROUTER_API_URL}/swap?${paramsString}`)
 
-    const res = await response.json()
-    const data: RouteInfo[] = res.map((route: any) => ({
-      ...route,
-      priceImpactPct: route.priceImpact,
-      slippageBps: slippage,
-      marketInfos: route.marketInfos.map((mInfo: any) => ({
-        ...mInfo,
-        lpFee: {
-          ...mInfo.fee,
-          pct: mInfo.fee.rate,
-        },
-      })),
-      mints: route.mints.map((x: string) => new PublicKey(x)),
-      instructions: route.instructions.map((ix: any) => ({
-        ...ix,
-        programId: new PublicKey(ix.programId),
-        data: Buffer.from(ix.data, 'base64'),
-        keys: ix.keys.map((key: any) => ({
-          ...key,
-          pubkey: new PublicKey(key.pubkey),
-        })),
-      })),
-      routerName: 'Mango',
-    }))
-    return {
-      routes: data,
-      bestRoute: (data.length ? data[0] : null) as RouteInfo | null,
-    }
-  }
-}
+//     const res = await response.json()
+//     const data: RouteInfo[] = res.map((route: any) => ({
+//       ...route,
+//       priceImpactPct: route.priceImpact,
+//       slippageBps: slippage,
+//       marketInfos: route.marketInfos.map((mInfo: any) => ({
+//         ...mInfo,
+//         lpFee: {
+//           ...mInfo.fee,
+//           pct: mInfo.fee.rate,
+//         },
+//       })),
+//       mints: route.mints.map((x: string) => new PublicKey(x)),
+//       instructions: route.instructions.map((ix: any) => ({
+//         ...ix,
+//         programId: new PublicKey(ix.programId),
+//         data: Buffer.from(ix.data, 'base64'),
+//         keys: ix.keys.map((key: any) => ({
+//           ...key,
+//           pubkey: new PublicKey(key.pubkey),
+//         })),
+//       })),
+//       routerName: 'Mango',
+//     }))
+//     return {
+//       routes: data,
+//       bestRoute: (data.length ? data[0] : null) as RouteInfo | null,
+//     }
+//   }
+// }
 
 export const handleGetRoutes = async (
   inputMint = 'So11111111111111111111111111111111111111112',
@@ -126,18 +126,19 @@ export const handleGetRoutes = async (
 
     const routes = []
 
-    if (mode === 'ALL' || mode === 'MANGO') {
-      const mangoRoute = fetchMangoRoutes(
-        inputMint,
-        outputMint,
-        amount,
-        slippage,
-        swapMode,
-        feeBps,
-        wallet,
-      )
-      routes.push(mangoRoute)
-    }
+    // FIXME: Disable for now, mango router needs to use ALTs
+    // if (mode === 'ALL' || mode === 'MANGO') {
+    //   const mangoRoute = fetchMangoRoutes(
+    //     inputMint,
+    //     outputMint,
+    //     amount,
+    //     slippage,
+    //     swapMode,
+    //     feeBps,
+    //     wallet,
+    //   )
+    //   routes.push(mangoRoute)
+    // }
 
     if (mode === 'ALL' || mode === 'JUPITER') {
       const jupiterRoute = fetchJupiterRoutes(
