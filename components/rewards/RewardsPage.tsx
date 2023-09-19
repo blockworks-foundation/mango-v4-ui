@@ -5,7 +5,7 @@ import { Disclosure } from '@headlessui/react'
 import { ChevronDownIcon, ClockIcon } from '@heroicons/react/20/solid'
 // import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
-import { RefObject, useEffect, useRef, useState, useCallback } from 'react'
+import { RefObject, useCallback, useEffect, useRef, useState } from 'react'
 import Particles from 'react-tsparticles'
 import { ModalProps } from 'types/modal'
 import Leaderboards from './Leaderboards'
@@ -35,6 +35,7 @@ import {
   Claim,
 } from '@blockworks-foundation/mango-mints-redemption'
 import useMangoAccount from 'hooks/useMangoAccount'
+import { chunk } from 'lodash'
 
 const DISTRIBUTION_NUMBER_PREFIX = 420
 const FAQS = [
@@ -482,6 +483,7 @@ const Claim = () => {
   const state = mangoStore.getState()
   const provider = state.client.program.provider
   const connection = provider.connection
+  //used to sing tx do not deconstruct
   const wallet = useWallet()
 
   const {
@@ -542,11 +544,12 @@ const Claim = () => {
               .instruction(),
           ),
         ],
-        sequenceType: SequenceType.StopOnFailure,
+        sequenceType: SequenceType.Sequential,
       })
     }
 
     try {
+      const claimIxes: TransactionInstructionWithSigners[] = []
       for (const claim of claims) {
         if (claimed !== undefined) {
           const alreadyClaimed =
@@ -567,15 +570,18 @@ const Claim = () => {
             new TransactionInstructionWithSigners(ix),
         )
 
-        transactionInstructions.push({
-          instructionsSet: ixs,
-          sequenceType: SequenceType.Sequential,
-        })
+        claimIxes.push(...ixs)
       }
+      chunk(claimIxes, 4).map((x) =>
+        transactionInstructions.push({
+          instructionsSet: x,
+          sequenceType: SequenceType.Parallel,
+        }),
+      )
 
       setIsClaiming(true)
       setClaimProgress(10)
-      console.log(transactionInstructions)
+
       await sendSignAndConfirmTransactions({
         connection,
         wallet,
@@ -612,7 +618,7 @@ const Claim = () => {
     } finally {
       setIsClaiming(false)
     }
-  }, [distribution, wallet, claims, rewardsClient])
+  }, [distribution, wallet, claims, rewardsClient, connection])
 
   return claims === undefined ? (
     <span>Loading...</span>
