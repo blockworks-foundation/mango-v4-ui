@@ -33,6 +33,14 @@ import ContentBox from '@components/shared/ContentBox'
 import SheenLoader from '@components/shared/SheenLoader'
 import useThemeWrapper from 'hooks/useThemeWrapper'
 
+type TempDataType = {
+  [time: string]: {
+    [marketKey: string]: number | string
+    time: string
+    total: number
+  }
+}
+
 const fetchHourlyFunding = async (mangoAccountPk: string) => {
   try {
     const data = await fetch(
@@ -87,31 +95,29 @@ const FundingChart = ({ hideChart }: { hideChart: () => void }) => {
     refetch()
   }, [])
 
-  const chartData = useMemo(() => {
+  const chartData: HourlyFundingChartData[] = useMemo(() => {
     if (!fundingData || !fundingData.length) return []
-    const rawData = []
-    for (const item of fundingData) {
-      for (const fundingItem of item.marketFunding) {
-        rawData.push({
-          [item.market]: fundingItem.long_funding + fundingItem.short_funding,
-          time: fundingItem.time,
-        })
-      }
-    }
-    const data = rawData.reduce((a: HourlyFundingChartData[], c) => {
-      const found: HourlyFundingChartData | undefined = a.find(
-        (item) => item['time'] === c.time,
-      )
-      const marketKey = Object.keys(c)[0]
-      const marketFunding = Object.values(c)[0]
-      if (found) {
-        found[marketKey] = marketFunding
-        found.total = found.total + marketFunding
-      } else {
-        a.push({ ...c, total: marketFunding })
-      }
-      return a
-    }, [])
+    const tempData: TempDataType = {}
+    const data: HourlyFundingChartData[] = []
+    fundingData.forEach((item) => {
+      item.marketFunding.forEach((fundingItem) => {
+        const time = fundingItem.time
+        const marketKey = item.market
+        const marketFunding =
+          fundingItem.long_funding + fundingItem.short_funding
+        if (tempData[time]) {
+          tempData[time][marketKey] = marketFunding
+          tempData[time].total += marketFunding
+        } else {
+          tempData[time] = {
+            [marketKey]: marketFunding,
+            time,
+            total: marketFunding,
+          }
+          data.push(tempData[time])
+        }
+      })
+    })
     return data
   }, [fundingData])
 

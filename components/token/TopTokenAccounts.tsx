@@ -44,39 +44,51 @@ const fetchTopTokenAccounts = async (tokenIndex: number) => {
       TopDepositorBorrower[],
     ] = await Promise.all([depositsResponse.json(), borrowsResponse.json()])
 
-    // const depositorProfilesResponse = await Promise.all(
-    //   depositsData.map((r: TopDepositorBorrower) =>
-    //     fetch(
-    //       `${MANGO_DATA_API_URL}/user-data/profile-details?wallet-pk=${r.wallet_pk}`
-    //     )
-    //   )
-    // )
+    const depositsDataToShow =
+      depositsData && depositsData.length
+        ? depositsData.slice(0, 10).filter((d) => d.value >= 1)
+        : []
 
-    // const depositorProfilesData = await Promise.all(
-    //   depositorProfilesResponse.map((d) => d.json())
-    // )
+    const borrowsDataToShow =
+      borrowsData && borrowsData.length
+        ? borrowsData.slice(0, 10).filter((d) => d.value <= -1)
+        : []
 
-    // const borrowerProfilesResponse = await Promise.all(
-    //   borrowsData.map((r: TopDepositorBorrower) =>
-    //     fetch(
-    //       `${MANGO_DATA_API_URL}/user-data/profile-details?wallet-pk=${r.wallet_pk}`
-    //     )
-    //   )
-    // )
+    const depositorProfilesResponse = await Promise.all(
+      depositsDataToShow.map((r: TopDepositorBorrower) =>
+        fetch(
+          `${MANGO_DATA_API_URL}/user-data/profile-details?wallet-pk=${r.wallet_pk}`,
+        ),
+      ),
+    )
 
-    // const borrowerProfilesData = await Promise.all(
-    //   borrowerProfilesResponse.map((d) => d.json())
-    // )
+    const depositorProfilesData = await Promise.all(
+      depositorProfilesResponse.map((d) => d.json()),
+    )
+
+    const borrowerProfilesResponse = await Promise.all(
+      borrowsDataToShow.map((r: TopDepositorBorrower) =>
+        fetch(
+          `${MANGO_DATA_API_URL}/user-data/profile-details?wallet-pk=${r.wallet_pk}`,
+        ),
+      ),
+    )
+
+    const borrowerProfilesData = await Promise.all(
+      borrowerProfilesResponse.map((d) => d.json()),
+    )
 
     return [
-      depositsData
-        // .map((data, i) => ({ ...data, ...depositorProfilesData[i] }))
-        .slice(0, 10)
-        .filter((d) => d.value > 0),
-      borrowsData
-        // .map((data, i) => ({ ...data, ...borrowerProfilesData[i] }))
-        .slice(0, 10)
-        .filter((d) => d.value < 0),
+      depositsDataToShow.map((data, i) => {
+        if (depositorProfilesData[i]) {
+          return { ...data, ...depositorProfilesData[i] }
+        } else return data
+      }),
+      borrowsDataToShow.map((data, i) => {
+        if (borrowerProfilesData[i]) {
+          return { ...data, ...borrowerProfilesData[i] }
+        } else return data
+      }),
     ]
   } catch (e) {
     console.log('Failed to fetch top token accounts', e)

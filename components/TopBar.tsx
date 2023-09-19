@@ -207,7 +207,7 @@ const TopBar = () => {
               className="mr-4"
             >{`${t('deposit')} / ${t('withdraw')}`}</Button>
           )}
-          <div className="h-[63px]">
+          <div className="h-[63px] bg-th-bkg-1">
             <button
               className={TOPBAR_ICON_BUTTON_CLASSES}
               onClick={() => setShowSettingsModal(true)}

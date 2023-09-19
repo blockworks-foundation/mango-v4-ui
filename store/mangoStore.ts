@@ -87,6 +87,7 @@ import maxBy from 'lodash/maxBy'
 import mapValues from 'lodash/mapValues'
 import groupBy from 'lodash/groupBy'
 import sampleSize from 'lodash/sampleSize'
+import { fetchTokenStatsData, processTokenStatsData } from 'apis/mngo'
 
 const GROUP = new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX')
 
@@ -261,6 +262,7 @@ export type MangoStore = {
     tokens: TokenAccount[]
     nfts: {
       data: NFT[] | []
+      initialLoad: boolean
       loading: boolean
     }
   }
@@ -376,7 +378,7 @@ const mangoStore = create<MangoStore>()(
       priorityFee: DEFAULT_PRIORITY_FEE,
       prependedGlobalAdditionalInstructions: [],
       selectedMarket: {
-        name: 'SOL/USDC',
+        name: 'SOL-PERP',
         current: undefined,
         fills: [],
         bidsAccount: undefined,
@@ -440,6 +442,7 @@ const mangoStore = create<MangoStore>()(
         nfts: {
           data: [],
           loading: false,
+          initialLoad: true,
         },
       },
       window: {
@@ -728,8 +731,12 @@ const mangoStore = create<MangoStore>()(
           } catch (error) {
             console.warn('Error: unable to fetch nfts.', error)
           } finally {
+            const notLoaded = mangoStore.getState().wallet.nfts.initialLoad
             set((state) => {
               state.wallet.nfts.loading = false
+              if (notLoaded) {
+                state.wallet.nfts.initialLoad = false
+              }
             })
           }
         },
@@ -937,62 +944,26 @@ const mangoStore = create<MangoStore>()(
           const set = get().set
           const group = get().group
           if (!group) return
+
           set((state) => {
             state.tokenStats.loading = true
           })
+
           try {
-            const response = await fetch(
-              `${MANGO_DATA_API_URL}/token-historical-stats?mango-group=${group?.publicKey.toString()}`,
-            )
-            const data = await response.json()
-            let mangoStats: MangoTokenStatsItem[] = []
-            if (data && data.length) {
-              mangoStats = data.reduce(
-                (a: MangoTokenStatsItem[], c: TokenStatsItem) => {
-                  const banks = Array.from(group.banksMapByMint)
-                    .map(([_mintAddress, banks]) => banks)
-                    .map((b) => b[0])
-                  const bank: Bank | undefined = banks.find(
-                    (b) => b.tokenIndex === c.token_index,
-                  )
-                  const hasDate = a.find(
-                    (d: MangoTokenStatsItem) => d.date === c.date_hour,
-                  )
-                  if (!hasDate) {
-                    a.push({
-                      date: c.date_hour,
-                      depositValue: Math.floor(c.total_deposits * c.price),
-                      borrowValue: Math.floor(c.total_borrows * c.price),
-                      feesCollected: c.collected_fees * bank!.uiPrice,
-                    })
-                  } else {
-                    hasDate.depositValue =
-                      hasDate.depositValue +
-                      Math.floor(c.total_deposits * c.price)
-                    hasDate.borrowValue =
-                      hasDate.borrowValue +
-                      Math.floor(c.total_borrows * c.price)
-                    hasDate.feesCollected =
-                      hasDate.feesCollected + c.collected_fees * bank!.uiPrice
-                  }
-                  return a.sort(
-                    (a, b) =>
-                      new Date(a.date).getTime() - new Date(b.date).getTime(),
-                  )
-                },
-                [],
-              )
-            }
+            const data = await fetchTokenStatsData(group)
+            const mangoStats = processTokenStatsData(data, group)
+
             set((state) => {
               state.tokenStats.data = data
               state.tokenStats.mangoStats = mangoStats
               state.tokenStats.initialLoad = true
               state.tokenStats.loading = false
             })
-          } catch {
+          } catch (error) {
             set((state) => {
               state.tokenStats.loading = false
             })
+
             notify({
               title: 'Failed to fetch token stats data',
               type: 'error',

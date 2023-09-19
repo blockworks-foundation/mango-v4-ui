@@ -94,7 +94,7 @@ export const MANGO_DATA_API_URL = 'https://api.mngo.cloud/data/v4'
 
 export const MANGO_DATA_OPENBOOK_URL = 'https://api.mngo.cloud/openbook/v1'
 
-export const DEFAULT_MARKET_NAME = 'SOL/USDC'
+export const DEFAULT_MARKET_NAME = 'SOL-PERP'
 
 export const MIN_SOL_BALANCE = 0.001
 
@@ -128,6 +128,7 @@ export const AUCTION_HOUSE_ID = new PublicKey(
 export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   bonk: true,
   btc: true,
+  chai: true,
   dai: true,
   dual: true,
   eth: true,

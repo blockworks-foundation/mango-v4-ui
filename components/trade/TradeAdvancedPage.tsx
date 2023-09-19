@@ -23,9 +23,6 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { SIDEBAR_COLLAPSE_KEY, TRADE_LAYOUT_KEY } from 'utils/constants'
 import TradeHotKeys from './TradeHotKeys'
 import OrderbookTooltip from './OrderbookTooltip'
-import { ExclamationTriangleIcon } from '@heroicons/react/20/solid'
-import useSelectedMarket from 'hooks/useSelectedMarket'
-import { PerpMarket } from '@blockworks-foundation/mango-v4'
 
 export type TradeLayout =
   | 'chartLeft'
@@ -59,8 +56,6 @@ const TradeAdvancedPage = () => {
     'chartLeft',
   )
   const [isCollapsed] = useLocalStorageState(SIDEBAR_COLLAPSE_KEY, false)
-  const { serumOrPerpMarket } = useSelectedMarket()
-  const { tradeType } = mangoStore((s) => s.tradeForm)
 
   const minPageHeight = 1000
   const topnavbarHeight = 64
@@ -289,18 +284,6 @@ const TradeAdvancedPage = () => {
 
   return (
     <>
-      {/* Openbook warning */}
-      {serumOrPerpMarket instanceof PerpMarket ||
-      tradeType === 'Market' ? null : (
-        <div className="fixed bottom-16 left-1/2 z-20 w-[90%] -translate-x-1/2 rounded-full bg-th-down px-4 py-2 sm:w-max md:bottom-12">
-          <div className="flex items-center">
-            <ExclamationTriangleIcon className="h-5 w-5 flex-shrink-0 text-th-fgd-1" />
-            <p className="ml-2 text-th-fgd-1">
-              Placing limit orders is currently disabled for security reasons.
-            </p>
-          </div>
-        </div>
-      )}
       {showMobileView ? (
         <MobileTradeAdvancedPage />
       ) : (
