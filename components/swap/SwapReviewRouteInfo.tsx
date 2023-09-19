@@ -40,7 +40,7 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { Howl } from 'howler'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 import Tooltip from '@components/shared/Tooltip'
-import { Disclosure } from '@headlessui/react'
+import { Disclosure, Transition } from '@headlessui/react'
 import RoutesModal from './RoutesModal'
 import { createAssociatedTokenAccountIdempotentInstruction } from '@blockworks-foundation/mango-v4'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
@@ -56,6 +56,7 @@ type JupiterRouteInfoProps = {
   selectedRoute: RouteInfo | undefined | null
   setSelectedRoute: Dispatch<SetStateAction<RouteInfo | undefined | null>>
   slippage: number
+  show: boolean
 }
 
 const deserializeJupiterIxAndAlt = async (
@@ -191,6 +192,7 @@ const SwapReviewRouteInfo = ({
   routes,
   selectedRoute,
   setSelectedRoute,
+  show,
 }: JupiterRouteInfoProps) => {
   const { t } = useTranslation(['common', 'trade'])
   const slippage = mangoStore((s) => s.swap.slippage)
@@ -416,352 +418,366 @@ const SwapReviewRouteInfo = ({
     inputTokenInfo &&
     outputTokenInfo &&
     amountOut ? (
-    <div className="thin-scroll flex h-full flex-col justify-between overflow-y-auto">
-      <div>
-        <IconButton
-          className="absolute left-4 top-4 mr-3 text-th-fgd-2"
-          onClick={onClose}
-          size="small"
-          ref={focusRef}
-        >
-          <ArrowLeftIcon className="h-5 w-5" />
-        </IconButton>
-        <div className="flex justify-center bg-gradient-to-t from-th-bkg-1 to-th-bkg-2 p-6 pb-0">
-          <div className="mb-3 flex w-full flex-col items-center border-b border-th-bkg-3 pb-4">
-            <div className="relative mb-2 w-[72px]">
-              <TokenLogo bank={inputBank} size={40} />
-              <div className="absolute right-0 top-0">
-                <TokenLogo bank={outputBank} size={40} />
+    <Transition
+      className="absolute right-0 top-0 z-10 h-full w-full bg-th-bkg-1 pb-0"
+      show={show}
+      enter="transition ease-in duration-300"
+      enterFrom="-translate-x-full"
+      enterTo="translate-x-0"
+      leave="transition ease-out duration-300"
+      leaveFrom="translate-x-0"
+      leaveTo="-translate-x-full"
+    >
+      <div className="thin-scroll flex h-full flex-col justify-between overflow-y-auto">
+        <div>
+          <IconButton
+            className="absolute left-4 top-4 mr-3 text-th-fgd-2"
+            onClick={onClose}
+            size="small"
+            ref={focusRef}
+          >
+            <ArrowLeftIcon className="h-5 w-5" />
+          </IconButton>
+          <div className="flex justify-center bg-gradient-to-t from-th-bkg-1 to-th-bkg-2 p-6 pb-0">
+            <div className="mb-3 flex w-full flex-col items-center border-b border-th-bkg-3 pb-4">
+              <div className="relative mb-2 w-[72px]">
+                <TokenLogo bank={inputBank} size={40} />
+                <div className="absolute right-0 top-0">
+                  <TokenLogo bank={outputBank} size={40} />
+                </div>
               </div>
-            </div>
-            <p className="mb-0.5 flex items-center text-center text-lg">
-              <span className="mr-1 font-mono text-th-fgd-1">
-                <FormatNumericValue value={amountIn} />
-              </span>{' '}
-              {inputTokenInfo?.symbol}
-              <ArrowRightIcon className="mx-2 h-5 w-5 text-th-fgd-2" />
-              <span className="mr-1 font-mono text-th-fgd-1">
-                <FormatNumericValue value={amountOut} />
-              </span>{' '}
-              {`${outputTokenInfo?.symbol}`}
-            </p>
-          </div>
-        </div>
-        <div className="space-y-2 overflow-auto px-6">
-          <div className="flex justify-between">
-            <p className="text-sm text-th-fgd-3">{t('price')}</p>
-            <div>
-              <div className="flex items-center justify-end">
-                <p className="text-right font-mono text-sm text-th-fgd-2">
-                  {swapRate ? (
-                    <>
-                      1{' '}
-                      <span className="font-body text-th-fgd-3">
-                        {inputTokenInfo?.symbol} ≈{' '}
-                      </span>
-                      <FormatNumericValue value={amountOut.div(amountIn)} />{' '}
-                      <span className="font-body text-th-fgd-3">
-                        {outputTokenInfo?.symbol}
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      1{' '}
-                      <span className="font-body text-th-fgd-3">
-                        {outputTokenInfo?.symbol} ≈{' '}
-                      </span>
-                      <FormatNumericValue value={amountIn.div(amountOut)} />{' '}
-                      <span className="font-body text-th-fgd-3">
-                        {inputTokenInfo?.symbol}
-                      </span>
-                    </>
-                  )}
-                </p>
-                <ArrowsRightLeftIcon
-                  className="ml-1 h-4 w-4 cursor-pointer text-th-fgd-2 hover:text-th-active"
-                  onClick={() => setSwapRate(!swapRate)}
-                />
-              </div>
-              <div className="space-y-2 px-1 text-xs">
-                {coingeckoPrices?.outputCoingeckoPrice &&
-                coingeckoPrices?.inputCoingeckoPrice ? (
-                  <div
-                    className={`text-right font-mono ${
-                      coinGeckoPriceDifference.gt(1)
-                        ? 'text-th-down'
-                        : 'text-th-up'
-                    }`}
-                  >
-                    {Decimal.abs(coinGeckoPriceDifference).toFixed(1)}%{' '}
-                    <span className="font-body text-th-fgd-3">{`${
-                      coinGeckoPriceDifference.lte(0)
-                        ? 'cheaper'
-                        : 'more expensive'
-                    } than CoinGecko`}</span>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          </div>
-          <div className="flex justify-between">
-            <p className="text-sm text-th-fgd-3">
-              {t('swap:minimum-received')}
-            </p>
-            {outputTokenInfo?.decimals && selectedRoute ? (
-              <p className="text-right font-mono text-sm text-th-fgd-2">
-                {selectedRoute.swapMode === 'ExactIn' ? (
-                  <FormatNumericValue
-                    value={
-                      selectedRoute.otherAmountThreshold /
-                      10 ** outputTokenInfo.decimals
-                    }
-                    decimals={outputTokenInfo.decimals}
-                  />
-                ) : (
-                  <FormatNumericValue
-                    value={
-                      selectedRoute.outAmount / 10 ** outputTokenInfo.decimals
-                    }
-                    decimals={outputTokenInfo.decimals}
-                  />
-                )}{' '}
-                <span className="font-body text-th-fgd-3">
-                  {outputTokenInfo?.symbol}
-                </span>
+              <p className="mb-0.5 flex items-center text-center text-lg">
+                <span className="mr-1 font-mono text-th-fgd-1">
+                  <FormatNumericValue value={amountIn} />
+                </span>{' '}
+                {inputTokenInfo?.symbol}
+                <ArrowRightIcon className="mx-2 h-5 w-5 text-th-fgd-2" />
+                <span className="mr-1 font-mono text-th-fgd-1">
+                  <FormatNumericValue value={amountOut} />
+                </span>{' '}
+                {`${outputTokenInfo?.symbol}`}
               </p>
-            ) : null}
+            </div>
           </div>
-          {selectedRoute?.swapMode === 'ExactOut' ? (
+          <div className="space-y-2 overflow-auto px-6">
             <div className="flex justify-between">
-              <p className="text-sm text-th-fgd-3">{t('swap:maximum-cost')}</p>
-              {inputTokenInfo?.decimals && selectedRoute ? (
+              <p className="text-sm text-th-fgd-3">{t('price')}</p>
+              <div>
+                <div className="flex items-center justify-end">
+                  <p className="text-right font-mono text-sm text-th-fgd-2">
+                    {swapRate ? (
+                      <>
+                        1{' '}
+                        <span className="font-body text-th-fgd-3">
+                          {inputTokenInfo?.symbol} ≈{' '}
+                        </span>
+                        <FormatNumericValue value={amountOut.div(amountIn)} />{' '}
+                        <span className="font-body text-th-fgd-3">
+                          {outputTokenInfo?.symbol}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        1{' '}
+                        <span className="font-body text-th-fgd-3">
+                          {outputTokenInfo?.symbol} ≈{' '}
+                        </span>
+                        <FormatNumericValue value={amountIn.div(amountOut)} />{' '}
+                        <span className="font-body text-th-fgd-3">
+                          {inputTokenInfo?.symbol}
+                        </span>
+                      </>
+                    )}
+                  </p>
+                  <ArrowsRightLeftIcon
+                    className="ml-1 h-4 w-4 cursor-pointer text-th-fgd-2 hover:text-th-active"
+                    onClick={() => setSwapRate(!swapRate)}
+                  />
+                </div>
+                <div className="space-y-2 px-1 text-xs">
+                  {coingeckoPrices?.outputCoingeckoPrice &&
+                  coingeckoPrices?.inputCoingeckoPrice ? (
+                    <div
+                      className={`text-right font-mono ${
+                        coinGeckoPriceDifference.gt(1)
+                          ? 'text-th-down'
+                          : 'text-th-up'
+                      }`}
+                    >
+                      {Decimal.abs(coinGeckoPriceDifference).toFixed(1)}%{' '}
+                      <span className="font-body text-th-fgd-3">{`${
+                        coinGeckoPriceDifference.lte(0)
+                          ? 'cheaper'
+                          : 'more expensive'
+                      } than CoinGecko`}</span>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-between">
+              <p className="text-sm text-th-fgd-3">
+                {t('swap:minimum-received')}
+              </p>
+              {outputTokenInfo?.decimals && selectedRoute ? (
                 <p className="text-right font-mono text-sm text-th-fgd-2">
-                  <FormatNumericValue
-                    value={
-                      selectedRoute.otherAmountThreshold /
-                      10 ** inputTokenInfo.decimals
-                    }
-                    decimals={inputTokenInfo.decimals}
-                  />{' '}
+                  {selectedRoute.swapMode === 'ExactIn' ? (
+                    <FormatNumericValue
+                      value={
+                        selectedRoute.otherAmountThreshold /
+                        10 ** outputTokenInfo.decimals
+                      }
+                      decimals={outputTokenInfo.decimals}
+                    />
+                  ) : (
+                    <FormatNumericValue
+                      value={
+                        selectedRoute.outAmount / 10 ** outputTokenInfo.decimals
+                      }
+                      decimals={outputTokenInfo.decimals}
+                    />
+                  )}{' '}
                   <span className="font-body text-th-fgd-3">
-                    {inputTokenInfo?.symbol}
+                    {outputTokenInfo?.symbol}
                   </span>
                 </p>
               ) : null}
             </div>
-          ) : null}
-          <div className="flex justify-between">
-            <Tooltip
-              content={
-                <>
-                  <p>
-                    The price impact is the difference observed between the
-                    total value of the entry tokens swapped and the destination
-                    tokens obtained.
-                  </p>
-                  <p className="mt-1">
-                    The bigger the trade is, the bigger the price impact can be.
-                  </p>
-                </>
-              }
-            >
-              <p className="tooltip-underline">{t('swap:price-impact')}</p>
-            </Tooltip>
-            <p className="text-right font-mono text-sm text-th-fgd-2">
-              {selectedRoute?.priceImpactPct * 100 < 0.1
-                ? '<0.1%'
-                : `${(selectedRoute?.priceImpactPct * 100).toFixed(2)}%`}
-            </p>
-          </div>
-          {borrowAmount ? (
-            <>
+            {selectedRoute?.swapMode === 'ExactOut' ? (
               <div className="flex justify-between">
-                <Tooltip
-                  content={
-                    balance
-                      ? t('swap:tooltip-borrow-balance', {
-                          balance: formatNumericValue(balance),
-                          borrowAmount: formatNumericValue(borrowAmount),
-                          token: inputTokenInfo?.symbol,
-                          rate: formatNumericValue(
-                            inputBank!.getBorrowRateUi(),
-                            2,
-                          ),
-                        })
-                      : t('swap:tooltip-borrow-no-balance', {
-                          borrowAmount: formatNumericValue(borrowAmount),
-                          token: inputTokenInfo?.symbol,
-                          rate: formatNumericValue(
-                            inputBank!.getBorrowRateUi(),
-                            2,
-                          ),
-                        })
-                  }
-                  delay={100}
-                >
-                  <p className="tooltip-underline">{t('borrow-amount')}</p>
-                </Tooltip>
-                <p className="text-right font-mono text-sm text-th-fgd-2">
-                  <FormatNumericValue value={borrowAmount} />{' '}
-                  <span className="font-body text-th-fgd-3">
-                    {inputTokenInfo?.symbol}
-                  </span>
+                <p className="text-sm text-th-fgd-3">
+                  {t('swap:maximum-cost')}
                 </p>
-              </div>
-              <div className="flex justify-between">
-                <Tooltip
-                  content={t('loan-origination-fee-tooltip', {
-                    fee: `${(
-                      inputBank!.loanOriginationFeeRate.toNumber() * 100
-                    ).toFixed(3)}%`,
-                  })}
-                  delay={100}
-                >
-                  <p className="tooltip-underline">
-                    {t('loan-origination-fee')}
+                {inputTokenInfo?.decimals && selectedRoute ? (
+                  <p className="text-right font-mono text-sm text-th-fgd-2">
+                    <FormatNumericValue
+                      value={
+                        selectedRoute.otherAmountThreshold /
+                        10 ** inputTokenInfo.decimals
+                      }
+                      decimals={inputTokenInfo.decimals}
+                    />{' '}
+                    <span className="font-body text-th-fgd-3">
+                      {inputTokenInfo?.symbol}
+                    </span>
                   </p>
-                </Tooltip>
-                <p className="text-right font-mono text-th-fgd-2">
-                  <FormatNumericValue
-                    value={
-                      borrowAmount *
-                      inputBank!.loanOriginationFeeRate.toNumber()
-                    }
-                    decimals={inputBank!.mintDecimals}
-                  />{' '}
-                  <span className="font-body text-th-fgd-3">
-                    {inputBank!.name}
-                  </span>
-                </p>
+                ) : null}
               </div>
-            </>
-          ) : null}
-        </div>
-      </div>
-      <div className="p-6">
-        <div className="mb-4 flex items-center justify-center">
-          <Button
-            onClick={onClick}
-            className="flex w-full items-center justify-center text-base"
-            size="large"
-          >
-            {submitting ? (
-              <Loading className="mr-2 h-5 w-5" />
-            ) : (
-              <div className="flex items-center">
-                <ArrowsRightLeftIcon className="mr-2 h-5 w-5" />
-                {t('swap')}
-              </div>
-            )}
-          </Button>
-        </div>
-        <div className="rounded-md bg-th-bkg-2">
-          <Disclosure>
-            {({ open }) => (
-              <>
-                <Disclosure.Button
-                  className={`flex w-full items-center justify-between rounded-md p-3 focus-visible:bg-th-bkg-3 ${
-                    open ? 'mb-2 rounded-b-none' : ''
-                  }`}
-                >
-                  <p>{t('swap:route-info')}</p>
-                  <ChevronDownIcon
-                    className={`${
-                      open ? 'rotate-180' : 'rotate-360'
-                    } h-5 w-5 text-th-fgd-3`}
-                  />
-                </Disclosure.Button>
-                <Disclosure.Panel className="space-y-2 p-3 pt-0">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-th-fgd-3">
-                      {t('swap:swap-route')}
+            ) : null}
+            <div className="flex justify-between">
+              <Tooltip
+                content={
+                  <>
+                    <p>
+                      The price impact is the difference observed between the
+                      total value of the entry tokens swapped and the
+                      destination tokens obtained.
                     </p>
-                    <div
-                      className="flex items-center text-th-fgd-2 md:hover:cursor-pointer md:hover:text-th-fgd-3"
-                      role="button"
-                      onClick={() => setShowRoutesModal(true)}
-                    >
-                      <span className="overflow-ellipsis whitespace-nowrap">
-                        {selectedRoute?.marketInfos.map((info, index) => {
-                          let includeSeparator = false
-                          if (
-                            selectedRoute?.marketInfos.length > 1 &&
-                            index !== selectedRoute?.marketInfos.length - 1
-                          ) {
-                            includeSeparator = true
-                          }
-                          return (
-                            <span key={index}>{`${info?.label} ${
-                              includeSeparator ? 'x ' : ''
-                            }`}</span>
-                          )
-                        })}
-                      </span>
-                      <PencilIcon className="ml-2 h-4 w-4 hover:text-th-active" />
-                    </div>
-                  </div>
-                  {typeof feeValue === 'number' ? (
-                    <div className="flex justify-between">
-                      <p className="text-sm text-th-fgd-3">{t('fee')}</p>
-                      <div className="flex items-center">
-                        <p className="text-right font-mono text-sm text-th-fgd-2">
-                          ≈ ${feeValue?.toFixed(2)}
-                        </p>
+                    <p className="mt-1">
+                      The bigger the trade is, the bigger the price impact can
+                      be.
+                    </p>
+                  </>
+                }
+              >
+                <p className="tooltip-underline">{t('swap:price-impact')}</p>
+              </Tooltip>
+              <p className="text-right font-mono text-sm text-th-fgd-2">
+                {selectedRoute?.priceImpactPct * 100 < 0.1
+                  ? '<0.1%'
+                  : `${(selectedRoute?.priceImpactPct * 100).toFixed(2)}%`}
+              </p>
+            </div>
+            {borrowAmount ? (
+              <>
+                <div className="flex justify-between">
+                  <Tooltip
+                    content={
+                      balance
+                        ? t('swap:tooltip-borrow-balance', {
+                            balance: formatNumericValue(balance),
+                            borrowAmount: formatNumericValue(borrowAmount),
+                            token: inputTokenInfo?.symbol,
+                            rate: formatNumericValue(
+                              inputBank!.getBorrowRateUi(),
+                              2,
+                            ),
+                          })
+                        : t('swap:tooltip-borrow-no-balance', {
+                            borrowAmount: formatNumericValue(borrowAmount),
+                            token: inputTokenInfo?.symbol,
+                            rate: formatNumericValue(
+                              inputBank!.getBorrowRateUi(),
+                              2,
+                            ),
+                          })
+                    }
+                    delay={100}
+                  >
+                    <p className="tooltip-underline">{t('borrow-amount')}</p>
+                  </Tooltip>
+                  <p className="text-right font-mono text-sm text-th-fgd-2">
+                    <FormatNumericValue value={borrowAmount} />{' '}
+                    <span className="font-body text-th-fgd-3">
+                      {inputTokenInfo?.symbol}
+                    </span>
+                  </p>
+                </div>
+                <div className="flex justify-between">
+                  <Tooltip
+                    content={t('loan-origination-fee-tooltip', {
+                      fee: `${(
+                        inputBank!.loanOriginationFeeRate.toNumber() * 100
+                      ).toFixed(3)}%`,
+                    })}
+                    delay={100}
+                  >
+                    <p className="tooltip-underline">
+                      {t('loan-origination-fee')}
+                    </p>
+                  </Tooltip>
+                  <p className="text-right font-mono text-th-fgd-2">
+                    <FormatNumericValue
+                      value={
+                        borrowAmount *
+                        inputBank!.loanOriginationFeeRate.toNumber()
+                      }
+                      decimals={inputBank!.mintDecimals}
+                    />{' '}
+                    <span className="font-body text-th-fgd-3">
+                      {inputBank!.name}
+                    </span>
+                  </p>
+                </div>
+              </>
+            ) : null}
+          </div>
+        </div>
+        <div className="p-6">
+          <div className="mb-4 flex items-center justify-center">
+            <Button
+              onClick={onClick}
+              className="flex w-full items-center justify-center text-base"
+              size="large"
+            >
+              {submitting ? (
+                <Loading className="mr-2 h-5 w-5" />
+              ) : (
+                <div className="flex items-center">
+                  <ArrowsRightLeftIcon className="mr-2 h-5 w-5" />
+                  {t('swap')}
+                </div>
+              )}
+            </Button>
+          </div>
+          <div className="rounded-md bg-th-bkg-2">
+            <Disclosure>
+              {({ open }) => (
+                <>
+                  <Disclosure.Button
+                    className={`flex w-full items-center justify-between rounded-md p-3 focus-visible:bg-th-bkg-3 ${
+                      open ? 'mb-2 rounded-b-none' : ''
+                    }`}
+                  >
+                    <p>{t('swap:route-info')}</p>
+                    <ChevronDownIcon
+                      className={`${
+                        open ? 'rotate-180' : 'rotate-360'
+                      } h-5 w-5 text-th-fgd-3`}
+                    />
+                  </Disclosure.Button>
+                  <Disclosure.Panel className="space-y-2 p-3 pt-0">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-th-fgd-3">
+                        {t('swap:swap-route')}
+                      </p>
+                      <div
+                        className="flex items-center text-th-fgd-2 md:hover:cursor-pointer md:hover:text-th-fgd-3"
+                        role="button"
+                        onClick={() => setShowRoutesModal(true)}
+                      >
+                        <span className="overflow-ellipsis whitespace-nowrap">
+                          {selectedRoute?.marketInfos.map((info, index) => {
+                            let includeSeparator = false
+                            if (
+                              selectedRoute?.marketInfos.length > 1 &&
+                              index !== selectedRoute?.marketInfos.length - 1
+                            ) {
+                              includeSeparator = true
+                            }
+                            return (
+                              <span key={index}>{`${info?.label} ${
+                                includeSeparator ? 'x ' : ''
+                              }`}</span>
+                            )
+                          })}
+                        </span>
+                        <PencilIcon className="ml-2 h-4 w-4 hover:text-th-active" />
                       </div>
                     </div>
-                  ) : (
-                    selectedRoute?.marketInfos.map((info, index) => {
-                      const feeToken = jupiterTokens.find(
-                        (item) => item?.address === info.lpFee?.mint,
-                      )
-                      return (
-                        <div className="flex justify-between" key={index}>
-                          <p className="text-sm text-th-fgd-3">
-                            {t('swap:fees-paid-to', {
-                              route: info?.label,
-                            })}
+                    {typeof feeValue === 'number' ? (
+                      <div className="flex justify-between">
+                        <p className="text-sm text-th-fgd-3">{t('fee')}</p>
+                        <div className="flex items-center">
+                          <p className="text-right font-mono text-sm text-th-fgd-2">
+                            ≈ ${feeValue?.toFixed(2)}
                           </p>
-                          {feeToken?.decimals && (
-                            <p className="pl-4 text-right font-mono text-sm text-th-fgd-2">
-                              {(
-                                info.lpFee?.amount /
-                                Math.pow(10, feeToken.decimals)
-                              ).toFixed(6)}{' '}
-                              <span className="font-body">
-                                {feeToken?.symbol}
-                              </span>{' '}
-                              (
-                              {(info.lpFee?.pct * 100).toLocaleString(
-                                undefined,
-                                {
-                                  maximumSignificantDigits: 2,
-                                },
-                              )}
-                              %)
-                            </p>
-                          )}
                         </div>
-                      )
-                    })
-                  )}
-                </Disclosure.Panel>
-              </>
-            )}
-          </Disclosure>
+                      </div>
+                    ) : (
+                      selectedRoute?.marketInfos.map((info, index) => {
+                        const feeToken = jupiterTokens.find(
+                          (item) => item?.address === info.lpFee?.mint,
+                        )
+                        return (
+                          <div className="flex justify-between" key={index}>
+                            <p className="text-sm text-th-fgd-3">
+                              {t('swap:fees-paid-to', {
+                                route: info?.label,
+                              })}
+                            </p>
+                            {feeToken?.decimals && (
+                              <p className="pl-4 text-right font-mono text-sm text-th-fgd-2">
+                                {(
+                                  info.lpFee?.amount /
+                                  Math.pow(10, feeToken.decimals)
+                                ).toFixed(6)}{' '}
+                                <span className="font-body">
+                                  {feeToken?.symbol}
+                                </span>{' '}
+                                (
+                                {(info.lpFee?.pct * 100).toLocaleString(
+                                  undefined,
+                                  {
+                                    maximumSignificantDigits: 2,
+                                  },
+                                )}
+                                %)
+                              </p>
+                            )}
+                          </div>
+                        )
+                      })
+                    )}
+                  </Disclosure.Panel>
+                </>
+              )}
+            </Disclosure>
+          </div>
         </div>
+        {showRoutesModal ? (
+          <RoutesModal
+            show={showRoutesModal}
+            onClose={() => setShowRoutesModal(false)}
+            setSelectedRoute={setSelectedRoute}
+            selectedRoute={selectedRoute}
+            routes={routes}
+            inputTokenSymbol={inputTokenInfo?.name}
+            outputTokenInfo={outputTokenInfo}
+          />
+        ) : null}
       </div>
-      {showRoutesModal ? (
-        <RoutesModal
-          show={showRoutesModal}
-          onClose={() => setShowRoutesModal(false)}
-          setSelectedRoute={setSelectedRoute}
-          selectedRoute={selectedRoute}
-          routes={routes}
-          inputTokenSymbol={inputTokenInfo?.name}
-          outputTokenInfo={outputTokenInfo}
-        />
-      ) : null}
-    </div>
+    </Transition>
   ) : null
 }
 

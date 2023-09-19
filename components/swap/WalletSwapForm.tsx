@@ -18,7 +18,6 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { DEFAULT_PERCENTAGE_VALUES } from './PercentageSelectButtons'
 import BuyTokenInput from './BuyTokenInput'
 import Button from '@components/shared/Button'
-import { Transition } from '@headlessui/react'
 import SwapReviewRouteInfo from './SwapReviewRouteInfo'
 import useIpAddress from 'hooks/useIpAddress'
 import { useTranslation } from 'react-i18next'
@@ -40,16 +39,6 @@ dayjs.extend(relativeTime)
 type WalletSwapFormProps = {
   setShowTokenSelect: Dispatch<SetStateAction<SwapFormTokenListType>>
 }
-
-const MAX_DIGITS = 11
-export const withValueLimit = (values: NumberFormatValues): boolean => {
-  return values.floatValue
-    ? values.floatValue.toFixed(0).length <= MAX_DIGITS
-    : true
-}
-
-export const NUMBER_FORMAT_CLASSNAMES =
-  'w-full rounded-r-lg h-[56px] box-border pb-4 border-l border-th-bkg-2 bg-th-input-bkg px-3 text-right font-mono text-xl text-th-fgd-1 focus:outline-none md:hover:bg-th-bkg-1'
 
 const set = mangoStore.getState().set
 
@@ -193,14 +182,6 @@ const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
     }
   }, [bestRoute, swapMode, inputBank, outputBank])
 
-  /* 
-    If the use margin setting is toggled, clear the form values
-  */
-  useEffect(() => {
-    setAmountInFormValue('')
-    setAmountOutFormValue('')
-  }, [useMargin, setAmountInFormValue, setAmountOutFormValue])
-
   const handleSwitchTokens = useCallback(() => {
     if (amountInAsDecimal?.gt(0) && amountOutAsDecimal.gte(0)) {
       setAmountInFormValue(amountOutAsDecimal.toString())
@@ -240,31 +221,16 @@ const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
 
   return (
     <>
-      <div>
-        <Transition
-          className="absolute right-0 top-0 z-10 h-full w-full bg-th-bkg-1 pb-0"
-          show={showConfirm}
-          enter="transition ease-in duration-300"
-          enterFrom="-translate-x-full"
-          enterTo="translate-x-0"
-          leave="transition ease-out duration-300"
-          leaveFrom="translate-x-0"
-          leaveTo="-translate-x-full"
-        >
-          <SwapReviewRouteInfo
-            amountIn={amountInAsDecimal}
-            isWalletSwap
-            onClose={() => setShowConfirm(false)}
-            routes={routes}
-            selectedRoute={selectedRoute}
-            setSelectedRoute={setSelectedRoute}
-            slippage={slippage}
-          />
-        </Transition>
-      </div>
-      <div className="pb-4">
-        <InlineNotification type="info" desc={t('swap:wallet-swap-desc')} />
-      </div>
+      <SwapReviewRouteInfo
+        amountIn={amountInAsDecimal}
+        isWalletSwap
+        onClose={() => setShowConfirm(false)}
+        routes={routes}
+        selectedRoute={selectedRoute}
+        setSelectedRoute={setSelectedRoute}
+        show={showConfirm}
+        slippage={slippage}
+      />
       <WalletSellTokenInput
         handleAmountInChange={handleAmountInChange}
         setShowTokenSelect={setShowTokenSelect}

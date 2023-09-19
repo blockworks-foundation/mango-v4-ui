@@ -20,7 +20,6 @@ import PercentageSelectButtons from './PercentageSelectButtons'
 import BuyTokenInput from './BuyTokenInput'
 import SellTokenInput from './SellTokenInput'
 import Button from '@components/shared/Button'
-import { Transition } from '@headlessui/react'
 import SwapReviewRouteInfo from './SwapReviewRouteInfo'
 import useIpAddress from 'hooks/useIpAddress'
 import { useTranslation } from 'react-i18next'
@@ -222,27 +221,15 @@ const MarketSwapForm = ({ setShowTokenSelect }: MarketSwapFormProps) => {
 
   return (
     <>
-      <div>
-        <Transition
-          className="absolute right-0 top-0 z-10 h-full w-full bg-th-bkg-1 pb-0"
-          show={showConfirm}
-          enter="transition ease-in duration-300"
-          enterFrom="-translate-x-full"
-          enterTo="translate-x-0"
-          leave="transition ease-out duration-300"
-          leaveFrom="translate-x-0"
-          leaveTo="-translate-x-full"
-        >
-          <SwapReviewRouteInfo
-            onClose={() => setShowConfirm(false)}
-            amountIn={amountInAsDecimal}
-            slippage={slippage}
-            routes={routes}
-            selectedRoute={selectedRoute}
-            setSelectedRoute={setSelectedRoute}
-          />
-        </Transition>
-      </div>
+      <SwapReviewRouteInfo
+        onClose={() => setShowConfirm(false)}
+        amountIn={amountInAsDecimal}
+        show={showConfirm}
+        slippage={slippage}
+        routes={routes}
+        selectedRoute={selectedRoute}
+        setSelectedRoute={setSelectedRoute}
+      />
       <SellTokenInput
         handleAmountInChange={handleAmountInChange}
         setShowTokenSelect={setShowTokenSelect}

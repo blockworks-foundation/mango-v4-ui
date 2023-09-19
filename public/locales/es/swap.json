@@ -47,10 +47,12 @@
     "tooltip-borrow-no-balance": "You'll borrow {{borrowAmount}} {{token}} to execute this swap. The current {{token}} variable borrow rate is {{rate}}%",
     "tooltip-margin": "When margin is enabled you can add leverage to your swaps. Borrows are opened automatically if a swap exceeds your balance.",
     "tooltip-max-slippage": "If price slips beyond your maximum slippage your swap will not be executed",
+    "tooltip-favorite-swap-add": "Add pair to favorites",
+    "tooltip-favorite-swap-remove": "Remove pair from favorites",
+    "tooltip-wallet-swap": "When enabled, you'll swap tokens in your wallet. When disabled, you'll swap tokens in your Mango Account.",
     "trigger-beta": "Trigger orders are in beta. Use with caution.",
     "use-margin": "Allow Margin",
     "wallet-swap": "Wallet Swap",
-    "wallet-swap-desc": "Swap tokens within your wallet",
     "warning-no-collateral": "You have no free collateral",
     "you-buy": "You're buying",
     "you-sell": "You're selling"
