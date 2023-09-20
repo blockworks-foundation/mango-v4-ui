@@ -27,9 +27,9 @@ const HealthContributionsChart = ({
   const { theme } = useThemeWrapper()
   const { isMobile } = useViewport()
 
-  const handleClick = (index: number) => {
-    setActiveIndex(index)
-  }
+  // const handleClick = (index: any) => {
+  //   setActiveIndex(index.name)
+  // }
 
   const handleMouseEnter = (data: HealthContribution, index: number) => {
     setActiveIndex(index)
@@ -102,7 +102,7 @@ const HealthContributionsChart = ({
               endAngle={450}
               activeIndex={activeIndex}
               activeShape={renderActiveShape}
-              onClick={handleClick}
+              // onClick={handleClick}
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
             >
