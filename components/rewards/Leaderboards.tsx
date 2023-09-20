@@ -2,12 +2,7 @@ import MedalIcon from '@components/icons/MedalIcon'
 import ProfileImage from '@components/profile/ProfileImage'
 import { ArrowLeftIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useViewport } from 'hooks/useViewport'
-import {
-  Badge,
-  RewardsLeaderboardItem,
-  fetchLeaderboard,
-  tiers,
-} from './RewardsPage'
+import { Badge, fetchLeaderboard, tiers, useCurrentSeason } from './RewardsPage'
 import { useState } from 'react'
 import Select from '@components/forms/Select'
 import { IconButton } from '@components/shared/Button'
@@ -40,21 +35,26 @@ const Leaderboards = ({
       return <WhaleIcon className="mr-2 h-5 w-5" />
     } else return <AcornIcon className="mr-2 h-5 w-5" />
   }
+  const { data: seasonData } = useCurrentSeason()
 
   const {
-    data: rewardsLeaderboardData,
+    data: topAccountsLeaderboardData,
     isFetching: fetchingRewardsLeaderboardData,
     isLoading: loadingRewardsLeaderboardData,
   } = useQuery(
     ['rewards-leaderboard-data', topAccountsTier],
-    () => fetchLeaderboard(topAccountsTier),
+    () => fetchLeaderboard(seasonData!.season_id),
     {
       cacheTime: 1000 * 60 * 10,
       staleTime: 1000 * 60,
       retry: 3,
       refetchOnWindowFocus: false,
+      enabled: !!seasonData,
     },
   )
+  const leadersForTier =
+    topAccountsLeaderboardData?.find((x) => x.tier === topAccountsTier)
+      ?.leaderboard || []
 
   const isLoading =
     fetchingRewardsLeaderboardData || loadingRewardsLeaderboardData
@@ -91,12 +91,10 @@ const Leaderboards = ({
       </div>
       <div className="space-y-2">
         {!isLoading ? (
-          rewardsLeaderboardData && rewardsLeaderboardData.length ? (
-            rewardsLeaderboardData.map(
-              (wallet: RewardsLeaderboardItem, i: number) => (
-                <LeaderboardCard rank={i + 1} key={i} wallet={wallet} />
-              ),
-            )
+          leadersForTier && leadersForTier.length ? (
+            leadersForTier.map((wallet, i: number) => (
+              <LeaderboardCard rank={i + 1} key={i} wallet={wallet} />
+            ))
           ) : (
             <div className="flex justify-center rounded-lg border border-th-bkg-3 p-8">
               <span className="text-th-fgd-3">Leaderboard not available</span>
@@ -123,7 +121,11 @@ const LeaderboardCard = ({
   wallet,
 }: {
   rank: number
-  wallet: RewardsLeaderboardItem
+  wallet: {
+    mango_account: string
+    tier: string
+    total_points: number
+  }
 }) => {
   const { isTablet } = useViewport()
   return (
@@ -155,7 +157,7 @@ const LeaderboardCard = ({
         />
         <div className="text-left">
           <p className="capitalize text-th-fgd-2 md:text-base">
-            {abbreviateAddress(new PublicKey(wallet.wallet_pk))}
+            {abbreviateAddress(new PublicKey(wallet.mango_account))}
           </p>
           {/* <p className="text-xs text-th-fgd-4">
             Acc: {'A1at5'.slice(0, 4) + '...' + 'tt45eU'.slice(-4)}
@@ -164,7 +166,7 @@ const LeaderboardCard = ({
       </div>
       <div className="flex items-center">
         <span className="mr-3 text-right font-mono md:text-base">
-          {formatNumericValue(wallet.points)}
+          {formatNumericValue(wallet.total_points)}
         </span>
         <ChevronRightIcon className="h-5 w-5 text-th-fgd-3" />
       </div>

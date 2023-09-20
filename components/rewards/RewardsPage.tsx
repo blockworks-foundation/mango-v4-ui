@@ -2,10 +2,21 @@ import Select from '@components/forms/Select'
 import Button, { LinkButton } from '@components/shared/Button'
 import Modal from '@components/shared/Modal'
 import { Disclosure } from '@headlessui/react'
-import { ChevronDownIcon, ClockIcon } from '@heroicons/react/20/solid'
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  ClockIcon,
+} from '@heroicons/react/20/solid'
 // import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
-import { RefObject, useCallback, useEffect, useRef, useState } from 'react'
+import {
+  ReactNode,
+  RefObject,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 import Particles from 'react-tsparticles'
 import { ModalProps } from 'types/modal'
 import Leaderboards from './Leaderboards'
@@ -36,6 +47,10 @@ import {
 } from '@blockworks-foundation/mango-mints-redemption'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { chunk } from 'lodash'
+import MangoIcon from '@components/icons/MangoIcon'
+import AcornIcon from '@components/icons/AcornIcon'
+import RobotIcon from '@components/icons/RobotIcon'
+import WhaleIcon from '@components/icons/WhaleIcon'
 
 const DISTRIBUTION_NUMBER_PREFIX = 420
 const FAQS = [
@@ -65,35 +80,33 @@ const FAQS = [
   },
 ]
 
-export type RewardsLeaderboardItem = {
-  points: number
-  tier: string
-  wallet_pk: string
-}
+export const tiers = ['seed', 'mango', 'whale', 'bot']
 
-export const tiers = ['whale', 'mango']
-
-const fetchRewardsPoints = async (mangoAccountPk: string | undefined) => {
+const fetchRewardsPoints = async (mangoAccountPk: string, seasonId: number) => {
   try {
     const data = await fetch(
-      `${MANGO_DATA_API_URL}/user-data/campaign-total-points-account?mango-account=${mangoAccountPk}`,
+      `${MANGO_DATA_API_URL}/seasons/season-total-points-account?mango-account=${mangoAccountPk}&seasons-id=${seasonId}`,
     )
     const res = await data.json()
-    return res.reduce(
-      (partialSum: number, a: { points: number }) => partialSum + a.points,
-      0,
-    )
+    return res.total_points
   } catch (e) {
     console.log('Failed to fetch points', e)
   }
 }
 
-export const fetchLeaderboard = async (tier: string | undefined) => {
+export const fetchLeaderboard = async (seasonId: number) => {
   try {
     const data = await fetch(
-      `${MANGO_DATA_API_URL}/user-data/campaign-leaderboard?tier=${tier}`,
+      `${MANGO_DATA_API_URL}/seasons/season-leaderboard?seasons-id=${seasonId}`,
     )
-    const res = await data.json()
+    const res = (await data.json()) as {
+      leaderboard: {
+        mango_account: string
+        tier: string
+        total_points: number
+      }[]
+      tier: string
+    }[]
     return res
   } catch (e) {
     console.log('Failed to top accounts leaderboard', e)
@@ -105,16 +118,57 @@ export const fetchCurrentSeason = async () => {
     const data = await fetch(
       `${MANGO_DATA_API_URL}/seasons/season-id?timestamp=${new Date().toISOString()}`,
     )
-    const res = await data.json()
+    const res = (await data.json()) as {
+      season_end: string
+      season_id: number
+      season_start: string
+    }
     return res
   } catch (e) {
     console.log('Failed to load current season', e)
   }
 }
 
+export const fetchAccountTier = async (
+  mangoAccount: string,
+  seasonId: number,
+) => {
+  try {
+    const data = await fetch(
+      `${MANGO_DATA_API_URL}/seasons/season-account-tier?mango-account=${mangoAccount}&seasons-id=${seasonId}`,
+    )
+    const res = (await data.json()) as { mango_account: string }
+    console.log(res)
+    return res
+  } catch (e) {
+    console.log('Failed to load current season', e)
+  }
+}
+
+export const useCurrentSeason = () => {
+  return useQuery(['current-season-data'], () => fetchCurrentSeason(), {
+    cacheTime: 1000 * 60 * 10,
+    staleTime: 1000 * 60,
+    retry: 3,
+    refetchOnWindowFocus: false,
+  })
+}
+const useAccountTier = (mangoAccount: string, seasonId: number | undefined) => {
+  return useQuery(
+    ['account-tier', mangoAccount],
+    () => fetchAccountTier(mangoAccount, seasonId!),
+    {
+      cacheTime: 1000 * 60 * 10,
+      staleTime: 1000 * 60,
+      retry: 3,
+      enabled: !!mangoAccount && !!seasonId,
+    },
+  )
+}
+
 const RewardsPage = () => {
   //   const { t } = useTranslation(['common', 'rewards'])
-  const [showClaim] = useState(true)
+  const [showClaim] = useState(false)
   const { data: isWhiteListed, isLoading, isFetching } = useIsWhiteListed()
   const [showLeaderboards, setShowLeaderboards] = useState('')
   const [showWhitelistModal, setShowWhitelistModal] = useState(false)
@@ -208,14 +262,19 @@ const Season = ({
   const [topAccountsTier, setTopAccountsTier] = useState('whale')
   const { mangoAccountAddress } = useMangoAccount()
   const { data: isWhiteListed } = useIsWhiteListed()
+  const { data: seasonData } = useCurrentSeason()
+  const { data: accountTier } = useAccountTier(
+    mangoAccountAddress,
+    seasonData?.season_id,
+  )
   const {
     data: walletPoints,
     isFetching: fetchingWalletRewardsData,
     isLoading: loadingWalletRewardsData,
     refetch,
   } = useQuery(
-    ['rewards-points', mangoAccountAddress],
-    () => fetchRewardsPoints(mangoAccountAddress),
+    ['rewards-points', mangoAccountAddress, seasonData],
+    () => fetchRewardsPoints(mangoAccountAddress, seasonData!.season_id),
     {
       cacheTime: 1000 * 60 * 10,
       staleTime: 1000 * 60,
@@ -230,15 +289,19 @@ const Season = ({
     isFetching: fetchingTopAccountsLeaderboardData,
     isLoading: loadingTopAccountsLeaderboardData,
   } = useQuery(
-    ['top-accounts-leaderboard-data', topAccountsTier],
-    () => fetchLeaderboard(topAccountsTier),
+    ['top-accounts-leaderboard-data'],
+    () => fetchLeaderboard(seasonData!.season_id),
     {
       cacheTime: 1000 * 60 * 10,
       staleTime: 1000 * 60,
       retry: 3,
       refetchOnWindowFocus: false,
+      enabled: !!seasonData,
     },
   )
+  const leadersForTier =
+    topAccountsLeaderboardData?.find((x) => x.tier === topAccountsTier)
+      ?.leaderboard || []
 
   const isLoadingWalletData =
     fetchingWalletRewardsData || loadingWalletRewardsData
@@ -282,39 +345,45 @@ const Season = ({
           </div>
         ) : null}
         <div className="col-span-12 lg:col-span-8">
-          {/* <div className="mb-2 rounded-lg border border-th-bkg-3 p-4">
+          <div className="mb-2 rounded-lg border border-th-bkg-3 p-4">
             <h2 className="mb-4">Rewards Tiers</h2>
-            <div className="mb-6 space-y-2"> */}
-          {/* <RewardsTierCard
+            <div className="mb-6 space-y-2">
+              <RewardsTierCard
                 icon={<AcornIcon className="h-8 w-8 text-th-fgd-2" />}
                 name="seed"
                 desc="All new participants start here"
                 showLeaderboard={showLeaderboard}
-                status={walletRewardsData?.tier === 'seed' ? 'Qualified' : ''}
+                status={
+                  accountTier?.mango_account === 'seed' ? 'Qualified' : ''
+                }
               />
               <RewardsTierCard
                 icon={<MangoIcon className="h-8 w-8 text-th-fgd-2" />}
                 name="mango"
                 desc="Average swap/trade value less than $1,000"
                 showLeaderboard={showLeaderboard}
-                status={walletRewardsData?.tier === 'mango' ? 'Qualified' : ''}
+                status={
+                  accountTier?.mango_account === 'mango' ? 'Qualified' : ''
+                }
               />
               <RewardsTierCard
                 icon={<WhaleIcon className="h-8 w-8 text-th-fgd-2" />}
                 name="whale"
                 desc="Average swap/trade value greater than $1,000"
                 showLeaderboard={showLeaderboard}
-                status={walletRewardsData?.tier === 'whale' ? 'Qualified' : ''}
+                status={
+                  accountTier?.mango_account === 'whale' ? 'Qualified' : ''
+                }
               />
               <RewardsTierCard
                 icon={<RobotIcon className="h-8 w-8 text-th-fgd-2" />}
                 name="bot"
                 desc="All bots"
                 showLeaderboard={showLeaderboard}
-                status={walletRewardsData?.tier === 'bot' ? 'Qualified' : ''}
-              /> */}
-          {/* </div>
-          </div> */}
+                status={accountTier?.mango_account === 'bot' ? 'Qualified' : ''}
+              />
+            </div>
+          </div>
           <div ref={faqRef}>
             <Faqs />
           </div>
@@ -373,13 +442,13 @@ const Season = ({
                 <p>Streak Bonus</p>
                 <p className="font-mono text-th-fgd-2">0x</p>
               </div>
-              {/* <div className="flex justify-between">
+              <div className="flex justify-between">
                 <p>Rewards Tier</p>
                 <p className="text-th-fgd-2">
                   {!isLoadingWalletData ? (
-                    walletRewardsData?.tier ? (
+                    accountTier?.mango_account ? (
                       <span className="capitalize">
-                        {walletRewardsData.tier}
+                        {accountTier?.mango_account}
                       </span>
                     ) : (
                       '–'
@@ -390,7 +459,7 @@ const Season = ({
                     </SheenLoader>
                   )}
                 </p>
-              </div> */}
+              </div>
               <div className="flex justify-between">
                 <p>Rank</p>
                 <p className="text-th-fgd-2">–</p>
@@ -415,26 +484,23 @@ const Season = ({
             </div>
             <div className="border-b border-th-bkg-3">
               {!isLoadingLeaderboardData ? (
-                topAccountsLeaderboardData &&
-                topAccountsLeaderboardData.length ? (
-                  topAccountsLeaderboardData
-                    .slice(0, 5)
-                    .map((wallet: RewardsLeaderboardItem, i: number) => (
-                      <div
-                        className="flex items-center justify-between border-t border-th-bkg-3 p-3"
-                        key={i + wallet.wallet_pk}
-                      >
-                        <div className="flex items-center space-x-2 font-mono">
-                          <span>{i + 1}.</span>
-                          <span className="text-th-fgd-3">
-                            {abbreviateAddress(new PublicKey(wallet.wallet_pk))}
-                          </span>
-                        </div>
-                        <span className="font-mono text-th-fgd-1">
-                          {formatNumericValue(wallet.points, 0)}
+                leadersForTier && leadersForTier.length ? (
+                  leadersForTier.slice(0, 5).map((user, i: number) => (
+                    <div
+                      className="flex items-center justify-between border-t border-th-bkg-3 p-3"
+                      key={i + user.mango_account}
+                    >
+                      <div className="flex items-center space-x-2 font-mono">
+                        <span>{i + 1}.</span>
+                        <span className="text-th-fgd-3">
+                          {abbreviateAddress(new PublicKey(user.mango_account))}
                         </span>
                       </div>
-                    ))
+                      <span className="font-mono text-th-fgd-1">
+                        {formatNumericValue(user.total_points, 0)}
+                      </span>
+                    </div>
+                  ))
                 ) : (
                   <div className="flex justify-center border-t border-th-bkg-3 py-4">
                     <span className="text-th-fgd-3">
@@ -706,49 +772,49 @@ const Claim = () => {
   )
 }
 
-// const RewardsTierCard = ({
-//   desc,
-//   icon,
-//   name,
-//   showLeaderboard,
-//   status,
-// }: {
-//   desc: string
-//   icon: ReactNode
-//   name: string
-//   showLeaderboard: (x: string) => void
-//   status?: string
-// }) => {
-//   const { t } = useTranslation('rewards')
-//   return (
-//     <button
-//       className="w-full rounded-lg bg-th-bkg-2 p-4 text-left focus:outline-none md:hover:bg-th-bkg-3"
-//       onClick={() => showLeaderboard(name)}
-//     >
-//       <div className="flex items-center justify-between">
-//         <div className="flex items-center">
-//           <div className="mr-4 flex h-14 w-14 items-center justify-center rounded-full bg-th-bkg-1">
-//             {icon}
-//           </div>
-//           <div>
-//             <h3>{t(name)}</h3>
-//             <p>{desc}</p>
-//           </div>
-//         </div>
-//         <div className="flex items-center pl-4">
-//           {status ? (
-//             <Badge
-//               label={status}
-//               borderColor="var(--success)"
-//               shadowColor="var(--success)"
-//             />
-//           ) : null}
-//           <ChevronRightIcon className="ml-4 h-6 w-6 text-th-fgd-3" />
-//         </div>
-//       </div>
-//     </button>
-//   )
-// }
+const RewardsTierCard = ({
+  desc,
+  icon,
+  name,
+  showLeaderboard,
+  status,
+}: {
+  desc: string
+  icon: ReactNode
+  name: string
+  showLeaderboard: (x: string) => void
+  status?: string
+}) => {
+  const { t } = useTranslation('rewards')
+  return (
+    <button
+      className="w-full rounded-lg bg-th-bkg-2 p-4 text-left focus:outline-none md:hover:bg-th-bkg-3"
+      onClick={() => showLeaderboard(name)}
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center">
+          <div className="mr-4 flex h-14 w-14 items-center justify-center rounded-full bg-th-bkg-1">
+            {icon}
+          </div>
+          <div>
+            <h3>{t(name)}</h3>
+            <p>{desc}</p>
+          </div>
+        </div>
+        <div className="flex items-center pl-4">
+          {status ? (
+            <Badge
+              label={status}
+              borderColor="var(--success)"
+              shadowColor="var(--success)"
+            />
+          ) : null}
+          <ChevronRightIcon className="ml-4 h-6 w-6 text-th-fgd-3" />
+        </div>
+      </div>
+    </button>
+  )
+}
 
 export const Badge = ({
   label,
