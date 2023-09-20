@@ -51,6 +51,7 @@ import MangoIcon from '@components/icons/MangoIcon'
 import AcornIcon from '@components/icons/AcornIcon'
 import RobotIcon from '@components/icons/RobotIcon'
 import WhaleIcon from '@components/icons/WhaleIcon'
+import { Provider } from '@project-serum/anchor'
 
 const DISTRIBUTION_NUMBER_PREFIX = 420
 const FAQS = [
@@ -91,6 +92,18 @@ const fetchRewardsPoints = async (mangoAccountPk: string, seasonId: number) => {
     return res.total_points
   } catch (e) {
     console.log('Failed to fetch points', e)
+  }
+}
+
+const fetchDistribution = async (provider: Provider, season: number) => {
+  try {
+    const client = new MangoMintsRedemptionClient(provider as AnchorProvider)
+    const d = await client.loadDistribution(
+      parseInt(`${DISTRIBUTION_NUMBER_PREFIX}${season}`),
+    )
+    return d
+  } catch (e) {
+    console.log(e)
   }
 }
 
@@ -138,7 +151,6 @@ export const fetchAccountTier = async (
       `${MANGO_DATA_API_URL}/seasons/season-account-tier?mango-account=${mangoAccount}&seasons-id=${seasonId}`,
     )
     const res = (await data.json()) as { mango_account: string }
-    console.log(res)
     return res
   } catch (e) {
     console.log('Failed to load current season', e)
@@ -165,14 +177,46 @@ const useAccountTier = (mangoAccount: string, seasonId: number | undefined) => {
     },
   )
 }
+const useDistribution = (provider: Provider, seasonId: number | undefined) => {
+  return useQuery(
+    ['distribution', seasonId],
+    () => fetchDistribution(provider, seasonId!),
+    {
+      cacheTime: 1000 * 60 * 10,
+      staleTime: 1000 * 60,
+      retry: 3,
+      enabled: !!provider && !!seasonId,
+    },
+  )
+}
 
 const RewardsPage = () => {
   //   const { t } = useTranslation(['common', 'rewards'])
-  const [showClaim] = useState(false)
+  const [showClaim, setShowClaim] = useState(false)
   const { data: isWhiteListed, isLoading, isFetching } = useIsWhiteListed()
   const [showLeaderboards, setShowLeaderboards] = useState('')
   const [showWhitelistModal, setShowWhitelistModal] = useState(false)
   const faqRef = useRef<HTMLDivElement>(null)
+  const { data: seasonData } = useCurrentSeason()
+  const { client } = mangoStore()
+  const { data: distributionData } = useDistribution(
+    client.program.provider,
+    seasonData ? seasonData.season_id - 1 : undefined,
+  )
+  const { publicKey } = useWallet()
+  useEffect(() => {
+    if (distributionData && publicKey) {
+      const start = distributionData.start.getTime()
+      const currentTimestamp = new Date().getTime()
+      const isClaimActive =
+        start < currentTimestamp &&
+        start + distributionData.duration * 1000 > currentTimestamp &&
+        !!distributionData.getClaims(publicKey).length
+      setShowClaim(isClaimActive)
+    } else {
+      setShowClaim(false)
+    }
+  }, [distributionData, publicKey])
 
   const scrollToFaqs = () => {
     if (faqRef.current) {
@@ -566,11 +610,10 @@ const Claim = () => {
   useEffect(() => {
     if (!wallet.publicKey || !currentSeasonData) return
     const fetchRewards = async () => {
-      console.log('fetchRewards')
       const client = new MangoMintsRedemptionClient(provider as AnchorProvider)
       const d = await client.loadDistribution(
         parseInt(
-          `${DISTRIBUTION_NUMBER_PREFIX}${currentSeasonData['season_id']}`,
+          `${DISTRIBUTION_NUMBER_PREFIX}${currentSeasonData['season_id'] - 1}`,
         ),
       )
       setDistribution(d)
@@ -587,11 +630,8 @@ const Claim = () => {
   const handleClaimRewards = useCallback(async () => {
     if (!distribution || !wallet.publicKey || !claims || !rewardsClient) return
     const transactionInstructions: TransactionInstructionWithType[] = []
-    console.log('distribution', distribution)
-    console.log('claims', claims)
     // Create claim account if it doesn't exist
     if (claimed === undefined) {
-      console.log('create claim account')
       transactionInstructions.push({
         instructionsSet: [
           new TransactionInstructionWithSigners(
@@ -621,7 +661,6 @@ const Claim = () => {
           const alreadyClaimed =
             claimed.find((c) => c.equals(claim.mint)) !== undefined
           if (alreadyClaimed) {
-            console.log('already claimed', claim.mint.toBase58())
             continue
           }
         }
