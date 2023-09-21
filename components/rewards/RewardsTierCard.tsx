@@ -7,20 +7,20 @@ const RewardsTierCard = ({
   desc,
   icon,
   name,
-  showLeaderboard,
+  setShowLeaderboards,
   status,
 }: {
   desc: string
   icon: ReactNode
   name: string
-  showLeaderboard: (x: string) => void
+  setShowLeaderboards: (x: string) => void
   status?: string
 }) => {
   const { t } = useTranslation('rewards')
   return (
     <button
       className="w-full rounded-lg bg-th-bkg-2 p-4 text-left focus:outline-none md:hover:bg-th-bkg-3"
-      onClick={() => showLeaderboard(name)}
+      onClick={() => setShowLeaderboards(name)}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center">

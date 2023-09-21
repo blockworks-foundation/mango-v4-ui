@@ -2,7 +2,6 @@ import MedalIcon from '@components/icons/MedalIcon'
 import ProfileImage from '@components/profile/ProfileImage'
 import { ArrowLeftIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useViewport } from 'hooks/useViewport'
-import { Badge, fetchLeaderboard, tiers, useCurrentSeason } from './RewardsPage'
 import { useState } from 'react'
 import Select from '@components/forms/Select'
 import { IconButton } from '@components/shared/Button'
@@ -16,6 +15,10 @@ import { abbreviateAddress } from 'utils/formatting'
 import { PublicKey } from '@solana/web3.js'
 import { formatNumericValue } from 'utils/numbers'
 import { useTranslation } from 'next-i18next'
+import { fetchLeaderboard } from 'apis/rewards'
+import { useCurrentSeason } from 'hooks/useRewards'
+import Badge from './Badge'
+import { tiers } from './RewardsPage'
 
 const Leaderboards = ({
   goBack,

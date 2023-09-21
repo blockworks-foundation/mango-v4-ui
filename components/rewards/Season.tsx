@@ -8,11 +8,14 @@ import SheenLoader from '@components/shared/SheenLoader'
 import { ClockIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
-import { useQuery } from '@tanstack/react-query'
-import { fetchRewardsPoints, fetchLeaderboard } from 'apis/rewards'
 import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
 import useMangoAccount from 'hooks/useMangoAccount'
-import { useCurrentSeason, useAccountTier } from 'hooks/useRewards'
+import {
+  useCurrentSeason,
+  useAccountTier,
+  useWalletPoints,
+  useTopAccountsLeaderBoard,
+} from 'hooks/useRewards'
 import { RefObject, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { abbreviateAddress } from 'utils/formatting'
@@ -24,10 +27,10 @@ import Badge from './Badge'
 
 const Season = ({
   faqRef,
-  showLeaderboard,
+  setShowLeaderboards,
 }: {
   faqRef: RefObject<HTMLDivElement>
-  showLeaderboard: (x: string) => void
+  setShowLeaderboards: (x: string) => void
 }) => {
   const { t } = useTranslation(['common', 'rewards'])
   const { wallet } = useWallet()
@@ -44,33 +47,14 @@ const Season = ({
     isFetching: fetchingWalletRewardsData,
     isLoading: loadingWalletRewardsData,
     refetch,
-  } = useQuery(
-    ['rewards-points', mangoAccountAddress, seasonData],
-    () => fetchRewardsPoints(mangoAccountAddress, seasonData!.season_id),
-    {
-      cacheTime: 1000 * 60 * 10,
-      staleTime: 1000 * 60,
-      retry: 3,
-      refetchOnWindowFocus: false,
-      enabled: !!wallet?.adapter && !!mangoAccountAddress,
-    },
-  )
+  } = useWalletPoints(mangoAccountAddress, seasonData?.season_id, wallet)
 
   const {
     data: topAccountsLeaderboardData,
     isFetching: fetchingTopAccountsLeaderboardData,
     isLoading: loadingTopAccountsLeaderboardData,
-  } = useQuery(
-    ['top-accounts-leaderboard-data'],
-    () => fetchLeaderboard(seasonData!.season_id),
-    {
-      cacheTime: 1000 * 60 * 10,
-      staleTime: 1000 * 60,
-      retry: 3,
-      refetchOnWindowFocus: false,
-      enabled: !!seasonData,
-    },
-  )
+  } = useTopAccountsLeaderBoard(seasonData?.season_id)
+
   const leadersForTier =
     topAccountsLeaderboardData?.find((x) => x.tier === topAccountsTier)
       ?.leaderboard || []
@@ -105,7 +89,7 @@ const Season = ({
                 icon={<AcornIcon className="h-8 w-8 text-th-fgd-2" />}
                 name="seed"
                 desc="All new participants start here"
-                showLeaderboard={showLeaderboard}
+                setShowLeaderboards={setShowLeaderboards}
                 status={
                   accountTier?.mango_account === 'seed' ? 'Qualified' : ''
                 }
@@ -114,7 +98,7 @@ const Season = ({
                 icon={<MangoIcon className="h-8 w-8 text-th-fgd-2" />}
                 name="mango"
                 desc="Average swap/trade value less than $1,000"
-                showLeaderboard={showLeaderboard}
+                setShowLeaderboards={setShowLeaderboards}
                 status={
                   accountTier?.mango_account === 'mango' ? 'Qualified' : ''
                 }
@@ -123,7 +107,7 @@ const Season = ({
                 icon={<WhaleIcon className="h-8 w-8 text-th-fgd-2" />}
                 name="whale"
                 desc="Average swap/trade value greater than $1,000"
-                showLeaderboard={showLeaderboard}
+                setShowLeaderboards={setShowLeaderboards}
                 status={
                   accountTier?.mango_account === 'whale' ? 'Qualified' : ''
                 }
@@ -132,7 +116,7 @@ const Season = ({
                 icon={<RobotIcon className="h-8 w-8 text-th-fgd-2" />}
                 name="bot"
                 desc="All bots"
-                showLeaderboard={showLeaderboard}
+                setShowLeaderboards={setShowLeaderboards}
                 status={accountTier?.mango_account === 'bot' ? 'Qualified' : ''}
               />
             </div>
@@ -273,7 +257,7 @@ const Season = ({
             </div>
             <Button
               className="mt-6 w-full"
-              onClick={() => showLeaderboard(topAccountsTier)}
+              onClick={() => setShowLeaderboards(topAccountsTier)}
               secondary
             >
               Full Leaderboard

@@ -26,7 +26,7 @@ export const fetchDistribution = async (provider: Provider, season: number) => {
     const d = await client.loadDistribution(
       parseInt(`${DISTRIBUTION_NUMBER_PREFIX}${season}`),
     )
-    return d
+    return { distribution: d, client }
   } catch (e) {
     console.log(e)
   }
