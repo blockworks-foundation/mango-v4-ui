@@ -53,7 +53,7 @@ const ReduceOutputTokenInput = ({
             outputBank || group?.banksMapByName.get(OUTPUT_TOKEN_DEFAULT)?.[0]
           }
           showTokenList={setShowTokenSelect}
-          type="reduce-output"
+          tokenType="reduce-output"
         />
       </div>
       <div className="relative col-span-1">

@@ -112,7 +112,7 @@ const SwapForm = () => {
         }
       })
     },
-    [inputBank, outputBank, set],
+    [inputBank, outputBank],
   )
 
   const handleSetMargin = () => {

@@ -66,7 +66,7 @@ const BuyTokenInput = ({
             outputBank || group?.banksMapByName.get(OUTPUT_TOKEN_DEFAULT)?.[0]
           }
           showTokenList={setShowTokenSelect}
-          type="output"
+          tokenType="output"
         />
       </div>
       <div className="relative col-span-1">
