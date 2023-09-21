@@ -57,8 +57,8 @@ const ClaimPage = () => {
   useEffect(() => {
     const handleSetDistribution = async () => {
       setDistribution(distributionDataAndClient!.distribution)
-      setClaims(distributionDataAndClient!.distribution.getClaims(publicKey!))
-      setClaimed(await distributionDataAndClient!.distribution.getClaimed())
+      setClaims(distributionDataAndClient!.distribution!.getClaims(publicKey!))
+      setClaimed(await distributionDataAndClient!.distribution!.getClaimed())
       setRewardsClient(distributionDataAndClient!.client)
     }
 

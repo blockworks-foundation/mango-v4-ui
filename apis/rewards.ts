@@ -29,6 +29,7 @@ export const fetchDistribution = async (provider: Provider, season: number) => {
     return { distribution: d, client }
   } catch (e) {
     console.log(e)
+    return { distribution: undefined, client: undefined }
   }
 }
 
