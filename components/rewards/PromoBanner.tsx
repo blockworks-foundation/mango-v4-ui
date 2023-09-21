@@ -1,17 +1,20 @@
 import { IconButton } from '@components/shared/Button'
 import { XMarkIcon } from '@heroicons/react/20/solid'
 import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
+import { useCurrentSeason } from 'hooks/useRewards'
 import Link from 'next/link'
 import { useState } from 'react'
 
 const PromoBanner = () => {
   const [showBanner, setShowBanner] = useState(true)
   const { data: isWhiteListed } = useIsWhiteListed()
+  const { data: seasonData } = useCurrentSeason()
+
   return isWhiteListed && showBanner ? (
     <div className="relative">
       <div className="flex flex-wrap items-center justify-center border-b border-th-bkg-3 bg-th-bkg-2 px-10 py-3">
         <p className="mr-2  text-center text-th-fgd-1 lg:text-base">
-          Season 1 of Mango Mints is starting soon.
+          Season {seasonData?.season_id} of Mango Mints is starting soon.
         </p>
         <Link
           className="bg-gradient-to-b from-mango-classic-theme-active to-mango-classic-theme-down bg-clip-text font-bold text-transparent lg:text-base"

@@ -71,7 +71,7 @@ const RewardsPage = () => {
           </div>
           <div className="flex flex-col items-center lg:items-start">
             <Badge
-              label="Season 1"
+              label={`Season ${seasonData?.season_id}`}
               borderColor="var(--active)"
               shadowColor="var(--active)"
             />

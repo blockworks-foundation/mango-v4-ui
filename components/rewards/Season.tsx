@@ -76,7 +76,7 @@ const Season = ({
       <div className="flex items-center justify-center bg-th-bkg-3 px-4 py-3">
         <ClockIcon className="mr-2 h-5 w-5 text-th-active" />
         <p className="text-base text-th-fgd-2">
-          Season 1 starts in:{' '}
+          Season {seasonData?.season_id} starts in:{' '}
           <span className="mr-4 font-bold text-th-fgd-1">4 days</span>
         </p>
       </div>

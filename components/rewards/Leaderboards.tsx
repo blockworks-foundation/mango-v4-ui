@@ -71,7 +71,7 @@ const Leaderboards = ({
           </IconButton>
           <h2 className="mr-4">Leaderboard</h2>
           <Badge
-            label="Season 1"
+            label={`Season ${seasonData?.season_id}`}
             borderColor="var(--active)"
             shadowColor="var(--active)"
           />

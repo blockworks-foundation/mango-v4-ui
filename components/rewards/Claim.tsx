@@ -41,6 +41,8 @@ const ClaimPage = () => {
   const { client } = mangoStore()
   const { publicKey } = useWallet()
   const { data: seasonData } = useCurrentSeason()
+  const currentSeason = seasonData?.season_id
+  const previousSeason = currentSeason ? currentSeason - 1 : null
   //needed for tx sign
   const wallet = useWallet()
 
@@ -170,7 +172,7 @@ const ClaimPage = () => {
       <div className="flex items-center justify-center bg-th-bkg-3 px-4 py-3">
         <ClockIcon className="mr-2 h-5 w-5 text-th-active" />
         <p className="text-base text-th-fgd-2">
-          Season 1 claim ends in:{' '}
+          Season {previousSeason} claim ends in:{' '}
           <span className="font-bold text-th-fgd-1">24 hours</span>
         </p>
       </div>
@@ -179,7 +181,7 @@ const ClaimPage = () => {
           <div className="mb-6 text-center md:mb-12">
             <h2 className="mb-2 text-5xl">Congratulations!</h2>
             <p className="text-lg">
-              You earned {claims.length} boxes in Season 1
+              You earned {claims.length} boxes in Season {previousSeason}
             </p>
           </div>
           <div className="flex flex-row space-y-6 md:items-center md:justify-center md:space-x-3">
