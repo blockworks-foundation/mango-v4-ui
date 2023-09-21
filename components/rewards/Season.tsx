@@ -24,6 +24,7 @@ import { tiers } from './RewardsPage'
 import RewardsTierCard from './RewardsTierCard'
 import Faqs from './Faqs'
 import Badge from './Badge'
+import dayjs from 'dayjs'
 
 const Season = ({
   faqRef,
@@ -48,6 +49,7 @@ const Season = ({
     isLoading: loadingWalletRewardsData,
     refetch,
   } = useWalletPoints(mangoAccountAddress, seasonData?.season_id, wallet)
+  const seasonEndsIn = dayjs(seasonData?.season_end).diff(new Date(), 'days')
 
   const {
     data: topAccountsLeaderboardData,
@@ -76,8 +78,10 @@ const Season = ({
       <div className="flex items-center justify-center bg-th-bkg-3 px-4 py-3">
         <ClockIcon className="mr-2 h-5 w-5 text-th-active" />
         <p className="text-base text-th-fgd-2">
-          Season {seasonData?.season_id} starts in:{' '}
-          <span className="mr-4 font-bold text-th-fgd-1">4 days</span>
+          Season {seasonData?.season_id} ends in:{' '}
+          <span className="mr-4 font-bold text-th-fgd-1">
+            {seasonEndsIn} days
+          </span>
         </p>
       </div>
       <div className="mx-auto grid max-w-[1140px] grid-cols-12 gap-4 p-8 lg:gap-6 lg:p-10">
