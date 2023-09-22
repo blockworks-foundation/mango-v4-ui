@@ -764,3 +764,7 @@ a.page-link:hover {
   color: #ffffff;
   background-color: #007bff;
 }
+
+.recharts-layer .recharts-pie-sector {
+  @apply focus:outline-none;
+}
