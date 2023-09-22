@@ -15,7 +15,7 @@ export const tiers = ['seed', 'mango', 'whale', 'bot']
 
 const RewardsPage = () => {
   //   const { t } = useTranslation(['common', 'rewards'])
-  const [showClaim, setShowClaim] = useState(false)
+  const [showClaim, setShowClaim] = useState(true)
   const [showLeaderboards, setShowLeaderboards] = useState('')
 
   const faqRef = useRef<HTMLDivElement>(null)
@@ -33,6 +33,7 @@ const RewardsPage = () => {
   const distributionData = distributionDataAndClient?.distribution
 
   useEffect(() => {
+    console.log(distributionData, publicKey)
     if (distributionData && publicKey) {
       const start = distributionData.start.getTime()
       const currentTimestamp = new Date().getTime()
@@ -40,6 +41,12 @@ const RewardsPage = () => {
         start < currentTimestamp &&
         start + distributionData.duration * 1000 > currentTimestamp &&
         !!distributionData.getClaims(publicKey).length
+      console.log(
+        start < currentTimestamp,
+        start + distributionData.duration * 1000 > currentTimestamp,
+        !!distributionData.getClaims(publicKey).length,
+        '@@@@@@@@',
+      )
       setShowClaim(isClaimActive)
     } else {
       setShowClaim(false)

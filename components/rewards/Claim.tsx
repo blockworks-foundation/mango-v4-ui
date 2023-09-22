@@ -23,6 +23,11 @@ import ClaimLossModal from './ClaimLossModal'
 import ClaimWinModal from './ClaimWinModal'
 import Image from 'next/image'
 import { Claim } from '@blockworks-foundation/mango-mints-redemption'
+import dynamic from 'next/dynamic'
+
+const RewardsComponent = dynamic(() => import('./RewardsComponents'), {
+  loading: () => <p>Loading...</p>,
+})
 
 const ClaimPage = () => {
   const [showWinModal, setShowWinModal] = useState(false)
@@ -32,6 +37,7 @@ const ClaimPage = () => {
   const [distribution, setDistribution] = useState<Distribution | undefined>(
     undefined,
   )
+  const [showRender, setShowRender] = useState(true)
   const [claims, setClaims] = useState<Claim[] | undefined>([])
   const [claimed, setClaimed] = useState<PublicKey[] | undefined>([])
   const [rewardsClient, setRewardsClient] = useState<
@@ -167,6 +173,10 @@ const ClaimPage = () => {
 
   return claims === undefined ? (
     <span>Loading...</span>
+  ) : showRender ? (
+    <div className="fixed bottom-0 left-0 right-0 top-0">
+      <RewardsComponent setHide={setShowRender}></RewardsComponent>
+    </div>
   ) : (
     <>
       <div className="flex items-center justify-center bg-th-bkg-3 px-4 py-3">
