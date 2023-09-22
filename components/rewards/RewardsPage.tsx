@@ -41,12 +41,6 @@ const RewardsPage = () => {
         start < currentTimestamp &&
         start + distributionData.duration * 1000 > currentTimestamp &&
         !!distributionData.getClaims(publicKey).length
-      console.log(
-        start < currentTimestamp,
-        start + distributionData.duration * 1000 > currentTimestamp,
-        !!distributionData.getClaims(publicKey).length,
-        '@@@@@@@@',
-      )
       setShowClaim(isClaimActive)
     } else {
       setShowClaim(false)

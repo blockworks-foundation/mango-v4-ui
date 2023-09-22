@@ -67,6 +67,7 @@ export default function RewardsComponent({
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [collectedPrizes, setCollectedPrize] = useState([] as any[])
+  const [muted, setMuted] = useState(true)
 
   const [currentPrize, setCurrentPrize] = useState()
 
@@ -94,6 +95,12 @@ export default function RewardsComponent({
       })
       renderLoaded.current = true
     }
+  }, [])
+
+  useEffect(() => {
+    setTimeout(() => {
+      setMuted(false)
+    }, 0)
   }, [])
 
   return (
@@ -139,7 +146,7 @@ export default function RewardsComponent({
         id="particles-coins"
         preload="true"
         playsInline
-        muted
+        muted={muted}
       >
         <source
           src="/particles/coins_2k_hvc1.mov"
@@ -152,7 +159,7 @@ export default function RewardsComponent({
         id="particles-fireworks"
         preload="true"
         playsInline
-        muted
+        muted={muted}
       >
         <source
           src="/particles/fireworks_2k_hvc1.mov"

@@ -37,7 +37,7 @@ const ClaimPage = () => {
   const [distribution, setDistribution] = useState<Distribution | undefined>(
     undefined,
   )
-  const [showRender, setShowRender] = useState(true)
+  const [showRender, setShowRender] = useState(false)
   const [claims, setClaims] = useState<Claim[] | undefined>([])
   const [claimed, setClaimed] = useState<PublicKey[] | undefined>([])
   const [rewardsClient, setRewardsClient] = useState<
