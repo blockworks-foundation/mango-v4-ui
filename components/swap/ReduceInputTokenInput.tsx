@@ -60,7 +60,7 @@ const ReduceInputTokenInput = ({
             inputBank || group?.banksMapByName.get(INPUT_TOKEN_DEFAULT)?.[0] // default to a user position
           }
           showTokenList={setShowTokenSelect}
-          type="reduce-input"
+          tokenType="reduce-input"
         />
       </div>
       <div className="relative col-span-1">
