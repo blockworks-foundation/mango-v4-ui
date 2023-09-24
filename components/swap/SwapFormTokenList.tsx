@@ -15,12 +15,14 @@ import { formatTokenSymbol } from 'utils/tokens'
 import TokenLogo from '@components/shared/TokenLogo'
 import Input from '@components/forms/Input'
 import { getInputTokenBalance } from './TriggerSwapForm'
+import { walletBalanceForToken } from '@components/DepositForm'
 
 export type SwapFormTokenListType =
   | 'input'
   | 'output'
   | 'reduce-input'
   | 'reduce-output'
+  | 'wallet-input'
   | undefined
 
 const generateSearchTerm = (item: Token, searchValue: string) => {
@@ -66,8 +68,19 @@ const TokenItem = ({
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
     if (!group) return
+    // if we want to let users swap from tokens not listed on Mango.
+
+    // if (type === 'wallet-input') {
+    //   const hasBank = Array.from(group.banksMapByName.values())
+    //     .map((b) => b[0].mint.toString())
+    //     .find((mint) => mint === address)
+    //   if (hasBank) {
+    //     return group.getFirstBankByMint(new PublicKey(address))
+    //   }
+    // }
+
     return group.getFirstBankByMint(new PublicKey(address))
-  }, [address])
+  }, [address, type])
 
   const isReduceOnly = useMemo(() => {
     if (!bank) return false
@@ -84,7 +97,7 @@ const TokenItem = ({
         onClick={() => onSubmit(address)}
       >
         <div className="flex items-center">
-          <TokenLogo bank={bank} />
+          <TokenLogo bank={bank} logoUrl={!bank ? token.logoURI : ''} />
           <div className="ml-2.5">
             <p className="text-left text-th-fgd-2">
               {bank?.name ? formatTokenSymbol(bank.name) : symbol || 'unknown'}
@@ -109,22 +122,26 @@ const TokenItem = ({
             </p>
           </div>
         </div>
-        {(type === 'input' || type === 'reduce-input') &&
-        token.amount &&
-        token.amountWithBorrow &&
-        token.decimals ? (
+        {type === 'input' || type === 'reduce-input' ? (
           <p className="font-mono text-sm text-th-fgd-2">
             {useMargin ? (
               <FormatNumericValue
-                value={token.amountWithBorrow}
+                value={token.amountWithBorrow || 0}
                 decimals={token.decimals}
               />
             ) : (
               <FormatNumericValue
-                value={token.amount}
+                value={token.amount || 0}
                 decimals={token.decimals}
               />
             )}
+          </p>
+        ) : type === 'wallet-input' ? (
+          <p className="font-mono text-sm text-th-fgd-2">
+            <FormatNumericValue
+              value={token.amount || 0}
+              decimals={token.decimals}
+            />
           </p>
         ) : null}
       </button>
@@ -150,9 +167,10 @@ const SwapFormTokenList = ({
 }) => {
   const { t } = useTranslation(['common', 'search', 'swap'])
   const [search, setSearch] = useState('')
-  const { mangoTokens } = useJupiterMints()
+  const { mangoTokens, jupiterTokens } = useJupiterMints()
   const inputBank = mangoStore((s) => s.swap.inputBank)
   const outputBank = mangoStore((s) => s.swap.outputBank)
+  const walletTokens = mangoStore((s) => s.wallet.tokens)
   const { group } = useMangoGroup()
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const focusRef = useRef<HTMLInputElement>(null)
@@ -169,40 +187,38 @@ const SwapFormTokenList = ({
 
   const tokenInfos: TokenInfoWithAmounts[] = useMemo(() => {
     if (
-      mangoTokens?.length &&
-      group &&
-      mangoAccount &&
-      outputBank &&
-      inputBank &&
-      type === 'input'
-    ) {
+      !mangoTokens.length ||
+      !group ||
+      !mangoAccount ||
+      !outputBank ||
+      !inputBank
+    )
+      return []
+    if (type === 'input') {
       const filteredSortedTokens = mangoTokens
         .map((token) => {
+          const tokenPk = new PublicKey(token.address)
+          const tokenBank = group.getFirstBankByMint(tokenPk)
           const max = getTokenInMax(
             mangoAccount,
-            new PublicKey(token.address),
+            tokenPk,
             outputBank.mint,
             group,
             useMargin,
           )
-          return { ...token, ...max }
+          const price = tokenBank.uiPrice
+          return { ...token, ...max, price }
         })
-        .filter((token) => (token.symbol === outputBank?.name ? false : true))
+        .filter((token) => (token.symbol === outputBank.name ? false : true))
         .sort((a, b) =>
           useMargin
-            ? Number(b.amountWithBorrow) - Number(a.amountWithBorrow)
-            : Number(b.amount) - Number(a.amount),
+            ? Number(b.amountWithBorrow.mul(b.price)) -
+              Number(a.amountWithBorrow.mul(a.price))
+            : Number(b.amount.mul(b.price)) - Number(a.amount.mul(a.price)),
         )
 
       return filteredSortedTokens
-    } else if (
-      mangoTokens?.length &&
-      group &&
-      mangoAccount &&
-      outputBank &&
-      inputBank &&
-      type === 'reduce-input'
-    ) {
+    } else if (type === 'reduce-input') {
       const filteredSortedTokens = mangoTokens
         .map((token) => {
           const tokenBank = group.getFirstBankByMint(
@@ -220,25 +236,74 @@ const SwapFormTokenList = ({
         })
         .filter(
           (token) =>
-            token.symbol !== outputBank?.name && token.absDollarValue > 0.0001,
+            token.symbol !== outputBank.name && token.absDollarValue > 0.0001,
         )
         .sort((a, b) => b.absDollarValue - a.absDollarValue)
 
       return filteredSortedTokens
-    } else if (mangoTokens?.length) {
+    } else if (type === 'wallet-input' && jupiterTokens.length) {
+      // if we want to let users swap from tokens not listed on Mango. Some other changes are need to pass the mint to the swap function
+
+      // const jupiterTokensWithAmount = []
+      // for (const token of jupiterTokens) {
+      //   const hasToken = walletTokens.find(
+      //     (t) => t.mint.toString() === token.address,
+      //   )
+      //   if (hasToken) {
+      //     jupiterTokensWithAmount.push({
+      //       ...token,
+      //       amount: new Decimal(hasToken.uiAmount),
+      //     })
+      //   }
+      // }
+      // const filteredSortedTokens = jupiterTokensWithAmount
+      //   .filter((token) =>
+      //     token.symbol !== outputBank.name && token.amount.gt(0) ? true : false,
+      //   )
+      //   .sort((a, b) => Number(b.amount) - Number(a.amount))
+
+      const filteredSortedTokens = mangoTokens
+        .map((token) => {
+          const tokenBank = group.getFirstBankByMint(
+            new PublicKey(token.address),
+          )
+          const max = walletBalanceForToken(walletTokens, tokenBank.name)
+          const price = tokenBank.uiPrice
+          return {
+            ...token,
+            amount: new Decimal(max.maxAmount),
+            decimals: max.maxDecimals,
+            price,
+          }
+        })
+        .filter((token) => (token.symbol === outputBank.name ? false : true))
+        .sort(
+          (a, b) =>
+            Number(b.amount.mul(b.price)) - Number(a.amount.mul(a.price)),
+        )
+
+      return filteredSortedTokens
+    } else if (mangoTokens.length) {
       const filteredTokens = mangoTokens
         .map((token) => ({
           ...token,
           amount: new Decimal(0),
           amountWithBorrow: new Decimal(0),
         }))
-        .filter((token) => (token.symbol === inputBank?.name ? false : true))
+        .filter((token) => (token.symbol === inputBank.name ? false : true))
         .sort((a, b) => a.symbol.localeCompare(b.symbol))
       return filteredTokens
-    } else {
-      return []
-    }
-  }, [mangoTokens, inputBank, outputBank, mangoAccount, group, useMargin, type])
+    } else return []
+  }, [
+    mangoTokens,
+    jupiterTokens,
+    inputBank,
+    outputBank,
+    mangoAccount,
+    group,
+    useMargin,
+    type,
+  ])
 
   const handleUpdateSearch = (e: ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value)
@@ -254,7 +319,7 @@ const SwapFormTokenList = ({
 
   const listTitle = useMemo(() => {
     if (!type) return ''
-    if (type === 'input') {
+    if (type === 'input' || type === 'wallet-input') {
       return t('swap:you-sell')
     } else if (type === 'output') {
       return t('swap:you-buy')

@@ -15,52 +15,40 @@ import { MANGO_MINT, SIZE_INPUT_UI_KEY, USDC_MINT } from '../../utils/constants'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { RouteInfo } from 'types/jupiter'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import SwapSlider from './SwapSlider'
-import PercentageSelectButtons from './PercentageSelectButtons'
+import { DEFAULT_PERCENTAGE_VALUES } from './PercentageSelectButtons'
 import BuyTokenInput from './BuyTokenInput'
-import SellTokenInput from './SellTokenInput'
 import Button from '@components/shared/Button'
 import SwapReviewRouteInfo from './SwapReviewRouteInfo'
 import useIpAddress from 'hooks/useIpAddress'
 import { useTranslation } from 'react-i18next'
 import useQuoteRoutes from './useQuoteRoutes'
-import { useTokenMax } from './useTokenMax'
 import Loading from '@components/shared/Loading'
 import InlineNotification from '@components/shared/InlineNotification'
-import useMangoAccount from 'hooks/useMangoAccount'
-import Link from 'next/link'
 import SecondaryConnectButton from '@components/shared/SecondaryConnectButton'
-import useRemainingBorrowsInPeriod from 'hooks/useRemainingBorrowsInPeriod'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { formatCurrencyValue } from 'utils/numbers'
+import { floorToDecimal } from 'utils/numbers'
 import { SwapFormTokenListType } from './SwapFormTokenList'
-import useTokenPositionsFull from 'hooks/useTokenPositionsFull'
+import WalletSellTokenInput from './WalletSellTokenInput'
+import { walletBalanceForToken } from '@components/DepositForm'
+import WalletSwapSlider from './WalletSwapSlider'
+import ButtonGroup from '@components/forms/ButtonGroup'
 
 dayjs.extend(relativeTime)
 
-type MarketSwapFormProps = {
+type WalletSwapFormProps = {
   setShowTokenSelect: Dispatch<SetStateAction<SwapFormTokenListType>>
 }
 
-const MAX_DIGITS = 11
-export const withValueLimit = (values: NumberFormatValues): boolean => {
-  return values.floatValue
-    ? values.floatValue.toFixed(0).length <= MAX_DIGITS
-    : true
-}
-
-export const NUMBER_FORMAT_CLASSNAMES =
-  'w-full rounded-r-lg h-[56px] box-border pb-4 border-l border-th-bkg-2 bg-th-input-bkg px-3 text-right font-mono text-xl text-th-fgd-1 focus:outline-none md:hover:bg-th-bkg-1'
-
 const set = mangoStore.getState().set
 
-const MarketSwapForm = ({ setShowTokenSelect }: MarketSwapFormProps) => {
+const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
   //initial state is undefined null is returned on error
   const [selectedRoute, setSelectedRoute] = useState<RouteInfo | null>()
   const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
   const [showConfirm, setShowConfirm] = useState(false)
+  const [sizePercentage, setSizePercentage] = useState('')
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const {
     margin: useMargin,
@@ -81,8 +69,21 @@ const MarketSwapForm = ({ setShowTokenSelect }: MarketSwapFormProps) => {
     slippage,
     swapMode,
     wallet: publicKey?.toBase58(),
+    mode: 'JUPITER',
   })
   const { ipAllowed, ipCountry } = useIpAddress()
+
+  const walletTokens = mangoStore((s) => s.wallet.tokens)
+
+  const [walletMax, inputDecimals] = useMemo(() => {
+    if (!inputBank) return ['0', 6]
+    const walletBalance = walletBalanceForToken(walletTokens, inputBank.name)
+    const max = floorToDecimal(
+      walletBalance.maxAmount,
+      walletBalance.maxDecimals,
+    ).toFixed()
+    return [max, walletBalance.maxDecimals]
+  }, [walletTokens, inputBank])
 
   const amountInAsDecimal: Decimal | null = useMemo(() => {
     return Number(debouncedAmountIn)
@@ -159,13 +160,6 @@ const MarketSwapForm = ({ setShowTokenSelect }: MarketSwapFormProps) => {
     [setAmountInFormValue],
   )
 
-  const handleRepay = useCallback(
-    (amountOut: string) => {
-      setAmountOutFormValue(amountOut, true)
-    },
-    [setAmountInFormValue],
-  )
-
   /* 
     Once a route is returned from the Jupiter API, use the inAmount or outAmount
     depending on the swapMode and set those values in state
@@ -187,14 +181,6 @@ const MarketSwapForm = ({ setShowTokenSelect }: MarketSwapFormProps) => {
       }
     }
   }, [bestRoute, swapMode, inputBank, outputBank])
-
-  /* 
-    If the use margin setting is toggled, clear the form values
-  */
-  useEffect(() => {
-    setAmountInFormValue('')
-    setAmountOutFormValue('')
-  }, [useMargin, setAmountInFormValue, setAmountOutFormValue])
 
   const handleSwitchTokens = useCallback(() => {
     if (amountInAsDecimal?.gt(0) && amountOutAsDecimal.gte(0)) {
@@ -219,37 +205,53 @@ const MarketSwapForm = ({ setShowTokenSelect }: MarketSwapFormProps) => {
     )
   }, [amountInAsDecimal, amountOutAsDecimal, connected, selectedRoute])
 
+  const handleSizePercentage = (percentage: string) => {
+    setSizePercentage(percentage)
+    const walletMaxDecimal = new Decimal(walletMax)
+    if (walletMaxDecimal.gt(0)) {
+      let amount = walletMaxDecimal.mul(percentage).div(100)
+      if (percentage !== '100') {
+        amount = floorToDecimal(amount, inputDecimals)
+      }
+      setAmountInFormValue(amount.toFixed())
+    } else {
+      setAmountInFormValue('0')
+    }
+  }
+
   return (
     <>
       <SwapReviewRouteInfo
-        onClose={() => setShowConfirm(false)}
         amountIn={amountInAsDecimal}
-        show={showConfirm}
-        slippage={slippage}
+        isWalletSwap
+        onClose={() => setShowConfirm(false)}
         routes={routes}
         selectedRoute={selectedRoute}
         setSelectedRoute={setSelectedRoute}
+        show={showConfirm}
+        slippage={slippage}
       />
-      <SellTokenInput
+      <WalletSellTokenInput
         handleAmountInChange={handleAmountInChange}
         setShowTokenSelect={setShowTokenSelect}
         handleMax={handleMax}
+        max={walletMax}
       />
       <div className="rounded-b-xl bg-th-bkg-2 p-3 pt-0">
         {swapFormSizeUi === 'slider' ? (
-          <SwapSlider
-            useMargin={useMargin}
+          <WalletSwapSlider
             amount={amountInAsDecimal.toNumber()}
             onChange={(v) => setAmountInFormValue(v, true)}
             step={1 / 10 ** (inputBank?.mintDecimals || 6)}
-            maxAmount={useTokenMax}
+            maxAmount={parseFloat(walletMax)}
           />
         ) : (
-          <div className="-mt-2">
-            <PercentageSelectButtons
-              amountIn={amountInAsDecimal.toString()}
-              setAmountIn={(v) => setAmountInFormValue(v, true)}
-              useMargin={useMargin}
+          <div className="col-span-2">
+            <ButtonGroup
+              activeValue={sizePercentage}
+              onChange={(p) => handleSizePercentage(p)}
+              values={DEFAULT_PERCENTAGE_VALUES}
+              unit="%"
             />
           </div>
         )}
@@ -273,7 +275,6 @@ const MarketSwapForm = ({ setShowTokenSelect }: MarketSwapFormProps) => {
         handleAmountOutChange={handleAmountOutChange}
         loading={loadingSwapDetails}
         setShowTokenSelect={setShowTokenSelect}
-        handleRepay={handleRepay}
       />
       {ipAllowed ? (
         <SwapFormSubmitButton
@@ -300,7 +301,7 @@ const MarketSwapForm = ({ setShowTokenSelect }: MarketSwapFormProps) => {
   )
 }
 
-export default MarketSwapForm
+export default WalletSwapForm
 
 const SwapFormSubmitButton = ({
   amountIn,
@@ -318,27 +319,10 @@ const SwapFormSubmitButton = ({
   useMargin: boolean
 }) => {
   const { t } = useTranslation('common')
-  const { mangoAccountAddress } = useMangoAccount()
   const { connected } = useWallet()
-  // const { amount: tokenMax, amountWithBorrow } = useTokenMax(useMargin)
-  const { inputBank, outputBank } = mangoStore((s) => s.swap)
-  const { remainingBorrowsInPeriod, timeToNextPeriod } =
-    useRemainingBorrowsInPeriod(true)
-  const tokenPositionsFull = useTokenPositionsFull([outputBank, inputBank])
 
-  // check if the borrowed amount exceeds the net borrow limit in the current period
-  const borrowExceedsLimitInPeriod = useMemo(() => {
-    const mangoAccount = mangoStore.getState().mangoAccount.current
-    if (!mangoAccount || !inputBank || !remainingBorrowsInPeriod) return false
-
-    const balance = mangoAccount.getTokenDepositsUi(inputBank)
-    const remainingBalance = balance - amountIn.toNumber()
-    const borrowAmount = remainingBalance < 0 ? Math.abs(remainingBalance) : 0
-
-    return borrowAmount > remainingBorrowsInPeriod
-  }, [amountIn, inputBank, mangoAccountAddress, remainingBorrowsInPeriod])
-
-  const disabled = !amountIn.toNumber() || !amountOut || !selectedRoute
+  const disabled =
+    (connected && !amountIn.toNumber()) || !amountOut || !selectedRoute
 
   return (
     <>
@@ -361,34 +345,6 @@ const SwapFormSubmitButton = ({
           isLarge
         />
       )}
-      {tokenPositionsFull ? (
-        <div className="pb-4">
-          <InlineNotification
-            type="error"
-            desc={
-              <>
-                {t('error-token-positions-full')}{' '}
-                <Link href="/settings" shallow>
-                  {t('manage')}
-                </Link>
-              </>
-            }
-          />
-        </div>
-      ) : null}
-      {borrowExceedsLimitInPeriod &&
-      remainingBorrowsInPeriod &&
-      timeToNextPeriod ? (
-        <div className="mb-4">
-          <InlineNotification
-            type="error"
-            desc={t('error-borrow-exceeds-limit', {
-              remaining: formatCurrencyValue(remainingBorrowsInPeriod),
-              resetTime: dayjs().to(dayjs().add(timeToNextPeriod, 'second')),
-            })}
-          />
-        </div>
-      ) : null}
       {selectedRoute === null && amountIn.gt(0) ? (
         <div className="mb-4">
           <InlineNotification type="error" desc={t('swap:no-swap-found')} />

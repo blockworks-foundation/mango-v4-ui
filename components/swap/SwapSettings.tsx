@@ -4,14 +4,12 @@ import { useEffect, useRef, useState } from 'react'
 import mangoStore from '@store/mangoStore'
 import ButtonGroup from '../forms/ButtonGroup'
 import Input from '../forms/Input'
-import Switch from '../forms/Switch'
 import Button, { IconButton, LinkButton } from '../shared/Button'
 
 const slippagePresets = ['0.1', '0.5', '1', '2']
 
 const SwapSettings = ({ onClose }: { onClose: () => void }) => {
   const { t } = useTranslation(['common', 'settings', 'swap'])
-  const margin = mangoStore((s) => s.swap.margin)
   const slippage = mangoStore((s) => s.swap.slippage)
   const set = mangoStore((s) => s.set)
   const focusRef = useRef<HTMLButtonElement>(null)
@@ -24,12 +22,6 @@ const SwapSettings = ({ onClose }: { onClose: () => void }) => {
       setShowCustomSlippageForm(true)
     }
   }, [])
-
-  const handleSetMargin = () => {
-    set((s) => {
-      s.swap.margin = !s.swap.margin
-    })
-  }
 
   const handleSetSlippage = (slippage: string) => {
     set((s) => {
@@ -94,14 +86,6 @@ const SwapSettings = ({ onClose }: { onClose: () => void }) => {
             values={slippagePresets}
           />
         )}
-      </div>
-      <div className="mt-6 flex items-center justify-between rounded-md bg-th-bkg-2 p-3">
-        <p className="text-th-fgd-1">{t('swap:use-margin')}</p>
-        <Switch
-          className="text-th-fgd-3"
-          checked={margin}
-          onChange={handleSetMargin}
-        />
       </div>
     </>
   )
