@@ -57,7 +57,7 @@ const WalletSellTokenInput = ({
             inputBank || group?.banksMapByName.get(INPUT_TOKEN_DEFAULT)?.[0]
           }
           showTokenList={setShowTokenSelect}
-          type="wallet-input"
+          tokenType="wallet-input"
         />
       </div>
       <div className="relative col-span-1">
