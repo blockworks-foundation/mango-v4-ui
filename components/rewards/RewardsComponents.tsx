@@ -45,11 +45,8 @@ export default function RewardsComponent({
 
   const [currentPrize, setCurrentPrize] = useState()
 
-  // TODO: make sure to set .mute=false on each video element on the first ui
-  //       interaction, e.g. when clicking a start button or something like that
   useEffect(() => {
     if (!renderLoaded.current && prizes.length) {
-      console.log(prizes, '@@@@')
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const v1 = document.getElementById('particles-fireworks') as any
       v1.onloadedmetadata = () => (v1.currentTime = v1.duration)
@@ -78,7 +75,7 @@ export default function RewardsComponent({
       info: x.quantity.toString(),
       rarity: 'Common',
       itemResolution: [32, 32],
-      itemUrl: '/models/tex_procedural/tokens/mngo.svg',
+      itemUrl: '/icons/mngo.svg',
       particleId: 'particles-coins',
       frontMaterialId: 'loader_mat_card_silver_front_square',
       backMaterialId: 'loader_mat_card_silver_back',
