@@ -1,5 +1,28 @@
-import { Claim } from '@blockworks-foundation/mango-mints-redemption'
+import {
+  Claim,
+  Distribution,
+  MangoMintsRedemptionClient,
+} from '@blockworks-foundation/mango-mints-redemption'
 import dynamic from 'next/dynamic'
+import ClaimWinModal from './ClaimWinModal'
+import ClaimLossModal from './ClaimLossModal'
+import Button from '@components/shared/Button'
+import { ClockIcon } from '@heroicons/react/20/solid'
+import { web3 } from '@project-serum/anchor'
+import { useWallet } from '@solana/wallet-adapter-react'
+import { PublicKey } from '@solana/web3.js'
+import mangoStore from '@store/mangoStore'
+import { useCurrentSeason, useDistribution } from 'hooks/useRewards'
+import { chunk } from 'lodash'
+import { useState, useEffect, useCallback } from 'react'
+import {
+  TransactionInstructionWithSigners,
+  SequenceType,
+} from '@blockworks-foundation/mangolana/lib/globalTypes'
+import {
+  TransactionInstructionWithType,
+  sendSignAndConfirmTransactions,
+} from '@blockworks-foundation/mangolana/lib/transactions'
 
 const RewardsComponent = dynamic(() => import('./RewardsComponents'), {
   loading: () => <p>Loading...</p>,
