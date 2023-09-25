@@ -14,21 +14,27 @@ import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import SwapSettings from './SwapSettings'
 import InlineNotification from '@components/shared/InlineNotification'
 import Tooltip from '@components/shared/Tooltip'
-import TabUnderline from '@components/shared/TabUnderline'
 import MarketSwapForm from './MarketSwapForm'
 import Switch from '@components/forms/Switch'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { SwapFormTokenListType } from './SwapFormTokenList'
 import { TriggerOrderTypes } from 'types'
 import TriggerSwapForm from './TriggerSwapForm'
+import WalletSwapForm from './WalletSwapForm'
+import TabButtons from '@components/shared/TabButtons'
+import useMangoAccount from 'hooks/useMangoAccount'
+import { useWallet } from '@solana/wallet-adapter-react'
 
 const set = mangoStore.getState().set
 
 const SwapForm = () => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
+  const { mangoAccountAddress } = useMangoAccount()
+  const { connected } = useWallet()
   const [showTokenSelect, setShowTokenSelect] =
     useState<SwapFormTokenListType>()
   const [showSettings, setShowSettings] = useState(false)
+  const [walletSwap, setWalletSwap] = useState(false)
   const [, setSavedSwapMargin] = useLocalStorageState<boolean>(
     SWAP_MARGIN_KEY,
     true,
@@ -43,6 +49,13 @@ const SwapForm = () => {
     amountOut: amountOutFormValue,
     swapOrTrigger,
   } = mangoStore((s) => s.swap)
+
+  // enable wallet swap when connected and no mango account
+  useEffect(() => {
+    if (connected && !mangoAccountAddress) {
+      setWalletSwap(true)
+    }
+  }, [connected, mangoAccountAddress])
 
   const handleTokenInSelect = useCallback((mintAddress: string) => {
     const group = mangoStore.getState().group
@@ -150,7 +163,9 @@ const SwapForm = () => {
           <SwapFormTokenList
             onClose={() => setShowTokenSelect(undefined)}
             onTokenSelect={
-              showTokenSelect === 'input' || showTokenSelect === 'reduce-input'
+              showTokenSelect === 'input' ||
+              showTokenSelect === 'reduce-input' ||
+              showTokenSelect === 'wallet-input'
                 ? handleTokenInSelect
                 : handleTokenOutSelect
             }
@@ -164,94 +179,131 @@ const SwapForm = () => {
         >
           <SwapSettings onClose={() => setShowSettings(false)} />
         </EnterBottomExitBottom>
-        <div className="relative p-6">
-          <div className="relative mb-6">
-            <TabUnderline
-              activeValue={swapOrTrigger}
-              values={['swap', 'trade:trigger-order']}
-              onChange={(v) => handleSwapOrTrigger(v)}
-            />
-          </div>
+        <div className="relative border-b border-th-bkg-3">
+          <TabButtons
+            activeValue={swapOrTrigger}
+            fillWidth
+            values={[
+              ['swap', 0],
+              ['trade:trigger-order', 0],
+            ]}
+            onChange={(v) => handleSwapOrTrigger(v)}
+          />
+        </div>
+        <div className="relative">
           {swapOrTrigger === 'swap' ? (
-            <MarketSwapForm setShowTokenSelect={setShowTokenSelect} />
-          ) : (
-            <TriggerSwapForm
-              showTokenSelect={showTokenSelect}
-              setShowTokenSelect={setShowTokenSelect}
-            />
-          )}
-          {inputBank ? (
-            <TokenVaultWarnings bank={inputBank} type="swap" />
-          ) : null}
-          {inputBank &&
-          inputBank.areBorrowsReduceOnly() &&
-          inputBank.areDepositsReduceOnly() ? (
-            <div className="pb-4">
-              <InlineNotification
-                type="warning"
-                desc={t('swap:input-reduce-only-warning', {
-                  symbol: inputBank.name,
-                })}
-              />
-            </div>
-          ) : null}
-          {outputBank &&
-          outputBank.areBorrowsReduceOnly() &&
-          outputBank.areDepositsReduceOnly() ? (
-            <div className="pb-4">
-              <InlineNotification
-                type="warning"
-                desc={t('swap:output-reduce-only-warning', {
-                  symbol: outputBank.name,
-                })}
-              />
-            </div>
-          ) : null}
-          <div className="space-y-2">
-            <div id="swap-step-four">
-              <HealthImpact maintProjectedHealth={maintProjectedHealth} />
-            </div>
-            {swapOrTrigger === 'swap' ? (
-              <>
-                <div className="flex items-center justify-between">
-                  <Tooltip content={t('swap:tooltip-margin')}>
-                    <p className="tooltip-underline text-sm text-th-fgd-3">
-                      {t('swap:margin')}
-                    </p>
-                  </Tooltip>
+            <>
+              <div className="flex justify-end pb-3 pt-4">
+                <div className="flex justify-between px-6">
                   <Switch
-                    className="text-th-fgd-3"
-                    checked={useMargin}
-                    onChange={handleSetMargin}
+                    checked={walletSwap}
+                    onChange={() => setWalletSwap(!walletSwap)}
                     small
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-th-fgd-3">
-                    {t('swap:max-slippage')}
-                  </p>
-                  <LinkButton
-                    className="flex items-center text-right font-mono text-sm font-normal text-th-fgd-2"
-                    onClick={() => setShowSettings(true)}
                   >
-                    <span className="mr-1.5">{slippage}%</span>
-                    <PencilIcon className="h-4 w-4" />
-                  </LinkButton>
+                    <Tooltip content={t('swap:tooltip-wallet-swap')}>
+                      <span className="tooltip-underline">
+                        {t('swap:wallet-swap')}
+                      </span>
+                    </Tooltip>
+                  </Switch>
                 </div>
-              </>
-            ) : null}
-            {estSlippage ? (
-              <>
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-th-fgd-3">
-                    {t('trade:est-slippage')}
-                  </p>
-                  <span className="font-mono text-th-fgd-2">
-                    {estSlippage.toFixed(2)}%
-                  </span>
+              </div>
+              {walletSwap ? (
+                <div className="px-6">
+                  <WalletSwapForm setShowTokenSelect={setShowTokenSelect} />
                 </div>
-              </>
+              ) : (
+                <div className="px-6">
+                  <MarketSwapForm setShowTokenSelect={setShowTokenSelect} />
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="px-6 pt-4">
+              <TriggerSwapForm
+                showTokenSelect={showTokenSelect}
+                setShowTokenSelect={setShowTokenSelect}
+              />
+            </div>
+          )}
+          <div className="px-6 pb-6">
+            {inputBank && !walletSwap ? (
+              <TokenVaultWarnings bank={inputBank} type="swap" />
             ) : null}
+            {inputBank &&
+            !walletSwap &&
+            inputBank.areBorrowsReduceOnly() &&
+            inputBank.areDepositsReduceOnly() ? (
+              <div className="pb-4">
+                <InlineNotification
+                  type="warning"
+                  desc={t('swap:input-reduce-only-warning', {
+                    symbol: inputBank.name,
+                  })}
+                />
+              </div>
+            ) : null}
+            {outputBank &&
+            !walletSwap &&
+            outputBank.areBorrowsReduceOnly() &&
+            outputBank.areDepositsReduceOnly() ? (
+              <div className="pb-4">
+                <InlineNotification
+                  type="warning"
+                  desc={t('swap:output-reduce-only-warning', {
+                    symbol: outputBank.name,
+                  })}
+                />
+              </div>
+            ) : null}
+            <div className="space-y-2">
+              {!walletSwap ? (
+                <HealthImpact maintProjectedHealth={maintProjectedHealth} />
+              ) : null}
+              {swapOrTrigger === 'swap' ? (
+                <>
+                  {!walletSwap ? (
+                    <div className="flex items-center justify-between">
+                      <Tooltip content={t('swap:tooltip-margin')}>
+                        <p className="tooltip-underline text-sm text-th-fgd-3">
+                          {t('swap:margin')}
+                        </p>
+                      </Tooltip>
+                      <Switch
+                        className="text-th-fgd-3"
+                        checked={useMargin}
+                        onChange={handleSetMargin}
+                        small
+                      />
+                    </div>
+                  ) : null}
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-th-fgd-3">
+                      {t('swap:max-slippage')}
+                    </p>
+                    <LinkButton
+                      className="flex items-center text-right font-mono text-sm font-normal text-th-fgd-2"
+                      onClick={() => setShowSettings(true)}
+                    >
+                      <span className="mr-1.5">{slippage}%</span>
+                      <PencilIcon className="h-4 w-4" />
+                    </LinkButton>
+                  </div>
+                </>
+              ) : null}
+              {estSlippage ? (
+                <>
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-th-fgd-3">
+                      {t('trade:est-slippage')}
+                    </p>
+                    <span className="font-mono text-th-fgd-2">
+                      {estSlippage.toFixed(2)}%
+                    </span>
+                  </div>
+                </>
+              ) : null}
+            </div>
           </div>
         </div>
       </div>
