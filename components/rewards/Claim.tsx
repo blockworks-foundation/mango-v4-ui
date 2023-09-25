@@ -21,7 +21,6 @@ import { chunk } from 'lodash'
 import { useState, useEffect, useCallback } from 'react'
 import ClaimLossModal from './ClaimLossModal'
 import ClaimWinModal from './ClaimWinModal'
-import Image from 'next/image'
 import { Claim } from '@blockworks-foundation/mango-mints-redemption'
 import dynamic from 'next/dynamic'
 
@@ -140,6 +139,7 @@ const ClaimPage = () => {
         callbacks: {
           afterFirstBatchSign: (signedCount) => {
             console.log('afterFirstBatchSign', signedCount)
+            setShowRender(true)
           },
           afterBatchSign: (signedCount) => {
             console.log('afterBatchSign', signedCount)
@@ -175,7 +175,10 @@ const ClaimPage = () => {
     <span>Loading...</span>
   ) : showRender ? (
     <div className="fixed bottom-0 left-0 right-0 top-0 z-[1000]">
-      <RewardsComponent setHide={setShowRender}></RewardsComponent>
+      <RewardsComponent
+        claims={claims}
+        setHide={setShowRender}
+      ></RewardsComponent>
     </div>
   ) : (
     <>
@@ -193,32 +196,6 @@ const ClaimPage = () => {
             <p className="text-lg">
               You earned {claims.length} boxes in Season {previousSeason}
             </p>
-          </div>
-          <div className="flex flex-row space-y-6 md:items-center md:justify-center md:space-x-3">
-            {claims.map((c) => {
-              return (
-                <div
-                  className="flex flex-col items-center p-6"
-                  key={c.mint.toBase58()}
-                >
-                  <Image
-                    className="md:-mt-10"
-                    src="/images/rewards/cube.png"
-                    width={140}
-                    height={140}
-                    alt="Reward"
-                    style={{ width: 'auto', maxWidth: '140px' }}
-                  />
-                  <div className="mt-5 text-lg">
-                    {c.quantity.toString()} {c.mintProperties['name']}
-                  </div>
-                  {claimed !== undefined &&
-                  claimed.find((cl) => cl.equals(c.mint)) !== undefined ? (
-                    <div className="mt-5 text-lg">Claimed!</div>
-                  ) : undefined}
-                </div>
-              )
-            })}
           </div>
           {isClaiming ? (
             <div>

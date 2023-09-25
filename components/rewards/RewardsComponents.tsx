@@ -8,73 +8,48 @@ const lalezar = Lalezar({
 })
 
 import { init, onClick } from '../../lib/render'
+import { Claim } from '@blockworks-foundation/mango-mints-redemption'
 
-const prizes = [
-  {
-    item: 'MNGO',
-    info: '10,000',
-    rarity: 'Rare',
-    itemResolution: [32, 32],
-    itemUrl: '/models/tex_procedural/tokens/mngo.svg',
-    particleId: 'particles-coins',
-    stencilUrl: '/models/tex_procedural/tex_card_front_gold_circle_albedo.png',
-    frontMaterialId: 'loader_mat_card_gold_front_circle',
-    backMaterialId: 'loader_mat_card_gold_back',
-  },
-  {
-    item: 'Pepe Skin',
-    info: '#1337',
-    rarity: 'Rare',
-    itemResolution: [440, 440],
-    itemUrl: '/skins/pepe_skin_demo.jpg',
-    particleId: 'particles-fireworks',
-    stencilUrl:
-      '/models/tex_procedural/tex_card_front_silver_square_albedo.png',
-    frontMaterialId: 'loader_mat_card_silver_front_square',
-    backMaterialId: 'loader_mat_card_silver_back',
-  },
-  {
-    item: 'BONK',
-    info: '21,000,000',
-    rarity: 'Common',
-    itemResolution: [32, 32],
-    itemUrl: '/models/tex_procedural/tokens/bonk.svg',
-    particleId: 'particles-coins',
-    stencilUrl: '/models/tex_procedural/tex_card_front_slver_albedo.png',
-    frontMaterialId: 'loader_mat_card_silver_front',
-    backMaterialId: 'loader_mat_card_silver_back',
-  },
-  {
-    item: 'Monke',
-    info: '#2345',
-    rarity: 'Legendary',
-    itemResolution: [384, 384],
-    itemUrl:
-      'https://gg6o4oqyfo22emifd25zpqp5iguyak7wjohheprzwxcqniztexqq.arweave.net/MbzuOhgrtaIxBR67l8H9QamAK_ZLjnI-ObXFBqMzJeE',
-    particleId: 'particles-fireworks',
-    stencilUrl: '/models/tex_procedural/tex_card_front_gold_albedo.png',
-    frontMaterialId: 'loader_mat_card_gold_front',
-    backMaterialId: 'loader_mat_card_gold_back',
-  },
-]
+type Prize = {
+  //symbol
+  item: string
+  //amount
+  info: string
+  rarity: 'Rare' | 'Legendary' | 'Common'
+  //eg [32, 32] token, nft [400,400]
+  itemResolution: number[]
+  itemUrl: string
+  particleId: 'particles-coins' | 'particles-fireworks'
+  stencilUrl:
+    | '/models/tex_procedural/tex_card_front_gold_circle_albedo.png'
+    | '/models/tex_procedural/tex_card_front_silver_square_albedo.png'
+  frontMaterialId:
+    | 'loader_mat_card_gold_front_circle'
+    | 'loader_mat_card_silver_front_square'
+  backMaterialId: 'loader_mat_card_gold_back' | 'loader_mat_card_silver_back'
+}
 
 export default function RewardsComponent({
   setHide,
+  claims,
 }: {
   setHide: Dispatch<SetStateAction<boolean>>
+  claims: Claim[]
 }) {
   const renderLoaded = useRef<boolean>(false)
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [collectedPrizes, setCollectedPrize] = useState([] as any[])
   const [muted, setMuted] = useState(true)
+  const [prizes, setPrizes] = useState<Prize[]>([])
 
   const [currentPrize, setCurrentPrize] = useState()
 
   // TODO: make sure to set .mute=false on each video element on the first ui
   //       interaction, e.g. when clicking a start button or something like that
   useEffect(() => {
-    if (!renderLoaded.current) {
+    if (!renderLoaded.current && prizes.length) {
+      console.log(prizes, '@@@@')
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const v1 = document.getElementById('particles-fireworks') as any
       v1.onloadedmetadata = () => (v1.currentTime = v1.duration)
@@ -95,13 +70,29 @@ export default function RewardsComponent({
       })
       renderLoaded.current = true
     }
-  }, [])
+  }, [prizes])
+
+  useEffect(() => {
+    const claimsAsPrizes: Prize[] = claims.map((x) => ({
+      item: x.mintProperties.name,
+      info: x.quantity.toString(),
+      rarity: 'Common',
+      itemResolution: [32, 32],
+      itemUrl: '/models/tex_procedural/tokens/mngo.svg',
+      particleId: 'particles-coins',
+      frontMaterialId: 'loader_mat_card_silver_front_square',
+      backMaterialId: 'loader_mat_card_silver_back',
+      stencilUrl:
+        '/models/tex_procedural/tex_card_front_silver_square_albedo.png',
+    }))
+    setPrizes(claimsAsPrizes)
+  }, [claims])
 
   useEffect(() => {
     setTimeout(() => {
       setMuted(false)
     }, 0)
-  }, [])
+  }, [prizes])
 
   return (
     <main className="from-midnight-sky to-midnight-horizon static h-screen w-screen bg-black bg-gradient-to-b">

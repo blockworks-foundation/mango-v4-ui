@@ -15,7 +15,7 @@ export const tiers = ['seed', 'mango', 'whale', 'bot']
 
 const RewardsPage = () => {
   //   const { t } = useTranslation(['common', 'rewards'])
-  const [showClaim, setShowClaim] = useState(true)
+  const [showClaim, setShowClaim] = useState(false)
   const [showLeaderboards, setShowLeaderboards] = useState('')
 
   const faqRef = useRef<HTMLDivElement>(null)
@@ -41,7 +41,7 @@ const RewardsPage = () => {
         start < currentTimestamp &&
         start + distributionData.duration * 1000 > currentTimestamp &&
         !!distributionData.getClaims(publicKey).length
-      setShowClaim(isClaimActive)
+      setShowClaim(true)
     } else {
       setShowClaim(false)
     }
