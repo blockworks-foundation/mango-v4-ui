@@ -33,7 +33,6 @@ const RewardsPage = () => {
   const distributionData = distributionDataAndClient?.distribution
 
   useEffect(() => {
-    console.log(distributionData, publicKey)
     if (distributionData && publicKey) {
       const start = distributionData.start.getTime()
       const currentTimestamp = new Date().getTime()
@@ -41,7 +40,7 @@ const RewardsPage = () => {
         start < currentTimestamp &&
         start + distributionData.duration * 1000 > currentTimestamp &&
         !!distributionData.getClaims(publicKey).length
-      setShowClaim(true)
+      setShowClaim(isClaimActive)
     } else {
       setShowClaim(false)
     }
