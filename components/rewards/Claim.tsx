@@ -37,6 +37,7 @@ const ClaimPage = () => {
     undefined,
   )
   const [showRender, setShowRender] = useState(false)
+  const [rewardsWasShown, setRewardsWasShow] = useState(false)
   const [claims, setClaims] = useState<Claim[] | undefined>([])
   const [claimed, setClaimed] = useState<PublicKey[] | undefined>([])
   const [rewardsClient, setRewardsClient] = useState<
@@ -74,6 +75,10 @@ const ClaimPage = () => {
     }
   }, [distributionDataAndClient, publicKey])
 
+  const startShowRewards = () => {
+    setShowRender(true)
+    setRewardsWasShow(true)
+  }
   const handleClaimRewards = useCallback(async () => {
     if (!distribution || !publicKey || !claims || !rewardsClient) return
     const transactionInstructions: TransactionInstructionWithType[] = []
@@ -136,7 +141,6 @@ const ClaimPage = () => {
         callbacks: {
           afterFirstBatchSign: (signedCount) => {
             console.log('afterFirstBatchSign', signedCount)
-            setShowRender(true)
           },
           afterBatchSign: (signedCount) => {
             console.log('afterBatchSign', signedCount)
@@ -208,13 +212,21 @@ const ClaimPage = () => {
                 Claiming rewards...
               </div>
             </div>
-          ) : (
+          ) : rewardsWasShown ? (
             <Button
               className="mx-auto mt-8 block"
               onClick={() => handleClaimRewards()}
               size="large"
             >
               Claim Rewards
+            </Button>
+          ) : (
+            <Button
+              className="mx-auto mt-8 block"
+              onClick={() => startShowRewards()}
+              size="large"
+            >
+              Show Rewards
             </Button>
           )}
         </div>

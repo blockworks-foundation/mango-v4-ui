@@ -7,7 +7,6 @@ const lalezar = Lalezar({
 })
 import { init, onClick } from '../../lib/render'
 import { Claim } from '@blockworks-foundation/mango-mints-redemption'
-import { useCurrentSeason, useDistribution } from 'hooks/useRewards'
 
 type Prize = {
   //symbol
@@ -43,12 +42,6 @@ export default function RewardsComponent({
   const [prizes, setPrizes] = useState<Prize[]>([])
 
   const [currentPrize, setCurrentPrize] = useState()
-
-  const { data: seasonData } = useCurrentSeason()
-  const currentSeason = seasonData ? seasonData.season_id : undefined
-  const prevSeason = currentSeason ? currentSeason - 1 : undefined
-
-  const { refetch } = useDistribution(prevSeason)
 
   useEffect(() => {
     if (!renderLoaded.current && prizes.length) {
@@ -108,7 +101,6 @@ export default function RewardsComponent({
         <div
           className="fixed right-0 top-0 text-right text-white"
           onClick={() => {
-            refetch()
             setShowRender(false)
           }}
         >

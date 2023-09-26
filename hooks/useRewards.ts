@@ -97,7 +97,7 @@ export const useIsAllClaimed = (
           (x) => !x.equals(PublicKey.default),
         )?.length
 
-        setIsAllCliamed(toClaim === claimed)
+        setIsAllCliamed(!toClaim || toClaim === claimed)
       } else {
         setIsAllCliamed(false)
       }
