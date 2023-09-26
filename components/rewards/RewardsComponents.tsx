@@ -32,10 +32,10 @@ type Prize = {
 }
 
 export default function RewardsComponent({
-  setHide,
+  setShowRender,
   claims,
 }: {
-  setHide: Dispatch<SetStateAction<boolean>>
+  setShowRender: Dispatch<SetStateAction<boolean>>
   claims: Claim[]
 }) {
   const renderLoaded = useRef<boolean>(false)
@@ -56,25 +56,31 @@ export default function RewardsComponent({
 
   useEffect(() => {
     if (!renderLoaded.current && prizes.length) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const v1 = document.getElementById('particles-fireworks') as any
-      v1.onloadedmetadata = () => (v1.currentTime = v1.duration)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const v2 = document.getElementById('particles-coins') as any
-      v2.onloadedmetadata = () => (v2.currentTime = v2.duration)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      init(document, window, prizes, (prize: any) => {
-        console.log('callback:showPrize', prize)
-        setCurrentPrize(prize)
-        collectedPrizes.push(prize)
-        setCollectedPrize(collectedPrizes)
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const v1 = document.getElementById('particles-fireworks') as any
+        v1.onloadedmetadata = () => (v1.currentTime = v1.duration)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const v2 = document.getElementById('particles-coins') as any
+        v2.onloadedmetadata = () => (v2.currentTime = v2.duration)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        init(document, window, prizes, (prize: any) => {
+          console.log('callback:showPrize', prize)
+          setCurrentPrize(prize)
+          collectedPrizes.push(prize)
+          setCollectedPrize(collectedPrizes)
 
-        setTimeout(() => {
-          console.log('callback:hidePrize')
-          setCurrentPrize(undefined)
-        }, 5000)
-      })
-      renderLoaded.current = true
+          setTimeout(() => {
+            console.log('callback:hidePrize')
+            setCurrentPrize(undefined)
+          }, 5000)
+        })
+        renderLoaded.current = true
+      } catch (e) {
+        //if webgl is turned off or someone uses old computer
+        console.log(e)
+        setShowRender(false)
+      }
     }
   }, [prizes])
 
@@ -107,7 +113,7 @@ export default function RewardsComponent({
           className="fixed right-0 top-0 text-right text-white"
           onClick={() => {
             refetch()
-            setHide(false)
+            setShowRender(false)
           }}
         >
           Close
