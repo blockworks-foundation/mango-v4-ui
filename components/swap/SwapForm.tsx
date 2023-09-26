@@ -24,13 +24,16 @@ import WalletSwapForm from './WalletSwapForm'
 import TabButtons from '@components/shared/TabButtons'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useWallet } from '@solana/wallet-adapter-react'
+import { useRouter } from 'next/router'
 
 const set = mangoStore.getState().set
 
 const SwapForm = () => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
+  const groupLoaded = mangoStore((s) => s.groupLoaded)
   const { mangoAccountAddress } = useMangoAccount()
   const { connected } = useWallet()
+  const { query } = useRouter()
   const [showTokenSelect, setShowTokenSelect] =
     useState<SwapFormTokenListType>()
   const [showSettings, setShowSettings] = useState(false)
@@ -56,6 +59,27 @@ const SwapForm = () => {
       setWalletSwap(true)
     }
   }, [connected, mangoAccountAddress])
+
+  // setup swap from url query
+  useEffect(() => {
+    const { group } = mangoStore.getState()
+    if ('walletSwap' in query) {
+      setWalletSwap(true)
+    }
+    if (!groupLoaded) return
+    if (query.in) {
+      const inBank = group?.banksMapByName.get(query.in.toString())?.[0]
+      set((state) => {
+        state.swap.inputBank = inBank
+      })
+    }
+    if (query.out) {
+      const outBank = group?.banksMapByName.get(query.out.toString())?.[0]
+      set((state) => {
+        state.swap.outputBank = outBank
+      })
+    }
+  }, [groupLoaded, query])
 
   const handleTokenInSelect = useCallback((mintAddress: string) => {
     const group = mangoStore.getState().group

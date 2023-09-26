@@ -9,6 +9,7 @@ import { Popover, Transition } from '@headlessui/react'
 // import Loading from '@components/shared/Loading'
 import mangoStore from '@store/mangoStore'
 import { WalletName, WalletReadyState } from '@solana/wallet-adapter-base'
+import { useRouter } from 'next/router'
 
 export default function ConnectWalletButton({
   handleShowSetup,
@@ -17,6 +18,7 @@ export default function ConnectWalletButton({
 }) {
   const { t } = useTranslation('common')
   const { wallet, wallets, select, connected, connect } = useWallet()
+  const { query } = useRouter()
   const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
   const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
   const [lastWalletName] = useLocalStorageState<WalletName | null>(
@@ -39,7 +41,7 @@ export default function ConnectWalletButton({
 
   return (
     <>
-      {isOnboarded && walletIcon ? (
+      {(isOnboarded || query.walletSwap) && walletIcon ? (
         <div className="flex">
           <button
             onClick={() => {
