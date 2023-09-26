@@ -56,7 +56,7 @@ const ClaimPage = () => {
 
   const { data: distributionDataAndClient } = useDistribution(
     provider,
-    seasonData?.season_id,
+    previousSeason!,
   )
 
   useEffect(() => {
