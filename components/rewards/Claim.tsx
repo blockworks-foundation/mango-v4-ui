@@ -218,7 +218,7 @@ const ClaimPage = () => {
               onClick={() => handleClaimRewards()}
               size="large"
             >
-              Claim Rewards
+              Claim
             </Button>
           ) : (
             <Button
