@@ -1,16 +1,13 @@
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
 import { Lalezar } from 'next/font/google'
-
 const lalezar = Lalezar({
   weight: '400',
   subsets: ['latin'],
   display: 'swap',
 })
-
 import { init, onClick } from '../../lib/render'
 import { Claim } from '@blockworks-foundation/mango-mints-redemption'
 import { useCurrentSeason, useDistribution } from 'hooks/useRewards'
-import mangoStore from '@store/mangoStore'
 
 type Prize = {
   //symbol
@@ -47,12 +44,11 @@ export default function RewardsComponent({
 
   const [currentPrize, setCurrentPrize] = useState()
 
-  const { client } = mangoStore()
   const { data: seasonData } = useCurrentSeason()
   const currentSeason = seasonData ? seasonData.season_id : undefined
   const prevSeason = currentSeason ? currentSeason - 1 : undefined
 
-  const { refetch } = useDistribution(client.program.provider, prevSeason)
+  const { refetch } = useDistribution(prevSeason)
 
   useEffect(() => {
     if (!renderLoaded.current && prizes.length) {

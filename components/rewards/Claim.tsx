@@ -54,10 +54,7 @@ const ClaimPage = () => {
   const provider = client.program.provider
   const connection = provider.connection
 
-  const { data: distributionDataAndClient } = useDistribution(
-    provider,
-    previousSeason!,
-  )
+  const { data: distributionDataAndClient } = useDistribution(previousSeason!)
 
   useEffect(() => {
     const handleSetDistribution = async () => {

@@ -20,7 +20,7 @@ const PromoBanner = () => {
           className="bg-gradient-to-b from-mango-classic-theme-active to-mango-classic-theme-down bg-clip-text font-bold text-transparent lg:text-base"
           href="/rewards"
         >
-          Get Ready
+          Check your points
         </Link>
       </div>
       <IconButton
