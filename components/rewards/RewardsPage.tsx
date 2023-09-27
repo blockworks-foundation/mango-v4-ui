@@ -1,5 +1,4 @@
 import Button from '@components/shared/Button'
-
 // import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
@@ -73,8 +72,7 @@ const RewardsPage = () => {
           <div className="flex flex-col items-center lg:items-start">
             <Badge
               label={`Season ${seasonData?.season_id}`}
-              borderColor="var(--active)"
-              shadowColor="var(--active)"
+              fillColor="bg-th-active"
             />
             <h1 className="my-2 text-center text-4xl lg:text-left">
               Win amazing prizes every week.

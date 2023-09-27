@@ -20,13 +20,9 @@ import { useCurrentSeason } from 'hooks/useRewards'
 import Badge from './Badge'
 import { tiers } from './RewardsPage'
 
-const Leaderboards = ({
-  goBack,
-  leaderboard,
-}: {
-  goBack: () => void
-  leaderboard: string
-}) => {
+const Leaderboards = (
+  { goBack, leaderboard }: { goBack: () => void; leaderboard: string },
+) => {
   const { t } = useTranslation('rewards')
   const [topAccountsTier, setTopAccountsTier] = useState<string>(leaderboard)
   const renderTierIcon = (tier: string) => {
@@ -63,17 +59,16 @@ const Leaderboards = ({
     fetchingRewardsLeaderboardData || loadingRewardsLeaderboardData
 
   return (
-    <div className="mx-auto max-w-[1140px] flex-col items-center p-8 lg:p-10">
+    <div className="mx-auto min-h-screen max-w-[1140px] flex-col items-center p-8 lg:p-10">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center">
           <IconButton className="mr-2" hideBg onClick={goBack} size="small">
             <ArrowLeftIcon className="h-5 w-5" />
           </IconButton>
-          <h2 className="mr-4">Leaderboard</h2>
+          <h2 className="rewards-h2 mr-4">Leaderboard</h2>
           <Badge
             label={`Season ${seasonData?.season_id}`}
-            borderColor="var(--active)"
-            shadowColor="var(--active)"
+            fillColor="bg-th-active"
           />
         </div>
         <Select
@@ -119,22 +114,24 @@ const Leaderboards = ({
 
 export default Leaderboards
 
-const LeaderboardCard = ({
-  rank,
-  account,
-}: {
-  rank: number
-  account: {
-    mango_account: string
-    tier: string
-    total_points: number
-  }
-}) => {
+const LeaderboardCard = (
+  {
+    rank,
+    account,
+  }: {
+    rank: number
+    account: {
+      mango_account: string
+      tier: string
+      total_points: number
+    }
+  },
+) => {
   const { isTablet } = useViewport()
   const { mango_account, total_points } = account
   return (
     <a
-      className="flex w-full items-center justify-between rounded-md border border-th-bkg-3 px-3 py-3 md:px-4 md:hover:bg-th-bkg-2"
+      className="flex w-full items-center justify-between rounded-lg border border-th-bkg-3 p-3 md:rounded-xl md:p-4 md:hover:bg-th-bkg-2"
       href={`/?address=${mango_account}`}
       rel="noopener noreferrer"
       target="_blank"
@@ -146,8 +143,8 @@ const LeaderboardCard = ({
           } md:mr-2`}
         >
           <p
-            className={`relative z-10 font-bold ${
-              rank < 4 ? 'text-th-bkg-1' : 'text-th-fgd-3'
+            className={`relative z-10 font-rewards text-base ${
+              rank < 4 ? 'text-th-bkg-1' : 'text-th-fgd-1'
             }`}
           >
             {rank}
@@ -172,7 +169,7 @@ const LeaderboardCard = ({
         <span className="mr-3 text-right font-mono md:text-base">
           {formatNumericValue(total_points)}
         </span>
-        <ChevronRightIcon className="h-5 w-5 text-th-fgd-3" />
+        <ChevronRightIcon className="h-6 w-6 text-th-fgd-3" />
       </div>
     </a>
   )

@@ -30,11 +30,12 @@ const FAQS = [
 
 const Faqs = () => {
   return (
-    <div className="rounded-lg border border-th-bkg-3 p-4">
-      <h2 className="mb-2">How it Works</h2>
-      <p className="mb-4">
+    <div className="rounded-2xl border border-th-bkg-3 p-6">
+      <h2 className="rewards-h2">How it Works</h2>
+      <p className="rewards-p mb-4">
         Feel free to reach out to us on{' '}
         <a
+          className="text-th-active"
           href="https://discord.gg/2uwjsBc5yw"
           target="_blank"
           rel="noopener noreferrer"
@@ -43,27 +44,29 @@ const Faqs = () => {
         </a>{' '}
         with additional questions.
       </p>
-      <div className="border-b border-th-bkg-3">
+      <div>
         {FAQS.map((faq, i) => (
           <Disclosure key={i}>
             {({ open }) => (
-              <>
+              <div className="mb-2 last:mb-0">
                 <Disclosure.Button
-                  className={`w-full border-t border-th-bkg-3 p-4 text-left focus:outline-none md:hover:bg-th-bkg-2`}
+                  className={`w-full rounded-lg bg-th-bkg-2 p-4 text-left focus:outline-none md:hover:bg-th-bkg-3 ${
+                    open ? 'rounded-b-none' : ''
+                  }`}
                 >
                   <div className="flex items-center justify-between">
-                    <p className="text-th-fgd-2">{faq.q}</p>
+                    <p className="rewards-p font-bold">{faq.q}</p>
                     <ChevronDownIcon
                       className={`${
                         open ? 'rotate-180' : 'rotate-360'
-                      } h-5 w-5 flex-shrink-0`}
+                      } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
                     />
                   </div>
                 </Disclosure.Button>
-                <Disclosure.Panel className="p-4">
-                  <p>{faq.a}</p>
+                <Disclosure.Panel className="rounded-b-lg bg-th-bkg-2 p-4">
+                  <p className="rewards-p">{faq.a}</p>
                 </Disclosure.Panel>
-              </>
+              </div>
             )}
           </Disclosure>
         ))}
