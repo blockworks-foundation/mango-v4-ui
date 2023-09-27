@@ -32,9 +32,15 @@ import {
   Sft,
   SftWithToken,
 } from '@metaplex-foundation/js'
+import Button from '@components/shared/Button'
+import Loading from '@components/shared/Loading'
 
 const RewardsComponent = dynamic(() => import('./RewardsComponents'), {
-  loading: () => <p>Loading...</p>,
+  loading: () => (
+    <div className="flex h-full w-full items-center justify-center">
+      <Loading></Loading>
+    </div>
+  ),
 })
 
 const CLAIM_BUTTON_CLASSES =
@@ -53,6 +59,7 @@ const ClaimPage = () => {
   const [rewardsWasShown, setRewardsWasShow] = useState(false)
   const [claims, setClaims] = useState<Claim[] | undefined>([])
   const [claimed, setClaimed] = useState<PublicKey[] | undefined>([])
+  const [loadingMetadata, setLoadingMetadata] = useState(false)
   const [tokenRewardsInfo, setTokensRewardsInfo] = useState<Token[]>([])
   const [nftsRewardsInfo, setNftsRewardsInfo] = useState<
     (Sft | SftWithToken | Nft | NftWithToken)[]
@@ -100,6 +107,7 @@ const ClaimPage = () => {
   }
   const handleTokenMetadata = useCallback(async () => {
     if (claims?.length && connection && jupiterTokens.length) {
+      setLoadingMetadata(true)
       const metaplex = new Metaplex(connection)
 
       const tokens = claims!
@@ -124,6 +132,7 @@ const ClaimPage = () => {
 
       setNftsRewardsInfo(nftsInfos)
       setTokensRewardsInfo(tokens)
+      setLoadingMetadata(false)
     }
   }, [claims, connection, jupiterTokens])
 
@@ -275,21 +284,29 @@ const ClaimPage = () => {
               </div>
             </div>
           ) : rewardsWasShown ? (
-            <button
+            <Button
               className={CLAIM_BUTTON_CLASSES}
               onClick={() => handleClaimRewards()}
             >
               <span className="mt-1">{`Claim ${claims.length} Prize${
                 claims.length > 1 ? 's' : ''
               }`}</span>
-            </button>
+            </Button>
           ) : (
-            <button
+            <Button
+              disabled={loadingMetadata}
               className={CLAIM_BUTTON_CLASSES}
               onClick={() => startShowRewards()}
             >
-              <span className="mt-1">Reveal Prizes</span>
-            </button>
+              <span className="mt-1">
+                {' '}
+                {loadingMetadata ? (
+                  <Loading className="w-3"></Loading>
+                ) : (
+                  'Reveal Prizes'
+                )}
+              </span>
+            </Button>
           )}
         </div>
       </div>
