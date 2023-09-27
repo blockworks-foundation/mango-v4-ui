@@ -19,12 +19,14 @@ const RewardsTierCard = ({
   const { t } = useTranslation('rewards')
   return (
     <button
-      className="w-full rounded-xl bg-th-bkg-2 p-4 text-left focus:outline-none md:hover:bg-th-bkg-3"
+      className={`w-full rounded-xl bg-th-bkg-2 p-4 text-left focus:outline-none md:hover:bg-th-bkg-3 ${
+        status ? 'border border-green-400' : ''
+      }`}
       onClick={() => setShowLeaderboards(name)}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center">
-          <div className="mr-4 flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-red-400">
+          <div className="mr-4 flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-th-bkg-1">
             {icon}
           </div>
           <div>

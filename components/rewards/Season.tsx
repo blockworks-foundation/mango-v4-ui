@@ -25,15 +25,13 @@ import Faqs from './Faqs'
 import dayjs from 'dayjs'
 import MedalIcon from '@components/icons/MedalIcon'
 
-const Season = (
-  {
-    faqRef,
-    setShowLeaderboards,
-  }: {
-    faqRef: RefObject<HTMLDivElement>
-    setShowLeaderboards: (x: string) => void
-  },
-) => {
+const Season = ({
+  faqRef,
+  setShowLeaderboards,
+}: {
+  faqRef: RefObject<HTMLDivElement>
+  setShowLeaderboards: (x: string) => void
+}) => {
   const { t } = useTranslation(['common', 'rewards'])
   const { wallet } = useWallet()
   const [topAccountsTier, setTopAccountsTier] = useState('whale')
@@ -75,7 +73,7 @@ const Season = (
 
   return (
     <>
-      <div className="flex items-center justify-center border-t border-th-bkg-3 p-4 pb-0">
+      <div className="flex items-center justify-center border-t border-th-bkg-3 p-4 lg:pb-0">
         <div className="flex items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-red-400 px-4 py-2">
           <ClockIcon className="mr-2 h-5 w-5 text-black" />
           <p className="font-rewards text-lg text-black">
@@ -85,43 +83,43 @@ const Season = (
         </div>
       </div>
       <div className="mx-auto grid max-w-[1140px] grid-cols-12 gap-4 p-8 pt-0 lg:p-10">
-        <div className="col-span-12 lg:col-span-7">
+        <div className="order-2 col-span-12 lg:order-1 lg:col-span-7">
           <div className="mb-4 rounded-2xl border border-th-bkg-3 p-6 pb-0">
             <h2 className="rewards-h2 mb-4">Rewards Tiers</h2>
             <div className="mb-6 space-y-2">
               <RewardsTierCard
-                icon={<AcornIcon className="h-8 w-8 text-black" />}
+                icon={<AcornIcon className="h-8 w-8 text-th-fgd-1" />}
                 name="seed"
                 desc="All new participants start here"
                 setShowLeaderboards={setShowLeaderboards}
                 status={
-                  accountTier?.mango_account === 'seed' ? 'Qualified' : ''
+                  accountTier?.mango_account === 'seed' ? 'Your Tier' : ''
                 }
               />
               <RewardsTierCard
-                icon={<MangoIcon className="h-8 w-8 text-black" />}
+                icon={<MangoIcon className="h-8 w-8 text-th-fgd-1" />}
                 name="mango"
                 desc="Average swap/trade value less than $1,000"
                 setShowLeaderboards={setShowLeaderboards}
                 status={
-                  accountTier?.mango_account === 'mango' ? 'Qualified' : ''
+                  accountTier?.mango_account === 'mango' ? 'Your Tier' : ''
                 }
               />
               <RewardsTierCard
-                icon={<WhaleIcon className="h-8 w-8 text-black" />}
+                icon={<WhaleIcon className="h-8 w-8 text-th-fgd-1" />}
                 name="whale"
                 desc="Average swap/trade value greater than $1,000"
                 setShowLeaderboards={setShowLeaderboards}
                 status={
-                  accountTier?.mango_account === 'whale' ? 'Qualified' : ''
+                  accountTier?.mango_account === 'whale' ? 'Your Tier' : ''
                 }
               />
               <RewardsTierCard
-                icon={<RobotIcon className="h-8 w-8 text-black" />}
+                icon={<RobotIcon className="h-8 w-8 text-th-fgd-1" />}
                 name="bot"
                 desc="All bots"
                 setShowLeaderboards={setShowLeaderboards}
-                status={accountTier?.mango_account === 'bot' ? 'Qualified' : ''}
+                status={accountTier?.mango_account === 'bot' ? 'Your Tier' : ''}
               />
             </div>
           </div>
@@ -129,7 +127,7 @@ const Season = (
             <Faqs />
           </div>
         </div>
-        <div className="col-span-12 lg:col-span-5">
+        <div className="order-1 col-span-12 lg:order-2 lg:col-span-5">
           <div className="mb-4 rounded-2xl border border-th-bkg-3 p-6">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="rewards-h2">Your Points</h2>
@@ -142,7 +140,7 @@ const Season = (
               ) : null} */}
             </div>
             <div className="mb-4 flex h-14 w-full items-center rounded-xl bg-th-bkg-2 px-3">
-              <span className="-mb-1 w-full font-rewards text-5xl text-th-fgd-1">
+              <span className="font-rewards -mb-1 w-full text-5xl text-th-fgd-1">
                 {!isLoadingWalletData ? (
                   walletPoints ? (
                     formatNumericValue(walletPoints)
@@ -160,8 +158,8 @@ const Season = (
                 )}
               </span>
             </div>
-            <div>
-              <div className="flex items-center justify-between">
+            <div className="border-b border-th-bkg-3">
+              <div className="flex items-center justify-between border-t border-th-bkg-3 px-3 py-2">
                 <p className="rewards-p">Points Earned</p>
                 <p className="font-rewards text-lg text-th-active">
                   {!isLoadingWalletData ? (
@@ -179,11 +177,11 @@ const Season = (
                   )}
                 </p>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between border-t border-th-bkg-3 px-3 py-2">
                 <p className="rewards-p">Streak Bonus</p>
                 <p className="font-rewards text-lg text-th-active">0x</p>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between border-t border-th-bkg-3 px-3 py-2">
                 <p className="rewards-p">Rewards Tier</p>
                 <p className="font-rewards text-lg text-th-active">
                   {!isLoadingWalletData ? (
@@ -201,7 +199,7 @@ const Season = (
                   )}
                 </p>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between border-t border-th-bkg-3 px-3 py-2">
                 <p className="rewards-p">Rank</p>
                 <p className="font-rewards text-lg text-th-active">–</p>
               </div>
@@ -240,7 +238,7 @@ const Season = (
                             }`}
                           >
                             <p
-                              className={`relative z-10 font-rewards text-base ${
+                              className={`font-rewards relative z-10 text-base ${
                                 rank < 4 ? 'text-th-bkg-1' : 'text-th-fgd-1'
                               }`}
                             >
@@ -280,7 +278,7 @@ const Season = (
               )}
             </div>
             <Button
-              className="raised-button w-full font-rewards"
+              className="raised-button font-rewards w-full"
               onClick={() => setShowLeaderboards(topAccountsTier)}
             >
               <span className="mt-1.5 text-xl">Full Leaderboard</span>
