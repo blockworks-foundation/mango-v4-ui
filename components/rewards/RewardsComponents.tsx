@@ -125,6 +125,7 @@ export default function RewardsComponent({
             : x.quantity.toString(),
         rarity: x.mintProperties.rarity,
         itemResolution: resultion,
+        //fallback of img from files if mint matches mango bank
         itemUrl: tokenInfo?.logoURI || '/icons/mngo.svg',
         ...materials[
           x.mintProperties.rarity as 'Rare' | 'Legendary' | 'Common'
