@@ -1,4 +1,11 @@
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 import { Lalezar } from 'next/font/google'
 const lalezar = Lalezar({
   weight: '400',
@@ -11,6 +18,10 @@ import { Token } from 'types/jupiter'
 import BigNumber from 'bignumber.js'
 import { IconButton } from '@components/shared/Button'
 import { XMarkIcon } from '@heroicons/react/20/solid'
+import useMangoGroup from 'hooks/useMangoGroup'
+import { PublicKey } from '@solana/web3.js'
+import { CUSTOM_TOKEN_ICONS } from 'utils/constants'
+import { Sft, SftWithToken, Nft, NftWithToken } from '@metaplex-foundation/js'
 
 type Prize = {
   //symbol
@@ -35,12 +46,15 @@ export default function RewardsComponent({
   setShowRender,
   claims,
   tokensInfo,
+  nftsRewardsInfo,
 }: {
   setShowRender: Dispatch<SetStateAction<boolean>>
   claims: Claim[]
   tokensInfo: Token[]
+  nftsRewardsInfo: (Sft | SftWithToken | Nft | NftWithToken)[]
 }) {
   const renderLoaded = useRef<boolean>(false)
+  const { group } = useMangoGroup()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [collectedPrizes, setCollectedPrize] = useState([] as any[])
@@ -79,11 +93,33 @@ export default function RewardsComponent({
     }
   }, [prizes])
 
+  const getFallbackImg = useCallback(
+    (mint: PublicKey, jupiterLogoUrl: string | undefined) => {
+      const bank = group?.getFirstBankByMint(mint)
+      const tokenSymbol = bank?.name.toLowerCase()
+      const hasCustomIcon = tokenSymbol
+        ? CUSTOM_TOKEN_ICONS[tokenSymbol]
+        : false
+      if (hasCustomIcon) {
+        return `/icons/${tokenSymbol}.svg`
+      } else {
+        return jupiterLogoUrl || '/icons/mngo.svg'
+      }
+    },
+    [group],
+  )
+
   useEffect(() => {
     const claimsAsPrizes: Prize[] = claims.map((x) => {
       const tokenInfo =
         x.mintProperties.type === 'token'
           ? tokensInfo.find((t) => t.address === x.mint.toBase58())
+          : null
+      const nftInfo =
+        x.mintProperties.type === 'nft'
+          ? nftsRewardsInfo.find(
+              (ni) => ni.address.toBase58() === x.mint.toBase58(),
+            )
           : null
       const resultion =
         x.mintProperties.type === 'token' ? [32, 32] : [400, 400]
@@ -128,14 +164,17 @@ export default function RewardsComponent({
         rarity: x.mintProperties.rarity,
         itemResolution: resultion,
         //fallback of img from files if mint matches mango bank
-        itemUrl: tokenInfo?.logoURI || '/icons/mngo.svg',
+        itemUrl:
+          x.mintProperties.type === 'token'
+            ? getFallbackImg(x.mint, tokenInfo?.logoURI)
+            : nftInfo?.json?.image || '/icons/mngo.svg',
         ...materials[
           x.mintProperties.rarity as 'Rare' | 'Legendary' | 'Common'
         ],
       }
     })
     setPrizes(claimsAsPrizes)
-  }, [claims])
+  }, [claims, getFallbackImg, tokensInfo])
 
   useEffect(() => {
     setTimeout(() => {

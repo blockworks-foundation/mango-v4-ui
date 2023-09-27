@@ -25,6 +25,13 @@ import {
 import useJupiterMints from 'hooks/useJupiterMints'
 import { Token } from 'types/jupiter'
 import SheenLoader from '@components/shared/SheenLoader'
+import {
+  Metaplex,
+  Nft,
+  NftWithToken,
+  Sft,
+  SftWithToken,
+} from '@metaplex-foundation/js'
 
 const RewardsComponent = dynamic(() => import('./RewardsComponents'), {
   loading: () => <p>Loading...</p>,
@@ -47,6 +54,9 @@ const ClaimPage = () => {
   const [claims, setClaims] = useState<Claim[] | undefined>([])
   const [claimed, setClaimed] = useState<PublicKey[] | undefined>([])
   const [tokenRewardsInfo, setTokensRewardsInfo] = useState<Token[]>([])
+  const [nftsRewardsInfo, setNftsRewardsInfo] = useState<
+    (Sft | SftWithToken | Nft | NftWithToken)[]
+  >([])
   const [rewardsClient, setRewardsClient] = useState<
     MangoMintsRedemptionClient | undefined
   >(undefined)
@@ -62,7 +72,9 @@ const ClaimPage = () => {
   const provider = client.program.provider
   const connection = provider.connection
 
-  const { data: distributionDataAndClient } = useDistribution(previousSeason!)
+  const { data: distributionDataAndClient, refetch } = useDistribution(
+    previousSeason!,
+  )
 
   useEffect(() => {
     const handleSetDistribution = async () => {
@@ -87,15 +99,33 @@ const ClaimPage = () => {
     setRewardsWasShow(true)
   }
   const handleTokenMetadata = useCallback(async () => {
-    const tokens = claims!
-      .filter((x) => x.mintProperties.type === 'token')
-      .map((t) => jupiterTokens.find((x) => x.address === t.mint.toBase58()))
-      .filter((x) => x)
-      .map((x) => x as Token)
+    if (claims?.length && connection && jupiterTokens.length) {
+      const metaplex = new Metaplex(connection)
 
-    //const nfts = claims!.filter((x) => x.mintProperties.type === 'nft')
-    setTokensRewardsInfo(tokens)
-  }, [claims, jupiterTokens])
+      const tokens = claims!
+        .filter((x) => x.mintProperties.type === 'token')
+        .map((t) => jupiterTokens.find((x) => x.address === t.mint.toBase58()))
+        .filter((x) => x)
+        .map((x) => x as Token)
+
+      const nfts = claims!.filter((x) => x.mintProperties.type === 'nft')
+      const nftsInfos: (Sft | SftWithToken | Nft | NftWithToken)[] = []
+
+      for (const nft of nfts) {
+        const metadataPDA = await metaplex
+          .nfts()
+          .pdas()
+          .metadata({ mint: nft.mint })
+        const tokenMetadata = await metaplex.nfts().findByMetadata({
+          metadata: metadataPDA,
+        })
+        nftsInfos.push(tokenMetadata)
+      }
+
+      setNftsRewardsInfo(nftsInfos)
+      setTokensRewardsInfo(tokens)
+    }
+  }, [claims, connection, jupiterTokens])
 
   useEffect(() => {
     if (claims) {
@@ -172,6 +202,7 @@ const ClaimPage = () => {
           afterAllTxConfirmed: () => {
             console.log('afterAllTxConfirmed')
             setClaimProgress(100)
+            refetch()
           },
           afterEveryTxConfirmation: () => {
             console.log('afterEveryTxConfirmation')
@@ -204,6 +235,7 @@ const ClaimPage = () => {
     <div className="fixed bottom-0 left-0 right-0 top-0 z-[1000]">
       <RewardsComponent
         tokensInfo={tokenRewardsInfo}
+        nftsRewardsInfo={nftsRewardsInfo}
         claims={claims}
         setShowRender={setShowRender}
       ></RewardsComponent>
@@ -221,7 +253,7 @@ const ClaimPage = () => {
       <div className="mx-auto grid max-w-[1140px] grid-cols-12 gap-4 p-8 lg:gap-6 lg:p-10">
         <div className="col-span-12">
           <div className="mb-6 text-center">
-            <h2 className="font-rewards mb-1 text-6xl tracking-wide">
+            <h2 className="mb-1 font-rewards text-6xl tracking-wide">
               Congratulations!
             </h2>
             <p className="text-lg font-bold text-th-fgd-1">

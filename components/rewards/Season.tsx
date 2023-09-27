@@ -34,7 +34,7 @@ const Season = ({
 }) => {
   const { t } = useTranslation(['common', 'rewards'])
   const { wallet } = useWallet()
-  const [topAccountsTier, setTopAccountsTier] = useState('whale')
+  const [topAccountsTier, setTopAccountsTier] = useState('mango')
   const { mangoAccountAddress } = useMangoAccount()
   const { data: seasonData } = useCurrentSeason()
   const { data: accountTier } = useAccountTier(
@@ -140,7 +140,7 @@ const Season = ({
               ) : null} */}
             </div>
             <div className="mb-4 flex h-14 w-full items-center rounded-xl bg-th-bkg-2 px-3">
-              <span className="font-rewards -mb-1 w-full text-5xl text-th-fgd-1">
+              <span className="-mb-1 w-full font-rewards text-5xl text-th-fgd-1">
                 {!isLoadingWalletData ? (
                   walletPoints ? (
                     formatNumericValue(walletPoints)
@@ -238,7 +238,7 @@ const Season = ({
                             }`}
                           >
                             <p
-                              className={`font-rewards relative z-10 text-base ${
+                              className={`relative z-10 font-rewards text-base ${
                                 rank < 4 ? 'text-th-bkg-1' : 'text-th-fgd-1'
                               }`}
                             >
@@ -278,7 +278,7 @@ const Season = ({
               )}
             </div>
             <Button
-              className="raised-button font-rewards w-full"
+              className="raised-button w-full font-rewards"
               onClick={() => setShowLeaderboards(topAccountsTier)}
             >
               <span className="mt-1.5 text-xl">Full Leaderboard</span>

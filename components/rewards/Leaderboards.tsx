@@ -20,9 +20,13 @@ import { useCurrentSeason } from 'hooks/useRewards'
 import Badge from './Badge'
 import { tiers } from './RewardsPage'
 
-const Leaderboards = (
-  { goBack, leaderboard }: { goBack: () => void; leaderboard: string },
-) => {
+const Leaderboards = ({
+  goBack,
+  leaderboard,
+}: {
+  goBack: () => void
+  leaderboard: string
+}) => {
   const { t } = useTranslation('rewards')
   const [topAccountsTier, setTopAccountsTier] = useState<string>(leaderboard)
   const renderTierIcon = (tier: string) => {
@@ -114,19 +118,17 @@ const Leaderboards = (
 
 export default Leaderboards
 
-const LeaderboardCard = (
-  {
-    rank,
-    account,
-  }: {
-    rank: number
-    account: {
-      mango_account: string
-      tier: string
-      total_points: number
-    }
-  },
-) => {
+const LeaderboardCard = ({
+  rank,
+  account,
+}: {
+  rank: number
+  account: {
+    mango_account: string
+    tier: string
+    total_points: number
+  }
+}) => {
   const { isTablet } = useViewport()
   const { mango_account, total_points } = account
   return (
