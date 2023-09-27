@@ -87,7 +87,7 @@ const RewardsPage = () => {
           </div>
         </div>
       </div>
-      {!showClaim ? (
+      {showClaim ? (
         <ClaimPage />
       ) : (
         <Season faqRef={faqRef} setShowLeaderboards={setShowLeaderboards} />
