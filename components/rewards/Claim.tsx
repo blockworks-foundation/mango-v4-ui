@@ -23,6 +23,8 @@ import {
   TransactionInstructionWithType,
   sendSignAndConfirmTransactions,
 } from '@blockworks-foundation/mangolana/lib/transactions'
+import useJupiterMints from 'hooks/useJupiterMints'
+import { Token } from 'types/jupiter'
 
 const RewardsComponent = dynamic(() => import('./RewardsComponents'), {
   loading: () => <p>Loading...</p>,
@@ -36,10 +38,12 @@ const ClaimPage = () => {
   const [distribution, setDistribution] = useState<Distribution | undefined>(
     undefined,
   )
+  const { jupiterTokens } = useJupiterMints()
   const [showRender, setShowRender] = useState(false)
   const [rewardsWasShown, setRewardsWasShow] = useState(false)
   const [claims, setClaims] = useState<Claim[] | undefined>([])
   const [claimed, setClaimed] = useState<PublicKey[] | undefined>([])
+  const [tokenRewardsInfo, setTokensRewardsInfo] = useState<Token[]>([])
   const [rewardsClient, setRewardsClient] = useState<
     MangoMintsRedemptionClient | undefined
   >(undefined)
@@ -79,6 +83,23 @@ const ClaimPage = () => {
     setShowRender(true)
     setRewardsWasShow(true)
   }
+  const handleTokenMetadata = useCallback(async () => {
+    const tokens = claims!
+      .filter((x) => x.mintProperties.type === 'token')
+      .map((t) => jupiterTokens.find((x) => x.address === t.mint.toBase58()))
+      .filter((x) => x)
+      .map((x) => x as Token)
+
+    //const nfts = claims!.filter((x) => x.mintProperties.type === 'nft')
+    setTokensRewardsInfo(tokens)
+  }, [claims, jupiterTokens])
+
+  useEffect(() => {
+    if (claims) {
+      handleTokenMetadata()
+    }
+  }, [claims, handleTokenMetadata])
+
   const handleClaimRewards = useCallback(async () => {
     if (!distribution || !publicKey || !claims || !rewardsClient) return
     const transactionInstructions: TransactionInstructionWithType[] = []
@@ -177,6 +198,7 @@ const ClaimPage = () => {
   ) : showRender ? (
     <div className="fixed bottom-0 left-0 right-0 top-0 z-[1000]">
       <RewardsComponent
+        tokensInfo={tokenRewardsInfo}
         claims={claims}
         setShowRender={setShowRender}
       ></RewardsComponent>

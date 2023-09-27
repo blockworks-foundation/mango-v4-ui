@@ -7,6 +7,8 @@ const lalezar = Lalezar({
 })
 import { init, onClick } from '../../lib/render'
 import { Claim } from '@blockworks-foundation/mango-mints-redemption'
+import { Token } from 'types/jupiter'
+import BigNumber from 'bignumber.js'
 
 type Prize = {
   //symbol
@@ -30,9 +32,11 @@ type Prize = {
 export default function RewardsComponent({
   setShowRender,
   claims,
+  tokensInfo,
 }: {
   setShowRender: Dispatch<SetStateAction<boolean>>
   claims: Claim[]
+  tokensInfo: Token[]
 }) {
   const renderLoaded = useRef<boolean>(false)
 
@@ -74,18 +78,59 @@ export default function RewardsComponent({
   }, [prizes])
 
   useEffect(() => {
-    const claimsAsPrizes: Prize[] = claims.map((x) => ({
-      item: x.mintProperties.name,
-      info: x.quantity.toString(),
-      rarity: 'Common',
-      itemResolution: [32, 32],
-      itemUrl: '/icons/mngo.svg',
-      particleId: 'particles-coins',
-      frontMaterialId: 'loader_mat_card_silver_front_square',
-      backMaterialId: 'loader_mat_card_silver_back',
-      stencilUrl:
-        '/models/tex_procedural/tex_card_front_silver_square_albedo.png',
-    }))
+    const claimsAsPrizes: Prize[] = claims.map((x) => {
+      const tokenInfo =
+        x.mintProperties.type === 'token'
+          ? tokensInfo.find((t) => t.address === x.mint.toBase58())
+          : null
+      const resultion =
+        x.mintProperties.type === 'token' ? [32, 32] : [400, 400]
+
+      const materials: {
+        [key: string]: Omit<
+          Prize,
+          'item' | 'info' | 'rarity' | 'itemResolution' | 'itemUrl'
+        >
+      } = {
+        Common: {
+          particleId: 'particles-coins',
+          frontMaterialId: 'loader_mat_card_silver_front_square',
+          backMaterialId: 'loader_mat_card_silver_back',
+          stencilUrl:
+            '/models/tex_procedural/tex_card_front_silver_square_albedo.png',
+        },
+        Legendary: {
+          particleId: 'particles-fireworks',
+          frontMaterialId: 'loader_mat_card_gold_front_circle',
+          backMaterialId: 'loader_mat_card_gold_back',
+          stencilUrl:
+            '/models/tex_procedural/tex_card_front_gold_circle_albedo.png',
+        },
+        Rare: {
+          particleId: 'particles-fireworks',
+          frontMaterialId: 'loader_mat_card_gold_front_circle',
+          backMaterialId: 'loader_mat_card_gold_back',
+          stencilUrl:
+            '/models/tex_procedural/tex_card_front_gold_circle_albedo.png',
+        },
+      }
+
+      return {
+        item: x.mintProperties.name,
+        info:
+          x.mintProperties.type === 'token'
+            ? new BigNumber(x.quantity.toString())
+                .shiftedBy(-tokenInfo!.decimals)
+                .toString()
+            : x.quantity.toString(),
+        rarity: x.mintProperties.rarity,
+        itemResolution: resultion,
+        itemUrl: tokenInfo?.logoURI || '/icons/mngo.svg',
+        ...materials[
+          x.mintProperties.rarity as 'Rare' | 'Legendary' | 'Common'
+        ],
+      }
+    })
     setPrizes(claimsAsPrizes)
   }, [claims])
 
