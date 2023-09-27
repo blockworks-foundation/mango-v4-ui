@@ -167,9 +167,17 @@ const ReadOnlyMangoAccount = () => {
     const set = mangoStore.getState().set
     const group = mangoStore.getState().group
 
+    if (hiddenAccounts?.includes(ma as string)) {
+      notify({
+        title: 'Private Account mode enabled',
+        type: 'info',
+      })
+      return
+    }
+
     async function loadUnownedMangoAccount() {
       try {
-        if (!ma || !group || hiddenAccounts?.includes(ma as string)) return
+        if (!ma || !group) return
 
         const client = mangoStore.getState().client
         const pk = new PublicKey(ma)
