@@ -63,17 +63,16 @@ const Leaderboards = ({
     fetchingRewardsLeaderboardData || loadingRewardsLeaderboardData
 
   return (
-    <div className="mx-auto max-w-[1140px] flex-col items-center p-8 lg:p-10">
+    <div className="mx-auto min-h-screen max-w-[1140px] flex-col items-center p-8 lg:p-10">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center">
           <IconButton className="mr-2" hideBg onClick={goBack} size="small">
             <ArrowLeftIcon className="h-5 w-5" />
           </IconButton>
-          <h2 className="mr-4">Leaderboard</h2>
+          <h2 className="rewards-h2 mr-4">Leaderboard</h2>
           <Badge
             label={`Season ${seasonData?.season_id}`}
-            borderColor="var(--active)"
-            shadowColor="var(--active)"
+            fillColor="bg-th-active"
           />
         </div>
         <Select
@@ -95,8 +94,8 @@ const Leaderboards = ({
       <div className="space-y-2">
         {!isLoading ? (
           leadersForTier && leadersForTier.length ? (
-            leadersForTier.map((wallet, i: number) => (
-              <LeaderboardCard rank={i + 1} key={i} wallet={wallet} />
+            leadersForTier.map((acc, i: number) => (
+              <LeaderboardCard rank={i + 1} key={i} account={acc} />
             ))
           ) : (
             <div className="flex justify-center rounded-lg border border-th-bkg-3 p-8">
@@ -121,20 +120,21 @@ export default Leaderboards
 
 const LeaderboardCard = ({
   rank,
-  wallet,
+  account,
 }: {
   rank: number
-  wallet: {
+  account: {
     mango_account: string
     tier: string
     total_points: number
   }
 }) => {
   const { isTablet } = useViewport()
+  const { mango_account, total_points } = account
   return (
     <a
-      className="flex w-full items-center justify-between rounded-md border border-th-bkg-3 px-3 py-3 md:px-4 md:hover:bg-th-bkg-2"
-      href={`/?address=${'account'}`}
+      className="flex w-full items-center justify-between rounded-lg border border-th-bkg-3 p-3 md:rounded-xl md:p-4 md:hover:bg-th-bkg-2"
+      href={`/?address=${mango_account}`}
       rel="noopener noreferrer"
       target="_blank"
     >
@@ -145,8 +145,8 @@ const LeaderboardCard = ({
           } md:mr-2`}
         >
           <p
-            className={`relative z-10 font-bold ${
-              rank < 4 ? 'text-th-bkg-1' : 'text-th-fgd-3'
+            className={`relative z-10 font-rewards text-base ${
+              rank < 4 ? 'text-th-bkg-1' : 'text-th-fgd-1'
             }`}
           >
             {rank}
@@ -160,7 +160,7 @@ const LeaderboardCard = ({
         />
         <div className="text-left">
           <p className="capitalize text-th-fgd-2 md:text-base">
-            {abbreviateAddress(new PublicKey(wallet.mango_account))}
+            {abbreviateAddress(new PublicKey(mango_account))}
           </p>
           {/* <p className="text-xs text-th-fgd-4">
             Acc: {'A1at5'.slice(0, 4) + '...' + 'tt45eU'.slice(-4)}
@@ -169,9 +169,9 @@ const LeaderboardCard = ({
       </div>
       <div className="flex items-center">
         <span className="mr-3 text-right font-mono md:text-base">
-          {formatNumericValue(wallet.total_points)}
+          {formatNumericValue(total_points)}
         </span>
-        <ChevronRightIcon className="h-5 w-5 text-th-fgd-3" />
+        <ChevronRightIcon className="h-6 w-6 text-th-fgd-3" />
       </div>
     </a>
   )

@@ -1,16 +1,11 @@
 import {
+  Claim,
   Distribution,
   MangoMintsRedemptionClient,
 } from '@blockworks-foundation/mango-mints-redemption'
-import {
-  TransactionInstructionWithSigners,
-  SequenceType,
-} from '@blockworks-foundation/mangolana/lib/globalTypes'
-import {
-  TransactionInstructionWithType,
-  sendSignAndConfirmTransactions,
-} from '@blockworks-foundation/mangolana/lib/transactions'
-import Button from '@components/shared/Button'
+import dynamic from 'next/dynamic'
+// import ClaimWinModal from './ClaimWinModal'
+// import ClaimLossModal from './ClaimLossModal'
 import { ClockIcon } from '@heroicons/react/20/solid'
 import { web3 } from '@project-serum/anchor'
 import { useWallet } from '@solana/wallet-adapter-react'
@@ -19,21 +14,56 @@ import mangoStore from '@store/mangoStore'
 import { useCurrentSeason, useDistribution } from 'hooks/useRewards'
 import { chunk } from 'lodash'
 import { useState, useEffect, useCallback } from 'react'
-import ClaimLossModal from './ClaimLossModal'
-import ClaimWinModal from './ClaimWinModal'
-import Image from 'next/image'
-import { Claim } from '@blockworks-foundation/mango-mints-redemption'
+import {
+  TransactionInstructionWithSigners,
+  SequenceType,
+} from '@blockworks-foundation/mangolana/lib/globalTypes'
+import {
+  TransactionInstructionWithType,
+  sendSignAndConfirmTransactions,
+} from '@blockworks-foundation/mangolana/lib/transactions'
+import useJupiterMints from 'hooks/useJupiterMints'
+import { Token } from 'types/jupiter'
+import SheenLoader from '@components/shared/SheenLoader'
+import {
+  Metaplex,
+  Nft,
+  NftWithToken,
+  Sft,
+  SftWithToken,
+} from '@metaplex-foundation/js'
+import Button from '@components/shared/Button'
+import Loading from '@components/shared/Loading'
+
+const RewardsComponent = dynamic(() => import('./RewardsComponents'), {
+  loading: () => (
+    <div className="flex h-full w-full items-center justify-center">
+      <Loading></Loading>
+    </div>
+  ),
+})
+
+const CLAIM_BUTTON_CLASSES =
+  'raised-button font-rewards mx-auto mt-6 block rounded-lg px-6 py-3 text-xl focus:outline-none'
 
 const ClaimPage = () => {
-  const [showWinModal, setShowWinModal] = useState(false)
-  const [showLossModal, setShowLossModal] = useState(false)
+  // const [showWinModal, setShowWinModal] = useState(false)
+  // const [showLossModal, setShowLossModal] = useState(false)
   const [isClaiming, setIsClaiming] = useState(false)
   const [claimProgress, setClaimProgress] = useState(0)
   const [distribution, setDistribution] = useState<Distribution | undefined>(
     undefined,
   )
+  const { jupiterTokens } = useJupiterMints()
+  const [showRender, setShowRender] = useState(false)
+  const [rewardsWasShown, setRewardsWasShow] = useState(false)
   const [claims, setClaims] = useState<Claim[] | undefined>([])
   const [claimed, setClaimed] = useState<PublicKey[] | undefined>([])
+  const [loadingMetadata, setLoadingMetadata] = useState(false)
+  const [tokenRewardsInfo, setTokensRewardsInfo] = useState<Token[]>([])
+  const [nftsRewardsInfo, setNftsRewardsInfo] = useState<
+    (Sft | SftWithToken | Nft | NftWithToken)[]
+  >([])
   const [rewardsClient, setRewardsClient] = useState<
     MangoMintsRedemptionClient | undefined
   >(undefined)
@@ -49,9 +79,8 @@ const ClaimPage = () => {
   const provider = client.program.provider
   const connection = provider.connection
 
-  const { data: distributionDataAndClient } = useDistribution(
-    provider,
-    seasonData?.season_id,
+  const { data: distributionDataAndClient, refetch } = useDistribution(
+    previousSeason!,
   )
 
   useEffect(() => {
@@ -71,6 +100,47 @@ const ClaimPage = () => {
       setRewardsClient(undefined)
     }
   }, [distributionDataAndClient, publicKey])
+
+  const startShowRewards = () => {
+    setShowRender(true)
+    setRewardsWasShow(true)
+  }
+  const handleTokenMetadata = useCallback(async () => {
+    if (claims?.length && connection && jupiterTokens.length) {
+      setLoadingMetadata(true)
+      const metaplex = new Metaplex(connection)
+
+      const tokens = claims!
+        .filter((x) => x.mintProperties.type === 'token')
+        .map((t) => jupiterTokens.find((x) => x.address === t.mint.toBase58()))
+        .filter((x) => x)
+        .map((x) => x as Token)
+
+      const nfts = claims!.filter((x) => x.mintProperties.type === 'nft')
+      const nftsInfos: (Sft | SftWithToken | Nft | NftWithToken)[] = []
+
+      for (const nft of nfts) {
+        const metadataPDA = await metaplex
+          .nfts()
+          .pdas()
+          .metadata({ mint: nft.mint })
+        const tokenMetadata = await metaplex.nfts().findByMetadata({
+          metadata: metadataPDA,
+        })
+        nftsInfos.push(tokenMetadata)
+      }
+
+      setNftsRewardsInfo(nftsInfos)
+      setTokensRewardsInfo(tokens)
+      setLoadingMetadata(false)
+    }
+  }, [claims, connection, jupiterTokens])
+
+  useEffect(() => {
+    if (claims) {
+      handleTokenMetadata()
+    }
+  }, [claims, handleTokenMetadata])
 
   const handleClaimRewards = useCallback(async () => {
     if (!distribution || !publicKey || !claims || !rewardsClient) return
@@ -141,6 +211,7 @@ const ClaimPage = () => {
           afterAllTxConfirmed: () => {
             console.log('afterAllTxConfirmed')
             setClaimProgress(100)
+            refetch()
           },
           afterEveryTxConfirmation: () => {
             console.log('afterEveryTxConfirmation')
@@ -166,76 +237,80 @@ const ClaimPage = () => {
   }, [distribution, wallet, claims, rewardsClient, connection])
 
   return claims === undefined ? (
-    <span>Loading...</span>
+    <SheenLoader className="m-8 flex flex-1">
+      <div className="h-64 w-full bg-th-bkg-2" />
+    </SheenLoader>
+  ) : showRender ? (
+    <div className="fixed bottom-0 left-0 right-0 top-0 z-[1000]">
+      <RewardsComponent
+        tokensInfo={tokenRewardsInfo}
+        nftsRewardsInfo={nftsRewardsInfo}
+        claims={claims}
+        setShowRender={setShowRender}
+      ></RewardsComponent>
+    </div>
   ) : (
     <>
-      <div className="flex items-center justify-center bg-th-bkg-3 px-4 py-3">
-        <ClockIcon className="mr-2 h-5 w-5 text-th-active" />
-        <p className="text-base text-th-fgd-2">
-          Season {previousSeason} claim ends in:{' '}
-          <span className="font-bold text-th-fgd-1">24 hours</span>
-        </p>
+      <div className="flex items-center justify-center border-t border-th-bkg-3 pt-8">
+        <div className="flex items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-red-400 px-4 py-2">
+          <ClockIcon className="mr-2 h-5 w-5 text-black" />
+          <p className="font-rewards text-lg text-black">
+            Season {previousSeason} claim ends in: <span>24 hours</span>
+          </p>
+        </div>
       </div>
       <div className="mx-auto grid max-w-[1140px] grid-cols-12 gap-4 p-8 lg:gap-6 lg:p-10">
         <div className="col-span-12">
-          <div className="mb-6 text-center md:mb-12">
-            <h2 className="mb-2 text-5xl">Congratulations!</h2>
-            <p className="text-lg">
-              You earned {claims.length} boxes in Season {previousSeason}
+          <div className="mb-6 text-center">
+            <h2 className="mb-1 font-rewards text-6xl tracking-wide">
+              Congratulations!
+            </h2>
+            <p className="text-lg font-bold text-th-fgd-1">
+              You&apos;re a winner in Season {previousSeason}
             </p>
-          </div>
-          <div className="flex flex-row space-y-6 md:items-center md:justify-center md:space-x-3">
-            {claims.map((c) => {
-              return (
-                <div
-                  className="flex flex-col items-center p-6"
-                  key={c.mint.toBase58()}
-                >
-                  <Image
-                    className="md:-mt-10"
-                    src="/images/rewards/cube.png"
-                    width={140}
-                    height={140}
-                    alt="Reward"
-                    style={{ width: 'auto', maxWidth: '140px' }}
-                  />
-                  <div className="mt-5 text-lg">
-                    {c.quantity.toString()} {c.mintProperties['name']}
-                  </div>
-                  {claimed !== undefined &&
-                  claimed.find((cl) => cl.equals(c.mint)) !== undefined ? (
-                    <div className="mt-5 text-lg">Claimed!</div>
-                  ) : undefined}
-                </div>
-              )
-            })}
           </div>
           {isClaiming ? (
             <div>
-              <div className="mt-2.5 flex h-2 w-full flex-grow rounded bg-th-bkg-4">
+              <div className="mt-2.5 flex h-4 w-full flex-grow rounded-full bg-th-bkg-4">
                 <div
                   style={{
                     width: `${claimProgress}%`,
                   }}
-                  className={`flex rounded bg-th-up`}
+                  className={`flex rounded-full bg-gradient-to-r from-green-600 to-green-400`}
                 ></div>
               </div>
-              <div className="mx-auto mt-5 text-center text-lg">
-                Claiming rewards...
+              <div className="mx-auto mt-3 text-center text-base">
+                {`Loading prizes: ${claimProgress.toFixed(0)}%`}
               </div>
             </div>
+          ) : rewardsWasShown ? (
+            <Button
+              className={CLAIM_BUTTON_CLASSES}
+              onClick={() => handleClaimRewards()}
+            >
+              <span className="mt-1">{`Claim ${claims.length} Prize${
+                claims.length > 1 ? 's' : ''
+              }`}</span>
+            </Button>
           ) : (
             <Button
-              className="mx-auto mt-8 block"
-              onClick={() => handleClaimRewards()}
-              size="large"
+              disabled={loadingMetadata}
+              className={CLAIM_BUTTON_CLASSES}
+              onClick={() => startShowRewards()}
             >
-              Claim Rewards
+              <span className="mt-1">
+                {' '}
+                {loadingMetadata ? (
+                  <Loading className="w-3"></Loading>
+                ) : (
+                  'Reveal Prizes'
+                )}
+              </span>
             </Button>
           )}
         </div>
       </div>
-      {showWinModal ? (
+      {/* {showWinModal ? (
         <ClaimWinModal
           isOpen={showWinModal}
           onClose={() => setShowWinModal(false)}
@@ -246,7 +321,7 @@ const ClaimPage = () => {
           isOpen={showLossModal}
           onClose={() => setShowLossModal(false)}
         />
-      ) : null}
+      ) : null} */}
     </>
   )
 }

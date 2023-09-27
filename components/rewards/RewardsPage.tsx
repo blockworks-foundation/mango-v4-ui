@@ -1,12 +1,15 @@
 import Button from '@components/shared/Button'
-
 // import { useTranslation } from 'next-i18next'
 import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 import Leaderboards from './Leaderboards'
 import { useWallet } from '@solana/wallet-adapter-react'
-import mangoStore from '@store/mangoStore'
-import { useCurrentSeason, useDistribution } from 'hooks/useRewards'
+
+import {
+  useCurrentSeason,
+  useDistribution,
+  useIsAllClaimed,
+} from 'hooks/useRewards'
 import Season from './Season'
 import Badge from './Badge'
 import ClaimPage from './Claim'
@@ -21,15 +24,11 @@ const RewardsPage = () => {
   const faqRef = useRef<HTMLDivElement>(null)
   const { publicKey } = useWallet()
 
-  const { client } = mangoStore()
   const { data: seasonData } = useCurrentSeason()
   const currentSeason = seasonData ? seasonData.season_id : undefined
   const prevSeason = currentSeason ? currentSeason - 1 : undefined
-
-  const { data: distributionDataAndClient } = useDistribution(
-    client.program.provider,
-    prevSeason,
-  )
+  const isAllClaimed = useIsAllClaimed(prevSeason, publicKey)
+  const { data: distributionDataAndClient } = useDistribution(prevSeason)
   const distributionData = distributionDataAndClient?.distribution
 
   useEffect(() => {
@@ -39,12 +38,13 @@ const RewardsPage = () => {
       const isClaimActive =
         start < currentTimestamp &&
         start + distributionData.duration * 1000 > currentTimestamp &&
-        !!distributionData.getClaims(publicKey).length
+        !isAllClaimed
+
       setShowClaim(isClaimActive)
     } else {
       setShowClaim(false)
     }
-  }, [distributionData, publicKey])
+  }, [distributionData, publicKey, isAllClaimed])
 
   const scrollToFaqs = () => {
     if (faqRef.current) {
@@ -72,8 +72,7 @@ const RewardsPage = () => {
           <div className="flex flex-col items-center lg:items-start">
             <Badge
               label={`Season ${seasonData?.season_id}`}
-              borderColor="var(--active)"
-              shadowColor="var(--active)"
+              fillColor="bg-th-active"
             />
             <h1 className="my-2 text-center text-4xl lg:text-left">
               Win amazing prizes every week.

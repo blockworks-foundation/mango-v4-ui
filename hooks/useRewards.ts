@@ -1,5 +1,6 @@
-import { Provider } from '@project-serum/anchor'
 import { Wallet } from '@solana/wallet-adapter-react'
+import { PublicKey } from '@solana/web3.js'
+import mangoStore from '@store/mangoStore'
 import { useQuery } from '@tanstack/react-query'
 import {
   fetchAccountTier,
@@ -8,6 +9,7 @@ import {
   fetchLeaderboard,
   fetchRewardsPoints,
 } from 'apis/rewards'
+import { useEffect, useState } from 'react'
 
 export const useCurrentSeason = () => {
   return useQuery(['current-season-data'], () => fetchCurrentSeason(), {
@@ -32,13 +34,12 @@ export const useAccountTier = (
     },
   )
 }
-export const useDistribution = (
-  provider: Provider,
-  seasonId: number | undefined,
-) => {
+export const useDistribution = (seasonId: number | undefined) => {
+  const { client } = mangoStore()
+  const provider = client.program.provider
   return useQuery(
     ['distribution', seasonId],
-    () => fetchDistribution(provider, seasonId!),
+    () => fetchDistribution(client.program.provider, seasonId!),
     {
       cacheTime: 1000 * 60 * 10,
       staleTime: 1000 * 60,
@@ -78,4 +79,31 @@ export const useTopAccountsLeaderBoard = (season_id: number | undefined) => {
       enabled: !!season_id,
     },
   )
+}
+
+export const useIsAllClaimed = (
+  prevSeason: number | undefined,
+  walletPk: PublicKey | null,
+) => {
+  const [isAllClaimed, setIsAllCliamed] = useState(false)
+  const { data: distributionDataAndClient } = useDistribution(prevSeason)
+  const distributionData = distributionDataAndClient?.distribution
+
+  useEffect(() => {
+    const handleGetIsAllClaimed = async () => {
+      if (walletPk) {
+        const toClaim = distributionData?.getClaims(walletPk).length
+        const claimed = (await distributionData?.getClaimed(walletPk))?.filter(
+          (x) => !x.equals(PublicKey.default),
+        )?.length
+
+        setIsAllCliamed(!toClaim || toClaim === claimed)
+      } else {
+        setIsAllCliamed(false)
+      }
+    }
+    handleGetIsAllClaimed()
+  }, [distributionData, walletPk])
+
+  return isAllClaimed
 }
