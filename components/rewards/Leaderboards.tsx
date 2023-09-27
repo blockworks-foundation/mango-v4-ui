@@ -95,8 +95,8 @@ const Leaderboards = ({
       <div className="space-y-2">
         {!isLoading ? (
           leadersForTier && leadersForTier.length ? (
-            leadersForTier.map((wallet, i: number) => (
-              <LeaderboardCard rank={i + 1} key={i} wallet={wallet} />
+            leadersForTier.map((acc, i: number) => (
+              <LeaderboardCard rank={i + 1} key={i} account={acc} />
             ))
           ) : (
             <div className="flex justify-center rounded-lg border border-th-bkg-3 p-8">
@@ -121,20 +121,21 @@ export default Leaderboards
 
 const LeaderboardCard = ({
   rank,
-  wallet,
+  account,
 }: {
   rank: number
-  wallet: {
+  account: {
     mango_account: string
     tier: string
     total_points: number
   }
 }) => {
   const { isTablet } = useViewport()
+  const { mango_account, total_points } = account
   return (
     <a
       className="flex w-full items-center justify-between rounded-md border border-th-bkg-3 px-3 py-3 md:px-4 md:hover:bg-th-bkg-2"
-      href={`/?address=${'account'}`}
+      href={`/?address=${mango_account}`}
       rel="noopener noreferrer"
       target="_blank"
     >
@@ -160,7 +161,7 @@ const LeaderboardCard = ({
         />
         <div className="text-left">
           <p className="capitalize text-th-fgd-2 md:text-base">
-            {abbreviateAddress(new PublicKey(wallet.mango_account))}
+            {abbreviateAddress(new PublicKey(mango_account))}
           </p>
           {/* <p className="text-xs text-th-fgd-4">
             Acc: {'A1at5'.slice(0, 4) + '...' + 'tt45eU'.slice(-4)}
@@ -169,7 +170,7 @@ const LeaderboardCard = ({
       </div>
       <div className="flex items-center">
         <span className="mr-3 text-right font-mono md:text-base">
-          {formatNumericValue(wallet.total_points)}
+          {formatNumericValue(total_points)}
         </span>
         <ChevronRightIcon className="h-5 w-5 text-th-fgd-3" />
       </div>
