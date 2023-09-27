@@ -4,9 +4,8 @@ import {
   MangoMintsRedemptionClient,
 } from '@blockworks-foundation/mango-mints-redemption'
 import dynamic from 'next/dynamic'
-import ClaimWinModal from './ClaimWinModal'
-import ClaimLossModal from './ClaimLossModal'
-import Button from '@components/shared/Button'
+// import ClaimWinModal from './ClaimWinModal'
+// import ClaimLossModal from './ClaimLossModal'
 import { ClockIcon } from '@heroicons/react/20/solid'
 import { web3 } from '@project-serum/anchor'
 import { useWallet } from '@solana/wallet-adapter-react'
@@ -25,14 +24,18 @@ import {
 } from '@blockworks-foundation/mangolana/lib/transactions'
 import useJupiterMints from 'hooks/useJupiterMints'
 import { Token } from 'types/jupiter'
+import SheenLoader from '@components/shared/SheenLoader'
 
 const RewardsComponent = dynamic(() => import('./RewardsComponents'), {
   loading: () => <p>Loading...</p>,
 })
 
+const CLAIM_BUTTON_CLASSES =
+  'raised-button font-rewards mx-auto mt-6 block rounded-lg px-6 py-3 text-xl focus:outline-none'
+
 const ClaimPage = () => {
-  const [showWinModal, setShowWinModal] = useState(false)
-  const [showLossModal, setShowLossModal] = useState(false)
+  // const [showWinModal, setShowWinModal] = useState(false)
+  // const [showLossModal, setShowLossModal] = useState(false)
   const [isClaiming, setIsClaiming] = useState(false)
   const [claimProgress, setClaimProgress] = useState(0)
   const [distribution, setDistribution] = useState<Distribution | undefined>(
@@ -194,7 +197,9 @@ const ClaimPage = () => {
   }, [distribution, wallet, claims, rewardsClient, connection])
 
   return claims === undefined ? (
-    <span>Loading...</span>
+    <SheenLoader className="m-8 flex flex-1">
+      <div className="h-64 w-full bg-th-bkg-2" />
+    </SheenLoader>
   ) : showRender ? (
     <div className="fixed bottom-0 left-0 right-0 top-0 z-[1000]">
       <RewardsComponent
@@ -205,55 +210,56 @@ const ClaimPage = () => {
     </div>
   ) : (
     <>
-      <div className="flex items-center justify-center bg-th-bkg-3 px-4 py-3">
-        <ClockIcon className="mr-2 h-5 w-5 text-th-active" />
-        <span className="font-rewards text-base text-th-fgd-2">
-          Season {previousSeason} claim ends in:{' '}
-          <span className="text-th-fgd-1">24 hours</span>
-        </span>
+      <div className="flex items-center justify-center border-t border-th-bkg-3 pt-8">
+        <div className="flex items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-red-400 px-4 py-2">
+          <ClockIcon className="mr-2 h-5 w-5 text-black" />
+          <p className="font-rewards text-lg text-black">
+            Season {previousSeason} claim ends in: <span>24 hours</span>
+          </p>
+        </div>
       </div>
       <div className="mx-auto grid max-w-[1140px] grid-cols-12 gap-4 p-8 lg:gap-6 lg:p-10">
         <div className="col-span-12">
-          <div className="mb-6 text-center md:mb-12">
-            <h2 className="mb-2 text-5xl">Congratulations!</h2>
-            <p className="text-lg">
-              You earned {claims.length} boxes in Season {previousSeason}
+          <div className="mb-6 text-center">
+            <h2 className="font-rewards mb-1 text-6xl tracking-wide">
+              Congratulations!
+            </h2>
+            <p className="text-lg font-bold text-th-fgd-1">
+              You&apos;re a winner in Season {previousSeason}
             </p>
           </div>
           {isClaiming ? (
             <div>
-              <div className="mt-2.5 flex h-2 w-full flex-grow rounded bg-th-bkg-4">
+              <div className="mt-2.5 flex h-4 w-full flex-grow rounded-full bg-th-bkg-4">
                 <div
                   style={{
                     width: `${claimProgress}%`,
                   }}
-                  className={`flex rounded bg-th-up`}
+                  className={`flex rounded-full bg-gradient-to-r from-green-600 to-green-400`}
                 ></div>
               </div>
-              <div className="mx-auto mt-5 text-center text-lg">
-                Claiming rewards...
+              <div className="mx-auto mt-3 text-center text-base">
+                {`Loading prizes: ${claimProgress.toFixed(0)}%`}
               </div>
             </div>
           ) : rewardsWasShown ? (
-            <Button
-              className="mx-auto mt-8 block"
+            <button
+              className={CLAIM_BUTTON_CLASSES}
               onClick={() => handleClaimRewards()}
-              size="large"
             >
-              Claim
-            </Button>
+              <span className="mt-1">Claim Prizes</span>
+            </button>
           ) : (
-            <Button
-              className="mx-auto mt-8 block"
+            <button
+              className={CLAIM_BUTTON_CLASSES}
               onClick={() => startShowRewards()}
-              size="large"
             >
-              Show Rewards
-            </Button>
+              <span className="mt-1">Reveal Prizes</span>
+            </button>
           )}
         </div>
       </div>
-      {showWinModal ? (
+      {/* {showWinModal ? (
         <ClaimWinModal
           isOpen={showWinModal}
           onClose={() => setShowWinModal(false)}
@@ -264,7 +270,7 @@ const ClaimPage = () => {
           isOpen={showLossModal}
           onClose={() => setShowLossModal(false)}
         />
-      ) : null}
+      ) : null} */}
     </>
   )
 }

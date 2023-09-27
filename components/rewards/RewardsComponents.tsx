@@ -9,6 +9,8 @@ import { init, onClick } from '../../lib/render'
 import { Claim } from '@blockworks-foundation/mango-mints-redemption'
 import { Token } from 'types/jupiter'
 import BigNumber from 'bignumber.js'
+import { IconButton } from '@components/shared/Button'
+import { XMarkIcon } from '@heroicons/react/20/solid'
 
 type Prize = {
   //symbol
@@ -142,16 +144,16 @@ export default function RewardsComponent({
   }, [prizes])
 
   return (
-    <main className="from-midnight-sky to-midnight-horizon static h-screen w-screen bg-black bg-gradient-to-b">
+    <main className="from-midnight-sky to-midnight-horizon static h-screen w-screen bg-gradient-to-b">
       <div className="absolute left-[80px] top-0 pl-4">
-        <div
-          className="fixed right-0 top-0 text-right text-white"
+        <IconButton
+          className="fixed right-4 top-4"
           onClick={() => {
             setShowRender(false)
           }}
         >
-          Close
-        </div>
+          <XMarkIcon className="h-8 w-8 text-th-fgd-2" />
+        </IconButton>
         <div className="my-2 flex flex-row gap-2">
           {collectedPrizes.map((p, i) => {
             return (
