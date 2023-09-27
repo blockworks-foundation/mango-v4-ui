@@ -247,7 +247,9 @@ const ClaimPage = () => {
               className={CLAIM_BUTTON_CLASSES}
               onClick={() => handleClaimRewards()}
             >
-              <span className="mt-1">Claim Prizes</span>
+              <span className="mt-1">{`Claim ${claims.length} Prize${
+                claims.length > 1 ? 's' : ''
+              }`}</span>
             </button>
           ) : (
             <button
