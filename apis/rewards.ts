@@ -14,9 +14,10 @@ export const fetchRewardsPoints = async (
       `${MANGO_DATA_API_URL}/seasons/season-total-points-account?mango-account=${mangoAccountPk}&seasons-id=${seasonId}`,
     )
     const res = await data.json()
-    return res.total_points
+    return res?.total_points || 0
   } catch (e) {
     console.log('Failed to fetch points', e)
+    return 0
   }
 }
 

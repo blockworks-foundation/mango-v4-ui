@@ -15,7 +15,7 @@ import {
   useWalletPoints,
   useTopAccountsLeaderBoard,
 } from 'hooks/useRewards'
-import { RefObject, useState, useEffect } from 'react'
+import { RefObject, useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { abbreviateAddress } from 'utils/formatting'
 import { formatNumericValue } from 'utils/numbers'
@@ -23,20 +23,24 @@ import { tiers } from './RewardsPage'
 import RewardsTierCard from './RewardsTierCard'
 import Faqs from './Faqs'
 import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+dayjs.extend(relativeTime)
 import MedalIcon from '@components/icons/MedalIcon'
 
-const Season = ({
-  faqRef,
-  setShowLeaderboards,
-}: {
-  faqRef: RefObject<HTMLDivElement>
-  setShowLeaderboards: (x: string) => void
-}) => {
+const Season = (
+  {
+    faqRef,
+    setShowLeaderboards,
+  }: {
+    faqRef: RefObject<HTMLDivElement>
+    setShowLeaderboards: (x: string) => void
+  },
+) => {
   const { t } = useTranslation(['common', 'rewards'])
   const { wallet } = useWallet()
   const [topAccountsTier, setTopAccountsTier] = useState('mango')
   const { mangoAccountAddress } = useMangoAccount()
-  const { data: seasonData } = useCurrentSeason()
+  const { data: seasonData, isLoading: loadingSeasonData } = useCurrentSeason()
   const { data: accountTier } = useAccountTier(
     mangoAccountAddress,
     seasonData?.season_id,
@@ -47,7 +51,11 @@ const Season = ({
     isLoading: loadingWalletRewardsData,
     refetch,
   } = useWalletPoints(mangoAccountAddress, seasonData?.season_id, wallet)
-  const seasonEndsIn = dayjs(seasonData?.season_end).diff(new Date(), 'days')
+
+  const seasonEndsIn = useMemo(() => {
+    if (!seasonData?.season_end) return
+    return dayjs().to(seasonData.season_end)
+  }, [seasonData])
 
   const {
     data: topAccountsLeaderboardData,
@@ -76,10 +84,20 @@ const Season = ({
       <div className="flex items-center justify-center border-t border-th-bkg-3 pt-8">
         <div className="flex items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-red-400 px-4 py-2">
           <ClockIcon className="mr-2 h-5 w-5 text-black" />
-          <p className="font-rewards text-lg text-black">
-            Season {seasonData?.season_id} ends in:{' '}
-            <span>{seasonEndsIn} days</span>
-          </p>
+          <div className="flex items-center font-rewards text-lg text-black">
+            Season {seasonData?.season_id} ends
+            <span className="ml-1">
+              {seasonEndsIn ? (
+                seasonEndsIn
+              ) : loadingSeasonData ? (
+                <SheenLoader className="mb-0.5 ml-1">
+                  <div className="h-5 w-12 bg-th-bkg-2" />
+                </SheenLoader>
+              ) : (
+                '–'
+              )}
+            </span>
+          </div>
         </div>
       </div>
       <div className="mx-auto grid max-w-[1140px] grid-cols-12 gap-4 p-8 pt-0 lg:p-10">
@@ -131,13 +149,6 @@ const Season = ({
           <div className="mb-4 rounded-2xl border border-th-bkg-3 p-6">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="rewards-h2">Your Points</h2>
-              {/* {isWhiteListed ? (
-                <Badge
-                  label="Whitelisted"
-                  borderColor="var(--success)"
-                  shadowColor="var(--success)"
-                />
-              ) : null} */}
             </div>
             <div className="mb-4 flex h-14 w-full items-center rounded-xl bg-th-bkg-2 px-3">
               <span className="-mb-1 w-full font-rewards text-5xl text-th-fgd-1">
@@ -161,7 +172,7 @@ const Season = ({
             <div className="border-b border-th-bkg-3">
               <div className="flex items-center justify-between border-t border-th-bkg-3 px-3 py-2">
                 <p className="rewards-p">Points Earned</p>
-                <p className="font-rewards text-lg text-th-active">
+                <div className="font-rewards text-lg text-th-active">
                   {!isLoadingWalletData ? (
                     walletPoints ? (
                       formatNumericValue(walletPoints)
@@ -175,7 +186,7 @@ const Season = ({
                       <div className="h-4 w-12 rounded-sm bg-th-bkg-3" />
                     </SheenLoader>
                   )}
-                </p>
+                </div>
               </div>
               <div className="flex items-center justify-between border-t border-th-bkg-3 px-3 py-2">
                 <p className="rewards-p">Streak Bonus</p>
@@ -183,7 +194,7 @@ const Season = ({
               </div>
               <div className="flex items-center justify-between border-t border-th-bkg-3 px-3 py-2">
                 <p className="rewards-p">Rewards Tier</p>
-                <p className="font-rewards text-lg text-th-active">
+                <div className="font-rewards text-lg text-th-active">
                   {!isLoadingWalletData ? (
                     accountTier?.mango_account ? (
                       <span className="capitalize">
@@ -197,7 +208,7 @@ const Season = ({
                       <div className="h-4 w-12 rounded-sm bg-th-bkg-3" />
                     </SheenLoader>
                   )}
-                </p>
+                </div>
               </div>
               <div className="flex items-center justify-between border-t border-th-bkg-3 px-3 py-2">
                 <p className="rewards-p">Rank</p>
