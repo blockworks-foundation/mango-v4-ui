@@ -577,6 +577,26 @@ table p {
   @apply text-base text-th-fgd-1;
 }
 
+.banner-wrapper {
+  overflow: hidden;
+}
+
+.banner-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: linear-gradient(
+    to right,
+    var(--bkg-1),
+    rgba(0, 0, 0, 0),
+    rgba(0, 0, 0, 0),
+    var(--bkg-1)
+  );
+}
+
 @keyframes moveLeftRight {
   0%,
   100% {
