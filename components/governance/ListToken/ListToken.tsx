@@ -10,6 +10,7 @@ import { AccountMeta, PublicKey, SYSVAR_RENT_PUBKEY } from '@solana/web3.js'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { OPENBOOK_PROGRAM_ID, toNative } from '@blockworks-foundation/mango-v4'
 import {
+  MANGO_DAO_FAST_LISTING_GOVERNANCE,
   MANGO_DAO_WALLET,
   MANGO_DAO_WALLET_GOVERNANCE,
   MANGO_MINT_DECIMALS,
@@ -571,11 +572,14 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
 
     const walletSigner = wallet as never
     setCreatingProposal(true)
+
     try {
       const proposalAddress = await createProposal(
         connection,
         walletSigner,
-        MANGO_DAO_WALLET_GOVERNANCE,
+        listingTier === 'UNTRUSTED'
+          ? MANGO_DAO_FAST_LISTING_GOVERNANCE
+          : MANGO_DAO_WALLET_GOVERNANCE,
         voter.tokenOwnerRecord!,
         advForm.proposalTitle,
         advForm.proposalDescription,
@@ -594,6 +598,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
 
     setCreatingProposal(false)
   }, [
+    listingTier,
     advForm,
     client,
     connection,

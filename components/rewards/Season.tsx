@@ -91,7 +91,7 @@ const Season = ({
         <div className="relative">
           <div className="flex items-center justify-center pb-6">
             <div className="flex items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-red-400 px-4 py-1">
-              <div className="font-rewards flex items-center text-lg text-black">
+              <div className="flex items-center font-rewards text-lg text-black">
                 Season {seasonData?.season_id} ends
                 <span className="ml-1">
                   {seasonEndsIn ? (
@@ -107,7 +107,7 @@ const Season = ({
               </div>
             </div>
           </div>
-          <h1 className="font-rewards my-2 text-center text-5xl lg:text-6xl">
+          <h1 className="my-2 text-center font-rewards text-5xl lg:text-6xl">
             Mango Mints
           </h1>
           <p className="mb-6 max-w-2xl text-center text-base leading-snug lg:text-xl">
@@ -115,7 +115,7 @@ const Season = ({
             chances to win big.
           </p>
           <button
-            className="raised-button font-rewards mx-auto block rounded-lg px-6 py-2 text-xl focus:outline-none lg:py-3"
+            className="raised-button mx-auto block rounded-lg px-6 py-2 font-rewards text-xl focus:outline-none lg:py-3"
             onClick={scrollToFaqs}
           >
             <span className="mt-1">How it Works</span>
@@ -175,11 +175,11 @@ const Season = ({
             <div className="mb-4 flex h-14 w-full items-center rounded-xl bg-th-bkg-2 px-3">
               {!isLoadingWalletData ? (
                 walletPoints ? (
-                  <span className="font-rewards -mb-1 w-full text-5xl text-th-fgd-1">
+                  <span className="-mb-1 w-full font-rewards text-5xl text-th-fgd-1">
                     {formatNumericValue(walletPoints)}
                   </span>
                 ) : wallet?.adapter.publicKey ? (
-                  <span className="font-rewards -mb-1 w-full text-5xl text-th-fgd-1">
+                  <span className="-mb-1 w-full font-rewards text-5xl text-th-fgd-1">
                     0
                   </span>
                 ) : (
@@ -273,7 +273,7 @@ const Season = ({
                             }`}
                           >
                             <p
-                              className={`font-rewards relative z-10 text-base ${
+                              className={`relative z-10 font-rewards text-base ${
                                 rank < 4 ? 'text-th-bkg-1' : 'text-th-fgd-1'
                               }`}
                             >
@@ -313,7 +313,7 @@ const Season = ({
               )}
             </div>
             <button
-              className="raised-button font-rewards mx-auto block w-full rounded-lg px-6 py-1 text-lg focus:outline-none"
+              className="raised-button mx-auto block w-full rounded-lg px-6 py-1 font-rewards text-lg focus:outline-none"
               onClick={() => setShowLeaderboards(topAccountsTier)}
             >
               <span className="mt-1.5 text-xl">Full Leaderboard</span>
