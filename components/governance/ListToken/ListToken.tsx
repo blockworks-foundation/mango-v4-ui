@@ -120,14 +120,19 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   )
   const [isPyth, setIsPyth] = useState(false)
   const tierLowerThenCurrent =
-    liqudityTier === 'PREMIUM'
+    liqudityTier === 'ULTRA_PREMIUM'
+      ? 'PREMIUM'
+      : liqudityTier === 'PREMIUM'
       ? 'MID'
       : liqudityTier === 'MID'
       ? 'MEME'
       : liqudityTier
-  const isMidOrPremium = liqudityTier === 'MID' || liqudityTier === 'PREMIUM'
+  const isPythRecommended =
+    liqudityTier === 'MID' ||
+    liqudityTier === 'PREMIUM' ||
+    liqudityTier === 'ULTRA_PREMIUM'
   const listingTier =
-    isMidOrPremium && !isPyth ? tierLowerThenCurrent : liqudityTier
+    isPythRecommended && !isPyth ? tierLowerThenCurrent : liqudityTier
 
   const quoteBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
   const minVoterWeight = useMemo(
@@ -257,12 +262,20 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const handleLiqudityCheck = useCallback(
     async (tokenMint: PublicKey) => {
       try {
-        const TIERS: LISTING_PRESETS_KEYS[] = ['PREMIUM', 'MID', 'MEME', 'SHIT']
+        const TIERS: LISTING_PRESETS_KEYS[] = [
+          'ULTRA_PREMIUM',
+          'PREMIUM',
+          'MID',
+          'MEME',
+          'SHIT',
+        ]
         const swaps = await Promise.all([
+          handleGetRoutesWithFixedArgs(250000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(100000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(20000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(5000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(1000, tokenMint, 'ExactIn'),
+          handleGetRoutesWithFixedArgs(250000, tokenMint, 'ExactOut'),
           handleGetRoutesWithFixedArgs(100000, tokenMint, 'ExactOut'),
           handleGetRoutesWithFixedArgs(20000, tokenMint, 'ExactOut'),
           handleGetRoutesWithFixedArgs(5000, tokenMint, 'ExactOut'),
@@ -320,6 +333,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     tokenMint: PublicKey,
   ) => {
     const tierToSwapValue: { [key: string]: number } = {
+      ULTRA_PREMIUM: 250000,
       PREMIUM: 100000,
       MID: 20000,
       MEME: 5000,
@@ -699,7 +713,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                     {listingTier && coinTiersToNames[listingTier]}
                   </p>
                 </div>
-                {isMidOrPremium && !isPyth && (
+                {isPythRecommended && !isPyth && (
                   <div className="mb-2 flex items-center justify-end">
                     <p className="text-th-warning">
                       Pyth oracle needed for higher tier

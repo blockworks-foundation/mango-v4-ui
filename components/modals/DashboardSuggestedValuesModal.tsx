@@ -107,19 +107,23 @@ const DashboardSuggestedValues = ({
         {},
       )
     const priceImapct = filteredResp[getApiTokenName(bank.name)]
-    const liqudityTier =
-      Object.values(PRESETS).find(
-        (x) => x.preset_target_amount === priceImapct?.target_amount,
-      )?.preset_key || 'SHIT'
+    const liqudityTier = (Object.values(PRESETS).find(
+      (x) => x.preset_target_amount === priceImapct?.target_amount,
+    )?.preset_key || 'SHIT') as LISTING_PRESETS_KEYS
     const tierLowerThenCurrent =
-      liqudityTier === 'PREMIUM'
+      liqudityTier === 'ULTRA_PREMIUM'
+        ? 'PREMIUM'
+        : liqudityTier === 'PREMIUM'
         ? 'MID'
         : liqudityTier === 'MID'
         ? 'MEME'
         : liqudityTier
-    const isMidOrPremium = liqudityTier === 'MID' || liqudityTier === 'PREMIUM'
+    const isPythRecommended =
+      liqudityTier === 'MID' ||
+      liqudityTier === 'PREMIUM' ||
+      liqudityTier === 'ULTRA_PREMIUM'
     const listingTier =
-      isMidOrPremium && bank?.oracleProvider !== OracleProvider.Pyth
+      isPythRecommended && bank?.oracleProvider !== OracleProvider.Pyth
         ? tierLowerThenCurrent
         : liqudityTier
 
