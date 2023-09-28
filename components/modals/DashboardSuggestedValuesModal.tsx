@@ -110,10 +110,8 @@ const DashboardSuggestedValues = ({
     const liqudityTier = (Object.values(PRESETS).find(
       (x) => x.preset_target_amount === priceImapct?.target_amount,
     )?.preset_key || 'SHIT') as LISTING_PRESETS_KEYS
-    const tierLowerThenCurrent =
-      liqudityTier === 'ULTRA_PREMIUM'
-        ? 'PREMIUM'
-        : liqudityTier === 'PREMIUM'
+    const detieredTierWithoutPyth =
+      liqudityTier === 'ULTRA_PREMIUM' || liqudityTier === 'PREMIUM'
         ? 'MID'
         : liqudityTier === 'MID'
         ? 'MEME'
@@ -124,7 +122,7 @@ const DashboardSuggestedValues = ({
       liqudityTier === 'ULTRA_PREMIUM'
     const listingTier =
       isPythRecommended && bank?.oracleProvider !== OracleProvider.Pyth
-        ? tierLowerThenCurrent
+        ? detieredTierWithoutPyth
         : liqudityTier
 
     setSuggstedTier(listingTier as LISTING_PRESETS_KEYS)

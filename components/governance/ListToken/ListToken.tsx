@@ -120,9 +120,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   )
   const [isPyth, setIsPyth] = useState(false)
   const tierLowerThenCurrent =
-    liqudityTier === 'ULTRA_PREMIUM'
-      ? 'PREMIUM'
-      : liqudityTier === 'PREMIUM'
+    liqudityTier === 'ULTRA_PREMIUM' || liqudityTier === 'PREMIUM'
       ? 'MID'
       : liqudityTier === 'MID'
       ? 'MEME'
