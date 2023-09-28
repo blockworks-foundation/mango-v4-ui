@@ -56,7 +56,7 @@ const RewardsPage = () => {
   }
 
   return !showLeaderboards ? (
-    !showClaim ? (
+    showClaim ? (
       <ClaimPage />
     ) : (
       <>

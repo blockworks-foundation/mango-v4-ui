@@ -31,6 +31,18 @@ import {
 } from '@metaplex-foundation/js'
 import Loading from '@components/shared/Loading'
 
+const CLAIM_BUTTON_CLASSES =
+  'raised-button font-rewards mx-auto mt-6 block rounded-lg px-6 py-3 text-xl focus:outline-none'
+
+const WINNER_TITLES = [
+  'Congratulations',
+  'Happy Days',
+  'Chicken Dinner',
+  'Well Played',
+  'Nailed It',
+  'Bravo',
+]
+
 const RewardsComponent = dynamic(() => import('./RewardsComponents'), {
   loading: () => (
     <div className="flex h-full w-full items-center justify-center">
@@ -39,9 +51,6 @@ const RewardsComponent = dynamic(() => import('./RewardsComponents'), {
   ),
 })
 
-const CLAIM_BUTTON_CLASSES =
-  'raised-button font-rewards mx-auto mt-6 block rounded-lg px-6 py-3 text-xl focus:outline-none'
-
 const ClaimPage = () => {
   const [isClaiming, setIsClaiming] = useState(false)
   const [claimProgress, setClaimProgress] = useState(0)
@@ -49,6 +58,9 @@ const ClaimPage = () => {
     undefined,
   )
   const { jupiterTokens } = useJupiterMints()
+  const [winnerTitle] = useState(
+    WINNER_TITLES[Math.floor(Math.random() * WINNER_TITLES.length)],
+  )
   const [showRender, setShowRender] = useState(false)
   const [rewardsWasShown, setRewardsWasShow] = useState(false)
   const [claims, setClaims] = useState<Claim[] | undefined>([])
@@ -257,7 +269,7 @@ const ClaimPage = () => {
         <div className="mx-auto max-w-[1140px] px-8 lg:px-10">
           <div className="mb-6 text-center">
             <h2 className="font-rewards mb-1 text-4xl tracking-wide sm:text-6xl">
-              Congratulations!
+              {winnerTitle}!
             </h2>
             <p className="text-lg font-bold text-th-fgd-1">
               You&apos;re a winner in Season {previousSeason}
