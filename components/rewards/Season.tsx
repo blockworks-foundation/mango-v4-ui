@@ -79,7 +79,7 @@ const Season = ({
 
   return (
     <>
-      <div className="flex items-center justify-center border-t border-th-bkg-3 pt-8">
+      <div className="flex items-center justify-center border-t border-th-bkg-3 pb-6 pt-8">
         <div className="flex items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-red-400 px-4 py-2">
           <ClockIcon className="mr-2 h-5 w-5 text-black" />
           <div className="font-rewards flex items-center text-lg text-black">
@@ -98,7 +98,7 @@ const Season = ({
           </div>
         </div>
       </div>
-      <div className="mx-auto grid max-w-[1140px] grid-cols-12 gap-4 p-8 pt-0 lg:p-10">
+      <div className="mx-auto grid max-w-[1140px] grid-cols-12 gap-4 p-8 pt-0 lg:p-10 lg:pt-0">
         <div className="order-2 col-span-12 lg:order-1 lg:col-span-7">
           <div className="mb-4 rounded-2xl border border-th-bkg-3 p-6 pb-0">
             <h2 className="rewards-h2 mb-4">Rewards Tiers</h2>

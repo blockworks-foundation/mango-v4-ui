@@ -4,8 +4,6 @@ import {
   MangoMintsRedemptionClient,
 } from '@blockworks-foundation/mango-mints-redemption'
 import dynamic from 'next/dynamic'
-// import ClaimWinModal from './ClaimWinModal'
-// import ClaimLossModal from './ClaimLossModal'
 import { ClockIcon } from '@heroicons/react/20/solid'
 import { web3 } from '@project-serum/anchor'
 import { useWallet } from '@solana/wallet-adapter-react'
@@ -24,7 +22,6 @@ import {
 } from '@blockworks-foundation/mangolana/lib/transactions'
 import useJupiterMints from 'hooks/useJupiterMints'
 import { Token } from 'types/jupiter'
-import SheenLoader from '@components/shared/SheenLoader'
 import {
   Metaplex,
   Nft,
@@ -32,7 +29,6 @@ import {
   Sft,
   SftWithToken,
 } from '@metaplex-foundation/js'
-import Button from '@components/shared/Button'
 import Loading from '@components/shared/Loading'
 
 const RewardsComponent = dynamic(() => import('./RewardsComponents'), {
@@ -47,8 +43,6 @@ const CLAIM_BUTTON_CLASSES =
   'raised-button font-rewards mx-auto mt-6 block rounded-lg px-6 py-3 text-xl focus:outline-none'
 
 const ClaimPage = () => {
-  // const [showWinModal, setShowWinModal] = useState(false)
-  // const [showLossModal, setShowLossModal] = useState(false)
   const [isClaiming, setIsClaiming] = useState(false)
   const [claimProgress, setClaimProgress] = useState(0)
   const [distribution, setDistribution] = useState<Distribution | undefined>(
@@ -237,9 +231,9 @@ const ClaimPage = () => {
   }, [distribution, wallet, claims, rewardsClient, connection])
 
   return claims === undefined ? (
-    <SheenLoader className="m-8 flex flex-1">
-      <div className="h-64 w-full bg-th-bkg-2" />
-    </SheenLoader>
+    <div className="flex min-h-[calc(100vh-94px)] items-center justify-center">
+      <Loading />
+    </div>
   ) : showRender ? (
     <div className="fixed bottom-0 left-0 right-0 top-0 z-[1000]">
       <RewardsComponent
@@ -250,8 +244,8 @@ const ClaimPage = () => {
       ></RewardsComponent>
     </div>
   ) : (
-    <>
-      <div className="flex items-center justify-center border-t border-th-bkg-3 pt-8">
+    <div className="min-h-[calc(100vh-94px)]">
+      <div className="flex items-center justify-center pt-10">
         <div className="flex items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-red-400 px-4 py-2">
           <ClockIcon className="mr-2 h-5 w-5 text-black" />
           <p className="font-rewards text-lg text-black">
@@ -259,10 +253,10 @@ const ClaimPage = () => {
           </p>
         </div>
       </div>
-      <div className="mx-auto grid max-w-[1140px] grid-cols-12 gap-4 p-8 lg:gap-6 lg:p-10">
-        <div className="col-span-12">
+      <div className="flex h-[calc(100vh-180px)] flex-col justify-center">
+        <div className="mx-auto max-w-[1140px] px-8 lg:px-10">
           <div className="mb-6 text-center">
-            <h2 className="mb-1 font-rewards text-6xl tracking-wide">
+            <h2 className="font-rewards mb-1 text-4xl tracking-wide sm:text-6xl">
               Congratulations!
             </h2>
             <p className="text-lg font-bold text-th-fgd-1">
@@ -270,8 +264,8 @@ const ClaimPage = () => {
             </p>
           </div>
           {isClaiming ? (
-            <div>
-              <div className="mt-2.5 flex h-4 w-full flex-grow rounded-full bg-th-bkg-4">
+            <div className="pt-1">
+              <div className="flex h-4 w-full flex-grow rounded-full bg-th-bkg-4">
                 <div
                   style={{
                     width: `${claimProgress}%`,
@@ -284,21 +278,19 @@ const ClaimPage = () => {
               </div>
             </div>
           ) : rewardsWasShown ? (
-            <Button
+            <button
               className={CLAIM_BUTTON_CLASSES}
               onClick={() => handleClaimRewards()}
-              size="large"
             >
               <span className="mt-1">{`Claim ${claims.length} Prize${
                 claims.length > 1 ? 's' : ''
               }`}</span>
-            </Button>
+            </button>
           ) : (
-            <Button
+            <button
               disabled={loadingMetadata}
               className={CLAIM_BUTTON_CLASSES}
               onClick={() => startShowRewards()}
-              size="large"
             >
               <span className="mt-1">
                 {' '}
@@ -308,23 +300,11 @@ const ClaimPage = () => {
                   'Reveal Prizes'
                 )}
               </span>
-            </Button>
+            </button>
           )}
         </div>
       </div>
-      {/* {showWinModal ? (
-        <ClaimWinModal
-          isOpen={showWinModal}
-          onClose={() => setShowWinModal(false)}
-        />
-      ) : null}
-      {showLossModal ? (
-        <ClaimLossModal
-          isOpen={showLossModal}
-          onClose={() => setShowLossModal(false)}
-        />
-      ) : null} */}
-    </>
+    </div>
   )
 }
 export default ClaimPage
