@@ -38,6 +38,7 @@ import { useCurrentSeason, useWalletPoints } from 'hooks/useRewards'
 import { formatNumericValue } from 'utils/numbers'
 import SheenLoader from './shared/SheenLoader'
 import Link from 'next/link'
+import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
 
 export const TOPBAR_ICON_BUTTON_CLASSES =
   'relative flex h-16 w-16 items-center justify-center border-l border-r border-th-bkg-3 focus-visible:bg-th-bkg-3 md:border-r-0 md:hover:bg-th-bkg-2'
@@ -51,6 +52,7 @@ const TopBar = () => {
   const { data: seasonData } = useCurrentSeason()
   const { data: walletPoints, isLoading: loadingWalletRewardsData } =
     useWalletPoints(mangoAccountAddress, seasonData?.season_id, wallet)
+  const { data: isWhiteListed } = useIsWhiteListed()
   const themeData = mangoStore((s) => s.themeData)
 
   const [action, setAction] = useState<'deposit' | 'withdraw'>('deposit')
@@ -185,7 +187,7 @@ const TopBar = () => {
                 <ArrowRightIcon className="sideways-bounce ml-2 h-5 w-5 text-th-fgd-1" />
               </span>
             )
-          ) : (
+          ) : isWhiteListed ? (
             <Link href="/rewards" shallow={true}>
               <div className="flex h-16 items-center justify-between bg-gradient-to-br from-th-bkg-2 to-th-bkg-3 px-4 lg:pl-6">
                 <div>
@@ -209,7 +211,7 @@ const TopBar = () => {
                 <ChevronRightIcon className="ml-2 hidden h-7 w-7 text-th-fgd-4 lg:block" />
               </div>
             </Link>
-          )}
+          ) : null}
         </span>
         {!isOnline ? (
           <div className="absolute left-1/2 top-3 z-10 flex h-10 w-max -translate-x-1/2 items-center rounded-full bg-th-down px-4 py-2 md:top-8">
