@@ -197,13 +197,13 @@ export default function RewardsComponent({
         </div>
         {!!currentPrize && (
           <>
-            <p className={`font-rewards -mb-3 text-4xl text-white`}>
+            <p className={`-mb-3 font-rewards text-4xl text-white`}>
               {currentPrize['item']}
             </p>
             {/* common: text-sky-300
             rare: text-yellow-300
             legendary: text-orange-400 */}
-            <p className={`font-rewards -mb-2 text-3xl text-yellow-300`}>
+            <p className={`-mb-2 font-rewards text-3xl text-yellow-300`}>
               {currentPrize['rarity']}
             </p>
             <p id="info-text" className={`font-rewards text-3xl	text-white`}>

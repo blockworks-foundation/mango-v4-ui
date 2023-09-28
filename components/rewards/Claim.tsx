@@ -11,7 +11,7 @@ import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
 import { useCurrentSeason, useDistribution } from 'hooks/useRewards'
 import { chunk } from 'lodash'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   TransactionInstructionWithSigners,
   SequenceType,
@@ -30,6 +30,7 @@ import {
   SftWithToken,
 } from '@metaplex-foundation/js'
 import Loading from '@components/shared/Loading'
+import dayjs from 'dayjs'
 
 const CLAIM_BUTTON_CLASSES =
   'raised-button font-rewards mx-auto mt-6 block rounded-lg px-6 py-3 text-xl focus:outline-none'
@@ -88,6 +89,13 @@ const ClaimPage = () => {
   const { data: distributionDataAndClient, refetch } = useDistribution(
     previousSeason!,
   )
+  const claimEndsIn = useMemo(() => {
+    if (!distributionDataAndClient?.distribution) return
+    const start = distributionDataAndClient.distribution.start.getTime()
+    return dayjs().to(
+      start + distributionDataAndClient.distribution.duration * 1000,
+    )
+  }, [distributionDataAndClient])
 
   useEffect(() => {
     const handleSetDistribution = async () => {
@@ -261,14 +269,14 @@ const ClaimPage = () => {
         <div className="flex items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-red-400 px-4 py-2">
           <ClockIcon className="mr-2 h-5 w-5 text-black" />
           <p className="font-rewards text-lg text-black">
-            Season {previousSeason} claim ends in: <span>24 hours</span>
+            Season {previousSeason} claim ends <span>{claimEndsIn}</span>
           </p>
         </div>
       </div>
       <div className="flex h-[calc(100vh-180px)] flex-col justify-center">
         <div className="mx-auto max-w-[1140px] px-8 lg:px-10">
           <div className="mb-6 text-center">
-            <h2 className="font-rewards mb-1 text-4xl tracking-wide sm:text-6xl">
+            <h2 className="mb-1 font-rewards text-4xl tracking-wide sm:text-6xl">
               {winnerTitle}!
             </h2>
             <p className="text-lg font-bold text-th-fgd-1">
