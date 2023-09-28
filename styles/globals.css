@@ -595,6 +595,7 @@ table p {
     rgba(0, 0, 0, 0),
     var(--bkg-1)
   );
+  pointer-events: none;
 }
 
 @keyframes moveLeftRight {
