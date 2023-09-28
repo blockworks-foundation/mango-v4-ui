@@ -31,6 +31,7 @@ import {
 } from '@metaplex-foundation/js'
 import Loading from '@components/shared/Loading'
 import dayjs from 'dayjs'
+import HolographicCard from './HolographicCard'
 
 const CLAIM_BUTTON_CLASSES =
   'raised-button font-rewards mx-auto mt-6 block rounded-lg px-6 py-3 text-xl focus:outline-none'
@@ -265,7 +266,7 @@ const ClaimPage = () => {
     </div>
   ) : (
     <div className="min-h-[calc(100vh-94px)]">
-      <div className="flex items-center justify-center pt-10">
+      <div className="flex items-center justify-center pt-8">
         <div className="flex items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-red-400 px-4 py-2">
           <ClockIcon className="mr-2 h-5 w-5 text-black" />
           <p className="font-rewards text-lg text-black">
@@ -273,9 +274,12 @@ const ClaimPage = () => {
           </p>
         </div>
       </div>
-      <div className="flex h-[calc(100vh-180px)] flex-col justify-center">
-        <div className="mx-auto max-w-[1140px] px-8 lg:px-10">
-          <div className="mb-6 text-center">
+      <div className="flex h-[calc(100vh-172px)] flex-col justify-center">
+        <div className="mx-auto flex max-w-[1140px] flex-col items-center justify-center px-8 lg:px-10">
+          <div className="-mt-16">
+            <HolographicCard />
+          </div>
+          <div className="-mt-8 mb-6 text-center">
             <h2 className="mb-1 font-rewards text-4xl tracking-wide sm:text-6xl">
               {winnerTitle}!
             </h2>
