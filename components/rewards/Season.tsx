@@ -3,9 +3,7 @@ import AcornIcon from '@components/icons/AcornIcon'
 import MangoIcon from '@components/icons/MangoIcon'
 import RobotIcon from '@components/icons/RobotIcon'
 import WhaleIcon from '@components/icons/WhaleIcon'
-import Button from '@components/shared/Button'
 import SheenLoader from '@components/shared/SheenLoader'
-import { ClockIcon } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
 import useMangoAccount from 'hooks/useMangoAccount'
@@ -15,7 +13,7 @@ import {
   useWalletPoints,
   useTopAccountsLeaderBoard,
 } from 'hooks/useRewards'
-import { RefObject, useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { abbreviateAddress } from 'utils/formatting'
 import { formatNumericValue } from 'utils/numbers'
@@ -27,15 +25,12 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 dayjs.extend(relativeTime)
 import MedalIcon from '@components/icons/MedalIcon'
 
-const Season = ({
-  faqRef,
-  setShowLeaderboards,
-}: {
-  faqRef: RefObject<HTMLDivElement>
-  setShowLeaderboards: (x: string) => void
-}) => {
+const Season = (
+  { setShowLeaderboards }: { setShowLeaderboards: (x: string) => void },
+) => {
   const { t } = useTranslation(['common', 'rewards'])
   const { wallet } = useWallet()
+  const faqRef = useRef<HTMLDivElement>(null)
   const [topAccountsTier, setTopAccountsTier] = useState('mango')
   const { mangoAccountAddress } = useMangoAccount()
   const { data: seasonData, isLoading: loadingSeasonData } = useCurrentSeason()
@@ -77,26 +72,49 @@ const Season = ({
     }
   }, [mangoAccountAddress])
 
+  const scrollToFaqs = () => {
+    if (faqRef.current) {
+      faqRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start', // or 'end' or 'center'
+      })
+    }
+  }
+
   return (
     <>
-      <div className="flex items-center justify-center border-t border-th-bkg-3 pb-6 pt-8">
-        <div className="flex items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-red-400 px-4 py-2">
-          <ClockIcon className="mr-2 h-5 w-5 text-black" />
-          <div className="flex items-center font-rewards text-lg text-black">
-            Season {seasonData?.season_id} ends
-            <span className="ml-1">
-              {seasonEndsIn ? (
-                seasonEndsIn
-              ) : loadingSeasonData ? (
-                <SheenLoader className="mb-0.5 ml-1">
-                  <div className="h-5 w-12 bg-th-bkg-2" />
-                </SheenLoader>
-              ) : (
-                '–'
-              )}
-            </span>
+      <div className="mx-auto mb-6 flex flex-col items-center justify-center border-b border-th-bkg-3 p-8 lg:mb-8 lg:px-10 lg:py-12">
+        <div className="flex items-center justify-center pb-6">
+          <div className="flex items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-red-400 px-4 py-1">
+            <div className="flex items-center font-rewards text-lg text-black">
+              Season {seasonData?.season_id} ends
+              <span className="ml-1">
+                {seasonEndsIn ? (
+                  seasonEndsIn
+                ) : loadingSeasonData ? (
+                  <SheenLoader className="mb-0.5 ml-1">
+                    <div className="h-5 w-12 bg-th-bkg-2" />
+                  </SheenLoader>
+                ) : (
+                  '–'
+                )}
+              </span>
+            </div>
           </div>
         </div>
+        <h1 className="my-2 text-center font-rewards text-5xl lg:text-6xl">
+          Mango Mints
+        </h1>
+        <p className="mb-6 max-w-2xl text-center text-base leading-snug lg:text-xl">
+          Earn points by performing actions on Mango. More points equals more
+          chances to win big.
+        </p>
+        <button
+          className="raised-button mx-auto block rounded-lg px-6 py-2 font-rewards text-xl focus:outline-none lg:py-3"
+          onClick={scrollToFaqs}
+        >
+          <span className="mt-1">How it Works</span>
+        </button>
       </div>
       <div className="mx-auto grid max-w-[1140px] grid-cols-12 gap-4 p-8 pt-0 lg:p-10 lg:pt-0">
         <div className="order-2 col-span-12 lg:order-1 lg:col-span-7">
@@ -288,12 +306,12 @@ const Season = ({
                 </div>
               )}
             </div>
-            <Button
-              className="raised-button w-full font-rewards"
+            <button
+              className="raised-button mx-auto block w-full rounded-lg px-6 py-1 font-rewards text-lg focus:outline-none"
               onClick={() => setShowLeaderboards(topAccountsTier)}
             >
               <span className="mt-1.5 text-xl">Full Leaderboard</span>
-            </Button>
+            </button>
           </div>
         </div>
       </div>

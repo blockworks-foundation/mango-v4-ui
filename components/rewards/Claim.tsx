@@ -4,7 +4,6 @@ import {
   MangoMintsRedemptionClient,
 } from '@blockworks-foundation/mango-mints-redemption'
 import dynamic from 'next/dynamic'
-import { ClockIcon } from '@heroicons/react/20/solid'
 import { web3 } from '@project-serum/anchor'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
@@ -262,19 +261,18 @@ const ClaimPage = () => {
         nftsRewardsInfo={nftsRewardsInfo}
         claims={claims}
         setShowRender={setShowRender}
-      ></RewardsComponent>
+      />
     </div>
   ) : (
     <div className="min-h-[calc(100vh-94px)]">
       <div className="flex items-center justify-center pt-8">
-        <div className="flex items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-red-400 px-4 py-2">
-          <ClockIcon className="mr-2 h-5 w-5 text-black" />
+        <div className="flex items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-red-400 px-4 py-1">
           <p className="font-rewards text-lg text-black">
             Season {previousSeason} claim ends <span>{claimEndsIn}</span>
           </p>
         </div>
       </div>
-      <div className="flex h-[calc(100vh-172px)] flex-col justify-center">
+      <div className="flex h-[calc(100vh-164px)] flex-col justify-center">
         <div className="mx-auto flex max-w-[1140px] flex-col items-center justify-center px-8 lg:px-10">
           <div className="-mt-16">
             <HolographicCard />
