@@ -27,15 +27,13 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 dayjs.extend(relativeTime)
 import MedalIcon from '@components/icons/MedalIcon'
 
-const Season = (
-  {
-    faqRef,
-    setShowLeaderboards,
-  }: {
-    faqRef: RefObject<HTMLDivElement>
-    setShowLeaderboards: (x: string) => void
-  },
-) => {
+const Season = ({
+  faqRef,
+  setShowLeaderboards,
+}: {
+  faqRef: RefObject<HTMLDivElement>
+  setShowLeaderboards: (x: string) => void
+}) => {
   const { t } = useTranslation(['common', 'rewards'])
   const { wallet } = useWallet()
   const [topAccountsTier, setTopAccountsTier] = useState('mango')
@@ -84,7 +82,7 @@ const Season = (
       <div className="flex items-center justify-center border-t border-th-bkg-3 pt-8">
         <div className="flex items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-red-400 px-4 py-2">
           <ClockIcon className="mr-2 h-5 w-5 text-black" />
-          <div className="flex items-center font-rewards text-lg text-black">
+          <div className="font-rewards flex items-center text-lg text-black">
             Season {seasonData?.season_id} ends
             <span className="ml-1">
               {seasonEndsIn ? (
@@ -151,23 +149,25 @@ const Season = (
               <h2 className="rewards-h2">Your Points</h2>
             </div>
             <div className="mb-4 flex h-14 w-full items-center rounded-xl bg-th-bkg-2 px-3">
-              <span className="-mb-1 w-full font-rewards text-5xl text-th-fgd-1">
-                {!isLoadingWalletData ? (
-                  walletPoints ? (
-                    formatNumericValue(walletPoints)
-                  ) : wallet?.adapter.publicKey ? (
+              {!isLoadingWalletData ? (
+                walletPoints ? (
+                  <span className="font-rewards -mb-1 w-full text-5xl text-th-fgd-1">
+                    {formatNumericValue(walletPoints)}
+                  </span>
+                ) : wallet?.adapter.publicKey ? (
+                  <span className="font-rewards -mb-1 w-full text-5xl text-th-fgd-1">
                     0
-                  ) : (
-                    <span className="flex items-center justify-center text-center font-body text-sm text-th-fgd-3">
-                      {t('connect-wallet')}
-                    </span>
-                  )
+                  </span>
                 ) : (
-                  <SheenLoader>
-                    <div className="h-8 w-32 rounded-md bg-th-bkg-3" />
-                  </SheenLoader>
-                )}
-              </span>
+                  <span className="flex items-center justify-center text-center font-body text-sm text-th-fgd-3">
+                    {t('connect-wallet')}
+                  </span>
+                )
+              ) : (
+                <SheenLoader>
+                  <div className="h-8 w-32 rounded-md bg-th-bkg-3" />
+                </SheenLoader>
+              )}
             </div>
             <div className="border-b border-th-bkg-3">
               <div className="flex items-center justify-between border-t border-th-bkg-3 px-3 py-2">
@@ -249,7 +249,7 @@ const Season = (
                             }`}
                           >
                             <p
-                              className={`relative z-10 font-rewards text-base ${
+                              className={`font-rewards relative z-10 text-base ${
                                 rank < 4 ? 'text-th-bkg-1' : 'text-th-fgd-1'
                               }`}
                             >
@@ -289,7 +289,7 @@ const Season = (
               )}
             </div>
             <Button
-              className="raised-button w-full font-rewards"
+              className="raised-button font-rewards w-full"
               onClick={() => setShowLeaderboards(topAccountsTier)}
             >
               <span className="mt-1.5 text-xl">Full Leaderboard</span>

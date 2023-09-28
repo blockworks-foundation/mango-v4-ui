@@ -75,6 +75,8 @@ export const LAST_WALLET_NAME = 'lastWalletName'
 
 export const PRIVACY_MODE = 'privacy-mode-0.1'
 
+export const MANGO_MINTS_BANNER_KEY = 'mangoMintsBanner-0.1'
+
 // Unused
 export const PROFILE_CATEGORIES = [
   'borrower',
