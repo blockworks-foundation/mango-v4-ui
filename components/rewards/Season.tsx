@@ -83,38 +83,42 @@ const Season = (
 
   return (
     <>
-      <div className="mx-auto mb-6 flex flex-col items-center justify-center border-b border-th-bkg-3 p-8 lg:mb-8 lg:px-10 lg:py-12">
-        <div className="flex items-center justify-center pb-6">
-          <div className="flex items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-red-400 px-4 py-1">
-            <div className="flex items-center font-rewards text-lg text-black">
-              Season {seasonData?.season_id} ends
-              <span className="ml-1">
-                {seasonEndsIn ? (
-                  seasonEndsIn
-                ) : loadingSeasonData ? (
-                  <SheenLoader className="mb-0.5 ml-1">
-                    <div className="h-5 w-12 bg-th-bkg-2" />
-                  </SheenLoader>
-                ) : (
-                  '–'
-                )}
-              </span>
+      <div className="relative mx-auto mb-6 flex flex-col items-center justify-center p-8 lg:mb-8 lg:px-10 lg:py-12">
+        <div className="absolute left-0 top-0 mt-3 h-[64px] w-[200%] animate-[moveRightLeft_240s_linear_infinite] bg-[url('/images/rewards/mints-banner-bg-1.png')] bg-contain bg-center bg-repeat-x opacity-20" />
+        <div className="absolute bottom-0 right-0 h-[64px] w-[200%] animate-[moveLeftRight_300s_linear_infinite] bg-[url('/images/rewards/mints-banner-bg-2.png')] bg-contain bg-center bg-repeat-x opacity-20" />
+        <div className="relative">
+          <div className="flex items-center justify-center pb-6">
+            <div className="flex items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-red-400 px-4 py-1">
+              <div className="flex items-center font-rewards text-lg text-black">
+                Season {seasonData?.season_id} ends
+                <span className="ml-1">
+                  {seasonEndsIn ? (
+                    seasonEndsIn
+                  ) : loadingSeasonData ? (
+                    <SheenLoader className="mb-0.5 ml-1">
+                      <div className="h-5 w-12 bg-th-bkg-2" />
+                    </SheenLoader>
+                  ) : (
+                    '–'
+                  )}
+                </span>
+              </div>
             </div>
           </div>
+          <h1 className="my-2 text-center font-rewards text-5xl lg:text-6xl">
+            Mango Mints
+          </h1>
+          <p className="mb-6 max-w-2xl text-center text-base leading-snug lg:text-xl">
+            Earn points by performing actions on Mango. More points equals more
+            chances to win big.
+          </p>
+          <button
+            className="raised-button mx-auto block rounded-lg px-6 py-2 font-rewards text-xl focus:outline-none lg:py-3"
+            onClick={scrollToFaqs}
+          >
+            <span className="mt-1">How it Works</span>
+          </button>
         </div>
-        <h1 className="my-2 text-center font-rewards text-5xl lg:text-6xl">
-          Mango Mints
-        </h1>
-        <p className="mb-6 max-w-2xl text-center text-base leading-snug lg:text-xl">
-          Earn points by performing actions on Mango. More points equals more
-          chances to win big.
-        </p>
-        <button
-          className="raised-button mx-auto block rounded-lg px-6 py-2 font-rewards text-xl focus:outline-none lg:py-3"
-          onClick={scrollToFaqs}
-        >
-          <span className="mt-1">How it Works</span>
-        </button>
       </div>
       <div className="mx-auto grid max-w-[1140px] grid-cols-12 gap-4 p-8 pt-0 lg:p-10 lg:pt-0">
         <div className="order-2 col-span-12 lg:order-1 lg:col-span-7">

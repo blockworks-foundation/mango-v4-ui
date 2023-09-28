@@ -577,6 +577,26 @@ table p {
   @apply text-base text-th-fgd-1;
 }
 
+@keyframes moveLeftRight {
+  0%,
+  100% {
+    right: 0;
+  }
+  50% {
+    right: -50%;
+  }
+}
+
+@keyframes moveRightLeft {
+  0%,
+  100% {
+    left: 0;
+  }
+  50% {
+    left: -50%;
+  }
+}
+
 /* holographic card */
 .card {
   width: 300px;
