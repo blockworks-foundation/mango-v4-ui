@@ -1,6 +1,5 @@
 import { Bank, toUiDecimals, I80F48 } from '@blockworks-foundation/mango-v4'
 import ExplorerLink from '@components/shared/ExplorerLink'
-import { coder } from '@project-serum/anchor/dist/cjs/spl/token'
 import mangoStore from '@store/mangoStore'
 import useMangoGroup from 'hooks/useMangoGroup'
 import type { NextPage } from 'next'
@@ -24,6 +23,7 @@ import DashboardSuggestedValues from '@components/modals/DashboardSuggestedValue
 import { USDC_MINT } from 'utils/constants'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
+import { AccountLayout, RawAccount } from '@solana/spl-token'
 
 dayjs.extend(relativeTime)
 
@@ -789,19 +789,16 @@ const KeyValuePair = ({
   )
 }
 
-type Vault = {
-  amount: BN
-}
-
 const VaultData = ({ bank }: { bank: Bank }) => {
-  const [vault, setVault] = useState<Vault>()
+  const [vault, setVault] = useState<RawAccount>()
   const client = mangoStore((s) => s.client)
 
   const getVaultData = useCallback(async () => {
     const res = await client.program.provider.connection.getAccountInfo(
       bank.vault,
     )
-    const v = res?.data ? coder().accounts.decode('token', res.data) : undefined
+
+    const v = res?.data ? AccountLayout.decode(res.data) : undefined
 
     setVault(v)
   }, [bank.vault])
@@ -814,7 +811,9 @@ const VaultData = ({ bank }: { bank: Bank }) => {
     <KeyValuePair
       label="Vault balance"
       value={
-        vault ? toUiDecimals(vault.amount.toNumber(), bank.mintDecimals) : '...'
+        vault
+          ? toUiDecimals(parseInt(vault.amount.toString()), bank.mintDecimals)
+          : '...'
       }
     />
   )

@@ -3,7 +3,7 @@ import mangoStore from '@store/mangoStore'
 import { Howl } from 'howler'
 import { NOTIFICATION_API, SOUND_SETTINGS_KEY } from './constants'
 import { Payload, SIWS } from '@web3auth/sign-in-with-solana'
-import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes'
+import { bs58 } from '@coral-xyz/anchor/dist/cjs/utils/bytes'
 import { WalletContextState } from '@solana/wallet-adapter-react'
 import {
   PublicKey,
