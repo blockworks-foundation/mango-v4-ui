@@ -31,7 +31,7 @@ const set = mangoStore.getState().set
 const SwapForm = () => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
   const groupLoaded = mangoStore((s) => s.groupLoaded)
-  const { mangoAccountAddress } = useMangoAccount()
+  const { mangoAccountAddress, initialLoad } = useMangoAccount()
   const { connected } = useWallet()
   const { query } = useRouter()
   const [showTokenSelect, setShowTokenSelect] =
@@ -55,10 +55,10 @@ const SwapForm = () => {
 
   // enable wallet swap when connected and no mango account
   useEffect(() => {
-    if (connected && !mangoAccountAddress) {
+    if (connected && !mangoAccountAddress && !initialLoad) {
       setWalletSwap(true)
     }
-  }, [connected, mangoAccountAddress])
+  }, [connected, mangoAccountAddress, initialLoad])
 
   // setup swap from url query
   useEffect(() => {

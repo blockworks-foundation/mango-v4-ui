@@ -256,6 +256,7 @@ const SwapReviewRouteInfo = ({
 
   const onWalletSwap = useCallback(async () => {
     if (!selectedRoute || !inputBank || !outputBank || !wallet.publicKey) return
+    const actions = mangoStore.getState().actions
     const client = mangoStore.getState().client
     const connection = mangoStore.getState().connection
     setSubmitting(true)
@@ -276,6 +277,7 @@ const SwapReviewRouteInfo = ({
         type: 'success',
         txid: tx.signature,
       })
+      actions.fetchWalletTokens(wallet.publicKey)
     } catch (e) {
       console.log('error swapping wallet tokens', e)
     } finally {
