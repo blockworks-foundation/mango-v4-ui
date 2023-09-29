@@ -12,7 +12,7 @@ import {
 } from 'utils/governance/listingTools'
 import { Bank, Group, OracleProvider } from '@blockworks-foundation/mango-v4'
 import { AccountMeta } from '@solana/web3.js'
-import { BN } from '@coral-xyz/anchor'
+import { BN } from '@project-serum/anchor'
 import {
   MANGO_DAO_WALLET,
   MANGO_DAO_WALLET_GOVERNANCE,

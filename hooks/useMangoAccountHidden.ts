@@ -1,4 +1,4 @@
-import { bs58 } from '@coral-xyz/anchor/dist/cjs/utils/bytes'
+import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes'
 import { PublicKey } from '@solana/web3.js'
 import { useQuery } from '@tanstack/react-query'
 import { MANGO_DATA_API_URL } from 'utils/constants'

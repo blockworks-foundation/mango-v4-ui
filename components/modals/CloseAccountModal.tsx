@@ -13,7 +13,7 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import { ExclamationCircleIcon, TrashIcon } from '@heroicons/react/20/solid'
 import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
-import { getMultipleAccounts } from '@coral-xyz/anchor/dist/cjs/utils/rpc'
+import { getMultipleAccounts } from '@project-serum/anchor/dist/cjs/utils/rpc'
 import { formatCurrencyValue } from 'utils/numbers'
 
 const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {

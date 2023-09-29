@@ -4,7 +4,7 @@ import {
   MangoMintsRedemptionClient,
 } from '@blockworks-foundation/mango-mints-redemption'
 import dynamic from 'next/dynamic'
-import { web3 } from '@coral-xyz/anchor'
+import { web3 } from '@project-serum/anchor'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'

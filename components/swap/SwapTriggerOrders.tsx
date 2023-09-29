@@ -13,7 +13,7 @@ import {
   NoSymbolIcon,
   TrashIcon,
 } from '@heroicons/react/20/solid'
-import { BN } from '@coral-xyz/anchor'
+import { BN } from '@project-serum/anchor'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
