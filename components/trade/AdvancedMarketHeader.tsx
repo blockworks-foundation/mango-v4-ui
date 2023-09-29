@@ -33,7 +33,8 @@ const AdvancedMarketHeader = ({
   const volume = useMemo(() => {
     if (!selectedMarketName || !serumOrPerpMarket || !marketsData) return 0
     if (serumOrPerpMarket instanceof PerpMarket) {
-      const perpData: MarketData = marketsData?.perpData
+      const perpData: MarketData | null = marketsData?.perpData
+      if (!perpData) return 0
       const perpEntries = Object.entries(perpData).find(
         (e) => e[0].toLowerCase() === selectedMarketName.toLowerCase(),
       )

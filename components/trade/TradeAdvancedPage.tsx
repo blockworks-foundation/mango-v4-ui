@@ -11,7 +11,7 @@ import mangoStore from '@store/mangoStore'
 // import useLocalStorageState from 'hooks/useLocalStorageState'
 import { breakpoints } from 'utils/theme'
 import { useViewport } from 'hooks/useViewport'
-// import AdvancedMarketHeader from './AdvancedMarketHeader'
+import AdvancedMarketHeader from './AdvancedMarketHeader'
 import AdvancedTradeForm from './AdvancedTradeForm'
 import TradeInfoTabs from './TradeInfoTabs'
 import MobileTradeAdvancedPage from './MobileTradeAdvancedPage'
@@ -312,7 +312,7 @@ const TradeAdvancedPage = () => {
               // measureBeforeMount
             >
               <div key="market-header" className="z-10">
-                {/* <AdvancedMarketHeader /> */}
+                <AdvancedMarketHeader />
               </div>
               <div
                 key="tv-chart"
