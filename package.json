@@ -28,9 +28,7 @@
     "@blockworks-foundation/mangolana": "0.0.1-beta.15",
     "@headlessui/react": "1.6.6",
     "@heroicons/react": "2.0.10",
-    "bignumber.js": "9.1.2",
     "@metaplex-foundation/js": "0.19.4",
-    "@project-serum/anchor": "0.25.0",
     "@pythnetwork/client": "2.15.0",
     "@sentry/nextjs": "7.58.0",
     "@solana/spl-governance": "0.3.27",
@@ -44,6 +42,7 @@
     "@tippyjs/react": "4.2.6",
     "@web3auth/sign-in-with-solana": "1.0.0",
     "big.js": "6.2.1",
+    "bignumber.js": "9.1.2",
     "clsx": "1.2.1",
     "csv-stringify": "6.3.2",
     "d3-interpolate": "3.0.1",
@@ -72,13 +71,12 @@
     "react-number-format": "4.9.2",
     "react-tsparticles": "2.2.4",
     "recharts": "2.5.0",
+    "three": "^0.155.0",
     "tsparticles": "2.2.4",
     "walktour": "5.1.1",
-    "zustand": "4.1.3",
-    "three": "^0.155.0"
+    "zustand": "4.1.3"
   },
   "peerDependencies": {
-    "@project-serum/anchor": "0.25.0",
     "@project-serum/serum": "0.13.65",
     "@solana/web3.js": ">=1.78.2"
   },
