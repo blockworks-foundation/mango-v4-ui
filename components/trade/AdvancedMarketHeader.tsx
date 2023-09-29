@@ -40,7 +40,8 @@ const AdvancedMarketHeader = ({
       )
       return perpEntries ? perpEntries[1][0]?.quote_volume_24h : 0
     } else {
-      const spotData: MarketData = marketsData?.spotData
+      const spotData: MarketData | null = marketsData?.spotData
+      if (!spotData) return 0
       const spotEntries = Object.entries(spotData).find(
         (e) => e[0].toLowerCase() === selectedMarketName.toLowerCase(),
       )
