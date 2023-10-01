@@ -302,12 +302,12 @@ const AccountSettings = () => {
             <Disclosure.Button className="w-full border-t border-th-bkg-3 py-4 md:px-4">
               <div className="flex items-center justify-between">
                 <Tooltip
-                  content={t('settings:tooltip-spot-open-orders', {
+                  content={t('settings:tooltip-spot-markets', {
                     max: MAX_ACCOUNTS.spotOpenOrders,
                   })}
                 >
                   <p className="tooltip-underline">
-                    {t('settings:spot-open-orders')}
+                    {t('settings:spot-markets')}
                   </p>
                 </Tooltip>
                 <ChevronDownIcon
@@ -324,7 +324,7 @@ const AccountSettings = () => {
                     {t('settings:slots-used', {
                       used: usedSerum3.length,
                       total: totalSerum3.length,
-                      type: t('settings:spot-open-orders').toLowerCase(),
+                      type: t('settings:spot-markets').toLowerCase(),
                     })}
                   </p>
                   <p className="mt-1">{t('settings:close-spot-oo-desc')}</p>
@@ -373,12 +373,12 @@ const AccountSettings = () => {
             <Disclosure.Button className="w-full border-t border-th-bkg-3 py-4 md:px-4">
               <div className="flex items-center justify-between">
                 <Tooltip
-                  content={t('settings:tooltip-perp-positions', {
+                  content={t('settings:tooltip-perp-markets', {
                     max: MAX_ACCOUNTS.perpAccounts,
                   })}
                 >
                   <p className="tooltip-underline">
-                    {t('settings:perp-positions')}
+                    {t('settings:perp-markets')}
                   </p>
                 </Tooltip>
                 <ChevronDownIcon
