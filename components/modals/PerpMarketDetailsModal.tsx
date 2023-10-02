@@ -4,7 +4,10 @@ import { useTranslation } from 'next-i18next'
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import Button from '@components/shared/Button'
 import useOracleProvider from 'hooks/useOracleProvider'
-import { ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid'
+import {
+  ArrowTopRightOnSquareIcon,
+  ExclamationTriangleIcon,
+} from '@heroicons/react/20/solid'
 import Tooltip from '@components/shared/Tooltip'
 import { useRouter } from 'next/router'
 
@@ -29,9 +32,19 @@ const PerpMarketDetailsModal = ({
 
   return market ? (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <h2 className="text-center text-lg">
-        {t('trade:market-details', { market: market.name })}
-      </h2>
+      <div className="flex flex-col items-center">
+        <h2 className="text-center text-lg">
+          {t('trade:market-details', { market: market.name })}
+        </h2>
+        {market?.reduceOnly ? (
+          <div className="mt-1 flex items-center">
+            <ExclamationTriangleIcon className="mr-1 mt-0.5 h-3 w-3 text-th-warning" />
+            <p className="text-xs leading-none text-th-warning">
+              {t('trade:reduce-only')}
+            </p>
+          </div>
+        ) : null}
+      </div>
       <div className="mt-4 space-y-2.5">
         <div className="flex justify-between">
           <p>{t('trade:min-order-size')}</p>

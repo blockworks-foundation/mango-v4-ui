@@ -1,6 +1,10 @@
 import FavoriteMarketButton from '@components/shared/FavoriteMarketButton'
 import { Popover } from '@headlessui/react'
-import { ChevronDownIcon, MagnifyingGlassIcon } from '@heroicons/react/20/solid'
+import {
+  ChevronDownIcon,
+  ExclamationTriangleIcon,
+  MagnifyingGlassIcon,
+} from '@heroicons/react/20/solid'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
@@ -159,10 +163,18 @@ const MarketSelectDropdown = () => {
               ) : (
                 <Loading className="mr-2 h-5 w-5 flex-shrink-0" />
               )}
-              <div className="whitespace-nowrap text-xl font-bold text-th-fgd-1 md:text-base">
+              <div className="whitespace-nowrap text-left text-xl font-bold text-th-fgd-1 md:text-base">
                 {selectedMarket?.name || (
                   <span className="text-th-fgd-3">{t('loading')}</span>
                 )}
+                {selectedMarket?.reduceOnly ? (
+                  <div className="flex items-center">
+                    <ExclamationTriangleIcon className="mr-1 mt-0.5 h-3 w-3 text-th-warning" />
+                    <p className="text-xxs leading-none text-th-warning">
+                      {t('trade:reduce-only')}
+                    </p>
+                  </div>
+                ) : null}
               </div>
             </div>
             <ChevronDownIcon
