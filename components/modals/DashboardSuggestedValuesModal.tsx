@@ -26,6 +26,8 @@ import {
   LISTING_PRESETS,
   LISTING_PRESETS_KEYS,
   LISTING_PRESETS_PYTH,
+  ListingPreset,
+  getTierWithAdjustedNetBorrows,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 
 const DashboardSuggestedValues = ({
@@ -301,7 +303,10 @@ const DashboardSuggestedValues = ({
 
   const formattedBankValues = getFormattedBankValues(group, bank)
 
-  const suggestedVaules = PRESETS[suggestedTier as LISTING_PRESETS_KEYS]
+  const suggestedVaules = getTierWithAdjustedNetBorrows(
+    PRESETS[suggestedTier as LISTING_PRESETS_KEYS] as ListingPreset,
+    bank.nativeDeposits().mul(bank.price).toNumber(),
+  )
   const suggestedFormattedPreset = formatSuggestedValues(suggestedVaules)
 
   type SuggestedFormattedPreset = typeof suggestedFormattedPreset
