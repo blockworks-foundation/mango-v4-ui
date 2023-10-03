@@ -1,5 +1,5 @@
 import localFont from 'next/font/local'
-import { Nunito, Short_Stack } from 'next/font/google'
+import { Lalezar, Nunito, Short_Stack } from 'next/font/google'
 
 // this font should be used as the mono variant for all themes
 
@@ -27,6 +27,12 @@ export const ttCommons = localFont({
     },
   ],
   variable: '--font-body',
+})
+
+export const lalezar = Lalezar({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-rewards',
 })
 
 export const ttCommonsExpanded = localFont({

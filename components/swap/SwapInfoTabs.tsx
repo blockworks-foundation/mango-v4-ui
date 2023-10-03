@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import TabButtons from '@components/shared/TabButtons'
 import SwapTradeBalances from '../shared/BalancesTable'
 import SwapHistoryTable from './SwapHistoryTable'
@@ -6,27 +6,35 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import ManualRefresh from '@components/shared/ManualRefresh'
 import { useViewport } from 'hooks/useViewport'
 import SwapTriggerOrders from './SwapTriggerOrders'
-import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
+import mangoStore from '@store/mangoStore'
 
 const SwapInfoTabs = () => {
   const [selectedTab, setSelectedTab] = useState('balances')
   const { mangoAccount } = useMangoAccount()
   const { isMobile, isTablet } = useViewport()
-  const { data: isWhiteListed } = useIsWhiteListed()
+  const { swapOrTrigger } = mangoStore((s) => s.swap)
 
   const tabsWithCount: [string, number][] = useMemo(() => {
     const tabs: [string, number][] = [
       ['balances', 0],
       ['swap:swap-history', 0],
     ]
-    if (isWhiteListed) {
-      const stopOrdersCount =
-        mangoAccount?.tokenConditionalSwaps.filter((tcs) => tcs.hasData)
-          ?.length || 0
-      tabs.splice(1, 0, ['trade:trigger-orders', stopOrdersCount])
-    }
+    const stopOrdersCount =
+      mangoAccount?.tokenConditionalSwaps.filter((tcs) => tcs.hasData)
+        ?.length || 0
+    tabs.splice(1, 0, ['trade:trigger-orders', stopOrdersCount])
     return tabs
-  }, [isWhiteListed, mangoAccount])
+  }, [mangoAccount])
+
+  useEffect(() => {
+    if (swapOrTrigger !== 'swap') {
+      setSelectedTab('trade:trigger-orders')
+    } else {
+      if (selectedTab !== 'balances') {
+        setSelectedTab('balances')
+      }
+    }
+  }, [swapOrTrigger])
 
   return (
     <div className="hide-scroll h-full overflow-y-scroll">

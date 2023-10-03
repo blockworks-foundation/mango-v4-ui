@@ -10,6 +10,7 @@ import { AccountMeta, PublicKey, SYSVAR_RENT_PUBKEY } from '@solana/web3.js'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { OPENBOOK_PROGRAM_ID, toNative } from '@blockworks-foundation/mango-v4'
 import {
+  MANGO_DAO_FAST_LISTING_GOVERNANCE,
   MANGO_DAO_WALLET,
   MANGO_DAO_WALLET_GOVERNANCE,
   MANGO_MINT_DECIMALS,
@@ -119,14 +120,17 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   )
   const [isPyth, setIsPyth] = useState(false)
   const tierLowerThenCurrent =
-    liqudityTier === 'PREMIUM'
+    liqudityTier === 'ULTRA_PREMIUM' || liqudityTier === 'PREMIUM'
       ? 'MID'
       : liqudityTier === 'MID'
       ? 'MEME'
       : liqudityTier
-  const isMidOrPremium = liqudityTier === 'MID' || liqudityTier === 'PREMIUM'
+  const isPythRecommended =
+    liqudityTier === 'MID' ||
+    liqudityTier === 'PREMIUM' ||
+    liqudityTier === 'ULTRA_PREMIUM'
   const listingTier =
-    isMidOrPremium && !isPyth ? tierLowerThenCurrent : liqudityTier
+    isPythRecommended && !isPyth ? tierLowerThenCurrent : liqudityTier
 
   const quoteBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
   const minVoterWeight = useMemo(
@@ -256,12 +260,20 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const handleLiqudityCheck = useCallback(
     async (tokenMint: PublicKey) => {
       try {
-        const TIERS: LISTING_PRESETS_KEYS[] = ['PREMIUM', 'MID', 'MEME', 'SHIT']
+        const TIERS: LISTING_PRESETS_KEYS[] = [
+          'ULTRA_PREMIUM',
+          'PREMIUM',
+          'MID',
+          'MEME',
+          'SHIT',
+        ]
         const swaps = await Promise.all([
+          handleGetRoutesWithFixedArgs(250000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(100000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(20000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(5000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(1000, tokenMint, 'ExactIn'),
+          handleGetRoutesWithFixedArgs(250000, tokenMint, 'ExactOut'),
           handleGetRoutesWithFixedArgs(100000, tokenMint, 'ExactOut'),
           handleGetRoutesWithFixedArgs(20000, tokenMint, 'ExactOut'),
           handleGetRoutesWithFixedArgs(5000, tokenMint, 'ExactOut'),
@@ -319,6 +331,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     tokenMint: PublicKey,
   ) => {
     const tierToSwapValue: { [key: string]: number } = {
+      ULTRA_PREMIUM: 250000,
       PREMIUM: 100000,
       MID: 20000,
       MEME: 5000,
@@ -571,11 +584,14 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
 
     const walletSigner = wallet as never
     setCreatingProposal(true)
+
     try {
       const proposalAddress = await createProposal(
         connection,
         walletSigner,
-        MANGO_DAO_WALLET_GOVERNANCE,
+        listingTier === 'UNTRUSTED'
+          ? MANGO_DAO_FAST_LISTING_GOVERNANCE
+          : MANGO_DAO_WALLET_GOVERNANCE,
         voter.tokenOwnerRecord!,
         advForm.proposalTitle,
         advForm.proposalDescription,
@@ -594,6 +610,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
 
     setCreatingProposal(false)
   }, [
+    listingTier,
     advForm,
     client,
     connection,
@@ -694,7 +711,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                     {listingTier && coinTiersToNames[listingTier]}
                   </p>
                 </div>
-                {isMidOrPremium && !isPyth && (
+                {isPythRecommended && !isPyth && (
                   <div className="mb-2 flex items-center justify-end">
                     <p className="text-th-warning">
                       Pyth oracle needed for higher tier

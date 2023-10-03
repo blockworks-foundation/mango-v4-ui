@@ -20,6 +20,11 @@ export const MANGO_MINT = new PublicKey(
 export const MANGO_DAO_WALLET_GOVERNANCE = new PublicKey(
   '7zGXUAeUkY9pEGfApsY26amibvqsf2dmty1cbtxHdfaQ',
 )
+
+export const MANGO_DAO_FAST_LISTING_GOVERNANCE = new PublicKey(
+  '7D6tGmaMyC8i73Q8X2Fec2S1Zb5rkyai6pctdMqHpHWT',
+)
+
 export const MANGO_DAO_WALLET = new PublicKey(
   '5tgfd6XgwiXB9otEnzFpXK11m7Q7yZUaAJzWK4oT5UGF',
 )

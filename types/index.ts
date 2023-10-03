@@ -439,6 +439,7 @@ export interface ThemeData {
     body: any
     display: any
     mono: any
+    rewards: any
   }
   logoPath: string
   platformName: string

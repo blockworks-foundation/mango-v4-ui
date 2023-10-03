@@ -33,13 +33,15 @@ const AdvancedMarketHeader = ({
   const volume = useMemo(() => {
     if (!selectedMarketName || !serumOrPerpMarket || !marketsData) return 0
     if (serumOrPerpMarket instanceof PerpMarket) {
-      const perpData: MarketData = marketsData?.perpData
+      const perpData: MarketData | null = marketsData?.perpData
+      if (!perpData) return 0
       const perpEntries = Object.entries(perpData).find(
         (e) => e[0].toLowerCase() === selectedMarketName.toLowerCase(),
       )
       return perpEntries ? perpEntries[1][0]?.quote_volume_24h : 0
     } else {
-      const spotData: MarketData = marketsData?.spotData
+      const spotData: MarketData | null = marketsData?.spotData
+      if (!spotData) return 0
       const spotEntries = Object.entries(spotData).find(
         (e) => e[0].toLowerCase() === selectedMarketName.toLowerCase(),
       )

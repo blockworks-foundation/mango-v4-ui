@@ -75,6 +75,8 @@ export const LAST_WALLET_NAME = 'lastWalletName'
 
 export const PRIVACY_MODE = 'privacy-mode-0.1'
 
+export const MANGO_MINTS_BANNER_KEY = 'mangoMintsBanner-0.1'
+
 // Unused
 export const PROFILE_CATEGORIES = [
   'borrower',
@@ -126,6 +128,7 @@ export const AUCTION_HOUSE_ID = new PublicKey(
   'BGBBt6G9bp36i5qt7PWjBWg3VNef1zPozAN9RFsEPDkh',
 )
 export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
+  all: true,
   bonk: true,
   btc: true,
   chai: true,
@@ -142,6 +145,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   msol: true,
   orca: true,
   ray: true,
+  rlb: true,
   rndr: true,
   sol: true,
   stsol: true,

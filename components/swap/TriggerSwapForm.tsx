@@ -705,7 +705,7 @@ const TriggerSwapForm = ({
       <div className="mb-3">
         <InlineNotification
           desc={
-            <div className="flex">
+            <div className="flex items-center">
               <span className="mr-1">{t('swap:trigger-beta')}</span>
               <Tooltip
                 content={
@@ -729,7 +729,7 @@ const TriggerSwapForm = ({
                   </ul>
                 }
               >
-                <span className="tooltip-underline">
+                <span className="tooltip-underline whitespace-nowrap">
                   {t('swap:important-info')}
                 </span>
               </Tooltip>

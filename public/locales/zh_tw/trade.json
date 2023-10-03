@@ -53,6 +53,7 @@
     "min-order-size-error": "訂單的最小數量是 {{minSize}} {{symbol}}",
     "more-details": "看細節",
     "no-balances": "無餘額",
+    "no-markets-found": "No markets found...",
     "no-orders": "無訂單",
     "no-positions": "無持倉",
     "no-unsettled": "無未結清餘額",

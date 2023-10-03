@@ -26,6 +26,8 @@ import {
   LISTING_PRESETS,
   LISTING_PRESETS_KEYS,
   LISTING_PRESETS_PYTH,
+  ListingPreset,
+  getTierWithAdjustedNetBorrows,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 
 const DashboardSuggestedValues = ({
@@ -107,20 +109,22 @@ const DashboardSuggestedValues = ({
         {},
       )
     const priceImapct = filteredResp[getApiTokenName(bank.name)]
-    const liqudityTier =
-      Object.values(PRESETS).find(
-        (x) => x.preset_target_amount === priceImapct?.target_amount,
-      )?.preset_key || 'SHIT'
-    const tierLowerThenCurrent =
-      liqudityTier === 'PREMIUM'
+    const liqudityTier = (Object.values(PRESETS).find(
+      (x) => x.preset_target_amount === priceImapct?.target_amount,
+    )?.preset_key || 'SHIT') as LISTING_PRESETS_KEYS
+    const detieredTierWithoutPyth =
+      liqudityTier === 'ULTRA_PREMIUM' || liqudityTier === 'PREMIUM'
         ? 'MID'
         : liqudityTier === 'MID'
         ? 'MEME'
         : liqudityTier
-    const isMidOrPremium = liqudityTier === 'MID' || liqudityTier === 'PREMIUM'
+    const isPythRecommended =
+      liqudityTier === 'MID' ||
+      liqudityTier === 'PREMIUM' ||
+      liqudityTier === 'ULTRA_PREMIUM'
     const listingTier =
-      isMidOrPremium && bank?.oracleProvider !== OracleProvider.Pyth
-        ? tierLowerThenCurrent
+      isPythRecommended && bank?.oracleProvider !== OracleProvider.Pyth
+        ? detieredTierWithoutPyth
         : liqudityTier
 
     setSuggstedTier(listingTier as LISTING_PRESETS_KEYS)
@@ -299,7 +303,10 @@ const DashboardSuggestedValues = ({
 
   const formattedBankValues = getFormattedBankValues(group, bank)
 
-  const suggestedVaules = PRESETS[suggestedTier as LISTING_PRESETS_KEYS]
+  const suggestedVaules = getTierWithAdjustedNetBorrows(
+    PRESETS[suggestedTier as LISTING_PRESETS_KEYS] as ListingPreset,
+    bank.nativeDeposits().mul(bank.price).toNumber(),
+  )
   const suggestedFormattedPreset = formatSuggestedValues(suggestedVaules)
 
   type SuggestedFormattedPreset = typeof suggestedFormattedPreset

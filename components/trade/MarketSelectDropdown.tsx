@@ -1,6 +1,10 @@
 import FavoriteMarketButton from '@components/shared/FavoriteMarketButton'
 import { Popover } from '@headlessui/react'
-import { ChevronDownIcon, MagnifyingGlassIcon } from '@heroicons/react/20/solid'
+import {
+  ChevronDownIcon,
+  ExclamationTriangleIcon,
+  MagnifyingGlassIcon,
+} from '@heroicons/react/20/solid'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
@@ -67,7 +71,7 @@ const startSearch = (
 }
 
 const MarketSelectDropdown = () => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'trade'])
   const { selectedMarket } = useSelectedMarket()
   const [spotOrPerp, setSpotOrPerp] = useState(
     selectedMarket instanceof PerpMarket ? 'perp' : 'spot',
@@ -159,10 +163,18 @@ const MarketSelectDropdown = () => {
               ) : (
                 <Loading className="mr-2 h-5 w-5 flex-shrink-0" />
               )}
-              <div className="whitespace-nowrap text-xl font-bold text-th-fgd-1 md:text-base">
+              <div className="whitespace-nowrap text-left text-xl font-bold text-th-fgd-1 md:text-base">
                 {selectedMarket?.name || (
                   <span className="text-th-fgd-3">{t('loading')}</span>
                 )}
+                {selectedMarket?.reduceOnly ? (
+                  <div className="flex items-center">
+                    <ExclamationTriangleIcon className="mr-1 mt-0.5 h-3 w-3 text-th-warning" />
+                    <p className="text-xxs leading-none text-th-warning">
+                      {t('trade:reduce-only')}
+                    </p>
+                  </div>
+                ) : null}
               </div>
             </div>
             <ChevronDownIcon
@@ -307,7 +319,7 @@ const MarketSelectDropdown = () => {
                   })}
                 </>
               ) : null}
-              {spotOrPerp === 'spot' && serumMarketsToShow.length ? (
+              {spotOrPerp === 'spot' ? (
                 <>
                   <div className="mb-3 flex items-center justify-between px-4">
                     <div className="relative w-1/2">
@@ -372,104 +384,110 @@ const MarketSelectDropdown = () => {
                       />
                     </p>
                   </div>
-                  {serumMarketsToShow.map((m) => {
-                    const baseBank = group?.getFirstBankByTokenIndex(
-                      m.baseTokenIndex,
-                    )
-                    const quoteBank = group?.getFirstBankByTokenIndex(
-                      m.quoteTokenIndex,
-                    )
-                    const market = group?.getSerum3ExternalMarket(
-                      m.serumMarketExternal,
-                    )
-                    let leverage
-                    if (group) {
-                      leverage = m.maxBidLeverage(group)
-                    }
-                    let price
-                    if (baseBank && market && quoteBank) {
-                      price = floorToDecimal(
-                        baseBank.uiPrice / quoteBank.uiPrice,
-                        getDecimalCount(market.tickSize),
-                      ).toNumber()
-                    }
+                  {serumMarketsToShow.length ? (
+                    serumMarketsToShow.map((m) => {
+                      const baseBank = group?.getFirstBankByTokenIndex(
+                        m.baseTokenIndex,
+                      )
+                      const quoteBank = group?.getFirstBankByTokenIndex(
+                        m.quoteTokenIndex,
+                      )
+                      const market = group?.getSerum3ExternalMarket(
+                        m.serumMarketExternal,
+                      )
+                      let leverage
+                      if (group) {
+                        leverage = m.maxBidLeverage(group)
+                      }
+                      let price
+                      if (baseBank && market && quoteBank) {
+                        price = floorToDecimal(
+                          baseBank.uiPrice / quoteBank.uiPrice,
+                          getDecimalCount(market.tickSize),
+                        ).toNumber()
+                      }
 
-                    const volumeData = m?.marketData?.quote_volume_24h
+                      const volumeData = m?.marketData?.quote_volume_24h
 
-                    const volume = volumeData ? volumeData : 0
+                      const volume = volumeData ? volumeData : 0
 
-                    return (
-                      <div className="flex w-full items-center" key={m.name}>
-                        <Link
-                          className={MARKET_LINK_CLASSES}
-                          href={{
-                            pathname: '/trade',
-                            query: { name: m.name },
-                          }}
-                          onClick={() => {
-                            close()
-                            setSearch('')
-                          }}
-                          shallow={true}
-                        >
-                          <div className="col-span-1 flex items-center">
-                            <div className="hidden sm:block">
-                              <MarketLogos market={m} size="small" />
+                      return (
+                        <div className="flex w-full items-center" key={m.name}>
+                          <Link
+                            className={MARKET_LINK_CLASSES}
+                            href={{
+                              pathname: '/trade',
+                              query: { name: m.name },
+                            }}
+                            onClick={() => {
+                              close()
+                              setSearch('')
+                            }}
+                            shallow={true}
+                          >
+                            <div className="col-span-1 flex items-center">
+                              <div className="hidden sm:block">
+                                <MarketLogos market={m} size="small" />
+                              </div>
+                              <span className="mr-1.5 text-xs text-th-fgd-2">
+                                {m.name}
+                              </span>
+                              {leverage ? (
+                                <LeverageBadge leverage={leverage} />
+                              ) : null}
                             </div>
-                            <span className="mr-1.5 text-xs text-th-fgd-2">
-                              {m.name}
-                            </span>
-                            {leverage ? (
-                              <LeverageBadge leverage={leverage} />
-                            ) : null}
+                            <div className="col-span-1 flex justify-end">
+                              {price && market?.tickSize ? (
+                                <span className="font-mono text-xs text-th-fgd-2">
+                                  {quoteBank?.name === 'USDC' ? '$' : ''}
+                                  {getDecimalCount(market.tickSize) <= 6
+                                    ? formatNumericValue(
+                                        price,
+                                        getDecimalCount(market.tickSize),
+                                      )
+                                    : price.toExponential(3)}
+                                  {quoteBank?.name !== 'USDC' ? (
+                                    <span className="font-body text-th-fgd-3">
+                                      {' '}
+                                      {quoteBank?.name}
+                                    </span>
+                                  ) : null}
+                                </span>
+                              ) : null}
+                            </div>
+                            <div className="col-span-1 flex justify-end">
+                              <MarketChange market={m} size="small" />
+                            </div>
+                            <div className="col-span-1 hidden sm:flex sm:justify-end">
+                              {loadingMarketData ? (
+                                <SheenLoader className="mt-0.5">
+                                  <div className="h-3.5 w-12 bg-th-bkg-2" />
+                                </SheenLoader>
+                              ) : (
+                                <span className="font-mono text-xs text-th-fgd-2">
+                                  {quoteBank?.name === 'USDC' ? '$' : ''}
+                                  {volume ? numberCompacter.format(volume) : 0}
+                                  {quoteBank?.name !== 'USDC' ? (
+                                    <span className="font-body text-th-fgd-3">
+                                      {' '}
+                                      {quoteBank?.name}
+                                    </span>
+                                  ) : null}
+                                </span>
+                              )}
+                            </div>
+                          </Link>
+                          <div className="px-3">
+                            <FavoriteMarketButton market={m} />
                           </div>
-                          <div className="col-span-1 flex justify-end">
-                            {price && market?.tickSize ? (
-                              <span className="font-mono text-xs text-th-fgd-2">
-                                {quoteBank?.name === 'USDC' ? '$' : ''}
-                                {getDecimalCount(market.tickSize) <= 6
-                                  ? formatNumericValue(
-                                      price,
-                                      getDecimalCount(market.tickSize),
-                                    )
-                                  : price.toExponential(3)}
-                                {quoteBank?.name !== 'USDC' ? (
-                                  <span className="font-body text-th-fgd-3">
-                                    {' '}
-                                    {quoteBank?.name}
-                                  </span>
-                                ) : null}
-                              </span>
-                            ) : null}
-                          </div>
-                          <div className="col-span-1 flex justify-end">
-                            <MarketChange market={m} size="small" />
-                          </div>
-                          <div className="col-span-1 hidden sm:flex sm:justify-end">
-                            {loadingMarketData ? (
-                              <SheenLoader className="mt-0.5">
-                                <div className="h-3.5 w-12 bg-th-bkg-2" />
-                              </SheenLoader>
-                            ) : (
-                              <span className="font-mono text-xs text-th-fgd-2">
-                                {quoteBank?.name === 'USDC' ? '$' : ''}
-                                {volume ? numberCompacter.format(volume) : 0}
-                                {quoteBank?.name !== 'USDC' ? (
-                                  <span className="font-body text-th-fgd-3">
-                                    {' '}
-                                    {quoteBank?.name}
-                                  </span>
-                                ) : null}
-                              </span>
-                            )}
-                          </div>
-                        </Link>
-                        <div className="px-3">
-                          <FavoriteMarketButton market={m} />
                         </div>
-                      </div>
-                    )
-                  })}
+                      )
+                    })
+                  ) : (
+                    <p className="mb-2 mt-4 text-center">
+                      {t('trade:no-markets-found')}
+                    </p>
+                  )}
                 </>
               ) : null}
             </div>

@@ -1,5 +1,6 @@
 import { ThemeData } from 'types'
 import {
+  lalezar,
   nunitoBody,
   nunitoDisplay,
   shortStackBody,
@@ -36,7 +37,12 @@ type NftThemeMeta = {
 export const nftThemeMeta: NftThemeMeta = {
   default: {
     buttonStyle: 'flat',
-    fonts: { body: ttCommons, display: ttCommonsExpanded, mono: ttCommonsMono },
+    fonts: {
+      body: ttCommons,
+      display: ttCommonsExpanded,
+      mono: ttCommonsMono,
+      rewards: lalezar,
+    },
     logoPath: '/logos/logo-mark.svg',
     platformName: 'Mango',
     rainAnimationImagePath: '',
@@ -50,7 +56,12 @@ export const nftThemeMeta: NftThemeMeta = {
   },
   Bonk: {
     buttonStyle: 'raised',
-    fonts: { body: nunitoBody, display: nunitoDisplay, mono: ttCommonsMono },
+    fonts: {
+      body: nunitoBody,
+      display: nunitoDisplay,
+      mono: ttCommonsMono,
+      rewards: lalezar,
+    },
     logoPath: '/images/themes/bonk/bonk-logo.png',
     platformName: 'Bongo',
     rainAnimationImagePath: '/images/themes/bonk/bonk-animation-logo.png',
@@ -68,6 +79,7 @@ export const nftThemeMeta: NftThemeMeta = {
       body: shortStackBody,
       display: shortStackDisplay,
       mono: ttCommonsMono,
+      rewards: lalezar,
     },
     logoPath: '/images/themes/pepe/pepe-logo.png',
     platformName: 'Pepe',

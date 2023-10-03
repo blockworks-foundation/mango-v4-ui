@@ -49,8 +49,12 @@
     "tooltip-borrow-no-balance": "您将借入 {{borrowAmount}} {{token}} 来执行此交换。当前的 {{token}} 可变借贷利率为 {{rate}}%",
     "tooltip-margin": "启用保证金时将能杠杆换币。如果换币数量超过您的余额将会自动借款。",
     "tooltip-max-slippage": "如果价格下滑超过您的最大滑点，换币交易将不会被执行",
+    "tooltip-favorite-swap-add": "Add pair to favorites",
+    "tooltip-favorite-swap-remove": "Remove pair from favorites",
+    "tooltip-wallet-swap": "When enabled, you'll swap tokens in your wallet. When disabled, you'll swap tokens in your Mango Account.",
     "trigger-beta": "触发订单还在开发中。请小心一点。",
     "use-margin": "允许杠杆",
+    "wallet-swap": "Wallet Swap",
     "warning-no-collateral": "你没有可用质押品",
     "you-buy": "你正在买",
     "you-sell": "你正在卖"

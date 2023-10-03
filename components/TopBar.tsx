@@ -3,6 +3,7 @@ import {
   ArrowLeftIcon,
   ArrowRightIcon,
   CheckCircleIcon,
+  ChevronRightIcon,
   Cog8ToothIcon,
   DocumentDuplicateIcon,
   ExclamationTriangleIcon,
@@ -33,6 +34,11 @@ import { IS_ONBOARDED_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import SettingsModal from './modals/SettingsModal'
 import DepositWithdrawIcon from './icons/DepositWithdrawIcon'
+import { useCurrentSeason, useWalletPoints } from 'hooks/useRewards'
+import { formatNumericValue } from 'utils/numbers'
+import SheenLoader from './shared/SheenLoader'
+import Link from 'next/link'
+import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
 
 export const TOPBAR_ICON_BUTTON_CLASSES =
   'relative flex h-16 w-16 items-center justify-center border-l border-r border-th-bkg-3 focus-visible:bg-th-bkg-3 md:border-r-0 md:hover:bg-th-bkg-2'
@@ -42,7 +48,11 @@ const set = mangoStore.getState().set
 const TopBar = () => {
   const { t } = useTranslation('common')
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
-  const { connected } = useWallet()
+  const { connected, wallet } = useWallet()
+  const { data: seasonData } = useCurrentSeason()
+  const { data: walletPoints, isLoading: loadingWalletRewardsData } =
+    useWalletPoints(mangoAccountAddress, seasonData?.season_id, wallet)
+  const { data: isWhiteListed } = useIsWhiteListed()
   const themeData = mangoStore((s) => s.themeData)
 
   const [action, setAction] = useState<'deposit' | 'withdraw'>('deposit')
@@ -56,7 +66,7 @@ const TopBar = () => {
   const router = useRouter()
   const { query } = router
 
-  const { isMobile } = useViewport()
+  const { isDesktop } = useViewport()
 
   const { isUnownedAccount } = useUnownedAccount()
   const showUserSetup = mangoStore((s) => s.showUserSetup)
@@ -108,11 +118,6 @@ const TopBar = () => {
               <ArrowLeftIcon className="h-5 w-5" />
             </button>
           ) : null}
-          {/* {connected ? (
-            <div className="hidden h-[63px] bg-th-bkg-1 md:flex md:items-center md:pl-6 md:pr-8">
-              <SolanaTps />
-            </div>
-          ) : null} */}
           <div className="flex h-[63px] w-16 items-center justify-center bg-th-bkg-1 md:hidden">
             <img
               className="h-9 w-9 flex-shrink-0"
@@ -182,6 +187,30 @@ const TopBar = () => {
                 <ArrowRightIcon className="sideways-bounce ml-2 h-5 w-5 text-th-fgd-1" />
               </span>
             )
+          ) : isWhiteListed ? (
+            <Link href="/rewards" shallow={true}>
+              <div className="flex h-16 items-center justify-between bg-gradient-to-br from-th-bkg-2 to-th-bkg-3 px-4 lg:pl-6">
+                <div>
+                  <span className="whitespace-nowrap font-bold text-th-fgd-2">
+                    Points
+                  </span>
+                  {!loadingWalletRewardsData ? (
+                    <p className="bg-gradient-to-br from-yellow-400 to-red-400 bg-clip-text font-display text-base text-transparent">
+                      {walletPoints
+                        ? formatNumericValue(walletPoints)
+                        : wallet?.adapter.publicKey
+                        ? 0
+                        : '–'}
+                    </p>
+                  ) : (
+                    <SheenLoader className="mt-1.5">
+                      <div className="h-[18px] w-12 rounded-sm bg-th-bkg-3" />
+                    </SheenLoader>
+                  )}
+                </div>
+                <ChevronRightIcon className="ml-2 hidden h-7 w-7 text-th-fgd-4 lg:block" />
+              </div>
+            </Link>
           ) : null}
         </span>
         {!isOnline ? (
@@ -193,7 +222,8 @@ const TopBar = () => {
           </div>
         ) : null}
         <div className="flex items-center">
-          {isUnownedAccount || (!connected && isMobile) ? null : isMobile ? (
+          {isUnownedAccount ||
+          (!connected && !isDesktop) ? null : !isDesktop ? (
             <button
               onClick={() => handleDepositWithdrawModal('deposit')}
               className={TOPBAR_ICON_BUTTON_CLASSES}

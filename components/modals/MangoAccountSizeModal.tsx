@@ -92,7 +92,7 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
         mangoAccount?.serum3.length || MIN_ACCOUNTS
       if (parseInt(spotOpenOrders) < minSpotOpenOrdersLength) {
         invalidFields.spotOpenOrders = t('settings:error-amount', {
-          type: t('settings:spot-open-orders'),
+          type: t('settings:spot-markets'),
           greaterThan: mangoAccount?.serum3.length,
           lessThan: '17',
         })
@@ -257,10 +257,10 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
             }
             disabled
             error={formErrors?.spotOpenOrders}
-            label={t('settings:spot-open-orders')}
+            label={t('settings:spot-markets')}
             handleMax={() => handleMax('spotOpenOrders')}
             handleSetForm={handleSetForm}
-            tooltipContent={t('settings:tooltip-spot-open-orders', {
+            tooltipContent={t('settings:tooltip-spot-markets', {
               max: MAX_ACCOUNTS.spotOpenOrders,
             })}
             type="spotOpenOrders"
@@ -280,10 +280,10 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
             }
             disabled
             error={formErrors?.perpAccounts}
-            label={t('settings:perp-positions')}
+            label={t('settings:perp-markets')}
             handleMax={() => handleMax('perpAccounts')}
             handleSetForm={handleSetForm}
-            tooltipContent={t('settings:tooltip-perp-positions', {
+            tooltipContent={t('settings:tooltip-perp-markets', {
               max: MAX_ACCOUNTS.perpAccounts,
             })}
             type="perpAccounts"
