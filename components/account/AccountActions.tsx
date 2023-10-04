@@ -17,8 +17,6 @@ import CloseAccountModal from '../modals/CloseAccountModal'
 import AccountNameModal from '../modals/AccountNameModal'
 import { copyToClipboard } from 'utils'
 import { notify } from 'utils/notifications'
-import { abbreviateAddress } from 'utils/formatting'
-import { MangoAccount } from '@blockworks-foundation/mango-v4'
 import DelegateModal from '@components/modals/DelegateModal'
 import useMangoAccount from 'hooks/useMangoAccount'
 import BorrowRepayModal from '@components/modals/BorrowRepayModal'
@@ -34,10 +32,10 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { PRIVACY_MODE } from 'utils/constants'
 
 export const handleCopyAddress = (
-  mangoAccount: MangoAccount,
+  mangoAccountAddress: string,
   successMessage: string,
 ) => {
-  copyToClipboard(mangoAccount.publicKey.toString())
+  copyToClipboard(mangoAccountAddress)
   notify({
     title: successMessage,
     type: 'success',
@@ -46,7 +44,7 @@ export const handleCopyAddress = (
 
 const AccountActions = () => {
   const { t } = useTranslation(['common', 'close-account', 'settings'])
-  const { mangoAccount, mangoAccountAddress } = useMangoAccount()
+  const { mangoAccountAddress } = useMangoAccount()
   const [showCloseAccountModal, setShowCloseAccountModal] = useState(false)
   const [showEditAccountModal, setShowEditAccountModal] = useState(false)
   const [showBorrowModal, setShowBorrowModal] = useState(false)
@@ -123,12 +121,14 @@ const AccountActions = () => {
                 >
                   <Popover.Panel className="absolute right-0 top-10 mt-1 space-y-2 rounded-md bg-th-bkg-2 px-4 py-2.5">
                     <ActionsLinkButton
-                      mangoAccount={mangoAccount!}
                       onClick={() =>
                         handleCopyAddress(
-                          mangoAccount!,
+                          mangoAccountAddress,
                           t('copy-address-success', {
-                            pk: abbreviateAddress(mangoAccount!.publicKey),
+                            pk: `${mangoAccountAddress.slice(
+                              0,
+                              4,
+                            )}...${mangoAccountAddress.slice(-4)}`,
                           }),
                         )
                       }
@@ -138,7 +138,6 @@ const AccountActions = () => {
                     </ActionsLinkButton>
                     <ActionsLinkButton
                       disabled={isDelegatedAccount}
-                      mangoAccount={mangoAccount!}
                       onClick={() => setShowEditAccountModal(true)}
                     >
                       <PencilIcon className="h-4 w-4" />
@@ -146,7 +145,6 @@ const AccountActions = () => {
                     </ActionsLinkButton>
                     <ActionsLinkButton
                       disabled={isDelegatedAccount && isUnownedAccount}
-                      mangoAccount={mangoAccount!}
                       onClick={() => setShowDelegateModal(true)}
                     >
                       <UserPlusIcon className="h-4 w-4" />
@@ -155,7 +153,6 @@ const AccountActions = () => {
                     {!isAccountFull ? (
                       <ActionsLinkButton
                         disabled={isDelegatedAccount}
-                        mangoAccount={mangoAccount!}
                         onClick={() => setShowAccountSizeModal(true)}
                       >
                         <SquaresPlusIcon className="h-4 w-4" />
@@ -166,14 +163,12 @@ const AccountActions = () => {
                     ) : null}
                     <ActionsLinkButton
                       disabled={isDelegatedAccount}
-                      mangoAccount={mangoAccount!}
                       onClick={() => setShowCloseAccountModal(true)}
                     >
                       <TrashIcon className="h-4 w-4" />
                       <span className="ml-2">{t('close-account')}</span>
                     </ActionsLinkButton>
                     <ActionsLinkButton
-                      mangoAccount={mangoAccount!}
                       onClick={() => setPrivacyMode(!privacyMode)}
                     >
                       {privacyMode ? (

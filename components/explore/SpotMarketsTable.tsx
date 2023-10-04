@@ -1,9 +1,5 @@
 import { useTranslation } from 'next-i18next'
 import { useCallback } from 'react'
-import { useViewport } from '../../../hooks/useViewport'
-import { COLORS } from '../../../styles/colors'
-import { breakpoints } from '../../../utils/theme'
-import ContentBox from '../../shared/ContentBox'
 import MarketLogos from '@components/trade/MarketLogos'
 import useMangoGroup from 'hooks/useMangoGroup'
 import {
@@ -18,21 +14,27 @@ import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { floorToDecimal, getDecimalCount, numberCompacter } from 'utils/numbers'
 import SimpleAreaChart from '@components/shared/SimpleAreaChart'
 import { Disclosure, Transition } from '@headlessui/react'
-import { ChevronDownIcon } from '@heroicons/react/20/solid'
+import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import useThemeWrapper from 'hooks/useThemeWrapper'
-import useListedMarketsWithMarketData, {
-  SerumMarketWithMarketData,
-} from 'hooks/useListedMarketsWithMarketData'
-import { sortSpotMarkets } from 'utils/markets'
+import { SerumMarketWithMarketData } from 'hooks/useListedMarketsWithMarketData'
 import { useSortableData } from 'hooks/useSortableData'
 import Change from '@components/shared/Change'
 import { Bank } from '@blockworks-foundation/mango-v4'
+import { useViewport } from 'hooks/useViewport'
+import { breakpoints } from 'utils/theme'
+import ContentBox from '@components/shared/ContentBox'
+import { COLORS } from 'styles/colors'
+import TokenLogo from '@components/shared/TokenLogo'
+import { goToTokenPage } from '@components/stats/tokens/TokenOverviewTable'
+import { useRouter } from 'next/router'
+import Decimal from 'decimal.js'
+import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 
 type TableData = {
   baseBank: Bank | undefined
   change: number
   market: SerumMarketWithMarketData
-  marketName: string
+  tokenName: string | undefined
   price: number
   priceHistory:
     | {
@@ -45,14 +47,17 @@ type TableData = {
   isUp: boolean
 }
 
-const SpotMarketsTable = () => {
+const SpotMarketsTable = ({
+  markets,
+}: {
+  markets: SerumMarketWithMarketData[]
+}) => {
   const { t } = useTranslation('common')
   const { group } = useMangoGroup()
   const { theme } = useThemeWrapper()
   const { width } = useViewport()
+  const router = useRouter()
   const showTableView = width ? width > breakpoints.md : false
-  const { serumMarketsWithData, isLoading, isFetching } =
-    useListedMarketsWithMarketData()
 
   const formattedTableData = useCallback(
     (markets: SerumMarketWithMarketData[]) => {
@@ -77,7 +82,29 @@ const SpotMarketsTable = () => {
 
         const change = volume > 0 ? ((price - pastPrice) / pastPrice) * 100 : 0
 
-        const marketName = m.name
+        const tokenName = baseBank?.name
+
+        let availableVaultBalance = 0
+        let available = new Decimal(0)
+        let depositRate = 0
+        let borrowRate = 0
+        let assetWeight = '0'
+
+        if (baseBank) {
+          availableVaultBalance = group
+            ? group.getTokenVaultBalanceByMintUi(baseBank.mint) -
+              baseBank.uiDeposits() * baseBank.minVaultToDepositsRatio
+            : 0
+          available = Decimal.max(
+            0,
+            availableVaultBalance.toFixed(baseBank.mintDecimals),
+          )
+          depositRate = baseBank.getDepositRateUi()
+          borrowRate = baseBank.getBorrowRateUi()
+          assetWeight = baseBank
+            .scaledInitAssetWeight(baseBank.price)
+            .toFixed(2)
+        }
 
         const isUp =
           price && priceHistory && priceHistory.length
@@ -85,10 +112,14 @@ const SpotMarketsTable = () => {
             : false
 
         const data = {
+          available,
+          assetWeight,
+          borrowRate,
           baseBank,
           change,
+          depositRate,
           market: m,
-          marketName,
+          tokenName,
           price,
           priceHistory,
           quoteBank,
@@ -106,13 +137,7 @@ const SpotMarketsTable = () => {
     items: tableData,
     requestSort,
     sortConfig,
-  } = useSortableData(
-    formattedTableData(
-      sortSpotMarkets(serumMarketsWithData, 'quote_volume_24h'),
-    ),
-  )
-
-  const loadingMarketData = isLoading || isFetching
+  } = useSortableData(formattedTableData(markets))
 
   return (
     <ContentBox hideBorder hidePadding>
@@ -122,10 +147,10 @@ const SpotMarketsTable = () => {
             <TrHead>
               <Th className="text-left">
                 <SortableColumnHeader
-                  sortKey="marketName"
-                  sort={() => requestSort('marketName')}
+                  sortKey="tokenName"
+                  sort={() => requestSort('tokenName')}
                   sortConfig={sortConfig}
-                  title={t('market')}
+                  title={t('token')}
                 />
               </Th>
               <Th>
@@ -159,15 +184,50 @@ const SpotMarketsTable = () => {
                   />
                 </div>
               </Th>
+              <Th>
+                <div className="flex justify-end">
+                  <SortableColumnHeader
+                    sortKey="available"
+                    sort={() => requestSort('available')}
+                    sortConfig={sortConfig}
+                    title={t('available')}
+                  />
+                </div>
+              </Th>
+              <Th>
+                <div className="flex justify-end">
+                  <SortableColumnHeader
+                    sortKey="assetWeight"
+                    sort={() => requestSort('assetWeight')}
+                    sortConfig={sortConfig}
+                    title={t('collateral-weight')}
+                  />
+                </div>
+              </Th>
+              <Th>
+                <div className="flex justify-end">
+                  <SortableColumnHeader
+                    sortKey="depositRate"
+                    sort={() => requestSort('depositRate')}
+                    sortConfig={sortConfig}
+                    title={t('rates')}
+                  />
+                </div>
+              </Th>
+              <Th />
             </TrHead>
           </thead>
           <tbody>
             {tableData.map((data) => {
               const {
+                available,
+                assetWeight,
                 baseBank,
+                borrowRate,
                 change,
+                depositRate,
                 market,
-                marketName,
+                tokenName,
                 price,
                 priceHistory,
                 quoteBank,
@@ -175,12 +235,20 @@ const SpotMarketsTable = () => {
                 isUp,
               } = data
 
+              if (!baseBank) return null
+
               return (
-                <TrBody key={market.publicKey.toString()}>
+                <TrBody
+                  className="default-transition md:hover:cursor-pointer md:hover:bg-th-bkg-2"
+                  key={market.publicKey.toString()}
+                  onClick={() =>
+                    goToTokenPage(baseBank.name.split(' ')[0], router)
+                  }
+                >
                   <Td>
                     <div className="flex items-center">
-                      <MarketLogos market={market} size="large" />
-                      <p className="font-body">{marketName}</p>
+                      <TokenLogo bank={baseBank} />
+                      <p className="ml-3 font-body">{tokenName}</p>
                     </div>
                   </Td>
                   <Td>
@@ -188,15 +256,7 @@ const SpotMarketsTable = () => {
                       <p>
                         {price ? (
                           <>
-                            <FormatNumericValue
-                              value={price}
-                              isUsd={quoteBank?.name === 'USDC'}
-                            />{' '}
-                            {quoteBank?.name !== 'USDC' ? (
-                              <span className="font-body text-th-fgd-4">
-                                {quoteBank?.name}
-                              </span>
-                            ) : null}
+                            <FormatNumericValue value={price} isUsd />
                           </>
                         ) : (
                           '–'
@@ -210,23 +270,19 @@ const SpotMarketsTable = () => {
                     </div>
                   </Td>
                   <Td>
-                    {!loadingMarketData ? (
-                      priceHistory && priceHistory.length ? (
-                        <div className="h-10 w-24">
-                          <SimpleAreaChart
-                            color={isUp ? COLORS.UP[theme] : COLORS.DOWN[theme]}
-                            data={priceHistory}
-                            name={baseBank!.name + quoteBank!.name}
-                            xKey="time"
-                            yKey="price"
-                          />
-                        </div>
-                      ) : baseBank?.name === 'USDC' ||
-                        baseBank?.name === 'USDT' ? null : (
-                        <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
-                      )
-                    ) : (
-                      <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
+                    {priceHistory && priceHistory.length ? (
+                      <div className="h-10 w-24">
+                        <SimpleAreaChart
+                          color={isUp ? COLORS.UP[theme] : COLORS.DOWN[theme]}
+                          data={priceHistory}
+                          name={baseBank!.name + quoteBank!.name}
+                          xKey="time"
+                          yKey="price"
+                        />
+                      </div>
+                    ) : baseBank?.name === 'USDC' ||
+                      baseBank?.name === 'USDT' ? null : (
+                      <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
                     )}
                   </Td>
                   <Td>
@@ -250,6 +306,33 @@ const SpotMarketsTable = () => {
                       </p>
                     </div>
                   </Td>
+                  <Td>
+                    <div className="flex flex-col text-right">
+                      <BankAmountWithValue
+                        amount={available}
+                        bank={baseBank}
+                        fixDecimals={false}
+                        stacked
+                      />
+                    </div>
+                  </Td>
+                  <Td className="text-right font-mono">{assetWeight}x</Td>
+                  <Td>
+                    <div className="flex justify-end space-x-1.5">
+                      <p className="text-th-up">
+                        <FormatNumericValue value={depositRate} decimals={2} />%
+                      </p>
+                      <span className="text-th-fgd-4">|</span>
+                      <p className="text-th-down">
+                        <FormatNumericValue value={borrowRate} decimals={2} />%
+                      </p>
+                    </div>
+                  </Td>
+                  <Td>
+                    <div className="flex justify-end">
+                      <ChevronRightIcon className="h-5 w-5 text-th-fgd-3" />
+                    </div>
+                  </Td>
                 </TrBody>
               )
             })}
@@ -261,7 +344,6 @@ const SpotMarketsTable = () => {
             return (
               <MobileSpotMarketItem
                 key={data.market.publicKey.toString()}
-                loadingMarketData={loadingMarketData}
                 data={data}
               />
             )
@@ -274,13 +356,7 @@ const SpotMarketsTable = () => {
 
 export default SpotMarketsTable
 
-const MobileSpotMarketItem = ({
-  data,
-  loadingMarketData,
-}: {
-  data: TableData
-  loadingMarketData: boolean
-}) => {
+const MobileSpotMarketItem = ({ data }: { data: TableData }) => {
   const { t } = useTranslation('common')
   const { theme } = useThemeWrapper()
 
@@ -288,7 +364,7 @@ const MobileSpotMarketItem = ({
     baseBank,
     change,
     market,
-    marketName,
+    tokenName,
     price,
     priceHistory,
     quoteBank,
@@ -308,25 +384,21 @@ const MobileSpotMarketItem = ({
                 <div className="flex flex-shrink-0 items-center">
                   <MarketLogos market={market} />
                 </div>
-                <p className="leading-none text-th-fgd-1">{marketName}</p>
+                <p className="leading-none text-th-fgd-1">{tokenName}</p>
               </div>
               <div className="flex items-center space-x-3">
-                {!loadingMarketData ? (
-                  priceHistory && priceHistory.length ? (
-                    <div className="h-10 w-20">
-                      <SimpleAreaChart
-                        color={isUp ? COLORS.UP[theme] : COLORS.DOWN[theme]}
-                        data={priceHistory}
-                        name={baseBank!.name + quoteBank!.name}
-                        xKey="time"
-                        yKey="price"
-                      />
-                    </div>
-                  ) : (
-                    <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
-                  )
+                {priceHistory && priceHistory.length ? (
+                  <div className="h-10 w-20">
+                    <SimpleAreaChart
+                      color={isUp ? COLORS.UP[theme] : COLORS.DOWN[theme]}
+                      data={priceHistory}
+                      name={baseBank!.name + quoteBank!.name}
+                      xKey="time"
+                      yKey="price"
+                    />
+                  </div>
                 ) : (
-                  <div className="h-10 w-[104px] animate-pulse rounded bg-th-bkg-3" />
+                  <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
                 )}
                 <Change change={change} suffix="%" />
                 <ChevronDownIcon

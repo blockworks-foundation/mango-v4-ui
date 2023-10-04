@@ -204,7 +204,7 @@ const MangoAccountsListModal = ({
                             className="text-th-fgd-3"
                             onClick={() =>
                               handleCopyAddress(
-                                acc,
+                                acc.publicKey.toString(),
                                 t('copy-address-success', {
                                   pk: abbreviateAddress(acc.publicKey),
                                 }),

@@ -79,6 +79,7 @@
   "enable-notifications": "Enable Notifications",
   "error-borrow-exceeds-limit": "Maximum borrow for the current period is {{remaining}}. New period starts {{resetTime}}",
   "error-token-positions-full": "你帐户的币位已占满",
+  "explore": "Explore",
   "explorer": "浏览器",
   "fee": "费用",
   "feedback-survey": "反馈调查",

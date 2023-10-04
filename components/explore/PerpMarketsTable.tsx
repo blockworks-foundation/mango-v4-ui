@@ -1,9 +1,5 @@
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
-import { useViewport } from '../../../hooks/useViewport'
-import { COLORS } from '../../../styles/colors'
-import { breakpoints } from '../../../utils/theme'
-import ContentBox from '../../shared/ContentBox'
 import MarketLogos from '@components/trade/MarketLogos'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import {
@@ -25,6 +21,10 @@ import useListedMarketsWithMarketData, {
   PerpMarketWithMarketData,
 } from 'hooks/useListedMarketsWithMarketData'
 import { sortPerpMarkets } from 'utils/markets'
+import { useViewport } from 'hooks/useViewport'
+import { breakpoints } from 'utils/theme'
+import ContentBox from '@components/shared/ContentBox'
+import { COLORS } from 'styles/colors'
 
 export const goToPerpMarketDetails = (
   market: PerpMarket,
@@ -34,7 +34,7 @@ export const goToPerpMarketDetails = (
   router.push({ pathname: router.pathname, query })
 }
 
-const PerpMarketsOverviewTable = () => {
+const PerpMarketsTable = () => {
   const { t } = useTranslation(['common', 'trade'])
   const { theme } = useThemeWrapper()
   const { width } = useViewport()
@@ -256,7 +256,7 @@ const PerpMarketsOverviewTable = () => {
   )
 }
 
-export default PerpMarketsOverviewTable
+export default PerpMarketsTable
 
 const MobilePerpMarketItem = ({
   market,
