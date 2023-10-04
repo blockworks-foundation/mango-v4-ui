@@ -1,12 +1,14 @@
 import Change from '@components/shared/Change'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import TokenLogo from '@components/shared/TokenLogo'
-import useListedMarketsWithMarketData from 'hooks/useListedMarketsWithMarketData'
+import useListedMarketsWithMarketData, {
+  SerumMarketWithMarketData,
+} from 'hooks/useListedMarketsWithMarketData'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useRouter } from 'next/router'
-import { ChangeEvent, Fragment, useMemo, useState } from 'react'
+import { ChangeEvent, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import SpotMarketsTable from './SpotMarketsTable'
+import SpotTable from './SpotTable'
 import { goToTokenPage } from '@components/stats/tokens/TokenOverviewTable'
 import {
   BoltIcon,
@@ -19,12 +21,64 @@ import {
 } from '@heroicons/react/20/solid'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { AllowedKeys, sortSpotMarkets, startSearch } from 'utils/markets'
+import { AllowedKeys } from 'utils/markets'
 import ButtonGroup from '@components/forms/ButtonGroup'
-import SpotMarketCards from './SpotMarketCards'
+import SpotCards from './SpotCards'
 import Input from '@components/forms/Input'
 import EmptyState from '@components/nftMarket/EmptyState'
+import { Bank } from '@blockworks-foundation/mango-v4'
 dayjs.extend(relativeTime)
+
+export type BankWithMarketData = {
+  bank: Bank
+  market: SerumMarketWithMarketData | undefined
+}
+
+const generateSearchTerm = (item: BankWithMarketData, searchValue: string) => {
+  const normalizedSearchValue = searchValue.toLowerCase()
+  const value = item.bank.name.toLowerCase()
+
+  const isMatchingWithName =
+    item.bank.name.toLowerCase().indexOf(normalizedSearchValue) >= 0
+  const matchingSymbolPercent = isMatchingWithName
+    ? normalizedSearchValue.length / item.bank.name.length
+    : 0
+
+  return {
+    token: item,
+    matchingIdx: value.indexOf(normalizedSearchValue),
+    matchingSymbolPercent,
+  }
+}
+
+const startSearch = (items: BankWithMarketData[], searchValue: string) => {
+  return items
+    .map((item) => generateSearchTerm(item, searchValue))
+    .filter((item) => item.matchingIdx >= 0)
+    .sort((i1, i2) => i1.matchingIdx - i2.matchingIdx)
+    .sort((i1, i2) => i2.matchingSymbolPercent - i1.matchingSymbolPercent)
+    .map((item) => item.token)
+}
+
+const sortTokens = (tokens: BankWithMarketData[], sortByKey: AllowedKeys) => {
+  return tokens.sort((a: BankWithMarketData, b: BankWithMarketData) => {
+    const aValue: number | undefined = a?.market?.marketData?.[sortByKey]
+    const bValue: number | undefined = b?.market?.marketData?.[sortByKey]
+
+    // Handle marketData[sortByKey] is undefined
+    if (typeof aValue === 'undefined' && typeof bValue === 'undefined') {
+      return 0 // Consider them equal
+    }
+    if (typeof aValue === 'undefined') {
+      return 1 // b should come before a
+    }
+    if (typeof bValue === 'undefined') {
+      return -1 // a should come before b
+    }
+
+    return bValue - aValue
+  })
+}
 
 const Spot = () => {
   const { t } = useTranslation(['common', 'explore', 'trade'])
@@ -34,6 +88,28 @@ const Spot = () => {
   const [sortByKey, setSortByKey] = useState<AllowedKeys>('quote_volume_24h')
   const [search, setSearch] = useState('')
   const [showTableView, setShowTableView] = useState(false)
+
+  const banksWithMarketData = useMemo(() => {
+    if (!group || !serumMarketsWithData.length) return []
+    const banksWithMarketData = []
+    const banks = Array.from(group.banksMapByMint)
+      .map(([_mintAddress, banks]) => banks)
+      .map((b) => b[0])
+    const usdcQuoteMarkets = serumMarketsWithData.filter(
+      (market) => market.quoteTokenIndex === 0,
+    )
+    for (const bank of banks) {
+      const market = usdcQuoteMarkets.find(
+        (market) => market.baseTokenIndex === bank.tokenIndex,
+      )
+      if (market) {
+        banksWithMarketData.push({ bank, market })
+      } else {
+        banksWithMarketData.push({ bank, market: undefined })
+      }
+    }
+    return banksWithMarketData
+  }, [group, serumMarketsWithData])
 
   const newlyListedMintInfo = useMemo(() => {
     if (!group) return []
@@ -85,12 +161,12 @@ const Spot = () => {
     return [gainers, losers]
   }, [serumMarketsWithData])
 
-  const sortedSerumMarketsToShow = useMemo(() => {
-    if (!serumMarketsWithData.length) return []
+  const sortedTokensToShow = useMemo(() => {
+    if (!banksWithMarketData.length) return []
     return search
-      ? startSearch(serumMarketsWithData, search)
-      : sortSpotMarkets(serumMarketsWithData, sortByKey)
-  }, [search, serumMarketsWithData, sortByKey, showTableView])
+      ? startSearch(banksWithMarketData, search)
+      : sortTokens(banksWithMarketData, sortByKey)
+  }, [search, banksWithMarketData, sortByKey, showTableView])
 
   const handleUpdateSearch = (e: ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value)
@@ -211,8 +287,9 @@ const Spot = () => {
           </div>
         </div>
       </div>
+
       <div className="border-t border-th-bkg-3 pt-4">
-        <div className="flex flex-col px-4 sm:flex-row sm:items-end sm:justify-between md:px-6 2xl:px-12">
+        <div className="flex flex-col px-4 sm:flex-row sm:items-center sm:justify-between md:px-6 2xl:px-12">
           <h2 className="mb-4 text-base sm:mb-0">{t('tokens')}</h2>
           <div className="flex flex-col sm:flex-row sm:space-x-3">
             <div className="relative mb-3 w-full sm:mb-0 sm:w-40">
@@ -225,7 +302,7 @@ const Spot = () => {
               <MagnifyingGlassIcon className="absolute left-2 top-3 h-4 w-4" />
             </div>
             <div className="flex space-x-3">
-              <div className="w-full md:w-48">
+              <div className="w-full sm:w-48">
                 <ButtonGroup
                   activeValue={sortByKey}
                   onChange={(v) => setSortByKey(v)}
@@ -254,13 +331,13 @@ const Spot = () => {
             </div>
           </div>
         </div>
-        {sortedSerumMarketsToShow.length ? (
+        {sortedTokensToShow.length ? (
           showTableView ? (
             <div className="mt-6 border-t border-th-bkg-3">
-              <SpotMarketsTable markets={sortedSerumMarketsToShow} />
+              <SpotTable tokens={sortedTokensToShow} />
             </div>
           ) : (
-            <SpotMarketCards markets={sortedSerumMarketsToShow} />
+            <SpotCards tokens={sortedTokensToShow} />
           )
         ) : (
           <div className="px-4 pt-2 md:px-6 2xl:px-12">
