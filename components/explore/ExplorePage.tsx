@@ -9,6 +9,7 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import Spot from './Spot'
 import mangoStore from '@store/mangoStore'
 import PerpStatsPage from '@components/stats/perps/PerpStatsPage'
+import useBanks from 'hooks/useBanks'
 dayjs.extend(relativeTime)
 
 const ExplorePage = () => {
@@ -19,17 +20,17 @@ const ExplorePage = () => {
   const perpStats = mangoStore((s) => s.perpStats.data)
   const initialStatsLoad = mangoStore((s) => s.tokenStats.initialLoad)
   const [activeTab, setActiveTab] = useState('spot')
-  const { perpMarketsWithData, serumMarketsWithData } =
-    useListedMarketsWithMarketData()
+  const { perpMarketsWithData } = useListedMarketsWithMarketData()
+  const { banks } = useBanks()
 
   const tabsWithCount: [string, number][] = useMemo(() => {
     const tabs: [string, number][] = [
-      ['spot', serumMarketsWithData.length],
+      ['spot', banks.length],
       ['perp', perpMarketsWithData.length],
       //   ['accounts', 0],
     ]
     return tabs
-  }, [perpMarketsWithData, serumMarketsWithData])
+  }, [banks, perpMarketsWithData])
 
   useEffect(() => {
     if (!perpStats || !perpStats.length) {

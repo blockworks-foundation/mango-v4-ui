@@ -27,6 +27,8 @@ import SpotCards from './SpotCards'
 import Input from '@components/forms/Input'
 import EmptyState from '@components/nftMarket/EmptyState'
 import { Bank } from '@blockworks-foundation/mango-v4'
+import Link from 'next/link'
+import useBanks from 'hooks/useBanks'
 dayjs.extend(relativeTime)
 
 export type BankWithMarketData = {
@@ -84,17 +86,15 @@ const Spot = () => {
   const { t } = useTranslation(['common', 'explore', 'trade'])
   const router = useRouter()
   const { group } = useMangoGroup()
+  const { banks } = useBanks()
   const { serumMarketsWithData } = useListedMarketsWithMarketData()
   const [sortByKey, setSortByKey] = useState<AllowedKeys>('quote_volume_24h')
   const [search, setSearch] = useState('')
-  const [showTableView, setShowTableView] = useState(false)
+  const [showTableView, setShowTableView] = useState(true)
 
   const banksWithMarketData = useMemo(() => {
-    if (!group || !serumMarketsWithData.length) return []
+    if (!banks.length || !group || !serumMarketsWithData.length) return []
     const banksWithMarketData = []
-    const banks = Array.from(group.banksMapByMint)
-      .map(([_mintAddress, banks]) => banks)
-      .map((b) => b[0])
     const usdcQuoteMarkets = serumMarketsWithData.filter(
       (market) => market.quoteTokenIndex === 0,
     )
@@ -109,7 +109,7 @@ const Spot = () => {
       }
     }
     return banksWithMarketData
-  }, [group, serumMarketsWithData])
+  }, [banks, group, serumMarketsWithData])
 
   const newlyListedMintInfo = useMemo(() => {
     if (!group) return []
@@ -176,9 +176,18 @@ const Spot = () => {
     <>
       <div className="grid grid-cols-12 gap-4 px-4 pb-8 md:px-6 2xl:px-12">
         <div className="col-span-12 rounded-lg border border-th-bkg-3 p-6 lg:col-span-4">
-          <div className="mb-4 flex items-center space-x-2">
-            <BoltIcon className="h-5 w-5" />
-            <h2 className="text-base">{t('explore:recently-listed')}</h2>
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <BoltIcon className="h-5 w-5" />
+              <h2 className="text-base">{t('explore:recently-listed')}</h2>
+            </div>
+            <a className="font-bold">
+              <Link href="/governance/list" shallow>
+                <span className="default-transition text-th-active md:hover:text-th-active-dark">
+                  {t('governance:list-token')}
+                </span>
+              </Link>
+            </a>
           </div>
           <div className="border-t border-th-bkg-3">
             {newlyListed.map((listing) => {
@@ -313,19 +322,19 @@ const Spot = () => {
               <div className="flex">
                 <button
                   className={`flex w-10 items-center justify-center rounded-l-md border border-th-bkg-3 focus:outline-none md:hover:bg-th-bkg-3 ${
-                    !showTableView ? 'bg-th-bkg-3 text-th-active' : ''
-                  }`}
-                  onClick={() => setShowTableView(!showTableView)}
-                >
-                  <Squares2X2Icon className="h-5 w-5" />
-                </button>
-                <button
-                  className={`flex w-10 items-center justify-center rounded-r-md border border-th-bkg-3 focus:outline-none md:hover:bg-th-bkg-3 ${
                     showTableView ? 'bg-th-bkg-3 text-th-active' : ''
                   }`}
                   onClick={() => setShowTableView(!showTableView)}
                 >
                   <TableCellsIcon className="h-5 w-5" />
+                </button>
+                <button
+                  className={`flex w-10 items-center justify-center rounded-r-md border border-th-bkg-3 focus:outline-none md:hover:bg-th-bkg-3 ${
+                    !showTableView ? 'bg-th-bkg-3 text-th-active' : ''
+                  }`}
+                  onClick={() => setShowTableView(!showTableView)}
+                >
+                  <Squares2X2Icon className="h-5 w-5" />
                 </button>
               </div>
             </div>

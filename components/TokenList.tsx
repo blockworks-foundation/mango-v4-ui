@@ -237,7 +237,7 @@ const TokenList = () => {
                 </Th>
                 <Th>
                   <div className="flex justify-end">
-                    <Tooltip content="The interest rates for depositing (green/left) and borrowing (red/right)">
+                    <Tooltip content={t('tooltip-interest-rates')}>
                       <SortableColumnHeader
                         sortKey="depositRate"
                         sort={() => requestSort('depositRate')}
@@ -245,7 +245,6 @@ const TokenList = () => {
                         title={t('rates')}
                         titleClass="tooltip-underline"
                       />
-                      {/* <span className="tooltip-underline">{t('rates')}</span> */}
                     </Tooltip>
                   </div>
                 </Th>

@@ -2,17 +2,12 @@ import { I80F48, PerpMarket } from '@blockworks-foundation/mango-v4'
 import { useMemo } from 'react'
 import useMangoGroup from './useMangoGroup'
 import useSelectedMarket from './useSelectedMarket'
+import useBanks from './useBanks'
 
 const useStablePrice = () => {
   const { selectedMarket } = useSelectedMarket()
   const { group } = useMangoGroup()
-
-  const banks = useMemo(() => {
-    if (!group) return []
-    return Array.from(group.banksMapByMint)
-      .map(([_mintAddress, banks]) => banks)
-      .map((b) => b[0])
-  }, [group])
+  const { banks } = useBanks()
 
   const stablePrice = useMemo(() => {
     if (!group || !selectedMarket || !banks.length) return 0

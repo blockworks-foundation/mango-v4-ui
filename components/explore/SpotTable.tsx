@@ -29,6 +29,7 @@ import Decimal from 'decimal.js'
 import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 import { BankWithMarketData } from './Spot'
 import { SerumMarketWithMarketData } from 'hooks/useListedMarketsWithMarketData'
+import Tooltip from '@components/shared/Tooltip'
 
 type TableData = {
   assetWeight: string
@@ -176,32 +177,41 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
               </Th>
               <Th>
                 <div className="flex justify-end">
-                  <SortableColumnHeader
-                    sortKey="available"
-                    sort={() => requestSort('available')}
-                    sortConfig={sortConfig}
-                    title={t('available')}
-                  />
+                  <Tooltip content={t('tooltip-available', { token: '' })}>
+                    <SortableColumnHeader
+                      sortKey="available"
+                      sort={() => requestSort('available')}
+                      sortConfig={sortConfig}
+                      title={t('available')}
+                      titleClass="tooltip-underline"
+                    />
+                  </Tooltip>
                 </div>
               </Th>
               <Th>
                 <div className="flex justify-end">
-                  <SortableColumnHeader
-                    sortKey="assetWeight"
-                    sort={() => requestSort('assetWeight')}
-                    sortConfig={sortConfig}
-                    title={t('explore:collateral-weight')}
-                  />
+                  <Tooltip content={t('tooltip-collateral-weight')}>
+                    <SortableColumnHeader
+                      sortKey="assetWeight"
+                      sort={() => requestSort('assetWeight')}
+                      sortConfig={sortConfig}
+                      title={t('explore:collateral-weight')}
+                      titleClass="tooltip-underline"
+                    />
+                  </Tooltip>
                 </div>
               </Th>
               <Th>
                 <div className="flex justify-end">
-                  <SortableColumnHeader
-                    sortKey="depositRate"
-                    sort={() => requestSort('depositRate')}
-                    sortConfig={sortConfig}
-                    title={t('rates')}
-                  />
+                  <Tooltip content={t('tooltip-interest-rates')}>
+                    <SortableColumnHeader
+                      sortKey="depositRate"
+                      sort={() => requestSort('depositRate')}
+                      sortConfig={sortConfig}
+                      title={t('rates')}
+                      titleClass="tooltip-underline"
+                    />
+                  </Tooltip>
                 </div>
               </Th>
               <Th />

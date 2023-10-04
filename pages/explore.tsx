@@ -9,6 +9,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
         'activity',
         'common',
         'explore',
+        'governance',
         'notifications',
         'onboarding',
         'profile',
