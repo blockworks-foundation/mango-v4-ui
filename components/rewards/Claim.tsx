@@ -33,7 +33,7 @@ import dayjs from 'dayjs'
 import HolographicCard from './HolographicCard'
 
 const CLAIM_BUTTON_CLASSES =
-  'raised-button font-rewards mx-auto mt-6 block rounded-lg px-6 py-3 text-xl focus:outline-none'
+  'raised-button group mx-auto block h-12 px-6 pt-1 font-rewards text-xl after:rounded-lg focus:outline-none lg:h-14'
 
 const WINNER_TITLES = [
   'Congratulations',
@@ -313,9 +313,9 @@ const ClaimPage = () => {
               className={CLAIM_BUTTON_CLASSES}
               onClick={() => handleClaimRewards()}
             >
-              <span className="mt-1">{`Claim ${claims.length} Prize${
-                claims.length > 1 ? 's' : ''
-              }`}</span>
+              <span className="block text-th-fgd-1 group-hover:mt-1 group-active:mt-2">{`Claim ${
+                claims.length
+              } Prize${claims.length > 1 ? 's' : ''}`}</span>
             </button>
           ) : (
             <button
@@ -323,7 +323,7 @@ const ClaimPage = () => {
               className={CLAIM_BUTTON_CLASSES}
               onClick={() => startShowRewards()}
             >
-              <span className="mt-1">
+              <span className="block text-th-fgd-1 group-hover:mt-1 group-active:mt-2">
                 {' '}
                 {loadingMetadata ? (
                   <Loading className="w-3"></Loading>

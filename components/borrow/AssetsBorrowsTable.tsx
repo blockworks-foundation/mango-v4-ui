@@ -139,7 +139,7 @@ const AssetsBorrowsTable = () => {
                             <p className="mb-0.5 text-right text-xs">
                               {t('rate')}
                             </p>
-                            <p className="text-right text-th-down">
+                            <p className="text-right font-mono text-th-down">
                               {formatNumericValue(bank.getBorrowRateUi(), 2)}%
                             </p>
                           </div>

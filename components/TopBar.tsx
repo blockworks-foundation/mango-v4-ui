@@ -41,7 +41,7 @@ import Link from 'next/link'
 import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
 
 export const TOPBAR_ICON_BUTTON_CLASSES =
-  'relative flex h-16 w-16 items-center justify-center border-l border-r border-th-bkg-3 focus-visible:bg-th-bkg-3 md:border-r-0 md:hover:bg-th-bkg-2'
+  'relative flex h-16 w-16 items-center justify-center border-l border-th-bkg-3 focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2'
 
 const set = mangoStore.getState().set
 
@@ -224,12 +224,14 @@ const TopBar = () => {
         <div className="flex items-center">
           {isUnownedAccount ||
           (!connected && !isDesktop) ? null : !isDesktop ? (
-            <button
-              onClick={() => handleDepositWithdrawModal('deposit')}
-              className={TOPBAR_ICON_BUTTON_CLASSES}
-            >
-              <DepositWithdrawIcon className="h-6 w-6" />
-            </button>
+            <div className="h-[63px] bg-th-bkg-1">
+              <button
+                onClick={() => handleDepositWithdrawModal('deposit')}
+                className={TOPBAR_ICON_BUTTON_CLASSES}
+              >
+                <DepositWithdrawIcon className="h-6 w-6" />
+              </button>
+            </div>
           ) : (
             <Button
               onClick={() => handleDepositWithdrawModal('deposit')}

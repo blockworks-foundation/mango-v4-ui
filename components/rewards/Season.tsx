@@ -119,10 +119,12 @@ const Season = ({
             chances to win big.
           </p>
           <button
-            className="raised-button mx-auto block rounded-lg px-6 py-2 font-rewards text-xl focus:outline-none lg:py-3"
+            className="raised-button group mx-auto block h-12 px-6 pt-1 font-rewards text-xl after:rounded-lg focus:outline-none lg:h-14"
             onClick={scrollToFaqs}
           >
-            <span className="mt-1">How it Works</span>
+            <span className="block text-th-fgd-1 group-hover:mt-1 group-active:mt-2">
+              How it Works
+            </span>
           </button>
         </div>
       </div>
@@ -240,10 +242,9 @@ const Season = ({
                   {!loadingAccountPointsAndRank ? (
                     accountPointsAndRank?.rank ? (
                       <span className="capitalize">
-                        {accountPointsAndRank.rank +
-                        accountPointsAndRank?.total_season_accounts
-                          ? `/${accountPointsAndRank.total_season_accounts}`
-                          : ''}
+                        {`${accountPointsAndRank.rank}/${
+                          accountPointsAndRank.total_season_accounts || '–'
+                        }`}
                       </span>
                     ) : (
                       '–'
@@ -330,10 +331,12 @@ const Season = ({
               )}
             </div>
             <button
-              className="raised-button mx-auto block w-full rounded-lg px-6 py-1 font-rewards text-lg focus:outline-none"
+              className="raised-button group mx-auto block h-10 w-full px-6 pt-1 font-rewards text-xl after:rounded-lg focus:outline-none lg:h-12"
               onClick={() => setShowLeaderboards(topAccountsTier)}
             >
-              <span className="mt-1.5 text-xl">Full Leaderboard</span>
+              <span className="block text-th-fgd-1 group-hover:mt-1 group-active:mt-2">
+                Full Leaderboard
+              </span>
             </button>
           </div>
         </div>

@@ -31,7 +31,7 @@ const NotificationsButton = () => {
   return (
     <>
       <button
-        className={TOPBAR_ICON_BUTTON_CLASSES}
+        className={`border-r md:border-r-0 ${TOPBAR_ICON_BUTTON_CLASSES}`}
         onClick={() => toggleModal()}
       >
         <BellIcon className="h-5 w-5" />

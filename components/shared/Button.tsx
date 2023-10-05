@@ -35,7 +35,7 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
       disabled={disabled}
       className={`rounded-md ${
         themeData.buttonStyle === 'raised'
-          ? 'raised-button'
+          ? 'raised-button group relative top-0 after:rounded-md'
           : secondary
           ? 'border border-th-button focus-visible:border-th-fgd-4 md:hover:border-th-button-hover'
           : 'bg-th-button focus-visible:border focus-visible:border-th-fgd-4 md:hover:bg-th-button-hover'
@@ -53,7 +53,15 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
       type={type}
       {...props}
     >
-      {children}
+      <span
+        className={`flex ${
+          themeData.buttonStyle === 'raised'
+            ? 'group-hover:mt-1 group-active:mt-2'
+            : ''
+        }`}
+      >
+        {children}
+      </span>
     </button>
   )
 }
