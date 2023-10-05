@@ -118,15 +118,13 @@ const FundingChart = ({ hideChart }: { hideChart: () => void }) => {
         }
       })
     })
-    data.sort((a,b) => a.time > b.time ? 1 : 0)
+    data.sort((a, b) => (a.time > b.time ? 1 : 0))
     return data
   }, [fundingData])
 
-  const CustomTooltip = ({
-    active,
-    payload,
-    label,
-  }: TooltipProps<number, string>) => {
+  const CustomTooltip = (
+    { active, payload, label }: TooltipProps<number, string>,
+  ) => {
     if (active && payload && payload.length) {
       const load = payload[0].payload
       const data: [string, any][] = Object.entries(load).filter(

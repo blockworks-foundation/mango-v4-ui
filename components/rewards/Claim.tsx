@@ -65,6 +65,7 @@ const ClaimPage = () => {
   const [showRender, setShowRender] = useState(false)
   const [rewardsWasShown, setRewardsWasShow] = useState(false)
   const [claims, setClaims] = useState<Claim[] | undefined>([])
+  const [loadingClaims, setLoadingClaims] = useState(false)
   const [claimed, setClaimed] = useState<PublicKey[] | undefined>([])
   const [loadingMetadata, setLoadingMetadata] = useState(false)
   const [tokenRewardsInfo, setTokensRewardsInfo] = useState<Token[]>([])
@@ -99,10 +100,12 @@ const ClaimPage = () => {
 
   useEffect(() => {
     const handleSetDistribution = async () => {
-      setDistribution(distributionDataAndClient!.distribution)
-      setClaims(distributionDataAndClient!.distribution!.getClaims(publicKey!))
-      setClaimed(await distributionDataAndClient!.distribution!.getClaimed())
-      setRewardsClient(distributionDataAndClient!.client)
+      setLoadingClaims(true)
+      setDistribution(distributionDataAndClient?.distribution)
+      setClaims(distributionDataAndClient?.distribution?.getClaims(publicKey!))
+      setClaimed(await distributionDataAndClient?.distribution?.getClaimed())
+      setRewardsClient(distributionDataAndClient?.client)
+      setLoadingClaims(false)
     }
 
     if (distributionDataAndClient && publicKey) {
@@ -251,6 +254,12 @@ const ClaimPage = () => {
   }, [distribution, wallet, claims, rewardsClient, connection])
 
   return claims === undefined ? (
+    <div className="flex min-h-[calc(100vh-94px)] items-center justify-center p-8">
+      <span className="text-center text-th-fgd-3">
+        Something went wrong. Try refreshing the page
+      </span>
+    </div>
+  ) : loadingClaims ? (
     <div className="flex min-h-[calc(100vh-94px)] items-center justify-center">
       <Loading />
     </div>
@@ -264,7 +273,7 @@ const ClaimPage = () => {
       />
     </div>
   ) : (
-    <div className="min-h-[calc(100vh-94px)]">
+    <div className="min-h-[calc(100vh-94px)] bg-[url('/images/rewards/claim-bg.png')] bg-cover bg-center">
       <div className="flex items-center justify-center pt-8">
         <div className="flex items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-red-400 px-4 py-1">
           <p className="font-rewards text-lg text-black">
@@ -278,10 +287,10 @@ const ClaimPage = () => {
             <HolographicCard />
           </div>
           <div className="-mt-8 mb-6 text-center">
-            <h2 className="mb-1 font-rewards text-4xl tracking-wide sm:text-6xl">
+            <h2 className="mb-1 font-rewards text-4xl tracking-wide text-white drop-shadow-[0_0_24px_rgba(0,0,0,1)] sm:text-6xl">
               {winnerTitle}!
             </h2>
-            <p className="text-lg font-bold text-th-fgd-1">
+            <p className="text-lg font-bold text-white drop-shadow-[0_0_8px_rgba(0,0,0,1)]">
               You&apos;re a winner in Season {previousSeason}
             </p>
           </div>
@@ -295,9 +304,9 @@ const ClaimPage = () => {
                   className={`flex rounded-full bg-gradient-to-r from-green-600 to-green-400`}
                 ></div>
               </div>
-              <div className="mx-auto mt-3 text-center text-base">
+              <p className="mx-auto mt-3 text-center text-base text-white drop-shadow-[0_0_8px_rgba(0,0,0,1)]">
                 {`Loading prizes: ${claimProgress.toFixed(0)}%`}
-              </div>
+              </p>
             </div>
           ) : rewardsWasShown ? (
             <button

@@ -2,7 +2,7 @@ import MedalIcon from '@components/icons/MedalIcon'
 import ProfileImage from '@components/profile/ProfileImage'
 import { ArrowLeftIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useViewport } from 'hooks/useViewport'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Select from '@components/forms/Select'
 import { IconButton } from '@components/shared/Button'
 import AcornIcon from '@components/icons/AcornIcon'
@@ -16,9 +16,14 @@ import { PublicKey } from '@solana/web3.js'
 import { formatNumericValue } from 'utils/numbers'
 import { useTranslation } from 'next-i18next'
 import { fetchLeaderboard } from 'apis/rewards'
-import { useCurrentSeason } from 'hooks/useRewards'
+import {
+  useAccountPointsAndRank,
+  useAccountTier,
+  useCurrentSeason,
+} from 'hooks/useRewards'
 import Badge from './Badge'
 import { tiers } from './RewardsPage'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 const Leaderboards = ({
   goBack,
@@ -28,7 +33,10 @@ const Leaderboards = ({
   leaderboard: string
 }) => {
   const { t } = useTranslation('rewards')
-  const [topAccountsTier, setTopAccountsTier] = useState<string>(leaderboard)
+  const { isDesktop } = useViewport()
+  const { mangoAccountAddress } = useMangoAccount()
+  const [leaderboardToShow, setLeaderboardToShow] =
+    useState<string>(leaderboard)
   const renderTierIcon = (tier: string) => {
     if (tier === 'bot') {
       return <RobotIcon className="mr-2 h-5 w-5" />
@@ -39,13 +47,17 @@ const Leaderboards = ({
     } else return <AcornIcon className="mr-2 h-5 w-5" />
   }
   const { data: seasonData } = useCurrentSeason()
+  const { data: accountTier } = useAccountTier(
+    mangoAccountAddress,
+    seasonData?.season_id,
+  )
+  const { data: accountPointsAndRank } = useAccountPointsAndRank(
+    mangoAccountAddress,
+    seasonData?.season_id,
+  )
 
-  const {
-    data: topAccountsLeaderboardData,
-    isFetching: fetchingRewardsLeaderboardData,
-    isLoading: loadingRewardsLeaderboardData,
-  } = useQuery(
-    ['rewards-leaderboard-data', topAccountsTier],
+  const { data: leaderboardData, isLoading: loadingLeaderboardData } = useQuery(
+    ['rewards-leaderboard-data', leaderboardToShow],
     () => fetchLeaderboard(seasonData!.season_id),
     {
       cacheTime: 1000 * 60 * 10,
@@ -55,12 +67,18 @@ const Leaderboards = ({
       enabled: !!seasonData,
     },
   )
-  const leadersForTier =
-    topAccountsLeaderboardData?.find((x) => x.tier === topAccountsTier)
-      ?.leaderboard || []
 
-  const isLoading =
-    fetchingRewardsLeaderboardData || loadingRewardsLeaderboardData
+  const leadersForTier =
+    leaderboardData && leaderboardData.length
+      ? leaderboardData.find((x) => x.tier === leaderboardToShow)
+          ?.leaderboard || []
+      : []
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo(0, 0)
+    }
+  }, [])
 
   return (
     <div className="mx-auto min-h-screen max-w-[1140px] flex-col items-center p-8 lg:p-10">
@@ -77,9 +95,9 @@ const Leaderboards = ({
         </div>
         <Select
           className="w-32"
-          icon={renderTierIcon(topAccountsTier)}
-          value={t(topAccountsTier)}
-          onChange={(tier) => setTopAccountsTier(tier)}
+          icon={renderTierIcon(leaderboardToShow)}
+          value={t(leaderboardToShow)}
+          onChange={(tier) => setLeaderboardToShow(tier)}
         >
           {tiers.map((tier) => (
             <Select.Option key={tier} value={tier}>
@@ -92,7 +110,48 @@ const Leaderboards = ({
         </Select>
       </div>
       <div className="space-y-2">
-        {!isLoading ? (
+        {accountTier?.tier === leaderboardToShow &&
+        accountPointsAndRank?.rank ? (
+          <div className="flex w-full items-center justify-between rounded-lg border border-th-active p-3 md:rounded-xl">
+            <div className="flex items-center space-x-3">
+              <div
+                className={`relative flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full ${
+                  accountPointsAndRank.rank < 4 ? '' : 'bg-th-bkg-3'
+                } md:mr-2`}
+              >
+                <p
+                  className={`relative z-10 font-rewards text-base ${
+                    accountPointsAndRank.rank < 4
+                      ? 'text-th-bkg-1'
+                      : 'text-th-fgd-1'
+                  }`}
+                >
+                  {accountPointsAndRank.rank}
+                </p>
+                {accountPointsAndRank.rank < 4 ? (
+                  <MedalIcon
+                    className="absolute"
+                    rank={accountPointsAndRank.rank}
+                  />
+                ) : null}
+              </div>
+              <ProfileImage
+                imageSize={!isDesktop ? '32' : '40'}
+                imageUrl={''}
+                placeholderSize={!isDesktop ? '20' : '24'}
+              />
+              <div className="text-left">
+                <p className="text-th-fgd-2 md:text-base">YOU</p>
+              </div>
+            </div>
+            <div>
+              <span className="mr-3 text-right font-mono md:text-base">
+                {formatNumericValue(accountPointsAndRank.total_points)}
+              </span>
+            </div>
+          </div>
+        ) : null}
+        {!loadingLeaderboardData ? (
           leadersForTier && leadersForTier.length ? (
             leadersForTier.map((acc, i: number) => (
               <LeaderboardCard rank={i + 1} key={i} account={acc} />
@@ -129,7 +188,7 @@ const LeaderboardCard = ({
     total_points: number
   }
 }) => {
-  const { isTablet } = useViewport()
+  const { isDesktop } = useViewport()
   const { mango_account, total_points } = account
   return (
     <a
@@ -154,17 +213,14 @@ const LeaderboardCard = ({
           {rank < 4 ? <MedalIcon className="absolute" rank={rank} /> : null}
         </div>
         <ProfileImage
-          imageSize={isTablet ? '32' : '40'}
+          imageSize={!isDesktop ? '32' : '40'}
           imageUrl={''}
-          placeholderSize={isTablet ? '20' : '24'}
+          placeholderSize={!isDesktop ? '20' : '24'}
         />
         <div className="text-left">
           <p className="capitalize text-th-fgd-2 md:text-base">
             {abbreviateAddress(new PublicKey(mango_account))}
           </p>
-          {/* <p className="text-xs text-th-fgd-4">
-            Acc: {'A1at5'.slice(0, 4) + '...' + 'tt45eU'.slice(-4)}
-          </p> */}
         </div>
       </div>
       <div className="flex items-center">

@@ -3,6 +3,7 @@ import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
 import { useQuery } from '@tanstack/react-query'
 import {
+  fetchAccountPointsAndRank,
   fetchAccountTier,
   fetchCurrentSeason,
   fetchDistribution,
@@ -26,6 +27,21 @@ export const useAccountTier = (
   return useQuery(
     ['account-tier', mangoAccount],
     () => fetchAccountTier(mangoAccount, seasonId!),
+    {
+      cacheTime: 1000 * 60 * 10,
+      staleTime: 1000 * 60,
+      retry: 3,
+      enabled: !!mangoAccount && !!seasonId,
+    },
+  )
+}
+export const useAccountPointsAndRank = (
+  mangoAccount: string,
+  seasonId: number | undefined,
+) => {
+  return useQuery(
+    ['account-rank', mangoAccount],
+    () => fetchAccountPointsAndRank(mangoAccount, seasonId!),
     {
       cacheTime: 1000 * 60 * 10,
       staleTime: 1000 * 60,

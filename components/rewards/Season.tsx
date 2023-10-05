@@ -10,8 +10,8 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import {
   useCurrentSeason,
   useAccountTier,
-  useWalletPoints,
   useTopAccountsLeaderBoard,
+  useAccountPointsAndRank,
 } from 'hooks/useRewards'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -33,19 +33,24 @@ const Season = ({
   const { t } = useTranslation(['common', 'rewards'])
   const { wallet } = useWallet()
   const faqRef = useRef<HTMLDivElement>(null)
-  const [topAccountsTier, setTopAccountsTier] = useState('mango')
   const { mangoAccountAddress } = useMangoAccount()
+  const [topAccountsTier, setTopAccountsTier] = useState('')
   const { data: seasonData, isLoading: loadingSeasonData } = useCurrentSeason()
-  const { data: accountTier } = useAccountTier(
+  const { data: accountTier, isLoading: loadingAccountTier } = useAccountTier(
     mangoAccountAddress,
     seasonData?.season_id,
   )
   const {
-    data: walletPoints,
-    isFetching: fetchingWalletRewardsData,
-    isLoading: loadingWalletRewardsData,
+    data: accountPointsAndRank,
+    isLoading: loadingAccountPointsAndRank,
     refetch,
-  } = useWalletPoints(mangoAccountAddress, seasonData?.season_id, wallet)
+  } = useAccountPointsAndRank(mangoAccountAddress, seasonData?.season_id)
+
+  useEffect(() => {
+    if (!topAccountsTier && !loadingAccountTier) {
+      setTopAccountsTier(accountTier?.tier.toLowerCase() || 'mango')
+    }
+  }, [loadingAccountTier, topAccountsTier])
 
   const seasonEndsIn = useMemo(() => {
     if (!seasonData?.season_end) return
@@ -59,11 +64,10 @@ const Season = ({
   } = useTopAccountsLeaderBoard(seasonData?.season_id)
 
   const leadersForTier =
-    topAccountsLeaderboardData?.find((x) => x.tier === topAccountsTier)
-      ?.leaderboard || []
-
-  const isLoadingWalletData =
-    fetchingWalletRewardsData || loadingWalletRewardsData
+    topAccountsLeaderboardData && topAccountsLeaderboardData.length
+      ? topAccountsLeaderboardData?.find((x) => x.tier === topAccountsTier)
+          ?.leaderboard || []
+      : []
 
   const isLoadingLeaderboardData =
     fetchingTopAccountsLeaderboardData || loadingTopAccountsLeaderboardData
@@ -132,34 +136,28 @@ const Season = ({
                 name="seed"
                 desc="All new participants start here"
                 setShowLeaderboards={setShowLeaderboards}
-                status={
-                  accountTier?.mango_account === 'seed' ? 'Your Tier' : ''
-                }
+                status={accountTier?.tier === 'seed' ? 'Your Tier' : ''}
               />
               <RewardsTierCard
                 icon={<MangoIcon className="h-8 w-8 text-th-fgd-1" />}
                 name="mango"
                 desc="Average swap/trade value less than $1,000"
                 setShowLeaderboards={setShowLeaderboards}
-                status={
-                  accountTier?.mango_account === 'mango' ? 'Your Tier' : ''
-                }
+                status={accountTier?.tier === 'mango' ? 'Your Tier' : ''}
               />
               <RewardsTierCard
                 icon={<WhaleIcon className="h-8 w-8 text-th-fgd-1" />}
                 name="whale"
                 desc="Average swap/trade value greater than $1,000"
                 setShowLeaderboards={setShowLeaderboards}
-                status={
-                  accountTier?.mango_account === 'whale' ? 'Your Tier' : ''
-                }
+                status={accountTier?.tier === 'whale' ? 'Your Tier' : ''}
               />
               <RewardsTierCard
                 icon={<RobotIcon className="h-8 w-8 text-th-fgd-1" />}
                 name="bot"
                 desc="All bots"
                 setShowLeaderboards={setShowLeaderboards}
-                status={accountTier?.mango_account === 'bot' ? 'Your Tier' : ''}
+                status={accountTier?.tier === 'bot' ? 'Your Tier' : ''}
               />
             </div>
           </div>
@@ -173,10 +171,10 @@ const Season = ({
               <h2 className="rewards-h2">Your Points</h2>
             </div>
             <div className="mb-4 flex h-14 w-full items-center rounded-xl bg-th-bkg-2 px-3">
-              {!isLoadingWalletData ? (
-                walletPoints ? (
+              {!loadingAccountPointsAndRank ? (
+                accountPointsAndRank?.total_points ? (
                   <span className="-mb-1 w-full font-rewards text-5xl text-th-fgd-1">
-                    {formatNumericValue(walletPoints)}
+                    {formatNumericValue(accountPointsAndRank.total_points)}
                   </span>
                 ) : wallet?.adapter.publicKey ? (
                   <span className="-mb-1 w-full font-rewards text-5xl text-th-fgd-1">
@@ -197,9 +195,11 @@ const Season = ({
               <div className="flex items-center justify-between border-t border-th-bkg-3 px-3 py-2">
                 <p className="rewards-p">Points Earned</p>
                 <div className="font-rewards text-lg text-th-active">
-                  {!isLoadingWalletData ? (
-                    walletPoints ? (
-                      formatNumericValue(walletPoints)
+                  {!loadingAccountPointsAndRank ? (
+                    accountPointsAndRank?.total_points_pre_multiplier ? (
+                      formatNumericValue(
+                        accountPointsAndRank.total_points_pre_multiplier,
+                      )
                     ) : wallet?.adapter.publicKey ? (
                       0
                     ) : (
@@ -214,16 +214,16 @@ const Season = ({
               </div>
               <div className="flex items-center justify-between border-t border-th-bkg-3 px-3 py-2">
                 <p className="rewards-p">Streak Bonus</p>
-                <p className="font-rewards text-lg text-th-active">0x</p>
+                <p className="font-rewards text-lg text-th-active">
+                  {accountTier?.streak_multiplier_percent}%
+                </p>
               </div>
               <div className="flex items-center justify-between border-t border-th-bkg-3 px-3 py-2">
                 <p className="rewards-p">Rewards Tier</p>
                 <div className="font-rewards text-lg text-th-active">
-                  {!isLoadingWalletData ? (
-                    accountTier?.mango_account ? (
-                      <span className="capitalize">
-                        {accountTier?.mango_account}
-                      </span>
+                  {!loadingAccountTier ? (
+                    accountTier?.tier ? (
+                      <span className="capitalize">{accountTier.tier}</span>
                     ) : (
                       '–'
                     )
@@ -236,7 +236,24 @@ const Season = ({
               </div>
               <div className="flex items-center justify-between border-t border-th-bkg-3 px-3 py-2">
                 <p className="rewards-p">Rank</p>
-                <p className="font-rewards text-lg text-th-active">–</p>
+                <div className="font-rewards text-lg text-th-active">
+                  {!loadingAccountPointsAndRank ? (
+                    accountPointsAndRank?.rank ? (
+                      <span className="capitalize">
+                        {accountPointsAndRank.rank +
+                        accountPointsAndRank?.total_season_accounts
+                          ? `/${accountPointsAndRank.total_season_accounts}`
+                          : ''}
+                      </span>
+                    ) : (
+                      '–'
+                    )
+                  ) : (
+                    <SheenLoader>
+                      <div className="h-4 w-12 rounded-sm bg-th-bkg-3" />
+                    </SheenLoader>
+                  )}
+                </div>
               </div>
             </div>
           </div>
