@@ -7,6 +7,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   maxLength?: number
   className?: string
   disabled?: boolean
+  heightClass?: string
   prefixClassname?: string
   wrapperClassName?: string
   hasError?: boolean
@@ -22,6 +23,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
     onChange,
     maxLength,
     className,
+    heightClass,
     hasError,
     wrapperClassName = 'w-full',
     disabled,
@@ -40,7 +42,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
           </div>
         ) : null}
         <input
-          className={`${className} h-12 w-full flex-1 rounded-md border bg-th-input-bkg px-3 text-base
+          className={`${className} ${
+            heightClass ? heightClass : 'h-12'
+          } w-full flex-1 rounded-md border bg-th-input-bkg px-3 text-base
           text-th-fgd-1 ${
             hasError ? 'border-th-down' : 'border-th-input-border'
           } focus:outline-none 

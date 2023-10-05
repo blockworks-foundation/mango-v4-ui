@@ -58,3 +58,35 @@ export const sortPerpMarkets = (
     },
   )
 }
+
+const generateSearchTerm = (
+  item: SerumMarketWithMarketData,
+  searchValue: string,
+) => {
+  const normalizedSearchValue = searchValue.toLowerCase()
+  const value = item.name.toLowerCase()
+
+  const isMatchingWithName =
+    item.name.toLowerCase().indexOf(normalizedSearchValue) >= 0
+  const matchingSymbolPercent = isMatchingWithName
+    ? normalizedSearchValue.length / item.name.length
+    : 0
+
+  return {
+    token: item,
+    matchingIdx: value.indexOf(normalizedSearchValue),
+    matchingSymbolPercent,
+  }
+}
+
+export const startSearch = (
+  items: SerumMarketWithMarketData[],
+  searchValue: string,
+) => {
+  return items
+    .map((item) => generateSearchTerm(item, searchValue))
+    .filter((item) => item.matchingIdx >= 0)
+    .sort((i1, i2) => i1.matchingIdx - i2.matchingIdx)
+    .sort((i1, i2) => i2.matchingSymbolPercent - i1.matchingSymbolPercent)
+    .map((item) => item.token)
+}

@@ -112,7 +112,7 @@ const TopBar = () => {
         <span className="mb-0 flex items-center">
           {query.token || query.market ? (
             <button
-              className="mr-4 flex h-16 w-16 items-center justify-center border-r border-th-bkg-3 focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2"
+              className="flex h-16 w-16 items-center justify-center border-r border-th-bkg-3 focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2"
               onClick={() => router.back()}
             >
               <ArrowLeftIcon className="h-5 w-5" />

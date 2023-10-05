@@ -24,10 +24,13 @@ import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import Loading from '@components/shared/Loading'
 import MarketChange from '@components/shared/MarketChange'
 import SheenLoader from '@components/shared/SheenLoader'
-import useListedMarketsWithMarketData, {
-  SerumMarketWithMarketData,
-} from 'hooks/useListedMarketsWithMarketData'
-import { AllowedKeys, sortPerpMarkets, sortSpotMarkets } from 'utils/markets'
+import useListedMarketsWithMarketData from 'hooks/useListedMarketsWithMarketData'
+import {
+  AllowedKeys,
+  sortPerpMarkets,
+  sortSpotMarkets,
+  startSearch,
+} from 'utils/markets'
 import Input from '@components/forms/Input'
 import { useSortableData } from 'hooks/useSortableData'
 import { SortableColumnHeader } from '@components/shared/TableElements'
@@ -37,38 +40,6 @@ const MARKET_LINK_CLASSES =
 
 const MARKET_LINK_DISABLED_CLASSES =
   'flex w-full items-center justify-between py-2 px-4 md:hover:cursor-not-allowed'
-
-const generateSearchTerm = (
-  item: SerumMarketWithMarketData,
-  searchValue: string,
-) => {
-  const normalizedSearchValue = searchValue.toLowerCase()
-  const value = item.name.toLowerCase()
-
-  const isMatchingWithName =
-    item.name.toLowerCase().indexOf(normalizedSearchValue) >= 0
-  const matchingSymbolPercent = isMatchingWithName
-    ? normalizedSearchValue.length / item.name.length
-    : 0
-
-  return {
-    token: item,
-    matchingIdx: value.indexOf(normalizedSearchValue),
-    matchingSymbolPercent,
-  }
-}
-
-const startSearch = (
-  items: SerumMarketWithMarketData[],
-  searchValue: string,
-) => {
-  return items
-    .map((item) => generateSearchTerm(item, searchValue))
-    .filter((item) => item.matchingIdx >= 0)
-    .sort((i1, i2) => i1.matchingIdx - i2.matchingIdx)
-    .sort((i1, i2) => i2.matchingSymbolPercent - i1.matchingSymbolPercent)
-    .map((item) => item.token)
-}
 
 const MarketSelectDropdown = () => {
   const { t } = useTranslation(['common', 'trade'])
