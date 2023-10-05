@@ -5,12 +5,15 @@ import mangoStore from '@store/mangoStore'
 import { useWallet } from '@solana/wallet-adapter-react'
 import GovernanceStore from '@store/governanceStore'
 import {
-  PriceImpactResp,
-  PriceImpactRespWithoutSide,
   formatSuggestedValues,
   getFormattedBankValues,
 } from 'utils/governance/listingTools'
-import { Bank, Group, OracleProvider } from '@blockworks-foundation/mango-v4'
+import {
+  Bank,
+  Group,
+  OracleProvider,
+  PriceImpact,
+} from '@blockworks-foundation/mango-v4'
 import { AccountMeta } from '@solana/web3.js'
 import { BN } from '@project-serum/anchor'
 import {
@@ -27,6 +30,9 @@ import {
   LISTING_PRESETS_KEYS,
   LISTING_PRESETS_PYTH,
   ListingPreset,
+  MidPriceImpact,
+  getMidPriceImpacts,
+  getProposedTier,
   getTierWithAdjustedNetBorrows,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 
@@ -39,7 +45,7 @@ const DashboardSuggestedValues = ({
 }: ModalProps & {
   bank: Bank
   group: Group
-  priceImpacts: PriceImpactResp[]
+  priceImpacts: PriceImpact[]
 }) => {
   const client = mangoStore((s) => s.client)
   //do not deconstruct wallet is used for anchor to sign
@@ -65,70 +71,34 @@ const DashboardSuggestedValues = ({
 
   const priceImpactsFiltered = useMemo(
     () =>
-      priceImpacts
-        .reduce((acc: PriceImpactRespWithoutSide[], val: PriceImpactResp) => {
-          if (val.side === 'ask') {
-            const bidSide = priceImpacts.find(
-              (x) =>
-                x.symbol === val.symbol &&
-                x.target_amount === val.target_amount &&
-                x.side === 'bid',
-            )
-            acc.push({
-              target_amount: val.target_amount,
-              avg_price_impact_percent: bidSide
-                ? (bidSide.avg_price_impact_percent +
-                    val.avg_price_impact_percent) /
-                  2
-                : val.avg_price_impact_percent,
-              symbol: val.symbol,
-            })
-          }
-          return acc
-        }, [])
-        .filter((x) => x.symbol === getApiTokenName(bank.name)),
+      getMidPriceImpacts(priceImpacts).filter(
+        (x) => x.symbol === getApiTokenName(bank.name),
+      ),
     [priceImpacts, bank.name],
   )
 
   const getSuggestedTierForListedTokens = useCallback(async () => {
     const filteredResp = priceImpactsFiltered
       .filter((x) => x.avg_price_impact_percent < 1)
-      .reduce(
-        (
-          acc: { [key: string]: PriceImpactRespWithoutSide },
-          val: PriceImpactRespWithoutSide,
-        ) => {
-          if (
-            !acc[val.symbol] ||
-            val.target_amount > acc[val.symbol].target_amount
-          ) {
-            acc[val.symbol] = val
-          }
-          return acc
-        },
-        {},
-      )
-    const priceImapct = filteredResp[getApiTokenName(bank.name)]
-    const liqudityTier = (Object.values(PRESETS).find(
-      (x) => x.preset_target_amount === priceImapct?.target_amount,
-    )?.preset_key || 'SHIT') as LISTING_PRESETS_KEYS
-    const detieredTierWithoutPyth =
-      liqudityTier === 'ULTRA_PREMIUM' || liqudityTier === 'PREMIUM'
-        ? 'MID'
-        : liqudityTier === 'MID'
-        ? 'MEME'
-        : liqudityTier
-    const isPythRecommended =
-      liqudityTier === 'MID' ||
-      liqudityTier === 'PREMIUM' ||
-      liqudityTier === 'ULTRA_PREMIUM'
-    const listingTier =
-      isPythRecommended && bank?.oracleProvider !== OracleProvider.Pyth
-        ? detieredTierWithoutPyth
-        : liqudityTier
+      .reduce((acc: { [key: string]: MidPriceImpact }, val: MidPriceImpact) => {
+        if (
+          !acc[val.symbol] ||
+          val.target_amount > acc[val.symbol].target_amount
+        ) {
+          acc[val.symbol] = val
+        }
+        return acc
+      }, {})
+    const priceImpact = filteredResp[getApiTokenName(bank.name)]
 
-    setSuggstedTier(listingTier as LISTING_PRESETS_KEYS)
-  }, [priceImpactsFiltered])
+    const suggestedTier = getProposedTier(
+      PRESETS,
+      priceImpact?.avg_price_impact_percent,
+      bank.oracleProvider === OracleProvider.Pyth,
+    )
+
+    setSuggstedTier(suggestedTier as LISTING_PRESETS_KEYS)
+  }, [PRESETS, bank.name, bank.oracleProvider, priceImpactsFiltered])
 
   const proposeNewSuggestedValues = useCallback(
     async (

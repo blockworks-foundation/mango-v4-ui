@@ -14,7 +14,7 @@ import BN from 'bn.js'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import {
-  PriceImpactResp,
+  PriceImpact,
   getFormattedBankValues,
   getPriceImpacts,
 } from 'utils/governance/listingTools'
@@ -49,7 +49,7 @@ const Dashboard: NextPage = () => {
   const connection = mangoStore((s) => s.connection)
 
   const [isOpenSuggestionModal, setIsOpenSuggestionModal] = useState(false)
-  const [priceImpacts, setPriceImapcts] = useState<PriceImpactResp[]>([])
+  const [priceImpacts, setPriceImapcts] = useState<PriceImpact[]>([])
 
   useEffect(() => {
     const handleGetPriceImapcts = async () => {

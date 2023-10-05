@@ -122,9 +122,11 @@ const FundingChart = ({ hideChart }: { hideChart: () => void }) => {
     return data
   }, [fundingData])
 
-  const CustomTooltip = (
-    { active, payload, label }: TooltipProps<number, string>,
-  ) => {
+  const CustomTooltip = ({
+    active,
+    payload,
+    label,
+  }: TooltipProps<number, string>) => {
     if (active && payload && payload.length) {
       const load = payload[0].payload
       const data: [string, any][] = Object.entries(load).filter(
