@@ -14,6 +14,7 @@ import Tooltip from '@components/shared/Tooltip'
 import SimpleAreaChart from '@components/shared/SimpleAreaChart'
 import { COLORS } from 'styles/colors'
 import useThemeWrapper from 'hooks/useThemeWrapper'
+import dayjs from 'dayjs'
 
 const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
   const { t } = useTranslation(['common', 'explore', 'trade'])
@@ -36,6 +37,19 @@ const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
         const depositRate = bank.getDepositRateUi()
         const borrowRate = bank.getBorrowRateUi()
         const assetWeight = bank.scaledInitAssetWeight(bank.price).toFixed(2)
+        const pastPrice = token.market?.marketData?.price_24h
+        const volume = token.market?.marketData?.quote_volume_24h || 0
+        const change =
+          volume > 0 && pastPrice
+            ? ((bank.uiPrice - pastPrice) / pastPrice) * 100
+            : 0
+
+        const chartData =
+          token.market?.marketData?.price_history
+            .sort((a, b) => a.time.localeCompare(b.time))
+            .concat([{ price: bank.uiPrice, time: dayjs().toISOString() }]) ||
+          []
+
         return (
           <div
             className="col-span-12 rounded-lg border border-th-bkg-3 p-6 md:col-span-6 xl:col-span-4 2xl:col-span-3"
@@ -51,27 +65,20 @@ const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
                       <FormatNumericValue value={bank.uiPrice} isUsd />
                     </span>
                     {token.market ? (
-                      <Change
-                        change={token.market?.rollingChange || 0}
-                        suffix="%"
-                      />
+                      <Change change={change} suffix="%" />
                     ) : null}
                   </div>
                 </div>
               </div>
-              {token.market?.marketData?.price_history &&
-              token.market?.marketData?.price_history.length ? (
+              {chartData.length ? (
                 <div className="h-10 w-20">
                   <SimpleAreaChart
                     color={
-                      token.market.marketData.price_history[0].price <=
-                      bank.uiPrice
+                      chartData[0].price <= bank.uiPrice
                         ? COLORS.UP[theme]
                         : COLORS.DOWN[theme]
                     }
-                    data={token.market.marketData.price_history.concat([
-                      { price: bank.uiPrice, time: new Date().toDateString() },
-                    ])}
+                    data={chartData}
                     name={bank.name}
                     xKey="time"
                     yKey="price"

@@ -69,9 +69,27 @@ const startSearch = (items: BankWithMarketData[], searchValue: string) => {
 
 const sortTokens = (tokens: BankWithMarketData[], sortByKey: AllowedKeys) => {
   return tokens.sort((a: BankWithMarketData, b: BankWithMarketData) => {
-    const aValue: number | undefined = a?.market?.marketData?.[sortByKey]
-    const bValue: number | undefined = b?.market?.marketData?.[sortByKey]
-
+    let aValue: number | undefined
+    let bValue: number | undefined
+    if (sortByKey === 'change_24h') {
+      const aPrice = a?.bank?.uiPrice || 0
+      const bPrice = b?.bank?.uiPrice || 0
+      const aPastPrice = a.market?.marketData?.price_24h
+      const bPastPrice = b.market?.marketData?.price_24h
+      const aVolume = a.market?.marketData?.quote_volume_24h || 0
+      const bVolume = b.market?.marketData?.quote_volume_24h || 0
+      aValue =
+        aVolume > 0 && aPastPrice
+          ? ((aPrice - aPastPrice) / aPastPrice) * 100
+          : undefined
+      bValue =
+        bVolume > 0 && bPastPrice
+          ? ((bPrice - bPastPrice) / bPastPrice) * 100
+          : undefined
+    } else {
+      aValue = a?.market?.marketData?.[sortByKey]
+      bValue = b?.market?.marketData?.[sortByKey]
+    }
     // Handle marketData[sortByKey] is undefined
     if (typeof aValue === 'undefined' && typeof bValue === 'undefined') {
       return 0 // Consider them equal
@@ -150,19 +168,19 @@ const Spot = () => {
     const sortByChange = serumMarketsWithData
       .filter((market) => market.quoteTokenIndex === 0)
       .sort((a, b) => {
-        const rollingChangeA = a.rollingChange || 0
-        const rollingChangeB = b.rollingChange || 0
+        const rollingChangeA = a?.marketData?.change_24h || 0
+        const rollingChangeB = b?.marketData?.change_24h || 0
         return rollingChangeB - rollingChangeA
       })
     const gainers = sortByChange.slice(0, 3).filter((item) => {
-      const change = item.rollingChange || 0
+      const change = item?.marketData?.change_24h || 0
       return change > 0
     })
     const losers = sortByChange
       .slice(-3)
       .reverse()
       .filter((item) => {
-        const change = item.rollingChange || 0
+        const change = item?.marketData?.change_24h || 0
         return change < 0
       })
     return [gainers, losers]
@@ -188,13 +206,11 @@ const Spot = () => {
               <BoltIcon className="h-5 w-5" />
               <h2 className="text-base">{t('explore:recently-listed')}</h2>
             </div>
-            <a className="font-bold">
-              <Link href="/governance/list" shallow>
-                <span className="default-transition text-th-active md:hover:text-th-active-dark">
-                  {t('governance:list-token')}
-                </span>
-              </Link>
-            </a>
+            <Link href="/governance/list" shallow>
+              <span className="default-transition font-bold text-th-active md:hover:text-th-active-dark">
+                {t('governance:list-token')}
+              </span>
+            </Link>
           </div>
           {groupLoaded ? (
             <div className="border-t border-th-bkg-3">
@@ -276,7 +292,7 @@ const Spot = () => {
                             <FormatNumericValue value={bank.uiPrice} isUsd />
                           </span>
                           <Change
-                            change={gainer.rollingChange || 0}
+                            change={gainer?.marketData?.change_24h || 0}
                             suffix="%"
                           />
                         </div>
@@ -330,7 +346,7 @@ const Spot = () => {
                             <FormatNumericValue value={bank.uiPrice} isUsd />
                           </span>
                           <Change
-                            change={loser.rollingChange || 0}
+                            change={loser?.marketData?.change_24h || 0}
                             suffix="%"
                           />
                         </div>

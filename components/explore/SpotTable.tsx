@@ -30,6 +30,7 @@ import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 import { BankWithMarketData } from './Spot'
 import { SerumMarketWithMarketData } from 'hooks/useListedMarketsWithMarketData'
 import Tooltip from '@components/shared/Tooltip'
+import dayjs from 'dayjs'
 
 type TableData = {
   assetWeight: string
@@ -41,12 +42,10 @@ type TableData = {
   tokenName: string
   market: SerumMarketWithMarketData | undefined
   price: number
-  priceHistory:
-    | {
-        price: number
-        time: string
-      }[]
-    | undefined
+  priceHistory: {
+    price: number
+    time: string
+  }[]
   volume: number
   isUp: boolean
 }
@@ -66,21 +65,17 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
         const baseBank = token.bank
         const price = baseBank.uiPrice
 
-        const pastPrice = token.market?.marketData?.price_24h || 0
+        const pastPrice = token.market?.marketData?.price_24h
 
-        let priceHistory
-        if (
-          token.market?.marketData?.price_history &&
-          token.market?.marketData?.price_history.length
-        ) {
-          priceHistory = token.market.marketData.price_history.concat([
-            { price: price, time: new Date().toDateString() },
-          ])
-        }
+        const priceHistory =
+          token.market?.marketData?.price_history
+            .sort((a, b) => a.time.localeCompare(b.time))
+            .concat([{ price: price, time: dayjs().toISOString() }]) || []
 
         const volume = token.market?.marketData?.quote_volume_24h || 0
 
-        const change = volume > 0 ? ((price - pastPrice) / pastPrice) * 100 : 0
+        const change =
+          volume > 0 && pastPrice ? ((price - pastPrice) / pastPrice) * 100 : 0
 
         const tokenName = baseBank.name
 
@@ -107,9 +102,7 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
         }
 
         const isUp =
-          price && priceHistory && priceHistory.length
-            ? price >= priceHistory[0].price
-            : false
+          price && priceHistory.length ? price >= priceHistory[0].price : false
 
         const data = {
           available,
@@ -279,7 +272,7 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
                     </div>
                   </Td>
                   <Td>
-                    {priceHistory && priceHistory.length ? (
+                    {priceHistory.length ? (
                       <div className="h-10 w-24">
                         <SimpleAreaChart
                           color={isUp ? COLORS.UP[theme] : COLORS.DOWN[theme]}
@@ -395,7 +388,7 @@ const MobileSpotItem = ({ data }: { data: TableData }) => {
                 <p className="ml-3 leading-none text-th-fgd-1">{tokenName}</p>
               </div>
               <div className="flex items-center space-x-3">
-                {priceHistory && priceHistory.length ? (
+                {priceHistory.length ? (
                   <div className="h-10 w-20">
                     <SimpleAreaChart
                       color={isUp ? COLORS.UP[theme] : COLORS.DOWN[theme]}
