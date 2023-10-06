@@ -80,7 +80,7 @@ const BottomBar = () => {
           <ArrowTrendingUpIcon className="mb-1 h-4 w-4" />
           <StyledBarItemLabel>{t('trade')}</StyledBarItemLabel>
         </BottomBarLink>
-        <BottomBarLink isActive={asPath === '/explore'} pathName="/borrow">
+        <BottomBarLink isActive={asPath === '/explore'} pathName="/explore">
           <SparklesIcon className="mb-1 h-4 w-4" />
           <StyledBarItemLabel>{t('explore')}</StyledBarItemLabel>
         </BottomBarLink>
