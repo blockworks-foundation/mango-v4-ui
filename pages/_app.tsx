@@ -43,6 +43,7 @@ import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { getDecimalCount } from 'utils/numbers'
 import { AUTO_CONNECT_WALLET, THEME_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
+import PlausibleProvider from 'next-plausible'
 
 // init react-query
 export const queryClient = new QueryClient()
@@ -100,7 +101,13 @@ function MyApp({ Component, pageProps }: AppProps) {
       : true
 
   return (
-    <>
+    <PlausibleProvider
+      domain="app.mango.markets"
+      customDomain="https://pl.mngo.cloud"
+      trackLocalhost={true}
+      selfHosted={true}
+      enabled={true}
+    >
       <Head>
         <title>Mango Markets</title>
         <link rel="icon" href="/favicon.ico" />
@@ -142,7 +149,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           </WalletProvider>
         </ConnectionProvider>
       </QueryClientProvider>
-    </>
+    </PlausibleProvider>
   )
 }
 
