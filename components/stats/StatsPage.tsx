@@ -15,7 +15,6 @@ const TABS = ['tokens', 'perp-markets', 'mango-stats']
 const StatsPage = () => {
   const [activeTab, setActiveTab] = useState('tokens')
   const perpStats = mangoStore((s) => s.perpStats.data)
-  const initialStatsLoad = mangoStore((s) => s.tokenStats.initialLoad)
   const perpPositionsStatsNotLoaded = mangoStore(
     (s) => s.perpStats.positions.initialLoad,
   )
@@ -39,18 +38,11 @@ const StatsPage = () => {
     }
   }, [perpPositionsStatsNotLoaded])
 
-  useEffect(() => {
-    if (!initialStatsLoad) {
-      const actions = mangoStore.getState().actions
-      actions.fetchTokenStats()
-    }
-  }, [initialStatsLoad])
-
   const tabsWithCount: [string, number][] = useMemo(() => {
     return TABS.map((t) => [t, 0])
   }, [])
   return (
-    <div className="pb-20 md:pb-[27px]">
+    <div className="pb-16 md:pb-[27px]">
       {market ? (
         <PerpStatsPage />
       ) : token ? (
