@@ -54,7 +54,7 @@ const Button: FunctionComponent<ButtonCombinedProps> = ({
       {...props}
     >
       <span
-        className={`flex ${
+        className={`flex items-center justify-center ${
           themeData.buttonStyle === 'raised'
             ? 'group-hover:mt-1 group-active:mt-2'
             : ''
