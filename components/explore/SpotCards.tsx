@@ -64,11 +64,14 @@ const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
                 <div className="h-10 w-20">
                   <SimpleAreaChart
                     color={
-                      token.market?.rollingChange || 0 >= 0
+                      token.market.marketData.price_history[0].price <=
+                      bank.uiPrice
                         ? COLORS.UP[theme]
                         : COLORS.DOWN[theme]
                     }
-                    data={token.market.marketData.price_history}
+                    data={token.market.marketData.price_history.concat([
+                      { price: bank.uiPrice, time: new Date().toDateString() },
+                    ])}
                     name={bank.name}
                     xKey="time"
                     yKey="price"

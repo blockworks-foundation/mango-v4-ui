@@ -68,7 +68,15 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
 
         const pastPrice = token.market?.marketData?.price_24h || 0
 
-        const priceHistory = token.market?.marketData?.price_history
+        let priceHistory
+        if (
+          token.market?.marketData?.price_history &&
+          token.market?.marketData?.price_history.length
+        ) {
+          priceHistory = token.market.marketData.price_history.concat([
+            { price: price, time: new Date().toDateString() },
+          ])
+        }
 
         const volume = token.market?.marketData?.quote_volume_24h || 0
 
