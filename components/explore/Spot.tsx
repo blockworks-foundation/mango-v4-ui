@@ -29,12 +29,17 @@ import EmptyState from '@components/nftMarket/EmptyState'
 import { Bank } from '@blockworks-foundation/mango-v4'
 import Link from 'next/link'
 import useBanks from 'hooks/useBanks'
+import SheenLoader from '@components/shared/SheenLoader'
+import mangoStore from '@store/mangoStore'
 dayjs.extend(relativeTime)
 
 export type BankWithMarketData = {
   bank: Bank
   market: SerumMarketWithMarketData | undefined
 }
+
+const CALLOUT_TILES_WRAPPER_CLASSES =
+  'col-span-12 flex flex-col rounded-lg border border-th-bkg-3 p-6 lg:col-span-4'
 
 const generateSearchTerm = (item: BankWithMarketData, searchValue: string) => {
   const normalizedSearchValue = searchValue.toLowerCase()
@@ -87,7 +92,9 @@ const Spot = () => {
   const router = useRouter()
   const { group } = useMangoGroup()
   const { banks } = useBanks()
-  const { serumMarketsWithData } = useListedMarketsWithMarketData()
+  const { serumMarketsWithData, isLoading: loadingSerumMarkets } =
+    useListedMarketsWithMarketData()
+  const groupLoaded = mangoStore((s) => s.groupLoaded)
   const [sortByKey, setSortByKey] = useState<AllowedKeys>('quote_volume_24h')
   const [search, setSearch] = useState('')
   const [showTableView, setShowTableView] = useState(true)
@@ -175,7 +182,7 @@ const Spot = () => {
   return (
     <>
       <div className="grid grid-cols-12 gap-4 px-4 pb-8 md:px-6 2xl:px-12">
-        <div className="col-span-12 rounded-lg border border-th-bkg-3 p-6 lg:col-span-4">
+        <div className={CALLOUT_TILES_WRAPPER_CLASSES}>
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <BoltIcon className="h-5 w-5" />
@@ -189,111 +196,159 @@ const Spot = () => {
               </Link>
             </a>
           </div>
-          <div className="border-t border-th-bkg-3">
-            {newlyListed.map((listing) => {
-              const bank = group?.getFirstBankByTokenIndex(
-                listing.baseTokenIndex,
-              )
-              const mintInfo = newlyListedMintInfo.find(
-                (info) => info.tokenIndex === listing.baseTokenIndex,
-              )
-              let timeSinceListing = ''
-              if (mintInfo) {
-                timeSinceListing = dayjs().to(
-                  mintInfo.registrationTime.toNumber() * 1000,
+          {groupLoaded ? (
+            <div className="border-t border-th-bkg-3">
+              {newlyListed.map((listing) => {
+                const bank = group?.getFirstBankByTokenIndex(
+                  listing.baseTokenIndex,
                 )
-              }
-              if (!bank) return null
-              return (
-                <div
-                  className="default-transition flex h-16 cursor-pointer items-center justify-between border-b border-th-bkg-3 px-4 md:hover:bg-th-bkg-2"
-                  key={listing.baseTokenIndex}
-                  onClick={() => goToTokenPage(bank.name.split(' ')[0], router)}
-                >
-                  <div className="flex items-center">
-                    <TokenLogo bank={bank} />
-                    <p className="ml-3 font-body text-th-fgd-2">{bank.name}</p>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="mr-3">
-                      <span className="text-th-fgd-3">{timeSinceListing}</span>
+                const mintInfo = newlyListedMintInfo.find(
+                  (info) => info.tokenIndex === listing.baseTokenIndex,
+                )
+                let timeSinceListing = ''
+                if (mintInfo) {
+                  timeSinceListing = dayjs().to(
+                    mintInfo.registrationTime.toNumber() * 1000,
+                  )
+                }
+                if (!bank) return null
+                return (
+                  <div
+                    className="default-transition flex h-16 cursor-pointer items-center justify-between border-b border-th-bkg-3 px-4 md:hover:bg-th-bkg-2"
+                    key={listing.baseTokenIndex}
+                    onClick={() =>
+                      goToTokenPage(bank.name.split(' ')[0], router)
+                    }
+                  >
+                    <div className="flex items-center">
+                      <TokenLogo bank={bank} />
+                      <p className="ml-3 font-body text-th-fgd-2">
+                        {bank.name}
+                      </p>
                     </div>
-                    <ChevronRightIcon className="h-5 w-5 text-th-fgd-3" />
+                    <div className="flex items-center">
+                      <div className="mr-3">
+                        <span className="text-th-fgd-3">
+                          {timeSinceListing}
+                        </span>
+                      </div>
+                      <ChevronRightIcon className="h-5 w-5 text-th-fgd-3" />
+                    </div>
                   </div>
-                </div>
-              )
-            })}
-          </div>
+                )
+              })}
+            </div>
+          ) : (
+            <CalloutTilesLoader />
+          )}
         </div>
 
-        <div className="col-span-12 rounded-lg border border-th-bkg-3 p-6 lg:col-span-4">
+        <div className={CALLOUT_TILES_WRAPPER_CLASSES}>
           <div className="mb-4 flex items-center space-x-2">
             <RocketLaunchIcon className="h-5 w-5" />
             <h2 className="text-base">{t('explore:gainers')}</h2>
           </div>
-          <div className="border-t border-th-bkg-3">
-            {gainers.map((gainer) => {
-              const bank = group?.getFirstBankByTokenIndex(
-                gainer.baseTokenIndex,
-              )
-              if (!bank) return null
-              return (
-                <div
-                  className="default-transition flex h-16 cursor-pointer items-center justify-between border-b border-th-bkg-3 px-4 md:hover:bg-th-bkg-2"
-                  key={gainer.baseTokenIndex}
-                  onClick={() => goToTokenPage(bank.name.split(' ')[0], router)}
-                >
-                  <div className="flex items-center">
-                    <TokenLogo bank={bank} />
-                    <p className="ml-3 font-body text-th-fgd-2">{bank.name}</p>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="mr-3 flex flex-col items-end">
-                      <span className="font-mono">
-                        <FormatNumericValue value={bank.uiPrice} isUsd />
-                      </span>
-                      <Change change={gainer.rollingChange || 0} suffix="%" />
+          {!loadingSerumMarkets && groupLoaded ? (
+            <div className="h-full border-t border-th-bkg-3">
+              {gainers.length ? (
+                gainers.map((gainer) => {
+                  const bank = group?.getFirstBankByTokenIndex(
+                    gainer.baseTokenIndex,
+                  )
+                  if (!bank) return null
+                  return (
+                    <div
+                      className="default-transition flex h-16 cursor-pointer items-center justify-between border-b border-th-bkg-3 px-4 md:hover:bg-th-bkg-2"
+                      key={gainer.baseTokenIndex}
+                      onClick={() =>
+                        goToTokenPage(bank.name.split(' ')[0], router)
+                      }
+                    >
+                      <div className="flex items-center">
+                        <TokenLogo bank={bank} />
+                        <p className="ml-3 font-body text-th-fgd-2">
+                          {bank.name}
+                        </p>
+                      </div>
+                      <div className="flex items-center">
+                        <div className="mr-3 flex flex-col items-end">
+                          <span className="font-mono">
+                            <FormatNumericValue value={bank.uiPrice} isUsd />
+                          </span>
+                          <Change
+                            change={gainer.rollingChange || 0}
+                            suffix="%"
+                          />
+                        </div>
+                        <ChevronRightIcon className="h-5 w-5 text-th-fgd-3" />
+                      </div>
                     </div>
-                    <ChevronRightIcon className="h-5 w-5 text-th-fgd-3" />
-                  </div>
+                  )
+                })
+              ) : (
+                <div className="flex h-full flex-col items-center justify-center">
+                  <FaceFrownIcon className="mb-1.5 h-5 w-5" />
+                  <p>{t('explore:no-gainers')}</p>
                 </div>
-              )
-            })}
-          </div>
+              )}
+            </div>
+          ) : (
+            <CalloutTilesLoader />
+          )}
         </div>
 
-        <div className="col-span-12 rounded-lg border border-th-bkg-3 p-6 lg:col-span-4">
+        <div className={CALLOUT_TILES_WRAPPER_CLASSES}>
           <div className="mb-4 flex items-center space-x-2">
             <FaceFrownIcon className="h-5 w-5" />
             <h2 className="text-base">{t('explore:losers')}</h2>
           </div>
-          <div className="border-t border-th-bkg-3">
-            {losers.map((loser) => {
-              const bank = group?.getFirstBankByTokenIndex(loser.baseTokenIndex)
-              if (!bank) return null
-              return (
-                <div
-                  className="default-transition flex h-16 cursor-pointer items-center justify-between border-b border-th-bkg-3 px-4 md:hover:bg-th-bkg-2"
-                  key={loser.baseTokenIndex}
-                  onClick={() => goToTokenPage(bank.name.split(' ')[0], router)}
-                >
-                  <div className="flex items-center">
-                    <TokenLogo bank={bank} />
-                    <p className="ml-3 font-body text-th-fgd-2">{bank.name}</p>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="mr-3 flex flex-col items-end">
-                      <span className="font-mono">
-                        <FormatNumericValue value={bank.uiPrice} isUsd />
-                      </span>
-                      <Change change={loser.rollingChange || 0} suffix="%" />
+          {!loadingSerumMarkets && groupLoaded ? (
+            <div className="h-full border-t border-th-bkg-3">
+              {losers.length ? (
+                losers.map((loser) => {
+                  const bank = group?.getFirstBankByTokenIndex(
+                    loser.baseTokenIndex,
+                  )
+                  if (!bank) return null
+                  return (
+                    <div
+                      className="default-transition flex h-16 cursor-pointer items-center justify-between border-b border-th-bkg-3 px-4 md:hover:bg-th-bkg-2"
+                      key={loser.baseTokenIndex}
+                      onClick={() =>
+                        goToTokenPage(bank.name.split(' ')[0], router)
+                      }
+                    >
+                      <div className="flex items-center">
+                        <TokenLogo bank={bank} />
+                        <p className="ml-3 font-body text-th-fgd-2">
+                          {bank.name}
+                        </p>
+                      </div>
+                      <div className="flex items-center">
+                        <div className="mr-3 flex flex-col items-end">
+                          <span className="font-mono">
+                            <FormatNumericValue value={bank.uiPrice} isUsd />
+                          </span>
+                          <Change
+                            change={loser.rollingChange || 0}
+                            suffix="%"
+                          />
+                        </div>
+                        <ChevronRightIcon className="h-5 w-5 text-th-fgd-3" />
+                      </div>
                     </div>
-                    <ChevronRightIcon className="h-5 w-5 text-th-fgd-3" />
-                  </div>
+                  )
+                })
+              ) : (
+                <div className="flex h-full flex-col items-center justify-center">
+                  <RocketLaunchIcon className="mb-1.5 h-5 w-5" />
+                  <p>{t('explore:no-losers')}</p>
                 </div>
-              )
-            })}
-          </div>
+              )}
+            </div>
+          ) : (
+            <CalloutTilesLoader />
+          )}
         </div>
       </div>
 
@@ -359,3 +414,15 @@ const Spot = () => {
 }
 
 export default Spot
+
+const CalloutTilesLoader = () => {
+  return (
+    <div className="space-y-1">
+      {[...Array(3)].map((x, i) => (
+        <SheenLoader className="flex flex-1" key={i}>
+          <div className="h-16 w-full rounded-md bg-th-bkg-2" />
+        </SheenLoader>
+      ))}
+    </div>
+  )
+}
