@@ -150,18 +150,16 @@ const Spot = () => {
   }, [group])
 
   const newlyListed = useMemo(() => {
-    if (!newlyListedMintInfo.length || !serumMarketsWithData.length) return []
+    if (!newlyListedMintInfo.length || !banks.length) return []
     const newlyListed = []
     for (const listing of newlyListedMintInfo) {
-      const market = serumMarketsWithData.find(
-        (market) => market.baseTokenIndex === listing.tokenIndex,
-      )
-      if (market) {
-        newlyListed.push(market)
+      const bank = banks.find((bank) => bank.tokenIndex === listing.tokenIndex)
+      if (bank) {
+        newlyListed.push(bank)
       }
     }
     return newlyListed
-  }, [newlyListedMintInfo, serumMarketsWithData])
+  }, [newlyListedMintInfo, banks])
 
   const [gainers, losers] = useMemo(() => {
     if (!serumMarketsWithData.length) return [[], []]
@@ -214,12 +212,9 @@ const Spot = () => {
           </div>
           {groupLoaded ? (
             <div className="border-t border-th-bkg-3">
-              {newlyListed.map((listing) => {
-                const bank = group?.getFirstBankByTokenIndex(
-                  listing.baseTokenIndex,
-                )
+              {newlyListed.map((token) => {
                 const mintInfo = newlyListedMintInfo.find(
-                  (info) => info.tokenIndex === listing.baseTokenIndex,
+                  (info) => info.tokenIndex === token.tokenIndex,
                 )
                 let timeSinceListing = ''
                 if (mintInfo) {
@@ -227,19 +222,18 @@ const Spot = () => {
                     mintInfo.registrationTime.toNumber() * 1000,
                   )
                 }
-                if (!bank) return null
                 return (
                   <div
                     className="default-transition flex h-16 cursor-pointer items-center justify-between border-b border-th-bkg-3 px-4 md:hover:bg-th-bkg-2"
-                    key={listing.baseTokenIndex}
+                    key={token.tokenIndex}
                     onClick={() =>
-                      goToTokenPage(bank.name.split(' ')[0], router)
+                      goToTokenPage(token.name.split(' ')[0], router)
                     }
                   >
                     <div className="flex items-center">
-                      <TokenLogo bank={bank} />
+                      <TokenLogo bank={token} />
                       <p className="ml-3 font-body text-th-fgd-2">
-                        {bank.name}
+                        {token.name}
                       </p>
                     </div>
                     <div className="flex items-center">
