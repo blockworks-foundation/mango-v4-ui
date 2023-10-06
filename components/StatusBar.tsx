@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import Tps from './Tps'
+import Tps, { StatusDot } from './Tps'
 import DiscordIcon from './icons/DiscordIcon'
 import { TwitterIcon } from './icons/TwitterIcon'
 import { DocumentTextIcon } from '@heroicons/react/20/solid'
@@ -8,6 +8,7 @@ import { IDL } from '@blockworks-foundation/mango-v4'
 import RpcPing from './RpcPing'
 import Tooltip from './shared/Tooltip'
 import { useRouter } from 'next/router'
+import useOffchainServicesHealth from 'hooks/useOffchainServicesHealth'
 
 const DEFAULT_LATEST_COMMIT = { sha: '', url: '' }
 
@@ -36,6 +37,10 @@ const StatusBar = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation('common')
   const [latestCommit, setLatestCommit] = useState(DEFAULT_LATEST_COMMIT)
   const router = useRouter()
+  const { offchainHealth, isLoading: loadingOffchainHealth } =
+    useOffchainServicesHealth()
+
+  console.log(offchainHealth)
 
   useEffect(() => {
     const { sha } = latestCommit
@@ -54,6 +59,15 @@ const StatusBar = ({ collapsed }: { collapsed: boolean }) => {
         <Tps />
         <span className="text-th-fgd-4">|</span>
         <RpcPing />
+        {!loadingOffchainHealth ? (
+          <>
+            <span className="text-th-fgd-4">|</span>
+            <div className="flex items-center">
+              <StatusDot status={offchainHealth} alert={201} warning={301} />
+              <span className="text-xs text-th-fgd-2">Offchain Services</span>
+            </div>
+          </>
+        ) : null}
       </div>
       <div className="col-span-1 flex items-center justify-center">
         <Tooltip content={t('program-version')}>
