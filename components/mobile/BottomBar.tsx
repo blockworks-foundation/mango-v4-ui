@@ -16,10 +16,11 @@ import {
   BanknotesIcon,
   PlusCircleIcon,
   ArchiveBoxArrowDownIcon,
-  // ClipboardDocumentIcon,
   NewspaperIcon,
   ExclamationTriangleIcon,
   DocumentTextIcon,
+  SparklesIcon,
+  ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/20/solid'
 import SolanaTps from '@components/SolanaTps'
 import LeaderboardIcon from '@components/icons/LeaderboardIcon'
@@ -79,9 +80,9 @@ const BottomBar = () => {
           <ArrowTrendingUpIcon className="mb-1 h-4 w-4" />
           <StyledBarItemLabel>{t('trade')}</StyledBarItemLabel>
         </BottomBarLink>
-        <BottomBarLink isActive={asPath === '/borrow'} pathName="/borrow">
-          <BanknotesIcon className="mb-1 h-4 w-4" />
-          <StyledBarItemLabel>{t('borrow')}</StyledBarItemLabel>
+        <BottomBarLink isActive={asPath === '/explore'} pathName="/borrow">
+          <SparklesIcon className="mb-1 h-4 w-4" />
+          <StyledBarItemLabel>{t('explore')}</StyledBarItemLabel>
         </BottomBarLink>
         <button
           className={`${
@@ -110,7 +111,7 @@ const MoreMenuPanel = ({
   const { t } = useTranslation(['common', 'search'])
   return (
     <div
-      className={`fixed bottom-0 z-30 h-full w-full overflow-hidden bg-th-bkg-2 px-4 transition duration-300 ease-in-out ${
+      className={`hide-scroll fixed bottom-0 z-30 h-full w-full overflow-auto bg-th-bkg-2 px-4 pb-4 transition duration-300 ease-in-out ${
         showPanel ? 'translate-y-0' : 'translate-y-full'
       }`}
     >
@@ -124,6 +125,11 @@ const MoreMenuPanel = ({
         className="border-b border-th-bkg-4"
         onClick={() => setShowPanel(false)}
       >
+        <MoreMenuItem
+          title={t('borrow')}
+          path="/borrow"
+          icon={<BanknotesIcon className="h-5 w-5" />}
+        />
         <MoreMenuItem
           title={t('stats')}
           path="/stats"
@@ -208,7 +214,7 @@ const MoreMenuItem = ({
         {icon}
         <span>{title}</span>
       </div>
-      <ChevronRightIcon className="h-5 w-5" />
+      <ArrowTopRightOnSquareIcon className="h-4 w-4" />
     </a>
   ) : (
     <Link href={path} shallow={true} className={classNames}>
