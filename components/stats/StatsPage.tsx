@@ -14,7 +14,6 @@ const TABS = ['tokens', 'perp-markets', 'mango-stats']
 
 const StatsPage = () => {
   const [activeTab, setActiveTab] = useState('tokens')
-  const perpStats = mangoStore((s) => s.perpStats.data)
   const perpPositionsStatsNotLoaded = mangoStore(
     (s) => s.perpStats.positions.initialLoad,
   )
@@ -23,13 +22,6 @@ const StatsPage = () => {
   const router = useRouter()
   const { market } = router.query
   const { token } = router.query
-
-  useEffect(() => {
-    if (!perpStats || !perpStats.length) {
-      const actions = mangoStore.getState().actions
-      actions.fetchPerpStats()
-    }
-  }, [perpStats])
 
   useEffect(() => {
     if (perpPositionsStatsNotLoaded) {

@@ -18,14 +18,14 @@ const ChartTabs = ({ bank }: { bank: Bank }) => {
   const [borrowRateDaysToShow, setBorrowRateDaysToShow] = useState('30')
   const tokenStats = mangoStore((s) => s.tokenStats.data)
   const loadingTokenStats = mangoStore((s) => s.tokenStats.loading)
-  const tokenStateInitialLoad = mangoStore((s) => s.tokenStats.initialLoad)
+  const tokenStatsInitialLoad = mangoStore((s) => s.tokenStats.initialLoad)
 
   useEffect(() => {
-    if (!tokenStateInitialLoad) {
+    if (!tokenStatsInitialLoad) {
       const actions = mangoStore.getState().actions
       actions.fetchTokenStats()
     }
-  }, [tokenStateInitialLoad])
+  }, [tokenStatsInitialLoad])
 
   const statsHistory = useMemo(() => {
     if (!tokenStats?.length) return []
