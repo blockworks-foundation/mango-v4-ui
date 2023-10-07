@@ -162,27 +162,54 @@ const Spot = () => {
   }, [newlyListedMintInfo, banks])
 
   const [gainers, losers] = useMemo(() => {
-    if (!serumMarketsWithData.length) return [[], []]
-    const sortByChange = serumMarketsWithData
-      .filter((market) => market.quoteTokenIndex === 0)
+    if (!banksWithMarketData.length) return [[], []]
+    const sortByChange = banksWithMarketData
+      .filter((token) => {
+        const volume = token.market?.marketData?.quote_volume_24h || 0
+        return token.market?.quoteTokenIndex === 0 && volume > 0
+      })
       .sort((a, b) => {
-        const rollingChangeA = a?.marketData?.change_24h || 0
-        const rollingChangeB = b?.marketData?.change_24h || 0
-        return rollingChangeB - rollingChangeA
+        const aPrice = a?.bank?.uiPrice || 0
+        const bPrice = b?.bank?.uiPrice || 0
+        const aPastPrice = a.market?.marketData?.price_24h
+        const bPastPrice = b.market?.marketData?.price_24h
+        const aValue = aPastPrice
+          ? ((aPrice - aPastPrice) / aPastPrice) * 100
+          : undefined
+        const bValue = bPastPrice
+          ? ((bPrice - bPastPrice) / bPastPrice) * 100
+          : undefined
+        if (typeof aValue === 'undefined' && typeof bValue === 'undefined') {
+          return 0 // Consider them equal
+        }
+        if (typeof aValue === 'undefined') {
+          return 1 // b should come before a
+        }
+        if (typeof bValue === 'undefined') {
+          return -1 // a should come before b
+        }
+
+        return bValue - aValue
       })
     const gainers = sortByChange.slice(0, 3).filter((item) => {
-      const change = item?.marketData?.change_24h || 0
+      const pastPrice = item.market?.marketData?.price_24h
+      const change = pastPrice
+        ? ((item.bank.uiPrice - pastPrice) / pastPrice) * 100
+        : 0
       return change > 0
     })
     const losers = sortByChange
       .slice(-3)
       .reverse()
       .filter((item) => {
-        const change = item?.marketData?.change_24h || 0
+        const pastPrice = item.market?.marketData?.price_24h
+        const change = pastPrice
+          ? ((item.bank.uiPrice - pastPrice) / pastPrice) * 100
+          : 0
         return change < 0
       })
     return [gainers, losers]
-  }, [serumMarketsWithData])
+  }, [banksWithMarketData])
 
   const sortedTokensToShow = useMemo(() => {
     if (!banksWithMarketData.length) return []
@@ -262,14 +289,15 @@ const Spot = () => {
             <div className="h-full border-t border-th-bkg-3">
               {gainers.length ? (
                 gainers.map((gainer) => {
-                  const bank = group?.getFirstBankByTokenIndex(
-                    gainer.baseTokenIndex,
-                  )
-                  if (!bank) return null
+                  const bank = gainer.bank
+                  const pastPrice = gainer.market?.marketData?.price_24h
+                  const change = pastPrice
+                    ? ((bank.uiPrice - pastPrice) / pastPrice) * 100
+                    : 0
                   return (
                     <div
                       className="default-transition flex h-16 cursor-pointer items-center justify-between border-b border-th-bkg-3 px-4 md:hover:bg-th-bkg-2"
-                      key={gainer.baseTokenIndex}
+                      key={bank.tokenIndex}
                       onClick={() =>
                         goToTokenPage(bank.name.split(' ')[0], router)
                       }
@@ -285,10 +313,7 @@ const Spot = () => {
                           <span className="font-mono">
                             <FormatNumericValue value={bank.uiPrice} isUsd />
                           </span>
-                          <Change
-                            change={gainer?.marketData?.change_24h || 0}
-                            suffix="%"
-                          />
+                          <Change change={change} suffix="%" />
                         </div>
                         <ChevronRightIcon className="h-5 w-5 text-th-fgd-3" />
                       </div>
@@ -316,14 +341,15 @@ const Spot = () => {
             <div className="h-full border-t border-th-bkg-3">
               {losers.length ? (
                 losers.map((loser) => {
-                  const bank = group?.getFirstBankByTokenIndex(
-                    loser.baseTokenIndex,
-                  )
-                  if (!bank) return null
+                  const bank = loser.bank
+                  const pastPrice = loser.market?.marketData?.price_24h
+                  const change = pastPrice
+                    ? ((bank.uiPrice - pastPrice) / pastPrice) * 100
+                    : 0
                   return (
                     <div
                       className="default-transition flex h-16 cursor-pointer items-center justify-between border-b border-th-bkg-3 px-4 md:hover:bg-th-bkg-2"
-                      key={loser.baseTokenIndex}
+                      key={bank.tokenIndex}
                       onClick={() =>
                         goToTokenPage(bank.name.split(' ')[0], router)
                       }
@@ -339,10 +365,7 @@ const Spot = () => {
                           <span className="font-mono">
                             <FormatNumericValue value={bank.uiPrice} isUsd />
                           </span>
-                          <Change
-                            change={loser?.marketData?.change_24h || 0}
-                            suffix="%"
-                          />
+                          <Change change={change} suffix="%" />
                         </div>
                         <ChevronRightIcon className="h-5 w-5 text-th-fgd-3" />
                       </div>
