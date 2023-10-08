@@ -61,13 +61,17 @@ const ActivityFilters = () => {
   const advancedParamsString = useMemo(() => {
     let advancedParams = ''
     Object.entries(advancedFilters).map((entry) => {
-      if (entry[1].length) {
-        // ETH should be renamed to ETH (Portal) in the database
-        const alignSymbolsToBackend = entry[1].map((e: string) =>
-          e === 'ETH (Portal)' ? 'ETH' : e,
-        )
-        advancedParams =
-          advancedParams + `&${entry[0]}=${alignSymbolsToBackend}`
+      if (entry[1].toString().length) {
+        if (entry[0] === 'symbol') {
+          // ETH should be renamed to ETH (Portal) in the database
+          const alignSymbolsToBackend = entry[1].map((e: string) =>
+            e === 'ETH (Portal)' ? 'ETH' : e,
+          )
+          advancedParams =
+            advancedParams + `&${entry[0]}=${alignSymbolsToBackend}`
+        } else {
+          advancedParams = advancedParams + `&${entry[0]}=${entry[1]}`
+        }
       }
     })
     return advancedParams
