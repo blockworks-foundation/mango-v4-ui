@@ -11,12 +11,20 @@ import {
 import Tooltip from '@components/shared/Tooltip'
 import { Disclosure, Transition } from '@headlessui/react'
 import { getOracleProvider } from 'hooks/useOracleProvider'
-import { goToPerpMarketDetails } from './PerpMarketsOverviewTable'
-import { useRouter } from 'next/router'
+import { NextRouter, useRouter } from 'next/router'
 import { LinkButton } from '@components/shared/Button'
 import SoonBadge from '@components/shared/SoonBadge'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
+import { PerpMarket } from '@blockworks-foundation/mango-v4'
+
+export const goToPerpMarketDetails = (
+  market: PerpMarket,
+  router: NextRouter,
+) => {
+  const query = { ...router.query, ['market']: market.name }
+  router.push({ pathname: router.pathname, query })
+}
 
 const PerpMarketDetailsTable = () => {
   const { t } = useTranslation(['common', 'trade'])

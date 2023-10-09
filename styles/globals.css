@@ -856,42 +856,76 @@ input[type='range']::-webkit-slider-runnable-track {
 /* raised button */
 
 .raised-button {
-  @apply relative flex items-center justify-center bg-th-button text-th-fgd-1 transition-none;
-  box-shadow: 0 6px var(--button-hover);
+  @apply relative z-10 transition-none;
 }
 
-.raised-button:hover {
-  background-color: var(--button);
+.raised-button:after {
+  @apply absolute left-0 top-0 h-full w-full bg-th-button;
+  content: '';
   box-shadow: 0 4px var(--button-hover);
+  z-index: -1;
+}
+
+.raised-button:hover:after {
+  background-color: var(--button);
+  box-shadow: 0 2px var(--button-hover);
   top: 2px;
 }
 
-.raised-button:active {
+.raised-button:active:after {
   box-shadow: 0 0 var(--button-hover);
-  top: 6px;
+  top: 4px;
 }
 
 /* raised buy button */
 
 .raised-buy-button {
-  @apply relative flex items-center justify-center bg-th-up text-black transition-none;
-  box-shadow: 0 6px var(--up-dark);
+  @apply relative z-10 text-black transition-none;
 }
 
-.raised-buy-button:hover {
-  background-color: var(--up) !important;
+.raised-buy-button:after {
+  @apply absolute left-0 top-0 h-full w-full bg-th-up;
+  content: '';
   box-shadow: 0 4px var(--up-dark);
+  z-index: -1;
+}
+
+.raised-buy-button:hover:after {
+  background-color: var(--up);
+  box-shadow: 0 2px var(--up-dark);
   top: 2px;
 }
 
-.raised-buy-button:active {
+.raised-buy-button:active:after {
   box-shadow: 0 0 var(--up-dark);
-  top: 6px;
+  top: 4px;
 }
 
 /* raised sell button */
 
 .raised-sell-button {
+  @apply relative z-10 text-white transition-none;
+}
+
+.raised-sell-button:after {
+  @apply absolute left-0 top-0 h-full w-full bg-th-down;
+  content: '';
+  box-shadow: 0 4px var(--down-dark);
+  z-index: -1;
+}
+
+.raised-sell-button:hover:after {
+  background-color: var(--down);
+  box-shadow: 0 2px var(--down-dark);
+  top: 2px;
+}
+
+.raised-sell-button:active:after {
+  box-shadow: 0 0 var(--down-dark);
+  top: 4px;
+}
+
+/* .raised-sell-button {
   @apply relative flex items-center justify-center bg-th-down text-white transition-none;
   box-shadow: 0 6px var(--down-dark);
 }
@@ -905,7 +939,7 @@ input[type='range']::-webkit-slider-runnable-track {
 .raised-sell-button:active {
   box-shadow: 0 0 var(--down-dark);
   top: 6px;
-}
+} */
 
 .pagination {
   margin-top: 15px;

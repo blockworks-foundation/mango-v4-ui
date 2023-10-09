@@ -787,16 +787,12 @@ const AdvancedTradeForm = () => {
                   <Button
                     className={`flex w-full items-center justify-center ${
                       tradeForm.side === 'buy'
-                        ? `bg-th-up-dark md:hover:bg-th-up-dark ${
-                            themeData.buttonStyle === 'raised'
-                              ? 'raised-buy-button'
-                              : 'text-white md:hover:brightness-90'
-                          }`
-                        : `bg-th-down-dark md:hover:bg-th-down-dark ${
-                            themeData.buttonStyle === 'raised'
-                              ? 'raised-sell-button'
-                              : 'text-white md:hover:brightness-90'
-                          }`
+                        ? themeData.buttonStyle === 'raised'
+                          ? 'raised-buy-button'
+                          : 'bg-th-up-dark text-white md:hover:bg-th-up-dark md:hover:brightness-90'
+                        : themeData.buttonStyle === 'raised'
+                        ? 'raised-sell-button'
+                        : 'bg-th-down-dark text-white md:hover:bg-th-down-dark md:hover:brightness-90'
                     }`}
                     disabled={disabled}
                     size="large"

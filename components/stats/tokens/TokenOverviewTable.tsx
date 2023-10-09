@@ -132,7 +132,7 @@ const TokenOverviewTable = () => {
                 </Th>
                 <Th className="text-right">
                   <div className="flex justify-end">
-                    <Tooltip content="The amount available to borrow">
+                    <Tooltip content={t('tooltip-available', { token: '' })}>
                       <SortableColumnHeader
                         sortKey="availableValue"
                         sort={() => requestSort('availableValue')}

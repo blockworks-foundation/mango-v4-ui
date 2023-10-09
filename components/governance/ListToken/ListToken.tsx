@@ -11,6 +11,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { OPENBOOK_PROGRAM_ID, toNative } from '@blockworks-foundation/mango-v4'
 import {
   MANGO_DAO_FAST_LISTING_GOVERNANCE,
+  MANGO_DAO_FAST_LISTING_WALLET,
   MANGO_DAO_WALLET,
   MANGO_DAO_WALLET_GOVERNANCE,
   MANGO_MINT_DECIMALS,
@@ -557,10 +558,10 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         .tokenRegisterTrustless(Number(advForm.tokenIndex), advForm.name)
         .accounts({
           mint: new PublicKey(advForm.mintPk),
-          payer: MANGO_DAO_WALLET,
+          payer: MANGO_DAO_FAST_LISTING_WALLET,
           rent: SYSVAR_RENT_PUBKEY,
           oracle: new PublicKey(advForm.oraclePk),
-          admin: MANGO_DAO_WALLET,
+          admin: MANGO_DAO_FAST_LISTING_WALLET,
           group: group!.publicKey,
         })
         .instruction()
@@ -580,7 +581,9 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         payer: MANGO_DAO_WALLET,
       })
       .instruction()
-    proposalTx.push(registerMarketix)
+    if (listingTier !== 'UNTRUSTED') {
+      proposalTx.push(registerMarketix)
+    }
 
     const walletSigner = wallet as never
     setCreatingProposal(true)

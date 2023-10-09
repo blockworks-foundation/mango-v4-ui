@@ -24,10 +24,13 @@ import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import Loading from '@components/shared/Loading'
 import MarketChange from '@components/shared/MarketChange'
 import SheenLoader from '@components/shared/SheenLoader'
-import useListedMarketsWithMarketData, {
-  SerumMarketWithMarketData,
-} from 'hooks/useListedMarketsWithMarketData'
-import { AllowedKeys, sortPerpMarkets, sortSpotMarkets } from 'utils/markets'
+import useListedMarketsWithMarketData from 'hooks/useListedMarketsWithMarketData'
+import {
+  AllowedKeys,
+  sortPerpMarkets,
+  sortSpotMarkets,
+  startSearch,
+} from 'utils/markets'
 import Input from '@components/forms/Input'
 import { useSortableData } from 'hooks/useSortableData'
 import { SortableColumnHeader } from '@components/shared/TableElements'
@@ -37,38 +40,6 @@ const MARKET_LINK_CLASSES =
 
 const MARKET_LINK_DISABLED_CLASSES =
   'flex w-full items-center justify-between py-2 px-4 md:hover:cursor-not-allowed'
-
-const generateSearchTerm = (
-  item: SerumMarketWithMarketData,
-  searchValue: string,
-) => {
-  const normalizedSearchValue = searchValue.toLowerCase()
-  const value = item.name.toLowerCase()
-
-  const isMatchingWithName =
-    item.name.toLowerCase().indexOf(normalizedSearchValue) >= 0
-  const matchingSymbolPercent = isMatchingWithName
-    ? normalizedSearchValue.length / item.name.length
-    : 0
-
-  return {
-    token: item,
-    matchingIdx: value.indexOf(normalizedSearchValue),
-    matchingSymbolPercent,
-  }
-}
-
-const startSearch = (
-  items: SerumMarketWithMarketData[],
-  searchValue: string,
-) => {
-  return items
-    .map((item) => generateSearchTerm(item, searchValue))
-    .filter((item) => item.matchingIdx >= 0)
-    .sort((i1, i2) => i1.matchingIdx - i2.matchingIdx)
-    .sort((i1, i2) => i2.matchingSymbolPercent - i1.matchingSymbolPercent)
-    .map((item) => item.token)
-}
 
 const MarketSelectDropdown = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -90,26 +61,28 @@ const MarketSelectDropdown = () => {
     return sortPerpMarkets(perpMarketsWithData, defaultSortByKey)
   }, [perpMarketsWithData])
 
-  const spotBaseTokens: string[] = useMemo(() => {
-    if (serumMarketsWithData.length) {
-      const baseTokens: string[] = ['All']
+  const spotQuoteTokens: string[] = useMemo(() => {
+    if (serumMarketsWithData.length && group) {
+      const quoteTokens: string[] = ['All']
       serumMarketsWithData.map((m) => {
-        const base = m.name.split('/')[1]
-        if (!baseTokens.includes(base)) {
-          baseTokens.push(base)
+        const quoteBank = group.getFirstBankByTokenIndex(m.quoteTokenIndex)
+        const quote = quoteBank.name
+        if (!quoteTokens.includes(quote)) {
+          quoteTokens.push(quote)
         }
       })
-      return baseTokens.sort((a, b) => a.localeCompare(b))
+      return quoteTokens.sort((a, b) => a.localeCompare(b))
     }
     return ['All']
-  }, [serumMarketsWithData])
+  }, [group, serumMarketsWithData])
 
   const unsortedSerumMarketsToShow = useMemo(() => {
-    if (!serumMarketsWithData.length) return []
+    if (!serumMarketsWithData.length || !group) return []
     if (spotBaseFilter !== 'All') {
       const filteredMarkets = serumMarketsWithData.filter((m) => {
-        const base = m.name.split('/')[1]
-        return base === spotBaseFilter
+        const quoteBank = group.getFirstBankByTokenIndex(m.quoteTokenIndex)
+        const quote = quoteBank.name
+        return quote === spotBaseFilter
       })
       return search
         ? startSearch(filteredMarkets, search)
@@ -119,7 +92,7 @@ const MarketSelectDropdown = () => {
         ? startSearch(serumMarketsWithData, search)
         : sortSpotMarkets(serumMarketsWithData, defaultSortByKey)
     }
-  }, [search, serumMarketsWithData, spotBaseFilter])
+  }, [group, search, serumMarketsWithData, spotBaseFilter])
 
   const handleUpdateSearch = (e: ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value)
@@ -195,7 +168,7 @@ const MarketSelectDropdown = () => {
                 fillWidth
               />
             </div>
-            <div className="thin-scroll max-h-[calc(100vh-188px)] overflow-auto py-3">
+            <div className="thin-scroll h-[calc(100vh-188px)] overflow-auto py-3 md:max-h-[calc(100vh-215px)]">
               {spotOrPerp === 'perp' && perpMarketsToShow.length ? (
                 <>
                   <div className="mb-2 grid grid-cols-3 border-b border-th-bkg-3 pb-1 pl-4 pr-14 text-xxs sm:grid-cols-4">
@@ -333,7 +306,7 @@ const MarketSelectDropdown = () => {
                       <MagnifyingGlassIcon className="absolute left-2 top-2 h-4 w-4" />
                     </div>
                     <div>
-                      {spotBaseTokens.map((tab) => (
+                      {spotQuoteTokens.map((tab) => (
                         <button
                           className={`rounded-md px-2.5 py-1.5 text-sm font-medium focus-visible:bg-th-bkg-3 focus-visible:text-th-fgd-1 ${
                             spotBaseFilter === tab

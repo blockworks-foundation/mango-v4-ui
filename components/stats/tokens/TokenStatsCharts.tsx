@@ -1,6 +1,6 @@
 import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 import { formatYAxis } from 'utils/formatting'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
@@ -14,6 +14,14 @@ const TokenStatsCharts = () => {
   const [borrowDaysToShow, setBorrowDaysToShow] = useState('30')
   const [depositDaysToShow, setDepositDaysToShow] = useState('30')
   const banks = useBanksWithBalances()
+  const tokenStatsInitialLoad = mangoStore((s) => s.tokenStats.initialLoad)
+
+  useEffect(() => {
+    if (!tokenStatsInitialLoad) {
+      const actions = mangoStore.getState().actions
+      actions.fetchTokenStats()
+    }
+  }, [tokenStatsInitialLoad])
 
   const [
     currentTotalDepositValue,
