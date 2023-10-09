@@ -1,15 +1,24 @@
 import { useTranslation } from 'react-i18next'
-import Tps from './Tps'
+import Tps, { StatusDot } from './Tps'
 import DiscordIcon from './icons/DiscordIcon'
 import { TwitterIcon } from './icons/TwitterIcon'
 import { DocumentTextIcon } from '@heroicons/react/20/solid'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { IDL } from '@blockworks-foundation/mango-v4'
 import RpcPing from './RpcPing'
 import Tooltip from './shared/Tooltip'
 import { useRouter } from 'next/router'
+import useOffchainServicesHealth from 'hooks/useOffchainServicesHealth'
+import mangoStore from '@store/mangoStore'
+import { Connection } from '@solana/web3.js'
+import { sumBy } from 'lodash'
+import useInterval from './shared/useInterval'
 
 const DEFAULT_LATEST_COMMIT = { sha: '', url: '' }
+export const tpsAlertThreshold = 1300
+export const tpsWarningThreshold = 1000
+export const rpcAlertThreshold = 250
+export const rpcWarningThreshold = 500
 
 const getLatestCommit = async () => {
   try {
@@ -32,10 +41,81 @@ const getLatestCommit = async () => {
   }
 }
 
+const getRecentPerformance = async (
+  connection: Connection,
+  setTps: (x: number) => void,
+) => {
+  try {
+    const samples = 2
+    const response = await connection.getRecentPerformanceSamples(samples)
+    const totalSecs = sumBy(response, 'samplePeriodSecs')
+    const totalTransactions = sumBy(response, 'numTransactions')
+    const tps = totalTransactions / totalSecs
+
+    setTps(tps)
+  } catch {
+    console.warn('Unable to fetch TPS')
+  }
+}
+
+const getPingTime = async (
+  connection: Connection,
+  setRpcPing: (x: number) => void,
+) => {
+  const startTime = Date.now()
+  try {
+    await connection.getSlot()
+
+    const endTime = Date.now()
+    const pingTime = endTime - startTime
+    setRpcPing(pingTime)
+  } catch (error) {
+    console.error('Error pinging the RPC:', error)
+    return null
+  }
+}
+
+const getOverallStatus = (
+  tps: number,
+  rpcPing: number,
+  offchainHealth: number,
+) => {
+  if (tps < tpsWarningThreshold) {
+    return 'severly-degraded'
+  } else if (
+    tps < tpsAlertThreshold ||
+    rpcPing > rpcWarningThreshold ||
+    offchainHealth !== 200
+  ) {
+    return 'degraded'
+  } else return 'operational'
+}
+
 const StatusBar = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation('common')
   const [latestCommit, setLatestCommit] = useState(DEFAULT_LATEST_COMMIT)
   const router = useRouter()
+  const { offchainHealth, isLoading: loadingOffchainHealth } =
+    useOffchainServicesHealth()
+  const connection = mangoStore((s) => s.connection)
+  const [tps, setTps] = useState(0)
+  const [rpcPing, setRpcPing] = useState(0)
+
+  useEffect(() => {
+    getPingTime(connection, setRpcPing)
+  }, [])
+
+  useInterval(() => {
+    getPingTime(connection, setRpcPing)
+  }, 30 * 1000)
+
+  useEffect(() => {
+    getRecentPerformance(connection, setTps)
+  }, [])
+
+  useInterval(() => {
+    getRecentPerformance(connection, setTps)
+  }, 60 * 1000)
 
   useEffect(() => {
     const { sha } = latestCommit
@@ -44,16 +124,65 @@ const StatusBar = ({ collapsed }: { collapsed: boolean }) => {
     }
   }, [latestCommit])
 
+  const platformHealth = useMemo(() => {
+    return getOverallStatus(tps, rpcPing, offchainHealth)
+  }, [tps, rpcPing, offchainHealth])
+
+  const dotColor =
+    platformHealth === 'severly-degraded'
+      ? 'bg-th-error'
+      : platformHealth === 'degraded'
+      ? 'bg-th-warning'
+      : 'bg-th-success'
+
   return (
     <div
       className={`fixed hidden ${
         collapsed ? 'w-[calc(100vw-64px)]' : 'w-[calc(100vw-200px)]'
       } bottom-0 z-10 bg-th-input-bkg px-4 py-1 md:grid md:grid-cols-3 md:px-6`}
     >
-      <div className="col-span-1 flex items-center space-x-2">
-        <Tps />
-        <span className="text-th-fgd-4">|</span>
-        <RpcPing />
+      <div className="col-span-1 flex items-center">
+        <Tooltip
+          content={
+            <div className="space-y-2">
+              <div>
+                <p className="mb-0.5">{t('solana-tps')}</p>
+                <Tps tps={tps} />
+              </div>
+              <div>
+                <p className="mb-0.5">{t('rpc-ping')}</p>
+                <RpcPing rpcPing={rpcPing} />
+              </div>
+              {!loadingOffchainHealth ? (
+                <div className="flex items-center">
+                  <StatusDot
+                    status={offchainHealth}
+                    alert={201}
+                    warning={301}
+                  />
+                  <span className="text-xs text-th-fgd-2">
+                    {t('offchain-services')}
+                  </span>
+                </div>
+              ) : null}
+            </div>
+          }
+          placement="top-start"
+        >
+          <div className="flex items-center">
+            <div className="relative mr-1 h-3 w-3">
+              <div
+                className={`absolute left-0.5 top-0.5 h-2 w-2 rounded-full ${dotColor}`}
+              />
+              <div
+                className={`absolute h-3 w-3 rounded-full opacity-40 ${dotColor}`}
+              />
+            </div>
+            <p className="tooltip-underline text-xs leading-none">
+              {t(platformHealth)}
+            </p>
+          </div>
+        </Tooltip>
       </div>
       <div className="col-span-1 flex items-center justify-center">
         <Tooltip content={t('program-version')}>
