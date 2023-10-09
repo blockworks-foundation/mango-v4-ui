@@ -1,3 +1,4 @@
+import useInterval from '@components/shared/useInterval'
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 
@@ -22,15 +23,19 @@ const fetchOffchainHealth = async () => {
 }
 
 export default function useOffchainServicesHealth() {
-  const { data: offchainHealthData, isLoading } = useQuery(
-    ['offchain-health'],
-    () => fetchOffchainHealth(),
-    {
-      cacheTime: 1000 * 60 * 10,
-      staleTime: 1000 * 60,
-      retry: 3,
-    },
-  )
+  const {
+    data: offchainHealthData,
+    isLoading,
+    refetch,
+  } = useQuery(['offchain-health'], () => fetchOffchainHealth(), {
+    cacheTime: 1000 * 60 * 10,
+    staleTime: 1000 * 60,
+    retry: 3,
+  })
+
+  useInterval(() => {
+    refetch()
+  }, 60 * 1000)
 
   const offchainHealth = useMemo(() => {
     if (!offchainHealthData) return 500
