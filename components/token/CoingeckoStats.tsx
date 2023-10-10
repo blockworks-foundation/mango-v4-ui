@@ -1,8 +1,6 @@
 import { Bank } from '@blockworks-foundation/mango-v4'
 import Change from '@components/shared/Change'
-import ChartRangeButtons from '@components/shared/ChartRangeButtons'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
-import SheenLoader from '@components/shared/SheenLoader'
 import { ArrowSmallUpIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 import { useQuery } from '@tanstack/react-query'
 import { makeApiRequest } from 'apis/birdeye/helpers'
@@ -12,8 +10,9 @@ import { BirdeyePriceResponse } from 'hooks/useBirdeyeMarketPrices'
 import parse from 'html-react-parser'
 import { useTranslation } from 'next-i18next'
 import { useMemo, useState } from 'react'
-import PriceChart from '@components/token/PriceChart'
 import { DAILY_SECONDS } from 'utils/constants'
+import DetailedAreaOrBarChart from '@components/shared/DetailedAreaOrBarChart'
+import { formatCurrencyValue } from 'utils/numbers'
 dayjs.extend(relativeTime)
 
 const DEFAULT_COINGECKO_VALUES = {
@@ -68,11 +67,7 @@ const CoingeckoStats = ({
   const [showFullDesc, setShowFullDesc] = useState(false)
   const [daysToShow, setDaysToShow] = useState<string>('1')
 
-  const {
-    data: birdeyePrices,
-    isLoading: loadingBirdeyePrices,
-    isFetching: fetchingBirdeyePrices,
-  } = useQuery(
+  const { data: birdeyePrices, isLoading: loadingBirdeyePrices } = useQuery(
     ['birdeye-token-prices', daysToShow, bank.mint],
     () => fetchBirdeyePrices(daysToShow, bank.mint.toString()),
     {
@@ -83,6 +78,14 @@ const CoingeckoStats = ({
       refetchOnWindowFocus: false,
     },
   )
+
+  const chartData = useMemo(() => {
+    if (!birdeyePrices || !birdeyePrices.length) return []
+    return birdeyePrices.map((item) => ({
+      ...item,
+      unixTime: item.unixTime * 1000,
+    }))
+  }, [birdeyePrices])
 
   const {
     ath,
@@ -134,22 +137,27 @@ const CoingeckoStats = ({
           </div>
         </div>
       ) : null}
-      <div className="mt-4 flex w-full items-center justify-between px-6">
-        <h2 className="text-base">{bank.name} Price Chart</h2>
-        <ChartRangeButtons
-          activeValue={daysToShow}
-          names={['24H', '7D', '30D']}
-          values={['1', '7', '30']}
-          onChange={(v) => setDaysToShow(v)}
-        />
-      </div>
-      {birdeyePrices?.length ? (
-        <PriceChart daysToShow={parseInt(daysToShow)} prices={birdeyePrices} />
-      ) : loadingBirdeyePrices || fetchingBirdeyePrices ? (
-        <div className="p-6">
-          <SheenLoader className="flex flex-1">
-            <div className="h-72 w-full rounded-lg bg-th-bkg-2 md:h-80" />
-          </SheenLoader>
+      {chartData?.length ? (
+        <div className="p-6 pb-4">
+          <DetailedAreaOrBarChart
+            data={chartData.concat([
+              {
+                address: bank.mint.toString(),
+                unixTime: Date.now(),
+                value: bank.uiPrice,
+              },
+            ])}
+            daysToShow={daysToShow}
+            setDaysToShow={setDaysToShow}
+            loading={loadingBirdeyePrices}
+            heightClass="h-64"
+            loaderHeightClass="h-[350px]"
+            prefix="$"
+            tickFormat={(x) => formatCurrencyValue(x)}
+            title={`${bank.name} Price Chart`}
+            xKey="unixTime"
+            yKey="value"
+          />
         </div>
       ) : (
         <div className="m-6 flex h-72 items-center justify-center rounded-lg border border-th-bkg-3 md:h-80">
