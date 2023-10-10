@@ -112,7 +112,7 @@ const Leaderboards = ({
       <div className="space-y-2">
         {accountTier?.tier === leaderboardToShow &&
         accountPointsAndRank?.rank ? (
-          <div className="flex w-full items-center justify-between rounded-lg border border-th-active p-3 md:rounded-xl">
+          <div className="flex w-full items-center justify-between rounded-lg border border-th-active p-3 md:rounded-xl md:p-4">
             <div className="flex items-center space-x-3">
               <div
                 className={`relative flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full ${
