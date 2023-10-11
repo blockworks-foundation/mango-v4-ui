@@ -58,16 +58,15 @@ const ListingsView = () => {
   )
 
   useEffect(() => {
-    if (
-      (!listingsToShow || !listingsToShow.length) &&
-      listings?.results.length
-    ) {
-      const sortedResults = listings.results.sort(
-        (a, b) => b.createdAt.toNumber() - a.createdAt.toNumber(),
-      )
+    if (!loadingListings && !fetchingListings) {
+      const sortedResults = listings
+        ? listings.results.sort(
+            (a, b) => b.createdAt.toNumber() - a.createdAt.toNumber(),
+          )
+        : []
       setListingsToShow(sortedResults)
     }
-  }, [listings])
+  }, [listings, loadingListings, fetchingListings])
 
   const cancelListing = async (listing: Listing) => {
     setCancellingListing(listing.asset.mint.address.toString())
