@@ -125,7 +125,7 @@ const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
               </div>
               <div>
                 <Tooltip
-                  content={t('tooltip-collateral-weight')}
+                  content={t('tooltip-collateral-weight', { token: bank.name })}
                   placement="top-start"
                 >
                   <p className="tooltip-underline mb-1">

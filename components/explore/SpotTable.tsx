@@ -192,7 +192,9 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
               </Th>
               <Th>
                 <div className="flex justify-end">
-                  <Tooltip content={t('tooltip-collateral-weight')}>
+                  <Tooltip
+                    content={t('tooltip-collateral-weight', { token: '' })}
+                  >
                     <SortableColumnHeader
                       sortKey="assetWeight"
                       sort={() => requestSort('assetWeight')}
