@@ -16,7 +16,6 @@ import ContentBox from './shared/ContentBox'
 import Tooltip from './shared/Tooltip'
 import { formatTokenSymbol } from 'utils/tokens'
 import useMangoAccount from 'hooks/useMangoAccount'
-import useJupiterMints from '../hooks/useJupiterMints'
 import {
   SortableColumnHeader,
   Table,
@@ -511,7 +510,6 @@ export const ActionsMenu = ({
   const [selectedToken, setSelectedToken] = useState('')
   const set = mangoStore.getState().set
   const router = useRouter()
-  const { mangoTokens } = useJupiterMints()
   const spotMarkets = mangoStore((s) => s.serumMarkets)
   const { isUnownedAccount } = useUnownedAccount()
   const { isDesktop } = useViewport()
@@ -546,41 +544,38 @@ export const ActionsMenu = ({
   }, [bank, mangoAccountAddress])
 
   const handleSwap = useCallback(() => {
-    const tokenInfo = mangoTokens.find(
-      (t) => t.address === bank.mint.toString(),
-    )
     const group = mangoStore.getState().group
-    if (balance && balance > 0) {
-      if (tokenInfo?.symbol === 'SOL') {
-        const usdcTokenInfo = mangoTokens.find((t) => t.address === USDC_MINT)
+    if (balance > 0) {
+      if (bank.name === 'USDC') {
+        const solBank = group?.getFirstBankByMint(WRAPPED_SOL_MINT)
+        set((s) => {
+          s.swap.inputBank = bank
+          s.swap.outputBank = solBank
+        })
+      } else {
         const usdcBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
         set((s) => {
-          s.swap.inputBank = usdcBank
-          s.swap.inputTokenInfo = usdcTokenInfo
+          s.swap.inputBank = bank
+          s.swap.outputBank = usdcBank
         })
       }
-      set((s) => {
-        s.swap.inputBank = bank
-        s.swap.inputTokenInfo = tokenInfo
-      })
     } else {
-      if (tokenInfo?.symbol === 'USDC') {
-        const solTokenInfo = mangoTokens.find(
-          (t) => t.address === WRAPPED_SOL_MINT.toString(),
-        )
+      if (bank.name === 'USDC') {
         const solBank = group?.getFirstBankByMint(WRAPPED_SOL_MINT)
         set((s) => {
           s.swap.inputBank = solBank
-          s.swap.inputTokenInfo = solTokenInfo
+          s.swap.outputBank = bank
+        })
+      } else {
+        const usdcBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
+        set((s) => {
+          s.swap.inputBank = usdcBank
+          s.swap.outputBank = bank
         })
       }
-      set((s) => {
-        s.swap.outputBank = bank
-        s.swap.outputTokenInfo = tokenInfo
-      })
     }
     router.push('/swap', undefined, { shallow: true })
-  }, [bank, router, set, mangoTokens, mangoAccountAddress])
+  }, [bank, router, set])
 
   const handleTrade = useCallback(() => {
     router.push(`/trade?name=${spotMarket?.name}`, undefined, { shallow: true })
