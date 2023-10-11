@@ -8,6 +8,8 @@ import metaplexStore from '@store/metaplexStore'
 import { Bid, LazyBid, LazyListing } from '@metaplex-foundation/js'
 
 export const ALL_FILTER = 'All'
+export const YOUR_LISTINGS = 'Your Listings'
+export const PRICE_LOW_HIGH = 'Price: Low to High'
 //10min
 const refetchMs = 600000
 

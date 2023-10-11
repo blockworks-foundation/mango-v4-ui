@@ -7,12 +7,14 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import metaplexStore from '@store/metaplexStore'
 import {
   ALL_FILTER,
+  PRICE_LOW_HIGH,
+  YOUR_LISTINGS,
   useAuctionHouse,
   useBids,
   useLazyListings,
   useListings,
 } from 'hooks/market/useAuctionHouse'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { MANGO_MINT_DECIMALS } from 'utils/governance/constants'
 // import { useTranslation } from 'next-i18next'
 import { ImgWithLoader } from '@components/ImgWithLoader'
@@ -24,8 +26,6 @@ import EmptyState from './EmptyState'
 import { notify } from 'utils/notifications'
 import ResponsivePagination from 'react-responsive-pagination'
 
-const YOUR_LISTINGS = 'Your Listings'
-const PRICE_LOW_HIGH = 'Price: Low to High'
 const PRICE_HIGH_LOW = 'Price: High to Low'
 const defaultFilters = [
   ALL_FILTER,
@@ -54,19 +54,14 @@ const ListingsView = () => {
     data: listings,
     isLoading: loadingListings,
     isFetching: fetchingListings,
-  } = useListings(ALL_FILTER, page)
+  } = useListings(currentFilter, page)
   const [listingsToShow, setListingsToShow] = useState<Listing[] | undefined>(
     undefined,
   )
 
   useEffect(() => {
     if (!loadingListings && !fetchingListings) {
-      const sortedResults = listings
-        ? listings.results.sort(
-            (a, b) => b.createdAt.toNumber() - a.createdAt.toNumber(),
-          )
-        : []
-      setListingsToShow(sortedResults)
+      setListingsToShow(listings ? listings.results : [])
     }
   }, [listings, loadingListings, fetchingListings])
 
@@ -134,55 +129,11 @@ const ListingsView = () => {
     setPage(page)
   }
 
-  const filters = useMemo(() => {
-    if (!listings?.results || !listings?.results.length) return defaultFilters
-    const collections: string[] = []
-    for (const listing of listings.results) {
-      const collectionName = listing.asset.json?.collection?.family || 'Unknown'
-      if (!collections.includes(collectionName)) {
-        collections.push(collectionName)
-      }
-    }
-    return defaultFilters.concat(collections.sort((a, b) => a.localeCompare(b)))
-  }, [listings])
+  const filters = defaultFilters
 
-  const handleFilter = useCallback(
-    (filter: string) => {
-      setCurrentFilter(filter)
-      if (filter === ALL_FILTER) {
-        const sortedResults = listings?.results.sort(
-          (a, b) => b.createdAt.toNumber() - a.createdAt.toNumber(),
-        )
-        setListingsToShow(sortedResults)
-      } else if (filter === YOUR_LISTINGS) {
-        const filteredListings = listings?.results.filter((listing) => {
-          return listing.sellerAddress.toString() === publicKey?.toString()
-        })
-        setListingsToShow(filteredListings)
-      } else if (filter.includes('Price')) {
-        return listings?.results.sort((a, b) => {
-          const aPrice = toUiDecimals(
-            a.price.basisPoints.toNumber(),
-            MANGO_MINT_DECIMALS,
-          )
-          const bPrice = toUiDecimals(
-            b.price.basisPoints.toNumber(),
-            MANGO_MINT_DECIMALS,
-          )
-          return filter === PRICE_LOW_HIGH ? aPrice - bPrice : bPrice - aPrice
-        })
-      } else {
-        const filteredListings = listings?.results.filter((listing) => {
-          const collectionName =
-            listing.asset.json?.collection?.family || 'Unknown'
-          return collectionName === filter
-        })
-        setListingsToShow(filteredListings)
-      }
-    },
-    [listings, publicKey],
-  )
-
+  const handleFilter = (filter: string) => {
+    setCurrentFilter(filter)
+  }
   const loading = loadingListings || fetchingListings
 
   return (
