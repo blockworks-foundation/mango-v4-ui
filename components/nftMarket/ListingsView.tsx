@@ -22,6 +22,7 @@ import Loading from '@components/shared/Loading'
 import SheenLoader from '@components/shared/SheenLoader'
 import EmptyState from './EmptyState'
 import { notify } from 'utils/notifications'
+import ResponsivePagination from 'react-responsive-pagination'
 
 const YOUR_LISTINGS = 'Your Listings'
 const PRICE_LOW_HIGH = 'Price: Low to High'
@@ -46,13 +47,14 @@ const ListingsView = () => {
   const [bidNftModal, setBidNftModal] = useState(false)
   const [cancellingListing, setCancellingListing] = useState('')
   const [buying, setBuying] = useState('')
+  const [page, setPage] = useState(1)
 
   const { refetch } = useLazyListings()
   const {
     data: listings,
     isLoading: loadingListings,
     isFetching: fetchingListings,
-  } = useListings()
+  } = useListings(ALL_FILTER, page)
   const [listingsToShow, setListingsToShow] = useState<Listing[] | undefined>(
     undefined,
   )
@@ -128,9 +130,9 @@ const ListingsView = () => {
     setAssetBidsModal(false)
     setAssetBidsListing(null)
   }
-  // const handlePageClick = (page: number) => {
-  //   setPage(page)
-  // }
+  const handlePageClick = (page: number) => {
+    setPage(page)
+  }
 
   const filters = useMemo(() => {
     if (!listings?.results || !listings?.results.length) return defaultFilters
@@ -318,13 +320,13 @@ const ListingsView = () => {
           </div>
         )}
       </div>
-      {/* <div>
+      <div>
         <ResponsivePagination
           current={page}
           total={listings?.totalPages || 0}
           onPageChange={handlePageClick}
         />
-      </div> */}
+      </div>
       {asssetBidsModal && assetBidsListing ? (
         <AssetBidsModal
           listing={assetBidsListing}
