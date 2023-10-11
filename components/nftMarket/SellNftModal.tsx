@@ -66,6 +66,10 @@ const SellNftModal = ({ isOpen, onClose }: ModalProps) => {
       onClose()
     } catch (e) {
       console.log('error listing nft', e)
+      notify({
+        title: `${e}`,
+        type: 'error',
+      })
     } finally {
       setSubmitting(false)
     }
