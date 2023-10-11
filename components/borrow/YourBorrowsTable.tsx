@@ -22,7 +22,7 @@ import Tooltip from '@components/shared/Tooltip'
 import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 import { BankWithBalance } from 'hooks/useBanksWithBalances'
 import { Disclosure, Transition } from '@headlessui/react'
-import TokenLogo from '@components/shared/TokenLogo'
+import TableTokenName from '@components/shared/TableTokenName'
 
 export const getAvailableToBorrow = (
   bankWithBal: BankWithBalance,
@@ -99,12 +99,7 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
                 return (
                   <TrBody key={bank.name} className="text-sm">
                     <Td>
-                      <div className="flex items-center">
-                        <div className="mr-2.5 flex flex-shrink-0 items-center">
-                          <TokenLogo bank={bank} />
-                        </div>
-                        <span>{bank.name}</span>
-                      </div>
+                      <TableTokenName bank={bank} symbol={bank.name} />
                     </Td>
                     <Td className="text-right">
                       <BankAmountWithValue
@@ -174,12 +169,7 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
                         className={`w-full border-t border-th-bkg-3 p-4 text-left first:border-t-0 focus:outline-none`}
                       >
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <div className="mr-2.5 flex flex-shrink-0 items-center">
-                              <TokenLogo bank={bank} />
-                            </div>
-                            <p className="text-th-fgd-1">{bank.name}</p>
-                          </div>
+                          <TableTokenName bank={bank} symbol={bank.name} />
                           <div className="flex items-center space-x-4">
                             <div>
                               <p className="mb-0.5 text-right text-xs">

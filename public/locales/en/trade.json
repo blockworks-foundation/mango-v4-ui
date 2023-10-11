@@ -53,6 +53,7 @@
     "min-order-size-error": "Min order size is {{minSize}} {{symbol}}",
     "more-details": "More Details",
     "no-balances": "No balances",
+    "no-borrows": "No Borrows",
     "no-markets-found": "No markets found...",
     "no-orders": "No open orders",
     "no-positions": "No perp positions",

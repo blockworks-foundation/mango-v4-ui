@@ -16,6 +16,7 @@ import mangoStore from '@store/mangoStore'
 import {
   ACCOUNT_ACTION_MODAL_INNER_HEIGHT,
   INPUT_TOKEN_DEFAULT,
+  TOKEN_REDUCE_ONLY_OPTIONS,
 } from './../utils/constants'
 import { notify } from './../utils/notifications'
 import ActionTokenList from './account/ActionTokenList'
@@ -64,6 +65,13 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
   const { mangoAccount } = useMangoAccount()
   const { connected, publicKey } = useWallet()
   const banks = useBanksWithBalances('maxBorrow')
+
+  const borrowBanks = useMemo(() => {
+    if (!banks || !banks.length) return []
+    return banks.filter(
+      (b) => b.bank.reduceOnly === TOKEN_REDUCE_ONLY_OPTIONS.DISABLED,
+    )
+  }, [banks])
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
@@ -184,7 +192,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
           </div>
         </div>
         <ActionTokenList
-          banks={banks}
+          banks={borrowBanks}
           onSelect={handleSelectToken}
           showBorrowRates
           valueKey="maxBorrow"

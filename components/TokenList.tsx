@@ -28,7 +28,11 @@ import {
 import DepositWithdrawModal from './modals/DepositWithdrawModal'
 import BorrowRepayModal from './modals/BorrowRepayModal'
 import { WRAPPED_SOL_MINT } from '@project-serum/serum/lib/token-instructions'
-import { SHOW_ZERO_BALANCES_KEY, USDC_MINT } from 'utils/constants'
+import {
+  SHOW_ZERO_BALANCES_KEY,
+  TOKEN_REDUCE_ONLY_OPTIONS,
+  USDC_MINT,
+} from 'utils/constants'
 import { PublicKey } from '@solana/web3.js'
 import ActionsLinkButton from './account/ActionsLinkButton'
 import FormatNumericValue from './shared/FormatNumericValue'
@@ -41,6 +45,7 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import TokenLogo from './shared/TokenLogo'
 import useHealthContributions from 'hooks/useHealthContributions'
 import { useSortableData } from 'hooks/useSortableData'
+import TableTokenName from './shared/TableTokenName'
 
 type TableData = {
   bank: Bank
@@ -273,12 +278,7 @@ const TokenList = () => {
                 return (
                   <TrBody key={symbol}>
                     <Td>
-                      <div className="flex items-center">
-                        <div className="mr-2.5 flex flex-shrink-0 items-center">
-                          <TokenLogo bank={bank} />
-                        </div>
-                        <p className="font-body">{symbol}</p>
-                      </div>
+                      <TableTokenName bank={bank} symbol={symbol} />
                     </Td>
                     <Td className="text-right">
                       <BankAmountWithValue
@@ -394,14 +394,7 @@ const MobileTokenListItem = ({ data }: { data: TableData }) => {
             className={`w-full border-t border-th-bkg-3 p-4 text-left first:border-t-0 focus:outline-none`}
           >
             <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="mr-2.5">
-                  <TokenLogo bank={bank} />
-                </div>
-                <div>
-                  <p className="mb-0.5 leading-none text-th-fgd-1">{symbol}</p>
-                </div>
-              </div>
+              <TableTokenName bank={bank} symbol={symbol} />
               <div className="flex items-center space-x-2">
                 <div className="text-right">
                   <p className="font-mono text-sm text-th-fgd-2">
@@ -643,11 +636,15 @@ export const ActionsMenu = ({
                       </p>
                     </div>
                   ) : null}
-                  <ActionsLinkButton
-                    onClick={() => handleShowActionModals(bank.name, 'deposit')}
-                  >
-                    {t('deposit')}
-                  </ActionsLinkButton>
+                  {bank.reduceOnly !== TOKEN_REDUCE_ONLY_OPTIONS.ENABLED ? (
+                    <ActionsLinkButton
+                      onClick={() =>
+                        handleShowActionModals(bank.name, 'deposit')
+                      }
+                    >
+                      {t('deposit')}
+                    </ActionsLinkButton>
+                  ) : null}
                   {balance < 0 ? (
                     <ActionsLinkButton
                       onClick={() => handleShowActionModals(bank.name, 'repay')}
@@ -664,11 +661,15 @@ export const ActionsMenu = ({
                       {t('withdraw')}
                     </ActionsLinkButton>
                   ) : null}
-                  <ActionsLinkButton
-                    onClick={() => handleShowActionModals(bank.name, 'borrow')}
-                  >
-                    {t('borrow')}
-                  </ActionsLinkButton>
+                  {bank.reduceOnly === TOKEN_REDUCE_ONLY_OPTIONS.DISABLED ? (
+                    <ActionsLinkButton
+                      onClick={() =>
+                        handleShowActionModals(bank.name, 'borrow')
+                      }
+                    >
+                      {t('borrow')}
+                    </ActionsLinkButton>
+                  ) : null}
                   <ActionsLinkButton onClick={handleSwap}>
                     {t('swap')}
                   </ActionsLinkButton>

@@ -16,6 +16,7 @@ import TokenLogo from '@components/shared/TokenLogo'
 import Input from '@components/forms/Input'
 import { getInputTokenBalance } from './TriggerSwapForm'
 import { walletBalanceForToken } from '@components/DepositForm'
+import TokenReduceOnlyDesc from '@components/shared/TokenReduceOnlyDesc'
 
 export type SwapFormTokenListType =
   | 'input'
@@ -82,12 +83,12 @@ const TokenItem = ({
     return group.getFirstBankByMint(new PublicKey(address))
   }, [address, type])
 
-  const isReduceOnly = useMemo(() => {
-    if (!bank) return false
-    const borrowsReduceOnly = bank.areBorrowsReduceOnly()
-    const depositsReduceOnly = bank.areDepositsReduceOnly()
-    return borrowsReduceOnly && depositsReduceOnly
-  }, [bank])
+  // const isReduceOnly = useMemo(() => {
+  //   if (!bank) return false
+  //   const borrowsReduceOnly = bank.areBorrowsReduceOnly()
+  //   const depositsReduceOnly = bank.areDepositsReduceOnly()
+  //   return borrowsReduceOnly && depositsReduceOnly
+  // }, [bank])
 
   return (
     <div>
@@ -110,11 +111,9 @@ const TokenItem = ({
                   {t(`trade:${token.amount.gt(0) ? 'long' : 'short'}`)}
                 </span>
               ) : null}
-              {isReduceOnly ? (
-                <span className="ml-1 text-xxs text-th-warning">
-                  {t('reduce-only')}
-                </span>
-              ) : null}
+              <span className="ml-1">
+                <TokenReduceOnlyDesc bank={bank} />
+              </span>
             </p>
 
             <p className="text-left text-xs text-th-fgd-4">

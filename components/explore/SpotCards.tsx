@@ -15,6 +15,7 @@ import SimpleAreaChart from '@components/shared/SimpleAreaChart'
 import { COLORS } from 'styles/colors'
 import useThemeWrapper from 'hooks/useThemeWrapper'
 import dayjs from 'dayjs'
+import TokenReduceOnlyDesc from '@components/shared/TokenReduceOnlyDesc'
 
 const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
   const { t } = useTranslation(['common', 'explore', 'trade'])
@@ -59,7 +60,12 @@ const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
               <div className="flex items-center space-x-3">
                 <TokenLogo bank={bank} size={32} />
                 <div>
-                  <h3 className="mb-1 text-base leading-none">{bank.name}</h3>
+                  <h3 className="mb-1 text-base leading-none">
+                    {bank.name}
+                    <span className="ml-1.5">
+                      <TokenReduceOnlyDesc bank={bank} />
+                    </span>
+                  </h3>
                   <div className="flex items-center space-x-3">
                     <span className="font-mono">
                       <FormatNumericValue value={bank.uiPrice} isUsd />

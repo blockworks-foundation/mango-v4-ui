@@ -175,3 +175,9 @@ export const MAX_ACCOUNTS = {
   perpOpenOrders: '64',
   tcsOrders: '64',
 }
+
+export enum TOKEN_REDUCE_ONLY_OPTIONS {
+  DISABLED,
+  ENABLED,
+  NO_BORROWS,
+}

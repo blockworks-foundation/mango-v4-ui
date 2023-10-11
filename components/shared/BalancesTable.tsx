@@ -28,13 +28,13 @@ import useBanksWithBalances, {
 } from 'hooks/useBanksWithBalances'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import { Disclosure, Transition } from '@headlessui/react'
-import TokenLogo from './TokenLogo'
 import useHealthContributions from 'hooks/useHealthContributions'
 import Tooltip from './Tooltip'
 import { PublicKey } from '@solana/web3.js'
 import { USDC_MINT } from 'utils/constants'
 import { WRAPPED_SOL_MINT } from '@project-serum/serum/lib/token-instructions'
 import { useSortableData } from 'hooks/useSortableData'
+import TableTokenName from './TableTokenName'
 
 const BalancesTable = () => {
   const { t } = useTranslation(['common', 'account', 'trade'])
@@ -175,12 +175,7 @@ const BalancesTable = () => {
             return (
               <TrBody key={bank.name} className="text-sm">
                 <Td>
-                  <div className="flex items-center">
-                    <div className="mr-2.5 flex flex-shrink-0 items-center">
-                      <TokenLogo bank={bank} />
-                    </div>
-                    <span>{symbol}</span>
-                  </div>
+                  <TableTokenName bank={bank} symbol={symbol} />
                 </Td>
                 <Td className="text-right">
                   <Balance bank={bankWithBalance} />
@@ -247,12 +242,7 @@ const BalancesTable = () => {
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <div className="flex items-start">
-                        <div className="mr-2.5">
-                          <TokenLogo bank={bank} />
-                        </div>
-                        <p className="text-th-fgd-2">{symbol}</p>
-                      </div>
+                      <TableTokenName bank={bank} symbol={symbol} />
                       <div className="flex items-center space-x-2">
                         <div className="text-right">
                           <Balance bank={bankWithBalance} />

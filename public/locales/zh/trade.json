@@ -53,6 +53,7 @@
     "min-order-size-error": "订单的最小数量是 {{minSize}} {{symbol}}",
     "more-details": "看细节",
     "no-balances": "无余额",
+    "no-borrows": "No Borrows",
     "no-markets-found": "No markets found...",
     "no-orders": "无订单",
     "no-positions": "无持仓",
