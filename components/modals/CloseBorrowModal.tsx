@@ -84,7 +84,10 @@ const CloseBorrowModal = ({
               <SwapSettings onClose={() => setShowSettings(false)} />
             </EnterBottomExitBottom>
             <div className="rounded-lg px-6 pb-4">
-              <MarketSwapForm setShowTokenSelect={setShowTokenSelect} />
+              <MarketSwapForm
+                setShowTokenSelect={setShowTokenSelect}
+                onSuccess={onClose}
+              />
               <SwapSummaryInfo
                 walletSwap={false}
                 setShowSettings={setShowSettings}

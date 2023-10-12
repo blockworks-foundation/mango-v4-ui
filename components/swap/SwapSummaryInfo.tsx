@@ -78,6 +78,8 @@ const SwapSummaryInfo = ({
   const handleSetMargin = () => {
     set((s) => {
       s.swap.margin = !s.swap.margin
+      s.swap.amountIn = ''
+      s.swap.amountOut = ''
     })
   }
 
