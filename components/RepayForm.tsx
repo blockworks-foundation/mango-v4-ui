@@ -63,6 +63,12 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
     return amount
   }, [bank, mangoAccount])
 
+  useEffect(() => {
+    if (token && !borrowAmount.eq(0)) {
+      setInputAmount(borrowAmount.toFixed())
+    }
+  }, [token, borrowAmount])
+
   const setMax = useCallback(() => {
     if (!bank) return
     const amount = new Decimal(borrowAmount).toDecimalPlaces(

@@ -43,7 +43,7 @@ const BuyTokenInput = ({
       balance,
       outputBank.mintDecimals,
     ).toNumber()
-    return balance && balance < 0 ? Math.abs(roundedBalance).toString() : 0
+    return balance && balance < 0 ? Math.abs(roundedBalance) : 0
   }, [mangoAccount, outputBank])
 
   return (
@@ -55,7 +55,7 @@ const BuyTokenInput = ({
             className="mb-0.5 text-xs"
             decimals={outputBank?.mintDecimals || 9}
             label={t('repay')}
-            onClick={() => handleRepay(outputTokenBalanceBorrow)}
+            onClick={() => handleRepay(outputTokenBalanceBorrow.toString())}
             value={outputTokenBalanceBorrow}
           />
         ) : null}

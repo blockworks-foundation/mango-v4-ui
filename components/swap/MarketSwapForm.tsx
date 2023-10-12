@@ -191,10 +191,10 @@ const MarketSwapForm = ({ setShowTokenSelect }: MarketSwapFormProps) => {
   /* 
     If the use margin setting is toggled, clear the form values
   */
-  useEffect(() => {
-    setAmountInFormValue('')
-    setAmountOutFormValue('')
-  }, [useMargin, setAmountInFormValue, setAmountOutFormValue])
+  // useEffect(() => {
+  //   setAmountInFormValue('')
+  //   setAmountOutFormValue('')
+  // }, [useMargin, setAmountInFormValue, setAmountOutFormValue])
 
   const handleSwitchTokens = useCallback(() => {
     if (amountInAsDecimal?.gt(0) && amountOutAsDecimal.gte(0)) {
