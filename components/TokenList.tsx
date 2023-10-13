@@ -229,6 +229,19 @@ const TokenList = () => {
                     </Tooltip>
                   </div>
                 </Th>
+                <Th>
+                  <div className="flex justify-end">
+                    <Tooltip content={t('tooltip-interest-rates')}>
+                      <SortableColumnHeader
+                        sortKey="depositRate"
+                        sort={() => requestSort('depositRate')}
+                        sortConfig={sortConfig}
+                        title={t('rates')}
+                        titleClass="tooltip-underline"
+                      />
+                    </Tooltip>
+                  </div>
+                </Th>
                 <Th className="text-right">
                   <span>{t('actions')}</span>
                 </Th>
@@ -290,57 +303,41 @@ const TokenList = () => {
                       )}
                     </Td>
                     <Td>
-                      <div className="flex flex-col items-end">
-                        <p>
-                          <FormatNumericValue
-                            value={interestValue}
-                            isUsd
-                            decimals={2}
-                          />
-                        </p>
-                        {balance > 0 ? (
-                          <Tooltip content={t('deposit-rate')}>
-                            <p className="cursor-help text-th-up">
-                              <FormatNumericValue
-                                value={depositRate}
-                                decimals={2}
-                              />
-                              %
-                            </p>
-                          </Tooltip>
-                        ) : balance < 0 ? (
-                          <Tooltip content={t('borrow-rate')}>
-                            <p className="cursor-help text-th-down">
-                              <FormatNumericValue
-                                value={borrowRate}
-                                decimals={2}
-                              />
-                              %
-                            </p>
-                          </Tooltip>
+                      <div className="flex justify-end">
+                        {Math.abs(interestValue) > 0 ? (
+                          <p>
+                            <FormatNumericValue
+                              value={interestValue}
+                              isUsd
+                              decimals={2}
+                            />
+                          </p>
                         ) : (
-                          <div className="flex justify-end space-x-1.5">
-                            <Tooltip content={t('deposit-rate')}>
-                              <p className="cursor-help text-th-up">
-                                <FormatNumericValue
-                                  value={depositRate}
-                                  decimals={2}
-                                />
-                                %
-                              </p>
-                            </Tooltip>
-                            <span className="text-th-fgd-4">|</span>
-                            <Tooltip content={t('borrow-rate')}>
-                              <p className="cursor-help text-th-down">
-                                <FormatNumericValue
-                                  value={borrowRate}
-                                  decimals={2}
-                                />
-                                %
-                              </p>
-                            </Tooltip>
-                          </div>
+                          <p className="text-th-fgd-4">–</p>
                         )}
+                      </div>
+                    </Td>
+                    <Td>
+                      <div className="flex justify-end space-x-1.5">
+                        <Tooltip content={t('deposit-rate')}>
+                          <p className="cursor-help text-th-up">
+                            <FormatNumericValue
+                              value={depositRate}
+                              decimals={2}
+                            />
+                            %
+                          </p>
+                        </Tooltip>
+                        <span className="text-th-fgd-4">|</span>
+                        <Tooltip content={t('borrow-rate')}>
+                          <p className="cursor-help text-th-down">
+                            <FormatNumericValue
+                              value={borrowRate}
+                              decimals={2}
+                            />
+                            %
+                          </p>
+                        </Tooltip>
                       </div>
                     </Td>
                     <Td>
