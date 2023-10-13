@@ -1,16 +1,16 @@
-import { Fragment, useState } from 'react'
-import Button, { IconButton } from '../shared/Button'
+import { useState } from 'react'
+import Button from '../shared/Button'
 import {
   ArrowDownRightIcon,
   ArrowUpLeftIcon,
-  DocumentDuplicateIcon,
-  EyeIcon,
-  EyeSlashIcon,
-  PencilIcon,
-  SquaresPlusIcon,
-  TrashIcon,
-  UserPlusIcon,
-  WrenchIcon,
+  // DocumentDuplicateIcon,
+  // EyeIcon,
+  // EyeSlashIcon,
+  // PencilIcon,
+  // SquaresPlusIcon,
+  // TrashIcon,
+  // UserPlusIcon,
+  // WrenchIcon,
 } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import CloseAccountModal from '../modals/CloseAccountModal'
@@ -22,14 +22,14 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import BorrowRepayModal from '@components/modals/BorrowRepayModal'
 import { useWallet } from '@solana/wallet-adapter-react'
 import CreateAccountModal from '@components/modals/CreateAccountModal'
-import { Popover, Transition } from '@headlessui/react'
-import ActionsLinkButton from './ActionsLinkButton'
+// import { Popover, Transition } from '@headlessui/react'
+// import ActionsLinkButton from './ActionsLinkButton'
 import useUnownedAccount from 'hooks/useUnownedAccount'
-import { useViewport } from 'hooks/useViewport'
+// import { useViewport } from 'hooks/useViewport'
 import MangoAccountSizeModal from '@components/modals/MangoAccountSizeModal'
-import useMangoAccountAccounts from 'hooks/useMangoAccountAccounts'
-import useLocalStorageState from 'hooks/useLocalStorageState'
-import { PRIVACY_MODE } from 'utils/constants'
+// import useMangoAccountAccounts from 'hooks/useMangoAccountAccounts'
+// import useLocalStorageState from 'hooks/useLocalStorageState'
+// import { PRIVACY_MODE } from 'utils/constants'
 
 export const handleCopyAddress = (
   mangoAccountAddress: string,
@@ -52,11 +52,14 @@ const AccountActions = () => {
   const [showDelegateModal, setShowDelegateModal] = useState(false)
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
   const [showAccountSizeModal, setShowAccountSizeModal] = useState(false)
-  const [privacyMode, setPrivacyMode] = useLocalStorageState(PRIVACY_MODE)
+  // const [privacyMode, setPrivacyMode] = useLocalStorageState(PRIVACY_MODE)
   const { connected } = useWallet()
-  const { isDelegatedAccount, isUnownedAccount } = useUnownedAccount()
-  const { isMobile } = useViewport()
-  const { isAccountFull } = useMangoAccountAccounts()
+  const {
+    // isDelegatedAccount,
+    isUnownedAccount,
+  } = useUnownedAccount()
+  // const { isMobile } = useViewport()
+  // const { isAccountFull } = useMangoAccountAccounts()
 
   const handleBorrowModal = () => {
     if (mangoAccountAddress || !connected) {
@@ -71,7 +74,7 @@ const AccountActions = () => {
       {isUnownedAccount ? null : (
         <div className="flex items-center space-x-2">
           <Button
-            className="flex w-full items-center justify-center sm:w-1/3 md:w-auto"
+            className="flex w-1/2 items-center justify-center md:w-auto"
             disabled={!mangoAccountAddress}
             onClick={() => setShowRepayModal(true)}
             secondary
@@ -80,14 +83,14 @@ const AccountActions = () => {
             {t('repay')}
           </Button>
           <Button
-            className="flex w-full items-center justify-center sm:w-1/3 md:w-auto"
+            className="flex w-1/2 items-center justify-center md:w-auto"
             onClick={handleBorrowModal}
             secondary
           >
             <ArrowUpLeftIcon className="mr-2 h-5 w-5 flex-shrink-0" />
             {t('borrow')}
           </Button>
-          <Popover className="relative sm:w-1/3 md:w-auto">
+          {/* <Popover className="relative sm:w-1/3 md:w-auto">
             {({ open }) => (
               <>
                 <Popover.Button
@@ -191,7 +194,7 @@ const AccountActions = () => {
                 </Transition>
               </>
             )}
-          </Popover>
+          </Popover> */}
         </div>
       )}
       {showCloseAccountModal ? (
