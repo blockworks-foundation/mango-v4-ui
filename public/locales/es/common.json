@@ -42,6 +42,7 @@
   "close-account": "Close Account",
   "close-account-desc": "Are you sure? Closing your account is irreversible",
   "closing-account": "Closing your account...",
+  "close-borrow": "Close {{token}} Borrow",
   "collateral-value": "Collateral Value",
   "confirm": "Confirm",
   "connect": "Connect",

@@ -45,6 +45,8 @@ import TokenLogo from './shared/TokenLogo'
 import useHealthContributions from 'hooks/useHealthContributions'
 import { useSortableData } from 'hooks/useSortableData'
 import TableTokenName from './shared/TableTokenName'
+import CloseBorrowModal from './modals/CloseBorrowModal'
+import { floorToDecimal } from 'utils/numbers'
 
 type TableData = {
   bank: Bank
@@ -61,8 +63,12 @@ type TableData = {
   borrowRate: number
 }
 
+const set = mangoStore.getState().set
+
 const TokenList = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
+  const [showCloseBorrowModal, setCloseBorrowModal] = useState(false)
+  const [closeBorrowBank, setCloseBorrowBank] = useState<Bank | undefined>()
   const [showZeroBalances, setShowZeroBalances] = useLocalStorageState(
     SHOW_ZERO_BALANCES_KEY,
     true,
@@ -82,7 +88,7 @@ const TokenList = () => {
       const formatted = []
       for (const b of banks) {
         const bank = b.bank
-        const balance = b.balance
+        const balance = floorToDecimal(b.balance, bank.mintDecimals).toNumber()
         const balanceValue = balance * bank.uiPrice
         const symbol = bank.name === 'MSOL' ? 'mSOL' : bank.name
 
@@ -153,6 +159,47 @@ const TokenList = () => {
     requestSort,
     sortConfig,
   } = useSortableData(unsortedTableData)
+
+  const handleOpenCloseBorrowModal = (borrowBank: Bank) => {
+    const group = mangoStore.getState().group
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+    setCloseBorrowModal(true)
+    setCloseBorrowBank(borrowBank)
+    if (borrowBank.name === 'USDC') {
+      const solBank = group?.getFirstBankByMint(WRAPPED_SOL_MINT)
+      set((state) => {
+        state.swap.inputBank = solBank
+      })
+    } else {
+      const usdcBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
+      set((state) => {
+        state.swap.inputBank = usdcBank
+      })
+    }
+    if (mangoAccount) {
+      const balance = mangoAccount.getTokenBalanceUi(borrowBank)
+      const roundedBalance = floorToDecimal(
+        balance,
+        borrowBank.mintDecimals,
+      ).toNumber()
+      set((state) => {
+        state.swap.swapMode = 'ExactOut'
+        state.swap.outputBank = borrowBank
+        state.swap.amountOut = Math.abs(roundedBalance).toString()
+      })
+    }
+  }
+
+  const handleCloseBorrowModal = () => {
+    setCloseBorrowModal(false)
+    set((state) => {
+      state.swap.inputBank = undefined
+      state.swap.outputBank = undefined
+      state.swap.amountIn = ''
+      state.swap.amountOut = ''
+      state.swap.swapMode = 'ExactIn'
+    })
+  }
 
   return (
     <ContentBox hideBorder hidePadding>
@@ -341,7 +388,15 @@ const TokenList = () => {
                       </div>
                     </Td>
                     <Td>
-                      <div className="flex items-center justify-end">
+                      <div className="flex items-center justify-end space-x-2">
+                        {balance < 0 ? (
+                          <button
+                            className="rounded-md border border-th-fgd-4 px-2 py-1.5 text-xs font-bold text-th-fgd-2 focus:outline-none md:hover:border-th-fgd-3"
+                            onClick={() => handleOpenCloseBorrowModal(bank)}
+                          >
+                            {t('close-borrow', { token: '' })}
+                          </button>
+                        ) : null}
                         <ActionsMenu bank={bank} />
                       </div>
                     </Td>
@@ -358,6 +413,13 @@ const TokenList = () => {
           })}
         </div>
       )}
+      {showCloseBorrowModal ? (
+        <CloseBorrowModal
+          borrowBank={closeBorrowBank}
+          isOpen={showCloseBorrowModal}
+          onClose={handleCloseBorrowModal}
+        />
+      ) : null}
     </ContentBox>
   )
 }

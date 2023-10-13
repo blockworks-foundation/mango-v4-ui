@@ -440,7 +440,7 @@ const SwapReviewRouteInfo = ({
           >
             <ArrowLeftIcon className="h-5 w-5" />
           </IconButton>
-          <div className="flex justify-center bg-gradient-to-t from-th-bkg-1 to-th-bkg-2 p-6 pb-0">
+          <div className="flex justify-center bg-th-bkg-1 p-6 pb-0">
             <div className="mb-3 flex w-full flex-col items-center border-b border-th-bkg-3 pb-4">
               <div className="relative mb-2 w-[72px]">
                 <TokenLogo bank={inputBank} size={40} />

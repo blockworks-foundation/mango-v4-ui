@@ -6,6 +6,7 @@ import { useMemo } from 'react'
 import useMangoAccount from './useMangoAccount'
 import useMangoGroup from './useMangoGroup'
 import { floorToDecimal } from 'utils/numbers'
+import Decimal from 'decimal.js'
 
 export interface BankWithBalance {
   balance: number
@@ -57,10 +58,9 @@ export default function useBanksWithBalances(
           maxWithdraw = maxWithdraw * 0.998
         }
         const borrowedAmount = mangoAccount
-          ? floorToDecimal(
-              mangoAccount.getTokenBorrowsUi(bank),
-              bank.mintDecimals,
-            ).toNumber()
+          ? new Decimal(mangoAccount.getTokenBorrowsUi(bank))
+              .toDecimalPlaces(bank.mintDecimals, Decimal.ROUND_UP)
+              .toNumber()
           : 0
         const walletBalance =
           walletBalanceForToken(walletTokens, bank.name)?.maxAmount || 0
