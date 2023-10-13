@@ -218,35 +218,12 @@ const TokenList = () => {
                 </Th>
                 <Th>
                   <div className="flex justify-end">
-                    <SortableColumnHeader
-                      sortKey="unsettled"
-                      sort={() => requestSort('unsettled')}
-                      sortConfig={sortConfig}
-                      title={t('trade:unsettled')}
-                    />
-                  </div>
-                </Th>
-                <Th>
-                  <div className="flex justify-end">
                     <Tooltip content="The sum of interest earned and interest paid for each token">
                       <SortableColumnHeader
                         sortKey="interestValue"
                         sort={() => requestSort('interestValue')}
                         sortConfig={sortConfig}
                         title={t('interest-earned-paid')}
-                        titleClass="tooltip-underline"
-                      />
-                    </Tooltip>
-                  </div>
-                </Th>
-                <Th>
-                  <div className="flex justify-end">
-                    <Tooltip content={t('tooltip-interest-rates')}>
-                      <SortableColumnHeader
-                        sortKey="depositRate"
-                        sort={() => requestSort('depositRate')}
-                        sortConfig={sortConfig}
-                        title={t('rates')}
                         titleClass="tooltip-underline"
                       />
                     </Tooltip>
@@ -263,10 +240,8 @@ const TokenList = () => {
                   balance,
                   bank,
                   symbol,
-                  interestAmount,
                   interestValue,
                   inOrders,
-                  unsettled,
                   collateralValue,
                   assetWeight,
                   liabWeight,
@@ -304,43 +279,68 @@ const TokenList = () => {
                       </p>
                     </Td>
                     <Td className="text-right">
-                      <BankAmountWithValue
-                        amount={inOrders}
-                        bank={bank}
-                        stacked
-                      />
-                    </Td>
-                    <Td className="text-right">
-                      <BankAmountWithValue
-                        amount={unsettled}
-                        bank={bank}
-                        stacked
-                      />
-                    </Td>
-                    <Td>
-                      <div className="flex flex-col text-right">
+                      {inOrders ? (
                         <BankAmountWithValue
-                          amount={interestAmount}
+                          amount={inOrders}
                           bank={bank}
-                          value={interestValue}
                           stacked
                         />
-                      </div>
+                      ) : (
+                        <p className="text-th-fgd-4">–</p>
+                      )}
                     </Td>
                     <Td>
-                      <div className="flex justify-end space-x-1.5">
-                        <p className="text-th-up">
+                      <div className="flex flex-col items-end">
+                        <p>
                           <FormatNumericValue
-                            value={depositRate}
+                            value={interestValue}
+                            isUsd
                             decimals={2}
                           />
-                          %
                         </p>
-                        <span className="text-th-fgd-4">|</span>
-                        <p className="text-th-down">
-                          <FormatNumericValue value={borrowRate} decimals={2} />
-                          %
-                        </p>
+                        {balance > 0 ? (
+                          <Tooltip content={t('deposit-rate')}>
+                            <p className="cursor-help text-th-up">
+                              <FormatNumericValue
+                                value={depositRate}
+                                decimals={2}
+                              />
+                              %
+                            </p>
+                          </Tooltip>
+                        ) : balance < 0 ? (
+                          <Tooltip content={t('borrow-rate')}>
+                            <p className="cursor-help text-th-down">
+                              <FormatNumericValue
+                                value={borrowRate}
+                                decimals={2}
+                              />
+                              %
+                            </p>
+                          </Tooltip>
+                        ) : (
+                          <div className="flex justify-end space-x-1.5">
+                            <Tooltip content={t('deposit-rate')}>
+                              <p className="cursor-help text-th-up">
+                                <FormatNumericValue
+                                  value={depositRate}
+                                  decimals={2}
+                                />
+                                %
+                              </p>
+                            </Tooltip>
+                            <span className="text-th-fgd-4">|</span>
+                            <Tooltip content={t('borrow-rate')}>
+                              <p className="cursor-help text-th-down">
+                                <FormatNumericValue
+                                  value={borrowRate}
+                                  decimals={2}
+                                />
+                                %
+                              </p>
+                            </Tooltip>
+                          </div>
+                        )}
                       </div>
                     </Td>
                     <Td>
