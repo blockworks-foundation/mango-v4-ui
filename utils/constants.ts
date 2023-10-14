@@ -150,6 +150,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   rndr: true,
   sol: true,
   stsol: true,
+  tbtc: true,
   usdc: true,
   usdh: true,
   usdt: true,
