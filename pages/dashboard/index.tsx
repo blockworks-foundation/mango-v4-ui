@@ -300,8 +300,9 @@ const Dashboard: NextPage = () => {
                                       formattedBankValues.oracleConfFilter
                                     }% (Last known confidence ${bank._oracleLastKnownDeviation
                                       ?.div(bank.price)
+                                      .mul(I80F48.fromNumber(100))
                                       .toNumber()
-                                      .toFixed(4)})`}
+                                      .toFixed(2)}%)`}
                                   />
                                   <KeyValuePair
                                     label="Oracle: Max Staleness"
