@@ -296,11 +296,16 @@ const Dashboard: NextPage = () => {
                                   />
                                   <KeyValuePair
                                     label="Oracle: Conf Filter"
-                                    value={`${formattedBankValues.oracleConfFilter}%`}
+                                    value={`${
+                                      formattedBankValues.oracleConfFilter
+                                    }% (Last known confidence ${bank._oracleLastKnownDeviation
+                                      ?.div(bank.price)
+                                      .toNumber()
+                                      .toFixed(4)})`}
                                   />
                                   <KeyValuePair
                                     label="Oracle: Max Staleness"
-                                    value={`${bank.oracleConfig.maxStalenessSlots} slots`}
+                                    value={`${bank.oracleConfig.maxStalenessSlots} slots (Last updated slot ${bank._oracleLastUpdatedSlot})`}
                                   />
                                   <KeyValuePair
                                     label="Group Insurance Fund"
