@@ -68,8 +68,8 @@ const ConnectedMenu = () => {
       <Popover>
         <div className="relative">
           <Popover.Button
-            className={`default-transition h-16 ${
-              isDesktop ? 'w-48 border-l border-th-bkg-3 px-4' : 'w-16'
+            className={`default-transition h-16 border-l border-th-bkg-3 ${
+              isDesktop ? 'w-48 px-4' : 'w-16'
             } hover:bg-th-bkg-2 focus:outline-none focus-visible:bg-th-bkg-3`}
           >
             <div

@@ -160,7 +160,7 @@ const SwapFormTokenList = ({
   useMargin,
 }: {
   onClose: () => void
-  onTokenSelect: (x: string) => void
+  onTokenSelect: (mintAddress: string, close: () => void) => void
   type: SwapFormTokenListType
   useMargin: boolean
 }) => {
@@ -173,6 +173,10 @@ const SwapFormTokenList = ({
   const { group } = useMangoGroup()
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const focusRef = useRef<HTMLInputElement>(null)
+
+  const handleTokenSelect = (mintAddress: string) => {
+    onTokenSelect(mintAddress, onClose)
+  }
 
   useEffect(() => {
     function onEscape(e: KeyboardEvent) {
@@ -355,7 +359,7 @@ const SwapFormTokenList = ({
           onChange={handleUpdateSearch}
           ref={focusRef}
         />
-        <MagnifyingGlassIcon className="absolute left-3 top-3.5 h-5 w-5" />
+        <MagnifyingGlassIcon className="absolute left-3 top-3.5 h-5 w-5 text-th-fgd-3" />
       </div>
       <div className="flex justify-between rounded bg-th-bkg-2 p-2">
         <p className="text-xs text-th-fgd-4">{t('token')}</p>
@@ -369,7 +373,7 @@ const SwapFormTokenList = ({
             <TokenItem
               key={token.address}
               token={token}
-              onSubmit={onTokenSelect}
+              onSubmit={handleTokenSelect}
               useMargin={useMargin}
               type={type}
             />

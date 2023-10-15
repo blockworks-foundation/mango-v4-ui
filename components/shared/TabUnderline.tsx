@@ -25,9 +25,9 @@ const TabUnderline = <T extends Values>({
     <div
       className={`relative mb-3 border-b border-th-bkg-3 ${
         values.includes('buy' as T) || values.includes('sell' as T)
-          ? 'pb-1 font-display md:pb-2.5'
-          : 'pb-1 font-bold'
-      } md:-mt-2.5`}
+          ? 'pb-1 font-display md:-mt-4'
+          : 'pb-1 font-bold md:-mt-2.5'
+      }`}
     >
       <div
         className={`absolute bottom-[-1px] left-0 h-0.5 ${
@@ -52,7 +52,7 @@ const TabUnderline = <T extends Values>({
             className={`relative flex h-10 w-1/2 ${
               fillWidth ? '' : 'max-w-[176px]'
             }
-            cursor-pointer items-center justify-center whitespace-nowrap rounded py-1 focus-visible:text-th-fgd-2 md:h-auto md:rounded-none md:hover:opacity-100 ${
+            cursor-pointer items-center justify-center whitespace-nowrap rounded py-1 focus-visible:text-th-fgd-2 md:rounded-none md:hover:opacity-100 ${
               small ? 'text-sm' : 'text-sm lg:text-base'
             }
             ${

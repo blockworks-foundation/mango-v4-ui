@@ -17,15 +17,12 @@ import { useTheme } from 'next-themes'
 import { useCallback } from 'react'
 import { useRouter } from 'next/router'
 import {
-  AUTO_CONNECT_WALLET,
   NOTIFICATION_POSITION_KEY,
-  PRIVACY_MODE,
   SIZE_INPUT_UI_KEY,
   TRADE_CHART_UI_KEY,
   TRADE_LAYOUT_KEY,
 } from 'utils/constants'
 import mangoStore from '@store/mangoStore'
-import Switch from '@components/forms/Switch'
 import { CUSTOM_SKINS } from 'utils/theme'
 
 const NOTIFICATION_POSITIONS = [
@@ -88,12 +85,6 @@ const DisplaySettings = () => {
     'trading-view',
   )
   const [, setTradeLayout] = useLocalStorageState(TRADE_LAYOUT_KEY, 'chartLeft')
-  const [autoConnect, setAutoConnect] = useLocalStorageState(
-    AUTO_CONNECT_WALLET,
-    true,
-  )
-
-  const [privacyMode, setPrivacyMode] = useLocalStorageState(PRIVACY_MODE)
 
   // add nft skins to theme selection list
   useEffect(() => {
@@ -225,22 +216,6 @@ const DisplaySettings = () => {
             names={TRADING_CHARTS.map((val) => t(`settings:${val}`))}
           />
         </div>
-      </div>
-      <div className="flex items-center justify-between border-t border-th-bkg-3 p-4">
-        <p className="">Auto Connect Wallet</p>
-        <Switch
-          checked={autoConnect}
-          onChange={() => setAutoConnect(!autoConnect)}
-        />
-      </div>
-      <div className="flex items-center justify-between border-t border-th-bkg-3 p-4">
-        <Tooltip content={t('settings:tooltip-privacy-mode')}>
-          <p className="tooltip-underline">{t('settings:privacy-mode')}</p>
-        </Tooltip>
-        <Switch
-          checked={privacyMode}
-          onChange={() => setPrivacyMode(!privacyMode)}
-        />
       </div>
     </div>
   )

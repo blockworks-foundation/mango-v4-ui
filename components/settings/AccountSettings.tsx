@@ -1,17 +1,24 @@
 import HideMangoAccount from '@components/account/HideMangoAccount'
 import MangoAccountSizeModal from '@components/modals/MangoAccountSizeModal'
-import Button, { LinkButton } from '@components/shared/Button'
+import Button, { IconButton, LinkButton } from '@components/shared/Button'
 import TokenLogo from '@components/shared/TokenLogo'
 import Tooltip from '@components/shared/Tooltip'
 import MarketLogos from '@components/trade/MarketLogos'
 import { Disclosure } from '@headlessui/react'
-import { ChevronDownIcon, SquaresPlusIcon } from '@heroicons/react/20/solid'
+import {
+  ChevronDownIcon,
+  DocumentDuplicateIcon,
+  PencilIcon,
+  SquaresPlusIcon,
+  TrashIcon,
+  UserPlusIcon,
+} from '@heroicons/react/20/solid'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoAccountAccounts from 'hooks/useMangoAccountAccounts'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useMemo, useState } from 'react'
-import { MAX_ACCOUNTS } from 'utils/constants'
+import { MAX_ACCOUNTS, PRIVACY_MODE } from 'utils/constants'
 import mangoStore from '@store/mangoStore'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 import { notify } from 'utils/notifications'
@@ -20,6 +27,19 @@ import { getMaxWithdrawForBank } from '@components/swap/useTokenMax'
 import Decimal from 'decimal.js'
 import { formatTokenSymbol } from 'utils/tokens'
 import { handleCancelAll } from '@components/swap/SwapTriggerOrders'
+import { handleCopyAddress } from '@components/account/AccountActions'
+import AccountNameModal from '@components/modals/AccountNameModal'
+import DelegateModal, {
+  DEFAULT_DELEGATE,
+} from '@components/modals/DelegateModal'
+import { abbreviateAddress } from 'utils/formatting'
+import CloseAccountModal from '@components/modals/CloseAccountModal'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import Switch from '@components/forms/Switch'
+import useUnownedAccount from 'hooks/useUnownedAccount'
+import { useWallet } from '@solana/wallet-adapter-react'
+import CreateAccountForm from '@components/account/CreateAccountForm'
+import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 
 enum CLOSE_TYPE {
   TOKEN,
@@ -34,11 +54,20 @@ const CLOSE_WRAPPER_CLASSNAMES =
 const SLOT_ROW_CLASSNAMES =
   'flex items-center justify-between border-t border-th-bkg-3 py-3'
 
+const ROW_BUTTON_CLASSNAMES =
+  'flex items-center justify-between border-t border-th-bkg-3 py-4 w-full md:px-4 focus:outline-none md:hover:bg-th-bkg-2'
+
 const AccountSettings = () => {
   const { t } = useTranslation(['common', 'settings', 'trade'])
-  const { mangoAccountAddress } = useMangoAccount()
+  const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const { group } = useMangoGroup()
+  const { isDelegatedAccount, isUnownedAccount } = useUnownedAccount()
+  const { connected } = useWallet()
   const [showAccountSizeModal, setShowAccountSizeModal] = useState(false)
+  const [showEditAccountModal, setShowEditAccountModal] = useState(false)
+  const [showCloseAccountModal, setShowCloseAccountModal] = useState(false)
+  const [privacyMode, setPrivacyMode] = useLocalStorageState(PRIVACY_MODE)
+  const [showDelegateModal, setShowDelegateModal] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [cancelTcs, setCancelTcs] = useState('')
   const {
@@ -177,12 +206,76 @@ const AccountSettings = () => {
     [emptyPerps, emptySerum3],
   )
 
-  return mangoAccountAddress && group ? (
+  return mangoAccount && group && !isDelegatedAccount && !isUnownedAccount ? (
     <div className="border-b border-th-bkg-3">
       <div className="pb-6">
+        <h3 className="mb-1 text-sm text-th-fgd-1">
+          {t('settings:account-address')}
+        </h3>
+        <div className="flex items-center space-x-2">
+          <p>{mangoAccount.publicKey.toString()}</p>
+          <IconButton
+            hideBg
+            onClick={() =>
+              handleCopyAddress(
+                mangoAccount.publicKey.toString(),
+                t('copy-address-success', {
+                  pk: abbreviateAddress(mangoAccount.publicKey),
+                }),
+              )
+            }
+          >
+            <DocumentDuplicateIcon className="h-5 w-5" />
+          </IconButton>
+        </div>
+      </div>
+      <div className="mb-6 border-b border-th-bkg-3">
+        <button
+          className={ROW_BUTTON_CLASSNAMES}
+          onClick={() => setShowEditAccountModal(true)}
+        >
+          <p>{t('edit-account')}</p>
+          <div className="flex items-center space-x-2">
+            <p className="text-th-fgd-2">{mangoAccount.name}</p>
+            <PencilIcon className="h-5 w-5 text-th-fgd-2" />
+          </div>
+        </button>
+        <button
+          className={ROW_BUTTON_CLASSNAMES}
+          onClick={() => setShowDelegateModal(true)}
+        >
+          <p>{t('delegate-account')}</p>
+          <div className="flex items-center space-x-2">
+            <p className="text-th-fgd-2">
+              {mangoAccount.delegate.toString() !== DEFAULT_DELEGATE
+                ? abbreviateAddress(mangoAccount.delegate)
+                : ''}
+            </p>
+            <UserPlusIcon className="h-5 w-5 text-th-fgd-2" />
+          </div>
+        </button>
+        <button
+          className={ROW_BUTTON_CLASSNAMES}
+          onClick={() => setShowCloseAccountModal(true)}
+        >
+          <p>{t('close-account')}</p>
+          <TrashIcon className="h-5 w-5 text-th-fgd-2" />
+        </button>
+      </div>
+      <div className="pb-6">
+        <h3 className="mb-4 text-sm text-th-fgd-2">{t('settings:privacy')}</h3>
+        <div className="flex items-center justify-between border-t border-th-bkg-3 py-4 md:px-4">
+          <Tooltip content={t('settings:tooltip-privacy-mode')}>
+            <p className="tooltip-underline">{t('settings:privacy-mode')}</p>
+          </Tooltip>
+          <Switch
+            checked={privacyMode}
+            onChange={() => setPrivacyMode(!privacyMode)}
+          />
+        </div>
         <HideMangoAccount />
       </div>
-      <div className="mb-4 flex items-center justify-between md:px-4">
+      <div className="mb-4 flex items-center justify-between">
         <h3 className="text-sm text-th-fgd-2">{t('settings:account-slots')}</h3>
         {!isAccountFull ? (
           <LinkButton
@@ -573,8 +666,42 @@ const AccountSettings = () => {
           onClose={() => setShowAccountSizeModal(false)}
         />
       ) : null}
+      {showEditAccountModal ? (
+        <AccountNameModal
+          isOpen={showEditAccountModal}
+          onClose={() => setShowEditAccountModal(false)}
+        />
+      ) : null}
+      {showDelegateModal ? (
+        <DelegateModal
+          isOpen={showDelegateModal}
+          onClose={() => setShowDelegateModal(false)}
+        />
+      ) : null}
+      {showCloseAccountModal ? (
+        <CloseAccountModal
+          isOpen={showCloseAccountModal}
+          onClose={() => setShowCloseAccountModal(false)}
+        />
+      ) : null}
     </div>
-  ) : null
+  ) : isUnownedAccount ? (
+    <div className="rounded-lg border border-th-bkg-3 p-4 md:p-6">
+      <p className="text-center">{t('settings:account-settings-unowned')}</p>
+    </div>
+  ) : isDelegatedAccount ? (
+    <div className="rounded-lg border border-th-bkg-3 p-4 md:p-6">
+      <p className="text-center">{t('settings:account-settings-delegated')}</p>
+    </div>
+  ) : connected ? (
+    <div className="rounded-lg border border-th-bkg-3 p-4 md:p-6">
+      <CreateAccountForm />
+    </div>
+  ) : (
+    <div className="rounded-lg border border-th-bkg-3 p-4 md:p-6">
+      <ConnectEmptyState text="Connect" />
+    </div>
+  )
 }
 
 export default AccountSettings

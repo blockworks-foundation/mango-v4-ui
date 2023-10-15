@@ -45,6 +45,8 @@ import TokenLogo from './shared/TokenLogo'
 import useHealthContributions from 'hooks/useHealthContributions'
 import { useSortableData } from 'hooks/useSortableData'
 import TableTokenName from './shared/TableTokenName'
+import CloseBorrowModal from './modals/CloseBorrowModal'
+import { floorToDecimal } from 'utils/numbers'
 
 type TableData = {
   bank: Bank
@@ -61,8 +63,12 @@ type TableData = {
   borrowRate: number
 }
 
+const set = mangoStore.getState().set
+
 const TokenList = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
+  const [showCloseBorrowModal, setCloseBorrowModal] = useState(false)
+  const [closeBorrowBank, setCloseBorrowBank] = useState<Bank | undefined>()
   const [showZeroBalances, setShowZeroBalances] = useLocalStorageState(
     SHOW_ZERO_BALANCES_KEY,
     true,
@@ -82,7 +88,7 @@ const TokenList = () => {
       const formatted = []
       for (const b of banks) {
         const bank = b.bank
-        const balance = b.balance
+        const balance = floorToDecimal(b.balance, bank.mintDecimals).toNumber()
         const balanceValue = balance * bank.uiPrice
         const symbol = bank.name === 'MSOL' ? 'mSOL' : bank.name
 
@@ -154,6 +160,47 @@ const TokenList = () => {
     sortConfig,
   } = useSortableData(unsortedTableData)
 
+  const handleOpenCloseBorrowModal = (borrowBank: Bank) => {
+    const group = mangoStore.getState().group
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+    setCloseBorrowModal(true)
+    setCloseBorrowBank(borrowBank)
+    if (borrowBank.name === 'USDC') {
+      const solBank = group?.getFirstBankByMint(WRAPPED_SOL_MINT)
+      set((state) => {
+        state.swap.inputBank = solBank
+      })
+    } else {
+      const usdcBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
+      set((state) => {
+        state.swap.inputBank = usdcBank
+      })
+    }
+    if (mangoAccount) {
+      const balance = mangoAccount.getTokenBalanceUi(borrowBank)
+      const roundedBalance = floorToDecimal(
+        balance,
+        borrowBank.mintDecimals,
+      ).toNumber()
+      set((state) => {
+        state.swap.swapMode = 'ExactOut'
+        state.swap.outputBank = borrowBank
+        state.swap.amountOut = Math.abs(roundedBalance).toString()
+      })
+    }
+  }
+
+  const handleCloseBorrowModal = () => {
+    setCloseBorrowModal(false)
+    set((state) => {
+      state.swap.inputBank = undefined
+      state.swap.outputBank = undefined
+      state.swap.amountIn = ''
+      state.swap.amountOut = ''
+      state.swap.swapMode = 'ExactIn'
+    })
+  }
+
   return (
     <ContentBox hideBorder hidePadding>
       {mangoAccountAddress ? (
@@ -218,16 +265,6 @@ const TokenList = () => {
                 </Th>
                 <Th>
                   <div className="flex justify-end">
-                    <SortableColumnHeader
-                      sortKey="unsettled"
-                      sort={() => requestSort('unsettled')}
-                      sortConfig={sortConfig}
-                      title={t('trade:unsettled')}
-                    />
-                  </div>
-                </Th>
-                <Th>
-                  <div className="flex justify-end">
                     <Tooltip content="The sum of interest earned and interest paid for each token">
                       <SortableColumnHeader
                         sortKey="interestValue"
@@ -263,10 +300,8 @@ const TokenList = () => {
                   balance,
                   bank,
                   symbol,
-                  interestAmount,
                   interestValue,
                   inOrders,
-                  unsettled,
                   collateralValue,
                   assetWeight,
                   liabWeight,
@@ -304,47 +339,64 @@ const TokenList = () => {
                       </p>
                     </Td>
                     <Td className="text-right">
-                      <BankAmountWithValue
-                        amount={inOrders}
-                        bank={bank}
-                        stacked
-                      />
-                    </Td>
-                    <Td className="text-right">
-                      <BankAmountWithValue
-                        amount={unsettled}
-                        bank={bank}
-                        stacked
-                      />
-                    </Td>
-                    <Td>
-                      <div className="flex flex-col text-right">
+                      {inOrders ? (
                         <BankAmountWithValue
-                          amount={interestAmount}
+                          amount={inOrders}
                           bank={bank}
-                          value={interestValue}
                           stacked
                         />
+                      ) : (
+                        <p className="text-th-fgd-4">–</p>
+                      )}
+                    </Td>
+                    <Td>
+                      <div className="flex justify-end">
+                        {Math.abs(interestValue) > 0 ? (
+                          <p>
+                            <FormatNumericValue
+                              value={interestValue}
+                              isUsd
+                              decimals={2}
+                            />
+                          </p>
+                        ) : (
+                          <p className="text-th-fgd-4">–</p>
+                        )}
                       </div>
                     </Td>
                     <Td>
                       <div className="flex justify-end space-x-1.5">
-                        <p className="text-th-up">
-                          <FormatNumericValue
-                            value={depositRate}
-                            decimals={2}
-                          />
-                          %
-                        </p>
+                        <Tooltip content={t('deposit-rate')}>
+                          <p className="cursor-help text-th-up">
+                            <FormatNumericValue
+                              value={depositRate}
+                              decimals={2}
+                            />
+                            %
+                          </p>
+                        </Tooltip>
                         <span className="text-th-fgd-4">|</span>
-                        <p className="text-th-down">
-                          <FormatNumericValue value={borrowRate} decimals={2} />
-                          %
-                        </p>
+                        <Tooltip content={t('borrow-rate')}>
+                          <p className="cursor-help text-th-down">
+                            <FormatNumericValue
+                              value={borrowRate}
+                              decimals={2}
+                            />
+                            %
+                          </p>
+                        </Tooltip>
                       </div>
                     </Td>
                     <Td>
-                      <div className="flex items-center justify-end">
+                      <div className="flex items-center justify-end space-x-2">
+                        {balance < 0 ? (
+                          <button
+                            className="rounded-md border border-th-fgd-4 px-2 py-1.5 text-xs font-bold text-th-fgd-2 focus:outline-none md:hover:border-th-fgd-3"
+                            onClick={() => handleOpenCloseBorrowModal(bank)}
+                          >
+                            {t('close-borrow', { token: '' })}
+                          </button>
+                        ) : null}
                         <ActionsMenu bank={bank} />
                       </div>
                     </Td>
@@ -361,6 +413,13 @@ const TokenList = () => {
           })}
         </div>
       )}
+      {showCloseBorrowModal ? (
+        <CloseBorrowModal
+          borrowBank={closeBorrowBank}
+          isOpen={showCloseBorrowModal}
+          onClose={handleCloseBorrowModal}
+        />
+      ) : null}
     </ContentBox>
   )
 }

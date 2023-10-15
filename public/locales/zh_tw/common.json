@@ -42,6 +42,7 @@
   "close-account": "關戶",
   "close-account-desc": "你確定嗎? 關戶就無法恢復",
   "closing-account": "正在關閉帳戶...",
+  "close-borrow": "Close {{token}} Borrow",
   "collateral-value": "質押品價值",
   "confirm": "確認",
   "connect": "連接",

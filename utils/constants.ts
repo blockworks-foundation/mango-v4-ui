@@ -102,9 +102,9 @@ export const MIN_SOL_BALANCE = 0.001
 
 export const MAX_PRIORITY_FEE_KEYS = 128
 
-export const ACCOUNT_ACTION_MODAL_HEIGHT = '462px'
+export const ACCOUNT_ACTION_MODAL_HEIGHT = '488px'
 
-export const ACCOUNT_ACTION_MODAL_INNER_HEIGHT = '400px'
+export const ACCOUNT_ACTION_MODAL_INNER_HEIGHT = '426px'
 
 export const TRADE_VOLUME_ALERT_KEY = 'tradeVolumeAlert-0.1'
 
@@ -132,6 +132,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   bonk: true,
   btc: true,
   chai: true,
+  crown: true,
   dai: true,
   dual: true,
   eth: true,
@@ -149,6 +150,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   rndr: true,
   sol: true,
   stsol: true,
+  tbtc: true,
   usdc: true,
   usdh: true,
   usdt: true,

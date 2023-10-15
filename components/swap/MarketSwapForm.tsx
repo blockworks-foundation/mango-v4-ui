@@ -41,6 +41,7 @@ dayjs.extend(relativeTime)
 
 type MarketSwapFormProps = {
   setShowTokenSelect: Dispatch<SetStateAction<SwapFormTokenListType>>
+  onSuccess?: () => void
 }
 
 const MAX_DIGITS = 11
@@ -55,7 +56,10 @@ export const NUMBER_FORMAT_CLASSNAMES =
 
 const set = mangoStore.getState().set
 
-const MarketSwapForm = ({ setShowTokenSelect }: MarketSwapFormProps) => {
+const MarketSwapForm = ({
+  setShowTokenSelect,
+  onSuccess,
+}: MarketSwapFormProps) => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
   //initial state is undefined null is returned on error
   const [selectedRoute, setSelectedRoute] = useState<RouteInfo | null>()
@@ -188,14 +192,6 @@ const MarketSwapForm = ({ setShowTokenSelect }: MarketSwapFormProps) => {
     }
   }, [bestRoute, swapMode, inputBank, outputBank])
 
-  /* 
-    If the use margin setting is toggled, clear the form values
-  */
-  useEffect(() => {
-    setAmountInFormValue('')
-    setAmountOutFormValue('')
-  }, [useMargin, setAmountInFormValue, setAmountOutFormValue])
-
   const handleSwitchTokens = useCallback(() => {
     if (amountInAsDecimal?.gt(0) && amountOutAsDecimal.gte(0)) {
       setAmountInFormValue(amountOutAsDecimal.toString())
@@ -219,10 +215,17 @@ const MarketSwapForm = ({ setShowTokenSelect }: MarketSwapFormProps) => {
     )
   }, [amountInAsDecimal, amountOutAsDecimal, connected, selectedRoute])
 
+  const handleClose = useCallback(() => {
+    setShowConfirm(false)
+    if (onSuccess) {
+      onSuccess()
+    }
+  }, [onSuccess, setShowConfirm])
+
   return (
     <>
       <SwapReviewRouteInfo
-        onClose={() => setShowConfirm(false)}
+        onClose={handleClose}
         amountIn={amountInAsDecimal}
         show={showConfirm}
         slippage={slippage}

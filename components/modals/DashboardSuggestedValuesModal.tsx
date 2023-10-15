@@ -93,7 +93,7 @@ const DashboardSuggestedValues = ({
 
     const suggestedTier = getProposedTier(
       PRESETS,
-      priceImpact?.avg_price_impact_percent,
+      priceImpact?.target_amount,
       bank.oracleProvider === OracleProvider.Pyth,
     )
 

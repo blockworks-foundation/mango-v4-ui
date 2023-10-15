@@ -6,7 +6,7 @@ const TokenReduceOnlyDesc = ({ bank }: { bank: Bank | undefined }) => {
   const { t } = useTranslation('trade')
   const tokenReduceState = bank?.reduceOnly
   return tokenReduceState === TOKEN_REDUCE_ONLY_OPTIONS.DISABLED ? null : (
-    <span className="text-xxs">
+    <span className="whitespace-nowrap text-xxs">
       {tokenReduceState === TOKEN_REDUCE_ONLY_OPTIONS.ENABLED ? (
         <span className="text-th-warning">{t('reduce-only')}</span>
       ) : (
