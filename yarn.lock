@@ -7504,6 +7504,13 @@ react-resize-detector@^8.0.4:
   dependencies:
     lodash "^4.17.21"
 
+react-responsive-pagination@2.2.3:
+  version "2.2.3"
+  resolved "https://registry.yarnpkg.com/react-responsive-pagination/-/react-responsive-pagination-2.2.3.tgz#1945010c67ccdaefa41118f911fb4dd8237314a8"
+  integrity sha512-Rn9ts0AZzM0X+pcmVcSMNJAPD/ChO+1Yowssl56TidZcPHXdeg40FKdO7cw6MR1umaLFT/er/2GQTG6EUpw1VQ==
+  dependencies:
+    prop-types "^15.8.1"
+
 react-simple-animate@3.0.2:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/react-simple-animate/-/react-simple-animate-3.0.2.tgz#67f29b0c64155d2dfd540c1c74f634ef521536a8"
