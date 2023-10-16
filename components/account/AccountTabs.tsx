@@ -12,7 +12,6 @@ import OpenOrders from '@components/trade/OpenOrders'
 import HistoryTabs from './HistoryTabs'
 import ManualRefresh from '@components/shared/ManualRefresh'
 import useMangoAccount from 'hooks/useMangoAccount'
-import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
 import SwapTriggerOrders from '@components/swap/SwapTriggerOrders'
 
 const AccountTabs = () => {
@@ -23,7 +22,6 @@ const AccountTabs = () => {
   const unsettledPerpPositions = useUnsettledPerpPositions()
   const openPerpPositions = useOpenPerpPositions()
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
-  const { data: isWhiteListed } = useIsWhiteListed()
 
   const tabsWithCount: [string, number][] = useMemo(() => {
     const unsettledTradeCount =
@@ -37,15 +35,12 @@ const AccountTabs = () => {
       ['trade:unsettled', unsettledTradeCount],
       ['history', 0],
     ]
-    if (isWhiteListed) {
-      const stopOrdersCount =
-        mangoAccount?.tokenConditionalSwaps.filter((tcs) => tcs.hasData)
-          ?.length || 0
-      tabs.splice(3, 0, ['trade:trigger-orders', stopOrdersCount])
-    }
+    const stopOrdersCount =
+      mangoAccount?.tokenConditionalSwaps.filter((tcs) => tcs.hasData)
+        ?.length || 0
+    tabs.splice(3, 0, ['trade:trigger-orders', stopOrdersCount])
     return tabs
   }, [
-    isWhiteListed,
     mangoAccount,
     openPerpPositions,
     unsettledPerpPositions,
