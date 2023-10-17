@@ -55,6 +55,7 @@ type JupiterRouteInfoProps = {
   amountIn: Decimal
   isWalletSwap?: boolean
   onClose: () => void
+  onSuccess?: () => void
   routes: JupiterV6RouteInfo[] | undefined
   selectedRoute: JupiterV6RouteInfo | undefined | null
   setSelectedRoute: Dispatch<
@@ -194,6 +195,7 @@ const SwapReviewRouteInfo = ({
   amountIn,
   isWalletSwap,
   onClose,
+  onSuccess,
   routes,
   selectedRoute,
   setSelectedRoute,
@@ -218,7 +220,7 @@ const SwapReviewRouteInfo = ({
   const focusRef = useRef<HTMLButtonElement>(null)
 
   const amountOut = useMemo(() => {
-    if (!selectedRoute || !outputTokenInfo) return
+    if (!selectedRoute?.outAmount || !outputTokenInfo) return
     return new Decimal(selectedRoute.outAmount.toString()).div(
       10 ** outputTokenInfo.decimals,
     )
@@ -363,6 +365,9 @@ const SwapReviewRouteInfo = ({
         actions.fetchGroup()
         actions.fetchSwapHistory(mangoAccount.publicKey.toString(), 30000)
         await actions.reloadMangoAccount(slot)
+        if (onSuccess) {
+          onSuccess()
+        }
       } catch (e) {
         console.error('onSwap error: ', e)
         sentry.captureException(e)
@@ -387,6 +392,7 @@ const SwapReviewRouteInfo = ({
     inputBank,
     outputBank,
     onClose,
+    onSuccess,
     selectedRoute,
     slippage,
     soundSettings,

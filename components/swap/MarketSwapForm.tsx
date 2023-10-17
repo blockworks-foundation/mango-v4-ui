@@ -179,13 +179,13 @@ const MarketSwapForm = ({
     if (typeof bestRoute !== 'undefined') {
       setSelectedRoute(bestRoute)
 
-      if (inputBank && swapMode === 'ExactOut' && bestRoute) {
-        const inAmount = new Decimal(bestRoute!.inAmount)
+      if (inputBank && swapMode === 'ExactOut' && bestRoute?.inAmount) {
+        const inAmount = new Decimal(bestRoute.inAmount)
           .div(10 ** inputBank.mintDecimals)
           .toString()
         setAmountInFormValue(inAmount)
-      } else if (outputBank && swapMode === 'ExactIn' && bestRoute) {
-        const outAmount = new Decimal(bestRoute!.outAmount)
+      } else if (outputBank && swapMode === 'ExactIn' && bestRoute?.outAmount) {
+        const outAmount = new Decimal(bestRoute.outAmount)
           .div(10 ** outputBank.mintDecimals)
           .toString()
         setAmountOutFormValue(outAmount)
@@ -216,23 +216,17 @@ const MarketSwapForm = ({
     )
   }, [amountInAsDecimal, amountOutAsDecimal, connected, selectedRoute])
 
-  const handleClose = useCallback(() => {
-    setShowConfirm(false)
-    if (onSuccess) {
-      onSuccess()
-    }
-  }, [onSuccess, setShowConfirm])
-
   return (
     <>
       <SwapReviewRouteInfo
-        onClose={handleClose}
         amountIn={amountInAsDecimal}
-        show={showConfirm}
-        slippage={slippage}
+        onClose={() => setShowConfirm(false)}
+        onSuccess={onSuccess}
         routes={bestRoute ? [bestRoute] : undefined}
         selectedRoute={selectedRoute}
         setSelectedRoute={setSelectedRoute}
+        show={showConfirm}
+        slippage={slippage}
       />
       <SellTokenInput
         handleAmountInChange={handleAmountInChange}
@@ -342,7 +336,11 @@ const SwapFormSubmitButton = ({
     return borrowAmount > remainingBorrowsInPeriod
   }, [amountIn, inputBank, mangoAccountAddress, remainingBorrowsInPeriod])
 
-  const disabled = !amountIn.toNumber() || !amountOut || !selectedRoute
+  const disabled =
+    !amountIn.toNumber() ||
+    !amountOut ||
+    !selectedRoute ||
+    !!selectedRoute.error
 
   return (
     <>
@@ -393,7 +391,8 @@ const SwapFormSubmitButton = ({
           />
         </div>
       ) : null}
-      {selectedRoute === null && amountIn.gt(0) ? (
+      {(selectedRoute === null && amountIn.gt(0)) ||
+      (selectedRoute && !!selectedRoute.error) ? (
         <div className="mb-4">
           <InlineNotification type="error" desc={t('swap:no-swap-found')} />
         </div>
