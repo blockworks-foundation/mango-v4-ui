@@ -201,10 +201,21 @@ const TokenList = () => {
     })
   }
 
+  const balancesNumber = useMemo(() => {
+    if (!banks.length) return 0
+    const activeBalancesNumber = banks.filter(
+      (bank) => Math.abs(bank.balance) > 0,
+    ).length
+    return activeBalancesNumber
+  }, [banks])
+
   return (
     <ContentBox hideBorder hidePadding>
       {mangoAccountAddress ? (
-        <div className="flex w-full items-center justify-end border-b border-th-bkg-3 px-6 py-3 lg:-mt-[36px] lg:mb-4 lg:mr-12 lg:w-auto lg:border-0 lg:py-0">
+        <div className="flex w-full items-center justify-between border-b border-th-bkg-3 px-6 py-3">
+          <p className="text-xs text-th-fgd-2">{`${balancesNumber} ${t(
+            'balances',
+          )}`}</p>
           <Switch
             checked={showZeroBalances}
             disabled={!mangoAccountAddress}

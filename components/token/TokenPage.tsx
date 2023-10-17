@@ -22,6 +22,7 @@ import TopTokenAccounts from './TopTokenAccounts'
 import TokenParams from './TokenParams'
 import { formatTokenSymbol } from 'utils/tokens'
 import TokenLogo from '@components/shared/TokenLogo'
+import { ArrowLeftIcon } from '@heroicons/react/20/solid'
 
 const DEFAULT_COINGECKO_VALUES = {
   ath: 0,
@@ -121,6 +122,21 @@ const TokenPage = () => {
 
   return (
     <>
+      <div className="flex h-14 items-center space-x-4 border-b border-th-bkg-3">
+        <button
+          className="flex h-14 w-14 flex-shrink-0 items-center justify-center border-r border-th-bkg-3 focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2"
+          onClick={() =>
+            router.push(router.pathname, undefined, { shallow: true })
+          }
+        >
+          <ArrowLeftIcon className="h-5 w-5" />
+        </button>
+        {bank ? (
+          <span className="text-lg font-bold text-th-fgd-1">
+            {formatTokenSymbol(bank.name)}
+          </span>
+        ) : null}
+      </div>
       {bank && bankName ? (
         <>
           <div className="flex flex-col border-b border-th-bkg-3 px-6 py-5 md:flex-row md:items-center md:justify-between">
@@ -129,10 +145,7 @@ const TokenPage = () => {
                 <TokenLogo bank={bank} />
                 {coingeckoTokenInfo ? (
                   <h1 className="text-base font-normal">
-                    {coingeckoTokenInfo.name}{' '}
-                    <span className="text-th-fgd-4">
-                      {formatTokenSymbol(bank.name)}
-                    </span>
+                    {coingeckoTokenInfo.name}
                   </h1>
                 ) : (
                   <h1 className="text-base font-normal">{bank.name}</h1>

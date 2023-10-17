@@ -10,8 +10,8 @@ export default function useAccountPerformanceData() {
 
   const {
     data: performanceData,
-    isLoading: loadingPerformanceData,
     isFetching: fetchingPerformanceData,
+    isInitialLoading: loadingPerformanceData,
   } = useQuery(
     ['performance', mangoAccountAddress],
     () => fetchAccountPerformance(mangoAccountAddress, 31),

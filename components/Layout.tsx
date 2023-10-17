@@ -105,13 +105,11 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
         <div className="fixed z-20 hidden h-screen md:block">
           <button
-            className="absolute right-0 top-1/2 z-20 hidden h-8 w-3 -translate-y-1/2 rounded-none rounded-l bg-th-bkg-3 hover:bg-th-bkg-4 focus:outline-none focus-visible:bg-th-bkg-4 2xl:block"
+            className="absolute right-0 top-1/2 z-20 hidden h-8 w-3 -translate-y-1/2 rounded-none rounded-l bg-th-bkg-3 hover:bg-th-bkg-4 focus:outline-none focus-visible:bg-th-bkg-4 2xl:flex 2xl:items-center 2xl:justify-center"
             onClick={handleToggleSidebar}
           >
             <ChevronRightIcon
-              className={`absolute bottom-2 h-4 w-4 shrink-0 ${
-                !isCollapsed ? 'rotate-180' : ''
-              }`}
+              className={`h-4 w-4 shrink-0 ${!isCollapsed ? 'rotate-180' : ''}`}
             />
           </button>
           <div

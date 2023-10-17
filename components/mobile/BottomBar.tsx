@@ -19,7 +19,6 @@ import {
   NewspaperIcon,
   ExclamationTriangleIcon,
   DocumentTextIcon,
-  SparklesIcon,
   ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/20/solid'
 import SolanaTps from '@components/SolanaTps'
@@ -80,9 +79,9 @@ const BottomBar = () => {
           <ArrowTrendingUpIcon className="mb-1 h-4 w-4" />
           <StyledBarItemLabel>{t('trade')}</StyledBarItemLabel>
         </BottomBarLink>
-        <BottomBarLink isActive={asPath === '/explore'} pathName="/explore">
-          <SparklesIcon className="mb-1 h-4 w-4" />
-          <StyledBarItemLabel>{t('explore')}</StyledBarItemLabel>
+        <BottomBarLink isActive={asPath === '/borrow'} pathName="/borrow">
+          <BanknotesIcon className="mb-1 h-4 w-4" />
+          <StyledBarItemLabel>{t('borrow')}</StyledBarItemLabel>
         </BottomBarLink>
         <button
           className={`${
@@ -125,11 +124,6 @@ const MoreMenuPanel = ({
         className="border-b border-th-bkg-4"
         onClick={() => setShowPanel(false)}
       >
-        <MoreMenuItem
-          title={t('borrow')}
-          path="/borrow"
-          icon={<BanknotesIcon className="h-5 w-5" />}
-        />
         <MoreMenuItem
           title={t('stats')}
           path="/stats"

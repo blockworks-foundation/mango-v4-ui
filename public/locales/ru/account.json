@@ -1,4 +1,5 @@
 {
+    "account-stats": "Account Stats",
     "assets": "Assets",
     "assets-liabilities": "Assets & Liabilities",
     "collateral-value": "Collateral Value",
@@ -15,6 +16,7 @@
     "lifetime-volume": "Lifetime Trade Volume",
     "maint-health-contribution": "Maint Health Contribution",
     "maint-health-contributions": "Maint Health Contributions",
+    "more-account-stats": "More Account Stats",
     "no-data": "No data to display",
     "no-pnl-history": "No PnL History",
     "pnl-chart": "PnL Chart",
