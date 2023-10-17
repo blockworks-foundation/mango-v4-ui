@@ -13,7 +13,7 @@ import mangoStore from '@store/mangoStore'
 import useDebounce from '../shared/useDebounce'
 import { MANGO_MINT, SIZE_INPUT_UI_KEY, USDC_MINT } from '../../utils/constants'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { RouteInfo } from 'types/jupiter'
+import { JupiterV6RouteInfo } from 'types/jupiter'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { DEFAULT_PERCENTAGE_VALUES } from './PercentageSelectButtons'
 import BuyTokenInput from './BuyTokenInput'
@@ -45,7 +45,8 @@ const set = mangoStore.getState().set
 const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
   //initial state is undefined null is returned on error
-  const [selectedRoute, setSelectedRoute] = useState<RouteInfo | null>()
+  const [selectedRoute, setSelectedRoute] =
+    useState<JupiterV6RouteInfo | null>()
   const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
   const [showConfirm, setShowConfirm] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
@@ -62,7 +63,7 @@ const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
   const [debouncedAmountIn] = useDebounce(amountInFormValue, 300)
   const [debouncedAmountOut] = useDebounce(amountOutFormValue, 300)
   const { connected, publicKey } = useWallet()
-  const { bestRoute, routes } = useQuoteRoutes({
+  const { bestRoute } = useQuoteRoutes({
     inputMint: inputBank?.mint.toString() || USDC_MINT,
     outputMint: outputBank?.mint.toString() || MANGO_MINT,
     amount: swapMode === 'ExactIn' ? debouncedAmountIn : debouncedAmountOut,
@@ -225,7 +226,7 @@ const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
         amountIn={amountInAsDecimal}
         isWalletSwap
         onClose={() => setShowConfirm(false)}
-        routes={routes}
+        routes={bestRoute ? [bestRoute] : undefined}
         selectedRoute={selectedRoute}
         setSelectedRoute={setSelectedRoute}
         show={showConfirm}
@@ -314,7 +315,7 @@ const SwapFormSubmitButton = ({
   amountOut: number | undefined
   inputSymbol: string | undefined
   loadingSwapDetails: boolean
-  selectedRoute: RouteInfo | undefined | null
+  selectedRoute: JupiterV6RouteInfo | undefined | null
   setShowConfirm: (x: boolean) => void
   useMargin: boolean
 }) => {

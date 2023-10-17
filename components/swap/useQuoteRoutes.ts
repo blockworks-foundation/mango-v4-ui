@@ -2,11 +2,12 @@
 import { PublicKey } from '@solana/web3.js'
 import { useQuery } from '@tanstack/react-query'
 import Decimal from 'decimal.js'
-import { RouteInfo } from 'types/jupiter'
+import { JupiterV6RouteInfo } from 'types/jupiter'
 // import { MANGO_ROUTER_API_URL } from 'utils/constants'
 import useJupiterSwapData from './useJupiterSwapData'
 import useDebounce from '@components/shared/useDebounce'
 import { useMemo } from 'react'
+import { JUPITER_V6_QUOTE_API_MAINNET } from 'utils/constants'
 
 type SwapModes = 'ALL' | 'JUPITER' | 'MANGO'
 
@@ -21,7 +22,7 @@ type useQuoteRoutesPropTypes = {
   enabled?: () => boolean
 }
 
-const fetchJupiterRoutes = async (
+const fetchJupiterRoute = async (
   inputMint = 'So11111111111111111111111111111111111111112',
   outputMint = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
   amount = 0,
@@ -36,19 +37,17 @@ const fetchJupiterRoutes = async (
       outputMint: outputMint.toString(),
       amount: amount.toString(),
       slippageBps: Math.ceil(slippage * 100).toString(),
-      feeBps: feeBps.toString(),
+      pfeeBps: feeBps.toString(),
       swapMode,
       onlyDirectRoutes: `${onlyDirectRoutes}`,
     }).toString()
 
     const response = await fetch(
-      `https://quote-api.jup.ag/v4/quote?${paramsString}`,
+      `${JUPITER_V6_QUOTE_API_MAINNET}/quote?${paramsString}`,
     )
-    const res = await response.json()
-    const data = res.data
+    const res: JupiterV6RouteInfo = await response.json()
     return {
-      routes: res.data as RouteInfo[],
-      bestRoute: (data.length ? data[0] : null) as RouteInfo | null,
+      bestRoute: res,
     }
   }
 }
@@ -141,7 +140,7 @@ export const handleGetRoutes = async (
     // }
 
     if (mode === 'ALL' || mode === 'JUPITER') {
-      const jupiterRoute = fetchJupiterRoutes(
+      const jupiterRoute = await fetchJupiterRoute(
         inputMint,
         outputMint,
         amount,
@@ -160,8 +159,7 @@ export const handleGetRoutes = async (
 
     const sortedByBiggestOutAmount = (
       responses as {
-        routes: RouteInfo[]
-        bestRoute: RouteInfo
+        bestRoute: JupiterV6RouteInfo
       }[]
     ).sort((a, b) =>
       swapMode === 'ExactIn'
@@ -169,12 +167,10 @@ export const handleGetRoutes = async (
         : Number(a.bestRoute.inAmount) - Number(b.bestRoute.inAmount),
     )
     return {
-      routes: sortedByBiggestOutAmount[0].routes,
       bestRoute: sortedByBiggestOutAmount[0].bestRoute,
     }
   } catch (e) {
     return {
-      routes: [],
       bestRoute: null,
     }
   }
@@ -205,10 +201,7 @@ const useQuoteRoutes = ({
       : new Decimal(0)
   }, [debouncedAmount, decimals])
 
-  const res = useQuery<
-    { routes: RouteInfo[]; bestRoute: RouteInfo | null },
-    Error
-  >(
+  const res = useQuery<{ bestRoute: JupiterV6RouteInfo | null }, Error>(
     [
       'swap-routes',
       inputMint,
