@@ -114,7 +114,9 @@ export const JUPITER_API_MAINNET = 'https://token.jup.ag/strict'
 
 export const JUPITER_API_DEVNET = 'https://api.jup.ag/api/tokens/devnet'
 
-export const JUPITER_PRICE_API_MAINNET = 'https://price.jup.ag/v4/'
+export const JUPITER_PRICE_API_MAINNET = 'https://price.jup.ag/v4/' // V6 Does not yet support /price requests as of 16/10/2023
+
+export const JUPITER_V6_QUOTE_API_MAINNET = 'https://quote-api.jup.ag/v6'
 
 export const NOTIFICATION_API = 'https://notifications-api.herokuapp.com/'
 

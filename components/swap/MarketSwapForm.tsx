@@ -13,7 +13,7 @@ import mangoStore from '@store/mangoStore'
 import useDebounce from '../shared/useDebounce'
 import { MANGO_MINT, SIZE_INPUT_UI_KEY, USDC_MINT } from '../../utils/constants'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { RouteInfo } from 'types/jupiter'
+import { JupiterV6RouteInfo } from 'types/jupiter'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import SwapSlider from './SwapSlider'
 import PercentageSelectButtons from './PercentageSelectButtons'
@@ -62,7 +62,8 @@ const MarketSwapForm = ({
 }: MarketSwapFormProps) => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
   //initial state is undefined null is returned on error
-  const [selectedRoute, setSelectedRoute] = useState<RouteInfo | null>()
+  const [selectedRoute, setSelectedRoute] =
+    useState<JupiterV6RouteInfo | null>()
   const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
   const [showConfirm, setShowConfirm] = useState(false)
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
@@ -78,7 +79,7 @@ const MarketSwapForm = ({
   const [debouncedAmountIn] = useDebounce(amountInFormValue, 300)
   const [debouncedAmountOut] = useDebounce(amountOutFormValue, 300)
   const { connected, publicKey } = useWallet()
-  const { bestRoute, routes } = useQuoteRoutes({
+  const { bestRoute } = useQuoteRoutes({
     inputMint: inputBank?.mint.toString() || USDC_MINT,
     outputMint: outputBank?.mint.toString() || MANGO_MINT,
     amount: swapMode === 'ExactIn' ? debouncedAmountIn : debouncedAmountOut,
@@ -229,7 +230,7 @@ const MarketSwapForm = ({
         amountIn={amountInAsDecimal}
         show={showConfirm}
         slippage={slippage}
-        routes={routes}
+        routes={bestRoute ? [bestRoute] : undefined}
         selectedRoute={selectedRoute}
         setSelectedRoute={setSelectedRoute}
       />
@@ -316,7 +317,7 @@ const SwapFormSubmitButton = ({
   amountOut: number | undefined
   inputSymbol: string | undefined
   loadingSwapDetails: boolean
-  selectedRoute: RouteInfo | undefined | null
+  selectedRoute: JupiterV6RouteInfo | undefined | null
   setShowConfirm: (x: boolean) => void
   useMargin: boolean
 }) => {

@@ -1,16 +1,18 @@
 import { Dispatch, SetStateAction } from 'react'
 
-import { RouteInfo, Token } from '../../types/jupiter'
+import { JupiterV6RouteInfo, Token } from '../../types/jupiter'
 import Modal from '../shared/Modal'
 import useJupiterMints from '../../hooks/useJupiterMints'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 
 type RoutesModalProps = {
   onClose: () => void
-  setSelectedRoute: Dispatch<SetStateAction<RouteInfo | undefined | null>>
+  setSelectedRoute: Dispatch<
+    SetStateAction<JupiterV6RouteInfo | undefined | null>
+  >
   show: boolean
-  routes: RouteInfo[]
-  selectedRoute: RouteInfo
+  routes: JupiterV6RouteInfo[]
+  selectedRoute: JupiterV6RouteInfo
   inputTokenSymbol: string
   outputTokenInfo: Token
 }
@@ -26,7 +28,7 @@ const RoutesModal = ({
 }: RoutesModalProps) => {
   const { jupiterTokens } = useJupiterMints()
 
-  const handleSelectRoute = (route: RouteInfo) => {
+  const handleSelectRoute = (route: JupiterV6RouteInfo) => {
     setSelectedRoute(route)
     onClose()
   }
@@ -55,16 +57,16 @@ const RoutesModal = ({
                 <div className="flex items-center justify-between">
                   <div className="flex flex-col text-left">
                     <div className="overflow-ellipsis font-bold">
-                      {route.marketInfos.map((info, index) => {
+                      {route.routePlan.map((info, index) => {
                         let includeSeparator = false
                         if (
-                          route.marketInfos.length > 1 &&
-                          index !== route.marketInfos.length - 1
+                          route.routePlan.length > 1 &&
+                          index !== route.routePlan.length - 1
                         ) {
                           includeSeparator = true
                         }
                         return (
-                          <span key={index}>{`${info.label} ${
+                          <span key={index}>{`${info.swapInfo.label} ${
                             includeSeparator ? 'x ' : ''
                           }`}</span>
                         )
@@ -72,16 +74,17 @@ const RoutesModal = ({
                     </div>
                     <div className="text-xs text-th-fgd-4">
                       {inputTokenSymbol} →{' '}
-                      {route.marketInfos.map((r, index) => {
+                      {route.routePlan.map((r, index) => {
                         const showArrow =
-                          index !== route.marketInfos.length - 1 ? true : false
+                          index !== route.routePlan.length - 1 ? true : false
                         return (
                           <span key={index}>
                             <span>
                               {
                                 jupiterTokens.find(
                                   (item) =>
-                                    item?.address === r?.outputMint?.toString(),
+                                    item?.address ===
+                                    r?.swapInfo.outputMint?.toString(),
                                 )?.symbol
                               }
                             </span>

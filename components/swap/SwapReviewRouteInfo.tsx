@@ -32,17 +32,20 @@ import { useTranslation } from 'next-i18next'
 import { formatNumericValue } from '../../utils/numbers'
 import { notify } from '../../utils/notifications'
 import useJupiterMints from '../../hooks/useJupiterMints'
-import { RouteInfo } from 'types/jupiter'
+import { JupiterV6RouteInfo } from 'types/jupiter'
 import useJupiterSwapData from './useJupiterSwapData'
 // import { Transaction } from '@solana/web3.js'
-import { SOUND_SETTINGS_KEY } from 'utils/constants'
+import {
+  JUPITER_V6_QUOTE_API_MAINNET,
+  SOUND_SETTINGS_KEY,
+} from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { Howl } from 'howler'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 import Tooltip from '@components/shared/Tooltip'
 import { Disclosure, Transition } from '@headlessui/react'
 import RoutesModal from './RoutesModal'
-import { createAssociatedTokenAccountIdempotentInstruction } from '@blockworks-foundation/mango-v4'
+// import { createAssociatedTokenAccountIdempotentInstruction } from '@blockworks-foundation/mango-v4'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { isMangoError } from 'types'
 import { useWallet } from '@solana/wallet-adapter-react'
@@ -52,9 +55,11 @@ type JupiterRouteInfoProps = {
   amountIn: Decimal
   isWalletSwap?: boolean
   onClose: () => void
-  routes: RouteInfo[] | undefined
-  selectedRoute: RouteInfo | undefined | null
-  setSelectedRoute: Dispatch<SetStateAction<RouteInfo | undefined | null>>
+  routes: JupiterV6RouteInfo[] | undefined
+  selectedRoute: JupiterV6RouteInfo | undefined | null
+  setSelectedRoute: Dispatch<
+    SetStateAction<JupiterV6RouteInfo | undefined | null>
+  >
   slippage: number
   show: boolean
 }
@@ -85,43 +90,43 @@ const deserializeJupiterIxAndAlt = async (
   return [decompiledMessage.instructions, addressLookupTables]
 }
 
-const prepareMangoRouterInstructions = async (
-  selectedRoute: RouteInfo,
-  inputMint: PublicKey,
-  outputMint: PublicKey,
-  userPublicKey: PublicKey,
-): Promise<[TransactionInstruction[], AddressLookupTableAccount[]]> => {
-  if (!selectedRoute || !selectedRoute.mints || !selectedRoute.instructions) {
-    return [[], []]
-  }
-  const mintsToFilterOut = [inputMint, outputMint]
-  const filteredOutMints = [
-    ...selectedRoute.mints.filter(
-      (routeMint) =>
-        !mintsToFilterOut.find((filterOutMint) =>
-          filterOutMint.equals(routeMint),
-        ),
-    ),
-  ]
-  const additionalInstructions = []
-  for (const mint of filteredOutMints) {
-    const ix = await createAssociatedTokenAccountIdempotentInstruction(
-      userPublicKey,
-      userPublicKey,
-      mint,
-    )
-    additionalInstructions.push(ix)
-  }
-  const instructions = [
-    ...additionalInstructions,
-    ...selectedRoute.instructions,
-  ]
-  return [instructions, []]
-}
+// const prepareMangoRouterInstructions = async (
+//   selectedRoute: RouteInfo,
+//   inputMint: PublicKey,
+//   outputMint: PublicKey,
+//   userPublicKey: PublicKey,
+// ): Promise<[TransactionInstruction[], AddressLookupTableAccount[]]> => {
+//   if (!selectedRoute || !selectedRoute.mints || !selectedRoute.instructions) {
+//     return [[], []]
+//   }
+//   const mintsToFilterOut = [inputMint, outputMint]
+//   const filteredOutMints = [
+//     ...selectedRoute.mints.filter(
+//       (routeMint) =>
+//         !mintsToFilterOut.find((filterOutMint) =>
+//           filterOutMint.equals(routeMint),
+//         ),
+//     ),
+//   ]
+//   const additionalInstructions = []
+//   for (const mint of filteredOutMints) {
+//     const ix = await createAssociatedTokenAccountIdempotentInstruction(
+//       userPublicKey,
+//       userPublicKey,
+//       mint,
+//     )
+//     additionalInstructions.push(ix)
+//   }
+//   const instructions = [
+//     ...additionalInstructions,
+//     ...selectedRoute.instructions,
+//   ]
+//   return [instructions, []]
+// }
 
 export const fetchJupiterTransaction = async (
   connection: Connection,
-  selectedRoute: RouteInfo,
+  selectedRoute: JupiterV6RouteInfo,
   userPublicKey: PublicKey,
   slippage: number,
   inputMint: PublicKey,
@@ -129,14 +134,14 @@ export const fetchJupiterTransaction = async (
   isDirectWalletSwap = false,
 ): Promise<[TransactionInstruction[], AddressLookupTableAccount[]]> => {
   const transactions = await (
-    await fetch('https://quote-api.jup.ag/v4/swap', {
+    await fetch(`${JUPITER_V6_QUOTE_API_MAINNET}/swap`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        // route from /quote api
-        route: selectedRoute,
+        // response from /quote api
+        quoteResponse: selectedRoute,
         // user public key to be used for the swap
         userPublicKey,
         // feeAccount is optional. Use if you want to charge a fee.  feeBps must have been passed in /quote API.
@@ -315,21 +320,22 @@ const SwapReviewRouteInfo = ({
         return
       setSubmitting(true)
       const [ixs, alts] =
-        selectedRoute.routerName === 'Mango'
-          ? await prepareMangoRouterInstructions(
-              selectedRoute,
-              inputBank.mint,
-              outputBank.mint,
-              mangoAccount.owner,
-            )
-          : await fetchJupiterTransaction(
-              connection,
-              selectedRoute,
-              wallet.publicKey,
-              slippage,
-              inputBank.mint,
-              outputBank.mint,
-            )
+        // selectedRoute.routerName === 'Mango'
+        //   ? await prepareMangoRouterInstructions(
+        //       selectedRoute,
+        //       inputBank.mint,
+        //       outputBank.mint,
+        //       mangoAccount.owner,
+        //     )
+        // :
+        await fetchJupiterTransaction(
+          connection,
+          selectedRoute,
+          wallet.publicKey,
+          slippage,
+          inputBank.mint,
+          outputBank.mint,
+        )
 
       try {
         const { signature: tx, slot } = await client.marginTrade({
@@ -699,16 +705,16 @@ const SwapReviewRouteInfo = ({
                         onClick={() => setShowRoutesModal(true)}
                       >
                         <span className="overflow-ellipsis whitespace-nowrap">
-                          {selectedRoute?.marketInfos.map((info, index) => {
+                          {selectedRoute?.routePlan.map((info, index) => {
                             let includeSeparator = false
                             if (
-                              selectedRoute?.marketInfos.length > 1 &&
-                              index !== selectedRoute?.marketInfos.length - 1
+                              selectedRoute?.routePlan.length > 1 &&
+                              index !== selectedRoute?.routePlan.length - 1
                             ) {
                               includeSeparator = true
                             }
                             return (
-                              <span key={index}>{`${info?.label} ${
+                              <span key={index}>{`${info?.swapInfo.label} ${
                                 includeSeparator ? 'x ' : ''
                               }`}</span>
                             )
@@ -727,33 +733,36 @@ const SwapReviewRouteInfo = ({
                         </div>
                       </div>
                     ) : (
-                      selectedRoute?.marketInfos.map((info, index) => {
+                      selectedRoute?.routePlan.map((info, index) => {
                         const feeToken = jupiterTokens.find(
-                          (item) => item?.address === info.lpFee?.mint,
+                          (item) => item?.address === info.swapInfo.feeMint,
                         )
                         return (
                           <div className="flex justify-between" key={index}>
                             <p className="text-sm text-th-fgd-3">
                               {t('swap:fees-paid-to', {
-                                route: info?.label,
+                                route: info?.swapInfo.label,
                               })}
                             </p>
                             {feeToken?.decimals && (
                               <p className="pl-4 text-right font-mono text-sm text-th-fgd-2">
                                 {(
-                                  info.lpFee?.amount /
+                                  info.swapInfo.feeAmount /
                                   Math.pow(10, feeToken.decimals)
                                 ).toFixed(6)}{' '}
                                 <span className="font-body">
                                   {feeToken?.symbol}
                                 </span>{' '}
                                 (
-                                {(info.lpFee?.pct * 100).toLocaleString(
-                                  undefined,
-                                  {
-                                    maximumSignificantDigits: 2,
-                                  },
-                                )}
+                                {(
+                                  (info.swapInfo.outputMint == feeToken.address
+                                    ? info.swapInfo.feeAmount /
+                                      info.swapInfo.outAmount
+                                    : info.swapInfo.feeAmount /
+                                      info.swapInfo.inAmount) * 100
+                                ).toLocaleString(undefined, {
+                                  maximumSignificantDigits: 2,
+                                })}
                                 %)
                               </p>
                             )}
