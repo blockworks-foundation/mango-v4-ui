@@ -953,6 +953,18 @@
     bn.js "^5.2.0"
     debug "^4.3.4"
 
+"@moongate/moongate-adapter@0.0.78":
+  version "0.0.78"
+  resolved "https://registry.yarnpkg.com/@moongate/moongate-adapter/-/moongate-adapter-0.0.78.tgz#69ae4c93fef7799546f4bc393ef3744ef256bf93"
+  integrity sha512-kHVOBl15/lpyNNRacPASr3gGnaIDwhBLhOg4qgtsnWJ2WuMzHFLhd5aN0Wfa/X/YXevV3PPV3qFLM+YS2wuB5Q==
+  dependencies:
+    "@moongate/solana-wallet-sdk" "^1.0.6"
+
+"@moongate/solana-wallet-sdk@^1.0.6":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@moongate/solana-wallet-sdk/-/solana-wallet-sdk-1.1.1.tgz#b1c53a7cd940dcc68f04e5634ec82463b51f64d8"
+  integrity sha512-QTfd2AGOTB+YbRhD2TJbta/qCq9kGrpXZkhBDi7SKqXqz3IKb0bb8fY6E3pa0Niz5ffuXjgyAHGa2xG06t2wEA==
+
 "@next/env@13.4.17":
   version "13.4.17"
   resolved "https://registry.yarnpkg.com/@next/env/-/env-13.4.17.tgz#65d51e87918ec10b8d5ee154c7ddfe94c85da89e"
