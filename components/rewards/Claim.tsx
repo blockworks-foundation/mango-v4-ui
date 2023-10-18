@@ -208,7 +208,7 @@ const ClaimPage = () => {
 
         claimIxes.push(...ixs)
       }
-      chunk(claimIxes, 4).map((x) =>
+      chunk(claimIxes, 2).map((x) =>
         transactionInstructions.push({
           instructionsSet: x,
           sequenceType: SequenceType.Parallel,
