@@ -16,7 +16,6 @@ import {
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { abbreviateAddress } from 'utils/formatting'
-import { formatNumericValue } from 'utils/numbers'
 import { tiers } from './RewardsPage'
 import RewardsTierCard from './RewardsTierCard'
 import Faqs from './Faqs'
@@ -24,6 +23,7 @@ import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 dayjs.extend(relativeTime)
 import MedalIcon from '@components/icons/MedalIcon'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 
 const Season = ({
   setShowLeaderboards,
@@ -176,7 +176,10 @@ const Season = ({
               {!loadingAccountPointsAndRank ? (
                 accountPointsAndRank?.total_points ? (
                   <span className="-mb-1 w-full font-rewards text-5xl text-th-fgd-1">
-                    {formatNumericValue(accountPointsAndRank.total_points)}
+                    <FormatNumericValue
+                      value={accountPointsAndRank.total_points}
+                      decimals={0}
+                    />
                   </span>
                 ) : wallet?.adapter.publicKey ? (
                   <span className="-mb-1 w-full font-rewards text-5xl text-th-fgd-1">
@@ -199,9 +202,10 @@ const Season = ({
                 <div className="font-rewards text-lg text-th-active">
                   {!loadingAccountPointsAndRank ? (
                     accountPointsAndRank?.total_points_pre_multiplier ? (
-                      formatNumericValue(
-                        accountPointsAndRank.total_points_pre_multiplier,
-                      )
+                      <FormatNumericValue
+                        value={accountPointsAndRank.total_points_pre_multiplier}
+                        decimals={0}
+                      />
                     ) : wallet?.adapter.publicKey ? (
                       0
                     ) : (
@@ -302,13 +306,18 @@ const Season = ({
                             ) : null}
                           </div>
                           <span className="text-th-fgd-3">
-                            {abbreviateAddress(
-                              new PublicKey(user.mango_account),
-                            )}
+                            {user.mango_account !== mangoAccountAddress
+                              ? abbreviateAddress(
+                                  new PublicKey(user.mango_account),
+                                )
+                              : 'YOU'}
                           </span>
                         </div>
                         <span className="font-mono text-th-fgd-1">
-                          {formatNumericValue(user.total_points, 0)}
+                          <FormatNumericValue
+                            value={user.total_points}
+                            decimals={0}
+                          />
                         </span>
                       </div>
                     )
