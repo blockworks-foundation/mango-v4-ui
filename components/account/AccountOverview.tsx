@@ -24,7 +24,7 @@ const AccountOverview = () => {
   const { group } = useMangoGroup()
   const { mangoAccount, initialLoad } = useMangoAccount()
   const { connected } = useWallet()
-  const { performanceData, rollingDailyData, loadingPerformanceData } =
+  const { performanceData, loadingPerformanceData } =
     useAccountPerformanceData()
   const [daysToShow, setDaysToShow] = useState('1')
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
@@ -52,6 +52,9 @@ const AccountOverview = () => {
     ]
   }, [accountValue, performanceData])
 
+  const chartData =
+    performanceData && performanceData?.length ? performanceData : []
+
   return (
     <>
       <div className="grid grid-cols-12 border-b border-th-bkg-3">
@@ -60,7 +63,7 @@ const AccountOverview = () => {
             {mangoAccount || (connected && initialLoad) ? (
               <div className="px-4 pb-4 md:px-6">
                 <DetailedAreaOrBarChart
-                  data={rollingDailyData.concat(latestAccountData)}
+                  data={chartData.concat(latestAccountData)}
                   daysToShow={daysToShow}
                   setDaysToShow={setDaysToShow}
                   loading={loadingPerformanceData || initialLoad}
