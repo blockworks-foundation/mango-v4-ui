@@ -36,11 +36,15 @@ type BaseProps = ModalProps & {
 type RaydiumProps = BaseProps & {
   raydiumPoolAddress: string
   orcaPoolAddress?: string
+  isRaydiumPoolReverse: boolean
+  isOrcaPoolReverse: boolean
 }
 
 type OrcaProps = BaseProps & {
   raydiumPoolAddress?: string
   orcaPoolAddress: string
+  isRaydiumPoolReverse: boolean
+  isOrcaPoolReverse: boolean
 }
 
 const CreateSwitchboardOracleModal = ({
@@ -49,7 +53,9 @@ const CreateSwitchboardOracleModal = ({
   baseTokenPk,
   baseTokenName,
   raydiumPoolAddress,
+  isRaydiumPoolReverse,
   orcaPoolAddress,
+  isOrcaPoolReverse,
   tier,
 }: RaydiumProps | OrcaProps) => {
   const { t } = useTranslation(['governance'])
@@ -114,6 +120,38 @@ const CreateSwitchboardOracleModal = ({
         QueueAccount.load(program, SWITCHBOARD_PERMISSIONLESS_QUE),
         CrankAccount.load(program, SWITCHBOARD_PERMISSIONLESS_CRANK),
       ])
+
+      let onFailureTaskDesc
+      if (isOrcaPoolReverse || isRaydiumPoolReverse) {
+        onFailureTaskDesc = [
+          {
+            lpExchangeRateTask: {
+              [poolPropertyName]: poolAddress,
+            },
+          },
+        ]
+      } else {
+        onFailureTaskDesc = [
+          {
+            valueTask: {
+              big: 1,
+            },
+          },
+          {
+            divideTask: {
+              job: {
+                tasks: [
+                  {
+                    lpExchangeRateTask: {
+                      [poolPropertyName]: poolAddress,
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        ]
+      }
 
       const [aggregatorAccount, txArray1] =
         await queueAccount.createFeedInstructions(payer, {
@@ -233,13 +271,7 @@ const CreateSwitchboardOracleModal = ({
                             },
                           },
                         ],
-                        onFailure: [
-                          {
-                            lpExchangeRateTask: {
-                              [poolPropertyName]: poolAddress,
-                            },
-                          },
-                        ],
+                        onFailure: onFailureTaskDesc,
                       },
                     },
                     {
