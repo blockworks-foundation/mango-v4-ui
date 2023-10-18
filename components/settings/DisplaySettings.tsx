@@ -90,10 +90,12 @@ const DisplaySettings = () => {
   useEffect(() => {
     if (nfts.length) {
       const customThemes = []
-      for (const nft of nfts) {
-        const collectionAddress = nft?.collectionAddress
+      const ownedCollections = [
+        ...new Set(nfts.map((x) => x.collectionAddress)),
+      ]
+      for (const collection of ownedCollections) {
         for (const themeKey in CUSTOM_SKINS) {
-          if (CUSTOM_SKINS[themeKey] === collectionAddress) {
+          if (CUSTOM_SKINS[themeKey] === collection) {
             customThemes.push(themeKey)
           }
         }
