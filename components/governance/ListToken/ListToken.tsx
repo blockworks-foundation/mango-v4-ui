@@ -297,10 +297,11 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           (acc: { amount: string; priceImpactPct: number }[], val) => {
             if (val.swapMode === 'ExactIn') {
               const exactOutRoute = bestRoutesSwaps.find(
-                (x) => x.amount === val.amount && x.swapMode === 'ExactOut',
+                (x) =>
+                  x.outAmount === val.outAmount && x.swapMode === 'ExactOut',
               )
               acc.push({
-                amount: val.amount.toString(),
+                amount: val.outAmount.toString(),
                 priceImpactPct: exactOutRoute?.priceImpactPct
                   ? (val.priceImpactPct + exactOutRoute.priceImpactPct) / 2
                   : val.priceImpactPct,
@@ -326,7 +327,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         handleGetPoolParams(tier, tokenMint)
         return tier
       } catch (e) {
-        console.log(e)
         notify({
           title: t('liquidity-check-error'),
           description: `${e}`,
