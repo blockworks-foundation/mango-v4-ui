@@ -290,17 +290,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           handleGetRoutesWithFixedArgs(1000, tokenMint, 'ExactOut'),
         ])
 
-        const context = WhirlpoolContext.from(
-          connection,
-          wallet,
-          new PublicKey('whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'),
-        )
-        const client = buildWhirlpoolClient(context)
-        const whirlpool = await client.getPool(
-          'FR7Zv9qwjD9shC8uvKE7EP2qpXjSzRjvW6w452yJq7Gg',
-        )
-        console.log(whirlpool.getTokenAInfo().mint.toString())
-
         const bestRoutesSwaps = swaps
           .filter((x) => x.bestRoute)
           .map((x) => x.bestRoute!)
