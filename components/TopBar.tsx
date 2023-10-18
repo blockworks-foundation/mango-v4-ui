@@ -35,6 +35,7 @@ import SheenLoader from './shared/SheenLoader'
 import Link from 'next/link'
 import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
 import FormatNumericValue from './shared/FormatNumericValue'
+import { useRouter } from 'next/router'
 
 export const TOPBAR_ICON_BUTTON_CLASSES =
   'relative flex h-16 w-10 sm:w-16 items-center justify-center sm:border-l sm:border-th-bkg-3 focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2'
@@ -46,9 +47,13 @@ const TopBar = () => {
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const { connected, wallet } = useWallet()
   const { data: seasonData } = useCurrentSeason()
-  const { data: walletPoints, isLoading: loadingWalletRewardsData } =
-    useWalletPoints(mangoAccountAddress, seasonData?.season_id, wallet)
+  const {
+    data: walletPoints,
+    isLoading: loadingWalletRewardsData,
+    refetch: refetchWalletPoints,
+  } = useWalletPoints(mangoAccountAddress, seasonData?.season_id, wallet)
   const { data: isWhiteListed } = useIsWhiteListed()
+  const router = useRouter()
   const themeData = mangoStore((s) => s.themeData)
 
   const [action, setAction] = useState<'deposit' | 'withdraw'>('deposit')
@@ -93,6 +98,12 @@ const TopBar = () => {
   useEffect(() => {
     setTimeout(() => setCopied(''), 2000)
   }, [copied])
+
+  useEffect(() => {
+    if (router.pathname === '/rewards') {
+      refetchWalletPoints()
+    }
+  }, [router])
 
   return (
     <div
