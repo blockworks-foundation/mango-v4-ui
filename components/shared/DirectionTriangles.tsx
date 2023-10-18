@@ -1,4 +1,4 @@
-export const UpTriangle = ({ size }: { size?: 'small' }) => (
+export const UpTriangle = ({ size }: { size?: 'small' | 'large' }) => (
   <div
     className={`h-0 w-0 ${
       size === 'small'
@@ -8,7 +8,7 @@ export const UpTriangle = ({ size }: { size?: 'small' }) => (
   />
 )
 
-export const DownTriangle = ({ size }: { size?: 'small' }) => (
+export const DownTriangle = ({ size }: { size?: 'small' | 'large' }) => (
   <div
     className={`h-0 w-0 ${
       size === 'small'

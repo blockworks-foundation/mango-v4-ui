@@ -26,8 +26,7 @@ import { formatDateAxis } from '@components/shared/DetailedAreaOrBarChart'
 import { formatYAxis } from 'utils/formatting'
 import ChartRangeButtons from '@components/shared/ChartRangeButtons'
 import { useTranslation } from 'next-i18next'
-import { IconButton } from '@components/shared/Button'
-import { ArrowLeftIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
+import { NoSymbolIcon } from '@heroicons/react/20/solid'
 import { FadeInFadeOut } from '@components/shared/Transitions'
 import ContentBox from '@components/shared/ContentBox'
 import SheenLoader from '@components/shared/SheenLoader'
@@ -69,7 +68,7 @@ const fetchHourlyFunding = async (mangoAccountPk: string) => {
   }
 }
 
-const FundingChart = ({ hideChart }: { hideChart: () => void }) => {
+const FundingChart = () => {
   const { t } = useTranslation('common')
   const { mangoAccountAddress } = useMangoAccount()
   const [daysToShow, setDaysToShow] = useState('30')
@@ -222,9 +221,6 @@ const FundingChart = ({ hideChart }: { hideChart: () => void }) => {
       <ContentBox className="px-6 pt-4" hideBorder hidePadding>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4 md:space-x-6">
-            <IconButton onClick={hideChart} size="medium">
-              <ArrowLeftIcon className="h-5 w-5" />
-            </IconButton>
             <h2 className="text-lg">{t('funding')}</h2>
           </div>
           <ChartRangeButtons
@@ -235,13 +231,11 @@ const FundingChart = ({ hideChart }: { hideChart: () => void }) => {
           />
         </div>
         {loadingFunding || fetchingFunding ? (
-          <SheenLoader className="mt-6 flex flex-1">
-            <div
-              className={`h-[calc(100vh-166px)] w-full rounded-lg bg-th-bkg-2`}
-            />
+          <SheenLoader className="mt-4 flex flex-1">
+            <div className={`h-[318px] w-full rounded-lg bg-th-bkg-2`} />
           </SheenLoader>
         ) : filteredData.find((d) => Math.abs(d.total) > 0) ? (
-          <div className="-mx-6 mt-6 h-[calc(100vh-170px)]">
+          <div className="-mx-6 mt-6 h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={filteredData}>
                 <Tooltip
@@ -335,7 +329,7 @@ const FundingChart = ({ hideChart }: { hideChart: () => void }) => {
             </ResponsiveContainer>
           </div>
         ) : (
-          <div className="mt-6 flex flex-col items-center rounded-lg border border-th-bkg-3 p-8">
+          <div className="mt-4 flex h-80 flex-col items-center justify-center rounded-lg border border-th-bkg-3 p-8">
             <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
             <p>{t('account:no-data')}</p>
           </div>
