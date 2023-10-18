@@ -174,9 +174,9 @@ export default function RewardsComponent({
         return {
           item: x.mintProperties.name,
           info:
-            x.mintProperties.type === 'token'
+            x.mintProperties.type === 'token' && tokenInfo
               ? new BigNumber(x.quantity.toString())
-                  .shiftedBy(-tokenInfo!.decimals)
+                  .shiftedBy(-tokenInfo.decimals)
                   .toString()
               : x.quantity.toString(),
           rarity: x.mintProperties.rarity,
