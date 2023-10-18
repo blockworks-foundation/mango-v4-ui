@@ -6,9 +6,16 @@ import mangoStore, { CLUSTER } from '@store/mangoStore'
 import { Token } from 'types/jupiter'
 import { handleGetRoutes } from '@components/swap/useQuoteRoutes'
 import { JUPITER_PRICE_API_MAINNET, USDC_MINT } from 'utils/constants'
-import { AccountMeta, PublicKey, SYSVAR_RENT_PUBKEY } from '@solana/web3.js'
+import {
+  AccountMeta,
+  PublicKey,
+  SYSVAR_RENT_PUBKEY,
+  Keypair,
+} from '@solana/web3.js'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { OPENBOOK_PROGRAM_ID, toNative } from '@blockworks-foundation/mango-v4'
+import { buildWhirlpoolClient, WhirlpoolContext } from '@orca-so/whirlpools-sdk'
+import { Wallet } from '@coral-xyz/anchor'
 import {
   MANGO_DAO_FAST_LISTING_GOVERNANCE,
   MANGO_DAO_FAST_LISTING_WALLET,
@@ -114,7 +121,9 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const [creatingProposal, setCreatingProposal] = useState(false)
   const [createOpenbookMarketModal, setCreateOpenbookMarket] = useState(false)
   const [orcaPoolAddress, setOrcaPoolAddress] = useState('')
+  const [isOrcaPoolReverse, setIsOrcaPoolReverse] = useState(false)
   const [raydiumPoolAddress, setRaydiumPoolAddress] = useState('')
+  const [isRaydiumPoolReverse, setIsRaydiumPoolReverse] = useState(false)
   const [oracleModalOpen, setOracleModalOpen] = useState(false)
   const [liqudityTier, setLiqudityTier] = useState<LISTING_PRESETS_KEYS | ''>(
     '',
@@ -280,6 +289,18 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           handleGetRoutesWithFixedArgs(5000, tokenMint, 'ExactOut'),
           handleGetRoutesWithFixedArgs(1000, tokenMint, 'ExactOut'),
         ])
+
+        const context = WhirlpoolContext.from(
+          connection,
+          wallet,
+          new PublicKey('whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'),
+        )
+        const client = buildWhirlpoolClient(context)
+        const whirlpool = await client.getPool(
+          'FR7Zv9qwjD9shC8uvKE7EP2qpXjSzRjvW6w452yJq7Gg',
+        )
+        console.log(whirlpool.getTokenAInfo().mint.toString())
+
         const bestRoutesSwaps = swaps
           .filter((x) => x.bestRoute)
           .map((x) => x.bestRoute!)
@@ -287,11 +308,10 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           (acc: { amount: string; priceImpactPct: number }[], val) => {
             if (val.swapMode === 'ExactIn') {
               const exactOutRoute = bestRoutesSwaps.find(
-                (x) =>
-                  x.outAmount === val.outAmount && x.swapMode === 'ExactOut',
+                (x) => x.amount === val.amount && x.swapMode === 'ExactOut',
               )
               acc.push({
-                amount: val.outAmount.toString(),
+                amount: val.amount.toString(),
                 priceImpactPct: exactOutRoute?.priceImpactPct
                   ? (val.priceImpactPct + exactOutRoute.priceImpactPct) / 2
                   : val.priceImpactPct,
@@ -317,6 +337,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         handleGetPoolParams(tier, tokenMint)
         return tier
       } catch (e) {
+        console.log(e)
         notify({
           title: t('liquidity-check-error'),
           description: `${e}`,
@@ -347,15 +368,29 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       true,
     )
 
-    const swapInfos = swaps?.bestRoute?.routePlan.map((x) => x.swapInfo)
-    const orcaPool = swapInfos?.find(
-      (x) => x.label?.toLowerCase().includes('orca'),
+    const marketInfos = swaps.routes.flatMap((x) => x.marketInfos)
+    const orcaPool = marketInfos.find((x) =>
+      x.label.toLowerCase().includes('orca'),
     )
-    const raydiumPool = swapInfos?.find(
-      (x) => x.label?.toLowerCase().includes('raydium'),
+    setOrcaPoolAddress(orcaPool?.id || '')
+    if (orcaPool?.id) {
+      const context = WhirlpoolContext.from(
+        connection,
+        client.program.provider,
+        new PublicKey('whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'),
+      )
+      const whirlPoolClient = buildWhirlpoolClient(context)
+      const whirlpool = await whirlPoolClient.getPool(orcaPool)
+      setIsOrcaPoolReverse(
+        whirlpool.getTokenAInfo().mint.toBase58() == USDC_MINT || false,
+      )
+    }
+
+    const raydiumPool = marketInfos.find((x) =>
+      x.label.toLowerCase().includes('raydium'),
     )
-    setOrcaPoolAddress(orcaPool?.ammKey || '')
-    setRaydiumPoolAddress(raydiumPool?.ammKey || '')
+    setRaydiumPoolAddress(raydiumPool?.id || '')
+    setIsRaydiumPoolReverse(false)
   }
 
   const handleTokenFind = useCallback(async () => {
@@ -1019,6 +1054,8 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                     />
                     <CreateSwitchboardOracleModal
                       tier={listingTier}
+                      isOrcaPoolReverse={isOrcaPoolReverse}
+                      isRaydiumPoolReverse={isRaydiumPoolReverse}
                       orcaPoolAddress={orcaPoolAddress}
                       raydiumPoolAddress={raydiumPoolAddress}
                       baseTokenName={currentTokenInfo.symbol}
