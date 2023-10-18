@@ -20,6 +20,8 @@ import { useTranslation } from 'next-i18next'
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import { DateChangeCallBack } from 'react-nice-dates'
 
+const set = mangoStore.getState().set
+
 interface AdvancedFilters {
   symbol: string[]
   'start-date': string
@@ -84,7 +86,6 @@ const ActivityFilters = () => {
   }, [advancedParamsString, params])
 
   useEffect(() => {
-    const set = mangoStore.getState().set
     if (queryParams.length) {
       set((state) => {
         state.activityFeed.queryParams = queryParams
@@ -96,8 +97,7 @@ const ActivityFilters = () => {
     }
   }, [queryParams])
 
-  const handleUpdateResults = useCallback(() => {
-    const set = mangoStore.getState().set
+  const handleUpdateResults = useCallback(async () => {
     if (queryParams) {
       setHasFilters(true)
     } else {
@@ -108,12 +108,16 @@ const ActivityFilters = () => {
       s.activityFeed.loading = true
     })
     if (mangoAccountAddress) {
-      actions.fetchActivityFeed(mangoAccountAddress, 0, queryParams)
+      try {
+        await actions.fetchActivityFeed(mangoAccountAddress, 0, queryParams)
+        setShowFilters(false)
+      } catch (e) {
+        console.log(e)
+      }
     }
   }, [actions, queryParams, mangoAccountAddress])
 
   const handleResetFilters = useCallback(async () => {
-    const set = mangoStore.getState().set
     setHasFilters(false)
     setShowFilters(false)
     set((s) => {
@@ -126,11 +130,6 @@ const ActivityFilters = () => {
       setParams([])
     }
   }, [actions, mangoAccountAddress])
-
-  const handleUpdateMobileResults = () => {
-    handleUpdateResults()
-    setShowFilters(false)
-  }
 
   return mangoAccountAddress ? (
     <Disclosure>
@@ -185,7 +184,7 @@ const ActivityFilters = () => {
           <Button
             className="w-full md:w-auto"
             size="large"
-            onClick={handleUpdateMobileResults}
+            onClick={handleUpdateResults}
           >
             {t('activity:update')}
           </Button>
@@ -274,19 +273,23 @@ const FiltersForm = ({
   }, [dateFrom, dateTo])
 
   useEffect(() => {
-    if (valueFrom && valueTo) {
-      setAdvancedFilters({
-        ...advancedFilters,
-        'usd-lower': Math.floor(valueFrom),
-        'usd-upper': Math.ceil(valueTo),
-      })
-    } else {
-      setAdvancedFilters({
-        ...advancedFilters,
-        'usd-lower': '',
-        'usd-upper': '',
-      })
+    let from: string | number = ''
+    let to: string | number = ''
+    if (valueFrom && !valueTo) {
+      from = Math.floor(valueFrom)
+      to = 100000000
+    } else if (valueTo && !valueFrom) {
+      from = 0
+      to = Math.ceil(valueTo)
+    } else if (valueFrom && valueTo) {
+      from = Math.floor(valueFrom)
+      to = Math.ceil(valueTo)
     }
+    setAdvancedFilters({
+      ...advancedFilters,
+      'usd-lower': from,
+      'usd-upper': to,
+    })
   }, [valueFrom, valueTo])
 
   return (

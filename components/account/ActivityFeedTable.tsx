@@ -36,6 +36,7 @@ import {
   isSpotTradeActivityFeedItem,
 } from 'types'
 import SpotTradeActivityDetails from './SpotTradeActivityDetails'
+import { formatTokenSymbol } from 'utils/tokens'
 
 export const formatFee = (value: number) => {
   return value.toLocaleString(undefined, {
@@ -493,11 +494,15 @@ const SharedTableBody = ({
       <Td className="text-right">{t(`activity:${activity_type}`)}</Td>
       <Td className="text-right font-mono">
         {amounts.credit.value}{' '}
-        <span className="font-body text-th-fgd-3">{amounts.credit.symbol}</span>
+        <span className="font-body text-th-fgd-3">
+          {formatTokenSymbol(amounts.credit.symbol)}
+        </span>
       </Td>
       <Td className="text-right font-mono">
         {amounts.debit.value}{' '}
-        <span className="font-body text-th-fgd-3">{amounts.debit.symbol}</span>
+        <span className="font-body text-th-fgd-3">
+          {formatTokenSymbol(amounts.debit.symbol)}
+        </span>
       </Td>
       <Td className="text-right font-mono">
         {fee.value}{' '}
