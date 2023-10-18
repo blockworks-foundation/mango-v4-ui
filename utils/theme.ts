@@ -95,5 +95,5 @@ export const nftThemeMeta: NftThemeMeta = {
 }
 
 export const CUSTOM_SKINS: { [key: string]: string } = {
-  pepe: '9jq32MyUURzZydTt65zwha4wqqdvGrL6YbJMhoHp8Xsd',
+  pepe: 'GJHEhovHn8UT98xUbWWWAC9J5iaRs6M5grBUzs8zqTd6',
 }
