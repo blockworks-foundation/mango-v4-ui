@@ -42,7 +42,7 @@
     keccak256 "^1.0.6"
     merkletreejs "^0.3.10"
 
-"@blockworks-foundation/mango-v4-settings@0.2.16":
+"@blockworks-foundation/mango-v4-settings@0.2.16", "@blockworks-foundation/mango-v4-settings@^0.2.16":
   version "0.2.16"
   resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4-settings/-/mango-v4-settings-0.2.16.tgz#63f03c13d1677461ea42d3b1e9171042830c6cdc"
   integrity sha512-9GCRZkVqTQsEUkqx/488pmSWM8I74Ght5AEzMPsuS5XlRGWIDjytWoBE0Y9wFVPrnRw2THTj0ZQft+vDwCYDCA==
@@ -50,12 +50,13 @@
     bn.js "^5.2.1"
     eslint-config-prettier "^9.0.0"
 
-"@blockworks-foundation/mango-v4@^0.19.33":
-  version "0.19.33"
-  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.19.33.tgz#d567e45b90c718010ca118f056b185ab18af21f5"
-  integrity sha512-idm/WhJ9inBbrwctkbgOWHkyI8lP0PR6sduMM8LPnYR1ctX94haEx+VyS/fDtCxyeVEFxF2RkKvx686zgqrpxw==
+"@blockworks-foundation/mango-v4@^0.19.36":
+  version "0.19.36"
+  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.19.36.tgz#f0183dd923113146ef39eff142e2bf0c4fffd0dd"
+  integrity sha512-oRMMiIDSJD4pjnUgjfR2Y2RGNRU/9YP7X78EPGzsQ2L4YjPLJQ33Cv1ECHBspvr1GGsulcA4MYpY2GUraENDvA==
   dependencies:
-    "@coral-xyz/anchor" "^0.27.0"
+    "@blockworks-foundation/mango-v4-settings" "^0.2.16"
+    "@coral-xyz/anchor" "^0.28.1-beta.2"
     "@project-serum/serum" "0.13.65"
     "@pythnetwork/client" "~2.14.0"
     "@solana/spl-token" "0.3.7"
@@ -123,7 +124,7 @@
     eventemitter3 "^4.0.7"
     uuid "^8.3.2"
 
-"@coral-xyz/anchor@^0.26.0", "@coral-xyz/anchor@^0.27.0", "@coral-xyz/anchor@^0.28.0":
+"@coral-xyz/anchor@^0.26.0", "@coral-xyz/anchor@^0.27.0", "@coral-xyz/anchor@^0.28.0", "@coral-xyz/anchor@^0.28.1-beta.2":
   version "0.27.0"
   resolved "https://registry.yarnpkg.com/@coral-xyz/anchor/-/anchor-0.27.0.tgz#621e5ef123d05811b97e49973b4ed7ede27c705c"
   integrity sha512-+P/vPdORawvg3A9Wj02iquxb4T0C5m4P6aZBVYysKl4Amk+r6aMPZkUhilBkD6E4Nuxnoajv3CFykUfkGE0n5g==

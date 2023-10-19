@@ -1,4 +1,9 @@
-import { Bank, toUiDecimals, I80F48 } from '@blockworks-foundation/mango-v4'
+import {
+  Bank,
+  toUiDecimals,
+  I80F48,
+  PriceImpact,
+} from '@blockworks-foundation/mango-v4'
 import ExplorerLink from '@components/shared/ExplorerLink'
 import { coder } from '@project-serum/anchor/dist/cjs/spl/token'
 import mangoStore from '@store/mangoStore'
@@ -14,7 +19,6 @@ import BN from 'bn.js'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import {
-  PriceImpact,
   getFormattedBankValues,
   getPriceImpacts,
 } from 'utils/governance/listingTools'
