@@ -36,6 +36,8 @@ import useThemeWrapper from 'hooks/useThemeWrapper'
 
 dayjs.extend(relativeTime)
 
+const titleClasses = 'mb-0.5 text-base'
+
 interface DetailedAreaOrBarChartProps {
   chartType?: 'area' | 'bar'
   customTooltip?: ContentType<number, string>
@@ -149,8 +151,6 @@ const DetailedAreaOrBarChart: FunctionComponent<
     return 0
   }
 
-  const titleClasses = `${small ? 'text-sm' : 'mb-0.5 text-base'} text-th-fgd-3`
-
   return (
     <FadeInFadeOut show={true}>
       <ContentBox hideBorder hidePadding>
@@ -203,10 +203,8 @@ const DetailedAreaOrBarChart: FunctionComponent<
                   {mouseData ? (
                     <div>
                       <div
-                        className={`flex ${
-                          small
-                            ? 'h-8 items-center text-2xl'
-                            : 'mb-1 items-end text-4xl'
+                        className={`flex items-end ${
+                          small ? 'h-8 text-2xl' : 'mb-1 text-4xl'
                         } font-display text-th-fgd-1`}
                       >
                         {animationSettings['number-scroll'] ? (
@@ -233,7 +231,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
                           </span>
                         )}
                         {!hideChange ? (
-                          <span className="ml-3">
+                          <span className={`ml-3 ${small ? 'mb-[3px]' : ''}`}>
                             <Change
                               change={calculateChartChange()}
                               decimals={yDecimals}
@@ -258,10 +256,8 @@ const DetailedAreaOrBarChart: FunctionComponent<
                   ) : (
                     <div>
                       <div
-                        className={`flex ${
-                          small
-                            ? 'h-8 items-center text-2xl'
-                            : 'mb-1 items-end text-4xl'
+                        className={`flex items-end ${
+                          small ? 'h-8 text-2xl' : 'mb-1 text-4xl'
                         } font-display text-th-fgd-1`}
                       >
                         {animationSettings['number-scroll'] ? (
@@ -296,7 +292,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
                           </span>
                         )}
                         {!hideChange ? (
-                          <span className="ml-3">
+                          <span className={`ml-3 ${small ? 'mb-[3px]' : ''}`}>
                             <Change
                               change={calculateChartChange()}
                               decimals={yDecimals}

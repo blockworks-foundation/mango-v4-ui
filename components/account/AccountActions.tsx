@@ -52,7 +52,7 @@ const AccountActions = () => {
   return (
     <>
       {isUnownedAccount ? null : (
-        <div className="grid grid-cols-4">
+        <div className="grid grid-cols-4 border-t border-th-bkg-3">
           <button
             className={`${ACTION_BUTTON_CLASSES} border-r border-th-bkg-3`}
             onClick={() => handleActionModal('deposit')}

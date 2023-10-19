@@ -92,9 +92,7 @@ const AccountOverview = () => {
                 <ConnectEmptyState text={t('governance:connect-wallet')} />
               </div>
             )}
-            <div className="border-t border-th-bkg-3">
-              <AccountActions />
-            </div>
+            <AccountActions />
           </div>
         </div>
         <div className="col-span-12 md:col-span-4">
