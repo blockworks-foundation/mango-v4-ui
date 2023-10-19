@@ -11,7 +11,6 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { DEFAULT_PRIORITY_FEE_LEVEL } from './settings/RpcSettings'
 import { useHiddenMangoAccounts } from 'hooks/useHiddenMangoAccounts'
 import { notify } from 'utils/notifications'
-import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
 
 const set = mangoStore.getState().set
 const actions = mangoStore.getState().actions
@@ -162,14 +161,13 @@ const ReadOnlyMangoAccount = () => {
   const groupLoaded = mangoStore((s) => s.groupLoaded)
   const ma = router.query?.address
   const { hiddenAccounts } = useHiddenMangoAccounts()
-  const { data: isWhiteListed } = useIsWhiteListed()
 
   useEffect(() => {
     if (!groupLoaded) return
     const set = mangoStore.getState().set
     const group = mangoStore.getState().group
 
-    if (hiddenAccounts?.includes(ma as string) && !isWhiteListed) {
+    if (hiddenAccounts?.includes(ma as string)) {
       notify({
         title: 'Private Account mode enabled',
         type: 'info',
