@@ -9,6 +9,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
     props: {
       ...(await serverSideTranslations(locale, [
         'common',
+        'governance',
         'notifications',
         'onboarding',
         'profile',
@@ -27,7 +28,7 @@ const Rewards: NextPage = () => {
     <div
       className={`pb-20 md:pb-0 ${themeData.fonts.rewards.variable} font-sans`}
     >
-      {isWhiteListed && <RewardsPage />}
+      {isWhiteListed ? <RewardsPage /> : null}
     </div>
   )
 }

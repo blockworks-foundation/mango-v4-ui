@@ -78,7 +78,7 @@ export const useWalletPoints = (
       staleTime: 1000 * 60,
       retry: 3,
       refetchOnWindowFocus: false,
-      enabled: !!wallet?.adapter && !!mangoAccountAddress,
+      enabled: !!(wallet?.adapter && mangoAccountAddress),
     },
   )
 }
@@ -101,7 +101,7 @@ export const useIsAllClaimed = (
   prevSeason: number | undefined,
   walletPk: PublicKey | null,
 ) => {
-  const [isAllClaimed, setIsAllCliamed] = useState(false)
+  const [isAllClaimed, setIsAllCliamed] = useState(true)
   const { data: distributionDataAndClient } = useDistribution(prevSeason)
   const distributionData = distributionDataAndClient?.distribution
 

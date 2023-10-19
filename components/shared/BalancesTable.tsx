@@ -100,8 +100,6 @@ const BalancesTable = () => {
     sortConfig,
   } = useSortableData(formattedTableData())
 
-  console.log(tableData)
-
   return filteredBanks.length ? (
     showTableView ? (
       <Table>

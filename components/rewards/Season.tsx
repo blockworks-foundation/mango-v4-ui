@@ -30,19 +30,18 @@ const Season = ({
 }: {
   setShowLeaderboards: (x: string) => void
 }) => {
-  const { t } = useTranslation(['common', 'rewards'])
+  const { t } = useTranslation(['common', 'governance', 'rewards'])
   const { wallet } = useWallet()
   const faqRef = useRef<HTMLDivElement>(null)
   const { mangoAccountAddress } = useMangoAccount()
   const [topAccountsTier, setTopAccountsTier] = useState('')
-  const { data: seasonData, isLoading: loadingSeasonData } = useCurrentSeason()
-  const { data: accountTier, isLoading: loadingAccountTier } = useAccountTier(
-    mangoAccountAddress,
-    seasonData?.season_id,
-  )
+  const { data: seasonData, isInitialLoading: loadingSeasonData } =
+    useCurrentSeason()
+  const { data: accountTier, isInitialLoading: loadingAccountTier } =
+    useAccountTier(mangoAccountAddress, seasonData?.season_id)
   const {
     data: accountPointsAndRank,
-    isLoading: loadingAccountPointsAndRank,
+    isInitialLoading: loadingAccountPointsAndRank,
     refetch,
   } = useAccountPointsAndRank(mangoAccountAddress, seasonData?.season_id)
 
@@ -187,7 +186,7 @@ const Season = ({
                   </span>
                 ) : (
                   <span className="flex items-center justify-center text-center font-body text-sm text-th-fgd-3">
-                    {t('connect-wallet')}
+                    {t('governance:connect-wallet')}
                   </span>
                 )
               ) : (
