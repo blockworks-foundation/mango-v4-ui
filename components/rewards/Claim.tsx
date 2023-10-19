@@ -32,6 +32,7 @@ import Loading from '@components/shared/Loading'
 import dayjs from 'dayjs'
 import HolographicCard from './HolographicCard'
 import { onClick, unmute } from 'lib/render'
+import { Prize, getClaimsAsPrizes, getFallbackImg } from './RewardsComponents'
 
 const CLAIM_BUTTON_CLASSES =
   'raised-button group mx-auto block h-12 px-6 pt-1 font-rewards text-xl after:rounded-lg focus:outline-none lg:h-14'
@@ -76,6 +77,7 @@ const ClaimPage = () => {
   const [rewardsClient, setRewardsClient] = useState<
     MangoMintsRedemptionClient | undefined
   >(undefined)
+  const [prizes, setPrizes] = useState<Prize[]>([])
 
   const { client } = mangoStore()
   const { publicKey } = useWallet()
@@ -257,6 +259,17 @@ const ClaimPage = () => {
     }
   }, [distribution, wallet, claims, rewardsClient, connection])
 
+  useEffect(() => {
+    if (tokenRewardsInfo.length && claims?.length) {
+      const claimsAsPrizes = getClaimsAsPrizes(
+        claims,
+        tokenRewardsInfo,
+        nftsRewardsInfo,
+      )
+      setPrizes(claimsAsPrizes)
+    }
+  }, [claims, getFallbackImg, tokenRewardsInfo])
+
   return claims === undefined && !loadingClaims ? (
     <div className="flex min-h-[calc(100vh-94px)] items-center justify-center p-8">
       <span className="text-center text-th-fgd-3">
@@ -279,9 +292,28 @@ const ClaimPage = () => {
         </div>
         <div className="flex h-[calc(100vh-164px)] flex-col justify-center">
           <div className="mx-auto flex max-w-[1140px] flex-col items-center justify-center px-8 lg:px-10">
-            <div className="-mt-16">
-              <HolographicCard />
-            </div>
+            {prizes.length && rewardsWasShown ? (
+              <div className="mb-12 flex flex-wrap justify-center">
+                {prizes.map((prize, i) => (
+                  <div
+                    className="relative m-1 rounded-lg bg-[#2F3188]"
+                    key={prize.itemUrl + i}
+                  >
+                    <img
+                      className="h-auto w-20 rounded-lg"
+                      src={prize.stencilUrl}
+                    />
+                    <div className="absolute left-1/2 top-1/2 flex h-[54px] w-[54px] -translate-x-1/2 -translate-y-1/2 items-center justify-center">
+                      <img className="rounded-full" src={prize.itemUrl} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="-mt-16">
+                <HolographicCard />
+              </div>
+            )}
             <div className="-mt-8 mb-6 text-center">
               <h2 className="mb-1 font-rewards text-4xl tracking-wide text-white drop-shadow-[0_0_24px_rgba(0,0,0,1)] sm:text-6xl">
                 {winnerTitle}!
