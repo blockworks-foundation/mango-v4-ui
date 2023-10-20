@@ -36,6 +36,7 @@ import Link from 'next/link'
 import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
 import FormatNumericValue from './shared/FormatNumericValue'
 import { useRouter } from 'next/router'
+import TopBarStore from '@store/topBarStore'
 
 export const TOPBAR_ICON_BUTTON_CLASSES =
   'relative flex h-16 w-10 sm:w-16 items-center justify-center sm:border-l sm:border-th-bkg-3 focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2'
@@ -61,7 +62,7 @@ const TopBar = () => {
   const [showDepositWithdrawModal, setShowDepositWithdrawModal] =
     useState(false)
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
-  const [showSettingsModal, setShowSettingsModal] = useState(false)
+  const { showSettingsModal, setShowSettingsModal } = TopBarStore()
   const isOnline = useOnlineStatus()
 
   const { isUnownedAccount } = useUnownedAccount()
