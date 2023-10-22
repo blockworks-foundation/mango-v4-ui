@@ -28,6 +28,7 @@ import DepositWithdrawModal from './modals/DepositWithdrawModal'
 import BorrowRepayModal from './modals/BorrowRepayModal'
 import { WRAPPED_SOL_MINT } from '@project-serum/serum/lib/token-instructions'
 import {
+  MANGO_DATA_API_URL,
   SHOW_ZERO_BALANCES_KEY,
   TOKEN_REDUCE_ONLY_OPTIONS,
   USDC_MINT,
@@ -47,6 +48,33 @@ import { useSortableData } from 'hooks/useSortableData'
 import TableTokenName from './shared/TableTokenName'
 import CloseBorrowModal from './modals/CloseBorrowModal'
 import { floorToDecimal } from 'utils/numbers'
+import { useQuery } from '@tanstack/react-query'
+import { TotalInterestDataItem } from 'types'
+import SheenLoader from './shared/SheenLoader'
+
+export const fetchInterestData = async (mangoAccountPk: string) => {
+  try {
+    const response = await fetch(
+      `${MANGO_DATA_API_URL}/stats/interest-account-total?mango-account=${mangoAccountPk}`,
+    )
+    const parsedResponse: Omit<TotalInterestDataItem, 'symbol'>[] | null =
+      await response.json()
+    if (parsedResponse) {
+      const entries: [string, Omit<TotalInterestDataItem, 'symbol'>][] =
+        Object.entries(parsedResponse).sort((a, b) => b[0].localeCompare(a[0]))
+
+      const stats: TotalInterestDataItem[] = entries
+        .map(([key, value]) => {
+          return { ...value, symbol: key }
+        })
+        .filter((x) => x)
+      return stats
+    } else return []
+  } catch (e) {
+    console.log('Failed to fetch account funding', e)
+    return []
+  }
+}
 
 type TableData = {
   bank: Bank
@@ -76,12 +104,24 @@ const TokenList = () => {
   const { mangoAccountAddress } = useMangoAccount()
   const { initContributions } = useHealthContributions()
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
-  const totalInterestData = mangoStore(
-    (s) => s.mangoAccount.interestTotals.data,
-  )
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const banks = useBanksWithBalances('balance')
+
+  const {
+    data: totalInterestData,
+    isInitialLoading: loadingTotalInterestData,
+  } = useQuery(
+    ['account-interest-data', mangoAccountAddress],
+    () => fetchInterestData(mangoAccountAddress),
+    {
+      cacheTime: 1000 * 60 * 10,
+      staleTime: 1000 * 60,
+      retry: 3,
+      refetchOnWindowFocus: false,
+      enabled: !!mangoAccountAddress,
+    },
+  )
 
   const formattedTableData = useCallback(
     (banks: BankWithBalance[]) => {
@@ -92,7 +132,7 @@ const TokenList = () => {
         const balanceValue = balance * bank.uiPrice
         const symbol = bank.name === 'MSOL' ? 'mSOL' : bank.name
 
-        const hasInterestEarned = totalInterestData.find(
+        const hasInterestEarned = totalInterestData?.find(
           (d) =>
             d.symbol.toLowerCase() === symbol.toLowerCase() ||
             (symbol === 'ETH (Portal)' && d.symbol === 'ETH'),
@@ -362,7 +402,11 @@ const TokenList = () => {
                     </Td>
                     <Td>
                       <div className="flex justify-end">
-                        {Math.abs(interestValue) > 0 ? (
+                        {loadingTotalInterestData ? (
+                          <SheenLoader>
+                            <div className="h-4 w-12 bg-th-bkg-2" />
+                          </SheenLoader>
+                        ) : Math.abs(interestValue) > 0 ? (
                           <p>
                             <FormatNumericValue
                               value={interestValue}

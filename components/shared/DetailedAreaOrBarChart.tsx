@@ -220,7 +220,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
                             )}${suffix}`}
                           />
                         ) : (
-                          <span>
+                          <span className="tabular-nums">
                             {mouseData[yKey] < 0 ? '-' : ''}
                             {prefix}
                             <FormatNumericValue

@@ -173,7 +173,6 @@ export type MangoStore = {
     openOrders: Record<string, Order[] | PerpOrder[]>
     perpPositions: PerpPosition[]
     spotBalances: SpotBalances
-    interestTotals: { data: TotalInterestDataItem[]; loading: boolean }
     swapHistory: {
       data: SwapHistoryItem[]
       initialLoad: boolean
@@ -271,7 +270,6 @@ export type MangoStore = {
     height: number
   }
   actions: {
-    fetchAccountInterestTotals: (mangoAccountPk: string) => Promise<void>
     fetchActivityFeed: (
       mangoAccountPk: string,
       offset?: number,
@@ -351,7 +349,6 @@ const mangoStore = create<MangoStore>()(
         openOrders: {},
         perpPositions: [],
         spotBalances: {},
-        interestTotals: { data: [], loading: false },
         swapHistory: { data: [], loading: true, initialLoad: true },
         tradeHistory: { data: [], loading: true },
       },
@@ -450,45 +447,6 @@ const mangoStore = create<MangoStore>()(
         height: 0,
       },
       actions: {
-        fetchAccountInterestTotals: async (mangoAccountPk: string) => {
-          const set = get().set
-          set((state) => {
-            state.mangoAccount.interestTotals.loading = true
-          })
-          try {
-            const response = await fetch(
-              `${MANGO_DATA_API_URL}/stats/interest-account-total?mango-account=${mangoAccountPk}`,
-            )
-            const parsedResponse:
-              | Omit<TotalInterestDataItem, 'symbol'>[]
-              | null = await response.json()
-            if (parsedResponse) {
-              const entries: [string, Omit<TotalInterestDataItem, 'symbol'>][] =
-                Object.entries(parsedResponse).sort((a, b) =>
-                  b[0].localeCompare(a[0]),
-                )
-
-              const stats: TotalInterestDataItem[] = entries
-                .map(([key, value]) => {
-                  return { ...value, symbol: key }
-                })
-                .filter((x) => x)
-
-              set((state) => {
-                state.mangoAccount.interestTotals.data = stats
-                state.mangoAccount.interestTotals.loading = false
-              })
-            }
-          } catch {
-            set((state) => {
-              state.mangoAccount.interestTotals.loading = false
-            })
-            console.error({
-              title: 'Failed to load account interest totals',
-              type: 'error',
-            })
-          }
-        },
         fetchActivityFeed: async (
           mangoAccountPk: string,
           offset = 0,
