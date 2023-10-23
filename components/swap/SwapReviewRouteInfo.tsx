@@ -151,7 +151,7 @@ export const fetchJupiterTransaction = async (
         // This is the ATA account for the output token where the fee will be sent to. If you are swapping from SOL->USDC then this would be the USDC ATA you want to collect the fee.
         // feeAccount: 'fee_account_public_key',
         slippageBps: Math.ceil(slippage * 100),
-        maxAccounts: 50
+        maxAccounts: 50,
       }),
     })
   ).json()
@@ -194,16 +194,18 @@ const successSound = new Howl({
   volume: 0.5,
 })
 
-const SwapReviewRouteInfo = ({
-  amountIn,
-  isWalletSwap,
-  onClose,
-  onSuccess,
-  routes,
-  selectedRoute,
-  setSelectedRoute,
-  show,
-}: JupiterRouteInfoProps) => {
+const SwapReviewRouteInfo = (
+  {
+    amountIn,
+    isWalletSwap,
+    onClose,
+    onSuccess,
+    routes,
+    selectedRoute,
+    setSelectedRoute,
+    show,
+  }: JupiterRouteInfoProps,
+) => {
   const { t } = useTranslation(['common', 'trade'])
   const slippage = mangoStore((s) => s.swap.slippage)
   const wallet = useWallet()

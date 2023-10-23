@@ -30,7 +30,7 @@ const fetchJupiterRoute = async (
   swapMode = 'ExactIn',
   feeBps = 0,
   onlyDirectRoutes = true,
-  maxAccounts = 50
+  maxAccounts = 50,
 ) => {
   {
     const paramsString = new URLSearchParams({
@@ -178,16 +178,18 @@ export const handleGetRoutes = async (
   }
 }
 
-const useQuoteRoutes = ({
-  inputMint,
-  outputMint,
-  amount,
-  slippage,
-  swapMode,
-  wallet,
-  mode = 'ALL',
-  enabled,
-}: useQuoteRoutesPropTypes) => {
+const useQuoteRoutes = (
+  {
+    inputMint,
+    outputMint,
+    amount,
+    slippage,
+    swapMode,
+    wallet,
+    mode = 'ALL',
+    enabled,
+  }: useQuoteRoutesPropTypes,
+) => {
   const [debouncedAmount] = useDebounce(amount, 250)
   const { inputTokenInfo, outputTokenInfo } = useJupiterSwapData()
 
