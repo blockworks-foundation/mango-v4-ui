@@ -24,6 +24,8 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 dayjs.extend(relativeTime)
 import MedalIcon from '@components/icons/MedalIcon'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
+import { usePlausible } from 'next-plausible'
+import { TelemetryEvents } from 'utils/telemetry'
 
 const Season = ({
   setShowLeaderboards,
@@ -31,6 +33,7 @@ const Season = ({
   setShowLeaderboards: (x: string) => void
 }) => {
   const { t } = useTranslation(['common', 'rewards'])
+  const telemetry = usePlausible<TelemetryEvents>()
   const { wallet } = useWallet()
   const faqRef = useRef<HTMLDivElement>(null)
   const { mangoAccountAddress } = useMangoAccount()
@@ -341,7 +344,10 @@ const Season = ({
             </div>
             <button
               className="raised-button group mx-auto block h-10 w-full px-6 pt-1 font-rewards text-xl after:rounded-lg focus:outline-none lg:h-12"
-              onClick={() => setShowLeaderboards(topAccountsTier)}
+              onClick={() => {
+                setShowLeaderboards(topAccountsTier)
+                telemetry('rewardsViewLeaderboard')
+              }}
             >
               <span className="block text-th-fgd-1 group-hover:mt-1 group-active:mt-2">
                 Full Leaderboard

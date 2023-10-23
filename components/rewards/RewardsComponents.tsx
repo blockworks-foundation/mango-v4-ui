@@ -17,6 +17,8 @@ import { PublicKey } from '@solana/web3.js'
 import { CUSTOM_TOKEN_ICONS } from 'utils/constants'
 import { Sft, SftWithToken, Nft, NftWithToken } from '@metaplex-foundation/js'
 import { Lalezar } from 'next/font/google'
+import { usePlausible } from 'next-plausible'
+import { TelemetryEvents } from 'utils/telemetry'
 
 const lalezar = Lalezar({
   weight: '400',
@@ -62,8 +64,11 @@ export default function RewardsComponent({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [collectedPrizes, setCollectedPrize] = useState([] as any[])
   const [prizes, setPrizes] = useState<Prize[]>([])
+  const [isAnimationFinished, setIsAnimationFinished] = useState<boolean>(false)
 
   const [currentPrize, setCurrentPrize] = useState()
+
+  const telemetry = usePlausible<TelemetryEvents>()
 
   function iOS() {
     return (
@@ -90,7 +95,7 @@ export default function RewardsComponent({
         const v2 = document.getElementById('particles-coins') as any
         v2.onloadedmetadata = () => (v2.currentTime = v2.duration)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        init(document, window, prizes, (prize: any) => {
+        init(document, window, prizes, (prize: any, isLast: boolean) => {
           console.log('callback:showPrize', prize)
           setCurrentPrize(prize)
           collectedPrizes.push(prize)
@@ -100,10 +105,17 @@ export default function RewardsComponent({
             console.log('callback:hidePrize')
             setCurrentPrize(undefined)
           }, 5000)
+
+          if (isLast) {
+            setIsAnimationFinished(true)
+          }
         })
         renderLoaded.current = true
       } catch (e) {
         //if webgl is turned off or someone uses old computer
+        telemetry('rewardsRenderUnsupported', {
+          props: { message: (e as Error).toString() },
+        })
         console.log(e)
         setShowRender(false)
       }
@@ -202,6 +214,12 @@ export default function RewardsComponent({
           <IconButton
             className="fixed right-4 top-4"
             onClick={() => {
+              telemetry('rewardsCloseRender', {
+                props: {
+                  rewards: collectedPrizes.length,
+                  early: isAnimationFinished,
+                },
+              })
               setShowRender(false)
               mute()
               document.getElementById('render-output')?.remove()

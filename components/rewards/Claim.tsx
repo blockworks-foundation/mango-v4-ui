@@ -32,6 +32,8 @@ import Loading from '@components/shared/Loading'
 import dayjs from 'dayjs'
 import HolographicCard from './HolographicCard'
 import { onClick, unmute } from 'lib/render'
+import { usePlausible } from 'next-plausible'
+import { TelemetryEvents } from 'utils/telemetry'
 
 const CLAIM_BUTTON_CLASSES =
   'raised-button group mx-auto block h-12 px-6 pt-1 font-rewards text-xl after:rounded-lg focus:outline-none lg:h-14'
@@ -89,6 +91,8 @@ const ClaimPage = () => {
   const provider = client.program.provider
   const connection = provider.connection
 
+  const telemetry = usePlausible<TelemetryEvents>()
+
   const { data: distributionDataAndClient, refetch } = useDistribution(
     previousSeason!,
   )
@@ -121,6 +125,7 @@ const ClaimPage = () => {
   }, [distributionDataAndClient, publicKey])
 
   const startShowRewards = () => {
+    telemetry('rewardsOpenRender')
     setShowRender(true)
     setRewardsWasShow(true)
     onClick()
@@ -250,7 +255,11 @@ const ClaimPage = () => {
           logFlowInfo: true,
         },
       })
+      telemetry('rewardsClaim', { props: { rewards: claims.length } })
     } catch (e) {
+      telemetry('rewardsClaimError', {
+        props: { message: (e as Error).toString() },
+      })
       console.error(e)
     } finally {
       setIsClaiming(false)
