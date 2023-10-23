@@ -178,18 +178,16 @@ export const handleGetRoutes = async (
   }
 }
 
-const useQuoteRoutes = (
-  {
-    inputMint,
-    outputMint,
-    amount,
-    slippage,
-    swapMode,
-    wallet,
-    mode = 'ALL',
-    enabled,
-  }: useQuoteRoutesPropTypes,
-) => {
+const useQuoteRoutes = ({
+  inputMint,
+  outputMint,
+  amount,
+  slippage,
+  swapMode,
+  wallet,
+  mode = 'ALL',
+  enabled,
+}: useQuoteRoutesPropTypes) => {
   const [debouncedAmount] = useDebounce(amount, 250)
   const { inputTokenInfo, outputTokenInfo } = useJupiterSwapData()
 

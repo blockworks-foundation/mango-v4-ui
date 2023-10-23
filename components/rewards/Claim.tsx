@@ -139,12 +139,14 @@ const ClaimPage = () => {
       const metaplex = new Metaplex(connection)
 
       const tokens = claims!
-        .filter((x) => x.mintProperties.type === 'token')
+        .filter((x) => x.mintProperties.type.toLowerCase() === 'token')
         .map((t) => jupiterTokens.find((x) => x.address === t.mint.toBase58()))
         .filter((x) => x)
         .map((x) => x as Token)
 
-      const nfts = claims!.filter((x) => x.mintProperties.type === 'nft')
+      const nfts = claims!.filter(
+        (x) => x.mintProperties.type.toLowerCase() === 'nft',
+      )
       const nftsInfos: (Sft | SftWithToken | Nft | NftWithToken)[] = []
 
       for (const nft of nfts) {

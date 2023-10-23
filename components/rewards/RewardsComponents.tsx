@@ -24,7 +24,7 @@ export type Prize = {
   item: string
   //amount
   info: string
-  rarity: 'Rare' | 'Legendary' | 'Common'
+  rarity: 'rare' | 'legendary' | 'common'
   //eg [32, 32] token, nft [400,400]
   itemResolution: number[]
   itemUrl: string
@@ -49,7 +49,7 @@ export const getFallbackImg = (
   if (hasCustomIcon) {
     return `/icons/${tokenSymbol}.svg`
   } else {
-    return jupiterLogoUrl || '/icons/mngo.svg'
+    return jupiterLogoUrl || `/icons/mngo.svg`
   }
 }
 
@@ -59,17 +59,20 @@ export const getClaimsAsPrizes = (
   nftsRewardsInfo: (Sft | SftWithToken | Nft | NftWithToken)[],
 ) =>
   claims.map((x) => {
+    const rarity = x.mintProperties.rarity.toLowerCase()
+    const type = x.mintProperties.type.toLowerCase()
     const tokenInfo =
-      x.mintProperties.type === 'token'
+      type === 'token'
         ? tokensInfo.find((t) => t.address === x.mint.toBase58())
         : null
+
     const nftInfo =
-      x.mintProperties.type === 'nft'
+      type === 'nft'
         ? nftsRewardsInfo.find(
             (ni) => ni.address.toBase58() === x.mint.toBase58(),
           )
         : null
-    const resultion = x.mintProperties.type === 'token' ? [32, 32] : [400, 400]
+    const resultion = type === 'token' ? [32, 32] : [400, 400]
 
     const materials: {
       [key: string]: Omit<
@@ -77,21 +80,21 @@ export const getClaimsAsPrizes = (
         'item' | 'info' | 'rarity' | 'itemResolution' | 'itemUrl'
       >
     } = {
-      Common: {
+      common: {
         particleId: 'particles-coins',
         frontMaterialId: 'loader_mat_card_silver_front_square',
         backMaterialId: 'loader_mat_card_silver_back',
         stencilUrl:
           '/models/tex_procedural/tex_card_front_silver_square_albedo.png',
       },
-      Legendary: {
+      legendary: {
         particleId: 'particles-fireworks',
         frontMaterialId: 'loader_mat_card_gold_front_circle',
         backMaterialId: 'loader_mat_card_gold_back',
         stencilUrl:
           '/models/tex_procedural/tex_card_front_gold_circle_albedo.png',
       },
-      Rare: {
+      rare: {
         particleId: 'particles-fireworks',
         frontMaterialId: 'loader_mat_card_gold_front_circle',
         backMaterialId: 'loader_mat_card_gold_back',
@@ -103,19 +106,19 @@ export const getClaimsAsPrizes = (
     return {
       item: x.mintProperties.name,
       info:
-        x.mintProperties.type === 'token' && tokenInfo
+        type === 'token' && tokenInfo
           ? new BigNumber(x.quantity.toString())
               .shiftedBy(-tokenInfo.decimals)
               .toString()
           : x.quantity.toString(),
-      rarity: x.mintProperties.rarity,
+      rarity: rarity,
       itemResolution: resultion,
       //fallback of img from files if mint matches mango bank
       itemUrl:
-        x.mintProperties.type === 'token'
+        type === 'token'
           ? getFallbackImg(x.mint, tokenInfo?.logoURI)
-          : nftInfo?.json?.image || '/icons/mngo.svg',
-      ...materials[x.mintProperties.rarity as 'Rare' | 'Legendary' | 'Common'],
+          : nftInfo?.json?.image || `/icons/mngo.svg`,
+      ...materials[rarity],
     }
   })
 
@@ -168,6 +171,8 @@ export default function RewardsComponent({
         const v2 = document.getElementById('particles-coins') as any
         v2.onloadedmetadata = () => (v2.currentTime = v2.duration)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         init(document, window, prizes, (prize: any, isLast: boolean) => {
           console.log('callback:showPrize', prize)
           setCurrentPrize(prize)
@@ -193,7 +198,7 @@ export default function RewardsComponent({
         setShowRender(false)
       }
     }
-  }, [prizes, start])
+  }, [collectedPrizes, prizes, setShowRender, start, telemetry])
 
   useEffect(() => {
     if (tokensInfo.length) {
@@ -204,7 +209,7 @@ export default function RewardsComponent({
       )
       setPrizes(claimsAsPrizes)
     }
-  }, [claims, getFallbackImg, tokensInfo])
+  }, [claims, nftsRewardsInfo, tokensInfo])
 
   return (
     <main className="from-midnight-sky to-midnight-horizon static h-screen w-screen bg-black bg-gradient-to-b">

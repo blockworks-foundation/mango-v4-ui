@@ -194,18 +194,16 @@ const successSound = new Howl({
   volume: 0.5,
 })
 
-const SwapReviewRouteInfo = (
-  {
-    amountIn,
-    isWalletSwap,
-    onClose,
-    onSuccess,
-    routes,
-    selectedRoute,
-    setSelectedRoute,
-    show,
-  }: JupiterRouteInfoProps,
-) => {
+const SwapReviewRouteInfo = ({
+  amountIn,
+  isWalletSwap,
+  onClose,
+  onSuccess,
+  routes,
+  selectedRoute,
+  setSelectedRoute,
+  show,
+}: JupiterRouteInfoProps) => {
   const { t } = useTranslation(['common', 'trade'])
   const slippage = mangoStore((s) => s.swap.slippage)
   const wallet = useWallet()
