@@ -169,13 +169,13 @@ const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
     if (typeof bestRoute !== 'undefined') {
       setSelectedRoute(bestRoute)
 
-      if (inputBank && swapMode === 'ExactOut' && bestRoute) {
-        const inAmount = new Decimal(bestRoute!.inAmount)
+      if (inputBank && swapMode === 'ExactOut' && bestRoute?.inAmount) {
+        const inAmount = new Decimal(bestRoute.inAmount)
           .div(10 ** inputBank.mintDecimals)
           .toString()
         setAmountInFormValue(inAmount)
-      } else if (outputBank && swapMode === 'ExactIn' && bestRoute) {
-        const outAmount = new Decimal(bestRoute!.outAmount)
+      } else if (outputBank && swapMode === 'ExactIn' && bestRoute?.outAmount) {
+        const outAmount = new Decimal(bestRoute.outAmount)
           .div(10 ** outputBank.mintDecimals)
           .toString()
         setAmountOutFormValue(outAmount)
@@ -346,7 +346,8 @@ const SwapFormSubmitButton = ({
           isLarge
         />
       )}
-      {selectedRoute === null && amountIn.gt(0) ? (
+      {(selectedRoute === null && amountIn.gt(0)) ||
+      (selectedRoute && !!selectedRoute.error) ? (
         <div className="mb-4">
           <InlineNotification type="error" desc={t('swap:no-swap-found')} />
         </div>
