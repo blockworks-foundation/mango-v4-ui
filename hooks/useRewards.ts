@@ -1,4 +1,3 @@
-import { Wallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
 import { useQuery } from '@tanstack/react-query'
@@ -8,7 +7,6 @@ import {
   fetchCurrentSeason,
   fetchDistribution,
   fetchLeaderboard,
-  fetchRewardsPoints,
 } from 'apis/rewards'
 import { useEffect, useState } from 'react'
 
@@ -61,24 +59,6 @@ export const useDistribution = (seasonId: number | undefined) => {
       staleTime: 1000 * 60,
       retry: 3,
       enabled: !!provider && !!seasonId,
-    },
-  )
-}
-
-export const useWalletPoints = (
-  mangoAccountAddress: string,
-  season_id: number | undefined,
-  wallet: Wallet | null,
-) => {
-  return useQuery(
-    ['rewards-points', mangoAccountAddress, season_id],
-    () => fetchRewardsPoints(mangoAccountAddress, season_id!),
-    {
-      cacheTime: 1000 * 60 * 10,
-      staleTime: 1000 * 60,
-      retry: 3,
-      refetchOnWindowFocus: false,
-      enabled: !!(wallet?.adapter && mangoAccountAddress),
     },
   )
 }
