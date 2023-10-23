@@ -1,6 +1,7 @@
 import useMangoAccount from 'hooks/useMangoAccount'
 import LeverageSlider from '../shared/LeverageSlider'
 import { TokenMaxResults } from './useTokenMax'
+import mangoStore from '@store/mangoStore'
 
 const SwapSlider = ({
   amount,
@@ -17,6 +18,7 @@ const SwapSlider = ({
 }) => {
   const { mangoAccount } = useMangoAccount()
   const { amount: tokenMax, amountWithBorrow } = maxAmount(useMargin)
+  const { inputBank } = mangoStore((s) => s.swap)
 
   return (
     <>
@@ -30,6 +32,7 @@ const SwapSlider = ({
       ) : (
         <LeverageSlider
           amount={amount}
+          decimals={inputBank?.mintDecimals}
           leverageMax={
             useMargin ? amountWithBorrow.toNumber() : tokenMax.toNumber()
           }

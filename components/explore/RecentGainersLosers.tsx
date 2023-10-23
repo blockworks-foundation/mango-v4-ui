@@ -197,7 +197,7 @@ const RecentGainersLosers = () => {
           {!loadingSerumMarkets && groupLoaded ? (
             <div className="h-full border-t border-th-bkg-3">
               {gainers.length ? (
-                gainers.map((gainer) => {
+                gainers.map((gainer, i) => {
                   const bank = gainer?.bank
 
                   const onClick = bank
@@ -211,8 +211,8 @@ const RecentGainersLosers = () => {
                     <div
                       className="default-transition flex h-16 cursor-pointer items-center justify-between border-b border-th-bkg-3 px-4 md:hover:bg-th-bkg-2"
                       key={
-                        `${bank?.tokenIndex}${bank?.name}` ||
-                        `${gainer?.market?.perpMarketIndex}${gainer?.market?.name}`
+                        `${bank?.tokenIndex}${bank?.name}${i}` ||
+                        `${gainer?.market?.perpMarketIndex}${gainer?.market?.name}${i}`
                       }
                       onClick={onClick}
                     >
@@ -260,7 +260,7 @@ const RecentGainersLosers = () => {
           {!loadingSerumMarkets && groupLoaded ? (
             <div className="h-full border-t border-th-bkg-3">
               {losers.length ? (
-                losers.map((loser) => {
+                losers.map((loser, i) => {
                   const bank = loser?.bank
 
                   const onClick = bank
@@ -273,7 +273,10 @@ const RecentGainersLosers = () => {
                   return (
                     <div
                       className="default-transition flex h-16 cursor-pointer items-center justify-between border-b border-th-bkg-3 px-4 md:hover:bg-th-bkg-2"
-                      key={bank?.tokenIndex || loser?.market?.perpMarketIndex}
+                      key={
+                        `${bank?.tokenIndex}${i}` ||
+                        `${loser?.market?.perpMarketIndex}${i}`
+                      }
                       onClick={onClick}
                     >
                       <div className="flex items-center">

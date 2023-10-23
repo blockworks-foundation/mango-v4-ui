@@ -51,6 +51,8 @@ import { isMangoError } from 'types'
 import { useWallet } from '@solana/wallet-adapter-react'
 import TokenLogo from '@components/shared/TokenLogo'
 
+const set = mangoStore.getState().set
+
 type JupiterRouteInfoProps = {
   amountIn: Decimal
   isWalletSwap?: boolean
@@ -279,6 +281,10 @@ const SwapReviewRouteInfo = ({
       )
 
       const tx = await client.sendAndConfirmTransaction(ixs)
+      set((s) => {
+        s.swap.amountIn = ''
+        s.swap.amountOut = ''
+      })
       notify({
         title: 'Transaction confirmed',
         type: 'success',
@@ -309,7 +315,6 @@ const SwapReviewRouteInfo = ({
       const mangoAccount = mangoStore.getState().mangoAccount.current
       const inputBank = mangoStore.getState().swap.inputBank
       const outputBank = mangoStore.getState().swap.outputBank
-      const set = mangoStore.getState().set
       const connection = mangoStore.getState().connection
 
       if (
@@ -352,6 +357,8 @@ const SwapReviewRouteInfo = ({
         })
         set((s) => {
           s.successAnimation.swap = true
+          s.swap.amountIn = ''
+          s.swap.amountOut = ''
         })
         if (soundSettings['swap-success']) {
           successSound.play()

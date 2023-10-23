@@ -29,6 +29,13 @@ const AccountHeroStats = ({ accountValue }: { accountValue: number }) => {
   const router = useRouter()
   const [showPnlHistory, setShowPnlHistory] = useState(false)
 
+  const handleGoToStats = () => {
+    const query = { ...router.query, ['view']: 'account-stats' }
+    router.push({ pathname: router.pathname, query }, undefined, {
+      shallow: true,
+    })
+  }
+
   const maintHealth = useMemo(() => {
     return group && mangoAccount
       ? mangoAccount.getHealthRatioUi(group, HealthType.maint)
@@ -244,9 +251,7 @@ const AccountHeroStats = ({ accountValue }: { accountValue: number }) => {
       </div>
       <button
         className="default-transition flex h-10 w-full items-center justify-between px-4 focus:outline-none disabled:cursor-not-allowed md:px-6 md:hover:bg-th-bkg-2"
-        onClick={() =>
-          router.push('/?view=account-stats', undefined, { shallow: true })
-        }
+        onClick={() => handleGoToStats()}
         disabled={!mangoAccountAddress}
       >
         <p>{t('account:more-account-stats')}</p>

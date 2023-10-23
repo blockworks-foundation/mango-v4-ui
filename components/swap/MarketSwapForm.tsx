@@ -36,6 +36,7 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import { formatCurrencyValue } from 'utils/numbers'
 import { SwapFormTokenListType } from './SwapFormTokenList'
 import useTokenPositionsFull from 'hooks/useTokenPositionsFull'
+import TopBarStore from '@store/topBarStore'
 
 dayjs.extend(relativeTime)
 
@@ -318,6 +319,7 @@ const SwapFormSubmitButton = ({
   const { t } = useTranslation('common')
   const { mangoAccountAddress } = useMangoAccount()
   const { connected } = useWallet()
+  const { setShowSettingsModal } = TopBarStore()
   // const { amount: tokenMax, amountWithBorrow } = useTokenMax(useMargin)
   const { inputBank, outputBank } = mangoStore((s) => s.swap)
   const { remainingBorrowsInPeriod, timeToNextPeriod } =
@@ -370,7 +372,7 @@ const SwapFormSubmitButton = ({
             desc={
               <>
                 {t('error-token-positions-full')}{' '}
-                <Link href="/settings" shallow>
+                <Link href={''} onClick={() => setShowSettingsModal(true)}>
                   {t('manage')}
                 </Link>
               </>

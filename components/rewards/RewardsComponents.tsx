@@ -1,24 +1,17 @@
-import {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react'
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
 import { init, mute, onClick, unmute } from '../../lib/render'
 import { Claim } from '@blockworks-foundation/mango-mints-redemption'
 import { Token } from 'types/jupiter'
 import BigNumber from 'bignumber.js'
 import { IconButton } from '@components/shared/Button'
 import { XMarkIcon } from '@heroicons/react/20/solid'
-import useMangoGroup from 'hooks/useMangoGroup'
 import { PublicKey } from '@solana/web3.js'
 import { CUSTOM_TOKEN_ICONS } from 'utils/constants'
 import { Sft, SftWithToken, Nft, NftWithToken } from '@metaplex-foundation/js'
 import { Lalezar } from 'next/font/google'
 import { usePlausible } from 'next-plausible'
 import { TelemetryEvents } from 'utils/telemetry'
+import mangoStore from '@store/mangoStore'
 
 const lalezar = Lalezar({
   weight: '400',
@@ -26,7 +19,7 @@ const lalezar = Lalezar({
   display: 'swap',
 })
 
-type Prize = {
+export type Prize = {
   //symbol
   item: string
   //amount
@@ -45,6 +38,87 @@ type Prize = {
   backMaterialId: 'loader_mat_card_gold_back' | 'loader_mat_card_silver_back'
 }
 
+export const getFallbackImg = (
+  mint: PublicKey,
+  jupiterLogoUrl: string | undefined,
+) => {
+  const group = mangoStore.getState().group
+  const bank = group?.getFirstBankByMint(mint)
+  const tokenSymbol = bank?.name.toLowerCase()
+  const hasCustomIcon = tokenSymbol ? CUSTOM_TOKEN_ICONS[tokenSymbol] : false
+  if (hasCustomIcon) {
+    return `/icons/${tokenSymbol}.svg`
+  } else {
+    return jupiterLogoUrl || '/icons/mngo.svg'
+  }
+}
+
+export const getClaimsAsPrizes = (
+  claims: Claim[],
+  tokensInfo: Token[],
+  nftsRewardsInfo: (Sft | SftWithToken | Nft | NftWithToken)[],
+) =>
+  claims.map((x) => {
+    const tokenInfo =
+      x.mintProperties.type === 'token'
+        ? tokensInfo.find((t) => t.address === x.mint.toBase58())
+        : null
+    const nftInfo =
+      x.mintProperties.type === 'nft'
+        ? nftsRewardsInfo.find(
+            (ni) => ni.address.toBase58() === x.mint.toBase58(),
+          )
+        : null
+    const resultion = x.mintProperties.type === 'token' ? [32, 32] : [400, 400]
+
+    const materials: {
+      [key: string]: Omit<
+        Prize,
+        'item' | 'info' | 'rarity' | 'itemResolution' | 'itemUrl'
+      >
+    } = {
+      Common: {
+        particleId: 'particles-coins',
+        frontMaterialId: 'loader_mat_card_silver_front_square',
+        backMaterialId: 'loader_mat_card_silver_back',
+        stencilUrl:
+          '/models/tex_procedural/tex_card_front_silver_square_albedo.png',
+      },
+      Legendary: {
+        particleId: 'particles-fireworks',
+        frontMaterialId: 'loader_mat_card_gold_front_circle',
+        backMaterialId: 'loader_mat_card_gold_back',
+        stencilUrl:
+          '/models/tex_procedural/tex_card_front_gold_circle_albedo.png',
+      },
+      Rare: {
+        particleId: 'particles-fireworks',
+        frontMaterialId: 'loader_mat_card_gold_front_circle',
+        backMaterialId: 'loader_mat_card_gold_back',
+        stencilUrl:
+          '/models/tex_procedural/tex_card_front_gold_circle_albedo.png',
+      },
+    }
+
+    return {
+      item: x.mintProperties.name,
+      info:
+        x.mintProperties.type === 'token' && tokenInfo
+          ? new BigNumber(x.quantity.toString())
+              .shiftedBy(-tokenInfo.decimals)
+              .toString()
+          : x.quantity.toString(),
+      rarity: x.mintProperties.rarity,
+      itemResolution: resultion,
+      //fallback of img from files if mint matches mango bank
+      itemUrl:
+        x.mintProperties.type === 'token'
+          ? getFallbackImg(x.mint, tokenInfo?.logoURI)
+          : nftInfo?.json?.image || '/icons/mngo.svg',
+      ...materials[x.mintProperties.rarity as 'Rare' | 'Legendary' | 'Common'],
+    }
+  })
+
 export default function RewardsComponent({
   setShowRender,
   claims,
@@ -59,7 +133,6 @@ export default function RewardsComponent({
   start: boolean
 }) {
   const renderLoaded = useRef<boolean>(false)
-  const { group } = useMangoGroup()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [collectedPrizes, setCollectedPrize] = useState([] as any[])
@@ -122,87 +195,13 @@ export default function RewardsComponent({
     }
   }, [prizes, start])
 
-  const getFallbackImg = useCallback(
-    (mint: PublicKey, jupiterLogoUrl: string | undefined) => {
-      const bank = group?.getFirstBankByMint(mint)
-      const tokenSymbol = bank?.name.toLowerCase()
-      const hasCustomIcon = tokenSymbol
-        ? CUSTOM_TOKEN_ICONS[tokenSymbol]
-        : false
-      if (hasCustomIcon) {
-        return `/icons/${tokenSymbol}.svg`
-      } else {
-        return jupiterLogoUrl || '/icons/mngo.svg'
-      }
-    },
-    [group],
-  )
-
   useEffect(() => {
     if (tokensInfo.length) {
-      const claimsAsPrizes: Prize[] = claims.map((x) => {
-        const tokenInfo =
-          x.mintProperties.type === 'token'
-            ? tokensInfo.find((t) => t.address === x.mint.toBase58())
-            : null
-        const nftInfo =
-          x.mintProperties.type === 'nft'
-            ? nftsRewardsInfo.find(
-                (ni) => ni.address.toBase58() === x.mint.toBase58(),
-              )
-            : null
-        const resultion =
-          x.mintProperties.type === 'token' ? [32, 32] : [400, 400]
-
-        const materials: {
-          [key: string]: Omit<
-            Prize,
-            'item' | 'info' | 'rarity' | 'itemResolution' | 'itemUrl'
-          >
-        } = {
-          Common: {
-            particleId: 'particles-coins',
-            frontMaterialId: 'loader_mat_card_silver_front_square',
-            backMaterialId: 'loader_mat_card_silver_back',
-            stencilUrl:
-              '/models/tex_procedural/tex_card_front_silver_square_albedo.png',
-          },
-          Legendary: {
-            particleId: 'particles-fireworks',
-            frontMaterialId: 'loader_mat_card_gold_front_circle',
-            backMaterialId: 'loader_mat_card_gold_back',
-            stencilUrl:
-              '/models/tex_procedural/tex_card_front_gold_circle_albedo.png',
-          },
-          Rare: {
-            particleId: 'particles-fireworks',
-            frontMaterialId: 'loader_mat_card_gold_front_circle',
-            backMaterialId: 'loader_mat_card_gold_back',
-            stencilUrl:
-              '/models/tex_procedural/tex_card_front_gold_circle_albedo.png',
-          },
-        }
-
-        return {
-          item: x.mintProperties.name,
-          info:
-            x.mintProperties.type === 'token'
-              ? new BigNumber(x.quantity.toString())
-                  .shiftedBy(-tokenInfo!.decimals)
-                  .toString()
-              : x.quantity.toString(),
-          rarity: x.mintProperties.rarity,
-          itemResolution: resultion,
-          //fallback of img from files if mint matches mango bank
-          itemUrl:
-            x.mintProperties.type === 'token'
-              ? getFallbackImg(x.mint, tokenInfo?.logoURI)
-              : nftInfo?.json?.image || '/icons/mngo.svg',
-          ...materials[
-            x.mintProperties.rarity as 'Rare' | 'Legendary' | 'Common'
-          ],
-        }
-      })
+      const claimsAsPrizes = getClaimsAsPrizes(
+        claims,
+        tokensInfo,
+        nftsRewardsInfo,
+      )
       setPrizes(claimsAsPrizes)
     }
   }, [claims, getFallbackImg, tokensInfo])

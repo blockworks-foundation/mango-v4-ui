@@ -41,7 +41,6 @@ const ConnectedMenu = () => {
       state.mangoAccounts = []
       state.mangoAccount.initialLoad = true
       state.mangoAccount.openOrders = {}
-      state.mangoAccount.interestTotals = { data: [], loading: false }
     })
     disconnect()
     notify({

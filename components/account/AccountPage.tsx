@@ -19,7 +19,9 @@ export type ViewToShow =
 
 export const handleViewChange = (view: ViewToShow, router: NextRouter) => {
   const query = { ...router.query, ['view']: view }
-  router.push({ pathname: router.pathname, query })
+  router.push({ pathname: router.pathname, query }, undefined, {
+    shallow: true,
+  })
 }
 
 const AccountPage = () => {

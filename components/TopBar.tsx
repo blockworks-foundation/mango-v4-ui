@@ -30,12 +30,14 @@ import { IS_ONBOARDED_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import SettingsModal from './modals/SettingsModal'
 import DepositWithdrawIcon from './icons/DepositWithdrawIcon'
-import { useCurrentSeason, useWalletPoints } from 'hooks/useRewards'
+import { useAccountPointsAndRank, useCurrentSeason } from 'hooks/useRewards'
 import SheenLoader from './shared/SheenLoader'
 import Link from 'next/link'
 import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
 import FormatNumericValue from './shared/FormatNumericValue'
 import { useRouter } from 'next/router'
+import TopBarStore from '@store/topBarStore'
+import MedalIcon from './icons/MedalIcon'
 
 export const TOPBAR_ICON_BUTTON_CLASSES =
   'relative flex h-16 w-10 sm:w-16 items-center justify-center sm:border-l sm:border-th-bkg-3 focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2'
@@ -48,10 +50,10 @@ const TopBar = () => {
   const { connected, wallet } = useWallet()
   const { data: seasonData } = useCurrentSeason()
   const {
-    data: walletPoints,
-    isLoading: loadingWalletRewardsData,
-    refetch: refetchWalletPoints,
-  } = useWalletPoints(mangoAccountAddress, seasonData?.season_id, wallet)
+    data: accountPointsAndRank,
+    isInitialLoading: loadingAccountPointsAndRank,
+    refetch: refetchPoints,
+  } = useAccountPointsAndRank(mangoAccountAddress, seasonData?.season_id)
   const { data: isWhiteListed } = useIsWhiteListed()
   const router = useRouter()
   const themeData = mangoStore((s) => s.themeData)
@@ -61,7 +63,7 @@ const TopBar = () => {
   const [showDepositWithdrawModal, setShowDepositWithdrawModal] =
     useState(false)
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
-  const [showSettingsModal, setShowSettingsModal] = useState(false)
+  const { showSettingsModal, setShowSettingsModal } = TopBarStore()
   const isOnline = useOnlineStatus()
 
   const { isUnownedAccount } = useUnownedAccount()
@@ -101,7 +103,7 @@ const TopBar = () => {
 
   useEffect(() => {
     if (router.pathname === '/rewards') {
-      refetchWalletPoints()
+      refetchPoints()
     }
   }, [router])
 
@@ -183,15 +185,45 @@ const TopBar = () => {
             )
           ) : isWhiteListed ? (
             <Link href="/rewards" shallow={true}>
-              <div className="flex h-16 items-center justify-between border-x border-th-bkg-3 px-4 md:border-l-0 lg:pl-6">
+              <div className="flex h-16 items-center justify-between border-x border-th-bkg-3 px-4 md:border-l-0">
+                {accountPointsAndRank?.rank ? (
+                  <div
+                    className={`relative hidden h-6 w-6 flex-shrink-0 items-center justify-center rounded-full sm:flex ${
+                      accountPointsAndRank.rank < 4 ? '' : 'bg-th-bkg-3'
+                    } mr-2`}
+                  >
+                    <p
+                      className={`relative z-10 text-xs font-bold ${
+                        accountPointsAndRank.rank < 4
+                          ? 'text-th-bkg-1'
+                          : 'text-th-fgd-1'
+                      }`}
+                    >
+                      {accountPointsAndRank.rank}
+                    </p>
+                    {accountPointsAndRank.rank < 4 ? (
+                      <MedalIcon
+                        className="absolute"
+                        rank={accountPointsAndRank.rank}
+                      />
+                    ) : null}
+                  </div>
+                ) : loadingAccountPointsAndRank ? (
+                  <SheenLoader className="mr-2 hidden sm:block">
+                    <div className="h-6 w-6 bg-th-bkg-2" />
+                  </SheenLoader>
+                ) : null}
                 <div>
                   <span className="whitespace-nowrap font-bold text-th-fgd-2">
                     Points
                   </span>
-                  {!loadingWalletRewardsData ? (
+                  {!loadingAccountPointsAndRank ? (
                     <p className="bg-gradient-to-br from-yellow-400 to-red-400 bg-clip-text font-display text-base text-transparent">
-                      {walletPoints ? (
-                        <FormatNumericValue value={walletPoints} decimals={0} />
+                      {accountPointsAndRank?.total_points ? (
+                        <FormatNumericValue
+                          value={accountPointsAndRank.total_points}
+                          decimals={0}
+                        />
                       ) : wallet?.adapter.publicKey ? (
                         0
                       ) : (

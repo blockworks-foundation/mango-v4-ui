@@ -48,6 +48,7 @@ import { formatTokenSymbol } from 'utils/tokens'
 import Tooltip from '@components/shared/Tooltip'
 import Link from 'next/link'
 import useTokenPositionsFull from 'hooks/useTokenPositionsFull'
+import TopBarStore from '@store/topBarStore'
 
 dayjs.extend(relativeTime)
 
@@ -112,6 +113,7 @@ const TriggerSwapForm = ({
   const { t } = useTranslation(['common', 'swap', 'trade'])
   const { mangoAccountAddress } = useMangoAccount()
   const { ipAllowed, ipCountry } = useIpAddress()
+  const { setShowSettingsModal } = TopBarStore()
   // const [triggerPrice, setTriggerPrice] = useState('')
   const [orderType, setOrderType] = useState(ORDER_TYPES[0])
   const [submitting, setSubmitting] = useState(false)
@@ -890,7 +892,7 @@ const TriggerSwapForm = ({
             desc={
               <>
                 {t('error-token-positions-full')}{' '}
-                <Link href="/settings" shallow>
+                <Link href={''} onClick={() => setShowSettingsModal(true)}>
                   {t('manage')}
                 </Link>
               </>
