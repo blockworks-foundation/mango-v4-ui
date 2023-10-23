@@ -104,9 +104,9 @@ export const MIN_SOL_BALANCE = 0.001
 
 export const MAX_PRIORITY_FEE_KEYS = 128
 
-export const ACCOUNT_ACTION_MODAL_HEIGHT = '462px'
+export const ACCOUNT_ACTION_MODAL_HEIGHT = '488px'
 
-export const ACCOUNT_ACTION_MODAL_INNER_HEIGHT = '400px'
+export const ACCOUNT_ACTION_MODAL_INNER_HEIGHT = '426px'
 
 export const TRADE_VOLUME_ALERT_KEY = 'tradeVolumeAlert-0.1'
 
@@ -116,7 +116,9 @@ export const JUPITER_API_MAINNET = 'https://token.jup.ag/strict'
 
 export const JUPITER_API_DEVNET = 'https://api.jup.ag/api/tokens/devnet'
 
-export const JUPITER_PRICE_API_MAINNET = 'https://price.jup.ag/v4/'
+export const JUPITER_PRICE_API_MAINNET = 'https://price.jup.ag/v4/' // V6 Does not yet support /price requests as of 16/10/2023
+
+export const JUPITER_V6_QUOTE_API_MAINNET = 'https://quote-api.jup.ag/v6'
 
 export const NOTIFICATION_API = 'https://notifications-api.herokuapp.com/'
 
@@ -134,6 +136,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   bonk: true,
   btc: true,
   chai: true,
+  crown: true,
   dai: true,
   dual: true,
   eth: true,
@@ -151,6 +154,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   rndr: true,
   sol: true,
   stsol: true,
+  tbtc: true,
   usdc: true,
   usdh: true,
   usdt: true,
@@ -176,4 +180,10 @@ export const MAX_ACCOUNTS = {
   perpAccounts: '4',
   perpOpenOrders: '64',
   tcsOrders: '64',
+}
+
+export enum TOKEN_REDUCE_ONLY_OPTIONS {
+  DISABLED,
+  ENABLED,
+  NO_BORROWS,
 }

@@ -1,15 +1,11 @@
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { PublicKey } from '@solana/web3.js'
-import { PencilIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
 import ContentBox from '../shared/ContentBox'
 import { useTranslation } from 'next-i18next'
 import SwapFormTokenList from './SwapFormTokenList'
-import { LinkButton } from '../shared/Button'
 import { EnterBottomExitBottom } from '../shared/Transitions'
-import { HealthType } from '@blockworks-foundation/mango-v4'
 import { OUTPUT_TOKEN_DEFAULT, SWAP_MARGIN_KEY } from '../../utils/constants'
-import HealthImpact from '@components/shared/HealthImpact'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import SwapSettings from './SwapSettings'
 import InlineNotification from '@components/shared/InlineNotification'
@@ -25,8 +21,34 @@ import TabButtons from '@components/shared/TabButtons'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useRouter } from 'next/router'
+import SwapSummaryInfo from './SwapSummaryInfo'
 
 const set = mangoStore.getState().set
+
+export const handleTokenInSelect = (mintAddress: string, close: () => void) => {
+  const group = mangoStore.getState().group
+  if (group) {
+    const bank = group.getFirstBankByMint(new PublicKey(mintAddress))
+    set((s) => {
+      s.swap.inputBank = bank
+    })
+  }
+  close()
+}
+
+export const handleTokenOutSelect = (
+  mintAddress: string,
+  close: () => void,
+) => {
+  const group = mangoStore.getState().group
+  if (group) {
+    const bank = group.getFirstBankByMint(new PublicKey(mintAddress))
+    set((s) => {
+      s.swap.outputBank = bank
+    })
+  }
+  close()
+}
 
 const SwapForm = () => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
@@ -45,11 +67,8 @@ const SwapForm = () => {
 
   const {
     margin: useMargin,
-    slippage,
     inputBank,
     outputBank,
-    amountIn: amountInFormValue,
-    amountOut: amountOutFormValue,
     swapOrTrigger,
   } = mangoStore((s) => s.swap)
 
@@ -81,63 +100,6 @@ const SwapForm = () => {
     }
   }, [groupLoaded, query])
 
-  const handleTokenInSelect = useCallback((mintAddress: string) => {
-    const group = mangoStore.getState().group
-    if (group) {
-      const bank = group.getFirstBankByMint(new PublicKey(mintAddress))
-      set((s) => {
-        s.swap.inputBank = bank
-      })
-    }
-    setShowTokenSelect(undefined)
-  }, [])
-
-  const handleTokenOutSelect = useCallback((mintAddress: string) => {
-    const group = mangoStore.getState().group
-    if (group) {
-      const bank = group.getFirstBankByMint(new PublicKey(mintAddress))
-      set((s) => {
-        s.swap.outputBank = bank
-      })
-    }
-    setShowTokenSelect(undefined)
-  }, [])
-
-  const maintProjectedHealth = useMemo(() => {
-    const group = mangoStore.getState().group
-    const mangoAccount = mangoStore.getState().mangoAccount.current
-    if (
-      !inputBank ||
-      !mangoAccount ||
-      !outputBank ||
-      !amountInFormValue ||
-      !amountOutFormValue ||
-      !group
-    )
-      return 100
-
-    const simulatedHealthRatio =
-      mangoAccount.simHealthRatioWithTokenPositionUiChanges(
-        group,
-        [
-          {
-            mintPk: inputBank.mint,
-            uiTokenAmount: parseFloat(amountInFormValue) * -1,
-          },
-          {
-            mintPk: outputBank.mint,
-            uiTokenAmount: parseFloat(amountOutFormValue),
-          },
-        ],
-        HealthType.maint,
-      )
-    return simulatedHealthRatio > 100
-      ? 100
-      : simulatedHealthRatio < 0
-      ? 0
-      : Math.trunc(simulatedHealthRatio)
-  }, [inputBank, outputBank, amountInFormValue, amountOutFormValue])
-
   const handleSwapOrTrigger = useCallback(
     (orderType: TriggerOrderTypes) => {
       set((state) => {
@@ -152,27 +114,9 @@ const SwapForm = () => {
     [inputBank, outputBank],
   )
 
-  const handleSetMargin = () => {
-    set((s) => {
-      s.swap.margin = !s.swap.margin
-    })
-  }
-
   useEffect(() => {
     setSavedSwapMargin(useMargin)
   }, [useMargin])
-
-  const estSlippage = useMemo(() => {
-    const { group } = mangoStore.getState()
-    const amountIn = parseFloat(amountInFormValue) || 0
-    if (!group || !inputBank || amountIn <= 0) return 0
-    const value = amountIn * inputBank.uiPrice
-    const slippage = group.getPriceImpactByTokenIndex(
-      inputBank.tokenIndex,
-      value,
-    )
-    return slippage
-  }, [amountInFormValue, inputBank])
 
   return (
     <ContentBox
@@ -280,54 +224,10 @@ const SwapForm = () => {
                 />
               </div>
             ) : null}
-            <div className="space-y-2">
-              {!walletSwap ? (
-                <HealthImpact maintProjectedHealth={maintProjectedHealth} />
-              ) : null}
-              {swapOrTrigger === 'swap' ? (
-                <>
-                  {!walletSwap ? (
-                    <div className="flex items-center justify-between">
-                      <Tooltip content={t('swap:tooltip-margin')}>
-                        <p className="tooltip-underline text-sm text-th-fgd-3">
-                          {t('swap:margin')}
-                        </p>
-                      </Tooltip>
-                      <Switch
-                        className="text-th-fgd-3"
-                        checked={useMargin}
-                        onChange={handleSetMargin}
-                        small
-                      />
-                    </div>
-                  ) : null}
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-th-fgd-3">
-                      {t('swap:max-slippage')}
-                    </p>
-                    <LinkButton
-                      className="flex items-center text-right font-mono text-sm font-normal text-th-fgd-2"
-                      onClick={() => setShowSettings(true)}
-                    >
-                      <span className="mr-1.5">{slippage}%</span>
-                      <PencilIcon className="h-4 w-4" />
-                    </LinkButton>
-                  </div>
-                </>
-              ) : null}
-              {estSlippage ? (
-                <>
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-th-fgd-3">
-                      {t('trade:est-slippage')}
-                    </p>
-                    <span className="font-mono text-th-fgd-2">
-                      {estSlippage.toFixed(2)}%
-                    </span>
-                  </div>
-                </>
-              ) : null}
-            </div>
+            <SwapSummaryInfo
+              walletSwap={walletSwap}
+              setShowSettings={setShowSettings}
+            />
           </div>
         </div>
       </div>

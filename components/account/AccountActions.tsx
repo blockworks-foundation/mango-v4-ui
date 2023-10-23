@@ -1,35 +1,19 @@
-import { Fragment, useState } from 'react'
-import Button, { IconButton } from '../shared/Button'
-import {
-  ArrowDownRightIcon,
-  ArrowUpLeftIcon,
-  DocumentDuplicateIcon,
-  EyeIcon,
-  EyeSlashIcon,
-  PencilIcon,
-  SquaresPlusIcon,
-  TrashIcon,
-  UserPlusIcon,
-  WrenchIcon,
-} from '@heroicons/react/20/solid'
+import { useState } from 'react'
 import { useTranslation } from 'next-i18next'
-import CloseAccountModal from '../modals/CloseAccountModal'
-import AccountNameModal from '../modals/AccountNameModal'
 import { copyToClipboard } from 'utils'
 import { notify } from 'utils/notifications'
-import DelegateModal from '@components/modals/DelegateModal'
 import useMangoAccount from 'hooks/useMangoAccount'
 import BorrowRepayModal from '@components/modals/BorrowRepayModal'
 import { useWallet } from '@solana/wallet-adapter-react'
 import CreateAccountModal from '@components/modals/CreateAccountModal'
-import { Popover, Transition } from '@headlessui/react'
-import ActionsLinkButton from './ActionsLinkButton'
 import useUnownedAccount from 'hooks/useUnownedAccount'
-import { useViewport } from 'hooks/useViewport'
-import MangoAccountSizeModal from '@components/modals/MangoAccountSizeModal'
-import useMangoAccountAccounts from 'hooks/useMangoAccountAccounts'
-import useLocalStorageState from 'hooks/useLocalStorageState'
-import { PRIVACY_MODE } from 'utils/constants'
+import DepositWithdrawModal from '@components/modals/DepositWithdrawModal'
+import {
+  ArrowDownRightIcon,
+  ArrowDownTrayIcon,
+  ArrowUpLeftIcon,
+  ArrowUpTrayIcon,
+} from '@heroicons/react/20/solid'
 
 export const handleCopyAddress = (
   mangoAccountAddress: string,
@@ -42,25 +26,24 @@ export const handleCopyAddress = (
   })
 }
 
+type ActionType = 'deposit' | 'withdraw' | 'borrow' | 'repay'
+
+const ACTION_BUTTON_CLASSES =
+  'flex h-10 items-center justify-center space-x-1 sm:space-x-2 font-bold focus:outline-none md:hover:bg-th-bkg-2 text-xs sm:text-sm'
+
+const ACTION_BUTTON_ICON_CLASSES = 'h-3.5 w-3.5 sm:h-5 sm:w-5'
+
 const AccountActions = () => {
   const { t } = useTranslation(['common', 'close-account', 'settings'])
   const { mangoAccountAddress } = useMangoAccount()
-  const [showCloseAccountModal, setShowCloseAccountModal] = useState(false)
-  const [showEditAccountModal, setShowEditAccountModal] = useState(false)
-  const [showBorrowModal, setShowBorrowModal] = useState(false)
-  const [showRepayModal, setShowRepayModal] = useState(false)
-  const [showDelegateModal, setShowDelegateModal] = useState(false)
+  const [modalToShow, setModalToShow] = useState('')
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
-  const [showAccountSizeModal, setShowAccountSizeModal] = useState(false)
-  const [privacyMode, setPrivacyMode] = useLocalStorageState(PRIVACY_MODE)
   const { connected } = useWallet()
-  const { isDelegatedAccount, isUnownedAccount } = useUnownedAccount()
-  const { isMobile } = useViewport()
-  const { isAccountFull } = useMangoAccountAccounts()
+  const { isUnownedAccount } = useUnownedAccount()
 
-  const handleBorrowModal = () => {
+  const handleActionModal = (type: ActionType) => {
     if (mangoAccountAddress || !connected) {
-      setShowBorrowModal(true)
+      setModalToShow(type)
     } else {
       setShowCreateAccountModal(true)
     }
@@ -69,173 +52,69 @@ const AccountActions = () => {
   return (
     <>
       {isUnownedAccount ? null : (
-        <div className="flex items-center space-x-2">
-          <Button
-            className="flex w-full items-center justify-center sm:w-1/3 md:w-auto"
-            disabled={!mangoAccountAddress}
-            onClick={() => setShowRepayModal(true)}
-            secondary
+        <div className="grid grid-cols-4">
+          <button
+            className={`${ACTION_BUTTON_CLASSES} border-r border-th-bkg-3`}
+            onClick={() => handleActionModal('deposit')}
           >
-            <ArrowDownRightIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-            {t('repay')}
-          </Button>
-          <Button
-            className="flex w-full items-center justify-center sm:w-1/3 md:w-auto"
-            onClick={handleBorrowModal}
-            secondary
+            <ArrowDownTrayIcon className={ACTION_BUTTON_ICON_CLASSES} />
+            <span>{t('deposit')}</span>
+          </button>
+          <button
+            className={`${ACTION_BUTTON_CLASSES} border-r border-th-bkg-3`}
+            onClick={() => handleActionModal('withdraw')}
           >
-            <ArrowUpLeftIcon className="mr-2 h-5 w-5 flex-shrink-0" />
-            {t('borrow')}
-          </Button>
-          <Popover className="relative sm:w-1/3 md:w-auto">
-            {({ open }) => (
-              <>
-                <Popover.Button
-                  className={`w-full focus:outline-none`}
-                  as="div"
-                >
-                  {!isMobile ? (
-                    <Button
-                      className="flex w-full items-center justify-center"
-                      secondary
-                    >
-                      <WrenchIcon className="mr-2 h-4 w-4 flex-shrink-0" />
-                      {t('actions')}
-                    </Button>
-                  ) : (
-                    <IconButton size="medium">
-                      <WrenchIcon className="h-5 w-5" />
-                    </IconButton>
-                  )}
-                </Popover.Button>
-                <Transition
-                  appear={true}
-                  show={open}
-                  as={Fragment}
-                  enter="transition ease-in duration-75"
-                  enterFrom="opacity-0 nice scale-75"
-                  enterTo="opacity-100 scale-100"
-                  leave="transition ease-out duration-100"
-                  leaveFrom="opacity-100"
-                  leaveTo="opacity-0"
-                >
-                  <Popover.Panel className="absolute right-0 top-10 mt-1 space-y-2 rounded-md bg-th-bkg-2 px-4 py-2.5">
-                    <ActionsLinkButton
-                      onClick={() =>
-                        handleCopyAddress(
-                          mangoAccountAddress,
-                          t('copy-address-success', {
-                            pk: `${mangoAccountAddress.slice(
-                              0,
-                              4,
-                            )}...${mangoAccountAddress.slice(-4)}`,
-                          }),
-                        )
-                      }
-                    >
-                      <DocumentDuplicateIcon className="h-4 w-4" />
-                      <span className="ml-2">{t('copy-address')}</span>
-                    </ActionsLinkButton>
-                    <ActionsLinkButton
-                      disabled={isDelegatedAccount}
-                      onClick={() => setShowEditAccountModal(true)}
-                    >
-                      <PencilIcon className="h-4 w-4" />
-                      <span className="ml-2">{t('edit-account')}</span>
-                    </ActionsLinkButton>
-                    <ActionsLinkButton
-                      disabled={isDelegatedAccount && isUnownedAccount}
-                      onClick={() => setShowDelegateModal(true)}
-                    >
-                      <UserPlusIcon className="h-4 w-4" />
-                      <span className="ml-2">{t('delegate-account')}</span>
-                    </ActionsLinkButton>
-                    {!isAccountFull ? (
-                      <ActionsLinkButton
-                        disabled={isDelegatedAccount}
-                        onClick={() => setShowAccountSizeModal(true)}
-                      >
-                        <SquaresPlusIcon className="h-4 w-4" />
-                        <span className="ml-2">
-                          {t('settings:increase-account-slots')}
-                        </span>
-                      </ActionsLinkButton>
-                    ) : null}
-                    <ActionsLinkButton
-                      disabled={isDelegatedAccount}
-                      onClick={() => setShowCloseAccountModal(true)}
-                    >
-                      <TrashIcon className="h-4 w-4" />
-                      <span className="ml-2">{t('close-account')}</span>
-                    </ActionsLinkButton>
-                    <ActionsLinkButton
-                      onClick={() => setPrivacyMode(!privacyMode)}
-                    >
-                      {privacyMode ? (
-                        <>
-                          <EyeIcon className="h-4 w-4" />
-                          <span className="ml-2">
-                            {t('settings:privacy-disable')}
-                          </span>
-                        </>
-                      ) : (
-                        <>
-                          <EyeSlashIcon className="h-4 w-4" />
-                          <span className="ml-2">
-                            {t('settings:privacy-enable')}
-                          </span>
-                        </>
-                      )}
-                    </ActionsLinkButton>
-                  </Popover.Panel>
-                </Transition>
-              </>
-            )}
-          </Popover>
+            <ArrowUpTrayIcon className={ACTION_BUTTON_ICON_CLASSES} />
+            <span>{t('withdraw')}</span>
+          </button>
+          <button
+            className={`${ACTION_BUTTON_CLASSES} border-r border-th-bkg-3`}
+            onClick={() => handleActionModal('borrow')}
+          >
+            <ArrowUpLeftIcon className={ACTION_BUTTON_ICON_CLASSES} />
+            <span>{t('borrow')}</span>
+          </button>
+          <button
+            className={ACTION_BUTTON_CLASSES}
+            onClick={() => handleActionModal('repay')}
+          >
+            <ArrowDownRightIcon className={ACTION_BUTTON_ICON_CLASSES} />
+            <span>{t('repay')}</span>
+          </button>
         </div>
       )}
-      {showCloseAccountModal ? (
-        <CloseAccountModal
-          isOpen={showCloseAccountModal}
-          onClose={() => setShowCloseAccountModal(false)}
+      {modalToShow === 'deposit' ? (
+        <DepositWithdrawModal
+          action="deposit"
+          isOpen={modalToShow === 'deposit'}
+          onClose={() => setModalToShow('')}
         />
       ) : null}
-      {showEditAccountModal ? (
-        <AccountNameModal
-          isOpen={showEditAccountModal}
-          onClose={() => setShowEditAccountModal(false)}
+      {modalToShow === 'withdraw' ? (
+        <DepositWithdrawModal
+          action="withdraw"
+          isOpen={modalToShow === 'withdraw'}
+          onClose={() => setModalToShow('')}
         />
       ) : null}
-      {showBorrowModal ? (
+      {modalToShow === 'borrow' ? (
         <BorrowRepayModal
           action="borrow"
-          isOpen={showBorrowModal}
-          onClose={() => setShowBorrowModal(false)}
+          isOpen={modalToShow === 'borrow'}
+          onClose={() => setModalToShow('')}
         />
       ) : null}
-      {showRepayModal ? (
+      {modalToShow === 'repay' ? (
         <BorrowRepayModal
           action="repay"
-          isOpen={showRepayModal}
-          onClose={() => setShowRepayModal(false)}
-        />
-      ) : null}
-      {showDelegateModal ? (
-        <DelegateModal
-          isOpen={showDelegateModal}
-          onClose={() => setShowDelegateModal(false)}
+          isOpen={modalToShow === 'repay'}
+          onClose={() => setModalToShow('')}
         />
       ) : null}
       {showCreateAccountModal ? (
         <CreateAccountModal
           isOpen={showCreateAccountModal}
           onClose={() => setShowCreateAccountModal(false)}
-        />
-      ) : null}
-      {showAccountSizeModal ? (
-        <MangoAccountSizeModal
-          isOpen={showAccountSizeModal}
-          onClose={() => setShowAccountSizeModal(false)}
         />
       ) : null}
     </>

@@ -1,6 +1,6 @@
 import { ArrowUpLeftIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useViewport } from '../../hooks/useViewport'
 import { formatNumericValue } from '../../utils/numbers'
 import { breakpoints } from '../../utils/theme'
@@ -13,7 +13,8 @@ import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
 import { getAvailableToBorrow } from './YourBorrowsTable'
 import { Disclosure, Transition } from '@headlessui/react'
-import TokenLogo from '@components/shared/TokenLogo'
+import { TOKEN_REDUCE_ONLY_OPTIONS } from 'utils/constants'
+import TableTokenName from '@components/shared/TableTokenName'
 
 const AssetsBorrowsTable = () => {
   const { t } = useTranslation(['common', 'token'])
@@ -23,6 +24,13 @@ const AssetsBorrowsTable = () => {
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const banks = useBanksWithBalances()
+
+  const banksToShow = useMemo(() => {
+    if (!banks || !banks.length) return []
+    return banks.filter(
+      (b) => b.bank.reduceOnly === TOKEN_REDUCE_ONLY_OPTIONS.DISABLED,
+    )
+  }, [banks])
 
   const handleShowBorrowModal = useCallback((token: string) => {
     setSelectedToken(token)
@@ -51,7 +59,7 @@ const AssetsBorrowsTable = () => {
             </TrHead>
           </thead>
           <tbody>
-            {banks.map((b) => {
+            {banksToShow.map((b) => {
               const bank = b.bank
 
               const borrows = bank.uiBorrows()
@@ -63,12 +71,7 @@ const AssetsBorrowsTable = () => {
               return (
                 <TrBody key={bank.name}>
                   <Td>
-                    <div className="flex items-center">
-                      <div className="mr-2.5 flex flex-shrink-0 items-center">
-                        <TokenLogo bank={bank} />
-                      </div>
-                      <p className="font-body">{bank.name}</p>
-                    </div>
+                    <TableTokenName bank={bank} symbol={bank.name} />
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">
@@ -113,7 +116,7 @@ const AssetsBorrowsTable = () => {
         </Table>
       ) : (
         <div className="border-b border-th-bkg-3">
-          {banks.map((b) => {
+          {banksToShow.map((b) => {
             const bank = b.bank
 
             const available = group
@@ -128,12 +131,7 @@ const AssetsBorrowsTable = () => {
                       className={`w-full border-t border-th-bkg-3 p-4 text-left first:border-t-0 focus:outline-none`}
                     >
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <div className="mr-2.5 flex flex-shrink-0 items-center">
-                            <TokenLogo bank={bank} />
-                          </div>
-                          <p className="text-th-fgd-1">{bank.name}</p>
-                        </div>
+                        <TableTokenName bank={bank} symbol={bank.name} />
                         <div className="flex items-center space-x-4">
                           <div>
                             <p className="mb-0.5 text-right text-xs">

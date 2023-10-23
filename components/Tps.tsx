@@ -1,45 +1,8 @@
-import { useEffect, useState } from 'react'
-import sumBy from 'lodash/sumBy'
-import { Connection } from '@solana/web3.js'
-import mangoStore, { CLUSTER } from '@store/mangoStore'
-import useInterval from './shared/useInterval'
+import { CLUSTER } from '@store/mangoStore'
 import { formatNumericValue } from 'utils/numbers'
-import Tooltip from './shared/Tooltip'
-import { useTranslation } from 'react-i18next'
+import { tpsAlertThreshold, tpsWarningThreshold } from './StatusBar'
 
-const tpsAlertThreshold = 1000
-const tpsWarningThreshold = 1300
-
-const getRecentPerformance = async (
-  connection: Connection,
-  setTps: (x: number) => void,
-) => {
-  try {
-    const samples = 2
-    const response = await connection.getRecentPerformanceSamples(samples)
-    const totalSecs = sumBy(response, 'samplePeriodSecs')
-    const totalTransactions = sumBy(response, 'numTransactions')
-    const tps = totalTransactions / totalSecs
-
-    setTps(tps)
-  } catch {
-    console.warn('Unable to fetch TPS')
-  }
-}
-
-const Tps = () => {
-  const { t } = useTranslation('common')
-  const connection = mangoStore((s) => s.connection)
-  const [tps, setTps] = useState(0)
-
-  useEffect(() => {
-    getRecentPerformance(connection, setTps)
-  }, [])
-
-  useInterval(() => {
-    getRecentPerformance(connection, setTps)
-  }, 60 * 1000)
-
+const Tps = ({ tps }: { tps: number }) => {
   if (CLUSTER == 'mainnet-beta') {
     return (
       <div>
@@ -50,12 +13,9 @@ const Tps = () => {
             warning={tpsWarningThreshold}
             isLessThan
           />
-          <Tooltip content={t('solana-tps-desc')}>
-            <span className="font-mono text-xs text-th-fgd-2">
-              <span className="mr-1">{formatNumericValue(tps, 0)}</span>
-              <span className="font-normal text-th-fgd-4">TPS</span>
-            </span>
-          </Tooltip>
+          <span className="font-mono text-xs text-th-fgd-2">
+            {formatNumericValue(tps, 0)}
+          </span>
         </div>
       </div>
     )

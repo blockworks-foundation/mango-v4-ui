@@ -67,11 +67,15 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
     if (!bank || !mangoAccount || !group)
       return [new Decimal(0), new Decimal(0)]
     const tokenMax = getMaxWithdrawForBank(group, bank, mangoAccount).toNumber()
-    let adjustedTokenMax = tokenMax
-    const balance = mangoAccount.getTokenBalanceUi(bank)
-    if (tokenMax < balance) {
-      adjustedTokenMax = tokenMax * 0.998
-    }
+    const adjustedTokenMax = tokenMax
+
+    // Note: Disable for now, not sure why this was added, we can re-renable with specific conditions when
+    // need is realized
+    // const balance = mangoAccount.getTokenBalanceUi(bank)
+    // if (tokenMax < balance) {
+    //   adjustedTokenMax = tokenMax * 0.998
+    // }
+
     return [new Decimal(adjustedTokenMax), new Decimal(tokenMax)]
   }, [mangoAccount, bank, group])
 

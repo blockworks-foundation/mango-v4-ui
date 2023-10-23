@@ -15,7 +15,6 @@ import {
   ArchiveBoxArrowDownIcon,
   ExclamationTriangleIcon,
   DocumentTextIcon,
-  SparklesIcon,
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
@@ -223,13 +222,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               icon={<ArrowTrendingUpIcon className="h-5 w-5" />}
               title={t('trade')}
               pagePath="/trade"
-            />
-            <MenuItem
-              active={pathname === '/explore'}
-              collapsed={collapsed}
-              icon={<SparklesIcon className="h-5 w-5" />}
-              title={t('explore')}
-              pagePath="/explore"
             />
             <MenuItem
               active={pathname === '/borrow'}

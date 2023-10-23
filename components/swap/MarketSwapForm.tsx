@@ -13,7 +13,7 @@ import mangoStore from '@store/mangoStore'
 import useDebounce from '../shared/useDebounce'
 import { MANGO_MINT, SIZE_INPUT_UI_KEY, USDC_MINT } from '../../utils/constants'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { RouteInfo } from 'types/jupiter'
+import { JupiterV6RouteInfo } from 'types/jupiter'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import SwapSlider from './SwapSlider'
 import PercentageSelectButtons from './PercentageSelectButtons'
@@ -41,6 +41,7 @@ dayjs.extend(relativeTime)
 
 type MarketSwapFormProps = {
   setShowTokenSelect: Dispatch<SetStateAction<SwapFormTokenListType>>
+  onSuccess?: () => void
 }
 
 const MAX_DIGITS = 11
@@ -55,10 +56,14 @@ export const NUMBER_FORMAT_CLASSNAMES =
 
 const set = mangoStore.getState().set
 
-const MarketSwapForm = ({ setShowTokenSelect }: MarketSwapFormProps) => {
+const MarketSwapForm = ({
+  setShowTokenSelect,
+  onSuccess,
+}: MarketSwapFormProps) => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
   //initial state is undefined null is returned on error
-  const [selectedRoute, setSelectedRoute] = useState<RouteInfo | null>()
+  const [selectedRoute, setSelectedRoute] =
+    useState<JupiterV6RouteInfo | null>()
   const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
   const [showConfirm, setShowConfirm] = useState(false)
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
@@ -74,7 +79,7 @@ const MarketSwapForm = ({ setShowTokenSelect }: MarketSwapFormProps) => {
   const [debouncedAmountIn] = useDebounce(amountInFormValue, 300)
   const [debouncedAmountOut] = useDebounce(amountOutFormValue, 300)
   const { connected, publicKey } = useWallet()
-  const { bestRoute, routes } = useQuoteRoutes({
+  const { bestRoute } = useQuoteRoutes({
     inputMint: inputBank?.mint.toString() || USDC_MINT,
     outputMint: outputBank?.mint.toString() || MANGO_MINT,
     amount: swapMode === 'ExactIn' ? debouncedAmountIn : debouncedAmountOut,
@@ -174,27 +179,19 @@ const MarketSwapForm = ({ setShowTokenSelect }: MarketSwapFormProps) => {
     if (typeof bestRoute !== 'undefined') {
       setSelectedRoute(bestRoute)
 
-      if (inputBank && swapMode === 'ExactOut' && bestRoute) {
-        const inAmount = new Decimal(bestRoute!.inAmount)
+      if (inputBank && swapMode === 'ExactOut' && bestRoute?.inAmount) {
+        const inAmount = new Decimal(bestRoute.inAmount)
           .div(10 ** inputBank.mintDecimals)
           .toString()
         setAmountInFormValue(inAmount)
-      } else if (outputBank && swapMode === 'ExactIn' && bestRoute) {
-        const outAmount = new Decimal(bestRoute!.outAmount)
+      } else if (outputBank && swapMode === 'ExactIn' && bestRoute?.outAmount) {
+        const outAmount = new Decimal(bestRoute.outAmount)
           .div(10 ** outputBank.mintDecimals)
           .toString()
         setAmountOutFormValue(outAmount)
       }
     }
   }, [bestRoute, swapMode, inputBank, outputBank])
-
-  /* 
-    If the use margin setting is toggled, clear the form values
-  */
-  useEffect(() => {
-    setAmountInFormValue('')
-    setAmountOutFormValue('')
-  }, [useMargin, setAmountInFormValue, setAmountOutFormValue])
 
   const handleSwitchTokens = useCallback(() => {
     if (amountInAsDecimal?.gt(0) && amountOutAsDecimal.gte(0)) {
@@ -222,13 +219,14 @@ const MarketSwapForm = ({ setShowTokenSelect }: MarketSwapFormProps) => {
   return (
     <>
       <SwapReviewRouteInfo
-        onClose={() => setShowConfirm(false)}
         amountIn={amountInAsDecimal}
-        show={showConfirm}
-        slippage={slippage}
-        routes={routes}
+        onClose={() => setShowConfirm(false)}
+        onSuccess={onSuccess}
+        routes={bestRoute ? [bestRoute] : undefined}
         selectedRoute={selectedRoute}
         setSelectedRoute={setSelectedRoute}
+        show={showConfirm}
+        slippage={slippage}
       />
       <SellTokenInput
         handleAmountInChange={handleAmountInChange}
@@ -313,7 +311,7 @@ const SwapFormSubmitButton = ({
   amountOut: number | undefined
   inputSymbol: string | undefined
   loadingSwapDetails: boolean
-  selectedRoute: RouteInfo | undefined | null
+  selectedRoute: JupiterV6RouteInfo | undefined | null
   setShowConfirm: (x: boolean) => void
   useMargin: boolean
 }) => {
@@ -338,7 +336,11 @@ const SwapFormSubmitButton = ({
     return borrowAmount > remainingBorrowsInPeriod
   }, [amountIn, inputBank, mangoAccountAddress, remainingBorrowsInPeriod])
 
-  const disabled = !amountIn.toNumber() || !amountOut || !selectedRoute
+  const disabled =
+    !amountIn.toNumber() ||
+    !amountOut ||
+    !selectedRoute ||
+    !!selectedRoute.error
 
   return (
     <>
@@ -389,7 +391,8 @@ const SwapFormSubmitButton = ({
           />
         </div>
       ) : null}
-      {selectedRoute === null && amountIn.gt(0) ? (
+      {(selectedRoute === null && amountIn.gt(0)) ||
+      (selectedRoute && !!selectedRoute.error) ? (
         <div className="mb-4">
           <InlineNotification type="error" desc={t('swap:no-swap-found')} />
         </div>

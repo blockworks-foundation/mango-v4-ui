@@ -1,5 +1,5 @@
 import { useTranslation } from 'next-i18next'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import mangoStore from '@store/mangoStore'
 import { PerpStatsItem } from 'types'
 import DetailedAreaOrBarChart from '@components/shared/DetailedAreaOrBarChart'
@@ -33,6 +33,13 @@ const MangoPerpStatsCharts = () => {
   const [feesDaysToShow, setFeesDaysToShow] = useState('30')
   const [oiDaysToShow, setOiDaysToShow] = useState('30')
   const [volumeDaysToShow, setVolumeDaysToShow] = useState('30')
+
+  useEffect(() => {
+    if (!perpStats || !perpStats.length) {
+      const actions = mangoStore.getState().actions
+      actions.fetchPerpStats()
+    }
+  }, [perpStats])
 
   const [feeValues, openInterestValues, volumeValues] = useMemo(() => {
     if (!perpStats || !perpStats.length) return [[], [], []]

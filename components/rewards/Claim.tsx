@@ -31,6 +31,7 @@ import {
 import Loading from '@components/shared/Loading'
 import dayjs from 'dayjs'
 import HolographicCard from './HolographicCard'
+import { onClick, unmute } from 'lib/render'
 
 const CLAIM_BUTTON_CLASSES =
   'raised-button group mx-auto block h-12 px-6 pt-1 font-rewards text-xl after:rounded-lg focus:outline-none lg:h-14'
@@ -81,6 +82,7 @@ const ClaimPage = () => {
   const { data: seasonData } = useCurrentSeason()
   const currentSeason = seasonData?.season_id
   const previousSeason = currentSeason ? currentSeason - 1 : null
+
   //needed for tx sign
   const wallet = useWallet()
 
@@ -121,6 +123,8 @@ const ClaimPage = () => {
   const startShowRewards = () => {
     setShowRender(true)
     setRewardsWasShow(true)
+    onClick()
+    unmute()
   }
   const handleTokenMetadata = useCallback(async () => {
     if (claims?.length && connection && jupiterTokens.length) {
@@ -204,7 +208,7 @@ const ClaimPage = () => {
 
         claimIxes.push(...ixs)
       }
-      chunk(claimIxes, 4).map((x) =>
+      chunk(claimIxes, 2).map((x) =>
         transactionInstructions.push({
           instructionsSet: x,
           sequenceType: SequenceType.Parallel,
@@ -253,7 +257,7 @@ const ClaimPage = () => {
     }
   }, [distribution, wallet, claims, rewardsClient, connection])
 
-  return claims === undefined ? (
+  return claims === undefined && !loadingClaims ? (
     <div className="flex min-h-[calc(100vh-94px)] items-center justify-center p-8">
       <span className="text-center text-th-fgd-3">
         Something went wrong. Try refreshing the page
@@ -263,79 +267,85 @@ const ClaimPage = () => {
     <div className="flex min-h-[calc(100vh-94px)] items-center justify-center">
       <Loading />
     </div>
-  ) : showRender ? (
-    <div className="fixed bottom-0 left-0 right-0 top-0 z-[1000]">
-      <RewardsComponent
-        tokensInfo={tokenRewardsInfo}
-        nftsRewardsInfo={nftsRewardsInfo}
-        claims={claims}
-        setShowRender={setShowRender}
-      />
-    </div>
   ) : (
-    <div className="min-h-[calc(100vh-94px)] bg-[url('/images/rewards/claim-bg.png')] bg-cover bg-center">
-      <div className="flex items-center justify-center pt-8">
-        <div className="flex items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-red-400 px-4 py-1">
-          <p className="font-rewards text-lg text-black">
-            Season {previousSeason} claim ends <span>{claimEndsIn}</span>
-          </p>
-        </div>
-      </div>
-      <div className="flex h-[calc(100vh-164px)] flex-col justify-center">
-        <div className="mx-auto flex max-w-[1140px] flex-col items-center justify-center px-8 lg:px-10">
-          <div className="-mt-16">
-            <HolographicCard />
-          </div>
-          <div className="-mt-8 mb-6 text-center">
-            <h2 className="mb-1 font-rewards text-4xl tracking-wide text-white drop-shadow-[0_0_24px_rgba(0,0,0,1)] sm:text-6xl">
-              {winnerTitle}!
-            </h2>
-            <p className="text-lg font-bold text-white drop-shadow-[0_0_8px_rgba(0,0,0,1)]">
-              You&apos;re a winner in Season {previousSeason}
+    <>
+      <div className="min-h-[calc(100vh-94px)] bg-[url('/images/rewards/claim-bg.png')] bg-cover bg-center">
+        <div className="flex items-center justify-center pt-8">
+          <div className="flex items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-red-400 px-4 py-1">
+            <p className="font-rewards text-lg text-black">
+              Season {previousSeason} claim ends <span>{claimEndsIn}</span>
             </p>
           </div>
-          {isClaiming ? (
-            <div className="pt-1">
-              <div className="flex h-4 w-full flex-grow rounded-full bg-th-bkg-4">
-                <div
-                  style={{
-                    width: `${claimProgress}%`,
-                  }}
-                  className={`flex rounded-full bg-gradient-to-r from-green-600 to-green-400`}
-                ></div>
-              </div>
-              <p className="mx-auto mt-3 text-center text-base text-white drop-shadow-[0_0_8px_rgba(0,0,0,1)]">
-                {`Loading prizes: ${claimProgress.toFixed(0)}%`}
+        </div>
+        <div className="flex h-[calc(100vh-164px)] flex-col justify-center">
+          <div className="mx-auto flex max-w-[1140px] flex-col items-center justify-center px-8 lg:px-10">
+            <div className="-mt-16">
+              <HolographicCard />
+            </div>
+            <div className="-mt-8 mb-6 text-center">
+              <h2 className="mb-1 font-rewards text-4xl tracking-wide text-white drop-shadow-[0_0_24px_rgba(0,0,0,1)] sm:text-6xl">
+                {winnerTitle}!
+              </h2>
+              <p className="text-lg font-bold text-white drop-shadow-[0_0_8px_rgba(0,0,0,1)]">
+                You&apos;re a winner in Season {previousSeason}
               </p>
             </div>
-          ) : rewardsWasShown ? (
-            <button
-              className={CLAIM_BUTTON_CLASSES}
-              onClick={() => handleClaimRewards()}
-            >
-              <span className="block text-th-fgd-1 group-hover:mt-1 group-active:mt-2">{`Claim ${
-                claims.length
-              } Prize${claims.length > 1 ? 's' : ''}`}</span>
-            </button>
-          ) : (
-            <button
-              disabled={loadingMetadata}
-              className={CLAIM_BUTTON_CLASSES}
-              onClick={() => startShowRewards()}
-            >
-              <span className="block text-th-fgd-1 group-hover:mt-1 group-active:mt-2">
-                {' '}
-                {loadingMetadata ? (
-                  <Loading className="w-3"></Loading>
-                ) : (
-                  'Reveal Prizes'
-                )}
-              </span>
-            </button>
-          )}
+            {isClaiming ? (
+              <div className="pt-1">
+                <div className="flex h-4 w-full flex-grow rounded-full bg-th-bkg-4">
+                  <div
+                    style={{
+                      width: `${claimProgress}%`,
+                    }}
+                    className={`flex rounded-full bg-gradient-to-r from-green-600 to-green-400`}
+                  ></div>
+                </div>
+                <p className="mx-auto mt-3 text-center text-base text-white drop-shadow-[0_0_8px_rgba(0,0,0,1)]">
+                  {`Loading prizes: ${claimProgress.toFixed(0)}%`}
+                </p>
+              </div>
+            ) : rewardsWasShown ? (
+              <button
+                className={CLAIM_BUTTON_CLASSES}
+                onClick={() => handleClaimRewards()}
+              >
+                <span className="block text-th-fgd-1 group-hover:mt-1 group-active:mt-2">{`Claim ${
+                  claims!.length
+                } Prize${claims!.length > 1 ? 's' : ''}`}</span>
+              </button>
+            ) : (
+              <button
+                disabled={loadingMetadata}
+                className={CLAIM_BUTTON_CLASSES}
+                onClick={() => startShowRewards()}
+              >
+                <span className="block text-th-fgd-1 group-hover:mt-1 group-active:mt-2">
+                  {' '}
+                  {loadingMetadata ? (
+                    <Loading className="w-3"></Loading>
+                  ) : (
+                    'Reveal Prizes'
+                  )}
+                </span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+      <div
+        className={`fixed bottom-0 left-0 right-0 top-0 z-[1000] ${
+          showRender ? 'h-full w-full' : 'h-0 w-0 overflow-hidden'
+        }`}
+      >
+        <RewardsComponent
+          tokensInfo={tokenRewardsInfo}
+          nftsRewardsInfo={nftsRewardsInfo}
+          claims={claims!}
+          start={showRender}
+          setShowRender={setShowRender}
+        />
+      </div>
+    </>
   )
 }
 export default ClaimPage

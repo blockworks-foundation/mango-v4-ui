@@ -42,10 +42,10 @@
     keccak256 "^1.0.6"
     merkletreejs "^0.3.10"
 
-"@blockworks-foundation/mango-v4-settings@0.2.15":
-  version "0.2.15"
-  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4-settings/-/mango-v4-settings-0.2.15.tgz#05ba6f6c73cf783ae67fb590e4c5971a106353ee"
-  integrity sha512-zjkCddUsDfEP3EzwgcOc0/Yw6OV8EXh2lfh0KGtcIPtExkV/zVtvwoR29rirabMEVw//HXeupkTY6Bo4KpyfWQ==
+"@blockworks-foundation/mango-v4-settings@0.2.16":
+  version "0.2.16"
+  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4-settings/-/mango-v4-settings-0.2.16.tgz#63f03c13d1677461ea42d3b1e9171042830c6cdc"
+  integrity sha512-9GCRZkVqTQsEUkqx/488pmSWM8I74Ght5AEzMPsuS5XlRGWIDjytWoBE0Y9wFVPrnRw2THTj0ZQft+vDwCYDCA==
   dependencies:
     bn.js "^5.2.1"
     eslint-config-prettier "^9.0.0"
@@ -7508,6 +7508,13 @@ react-resize-detector@^8.0.4:
   integrity sha512-S7szxlaIuiy5UqLhLL1KY3aoyGHbZzsTpYal9eYMwCyKqoqoVLCmIgAgNyIM1FhnP2KyBygASJxdhejrzjMb+w==
   dependencies:
     lodash "^4.17.21"
+
+react-responsive-pagination@2.2.3:
+  version "2.2.3"
+  resolved "https://registry.yarnpkg.com/react-responsive-pagination/-/react-responsive-pagination-2.2.3.tgz#1945010c67ccdaefa41118f911fb4dd8237314a8"
+  integrity sha512-Rn9ts0AZzM0X+pcmVcSMNJAPD/ChO+1Yowssl56TidZcPHXdeg40FKdO7cw6MR1umaLFT/er/2GQTG6EUpw1VQ==
+  dependencies:
+    prop-types "^15.8.1"
 
 react-simple-animate@3.0.2:
   version "3.0.2"

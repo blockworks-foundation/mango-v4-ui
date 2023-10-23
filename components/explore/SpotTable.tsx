@@ -31,6 +31,7 @@ import { BankWithMarketData } from './Spot'
 import { SerumMarketWithMarketData } from 'hooks/useListedMarketsWithMarketData'
 import Tooltip from '@components/shared/Tooltip'
 import dayjs from 'dayjs'
+import TableTokenName from '@components/shared/TableTokenName'
 
 type TableData = {
   assetWeight: string
@@ -191,7 +192,9 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
               </Th>
               <Th>
                 <div className="flex justify-end">
-                  <Tooltip content={t('tooltip-collateral-weight')}>
+                  <Tooltip
+                    content={t('tooltip-collateral-weight', { token: '' })}
+                  >
                     <SortableColumnHeader
                       sortKey="assetWeight"
                       sort={() => requestSort('assetWeight')}
@@ -244,10 +247,7 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
                   onClick={() => goToTokenPage(tokenName.split(' ')[0], router)}
                 >
                   <Td>
-                    <div className="flex items-center">
-                      <TokenLogo bank={baseBank} />
-                      <p className="ml-3 font-body">{tokenName}</p>
-                    </div>
+                    <TableTokenName bank={baseBank} symbol={tokenName} />
                   </Td>
                   <Td>
                     <div className="flex flex-col text-right">

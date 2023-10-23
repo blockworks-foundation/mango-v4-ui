@@ -39,12 +39,13 @@ dayjs.extend(relativeTime)
 interface DetailedAreaOrBarChartProps {
   chartType?: 'area' | 'bar'
   customTooltip?: ContentType<number, string>
-  data: any[]
+  data: any[] | undefined
   daysToShow?: string
   domain?: AxisDomain
   heightClass?: string
   hideChange?: boolean
   hideChart?: () => void
+  hideAxis?: boolean
   loaderHeightClass?: string
   loading?: boolean
   prefix?: string
@@ -80,6 +81,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
   heightClass,
   hideChange,
   hideChart,
+  hideAxis,
   loaderHeightClass,
   loading,
   prefix = '',
@@ -114,12 +116,12 @@ const DetailedAreaOrBarChart: FunctionComponent<
   }
 
   const flipGradientCoords = useMemo(() => {
-    if (!data.length) return
+    if (!data || !data.length) return
     return data[0][yKey] <= 0 && data[data.length - 1][yKey] < 0
   }, [data])
 
   const filteredData = useMemo(() => {
-    if (!data.length) return []
+    if (!data || !data.length) return []
     const start = Number(daysToShow) * DAILY_MILLISECONDS
     const filtered = data.filter((d: any) => {
       const dataTime = new Date(d[xKey]).getTime()
@@ -285,7 +287,9 @@ const DetailedAreaOrBarChart: FunctionComponent<
                               : ''}
                             {prefix}
                             <FormatNumericValue
-                              value={Math.abs(data[data.length - 1][yKey])}
+                              value={
+                                data ? Math.abs(data[data.length - 1][yKey]) : 0
+                              }
                               decimals={yDecimals}
                             />
                             {suffix}
@@ -386,6 +390,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
                       <XAxis
                         axisLine={false}
                         dataKey={xKey}
+                        hide={hideAxis}
                         minTickGap={20}
                         padding={{ left: 20, right: 20 }}
                         tick={{
@@ -400,6 +405,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
                       <YAxis
                         axisLine={false}
                         dataKey={yKey}
+                        hide={hideAxis}
                         minTickGap={20}
                         type="number"
                         domain={

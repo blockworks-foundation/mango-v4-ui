@@ -16,6 +16,7 @@ import TokenLogo from '@components/shared/TokenLogo'
 import Input from '@components/forms/Input'
 import { getInputTokenBalance } from './TriggerSwapForm'
 import { walletBalanceForToken } from '@components/DepositForm'
+import TokenReduceOnlyDesc from '@components/shared/TokenReduceOnlyDesc'
 
 export type SwapFormTokenListType =
   | 'input'
@@ -82,12 +83,12 @@ const TokenItem = ({
     return group.getFirstBankByMint(new PublicKey(address))
   }, [address, type])
 
-  const isReduceOnly = useMemo(() => {
-    if (!bank) return false
-    const borrowsReduceOnly = bank.areBorrowsReduceOnly()
-    const depositsReduceOnly = bank.areDepositsReduceOnly()
-    return borrowsReduceOnly && depositsReduceOnly
-  }, [bank])
+  // const isReduceOnly = useMemo(() => {
+  //   if (!bank) return false
+  //   const borrowsReduceOnly = bank.areBorrowsReduceOnly()
+  //   const depositsReduceOnly = bank.areDepositsReduceOnly()
+  //   return borrowsReduceOnly && depositsReduceOnly
+  // }, [bank])
 
   return (
     <div>
@@ -110,11 +111,9 @@ const TokenItem = ({
                   {t(`trade:${token.amount.gt(0) ? 'long' : 'short'}`)}
                 </span>
               ) : null}
-              {isReduceOnly ? (
-                <span className="ml-1 text-xxs text-th-warning">
-                  {t('reduce-only')}
-                </span>
-              ) : null}
+              <span className="ml-1">
+                <TokenReduceOnlyDesc bank={bank} />
+              </span>
             </p>
 
             <p className="text-left text-xs text-th-fgd-4">
@@ -161,7 +160,7 @@ const SwapFormTokenList = ({
   useMargin,
 }: {
   onClose: () => void
-  onTokenSelect: (x: string) => void
+  onTokenSelect: (mintAddress: string, close: () => void) => void
   type: SwapFormTokenListType
   useMargin: boolean
 }) => {
@@ -174,6 +173,10 @@ const SwapFormTokenList = ({
   const { group } = useMangoGroup()
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const focusRef = useRef<HTMLInputElement>(null)
+
+  const handleTokenSelect = (mintAddress: string) => {
+    onTokenSelect(mintAddress, onClose)
+  }
 
   useEffect(() => {
     function onEscape(e: KeyboardEvent) {
@@ -356,7 +359,7 @@ const SwapFormTokenList = ({
           onChange={handleUpdateSearch}
           ref={focusRef}
         />
-        <MagnifyingGlassIcon className="absolute left-3 top-3.5 h-5 w-5" />
+        <MagnifyingGlassIcon className="absolute left-3 top-3.5 h-5 w-5 text-th-fgd-3" />
       </div>
       <div className="flex justify-between rounded bg-th-bkg-2 p-2">
         <p className="text-xs text-th-fgd-4">{t('token')}</p>
@@ -370,7 +373,7 @@ const SwapFormTokenList = ({
             <TokenItem
               key={token.address}
               token={token}
-              onSubmit={onTokenSelect}
+              onSubmit={handleTokenSelect}
               useMargin={useMargin}
               type={type}
             />

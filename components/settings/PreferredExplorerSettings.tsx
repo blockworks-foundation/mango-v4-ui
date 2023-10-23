@@ -18,8 +18,8 @@ const PreferredExplorerSettings = () => {
     EXPLORERS[0],
   )
   return (
-    <>
-      <h3 className="mb-4 text-sm font-normal text-th-fgd-1">
+    <div className="pt-6">
+      <h3 className="mb-4 text-sm text-th-fgd-1">
         {t('settings:preferred-explorer')}
       </h3>
       <div className="space-y-2">
@@ -44,7 +44,7 @@ const PreferredExplorerSettings = () => {
           </button>
         ))}
       </div>
-    </>
+    </div>
   )
 }
 

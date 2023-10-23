@@ -7,7 +7,7 @@ export const formatNumericValue = (
 ): string => {
   const numberValue = Number(value)
   let formattedValue
-  if (decimals) {
+  if (decimals !== undefined) {
     formattedValue = roundUp
       ? roundValue(numberValue, decimals, true)
       : roundValue(numberValue, decimals)
@@ -37,7 +37,7 @@ export const formatCurrencyValue = (
   let formattedValue
   if (numberValue > -0.0000000001 && numberValue < 0.000000001) {
     formattedValue = '$0.00'
-  } else if (decimals) {
+  } else if (decimals !== undefined) {
     formattedValue = Intl.NumberFormat('en', {
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,

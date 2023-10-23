@@ -89,7 +89,7 @@ const BorrowPage = () => {
   }, [borrowValue, mangoAccount, group])
 
   return (
-    <>
+    <div className="md:pb-[27px]">
       <div className="flex flex-col border-b border-th-bkg-3 px-4 py-4 md:px-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-col md:flex-row">
           <div className="pb-4 md:pb-0 md:pr-6">
@@ -202,7 +202,7 @@ const BorrowPage = () => {
           onClose={() => setShowCreateAccountModal(false)}
         />
       ) : null}
-    </>
+    </div>
   )
 }
 

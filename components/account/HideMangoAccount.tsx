@@ -37,7 +37,7 @@ const HideMangoAccount = () => {
 
   return (
     <>
-      <div className="flex items-center justify-between border-y border-th-bkg-3 p-4">
+      <div className="flex items-center justify-between border-y border-th-bkg-3 py-4 md:px-4">
         <Tooltip content={t('settings:tooltip-private-account')}>
           <p className="tooltip-underline">{t('settings:private-account')}</p>
         </Tooltip>

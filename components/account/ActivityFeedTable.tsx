@@ -36,6 +36,7 @@ import {
   isSpotTradeActivityFeedItem,
 } from 'types'
 import SpotTradeActivityDetails from './SpotTradeActivityDetails'
+import { formatTokenSymbol } from 'utils/tokens'
 
 export const formatFee = (value: number) => {
   return value.toLocaleString(undefined, {
@@ -447,12 +448,14 @@ const ActivityFeedTable = () => {
       ) : null}
     </>
   ) : mangoAccountAddress || connected ? (
-    <div className="flex flex-col items-center p-8">
-      <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
-      <p>{t('activity:no-activity')}</p>
+    <div className="flex flex-1 flex-col items-center justify-center">
+      <div className="flex flex-col items-center p-8">
+        <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
+        <p>{t('activity:no-activity')}</p>
+      </div>
     </div>
   ) : (
-    <div className="p-8">
+    <div className="flex flex-1 flex-col items-center justify-center p-8">
       <ConnectEmptyState text={t('activity:connect-activity')} />
     </div>
   )
@@ -491,11 +494,15 @@ const SharedTableBody = ({
       <Td className="text-right">{t(`activity:${activity_type}`)}</Td>
       <Td className="text-right font-mono">
         {amounts.credit.value}{' '}
-        <span className="font-body text-th-fgd-3">{amounts.credit.symbol}</span>
+        <span className="font-body text-th-fgd-3">
+          {formatTokenSymbol(amounts.credit.symbol)}
+        </span>
       </Td>
       <Td className="text-right font-mono">
         {amounts.debit.value}{' '}
-        <span className="font-body text-th-fgd-3">{amounts.debit.symbol}</span>
+        <span className="font-body text-th-fgd-3">
+          {formatTokenSymbol(amounts.debit.symbol)}
+        </span>
       </Td>
       <Td className="text-right font-mono">
         {fee.value}{' '}

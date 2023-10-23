@@ -12,7 +12,7 @@ const Change = ({
   change: number | typeof NaN
   decimals?: number
   prefix?: string
-  size?: 'small'
+  size?: 'small' | 'large'
   suffix?: string
 }) => {
   return !isNaN(change) ? (
@@ -34,7 +34,11 @@ const Change = ({
       )}
       <p
         className={`font-mono font-normal ${
-          size === 'small' ? 'text-xs' : 'text-sm'
+          size === 'small'
+            ? 'text-xs'
+            : size === 'large'
+            ? 'text-base'
+            : 'text-sm'
         } ${
           change > 0
             ? 'text-th-up'

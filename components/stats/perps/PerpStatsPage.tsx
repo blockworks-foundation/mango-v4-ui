@@ -4,6 +4,7 @@ import { useEffect, useMemo } from 'react'
 import MarketLogos from '@components/trade/MarketLogos'
 import mangoStore from '@store/mangoStore'
 import PerpMarketDetails from './PerpMarketDetails'
+import { ArrowLeftIcon } from '@heroicons/react/20/solid'
 
 const PerpStatsPage = () => {
   const router = useRouter()
@@ -33,12 +34,20 @@ const PerpStatsPage = () => {
 
   return marketDetails ? (
     <>
-      <div className="flex flex-col border-b border-th-bkg-3 px-6 py-5 md:flex-row md:items-center md:justify-between">
-        <div>
-          <div className="flex items-center">
-            <MarketLogos market={marketDetails} size="large" />
-            <h1 className="text-xl">{marketDetails.name}</h1>
-          </div>
+      <div className="flex h-14 items-center space-x-4 border-b border-th-bkg-3">
+        <button
+          className="flex h-14 w-14 flex-shrink-0 items-center justify-center border-r border-th-bkg-3 focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2"
+          onClick={() =>
+            router.push(router.pathname, undefined, { shallow: true })
+          }
+        >
+          <ArrowLeftIcon className="h-5 w-5" />
+        </button>
+        <div className="flex items-center">
+          <MarketLogos market={marketDetails} size="large" />
+          <span className="text-lg font-bold text-th-fgd-1">
+            {marketDetails.name}
+          </span>
         </div>
       </div>
       <PerpMarketDetails marketStats={marketStats} perpMarket={marketDetails} />
