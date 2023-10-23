@@ -5,14 +5,14 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import {
   useCurrentSeason,
   useDistribution,
-  useIsAllClaimed,
+  useRewardsParams,
 } from 'hooks/useRewards'
 import Link from 'next/link'
 import { useMemo } from 'react'
 import { MANGO_MINTS_BANNER_KEY } from 'utils/constants'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { useWallet } from '@solana/wallet-adapter-react'
+
 dayjs.extend(relativeTime)
 
 const BANNER_WRAPPER_CLASSES =
@@ -28,13 +28,12 @@ const PromoBanner = () => {
     MANGO_MINTS_BANNER_KEY,
     {},
   )
-  const { publicKey } = useWallet()
   const { data: isWhiteListed } = useIsWhiteListed()
   const { data: seasonData } = useCurrentSeason()
   const currentSeason = seasonData ? seasonData.season_id : undefined
   const prevSeason = currentSeason ? currentSeason - 1 : undefined
   const { data: distributionDataAndClient } = useDistribution(prevSeason)
-  const { showClaim } = useIsAllClaimed(prevSeason, publicKey)
+  const { showClaim } = useRewardsParams()
 
   const hasClosedBanner = useMemo(() => {
     if (!seasonData?.season_id) return false

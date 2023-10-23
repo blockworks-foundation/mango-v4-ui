@@ -1,3 +1,4 @@
+import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
 import { useQuery } from '@tanstack/react-query'
@@ -77,14 +78,19 @@ export const useTopAccountsLeaderBoard = (season_id: number | undefined) => {
   )
 }
 
-export const useIsAllClaimed = (
-  prevSeason: number | undefined,
-  walletPk: PublicKey | null,
-) => {
+export const useRewardsParams = () => {
+  const { publicKey: walletPk } = useWallet()
+  const { data: seasonData } = useCurrentSeason()
+  const currentSeason = seasonData ? seasonData.season_id : undefined
+  const prevSeason = currentSeason ? currentSeason - 1 : undefined
   const [isAllClaimed, setIsAllCliamed] = useState(true)
   const [showClaim, setShowClaim] = useState(false)
   const { data: distributionDataAndClient } = useDistribution(prevSeason)
   const distributionData = distributionDataAndClient?.distribution
+  const start = distributionData?.start.getTime()
+  const end = distributionData
+    ? start! + distributionData.duration * 1000
+    : null
 
   useEffect(() => {
     const handleGetIsAllClaimed = async () => {
@@ -104,11 +110,10 @@ export const useIsAllClaimed = (
 
   useEffect(() => {
     if (distributionData && walletPk) {
-      const start = distributionData.start.getTime()
       const currentTimestamp = new Date().getTime()
       const isClaimActive =
-        start < currentTimestamp &&
-        start + distributionData.duration * 1000 > currentTimestamp &&
+        start! < currentTimestamp &&
+        start! + distributionData.duration * 1000 > currentTimestamp &&
         !isAllClaimed
 
       setShowClaim(isClaimActive)
@@ -116,6 +121,6 @@ export const useIsAllClaimed = (
       setShowClaim(false)
     }
   }, [distributionData, walletPk, isAllClaimed])
-
-  return { isAllClaimed, showClaim }
+  console.log(start)
+  return { isAllClaimed, showClaim, start, end }
 }

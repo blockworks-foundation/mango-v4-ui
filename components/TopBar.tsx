@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   ArrowRightIcon,
   CheckCircleIcon,
@@ -30,7 +30,11 @@ import { IS_ONBOARDED_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import SettingsModal from './modals/SettingsModal'
 import DepositWithdrawIcon from './icons/DepositWithdrawIcon'
-import { useAccountPointsAndRank, useCurrentSeason } from 'hooks/useRewards'
+import {
+  useAccountPointsAndRank,
+  useCurrentSeason,
+  useRewardsParams,
+} from 'hooks/useRewards'
 import SheenLoader from './shared/SheenLoader'
 import Link from 'next/link'
 import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
@@ -38,6 +42,7 @@ import FormatNumericValue from './shared/FormatNumericValue'
 import { useRouter } from 'next/router'
 import TopBarStore from '@store/topBarStore'
 import MedalIcon from './icons/MedalIcon'
+import dayjs from 'dayjs'
 
 export const TOPBAR_ICON_BUTTON_CLASSES =
   'relative flex h-16 w-10 sm:w-16 items-center justify-center sm:border-l sm:border-th-bkg-3 focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2'
@@ -49,6 +54,11 @@ const TopBar = () => {
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const { connected, wallet } = useWallet()
   const { data: seasonData } = useCurrentSeason()
+  const { start, end, showClaim } = useRewardsParams()
+  const claimEndsIn = useMemo(() => {
+    if (!start || !end) return
+    return dayjs().to(end)
+  }, [start, end])
   const {
     data: accountPointsAndRank,
     isInitialLoading: loadingAccountPointsAndRank,
@@ -236,6 +246,7 @@ const TopBar = () => {
                     </SheenLoader>
                   )}
                 </div>
+                {showClaim && <div>Claim available! ends: {claimEndsIn} </div>}
                 <ChevronRightIcon className="ml-2 hidden h-6 w-6 text-th-fgd-4 lg:block" />
               </div>
             </Link>
