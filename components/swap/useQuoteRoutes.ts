@@ -30,6 +30,7 @@ const fetchJupiterRoute = async (
   swapMode = 'ExactIn',
   feeBps = 0,
   onlyDirectRoutes = true,
+  maxAccounts = 50
 ) => {
   {
     const paramsString = new URLSearchParams({
@@ -38,6 +39,7 @@ const fetchJupiterRoute = async (
       amount: amount.toString(),
       slippageBps: Math.ceil(slippage * 100).toString(),
       pfeeBps: feeBps.toString(),
+      maxAccounts: maxAccounts.toString(),
       swapMode,
       onlyDirectRoutes: `${onlyDirectRoutes}`,
     }).toString()
