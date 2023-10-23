@@ -102,6 +102,7 @@ export const useIsAllClaimed = (
   walletPk: PublicKey | null,
 ) => {
   const [isAllClaimed, setIsAllCliamed] = useState(true)
+  const [showClaim, setShowClaim] = useState(false)
   const { data: distributionDataAndClient } = useDistribution(prevSeason)
   const distributionData = distributionDataAndClient?.distribution
 
@@ -121,5 +122,20 @@ export const useIsAllClaimed = (
     handleGetIsAllClaimed()
   }, [distributionData, walletPk])
 
-  return isAllClaimed
+  useEffect(() => {
+    if (distributionData && walletPk) {
+      const start = distributionData.start.getTime()
+      const currentTimestamp = new Date().getTime()
+      const isClaimActive =
+        start < currentTimestamp &&
+        start + distributionData.duration * 1000 > currentTimestamp &&
+        !isAllClaimed
+
+      setShowClaim(isClaimActive)
+    } else {
+      setShowClaim(false)
+    }
+  }, [distributionData, walletPk, isAllClaimed])
+
+  return { isAllClaimed, showClaim }
 }
