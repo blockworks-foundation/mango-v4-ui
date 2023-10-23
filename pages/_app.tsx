@@ -41,8 +41,13 @@ import Head from 'next/head'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { getDecimalCount } from 'utils/numbers'
-import { AUTO_CONNECT_WALLET, THEME_KEY } from 'utils/constants'
+import {
+  AUTO_CONNECT_WALLET,
+  SEND_TELEMETRY_KEY,
+  THEME_KEY,
+} from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
+import PlausibleProvider from 'next-plausible'
 
 // init react-query
 export const queryClient = new QueryClient()
@@ -99,8 +104,16 @@ function MyApp({ Component, pageProps }: AppProps) {
       ? false
       : true
 
+  const [sendTelemetry] = useLocalStorageState(SEND_TELEMETRY_KEY, true)
+
   return (
-    <>
+    <PlausibleProvider
+      domain="app.mango.markets"
+      customDomain="https://pl.mngo.cloud"
+      trackLocalhost={true}
+      selfHosted={true}
+      enabled={sendTelemetry}
+    >
       <Head>
         <title>Mango Markets</title>
         <link rel="icon" href="/favicon.ico" />
@@ -142,7 +155,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           </WalletProvider>
         </ConnectionProvider>
       </QueryClientProvider>
-    </>
+    </PlausibleProvider>
   )
 }
 

@@ -13,6 +13,7 @@ import { useViewport } from 'hooks/useViewport'
 import { IconButton } from '@components/shared/Button'
 import AnimationSettings from '@components/settings/AnimationSettings'
 import SoundSettings from '@components/settings/SoundSettings'
+import TelemetrySettings from '@components/settings/TelemetrySettings'
 import AutoConnectSettings from '@components/settings/AutoConnectSettings'
 
 enum SettingsCategories {
@@ -153,6 +154,7 @@ const TabContent = ({
           <PreferredExplorerSettings />
           <AnimationSettings />
           <SoundSettings />
+          <TelemetrySettings />
         </>
       )
     default:
