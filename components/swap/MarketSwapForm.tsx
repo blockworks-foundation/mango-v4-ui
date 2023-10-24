@@ -80,6 +80,7 @@ const MarketSwapForm = ({
   const [debouncedAmountIn] = useDebounce(amountInFormValue, 300)
   const [debouncedAmountOut] = useDebounce(amountOutFormValue, 300)
   const { connected, publicKey } = useWallet()
+  const { mangoAccount } = useMangoAccount()
   const { bestRoute } = useQuoteRoutes({
     inputMint: inputBank?.mint.toString() || USDC_MINT,
     outputMint: outputBank?.mint.toString() || MANGO_MINT,
@@ -87,6 +88,7 @@ const MarketSwapForm = ({
     slippage,
     swapMode,
     wallet: publicKey?.toBase58(),
+    mangoAccount,
   })
   const { ipAllowed, ipCountry } = useIpAddress()
 
