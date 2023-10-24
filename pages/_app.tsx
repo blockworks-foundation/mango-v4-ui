@@ -60,7 +60,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter()
   const wallets = useMemo(() => {
     return [
-      new MoongateWalletAdapter('bottom-left'),
+      new MoongateWalletAdapter({ position: 'bottom-left' }),
       new PhantomWalletAdapter(),
       new SolflareWalletAdapter(),
       new BackpackWalletAdapter(),
