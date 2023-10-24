@@ -231,14 +231,16 @@ const DetailedAreaOrBarChart: FunctionComponent<
                           </span>
                         )}
                         {!hideChange ? (
-                          <span className={`ml-3 ${small ? 'mb-[3px]' : ''}`}>
+                          <div
+                            className={`ml-3 ${small ? 'mb-[3px]' : 'mb-0.5'}`}
+                          >
                             <Change
                               change={calculateChartChange()}
                               decimals={yDecimals}
                               prefix={prefix}
                               suffix={suffix}
                             />
-                          </span>
+                          </div>
                         ) : null}
                       </div>
                       <p
@@ -296,14 +298,16 @@ const DetailedAreaOrBarChart: FunctionComponent<
                           </span>
                         )}
                         {!hideChange ? (
-                          <span className={`ml-3 ${small ? 'mb-[3px]' : ''}`}>
+                          <div
+                            className={`ml-3 ${small ? 'mb-[3px]' : 'mb-0.5'}`}
+                          >
                             <Change
                               change={calculateChartChange()}
                               decimals={yDecimals}
                               prefix={prefix}
                               suffix={suffix}
                             />
-                          </span>
+                          </div>
                         ) : null}
                       </div>
                       <p
