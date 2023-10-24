@@ -4,6 +4,8 @@
     "deposit-funds": "Deposit Funds",
     "disabled": "Disabled",
     "enabled": "Enabled",
+    "error-slippage-exceeded": "Slippage exceeded",
+    "error-slippage-exceeded-desc": "Try increasing your max slippage",
     "est-liq-price": "Est. Liq Price",
     "est-received": "Est. Received",
     "fees-paid-to": "Fees Paid to {{route}}",

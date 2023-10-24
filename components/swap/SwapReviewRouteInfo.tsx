@@ -50,6 +50,7 @@ import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { isMangoError } from 'types'
 import { useWallet } from '@solana/wallet-adapter-react'
 import TokenLogo from '@components/shared/TokenLogo'
+import { parseTxForKnownErrors } from '@blockworks-foundation/mango-v4'
 
 const set = mangoStore.getState().set
 
@@ -204,7 +205,7 @@ const SwapReviewRouteInfo = ({
   setSelectedRoute,
   show,
 }: JupiterRouteInfoProps) => {
-  const { t } = useTranslation(['common', 'trade'])
+  const { t } = useTranslation(['common', 'swap', 'trade'])
   const slippage = mangoStore((s) => s.swap.slippage)
   const wallet = useWallet()
   const [showRoutesModal, setShowRoutesModal] = useState<boolean>(false)
@@ -380,12 +381,25 @@ const SwapReviewRouteInfo = ({
         console.error('onSwap error: ', e)
         sentry.captureException(e)
         if (isMangoError(e)) {
-          notify({
-            title: 'Transaction failed',
-            description: e.message,
-            txid: e?.txid,
-            type: 'error',
-          })
+          const slippageExceeded = await parseTxForKnownErrors(
+            connection,
+            e?.txid,
+          )
+          if (slippageExceeded === 1) {
+            notify({
+              title: t('swap:error-slippage-exceeded'),
+              description: t('swap:error-slippage-exceeded-desc'),
+              txid: e?.txid,
+              type: 'error',
+            })
+          } else {
+            notify({
+              title: 'Transaction failed',
+              description: e.message,
+              txid: e?.txid,
+              type: 'error',
+            })
+          }
         }
       } finally {
         setSubmitting(false)
