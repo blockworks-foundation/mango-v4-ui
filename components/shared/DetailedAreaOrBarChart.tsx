@@ -282,12 +282,16 @@ const DetailedAreaOrBarChart: FunctionComponent<
                               ? '-'
                               : ''}
                             {prefix}
-                            <FormatNumericValue
-                              value={
-                                data ? Math.abs(data[data.length - 1][yKey]) : 0
-                              }
-                              decimals={yDecimals}
-                            />
+                            <span className="tabular-nums">
+                              <FormatNumericValue
+                                value={
+                                  data
+                                    ? Math.abs(data[data.length - 1][yKey])
+                                    : 0
+                                }
+                                decimals={yDecimals}
+                              />
+                            </span>
                             {suffix}
                           </span>
                         )}

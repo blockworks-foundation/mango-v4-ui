@@ -12,7 +12,7 @@ import { useTranslation } from 'next-i18next'
 import { useMemo, useState } from 'react'
 import { DAILY_SECONDS } from 'utils/constants'
 import DetailedAreaOrBarChart from '@components/shared/DetailedAreaOrBarChart'
-import { formatCurrencyValue } from 'utils/numbers'
+import { countLeadingZeros, formatCurrencyValue } from 'utils/numbers'
 dayjs.extend(relativeTime)
 
 const DEFAULT_COINGECKO_VALUES = {
@@ -81,10 +81,15 @@ const CoingeckoStats = ({
 
   const chartData = useMemo(() => {
     if (!birdeyePrices || !birdeyePrices.length) return []
-    return birdeyePrices.map((item) => ({
-      ...item,
-      unixTime: item.unixTime * 1000,
-    }))
+    return birdeyePrices.map((item) => {
+      const decimals = countLeadingZeros(item.value) + 3
+      const floatPrice = parseFloat(item.value.toString())
+      const roundedPrice = +floatPrice.toFixed(decimals)
+      return {
+        unixTime: item.unixTime * 1000,
+        value: roundedPrice,
+      }
+    })
   }, [birdeyePrices])
 
   const {
@@ -142,9 +147,10 @@ const CoingeckoStats = ({
           <DetailedAreaOrBarChart
             data={chartData.concat([
               {
-                address: bank.mint.toString(),
                 unixTime: Date.now(),
-                value: bank.uiPrice,
+                value: parseFloat(
+                  bank.uiPrice.toFixed(countLeadingZeros(bank.uiPrice) + 3),
+                ),
               },
             ])}
             daysToShow={daysToShow}
@@ -153,10 +159,14 @@ const CoingeckoStats = ({
             heightClass="h-64"
             loaderHeightClass="h-[350px]"
             prefix="$"
-            tickFormat={(x) => formatCurrencyValue(x)}
+            tickFormat={(x) =>
+              x < 0.00001 ? x.toExponential() : formatCurrencyValue(x)
+            }
             title={`${bank.name} Price Chart`}
             xKey="unixTime"
             yKey="value"
+            yDecimals={countLeadingZeros(bank.uiPrice) + 3}
+            domain={['dataMin', 'dataMax']}
           />
         </div>
       ) : (

@@ -8,21 +8,21 @@ type CoingeckoOhlcv = [
   close: number,
 ][]
 
-export type ChartDataItem = {
+export type SwapChartDataItem = {
   time: number
   price: number
   inputTokenPrice: number
   outputTokenPrice: number
 }
 
-export const fetchChartData = async (
+export const fetchSwapChartData = async (
   baseTokenId: string | undefined,
   inputBank: Bank | undefined,
   quoteTokenId: string | undefined,
   outputBank: Bank | undefined,
   daysToShow: string,
   flipPrices: boolean,
-): Promise<ChartDataItem[]> => {
+): Promise<SwapChartDataItem[]> => {
   if (!baseTokenId || !quoteTokenId) return []
   const baseId = flipPrices ? baseTokenId : quoteTokenId
   const quoteId = flipPrices ? quoteTokenId : baseTokenId
@@ -40,7 +40,7 @@ export const fetchChartData = async (
       await Promise.all([inputResponse.json(), outputResponse.json()])
 
     if (Array.isArray(inputTokenData) && Array.isArray(outputTokenData)) {
-      const parsedData: ChartDataItem[] = []
+      const parsedData: SwapChartDataItem[] = []
       for (const inputTokenCandle of inputTokenData) {
         const outputTokenCandle = outputTokenData.find(
           (outputTokenCandle) => outputTokenCandle[0] === inputTokenCandle[0],
@@ -58,7 +58,7 @@ export const fetchChartData = async (
         const latestPrice = flipPrices
           ? outputBank.uiPrice / inputBank.uiPrice
           : inputBank.uiPrice / outputBank.uiPrice
-        const item: ChartDataItem[] = [
+        const item: SwapChartDataItem[] = [
           {
             price: latestPrice,
             time: Date.now(),
