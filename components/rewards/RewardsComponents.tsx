@@ -30,11 +30,15 @@ export type Prize = {
   itemUrl: string
   particleId: 'particles-coins' | 'particles-fireworks'
   stencilUrl:
+    | '/models/tex_procedural/tex_card_front_gold_albedo.png'
     | '/models/tex_procedural/tex_card_front_gold_circle_albedo.png'
     | '/models/tex_procedural/tex_card_front_silver_square_albedo.png'
+    | '/models/tex_procedural/tex_card_front_slver_albedo.png'
   frontMaterialId:
+    | 'loader_mat_card_gold_front'
     | 'loader_mat_card_gold_front_circle'
     | 'loader_mat_card_silver_front_square'
+    | 'loader_mat_card_silver_front'
   backMaterialId: 'loader_mat_card_gold_back' | 'loader_mat_card_silver_back'
 }
 
@@ -74,35 +78,59 @@ export const getClaimsAsPrizes = (
         : null
     const resultion = type === 'token' ? [32, 32] : [400, 400]
 
-    const materials: {
-      [key: string]: Omit<
-        Prize,
-        'item' | 'info' | 'rarity' | 'itemResolution' | 'itemUrl'
-      >
-    } = {
-      common: {
+    const Materials: Record<
+      string,
+      Omit<Prize, 'item' | 'info' | 'rarity' | 'itemResolution' | 'itemUrl'>
+    > = {
+      goldCircle: {
+        stencilUrl:
+          '/models/tex_procedural/tex_card_front_gold_circle_albedo.png',
+        frontMaterialId: 'loader_mat_card_gold_front_circle',
+        backMaterialId: 'loader_mat_card_gold_back',
         particleId: 'particles-coins',
-        frontMaterialId: 'loader_mat_card_silver_front_square',
+      },
+      goldSquare: {
+        stencilUrl: '/models/tex_procedural/tex_card_front_gold_albedo.png',
+        frontMaterialId: 'loader_mat_card_gold_front',
+        backMaterialId: 'loader_mat_card_gold_back',
+        particleId: 'particles-fireworks',
+      },
+      silverCircle: {
+        stencilUrl: '/models/tex_procedural/tex_card_front_slver_albedo.png',
+        frontMaterialId: 'loader_mat_card_silver_front',
         backMaterialId: 'loader_mat_card_silver_back',
+        particleId: 'particles-coins',
+      },
+      silverSquare: {
         stencilUrl:
           '/models/tex_procedural/tex_card_front_silver_square_albedo.png',
-      },
-      legendary: {
+        frontMaterialId: 'loader_mat_card_silver_front_square',
+        backMaterialId: 'loader_mat_card_silver_back',
         particleId: 'particles-fireworks',
-        frontMaterialId: 'loader_mat_card_gold_front_circle',
-        backMaterialId: 'loader_mat_card_gold_back',
-        stencilUrl:
-          '/models/tex_procedural/tex_card_front_gold_circle_albedo.png',
-      },
-      rare: {
-        particleId: 'particles-fireworks',
-        frontMaterialId: 'loader_mat_card_gold_front_circle',
-        backMaterialId: 'loader_mat_card_gold_back',
-        stencilUrl:
-          '/models/tex_procedural/tex_card_front_gold_circle_albedo.png',
       },
     }
 
+    const MaterialMapping: Record<string, keyof typeof Materials> = {
+      'token-common': 'silverCircle',
+      'token-rare': 'goldCircle',
+      'token-legendary': 'goldCircle',
+      'nft-common': 'silverSquare',
+      'nft-rare': 'goldSquare',
+      'nft-legendary': 'goldSquare',
+    }
+
+    const getMaterials = (
+      type: 'token' | 'nft',
+      rarity: 'common' | 'rare' | 'legendary',
+    ) => {
+      const materialKey = `${type}-${rarity}`
+
+      return {
+        material: Materials[MaterialMapping[materialKey]],
+      }
+    }
+
+    const material = getMaterials(type, rarity)
     return {
       item: x.mintProperties.name,
       info:
@@ -111,14 +139,14 @@ export const getClaimsAsPrizes = (
               .shiftedBy(-tokenInfo.decimals)
               .toString()
           : x.quantity.toString(),
-      rarity: rarity,
+      rarity: rarity.charAt(0).toUpperCase() + rarity.slice(1),
       itemResolution: resultion,
       //fallback of img from files if mint matches mango bank
       itemUrl:
         type === 'token'
           ? getFallbackImg(x.mint, tokenInfo?.logoURI)
           : nftInfo?.json?.image || `/icons/mngo.svg`,
-      ...materials[rarity],
+      ...material.material,
     }
   })
 
