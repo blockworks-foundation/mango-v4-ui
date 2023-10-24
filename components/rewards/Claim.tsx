@@ -177,24 +177,31 @@ const ClaimPage = () => {
     const transactionInstructions: TransactionInstructionWithType[] = []
     // Create claim account if it doesn't exist
     if (claimed === undefined) {
-      transactionInstructions.push({
-        instructionsSet: [
-          new TransactionInstructionWithSigners(
-            await rewardsClient.program.methods
-              .claimAccountCreate()
-              .accounts({
-                distribution: distribution.publicKey,
-                claimAccount: distribution.findClaimAccountAddress(publicKey!),
-                claimant: publicKey!,
-                payer: publicKey!,
-                systemProgram: web3.SystemProgram.programId,
-                rent: web3.SYSVAR_RENT_PUBKEY,
-              })
-              .instruction(),
-          ),
-        ],
-        sequenceType: SequenceType.Sequential,
-      })
+      const claimAccountPk = distribution.findClaimAccountAddress(publicKey!)
+      const isCreated = (await connection.getBalance(claimAccountPk)) > 1
+
+      if (!isCreated) {
+        transactionInstructions.push({
+          instructionsSet: [
+            new TransactionInstructionWithSigners(
+              await rewardsClient.program.methods
+                .claimAccountCreate()
+                .accounts({
+                  distribution: distribution.publicKey,
+                  claimAccount: distribution.findClaimAccountAddress(
+                    publicKey!,
+                  ),
+                  claimant: publicKey!,
+                  payer: publicKey!,
+                  systemProgram: web3.SystemProgram.programId,
+                  rent: web3.SYSVAR_RENT_PUBKEY,
+                })
+                .instruction(),
+            ),
+          ],
+          sequenceType: SequenceType.Sequential,
+        })
+      }
     }
 
     try {
