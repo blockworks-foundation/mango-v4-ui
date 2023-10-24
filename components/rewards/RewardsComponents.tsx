@@ -211,6 +211,15 @@ export default function RewardsComponent({
     }
   }, [claims, nftsRewardsInfo, tokensInfo])
 
+  // close after animation finishes
+  useEffect(() => {
+    if (isAnimationFinished) {
+      setTimeout(() => {
+        setShowRender(false)
+      }, 10000)
+    }
+  }, [isAnimationFinished])
+
   return (
     <main className="from-midnight-sky to-midnight-horizon static h-screen w-screen bg-black bg-gradient-to-b">
       {start && (
