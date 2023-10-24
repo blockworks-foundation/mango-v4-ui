@@ -28,7 +28,7 @@ const fetchJupiterRoute = async (
   amount = 0,
   slippage = 50,
   swapMode = 'ExactIn',
-  feeBps = 0,
+  feeBps = 1,
   onlyDirectRoutes = true,
 ) => {
   {
@@ -37,7 +37,7 @@ const fetchJupiterRoute = async (
       outputMint: outputMint.toString(),
       amount: amount.toString(),
       slippageBps: Math.ceil(slippage * 100).toString(),
-      pfeeBps: feeBps.toString(),
+      platformFeeBps: feeBps.toString(),
       swapMode,
       onlyDirectRoutes: `${onlyDirectRoutes}`,
     }).toString()
@@ -115,7 +115,7 @@ export const handleGetRoutes = async (
   amount = 0,
   slippage = 50,
   swapMode = 'ExactIn',
-  feeBps = 0,
+  feeBps = 1,
   wallet: string | undefined,
   mode: SwapModes = 'ALL',
   jupiterOnlyDirectRoutes = false,
@@ -218,7 +218,7 @@ const useQuoteRoutes = ({
         nativeAmount.toNumber(),
         slippage,
         swapMode,
-        0,
+        1,
         wallet,
         mode,
       ),
