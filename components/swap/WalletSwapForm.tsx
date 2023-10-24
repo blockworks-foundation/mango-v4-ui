@@ -70,6 +70,7 @@ const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
     slippage,
     swapMode,
     wallet: publicKey?.toBase58(),
+    mangoAccount: undefined,
     mode: 'JUPITER',
   })
   const { ipAllowed, ipCountry } = useIpAddress()
