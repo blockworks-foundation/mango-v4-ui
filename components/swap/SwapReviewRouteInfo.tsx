@@ -136,6 +136,7 @@ export const fetchJupiterTransaction = async (
   outputMint: PublicKey,
   isDirectWalletSwap = false,
 ): Promise<[TransactionInstruction[], AddressLookupTableAccount[]]> => {
+  // TODO: replace by something that belongs to the DAO
   // https://referral.jup.ag/
   // EV4qhLE2yPKdUPdQ74EWJUn21xT3eGQxG3DRR1g9NNFc belongs to 8SSLjXBEVk9nesbhi9UMCA32uijbVBUqWoKPPQPTekzt
   // for now
