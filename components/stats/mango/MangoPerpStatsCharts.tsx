@@ -111,6 +111,7 @@ const MangoPerpStatsCharts = () => {
       {feeValues.length ? (
         <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 md:pl-6">
           <DetailedAreaOrBarChart
+            changeAsPercent
             data={feeValues}
             daysToShow={feesDaysToShow}
             setDaysToShow={setFeesDaysToShow}
@@ -128,6 +129,7 @@ const MangoPerpStatsCharts = () => {
       {openInterestValues.length ? (
         <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 md:border-r">
           <DetailedAreaOrBarChart
+            changeAsPercent
             data={openInterestValues}
             daysToShow={oiDaysToShow}
             setDaysToShow={setOiDaysToShow}
@@ -145,6 +147,7 @@ const MangoPerpStatsCharts = () => {
       {volumeValues.length ? (
         <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 md:pl-6">
           <DetailedAreaOrBarChart
+            changeAsPercent
             data={volumeValues}
             daysToShow={volumeDaysToShow}
             setDaysToShow={setVolumeDaysToShow}

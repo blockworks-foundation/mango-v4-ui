@@ -63,6 +63,7 @@ const AccountOverview = () => {
             {mangoAccount || (connected && initialLoad) ? (
               <div className="px-4 pb-4 md:px-6">
                 <DetailedAreaOrBarChart
+                  changeAsPercent
                   data={chartData.concat(latestAccountData)}
                   daysToShow={daysToShow}
                   setDaysToShow={setDaysToShow}

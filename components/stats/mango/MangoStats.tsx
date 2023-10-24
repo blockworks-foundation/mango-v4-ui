@@ -1,5 +1,5 @@
-import MangoPerpStatsCharts from '../perps/MangoPerpStatsCharts'
-import TokenStatsCharts from '../tokens/TokenStatsCharts'
+import MangoPerpStatsCharts from './MangoPerpStatsCharts'
+import TokenStatsCharts from './TokenStatsCharts'
 
 const MangoStats = () => {
   return (

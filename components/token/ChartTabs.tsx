@@ -57,6 +57,7 @@ const ChartTabs = ({ bank }: { bank: Bank }) => {
           <div className="h-[412px] border-t border-th-bkg-3 px-6 py-6 sm:h-96">
             {activeDepositsTab === 'token:deposits' ? (
               <DetailedAreaOrBarChart
+                changeAsPercent
                 data={statsHistory}
                 daysToShow={depositDaysToShow}
                 setDaysToShow={setDepositDaysToShow}
@@ -97,6 +98,7 @@ const ChartTabs = ({ bank }: { bank: Bank }) => {
           <div className="h-[412px] border-t border-th-bkg-3 px-6 py-6 sm:h-96">
             {activeBorrowsTab === 'token:borrows' ? (
               <DetailedAreaOrBarChart
+                changeAsPercent
                 data={statsHistory}
                 daysToShow={borrowDaysToShow}
                 setDaysToShow={setBorrowDaysToShow}

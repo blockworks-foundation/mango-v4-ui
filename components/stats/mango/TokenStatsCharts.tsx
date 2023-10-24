@@ -13,6 +13,7 @@ const TokenStatsCharts = () => {
   const loadingStats = mangoStore((s) => s.tokenStats.loading)
   const [borrowDaysToShow, setBorrowDaysToShow] = useState('30')
   const [depositDaysToShow, setDepositDaysToShow] = useState('30')
+  const [feesDaysToShow, setFeesDaysToShow] = useState('30')
   const banks = useBanksWithBalances()
   const tokenStatsInitialLoad = mangoStore((s) => s.tokenStats.initialLoad)
 
@@ -48,6 +49,7 @@ const TokenStatsCharts = () => {
     <>
       <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 md:border-r">
         <DetailedAreaOrBarChart
+          changeAsPercent
           data={mangoStats.concat([
             {
               date: dayjs().toISOString(),
@@ -70,6 +72,7 @@ const TokenStatsCharts = () => {
       </div>
       <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 md:pl-6">
         <DetailedAreaOrBarChart
+          changeAsPercent
           data={mangoStats.concat([
             {
               date: dayjs().toISOString(),
@@ -92,6 +95,7 @@ const TokenStatsCharts = () => {
       </div>
       <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 md:border-r md:pl-6">
         <DetailedAreaOrBarChart
+          changeAsPercent
           data={mangoStats.concat([
             {
               date: dayjs().toISOString(),
@@ -100,8 +104,8 @@ const TokenStatsCharts = () => {
               feesCollected: currentCollectedFeesValue,
             },
           ])}
-          daysToShow={borrowDaysToShow}
-          setDaysToShow={setBorrowDaysToShow}
+          daysToShow={feesDaysToShow}
+          setDaysToShow={setFeesDaysToShow}
           heightClass="h-64"
           loaderHeightClass="h-[350px]"
           loading={loadingStats}
