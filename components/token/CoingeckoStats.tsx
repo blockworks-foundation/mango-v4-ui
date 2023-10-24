@@ -1,7 +1,7 @@
 import { Bank } from '@blockworks-foundation/mango-v4'
 import Change from '@components/shared/Change'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
-import { ArrowSmallUpIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
+import { ArrowSmallUpIcon } from '@heroicons/react/20/solid'
 import { useQuery } from '@tanstack/react-query'
 import { makeApiRequest } from 'apis/birdeye/helpers'
 import dayjs from 'dayjs'
@@ -142,41 +142,33 @@ const CoingeckoStats = ({
           </div>
         </div>
       ) : null}
-      {chartData?.length ? (
-        <div className="p-6 pb-4">
-          <DetailedAreaOrBarChart
-            data={chartData.concat([
-              {
-                unixTime: Date.now(),
-                value: parseFloat(
-                  bank.uiPrice.toFixed(countLeadingZeros(bank.uiPrice) + 3),
-                ),
-              },
-            ])}
-            daysToShow={daysToShow}
-            setDaysToShow={setDaysToShow}
-            loading={loadingBirdeyePrices}
-            heightClass="h-64"
-            loaderHeightClass="h-[350px]"
-            prefix="$"
-            tickFormat={(x) =>
-              x < 0.00001 ? x.toExponential() : formatCurrencyValue(x)
-            }
-            title={`${bank.name} Price Chart`}
-            xKey="unixTime"
-            yKey="value"
-            yDecimals={countLeadingZeros(bank.uiPrice) + 3}
-            domain={['dataMin', 'dataMax']}
-          />
-        </div>
-      ) : (
-        <div className="m-6 flex h-72 items-center justify-center rounded-lg border border-th-bkg-3 md:h-80">
-          <div className="flex flex-col items-center">
-            <NoSymbolIcon className="mb-2 h-7 w-7 text-th-fgd-4" />
-            <p>{t('chart-unavailable')}</p>
-          </div>
-        </div>
-      )}
+      <div className="p-6 pb-4">
+        <DetailedAreaOrBarChart
+          changeAsPercent
+          data={chartData.concat([
+            {
+              unixTime: Date.now(),
+              value: parseFloat(
+                bank.uiPrice.toFixed(countLeadingZeros(bank.uiPrice) + 3),
+              ),
+            },
+          ])}
+          daysToShow={daysToShow}
+          setDaysToShow={setDaysToShow}
+          loading={loadingBirdeyePrices}
+          heightClass="h-64"
+          loaderHeightClass="h-[350px]"
+          prefix="$"
+          tickFormat={(x) =>
+            x < 0.00001 ? x.toExponential() : formatCurrencyValue(x)
+          }
+          title={`${bank.name} Price Chart`}
+          xKey="unixTime"
+          yKey="value"
+          yDecimals={countLeadingZeros(bank.uiPrice) + 3}
+          domain={['dataMin', 'dataMax']}
+        />
+      </div>
       <div className="grid grid-cols-1 border-b border-th-bkg-3 md:grid-cols-2">
         <div className="col-span-1 border-y border-th-bkg-3 px-6 py-4 md:col-span-2">
           <h2 className="text-base">{bank.name} Stats</h2>

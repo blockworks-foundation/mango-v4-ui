@@ -52,6 +52,7 @@ const PerpMarketDetails = ({
           </div>
           <div className={CHART_WRAPPER_CLASSES}>
             <DetailedAreaOrBarChart
+              changeAsPercent
               data={openInterestChartData.concat([
                 {
                   date_hour: dayjs().toISOString(),
@@ -81,6 +82,7 @@ const PerpMarketDetails = ({
           </div>
           <div className={CHART_WRAPPER_CLASSES}>
             <DetailedAreaOrBarChart
+              changeAsPercent
               data={marketStats.concat([
                 {
                   ...lastStat,

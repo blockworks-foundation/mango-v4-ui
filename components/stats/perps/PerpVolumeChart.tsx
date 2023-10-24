@@ -96,6 +96,7 @@ const PerpVolumeChart = ({
 
   return (
     <DetailedAreaOrBarChart
+      changeAsPercent
       data={chartData}
       daysToShow={daysToShow}
       setDaysToShow={setDaysToShow}
@@ -107,7 +108,6 @@ const PerpVolumeChart = ({
       title={t('stats:volume')}
       xKey="date_hour"
       yKey="volume"
-      // yDecimals={5}
       chartType="bar"
       tooltipDateFormat={daysToShow === '30' ? 'DD MMM YY' : ''}
     />
