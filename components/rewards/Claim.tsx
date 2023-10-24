@@ -35,6 +35,7 @@ import { onClick, unmute } from 'lib/render'
 import { usePlausible } from 'next-plausible'
 import { TelemetryEvents } from 'utils/telemetry'
 import { Prize, getClaimsAsPrizes, getFallbackImg } from './RewardsComponents'
+import { notify } from 'utils/notifications'
 
 const CLAIM_BUTTON_CLASSES =
   'raised-button group mx-auto block h-12 px-6 pt-1 font-rewards text-xl after:rounded-lg focus:outline-none lg:h-14'
@@ -258,6 +259,12 @@ const ClaimPage = () => {
           },
           onError: (e, notProcessedTransactions, originalProps) => {
             console.log('error', e, notProcessedTransactions, originalProps)
+            notify({
+              title: 'Transaction failed',
+              description: e.message,
+              txid: e?.txid,
+              type: 'error',
+            })
           },
         },
         config: {
