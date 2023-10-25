@@ -515,16 +515,15 @@ const AdvancedTradeForm = () => {
     const balance = mangoAccount.getTokenDepositsUi(balanceBank)
     const remainingBalance = balance - parseFloat(size)
     const borrowAmount = remainingBalance < 0 ? Math.abs(remainingBalance) : 0
-
-    return borrowAmount > remainingBorrowsInPeriod
+    const borrowAmountNotional = borrowAmount * balanceBank.uiPrice
+    return borrowAmountNotional > remainingBorrowsInPeriod
   }, [balanceBank, mangoAccount, remainingBorrowsInPeriod, tradeForm])
 
   const disabled =
     (connected && (!tradeForm.baseSize || !tradeForm.price)) ||
     !serumOrPerpMarket ||
     parseFloat(tradeForm.baseSize) < serumOrPerpMarket.minOrderSize ||
-    !isMarketEnabled ||
-    borrowExceedsLimitInPeriod
+    !isMarketEnabled
 
   return (
     <div>

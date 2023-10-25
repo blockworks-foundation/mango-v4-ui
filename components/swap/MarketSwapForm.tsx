@@ -336,8 +336,8 @@ const SwapFormSubmitButton = ({
     const balance = mangoAccount.getTokenDepositsUi(inputBank)
     const remainingBalance = balance - amountIn.toNumber()
     const borrowAmount = remainingBalance < 0 ? Math.abs(remainingBalance) : 0
-
-    return borrowAmount > remainingBorrowsInPeriod
+    const borrowAmountNotional = borrowAmount * inputBank.uiPrice
+    return borrowAmountNotional > remainingBorrowsInPeriod
   }, [amountIn, inputBank, mangoAccountAddress, remainingBorrowsInPeriod])
 
   const disabled =
