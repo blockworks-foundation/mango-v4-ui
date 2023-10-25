@@ -18,7 +18,7 @@ const RewardsPage = () => {
   const { showClaim } = useIsAllClaimed(prevSeason, publicKey)
 
   return !showLeaderboards ? (
-    !showClaim ? (
+    showClaim ? (
       <ClaimPage />
     ) : (
       <Season setShowLeaderboards={setShowLeaderboards} />
