@@ -30,7 +30,7 @@ const fetchJupiterRoute = async (
   swapMode = 'ExactIn',
   feeBps = 0,
   onlyDirectRoutes = true,
-  maxAccounts = 50
+  maxAccounts = 50,
 ) => {
   {
     const paramsString = new URLSearchParams({

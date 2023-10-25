@@ -72,7 +72,7 @@ const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
     wallet: publicKey?.toBase58(),
     mode: 'JUPITER',
   })
-  const { ipAllowed, ipCountry } = useIpAddress()
+  const { ipAllowed, swapAllowed, ipCountry } = useIpAddress()
 
   const walletTokens = mangoStore((s) => s.wallet.tokens)
 
@@ -277,7 +277,7 @@ const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
         loading={loadingSwapDetails}
         setShowTokenSelect={setShowTokenSelect}
       />
-      {ipAllowed ? (
+      {ipAllowed || swapAllowed ? (
         <SwapFormSubmitButton
           loadingSwapDetails={loadingSwapDetails}
           useMargin={useMargin}

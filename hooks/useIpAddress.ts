@@ -14,6 +14,7 @@ const SANCTIONED_COUNTRIES = [
   ['CU', 'Cuba'],
   ['CD', 'Democratic Republic of Congo'],
   ['EC', 'Ecuador'],
+  ['GB', 'United Kingdom'],
   ['IR', 'Iran'],
   ['IQ', 'Iraq'],
   ['LR', 'Liberia'],
@@ -35,7 +36,11 @@ const SANCTIONED_COUNTRY_CODES = SANCTIONED_COUNTRIES.map(
   (country) => country[0],
 )
 
-const SPOT_ALLOWED = ['GB']
+const PERP_ALLOWED: string[] = []
+const SPOT_ALLOWED: string[] = []
+const SWAP_ALLOWED: string[] = []
+const BORROW_LEND_ALLOWED: string[] = []
+const SHOW_WARNING: string[] = ['GB']
 
 const fetchIpGeolocation = async () => {
   const response = await fetch(`https://country-code.mangomarkets.workers.dev`)
@@ -48,6 +53,10 @@ const fetchIpGeolocation = async () => {
 export default function useIpAddress() {
   const [ipAllowed, setIpAllowed] = useState(false)
   const [spotAllowed, setSpotAllowed] = useState(false)
+  const [perpAllowed, setPerpAllowed] = useState(false)
+  const [swapAllowed, setSwapAllowed] = useState(false)
+  const [borrowLendAllowed, setBorrowLendAllowed] = useState(false)
+  const [showWarning, setShowWarning] = useState(false)
   const [ipCountry, setIpCountry] = useState('')
 
   const ipCountryCode = useQuery<string, Error>(
@@ -66,12 +75,32 @@ export default function useIpAddress() {
       setIpCountry(ipCountryCode.data)
       setIpAllowed(!SANCTIONED_COUNTRY_CODES.includes(ipCountryCode.data))
       setSpotAllowed(SPOT_ALLOWED.includes(ipCountryCode.data))
+      setPerpAllowed(PERP_ALLOWED.includes(ipCountryCode.data))
+      setSwapAllowed(SWAP_ALLOWED.includes(ipCountryCode.data))
+      setBorrowLendAllowed(BORROW_LEND_ALLOWED.includes(ipCountryCode.data))
+      setShowWarning(SHOW_WARNING.includes(ipCountryCode.data))
     }
   }, [ipCountryCode])
 
-  if (CLUSTER === 'mainnet-beta') {
-    return { ipAllowed, spotAllowed, ipCountry }
+  if (CLUSTER === 'mainnet-beta' && !process.env.NEXT_PUBLIC_DISABLE_GEOBLOCK) {
+    return {
+      ipAllowed,
+      spotAllowed,
+      perpAllowed,
+      swapAllowed,
+      borrowLendAllowed,
+      showWarning,
+      ipCountry,
+    }
   } else {
-    return { ipAllowed: true, spotAllowed: true, ipCountry }
+    return {
+      ipAllowed: true,
+      spotAllowed: true,
+      perpAllowed: true,
+      swapAllowed: true,
+      borrowLendAllowed: true,
+      showWarning: true,
+      ipCountry,
+    }
   }
 }

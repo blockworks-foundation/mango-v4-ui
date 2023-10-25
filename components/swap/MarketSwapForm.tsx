@@ -88,7 +88,7 @@ const MarketSwapForm = ({
     swapMode,
     wallet: publicKey?.toBase58(),
   })
-  const { ipAllowed, ipCountry } = useIpAddress()
+  const { ipAllowed, swapAllowed, ipCountry } = useIpAddress()
 
   const amountInAsDecimal: Decimal | null = useMemo(() => {
     return Number(debouncedAmountIn)
@@ -274,7 +274,7 @@ const MarketSwapForm = ({
         setShowTokenSelect={setShowTokenSelect}
         handleRepay={handleRepay}
       />
-      {ipAllowed ? (
+      {ipAllowed || swapAllowed ? (
         <SwapFormSubmitButton
           loadingSwapDetails={loadingSwapDetails}
           useMargin={useMargin}

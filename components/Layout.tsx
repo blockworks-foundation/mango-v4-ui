@@ -30,6 +30,7 @@ import { useTheme } from 'next-themes'
 import PromoBanner from './rewards/PromoBanner'
 import { useRouter } from 'next/router'
 import StatusBar from './StatusBar'
+import WarningBanner from './shared/WarningBanner'
 
 export const sideBarAnimationDuration = 300
 const termsLastUpdated = 1679441610978
@@ -127,6 +128,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
           }`}
         >
           <TopBar />
+          <WarningBanner />
           {asPath !== '/rewards' ? <PromoBanner /> : null}
           {children}
           <StatusBar collapsed={isCollapsed} />

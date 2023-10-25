@@ -112,7 +112,7 @@ const TriggerSwapForm = ({
 }: TriggerSwapFormProps) => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
   const { mangoAccountAddress } = useMangoAccount()
-  const { ipAllowed, ipCountry } = useIpAddress()
+  const { ipAllowed, swapAllowed, ipCountry } = useIpAddress()
   const { setShowSettingsModal } = TopBarStore()
   // const [triggerPrice, setTriggerPrice] = useState('')
   const [orderType, setOrderType] = useState(ORDER_TYPES[0])
@@ -854,7 +854,7 @@ const TriggerSwapForm = ({
           <InlineNotification desc={orderDescription} type="info" />
         </div>
       ) : null}
-      {ipAllowed ? (
+      {ipAllowed || swapAllowed ? (
         <Button
           disabled={borrowExceedsLimitInPeriod || tokenPositionsFull}
           onClick={onClick}

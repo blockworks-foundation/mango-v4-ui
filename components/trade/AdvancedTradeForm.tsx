@@ -97,7 +97,7 @@ const AdvancedTradeForm = () => {
   const [tradeFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const [savedCheckboxSettings, setSavedCheckboxSettings] =
     useLocalStorageState(TRADE_CHECKBOXES_KEY, DEFAULT_CHECKBOX_SETTINGS)
-  const { ipAllowed, ipCountry } = useIpAddress()
+  const { ipAllowed, perpAllowed, spotAllowed, ipCountry } = useIpAddress()
   const [soundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,
     INITIAL_SOUND_SETTINGS,
@@ -334,6 +334,36 @@ const AdvancedTradeForm = () => {
           : quoteBank.oracleLastUpdatedSlot !== 0)
       )
     }
+  }, [selectedMarket])
+
+  const isSanctioned = useMemo(() => {
+    return !(
+      ipAllowed ||
+      (selectedMarket instanceof PerpMarket && perpAllowed) ||
+      (selectedMarket instanceof Serum3Market && spotAllowed)
+    )
+  }, [selectedMarket, ipCountry])
+
+  const hasPosition = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!mangoAccount || !selectedMarket || !group) return false
+    if (selectedMarket instanceof PerpMarket) {
+      const basePosition = mangoAccount
+        .getPerpPosition(selectedMarket.perpMarketIndex)
+        ?.getBasePositionUi(selectedMarket)
+      return basePosition !== undefined && basePosition != 0
+    } else if (selectedMarket instanceof Serum3Market) {
+      const baseBank = group.getFirstBankByTokenIndex(
+        selectedMarket.baseTokenIndex,
+      )
+      const tokenPosition = mangoAccount.getTokenBalanceUi(baseBank)
+      return tokenPosition != 0
+    }
+  }, [selectedMarket, ipCountry, mangoAccount])
+
+  const isForceReduceOnly = useMemo(() => {
+    if (!selectedMarket) return false
+    return selectedMarket.reduceOnly || (isSanctioned && hasPosition)
   }, [selectedMarket])
 
   /*
@@ -769,10 +799,13 @@ const AdvancedTradeForm = () => {
                   >
                     <div className="flex items-center text-xs text-th-fgd-3">
                       <Checkbox
-                        checked={tradeForm.reduceOnly}
+                        checked={
+                          tradeForm.reduceOnly || isForceReduceOnly === true
+                        }
                         onChange={(e) =>
                           handleReduceOnlyChange(e.target.checked)
                         }
+                        disabled={isForceReduceOnly}
                       >
                         {t('trade:reduce-only')}
                       </Checkbox>
@@ -782,7 +815,7 @@ const AdvancedTradeForm = () => {
               )}
             </div>
             <div className="mb-4 mt-6 flex px-3 md:px-4">
-              {ipAllowed ? (
+              {!isSanctioned || isForceReduceOnly ? (
                 connected ? (
                   <Button
                     className={`flex w-full items-center justify-center ${
