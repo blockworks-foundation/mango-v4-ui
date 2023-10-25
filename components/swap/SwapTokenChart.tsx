@@ -502,7 +502,9 @@ const SwapTokenChart = () => {
                         numbers={formatNumericValue(mouseData.price)}
                       />
                     ) : (
-                      <FormatNumericValue value={mouseData.price} />
+                      <span className="tabular-nums">
+                        <FormatNumericValue value={mouseData.price} />
+                      </span>
                     )}
                     <span
                       className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0`}
@@ -527,9 +529,11 @@ const SwapTokenChart = () => {
                         )}
                       />
                     ) : (
-                      <FormatNumericValue
-                        value={chartData[chartData.length - 1].price}
-                      />
+                      <span className="tabular-nums">
+                        <FormatNumericValue
+                          value={chartData[chartData.length - 1].price}
+                        />
+                      </span>
                     )}
                     <span
                       className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0`}
