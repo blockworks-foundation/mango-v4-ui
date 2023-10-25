@@ -1,10 +1,10 @@
 import { ThemeData } from 'types'
 import {
+  comicNeueBody,
+  comicNeueDisplay,
   lalezar,
   nunitoBody,
   nunitoDisplay,
-  shortStackBody,
-  shortStackDisplay,
   ttCommons,
   ttCommonsExpanded,
   ttCommonsMono,
@@ -76,8 +76,8 @@ export const nftThemeMeta: NftThemeMeta = {
   Pepe: {
     buttonStyle: 'raised',
     fonts: {
-      body: shortStackBody,
-      display: shortStackDisplay,
+      body: comicNeueBody,
+      display: comicNeueDisplay,
       mono: ttCommonsMono,
       rewards: lalezar,
     },

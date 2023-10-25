@@ -185,7 +185,7 @@ const TopBar = () => {
             )
           ) : isWhiteListed ? (
             <Link href="/rewards" shallow={true}>
-              <div className="flex h-16 items-center justify-between border-x border-th-bkg-3 px-4 md:border-l-0">
+              <div className="flex h-16 items-center justify-between border-x border-th-bkg-3 bg-th-bkg-1 px-4 md:border-l-0">
                 {accountPointsAndRank?.rank ? (
                   <div
                     className={`relative hidden h-6 w-6 flex-shrink-0 items-center justify-center rounded-full sm:flex ${

@@ -1,5 +1,5 @@
 import localFont from 'next/font/local'
-import { Lalezar, Nunito, Short_Stack } from 'next/font/google'
+import { Lalezar, Nunito, Comic_Neue } from 'next/font/google'
 
 // this font should be used as the mono variant for all themes
 
@@ -55,13 +55,13 @@ export const nunitoBody = Nunito({
 
 // pepe theme
 
-export const shortStackDisplay = Short_Stack({
-  weight: '400',
+export const comicNeueDisplay = Comic_Neue({
+  weight: '700',
   subsets: ['latin'],
   variable: '--font-display',
 })
 
-export const shortStackBody = Short_Stack({
+export const comicNeueBody = Comic_Neue({
   weight: '400',
   subsets: ['latin'],
   variable: '--font-body',
