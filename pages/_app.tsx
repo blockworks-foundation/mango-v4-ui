@@ -2,7 +2,7 @@ import '../styles/globals.css'
 import 'react-nice-dates/build/style.css'
 import '../styles/datepicker.css'
 import type { AppProps } from 'next/app'
-import { useCallback, useMemo } from 'react'
+import { ReactNode, useCallback, useMemo } from 'react'
 import {
   Adapter,
   WalletAdapterNetwork,
@@ -12,6 +12,7 @@ import {
 import {
   ConnectionProvider,
   WalletProvider,
+  useWallet,
 } from '@solana/wallet-adapter-react'
 import {
   PhantomWalletAdapter,
@@ -29,7 +30,7 @@ import {
 import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare'
 import { clusterApiUrl } from '@solana/web3.js'
 import TransactionNotification from '@components/notifications/TransactionNotification'
-import { ThemeProvider } from 'next-themes'
+import { ThemeProvider, useTheme } from 'next-themes'
 import { appWithTranslation } from 'next-i18next'
 import Layout from '../components/Layout'
 import MangoProvider from '@components/MangoProvider'
@@ -104,16 +105,8 @@ function MyApp({ Component, pageProps }: AppProps) {
       ? false
       : true
 
-  const [sendTelemetry] = useLocalStorageState(SEND_TELEMETRY_KEY, true)
-
   return (
-    <PlausibleProvider
-      domain="app.mango.markets"
-      customDomain="https://pl.mngo.cloud"
-      trackLocalhost={true}
-      selfHosted={true}
-      enabled={sendTelemetry}
-    >
+    <>
       <Head>
         <title>Mango Markets</title>
         <link rel="icon" href="/favicon.ico" />
@@ -148,18 +141,50 @@ function MyApp({ Component, pageProps }: AppProps) {
             <ThemeProvider defaultTheme="Mango Classic" storageKey={THEME_KEY}>
               <PageTitle />
               <Layout>
-                <Component {...pageProps} />
+                <Telemetry>
+                  <Component {...pageProps} />
+                </Telemetry>
               </Layout>
               <TransactionNotification />
             </ThemeProvider>
           </WalletProvider>
         </ConnectionProvider>
       </QueryClientProvider>
-    </PlausibleProvider>
+    </>
   )
 }
 
 export default appWithTranslation(MyApp)
+
+export const Telemetry = ({ children }: { children: ReactNode }) => {
+  const router = useRouter()
+  const { wallet, connected } = useWallet()
+  const { theme } = useTheme()
+
+  const [sendTelemetry] = useLocalStorageState(SEND_TELEMETRY_KEY, true)
+
+  const telemetryProps = useMemo(() => {
+    console.log(wallet, connected, connected, wallet?.adapter.name ?? 'unknown')
+    return {
+      walletProvider: wallet?.adapter.name ?? 'unknown',
+      viewingAccount: router.asPath.includes('?address') ? 'true' : 'false',
+      currentTheme: theme ?? 'unknown',
+    }
+  }, [wallet, connected, theme])
+
+  return (
+    <PlausibleProvider
+      domain="app.mango.markets"
+      customDomain="https://pl.mngo.cloud"
+      trackLocalhost={true}
+      selfHosted={true}
+      enabled={sendTelemetry}
+      pageviewProps={telemetryProps}
+    >
+      {children}
+    </PlausibleProvider>
+  )
+}
 
 const PageTitle = () => {
   const router = useRouter()
