@@ -304,10 +304,12 @@ export default function RewardsComponent({
         </div>
         {!!currentPrize && (
           <>
-            <p className={`text-4xl text-white	${lalezar.className}`}>
+            <p className={`-mb-2 text-4xl text-white	${lalezar.className}`}>
               {currentPrize['item']}
             </p>
-            <p className={`text-3xl text-yellow-300 ${lalezar.className}`}>
+            <p
+              className={`-mb-2 text-3xl text-yellow-300 ${lalezar.className}`}
+            >
               {currentPrize['rarity']}
             </p>
             <p
