@@ -365,7 +365,7 @@ const ClaimPage = () => {
         </div>
 
         {isClaiming ? (
-          <div className="pt-1">
+          <div className="mx-auto w-full max-w-[500px] px-6">
             <div className="flex h-4 w-full flex-grow rounded-full bg-th-bkg-4">
               <div
                 style={{
@@ -375,7 +375,7 @@ const ClaimPage = () => {
               ></div>
             </div>
             <p className="mx-auto mt-3 text-center text-base text-white drop-shadow-[0_0_8px_rgba(0,0,0,1)]">
-              {`Loading prizes: ${claimProgress.toFixed(0)}%`}
+              {`Claiming prizes: ${claimProgress.toFixed(0)}%`}
             </p>
           </div>
         ) : rewardsWasShown ? (
