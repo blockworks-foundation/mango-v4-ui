@@ -1,4 +1,4 @@
-import { FunctionComponent, useCallback, useState } from 'react'
+import { FunctionComponent, useState } from 'react'
 import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
 import Modal from '@components/shared/Modal'
@@ -14,6 +14,58 @@ import MarketLogos from './MarketLogos'
 import PerpSideBadge from './PerpSideBadge'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 
+export const handleCloseAll = async (
+  setSubmitting?: (s: boolean) => void,
+  onClose?: () => void,
+) => {
+  const client = mangoStore.getState().client
+  const mangoAccount = mangoStore.getState().mangoAccount.current
+  const actions = mangoStore.getState().actions
+  const group = mangoStore.getState().group
+
+  if (!group || !mangoAccount) {
+    notify({
+      title: 'Something went wrong. Try again later',
+      type: 'error',
+    })
+    return
+  }
+  if (setSubmitting) {
+    setSubmitting(true)
+  }
+  try {
+    const maxSlippage = 0.025
+    const { signature: tx } = await client.perpCloseAll(
+      group,
+      mangoAccount,
+      maxSlippage,
+    )
+    actions.fetchOpenOrders()
+    notify({
+      type: 'success',
+      title: 'Transaction successful',
+      txid: tx,
+    })
+  } catch (e) {
+    if (isMangoError(e)) {
+      notify({
+        title: 'There was an issue.',
+        description: e.message,
+        txid: e?.txid,
+        type: 'error',
+      })
+    }
+    console.error('Place trade error:', e)
+  } finally {
+    if (setSubmitting) {
+      setSubmitting(false)
+    }
+    if (onClose) {
+      onClose()
+    }
+  }
+}
+
 const CloseAllPositionsModal: FunctionComponent<ModalProps> = ({
   onClose,
   isOpen,
@@ -23,47 +75,47 @@ const CloseAllPositionsModal: FunctionComponent<ModalProps> = ({
   const openPerpPositions = useOpenPerpPositions()
   const { group } = useMangoGroup()
 
-  const handleCloseAll = useCallback(async () => {
-    const client = mangoStore.getState().client
-    const mangoAccount = mangoStore.getState().mangoAccount.current
-    const actions = mangoStore.getState().actions
+  // const handleCloseAll = useCallback(async () => {
+  //   const client = mangoStore.getState().client
+  //   const mangoAccount = mangoStore.getState().mangoAccount.current
+  //   const actions = mangoStore.getState().actions
 
-    if (!group || !mangoAccount) {
-      notify({
-        title: 'Something went wrong. Try again later',
-        type: 'error',
-      })
-      return
-    }
-    setSubmitting(true)
-    try {
-      const maxSlippage = 0.025
-      const { signature: tx } = await client.perpCloseAll(
-        group,
-        mangoAccount,
-        maxSlippage,
-      )
-      actions.fetchOpenOrders()
-      notify({
-        type: 'success',
-        title: 'Transaction successful',
-        txid: tx,
-      })
-    } catch (e) {
-      if (isMangoError(e)) {
-        notify({
-          title: 'There was an issue.',
-          description: e.message,
-          txid: e?.txid,
-          type: 'error',
-        })
-      }
-      console.error('Place trade error:', e)
-    } finally {
-      setSubmitting(false)
-      onClose()
-    }
-  }, [group, onClose])
+  //   if (!group || !mangoAccount) {
+  //     notify({
+  //       title: 'Something went wrong. Try again later',
+  //       type: 'error',
+  //     })
+  //     return
+  //   }
+  //   setSubmitting(true)
+  //   try {
+  //     const maxSlippage = 0.025
+  //     const { signature: tx } = await client.perpCloseAll(
+  //       group,
+  //       mangoAccount,
+  //       maxSlippage,
+  //     )
+  //     actions.fetchOpenOrders()
+  //     notify({
+  //       type: 'success',
+  //       title: 'Transaction successful',
+  //       txid: tx,
+  //     })
+  //   } catch (e) {
+  //     if (isMangoError(e)) {
+  //       notify({
+  //         title: 'There was an issue.',
+  //         description: e.message,
+  //         txid: e?.txid,
+  //         type: 'error',
+  //       })
+  //     }
+  //     console.error('Place trade error:', e)
+  //   } finally {
+  //     setSubmitting(false)
+  //     onClose()
+  //   }
+  // }, [group, onClose])
 
   if (!group) return null
 
@@ -106,7 +158,7 @@ const CloseAllPositionsModal: FunctionComponent<ModalProps> = ({
       </div>
       <Button
         className="mb-4 mt-6 flex w-full items-center justify-center"
-        onClick={handleCloseAll}
+        onClick={() => handleCloseAll(setSubmitting, onClose)}
         size="large"
       >
         {submitting ? (

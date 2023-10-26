@@ -24,6 +24,8 @@ import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import { Market } from '@project-serum/serum'
 import { useTranslation } from 'next-i18next'
 import { useCustomHotkeys } from 'hooks/useCustomHotKeys'
+import { HOTKEY_TEMPLATES } from '@components/modals/HotKeyModal'
+import { handleCloseAll } from './CloseAllPositionsModal'
 
 const set = mangoStore.getState().set
 
@@ -173,6 +175,14 @@ const TradeHotKeys = ({ children }: { children: ReactNode }) => {
     INITIAL_SOUND_SETTINGS,
   )
 
+  const handleHotKeyPress = (hkOrder: HotKey) => {
+    if (hkOrder.custom === HOTKEY_TEMPLATES.CLOSE_ALL_PERP) {
+      handleCloseAll()
+    } else {
+      handlePlaceOrder(hkOrder)
+    }
+  }
+
   const handlePlaceOrder = useCallback(
     async (hkOrder: HotKey) => {
       const client = mangoStore.getState().client
@@ -251,7 +261,6 @@ const TradeHotKeys = ({ children }: { children: ReactNode }) => {
             return
           }
         } else {
-          console.log(baseSize, orderMax)
           if (baseSize > orderMax) {
             notify({
               type: 'error',
@@ -353,7 +362,7 @@ const TradeHotKeys = ({ children }: { children: ReactNode }) => {
     [serumOrPerpMarket],
   )
 
-  useCustomHotkeys(handlePlaceOrder)
+  useCustomHotkeys(handleHotKeyPress)
 
   return <>{children}</>
 }

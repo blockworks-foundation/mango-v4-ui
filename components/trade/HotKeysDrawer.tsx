@@ -96,7 +96,9 @@ const HotKeysDrawer = ({
                   <div className="border-b border-th-bkg-3">
                     {hotKeys.map((hk: HotKey) => {
                       const {
+                        custom,
                         keySequence,
+                        name,
                         orderSide,
                         orderPrice,
                         orderSize,
@@ -135,27 +137,32 @@ const HotKeysDrawer = ({
                           key={keySequence}
                         >
                           <div>
-                            <p className="font-bold text-th-fgd-2">
+                            <p className="text-th-fgd-1">{name}</p>
+                            <p className="font-bold text-th-active">
                               {keySequence}
                             </p>
-                            <p>{`${t(orderSide)} ${t(
-                              `trade:${orderType}`,
-                            )}, ${size} at ${price}`}</p>
-                            <div className="flex items-center space-x-2">
-                              {!options.margin &&
-                              selectedMarket instanceof PerpMarket ? (
-                                <div className={BADGE_CLASSNAMES}>
-                                  {t('trade:margin')}
-                                </div>
-                              ) : null}
-                              {Object.entries(options).map((e) => {
-                                return e[1] ? (
+                            {!custom ? (
+                              <p>{`${t(orderSide)} ${t(
+                                `trade:${orderType}`,
+                              )}, ${size} at ${price}`}</p>
+                            ) : null}
+                            {!custom ? (
+                              <div className="flex items-center space-x-2">
+                                {!options.margin &&
+                                selectedMarket instanceof PerpMarket ? (
                                   <div className={BADGE_CLASSNAMES}>
-                                    {t(`trade:${e[0]}`)}
+                                    {t('trade:margin')}
                                   </div>
-                                ) : null
-                              })}
-                            </div>
+                                ) : null}
+                                {Object.entries(options).map((e) => {
+                                  return e[1] ? (
+                                    <div className={BADGE_CLASSNAMES}>
+                                      {t(`trade:${e[0]}`)}
+                                    </div>
+                                  ) : null
+                                })}
+                              </div>
+                            ) : null}
                           </div>
                           <div className="pl-4">
                             <IconButton
