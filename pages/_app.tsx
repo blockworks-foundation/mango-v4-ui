@@ -2,7 +2,7 @@ import '../styles/globals.css'
 import 'react-nice-dates/build/style.css'
 import '../styles/datepicker.css'
 import type { AppProps } from 'next/app'
-import { ReactNode, useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import {
   Adapter,
   WalletAdapterNetwork,
@@ -141,9 +141,8 @@ function MyApp({ Component, pageProps }: AppProps) {
             <ThemeProvider defaultTheme="Mango Classic" storageKey={THEME_KEY}>
               <PageTitle />
               <Layout>
-                <Telemetry>
-                  <Component {...pageProps} />
-                </Telemetry>
+                <Telemetry />
+                <Component {...pageProps} />
               </Layout>
               <TransactionNotification />
             </ThemeProvider>
@@ -156,7 +155,7 @@ function MyApp({ Component, pageProps }: AppProps) {
 
 export default appWithTranslation(MyApp)
 
-export const Telemetry = ({ children }: { children: ReactNode }) => {
+export const Telemetry = () => {
   const router = useRouter()
   const { wallet, connected } = useWallet()
   const { theme } = useTheme()
@@ -164,12 +163,22 @@ export const Telemetry = ({ children }: { children: ReactNode }) => {
   const [sendTelemetry] = useLocalStorageState(SEND_TELEMETRY_KEY, true)
 
   const telemetryProps = useMemo(() => {
-    console.log(wallet, connected, connected, wallet?.adapter.name ?? 'unknown')
-    return {
+    const props = {
       walletProvider: wallet?.adapter.name ?? 'unknown',
-      viewingAccount: router.asPath.includes('?address') ? 'true' : 'false',
+      walletConnected: (wallet?.adapter.connected ?? 'false').toString(),
+      viewingAccount: router.asPath.includes('?address').toString(),
       currentTheme: theme ?? 'unknown',
     }
+
+    // Hack to update script tag
+    const el = document.getElementById('plausible')
+    if (el) {
+      Object.entries(props).forEach(([key, value]) => {
+        el.setAttribute(`event-${key}`, value)
+      })
+    }
+
+    return props
   }, [wallet, connected, theme])
 
   return (
@@ -179,10 +188,9 @@ export const Telemetry = ({ children }: { children: ReactNode }) => {
       trackLocalhost={true}
       selfHosted={true}
       enabled={sendTelemetry}
+      scriptProps={{ id: 'plausible' }}
       pageviewProps={telemetryProps}
-    >
-      {children}
-    </PlausibleProvider>
+    />
   )
 }
 
