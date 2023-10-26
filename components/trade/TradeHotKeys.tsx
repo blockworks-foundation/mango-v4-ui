@@ -191,6 +191,7 @@ const TradeHotKeys = ({ children }: { children: ReactNode }) => {
       const actions = mangoStore.getState().actions
       const selectedMarket = mangoStore.getState().selectedMarket.current
       const {
+        custom,
         ioc,
         orderPrice,
         orderSide,
@@ -203,10 +204,25 @@ const TradeHotKeys = ({ children }: { children: ReactNode }) => {
       if (!group || !mangoAccount || !serumOrPerpMarket || !selectedMarket)
         return
       try {
+        let useMargin
+        if (
+          (custom === HOTKEY_TEMPLATES.CLOSE_LONG ||
+            custom === HOTKEY_TEMPLATES.CLOSE_SHORT) &&
+          selectedMarket instanceof Serum3Market
+        ) {
+          useMargin = false
+        } else {
+          useMargin = margin
+        }
         const orderMax =
           serumOrPerpMarket instanceof PerpMarket
             ? calcPerpMax(mangoAccount, selectedMarket, orderSide)
-            : calcSpotMarketMax(mangoAccount, selectedMarket, orderSide, margin)
+            : calcSpotMarketMax(
+                mangoAccount,
+                selectedMarket,
+                orderSide,
+                useMargin,
+              )
         const quoteTokenIndex =
           selectedMarket instanceof PerpMarket
             ? 0

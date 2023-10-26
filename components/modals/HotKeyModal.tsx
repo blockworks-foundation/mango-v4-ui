@@ -34,6 +34,7 @@ type HotKeyForm = {
 }
 
 type TEMPLATE = {
+  custom?: string
   price: string
   side: 'buy' | 'sell'
   size: string
@@ -74,29 +75,31 @@ const DEFAULT_FORM_VALUES: HotKeyForm = {
   reduce: false,
 }
 
-const CLOSE_LONG: TEMPLATE = {
-  price: '',
-  side: 'sell',
-  size: '100',
-  sizeType: 'percentage',
-  orderType: 'market',
-  ioc: false,
-  post: false,
-  margin: true,
-  reduce: true,
-}
+// const CLOSE_LONG: TEMPLATE = {
+//   custom: HOTKEY_TEMPLATES.CLOSE_LONG,
+//   price: '',
+//   side: 'sell',
+//   size: '100',
+//   sizeType: 'percentage',
+//   orderType: 'market',
+//   ioc: false,
+//   post: false,
+//   margin: true,
+//   reduce: true,
+// }
 
-const CLOSE_SHORT: TEMPLATE = {
-  price: '',
-  side: 'buy',
-  size: '100',
-  sizeType: 'percentage',
-  orderType: 'market',
-  ioc: false,
-  post: false,
-  margin: true,
-  reduce: true,
-}
+// const CLOSE_SHORT: TEMPLATE = {
+//   custom: HOTKEY_TEMPLATES.CLOSE_SHORT,
+//   price: '',
+//   side: 'buy',
+//   size: '100',
+//   sizeType: 'percentage',
+//   orderType: 'market',
+//   ioc: false,
+//   post: false,
+//   margin: true,
+//   reduce: true,
+// }
 
 const CLOSE_ALL_PERP: CUSTOM_TEMPLATE = {
   custom: HOTKEY_TEMPLATES.CLOSE_ALL_PERP,
@@ -216,26 +219,27 @@ const HotKeyModal = ({ isOpen, onClose }: ModalProps) => {
       return
     }
     const name = hotKeyForm.name ? hotKeyForm.name : selectedTemplate || ''
-    const newHotKey = !hotKeyForm.custom
-      ? {
-          keySequence: `${hotKeyForm.baseKey}+${hotKeyForm.triggerKey}`,
-          custom: hotKeyForm.custom,
-          name: name,
-          orderSide: hotKeyForm.side,
-          orderSizeType: hotKeyForm.sizeType,
-          orderSize: hotKeyForm.size,
-          orderType: hotKeyForm.orderType,
-          orderPrice: hotKeyForm.price,
-          ioc: hotKeyForm.ioc,
-          margin: hotKeyForm.margin,
-          postOnly: hotKeyForm.post,
-          reduceOnly: hotKeyForm.reduce,
-        }
-      : {
-          keySequence: `${hotKeyForm.baseKey}+${hotKeyForm.triggerKey}`,
-          custom: hotKeyForm.custom,
-          name: name,
-        }
+    const newHotKey =
+      hotKeyForm.custom !== HOTKEY_TEMPLATES.CLOSE_ALL_PERP
+        ? {
+            keySequence: `${hotKeyForm.baseKey}+${hotKeyForm.triggerKey}`,
+            custom: hotKeyForm.custom,
+            name: name,
+            orderSide: hotKeyForm.side,
+            orderSizeType: hotKeyForm.sizeType,
+            orderSize: hotKeyForm.size,
+            orderType: hotKeyForm.orderType,
+            orderPrice: hotKeyForm.price,
+            ioc: hotKeyForm.ioc,
+            margin: hotKeyForm.margin,
+            postOnly: hotKeyForm.post,
+            reduceOnly: hotKeyForm.reduce,
+          }
+        : {
+            keySequence: `${hotKeyForm.baseKey}+${hotKeyForm.triggerKey}`,
+            custom: hotKeyForm.custom,
+            name: name,
+          }
     setHotKeys([...hotKeys, newHotKey])
     onClose()
   }
@@ -296,7 +300,7 @@ const HotKeyModal = ({ isOpen, onClose }: ModalProps) => {
         </div>
         {activeTab === 'settings:templates' ? (
           <div className="border-b border-th-bkg-3">
-            <button
+            {/* <button
               className={TEMPLATE_BUTTON_CLASSES}
               onClick={() =>
                 handleSetTemplate(CLOSE_LONG, HOTKEY_TEMPLATES.CLOSE_LONG)
@@ -321,7 +325,7 @@ const HotKeyModal = ({ isOpen, onClose }: ModalProps) => {
               <TemplateCheckMark
                 isActive={selectedTemplate === HOTKEY_TEMPLATES.CLOSE_SHORT}
               />
-            </button>
+            </button> */}
             <button
               className={TEMPLATE_BUTTON_CLASSES}
               onClick={() =>
