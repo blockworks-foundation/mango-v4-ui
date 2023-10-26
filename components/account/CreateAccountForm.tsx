@@ -15,6 +15,8 @@ import { isMangoError } from 'types'
 import { MAX_ACCOUNTS } from 'utils/constants'
 import Switch from '@components/forms/Switch'
 import NotificationCookieStore from '@store/notificationCookieStore'
+import { usePlausible } from 'next-plausible'
+import { TelemetryEvents } from 'utils/telemetry'
 
 const getNextAccountNumber = (accounts: MangoAccount[]): number => {
   if (accounts.length > 1) {
@@ -43,6 +45,7 @@ const CreateAccountForm = ({
   //whole context needed to sign msgs
   const walletContext = useWallet()
   const { maxSolDeposit } = useSolBalance()
+  const telemetry = usePlausible<TelemetryEvents>()
   const setCookie = NotificationCookieStore((s) => s.setCookie)
 
   const handleNewAccount = async () => {
@@ -81,6 +84,12 @@ const CreateAccountForm = ({
             s.mangoAccounts = reloadedMangoAccounts
           })
         }
+        telemetry('accountCreate', {
+          props: {
+            accountNum: newAccountNum,
+            enableNotifications: signToNotifications,
+          },
+        })
         setLoading(false)
         notify({
           title: t('new-account-success'),
