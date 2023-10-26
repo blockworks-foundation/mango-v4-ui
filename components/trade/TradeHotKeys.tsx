@@ -21,7 +21,6 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { floorToDecimal, getDecimalCount } from 'utils/numbers'
-import { Market } from '@project-serum/serum'
 import { useTranslation } from 'next-i18next'
 import { useCustomHotkeys } from 'hooks/useCustomHotKeys'
 import { HOTKEY_TEMPLATES } from '@components/modals/HotKeyModal'
@@ -32,7 +31,6 @@ const set = mangoStore.getState().set
 const calcBaseSize = (
   orderDetails: HotKey,
   maxSize: number,
-  market: PerpMarket | Market,
   oraclePrice: number,
   quoteTokenIndex: number,
   group: Group,
@@ -59,35 +57,20 @@ const calcBaseSize = (
           : orderSizeInQuote
     }
     if (orderType === 'market') {
-      baseSize = floorToDecimal(
-        quoteSize / oraclePrice,
-        getDecimalCount(market.minOrderSize),
-      ).toNumber()
+      baseSize = quoteSize / oraclePrice
     } else {
       const price = limitPrice ? limitPrice : 0
-      baseSize = floorToDecimal(
-        quoteSize / price,
-        getDecimalCount(market.minOrderSize),
-      ).toNumber()
+      baseSize = quoteSize / price
     }
   } else {
     if (orderSizeType === 'percentage') {
-      baseSize = floorToDecimal(
-        (Number(orderSize) / 100) * maxSize,
-        getDecimalCount(market.minOrderSize),
-      ).toNumber()
+      baseSize = (Number(orderSize) / 100) * maxSize
     } else {
       if (orderType === 'market') {
-        baseSize = floorToDecimal(
-          Number(orderSize) / oraclePrice,
-          getDecimalCount(market.minOrderSize),
-        ).toNumber()
+        baseSize = Number(orderSize) / oraclePrice
       } else {
         const price = limitPrice ? limitPrice : 0
-        baseSize = floorToDecimal(
-          Number(orderSize) / price,
-          getDecimalCount(market.minOrderSize),
-        ).toNumber()
+        baseSize = Number(orderSize) / price
       }
     }
   }
@@ -177,6 +160,11 @@ const TradeHotKeys = ({ children }: { children: ReactNode }) => {
 
   const handleHotKeyPress = (hkOrder: HotKey) => {
     if (hkOrder.custom === HOTKEY_TEMPLATES.CLOSE_ALL_PERP) {
+      notify({
+        type: 'info',
+        title: t('trade:placing-order'),
+        description: hkOrder.custom,
+      })
       handleCloseAll()
     } else {
       handlePlaceOrder(hkOrder)
@@ -204,40 +192,52 @@ const TradeHotKeys = ({ children }: { children: ReactNode }) => {
       if (!group || !mangoAccount || !serumOrPerpMarket || !selectedMarket)
         return
       try {
-        let useMargin
-        if (
-          (custom === HOTKEY_TEMPLATES.CLOSE_LONG ||
-            custom === HOTKEY_TEMPLATES.CLOSE_SHORT) &&
-          selectedMarket instanceof Serum3Market
-        ) {
-          useMargin = false
-        } else {
-          useMargin = margin
-        }
-        const orderMax =
-          serumOrPerpMarket instanceof PerpMarket
-            ? calcPerpMax(mangoAccount, selectedMarket, orderSide)
-            : calcSpotMarketMax(
-                mangoAccount,
-                selectedMarket,
-                orderSide,
-                useMargin,
-              )
-        const quoteTokenIndex =
-          selectedMarket instanceof PerpMarket
-            ? 0
-            : selectedMarket.quoteTokenIndex
         let baseSize: number
         let price: number
-        if (orderType === 'market') {
-          baseSize = calcBaseSize(
-            hkOrder,
-            orderMax,
-            serumOrPerpMarket,
-            oraclePrice,
-            quoteTokenIndex,
-            group,
-          )
+
+        if (
+          custom === HOTKEY_TEMPLATES.CLOSE_LONG ||
+          custom === HOTKEY_TEMPLATES.CLOSE_SHORT
+        ) {
+          if (selectedMarket instanceof Serum3Market) {
+            const baseBank = group.getFirstBankByTokenIndex(
+              selectedMarket.baseTokenIndex,
+            )
+            const baseBalance = mangoAccount.getTokenBalanceUi(baseBank)
+            baseSize = baseBalance
+          } else {
+            const position = mangoAccount.getPerpPosition(
+              selectedMarket.perpMarketIndex,
+            )
+            const rawBaseSize = position?.getBasePositionUi(selectedMarket)
+            if (rawBaseSize) {
+              // increase size to make sure position is fully closed (reduceOnly is enabled)
+              baseSize = rawBaseSize * 2
+            } else {
+              notify({
+                type: 'error',
+                title: t('settings:error-no-position'),
+              })
+              return
+            }
+          }
+
+          // check correct side for close
+          if (custom === HOTKEY_TEMPLATES.CLOSE_LONG && baseSize < 0) {
+            notify({
+              type: 'error',
+              title: t('settings:error-no-long'),
+            })
+            return
+          }
+          if (custom === HOTKEY_TEMPLATES.CLOSE_SHORT && baseSize > 0) {
+            notify({
+              type: 'error',
+              title: t('settings:error-no-short'),
+            })
+            return
+          }
+
           const orderbook = mangoStore.getState().selectedMarket.orderbook
           price = calculateLimitPriceForMarketOrder(
             orderbook,
@@ -245,55 +245,81 @@ const TradeHotKeys = ({ children }: { children: ReactNode }) => {
             orderSide,
           )
         } else {
-          // change in price from oracle for limit order
-          const priceChange = (Number(orderPrice) / 100) * oraclePrice
-          // subtract price change for buy limit, add for sell limit
-          const rawPrice =
-            orderSide === 'buy'
-              ? oraclePrice - priceChange
-              : oraclePrice + priceChange
-          price = floorToDecimal(
-            rawPrice,
-            getDecimalCount(serumOrPerpMarket.tickSize),
-          ).toNumber()
-          baseSize = calcBaseSize(
-            hkOrder,
-            orderMax,
-            serumOrPerpMarket,
-            oraclePrice,
-            quoteTokenIndex,
-            group,
-            price,
-          )
+          const orderMax =
+            serumOrPerpMarket instanceof PerpMarket
+              ? calcPerpMax(mangoAccount, selectedMarket, orderSide)
+              : calcSpotMarketMax(
+                  mangoAccount,
+                  selectedMarket,
+                  orderSide,
+                  margin,
+                )
+          const quoteTokenIndex =
+            selectedMarket instanceof PerpMarket
+              ? 0
+              : selectedMarket.quoteTokenIndex
+
+          if (orderType === 'market') {
+            baseSize = calcBaseSize(
+              hkOrder,
+              orderMax,
+              oraclePrice,
+              quoteTokenIndex,
+              group,
+            )
+            const orderbook = mangoStore.getState().selectedMarket.orderbook
+            price = calculateLimitPriceForMarketOrder(
+              orderbook,
+              Math.abs(baseSize),
+              orderSide,
+            )
+          } else {
+            // change in price from oracle for limit order
+            const priceChange = (Number(orderPrice) / 100) * oraclePrice
+            // subtract price change for buy limit, add for sell limit
+            const rawPrice =
+              orderSide === 'buy'
+                ? oraclePrice - priceChange
+                : oraclePrice + priceChange
+            price = floorToDecimal(
+              rawPrice,
+              getDecimalCount(serumOrPerpMarket.tickSize),
+            ).toNumber()
+            baseSize = calcBaseSize(
+              hkOrder,
+              orderMax,
+              oraclePrice,
+              quoteTokenIndex,
+              group,
+              price,
+            )
+          }
         }
 
-        // check if size < max
-        if (orderSide === 'buy') {
-          if (baseSize * price > orderMax) {
-            notify({
-              type: 'error',
-              title: t('settings:error-order-exceeds-max'),
-            })
-            return
-          }
-        } else {
-          if (baseSize > orderMax) {
-            notify({
-              type: 'error',
-              title: t('settings:error-order-exceeds-max'),
-            })
-            return
-          }
+        const formattedSize = floorToDecimal(
+          Math.abs(baseSize),
+          getDecimalCount(serumOrPerpMarket.minOrderSize),
+        ).toNumber()
+
+        // check if size > min order size
+        if (formattedSize < serumOrPerpMarket.minOrderSize) {
+          notify({
+            type: 'error',
+            title: t('settings:error-order-less-than-min'),
+          })
+          return
         }
 
         notify({
           type: 'info',
           title: t('trade:placing-order'),
-          description: `${t(orderSide)} ${baseSize} ${selectedMarket.name} ${
-            orderType === 'limit'
-              ? `${t('settings:at')} ${price}`
-              : `${t('settings:at')} ${t('market')}`
-          }`,
+          description: custom
+            ? custom
+            : `${t(orderSide)} ${formattedSize} ${selectedMarket.name} ${
+                orderType === 'limit'
+                  ? `${t('settings:at')} ${price}`
+                  : `${t('settings:at')} ${t('market')}`
+              }`,
         })
 
         if (selectedMarket instanceof Serum3Market) {
@@ -302,13 +328,14 @@ const TradeHotKeys = ({ children }: { children: ReactNode }) => {
             : postOnly && orderType !== 'market'
             ? Serum3OrderType.postOnly
             : Serum3OrderType.limit
+
           const tx = await client.serum3PlaceOrder(
             group,
             mangoAccount,
             selectedMarket.serumMarketExternal,
             orderSide === 'buy' ? Serum3Side.bid : Serum3Side.ask,
             price,
-            baseSize,
+            formattedSize,
             Serum3SelfTradeBehavior.decrementTake,
             spotOrderType,
             Date.now(),
@@ -335,7 +362,6 @@ const TradeHotKeys = ({ children }: { children: ReactNode }) => {
               : postOnly
               ? PerpOrderType.postOnly
               : PerpOrderType.limit
-          console.log('perpOrderType', perpOrderType)
 
           const tx = await client.perpPlaceOrder(
             group,
@@ -343,7 +369,7 @@ const TradeHotKeys = ({ children }: { children: ReactNode }) => {
             selectedMarket.perpMarketIndex,
             orderSide === 'buy' ? PerpOrderSide.bid : PerpOrderSide.ask,
             price,
-            Math.abs(baseSize),
+            formattedSize,
             undefined, // maxQuoteQuantity
             Date.now(),
             perpOrderType,
