@@ -430,9 +430,7 @@ const AdvancedTradeForm = () => {
         })
       } else if (selectedMarket instanceof PerpMarket) {
         const perpOrderType =
-          tradeForm.tradeType === 'Market'
-            ? PerpOrderType.market
-            : tradeForm.ioc
+          tradeForm.tradeType === 'Market' || tradeForm.ioc
             ? PerpOrderType.immediateOrCancel
             : tradeForm.postOnly
             ? PerpOrderType.postOnly
@@ -721,23 +719,6 @@ const AdvancedTradeForm = () => {
                       </Checkbox>
                     </Tooltip>
                   </div>
-                  <div className="mr-3 mt-4" id="trade-step-seven">
-                    <Tooltip
-                      className="hidden md:block"
-                      delay={100}
-                      placement="left"
-                      content={t('trade:tooltip-ioc')}
-                    >
-                      <div className="flex items-center text-xs text-th-fgd-3">
-                        <Checkbox
-                          checked={tradeForm.ioc}
-                          onChange={(e) => handleIocChange(e.target.checked)}
-                        >
-                          IOC
-                        </Checkbox>
-                      </div>
-                    </Tooltip>
-                  </div>
                 </div>
               ) : null}
               {selectedMarket instanceof Serum3Market ? (
@@ -757,26 +738,49 @@ const AdvancedTradeForm = () => {
                   </Tooltip>
                 </div>
               ) : (
-                <div className="mr-3 mt-4">
-                  <Tooltip
-                    className="hidden md:block"
-                    delay={100}
-                    placement="left"
-                    content={
-                      'Reduce will only decrease the size of an open position. This is often used for closing a position.'
-                    }
-                  >
-                    <div className="flex items-center text-xs text-th-fgd-3">
-                      <Checkbox
-                        checked={tradeForm.reduceOnly}
-                        onChange={(e) =>
-                          handleReduceOnlyChange(e.target.checked)
-                        }
-                      >
-                        {t('trade:reduce-only')}
-                      </Checkbox>
-                    </div>
-                  </Tooltip>
+                <div className="flex">
+                  <div className="mr-3 mt-4" id="trade-step-seven">
+                    <Tooltip
+                      className="hidden md:block"
+                      delay={100}
+                      placement="left"
+                      content={t('trade:tooltip-ioc')}
+                    >
+                      <div className="flex items-center text-xs text-th-fgd-3">
+                        <Checkbox
+                          checked={
+                            tradeForm.tradeType === 'Market'
+                              ? true
+                              : tradeForm.ioc
+                          }
+                          onChange={(e) => handleIocChange(e.target.checked)}
+                        >
+                          IOC
+                        </Checkbox>
+                      </div>
+                    </Tooltip>
+                  </div>
+                  <div className="mr-3 mt-4">
+                    <Tooltip
+                      className="hidden md:block"
+                      delay={100}
+                      placement="left"
+                      content={
+                        'Reduce will only decrease the size of an open position. This is often used for closing a position.'
+                      }
+                    >
+                      <div className="flex items-center text-xs text-th-fgd-3">
+                        <Checkbox
+                          checked={tradeForm.reduceOnly}
+                          onChange={(e) =>
+                            handleReduceOnlyChange(e.target.checked)
+                          }
+                        >
+                          {t('trade:reduce-only')}
+                        </Checkbox>
+                      </div>
+                    </Tooltip>
+                  </div>
                 </div>
               )}
             </div>
