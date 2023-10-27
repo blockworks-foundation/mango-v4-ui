@@ -50,27 +50,16 @@ const LeverageSlider = ({
     [decimals, leverageMax],
   )
 
-  // set percent when max changes (toggling margin)
-  useEffect(() => {
-    const percent = ((value - leverageMax) / leverageMax) * 100 + 100
-    setPercent(Math.round(percent))
-  }, [leverageMax])
-
-  // set percent to 100 on max button click
-  useEffect(() => {
-    if (amount === leverageMax) {
-      setPercent(100)
-    }
-  }, [amount, leverageMax])
-
   useEffect(() => {
     if (amount) {
+      const percent = ((amount - leverageMax) / leverageMax) * 100 + 100
       setValue(amount)
+      setPercent(Math.ceil(percent))
     } else {
       setValue(0)
       setPercent(0)
     }
-  }, [amount])
+  }, [amount, leverageMax])
 
   const handleSliderChange = (e: ChangeEvent<HTMLInputElement>) => {
     const target = e.target

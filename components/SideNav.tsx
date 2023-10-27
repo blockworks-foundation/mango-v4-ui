@@ -162,11 +162,11 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
       className={`transition-all duration-${sideBarAnimationDuration} ${
         collapsed ? 'w-[64px]' : 'w-[200px]'
       } border-r border-th-bkg-3 bg-th-bkg-1 bg-contain`}
-      style={
-        collapsed
-          ? { backgroundImage: `url(${themeData.sideTilePath})` }
-          : { backgroundImage: `url(${themeData.sideTilePathExpanded})` }
-      }
+      // style={
+      //   collapsed
+      //     ? { backgroundImage: `url(${themeData.sideTilePath})` }
+      //     : { backgroundImage: `url(${themeData.sideTilePathExpanded})` }
+      // }
     >
       {sidebarImageUrl && !collapsed ? (
         <img

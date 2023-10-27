@@ -39,6 +39,7 @@ dayjs.extend(relativeTime)
 const titleClasses = 'mb-0.5 text-base'
 
 interface DetailedAreaOrBarChartProps {
+  changeAsPercent?: boolean
   chartType?: 'area' | 'bar'
   customTooltip?: ContentType<number, string>
   data: any[] | undefined
@@ -75,6 +76,7 @@ export const formatDateAxis = (date: string, days: number) => {
 const DetailedAreaOrBarChart: FunctionComponent<
   DetailedAreaOrBarChartProps
 > = ({
+  changeAsPercent,
   chartType = 'area',
   customTooltip,
   data,
@@ -88,16 +90,16 @@ const DetailedAreaOrBarChart: FunctionComponent<
   loading,
   prefix = '',
   setDaysToShow,
+  showZeroLine,
   small,
   suffix = '',
   tickFormat,
   title,
   tooltipContent,
+  tooltipDateFormat,
   xKey,
   yDecimals,
   yKey,
-  showZeroLine,
-  tooltipDateFormat,
 }) => {
   const { t } = useTranslation('common')
   const [mouseData, setMouseData] = useState<any>(null)
@@ -135,18 +137,26 @@ const DetailedAreaOrBarChart: FunctionComponent<
   }, [data, daysToShow])
 
   const calculateChartChange = () => {
+    const firstValue = filteredData[0][yKey]
     if (filteredData.length) {
       if (mouseData) {
         const index = filteredData.findIndex(
           (d: any) => d[xKey] === mouseData[xKey],
         )
+        const currentValue = filteredData[index][yKey]
         const change =
-          index >= 0 ? filteredData[index][yKey] - filteredData[0][yKey] : 0
+          index >= 0
+            ? changeAsPercent
+              ? ((currentValue - firstValue) / firstValue) * 100
+              : currentValue - firstValue
+            : 0
         return isNaN(change) ? 0 : change
-      } else
-        return (
-          filteredData[filteredData.length - 1][yKey] - filteredData[0][yKey]
-        )
+      } else {
+        const currentValue = filteredData[filteredData.length - 1][yKey]
+        return changeAsPercent
+          ? ((currentValue - firstValue) / firstValue) * 100
+          : currentValue - firstValue
+      }
     }
     return 0
   }
@@ -231,14 +241,16 @@ const DetailedAreaOrBarChart: FunctionComponent<
                           </span>
                         )}
                         {!hideChange ? (
-                          <span className={`ml-3 ${small ? 'mb-[3px]' : ''}`}>
+                          <div
+                            className={`ml-3 ${small ? 'mb-[3px]' : 'mb-0.5'}`}
+                          >
                             <Change
                               change={calculateChartChange()}
-                              decimals={yDecimals}
-                              prefix={prefix}
-                              suffix={suffix}
+                              decimals={!changeAsPercent ? yDecimals : 2}
+                              prefix={!changeAsPercent ? prefix : ''}
+                              suffix={!changeAsPercent ? suffix : '%'}
                             />
-                          </span>
+                          </div>
                         ) : null}
                       </div>
                       <p
@@ -282,24 +294,30 @@ const DetailedAreaOrBarChart: FunctionComponent<
                               ? '-'
                               : ''}
                             {prefix}
-                            <FormatNumericValue
-                              value={
-                                data ? Math.abs(data[data.length - 1][yKey]) : 0
-                              }
-                              decimals={yDecimals}
-                            />
+                            <span className="tabular-nums">
+                              <FormatNumericValue
+                                value={
+                                  data
+                                    ? Math.abs(data[data.length - 1][yKey])
+                                    : 0
+                                }
+                                decimals={yDecimals}
+                              />
+                            </span>
                             {suffix}
                           </span>
                         )}
                         {!hideChange ? (
-                          <span className={`ml-3 ${small ? 'mb-[3px]' : ''}`}>
+                          <div
+                            className={`ml-3 ${small ? 'mb-[3px]' : 'mb-0.5'}`}
+                          >
                             <Change
                               change={calculateChartChange()}
-                              decimals={yDecimals}
-                              prefix={prefix}
-                              suffix={suffix}
+                              decimals={!changeAsPercent ? yDecimals : 2}
+                              prefix={!changeAsPercent ? prefix : ''}
+                              suffix={!changeAsPercent ? suffix : '%'}
                             />
-                          </span>
+                          </div>
                         ) : null}
                       </div>
                       <p

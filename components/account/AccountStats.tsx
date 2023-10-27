@@ -81,6 +81,7 @@ const AccountStats = ({ hideView }: { hideView: () => void }) => {
       <div className="grid grid-cols-2">
         <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 md:border-r">
           <DetailedAreaOrBarChart
+            changeAsPercent
             data={chartData}
             daysToShow={pnlDaysToShow}
             setDaysToShow={setPnlDaysToShow}
@@ -97,6 +98,7 @@ const AccountStats = ({ hideView }: { hideView: () => void }) => {
         </div>
         <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 md:pl-6">
           <DetailedAreaOrBarChart
+            changeAsPercent
             data={chartData}
             daysToShow={interestDaysToShow}
             setDaysToShow={setInterestDaysToShow}

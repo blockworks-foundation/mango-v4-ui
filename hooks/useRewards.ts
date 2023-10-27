@@ -116,6 +116,5 @@ export const useIsAllClaimed = (
       setShowClaim(false)
     }
   }, [distributionData, walletPk, isAllClaimed])
-
   return { isAllClaimed, showClaim }
 }

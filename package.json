@@ -61,6 +61,7 @@
     "lodash": "4.17.21",
     "next": "13.4.17",
     "next-i18next": "14.0.0",
+    "next-plausible": "3.11.1",
     "next-themes": "0.2.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",

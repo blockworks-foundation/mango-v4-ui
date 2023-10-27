@@ -30,9 +30,11 @@ import {
 } from '@metaplex-foundation/js'
 import Loading from '@components/shared/Loading'
 import dayjs from 'dayjs'
-import HolographicCard from './HolographicCard'
 import { onClick, unmute } from 'lib/render'
+import { usePlausible } from 'next-plausible'
+import { TelemetryEvents } from 'utils/telemetry'
 import { Prize, getClaimsAsPrizes, getFallbackImg } from './RewardsComponents'
+import { notify } from 'utils/notifications'
 
 const CLAIM_BUTTON_CLASSES =
   'raised-button group mx-auto block h-12 px-6 pt-1 font-rewards text-xl after:rounded-lg focus:outline-none lg:h-14'
@@ -91,6 +93,8 @@ const ClaimPage = () => {
   const provider = client.program.provider
   const connection = provider.connection
 
+  const telemetry = usePlausible<TelemetryEvents>()
+
   const { data: distributionDataAndClient, refetch } = useDistribution(
     previousSeason!,
   )
@@ -123,6 +127,7 @@ const ClaimPage = () => {
   }, [distributionDataAndClient, publicKey])
 
   const startShowRewards = () => {
+    telemetry('rewardsOpenRender')
     setShowRender(true)
     setRewardsWasShow(true)
     onClick()
@@ -134,12 +139,14 @@ const ClaimPage = () => {
       const metaplex = new Metaplex(connection)
 
       const tokens = claims!
-        .filter((x) => x.mintProperties.type === 'token')
+        .filter((x) => x.mintProperties.type.toLowerCase() === 'token')
         .map((t) => jupiterTokens.find((x) => x.address === t.mint.toBase58()))
         .filter((x) => x)
         .map((x) => x as Token)
 
-      const nfts = claims!.filter((x) => x.mintProperties.type === 'nft')
+      const nfts = claims!.filter(
+        (x) => x.mintProperties.type.toLowerCase() === 'nft',
+      )
       const nftsInfos: (Sft | SftWithToken | Nft | NftWithToken)[] = []
 
       for (const nft of nfts) {
@@ -170,24 +177,31 @@ const ClaimPage = () => {
     const transactionInstructions: TransactionInstructionWithType[] = []
     // Create claim account if it doesn't exist
     if (claimed === undefined) {
-      transactionInstructions.push({
-        instructionsSet: [
-          new TransactionInstructionWithSigners(
-            await rewardsClient.program.methods
-              .claimAccountCreate()
-              .accounts({
-                distribution: distribution.publicKey,
-                claimAccount: distribution.findClaimAccountAddress(publicKey!),
-                claimant: publicKey!,
-                payer: publicKey!,
-                systemProgram: web3.SystemProgram.programId,
-                rent: web3.SYSVAR_RENT_PUBKEY,
-              })
-              .instruction(),
-          ),
-        ],
-        sequenceType: SequenceType.Sequential,
-      })
+      const claimAccountPk = distribution.findClaimAccountAddress(publicKey!)
+      const isCreated = (await connection.getBalance(claimAccountPk)) > 1
+
+      if (!isCreated) {
+        transactionInstructions.push({
+          instructionsSet: [
+            new TransactionInstructionWithSigners(
+              await rewardsClient.program.methods
+                .claimAccountCreate()
+                .accounts({
+                  distribution: distribution.publicKey,
+                  claimAccount: distribution.findClaimAccountAddress(
+                    publicKey!,
+                  ),
+                  claimant: publicKey!,
+                  payer: publicKey!,
+                  systemProgram: web3.SystemProgram.programId,
+                  rent: web3.SYSVAR_RENT_PUBKEY,
+                })
+                .instruction(),
+            ),
+          ],
+          sequenceType: SequenceType.Sequential,
+        })
+      }
     }
 
     try {
@@ -244,6 +258,12 @@ const ClaimPage = () => {
           },
           onError: (e, notProcessedTransactions, originalProps) => {
             console.log('error', e, notProcessedTransactions, originalProps)
+            notify({
+              title: 'Transaction failed',
+              description: e.message,
+              txid: e?.txid,
+              type: 'error',
+            })
           },
         },
         config: {
@@ -252,7 +272,11 @@ const ClaimPage = () => {
           logFlowInfo: true,
         },
       })
+      telemetry('rewardsClaim', { props: { rewards: claims.length } })
     } catch (e) {
+      telemetry('rewardsClaimError', {
+        props: { message: (e as Error).toString() },
+      })
       console.error(e)
     } finally {
       setIsClaiming(false)
@@ -271,98 +295,114 @@ const ClaimPage = () => {
   }, [claims, getFallbackImg, tokenRewardsInfo])
 
   return claims === undefined && !loadingClaims ? (
-    <div className="flex min-h-[calc(100vh-94px)] items-center justify-center p-8">
+    <div className="flex min-h-[calc(100vh-92px)] items-center justify-center p-8">
       <span className="text-center text-th-fgd-3">
         Something went wrong. Try refreshing the page
       </span>
     </div>
   ) : loadingClaims ? (
-    <div className="flex min-h-[calc(100vh-94px)] items-center justify-center">
+    <div className="flex min-h-[calc(100vh-92px)] items-center justify-center">
       <Loading />
     </div>
   ) : (
-    <>
-      <div className="min-h-[calc(100vh-94px)] bg-[url('/images/rewards/claim-bg.png')] bg-cover bg-center">
-        <div className="flex items-center justify-center pt-8">
+    <div className="flex min-h-[calc(100vh-112px)] flex-col bg-[url('/images/rewards/claim-bg.png')] bg-cover bg-fixed bg-center sm:min-h-[calc(100vh-92px)]">
+      <div className="flex flex-1 flex-col justify-around pb-20 pt-8 md:pb-16">
+        <div className="flex items-center justify-center">
           <div className="flex items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-red-400 px-4 py-1">
             <p className="font-rewards text-lg text-black">
               Season {previousSeason} claim ends <span>{claimEndsIn}</span>
             </p>
           </div>
         </div>
-        <div className="flex h-[calc(100vh-164px)] flex-col justify-center">
-          <div className="mx-auto flex max-w-[1140px] flex-col items-center justify-center px-8 lg:px-10">
+        <div className="flex flex-col justify-center">
+          <div className="mx-auto flex w-full max-w-[1140px] flex-col items-center justify-center px-8 lg:px-10">
             {prizes.length && rewardsWasShown ? (
-              <div className="mb-12 flex flex-wrap justify-center">
-                {prizes.map((prize, i) => (
-                  <div
-                    className="relative m-1 rounded-lg bg-[#2F3188]"
-                    key={prize.itemUrl + i}
-                  >
-                    <img
-                      className="h-auto w-20 rounded-lg"
-                      src={prize.stencilUrl}
-                    />
-                    <div className="absolute left-1/2 top-1/2 flex h-[54px] w-[54px] -translate-x-1/2 -translate-y-1/2 items-center justify-center">
-                      <img className="rounded-full" src={prize.itemUrl} />
+              <div className="my-8 flex w-full flex-col justify-center sm:flex-row sm:flex-wrap">
+                {prizes.map((prize, i) => {
+                  const { info, item, itemUrl, rarity, stencilUrl } = prize
+                  return (
+                    <div
+                      className="m-2 flex rounded-xl border border-white sm:w-[200px] sm:flex-col sm:pt-4"
+                      key={itemUrl + i}
+                    >
+                      <div className="p-4 sm:p-0">
+                        <div className="relative mx-auto h-auto w-16 rounded-lg bg-[#2F3188] sm:w-20">
+                          <img className="rounded-lg" src={stencilUrl} />
+                          <div className="absolute left-1/2 top-1/2 flex h-[47px] w-[47px] -translate-x-1/2 -translate-y-1/2 items-center justify-center sm:h-[59px] sm:w-[59px]">
+                            <img className="rounded-md" src={itemUrl} />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="w-full rounded-r-xl border-l border-white bg-[rgba(0,0,0,0.4)] p-4 sm:mt-4 sm:rounded-b-xl sm:rounded-r-none sm:border-l-0 sm:border-t sm:pt-2">
+                        <p className="-mb-1.5 font-rewards text-base text-white">
+                          {item}
+                        </p>
+                        <p className="-mb-1.5 font-rewards text-yellow-300">
+                          {rarity}
+                        </p>
+                        <p className="-mb-1 font-rewards text-white">{info}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             ) : (
-              <div className="-mt-16">
-                <HolographicCard />
-              </div>
-            )}
-            <div className="-mt-8 mb-6 text-center">
-              <h2 className="mb-1 font-rewards text-4xl tracking-wide text-white drop-shadow-[0_0_24px_rgba(0,0,0,1)] sm:text-6xl">
-                {winnerTitle}!
-              </h2>
-              <p className="text-lg font-bold text-white drop-shadow-[0_0_8px_rgba(0,0,0,1)]">
-                You&apos;re a winner in Season {previousSeason}
-              </p>
-            </div>
-            {isClaiming ? (
-              <div className="pt-1">
-                <div className="flex h-4 w-full flex-grow rounded-full bg-th-bkg-4">
-                  <div
-                    style={{
-                      width: `${claimProgress}%`,
-                    }}
-                    className={`flex rounded-full bg-gradient-to-r from-green-600 to-green-400`}
-                  ></div>
+              <>
+                <div className="mb-12 h-auto w-24">
+                  <img src="/images/rewards/chest.png" />
                 </div>
-                <p className="mx-auto mt-3 text-center text-base text-white drop-shadow-[0_0_8px_rgba(0,0,0,1)]">
-                  {`Loading prizes: ${claimProgress.toFixed(0)}%`}
-                </p>
-              </div>
-            ) : rewardsWasShown ? (
-              <button
-                className={CLAIM_BUTTON_CLASSES}
-                onClick={() => handleClaimRewards()}
-              >
-                <span className="block text-th-fgd-1 group-hover:mt-1 group-active:mt-2">{`Claim ${
-                  claims!.length
-                } Prize${claims!.length > 1 ? 's' : ''}`}</span>
-              </button>
-            ) : (
-              <button
-                disabled={loadingMetadata}
-                className={CLAIM_BUTTON_CLASSES}
-                onClick={() => startShowRewards()}
-              >
-                <span className="block text-th-fgd-1 group-hover:mt-1 group-active:mt-2">
-                  {' '}
-                  {loadingMetadata ? (
-                    <Loading className="w-3"></Loading>
-                  ) : (
-                    'Reveal Prizes'
-                  )}
-                </span>
-              </button>
+                <div className="-mt-8 mb-6 text-center">
+                  <h2 className="mb-1 font-rewards text-4xl tracking-wide text-white drop-shadow-[0_0_24px_rgba(0,0,0,1)] sm:text-6xl">
+                    {winnerTitle}!
+                  </h2>
+                  <p className="text-lg font-bold text-white drop-shadow-[0_0_8px_rgba(0,0,0,1)]">
+                    You&apos;re a winner in Season {previousSeason}
+                  </p>
+                </div>
+              </>
             )}
           </div>
         </div>
+
+        {isClaiming ? (
+          <div className="mx-auto w-full max-w-[500px] px-6">
+            <div className="flex h-4 w-full flex-grow rounded-full bg-th-bkg-4">
+              <div
+                style={{
+                  width: `${claimProgress}%`,
+                }}
+                className={`flex rounded-full bg-gradient-to-r from-green-600 to-green-400`}
+              ></div>
+            </div>
+            <p className="mx-auto mt-3 text-center text-base text-white drop-shadow-[0_0_8px_rgba(0,0,0,1)]">
+              {`Claiming prizes: ${claimProgress.toFixed(0)}%`}
+            </p>
+          </div>
+        ) : rewardsWasShown ? (
+          <button
+            className={CLAIM_BUTTON_CLASSES}
+            onClick={() => handleClaimRewards()}
+          >
+            <span className="block text-th-fgd-1 group-hover:mt-1 group-active:mt-2">{`Claim ${
+              claims!.length
+            } Prize${claims!.length > 1 ? 's' : ''}`}</span>
+          </button>
+        ) : (
+          <button
+            disabled={loadingMetadata}
+            className={CLAIM_BUTTON_CLASSES}
+            onClick={() => startShowRewards()}
+          >
+            <span className="block text-th-fgd-1 group-hover:mt-1 group-active:mt-2">
+              {' '}
+              {loadingMetadata ? (
+                <Loading className="w-3"></Loading>
+              ) : (
+                'Reveal Prizes'
+              )}
+            </span>
+          </button>
+        )}
       </div>
       <div
         className={`fixed bottom-0 left-0 right-0 top-0 z-[1000] ${
@@ -377,7 +417,7 @@ const ClaimPage = () => {
           setShowRender={setShowRender}
         />
       </div>
-    </>
+    </div>
   )
 }
 export default ClaimPage

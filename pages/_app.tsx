@@ -12,6 +12,7 @@ import {
 import {
   ConnectionProvider,
   WalletProvider,
+  useWallet,
 } from '@solana/wallet-adapter-react'
 import {
   PhantomWalletAdapter,
@@ -29,7 +30,7 @@ import {
 import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare'
 import { clusterApiUrl } from '@solana/web3.js'
 import TransactionNotification from '@components/notifications/TransactionNotification'
-import { ThemeProvider } from 'next-themes'
+import { ThemeProvider, useTheme } from 'next-themes'
 import { appWithTranslation } from 'next-i18next'
 import Layout from '../components/Layout'
 import MangoProvider from '@components/MangoProvider'
@@ -41,8 +42,13 @@ import Head from 'next/head'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { getDecimalCount } from 'utils/numbers'
-import { AUTO_CONNECT_WALLET, THEME_KEY } from 'utils/constants'
+import {
+  AUTO_CONNECT_WALLET,
+  SEND_TELEMETRY_KEY,
+  THEME_KEY,
+} from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
+import PlausibleProvider from 'next-plausible'
 
 // init react-query
 export const queryClient = new QueryClient()
@@ -135,6 +141,7 @@ function MyApp({ Component, pageProps }: AppProps) {
             <ThemeProvider defaultTheme="Mango Classic" storageKey={THEME_KEY}>
               <PageTitle />
               <Layout>
+                <Telemetry />
                 <Component {...pageProps} />
               </Layout>
               <TransactionNotification />
@@ -147,6 +154,45 @@ function MyApp({ Component, pageProps }: AppProps) {
 }
 
 export default appWithTranslation(MyApp)
+
+export const Telemetry = () => {
+  const router = useRouter()
+  const { wallet, connected } = useWallet()
+  const { theme } = useTheme()
+
+  const [sendTelemetry] = useLocalStorageState(SEND_TELEMETRY_KEY, true)
+
+  const telemetryProps = useMemo(() => {
+    const props = {
+      walletProvider: wallet?.adapter.name ?? 'unknown',
+      walletConnected: (wallet?.adapter.connected ?? 'false').toString(),
+      viewingAccount: router.asPath.includes('?address').toString(),
+      currentTheme: theme ?? 'unknown',
+    }
+
+    // Hack to update script tag
+    const el = document.getElementById('plausible')
+    if (el) {
+      Object.entries(props).forEach(([key, value]) => {
+        el.setAttribute(`event-${key}`, value)
+      })
+    }
+
+    return props
+  }, [wallet, connected, theme])
+
+  return (
+    <PlausibleProvider
+      domain="app.mango.markets"
+      customDomain="https://pl.mngo.cloud"
+      trackLocalhost={true}
+      selfHosted={true}
+      enabled={sendTelemetry}
+      scriptProps={{ id: 'plausible' }}
+      pageviewProps={telemetryProps}
+    />
+  )
+}
 
 const PageTitle = () => {
   const router = useRouter()

@@ -24,6 +24,40 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 dayjs.extend(relativeTime)
 import MedalIcon from '@components/icons/MedalIcon'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
+import { usePlausible } from 'next-plausible'
+import { TelemetryEvents } from 'utils/telemetry'
+import { useQuery } from '@tanstack/react-query'
+import { MANGO_DATA_API_URL } from 'utils/constants'
+import {
+  ActivityFeed,
+  isSpotTradeActivityFeedItem,
+  isSwapActivityFeedItem,
+} from 'types'
+import Tooltip from '@components/shared/Tooltip'
+
+const fetchSeasonTradesData = async (
+  startDate: string,
+  mangoAccountPk: string,
+) => {
+  try {
+    const response = await fetch(
+      `${MANGO_DATA_API_URL}/stats/activity-feed?mango-account=${mangoAccountPk}&start-date=${startDate}`,
+    )
+    const parsedResponse = await response.json()
+
+    if (parsedResponse && parsedResponse?.length) {
+      const swapsAndSpot = parsedResponse.filter(
+        (data: ActivityFeed) =>
+          data.activity_type === 'swap' ||
+          data.activity_type === 'openbook_trade',
+      )
+      return swapsAndSpot
+    } else return []
+  } catch (e) {
+    console.error('Failed to load season trades data', e)
+    return []
+  }
+}
 
 const Season = ({
   setShowLeaderboards,
@@ -31,6 +65,7 @@ const Season = ({
   setShowLeaderboards: (x: string) => void
 }) => {
   const { t } = useTranslation(['common', 'governance', 'rewards'])
+  const telemetry = usePlausible<TelemetryEvents>()
   const { wallet } = useWallet()
   const faqRef = useRef<HTMLDivElement>(null)
   const { mangoAccountAddress } = useMangoAccount()
@@ -44,6 +79,47 @@ const Season = ({
     isInitialLoading: loadingAccountPointsAndRank,
     refetch,
   } = useAccountPointsAndRank(mangoAccountAddress, seasonData?.season_id)
+
+  const { data: seasonTradesData } = useQuery(
+    ['season-trades-data', seasonData?.season_start],
+    () => fetchSeasonTradesData(seasonData!.season_start, mangoAccountAddress),
+    {
+      cacheTime: 1000 * 60 * 10,
+      staleTime: 1000 * 60,
+      retry: 3,
+      refetchOnWindowFocus: false,
+      enabled: !!(seasonData?.season_start && mangoAccountAddress),
+    },
+  )
+
+  const averageTradeValue = useMemo(() => {
+    if (!seasonTradesData || !seasonTradesData?.length) return 0
+    const notionalValues = []
+    for (const trade of seasonTradesData) {
+      const { activity_details } = trade
+      if (isSwapActivityFeedItem(trade)) {
+        const value =
+          activity_details.swap_in_amount * activity_details.swap_in_price_usd
+        notionalValues.push(value)
+      }
+      if (isSpotTradeActivityFeedItem(trade)) {
+        const value = activity_details.size * activity_details.price
+        notionalValues.push(value)
+      }
+    }
+    const totalValue = notionalValues.reduce((a, c) => a + c, 0)
+    const averageValue = totalValue / notionalValues.length
+    return averageValue
+  }, [seasonTradesData])
+
+  const projectedTier = useMemo(() => {
+    if (!accountTier?.tier) return ''
+    if (accountTier.tier === 'bot') {
+      return 'bot'
+    } else if (averageTradeValue > 1000) {
+      return 'whale'
+    } else return 'mango'
+  }, [accountTier, averageTradeValue])
 
   useEffect(() => {
     if (!topAccountsTier && !loadingAccountTier) {
@@ -168,9 +244,7 @@ const Season = ({
         </div>
         <div className="order-1 col-span-12 lg:order-2 lg:col-span-5">
           <div className="mb-4 rounded-2xl border border-th-bkg-3 p-6">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="rewards-h2">Your Points</h2>
-            </div>
+            <h2 className="rewards-h2 mb-4">Your Points</h2>
             <div className="mb-4 flex h-14 w-full items-center rounded-xl bg-th-bkg-2 px-3">
               {!loadingAccountPointsAndRank ? (
                 accountPointsAndRank?.total_points ? (
@@ -261,6 +335,35 @@ const Season = ({
               </div>
             </div>
           </div>
+          <div className="mb-4 rounded-2xl border border-th-bkg-3 p-6">
+            <h2 className="rewards-h2 mb-4">Activity</h2>
+            <div className="border-b border-th-bkg-3">
+              <div className="flex items-center justify-between border-t border-th-bkg-3 px-3 py-2">
+                <p className="rewards-p">Average Trade Value</p>
+                <span className="font-rewards text-lg text-th-active">
+                  <FormatNumericValue value={averageTradeValue} isUsd />
+                </span>
+              </div>
+              <div className="flex items-center justify-between border-t border-th-bkg-3 px-3 py-2">
+                <Tooltip content="Your projected tier for next season. This is based on your average trade value">
+                  <p className="rewards-p tooltip-underline">Projected Tier</p>
+                </Tooltip>
+                <span className="font-rewards text-lg text-th-active">
+                  {!loadingAccountTier ? (
+                    projectedTier ? (
+                      <span className="capitalize">{projectedTier}</span>
+                    ) : (
+                      '–'
+                    )
+                  ) : (
+                    <SheenLoader>
+                      <div className="h-4 w-12 rounded-sm bg-th-bkg-3" />
+                    </SheenLoader>
+                  )}
+                </span>
+              </div>
+            </div>
+          </div>
           <div className="rounded-2xl border border-th-bkg-3 p-6">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="rewards-h2">Top Accounts</h2>
@@ -340,7 +443,10 @@ const Season = ({
             </div>
             <button
               className="raised-button group mx-auto block h-10 w-full px-6 pt-1 font-rewards text-xl after:rounded-lg focus:outline-none lg:h-12"
-              onClick={() => setShowLeaderboards(topAccountsTier)}
+              onClick={() => {
+                setShowLeaderboards(topAccountsTier)
+                telemetry('rewardsViewLeaderboard')
+              }}
             >
               <span className="block text-th-fgd-1 group-hover:mt-1 group-active:mt-2">
                 Full Leaderboard

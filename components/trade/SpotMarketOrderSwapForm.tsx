@@ -48,6 +48,7 @@ import { useTokenMax } from '@components/swap/useTokenMax'
 import SheenLoader from '@components/shared/SheenLoader'
 import { fetchJupiterTransaction } from '@components/swap/SwapReviewRouteInfo'
 import MaxMarketTradeAmount from './MaxMarketTradeAmount'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 const set = mangoStore.getState().set
 
@@ -66,6 +67,7 @@ export default function SpotMarketOrderSwapForm() {
   const [placingOrder, setPlacingOrder] = useState(false)
   const { ipAllowed, ipCountry } = useIpAddress()
   const { connected, publicKey, connect } = useWallet()
+  const { mangoAccount } = useMangoAccount()
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const [savedCheckboxSettings, setSavedCheckboxSettings] =
     useLocalStorageState(TRADE_CHECKBOXES_KEY, DEFAULT_CHECKBOX_SETTINGS)
@@ -207,6 +209,7 @@ export default function SpotMarketOrderSwapForm() {
     slippage,
     swapMode: 'ExactIn',
     wallet: publicKey?.toBase58(),
+    mangoAccount,
     mode: 'JUPITER',
   })
 

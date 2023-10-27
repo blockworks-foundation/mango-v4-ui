@@ -265,8 +265,8 @@ const TriggerSwapForm = ({
     const balance = mangoAccount.getTokenDepositsUi(outputBank)
     const remainingBalance = balance - amountOutAsDecimal.toNumber()
     const borrowAmount = remainingBalance < 0 ? Math.abs(remainingBalance) : 0
-
-    return borrowAmount > remainingBorrowsInPeriod
+    const borrowAmountNotional = borrowAmount * outputBank.uiPrice
+    return borrowAmountNotional > remainingBorrowsInPeriod
   }, [
     amountOutAsDecimal,
     outputBank,
@@ -856,7 +856,6 @@ const TriggerSwapForm = ({
       ) : null}
       {ipAllowed ? (
         <Button
-          disabled={borrowExceedsLimitInPeriod || tokenPositionsFull}
           onClick={onClick}
           className="mb-4 mt-6 flex w-full items-center justify-center text-base"
           size="large"

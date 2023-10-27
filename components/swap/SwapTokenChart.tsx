@@ -28,7 +28,7 @@ import ChartRangeButtons from '../shared/ChartRangeButtons'
 import { useViewport } from 'hooks/useViewport'
 import { formatTokenSymbol } from 'utils/tokens'
 import { useQuery } from '@tanstack/react-query'
-import { ChartDataItem, fetchChartData } from 'apis/coingecko'
+import { SwapChartDataItem, fetchSwapChartData } from 'apis/coingecko'
 import mangoStore from '@store/mangoStore'
 import useJupiterSwapData from './useJupiterSwapData'
 import useLocalStorageState from 'hooks/useLocalStorageState'
@@ -61,7 +61,7 @@ const CustomizedLabel = ({
   value,
   index,
 }: {
-  chartData: ChartDataItem[]
+  chartData: SwapChartDataItem[]
   x?: number
   y?: string | number
   value?: number
@@ -182,7 +182,7 @@ const SwapTokenChart = () => {
   const { inputCoingeckoId, outputCoingeckoId } = useJupiterSwapData()
   const [baseTokenId, setBaseTokenId] = useState(inputCoingeckoId)
   const [quoteTokenId, setQuoteTokenId] = useState(outputCoingeckoId)
-  const [mouseData, setMouseData] = useState<ChartDataItem>()
+  const [mouseData, setMouseData] = useState<SwapChartDataItem>()
   const [daysToShow, setDaysToShow] = useState('1')
   const { theme } = useThemeWrapper()
   const [animationSettings] = useLocalStorageState(
@@ -333,7 +333,7 @@ const SwapTokenChart = () => {
   } = useQuery(
     ['swap-chart-data', baseTokenId, quoteTokenId, daysToShow, flipPrices],
     () =>
-      fetchChartData(
+      fetchSwapChartData(
         baseTokenId,
         inputBank,
         quoteTokenId,
@@ -375,15 +375,19 @@ const SwapTokenChart = () => {
     if (!coingeckoData || !coingeckoData.length || !chartSwapTimes.length)
       return []
     return chartSwapTimes.map((x) => {
-      const makeChartDataItem = { inputTokenPrice: 1, outputTokenPrice: 1 }
+      const makeSwapChartDataItem = { inputTokenPrice: 1, outputTokenPrice: 1 }
       const index = coingeckoData.findIndex((d) => d.time > x) // find index of data point with x value greater than highlight x
       if (index === 0) {
-        return { time: x, price: coingeckoData[0].price, ...makeChartDataItem } // return first data point y value if highlight x is less than first data point x
+        return {
+          time: x,
+          price: coingeckoData[0].price,
+          ...makeSwapChartDataItem,
+        } // return first data point y value if highlight x is less than first data point x
       } else if (index === -1) {
         return {
           time: x,
           price: coingeckoData[coingeckoData.length - 1].price,
-          ...makeChartDataItem,
+          ...makeSwapChartDataItem,
         } // return last data point y value if highlight x is greater than last data point x
       } else {
         const x0 = coingeckoData[index - 1].time
@@ -392,7 +396,7 @@ const SwapTokenChart = () => {
         const y1 = coingeckoData[index].price
         const interpolateY = interpolateNumber(y0, y1) // create interpolate function for y values
         const y = interpolateY((x - x0) / (x1 - x0)) // estimate y value at highlight x using interpolate function
-        return { time: x, price: y, ...makeChartDataItem }
+        return { time: x, price: y, ...makeSwapChartDataItem }
       }
     })
   }, [coingeckoData, chartSwapTimes])
@@ -498,7 +502,9 @@ const SwapTokenChart = () => {
                         numbers={formatNumericValue(mouseData.price)}
                       />
                     ) : (
-                      <FormatNumericValue value={mouseData.price} />
+                      <span className="tabular-nums">
+                        <FormatNumericValue value={mouseData.price} />
+                      </span>
                     )}
                     <span
                       className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0`}
@@ -523,9 +529,11 @@ const SwapTokenChart = () => {
                         )}
                       />
                     ) : (
-                      <FormatNumericValue
-                        value={chartData[chartData.length - 1].price}
-                      />
+                      <span className="tabular-nums">
+                        <FormatNumericValue
+                          value={chartData[chartData.length - 1].price}
+                        />
+                      </span>
                     )}
                     <span
                       className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0`}

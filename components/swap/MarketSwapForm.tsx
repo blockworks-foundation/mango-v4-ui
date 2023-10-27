@@ -80,6 +80,7 @@ const MarketSwapForm = ({
   const [debouncedAmountIn] = useDebounce(amountInFormValue, 300)
   const [debouncedAmountOut] = useDebounce(amountOutFormValue, 300)
   const { connected, publicKey } = useWallet()
+  const { mangoAccount } = useMangoAccount()
   const { bestRoute } = useQuoteRoutes({
     inputMint: inputBank?.mint.toString() || USDC_MINT,
     outputMint: outputBank?.mint.toString() || MANGO_MINT,
@@ -87,6 +88,7 @@ const MarketSwapForm = ({
     slippage,
     swapMode,
     wallet: publicKey?.toBase58(),
+    mangoAccount,
   })
   const { ipAllowed, ipCountry } = useIpAddress()
 
@@ -334,8 +336,8 @@ const SwapFormSubmitButton = ({
     const balance = mangoAccount.getTokenDepositsUi(inputBank)
     const remainingBalance = balance - amountIn.toNumber()
     const borrowAmount = remainingBalance < 0 ? Math.abs(remainingBalance) : 0
-
-    return borrowAmount > remainingBorrowsInPeriod
+    const borrowAmountNotional = borrowAmount * inputBank.uiPrice
+    return borrowAmountNotional > remainingBorrowsInPeriod
   }, [amountIn, inputBank, mangoAccountAddress, remainingBorrowsInPeriod])
 
   const disabled =

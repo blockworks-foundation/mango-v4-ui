@@ -4,6 +4,8 @@
     "deposit-funds": "存入资金",
     "disabled": "关闭",
     "enabled": "开启",
+    "error-slippage-exceeded": "Slippage exceeded",
+    "error-slippage-exceeded-desc": "Try increasing your max slippage",
     "est-liq-price": "预计清算价格",
     "est-received": "预计收到",
     "fees-paid-to": "缴给{{route}}的费用",

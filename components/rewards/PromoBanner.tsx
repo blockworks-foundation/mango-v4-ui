@@ -57,7 +57,7 @@ const PromoBanner = () => {
   return seasonData?.season_id && isWhiteListed ? (
     showClaim ? (
       <BannerContent
-        text={`Claiming season ${seasonData.season_id} rewards ends ${
+        text={`Claiming season ${seasonData.season_id - 1} rewards ends ${
           claimEndsIn || ''
         }.`}
         linkText="Claim Now"

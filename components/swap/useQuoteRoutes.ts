@@ -8,6 +8,7 @@ import useJupiterSwapData from './useJupiterSwapData'
 import useDebounce from '@components/shared/useDebounce'
 import { useMemo } from 'react'
 import { JUPITER_V6_QUOTE_API_MAINNET } from 'utils/constants'
+import { MangoAccount } from '@blockworks-foundation/mango-v4'
 
 type SwapModes = 'ALL' | 'JUPITER' | 'MANGO'
 
@@ -18,6 +19,7 @@ type useQuoteRoutesPropTypes = {
   slippage: number
   swapMode: string
   wallet: string | undefined
+  mangoAccount: MangoAccount | undefined
   mode?: SwapModes
   enabled?: () => boolean
 }
@@ -30,6 +32,7 @@ const fetchJupiterRoute = async (
   swapMode = 'ExactIn',
   feeBps = 1,
   onlyDirectRoutes = true,
+  maxAccounts = 64,
 ) => {
   {
     const paramsString = new URLSearchParams({
@@ -38,6 +41,7 @@ const fetchJupiterRoute = async (
       amount: amount.toString(),
       slippageBps: Math.ceil(slippage * 100).toString(),
       platformFeeBps: feeBps.toString(),
+      maxAccounts: maxAccounts.toString(),
       swapMode,
       onlyDirectRoutes: `${onlyDirectRoutes}`,
     }).toString()
@@ -117,11 +121,26 @@ export const handleGetRoutes = async (
   swapMode = 'ExactIn',
   feeBps = 1,
   wallet: string | undefined,
+  mangoAccount: MangoAccount | undefined,
   mode: SwapModes = 'ALL',
   jupiterOnlyDirectRoutes = false,
 ) => {
   try {
     wallet ||= PublicKey.default.toBase58()
+
+    let maxAccounts: number
+    if (!mangoAccount) {
+      maxAccounts = 64
+    } else {
+      // TODO: replace with client method
+      const totalSlots =
+        mangoAccount.tokensActive().length +
+        mangoAccount.serum3Active().length +
+        mangoAccount.tokenConditionalSwapsActive().length +
+        mangoAccount.perpActive().length +
+        mangoAccount.perpOrdersActive().length
+      maxAccounts = 56 - 2 * totalSlots
+    }
 
     const routes = []
 
@@ -148,6 +167,7 @@ export const handleGetRoutes = async (
         swapMode,
         feeBps,
         jupiterOnlyDirectRoutes,
+        maxAccounts,
       )
       routes.push(jupiterRoute)
     }
@@ -183,6 +203,7 @@ const useQuoteRoutes = ({
   slippage,
   swapMode,
   wallet,
+  mangoAccount,
   mode = 'ALL',
   enabled,
 }: useQuoteRoutesPropTypes) => {
@@ -220,6 +241,7 @@ const useQuoteRoutes = ({
         swapMode,
         1,
         wallet,
+        mangoAccount,
         mode,
       ),
     {

@@ -6700,6 +6700,11 @@ next-i18next@14.0.0:
     hoist-non-react-statics "^3.3.2"
     i18next-fs-backend "^2.1.5"
 
+next-plausible@3.11.1:
+  version "3.11.1"
+  resolved "https://registry.yarnpkg.com/next-plausible/-/next-plausible-3.11.1.tgz#89c519cf71d80a573ee16eebe1f355b062362aaf"
+  integrity sha512-Gd+QU+XflVTx65yJ2cNZyrOQLrpz3uKjGLEG4ls+CIVqK3yjsVGCMsEWJcvv1LAeVfHUQtCyp1xyAltLn5Odcg==
+
 next-themes@0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/next-themes/-/next-themes-0.2.0.tgz#fdc507f61e95b3ae513dee8d4783bcec8c02e3a3"
