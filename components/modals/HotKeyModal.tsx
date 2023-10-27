@@ -112,7 +112,11 @@ const HotKeyModal = ({ isOpen, onClose }: ModalProps) => {
 
   const handleSwitchTab = (tab: string) => {
     setActiveTab(tab)
-    setHotKeyForm({ ...DEFAULT_FORM_VALUES })
+    setHotKeyForm({
+      ...DEFAULT_FORM_VALUES,
+      name: hotKeyForm.name,
+      triggerKey: hotKeyForm.triggerKey,
+    })
     setFormErrors({})
     setSelectedTemplate('')
   }
