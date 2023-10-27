@@ -50,7 +50,10 @@ import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { isMangoError } from 'types'
 import { useWallet } from '@solana/wallet-adapter-react'
 import TokenLogo from '@components/shared/TokenLogo'
-import { parseTxForKnownErrors } from '@blockworks-foundation/mango-v4'
+import {
+  TransactionErrors,
+  parseTxForKnownErrors,
+} from '@blockworks-foundation/mango-v4'
 
 const set = mangoStore.getState().set
 
@@ -402,7 +405,10 @@ const SwapReviewRouteInfo = ({
             connection,
             e?.txid,
           )
-          if (slippageExceeded === 1) {
+          if (
+            slippageExceeded ===
+            TransactionErrors.JupiterSlippageToleranceExceeded
+          ) {
             notify({
               title: t('swap:error-slippage-exceeded'),
               description: t('swap:error-slippage-exceeded-desc'),
