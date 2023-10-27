@@ -7,12 +7,16 @@ const PERCENTAGE_SHORTCUTS = [10, 25, 50, 75, 100]
 const LeverageSlider = ({
   amount,
   decimals,
+  handleStartDrag,
+  handleEndDrag,
   leverageMax,
   onChange,
   step,
 }: {
   amount: number
   decimals?: number
+  handleStartDrag?: () => void
+  handleEndDrag?: () => void
   leverageMax: number
   onChange: (x: string) => void
   step: number
@@ -87,6 +91,10 @@ const LeverageSlider = ({
         className="w-full focus:outline-none"
         onChange={handleSliderChange}
         value={value}
+        onMouseDown={handleStartDrag}
+        onMouseUp={handleEndDrag}
+        onKeyDown={handleStartDrag}
+        onKeyUp={handleEndDrag}
       ></input>
       <div className="mt-1 flex justify-between">
         {PERCENTAGE_SHORTCUTS.map((p) => (

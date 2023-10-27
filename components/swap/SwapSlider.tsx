@@ -9,12 +9,16 @@ const SwapSlider = ({
   useMargin,
   step,
   maxAmount,
+  handleStartDrag,
+  handleEndDrag,
 }: {
   amount: number
   onChange: (x: string) => void
   useMargin: boolean
   step: number
   maxAmount: (useMargin: boolean) => TokenMaxResults
+  handleStartDrag?: () => void
+  handleEndDrag?: () => void
 }) => {
   const { mangoAccount } = useMangoAccount()
   const { amount: tokenMax, amountWithBorrow } = maxAmount(useMargin)
@@ -28,6 +32,8 @@ const SwapSlider = ({
           leverageMax={100}
           onChange={onChange}
           step={step}
+          handleStartDrag={handleStartDrag}
+          handleEndDrag={handleEndDrag}
         />
       ) : (
         <LeverageSlider
@@ -38,6 +44,8 @@ const SwapSlider = ({
           }
           onChange={onChange}
           step={step}
+          handleStartDrag={handleStartDrag}
+          handleEndDrag={handleEndDrag}
         />
       )}
     </>
