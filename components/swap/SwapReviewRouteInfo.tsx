@@ -50,7 +50,10 @@ import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { isMangoError } from 'types'
 import { useWallet } from '@solana/wallet-adapter-react'
 import TokenLogo from '@components/shared/TokenLogo'
-import { parseTxForKnownErrors } from '@blockworks-foundation/mango-v4'
+import {
+  TransactionErrors,
+  parseTxForKnownErrors,
+} from '@blockworks-foundation/mango-v4'
 
 const set = mangoStore.getState().set
 
@@ -137,6 +140,21 @@ export const fetchJupiterTransaction = async (
   outputMint: PublicKey,
   isDirectWalletSwap = false,
 ): Promise<[TransactionInstruction[], AddressLookupTableAccount[]]> => {
+  // TODO: replace by something that belongs to the DAO
+  // https://referral.jup.ag/
+  // EV4qhLE2yPKdUPdQ74EWJUn21xT3eGQxG3DRR1g9NNFc belongs to 8SSLjXBEVk9nesbhi9UMCA32uijbVBUqWoKPPQPTekzt
+  // for now
+  const feeAccountPdas = await PublicKey.findProgramAddressSync(
+    [
+      Buffer.from('referral_ata'),
+      new PublicKey('EV4qhLE2yPKdUPdQ74EWJUn21xT3eGQxG3DRR1g9NNFc').toBuffer(),
+      outputMint.toBuffer(),
+    ],
+    new PublicKey('REFER4ZgmyYx9c6He5XfaTMiGfdLwRnkV4RPp9t9iF3'),
+  )
+  const feeAccount = feeAccountPdas[0]
+
+  // docs https://station.jup.ag/api-v6/post-swap
   const transactions = await (
     await fetch(`${JUPITER_V6_QUOTE_API_MAINNET}/swap`, {
       method: 'POST',
@@ -148,10 +166,13 @@ export const fetchJupiterTransaction = async (
         quoteResponse: selectedRoute,
         // user public key to be used for the swap
         userPublicKey,
-        // feeAccount is optional. Use if you want to charge a fee.  feeBps must have been passed in /quote API.
-        // This is the ATA account for the output token where the fee will be sent to. If you are swapping from SOL->USDC then this would be the USDC ATA you want to collect the fee.
-        // feeAccount: 'fee_account_public_key',
         slippageBps: Math.ceil(slippage * 100),
+        // docs
+        // https://station.jup.ag/docs/additional-topics/referral-program
+        // https://github.com/TeamRaccoons/referral
+        // https://github.com/TeamRaccoons/referral/blob/main/packages/sdk/src/referral.ts
+        platformFeeBps: 1,
+        feeAccount,
       }),
     })
   ).json()
@@ -384,7 +405,10 @@ const SwapReviewRouteInfo = ({
             connection,
             e?.txid,
           )
-          if (slippageExceeded === 1) {
+          if (
+            slippageExceeded ===
+            TransactionErrors.JupiterSlippageToleranceExceeded
+          ) {
             notify({
               title: t('swap:error-slippage-exceeded'),
               description: t('swap:error-slippage-exceeded-desc'),
