@@ -63,7 +63,11 @@ const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
   const { connected, publicKey } = useWallet()
   const quoteAmount =
     swapMode === 'ExactIn' ? amountInFormValue : amountOutFormValue
-  const { bestRoute } = useQuoteRoutes({
+  const {
+    bestRoute,
+    isFetching: fetchingRoute,
+    refetch: refetchRoute,
+  } = useQuoteRoutes({
     inputMint: inputBank?.mint.toString(),
     outputMint: outputBank?.mint.toString(),
     amount: quoteAmount,
@@ -298,8 +302,10 @@ const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
     <>
       <SwapReviewRouteInfo
         amountIn={amountInAsDecimal}
+        loadingRoute={fetchingRoute}
         isWalletSwap
         onClose={() => setShowConfirm(false)}
+        refetchRoute={refetchRoute}
         routes={bestRoute ? [bestRoute] : undefined}
         selectedRoute={selectedRoute}
         setSelectedRoute={setSelectedRoute}

@@ -256,14 +256,18 @@ const useQuoteRoutes = ({
           routes: [],
           bestRoute: undefined,
         }),
+        isFetching: res.isFetching,
         isLoading: res.isLoading,
         isInitialLoading: res.isInitialLoading,
+        refetch: res.refetch,
       }
     : {
         routes: [],
         bestRoute: undefined,
+        isFetching: false,
         isLoading: false,
         isInitialLoading: false,
+        refetch: undefined,
       }
 }
 

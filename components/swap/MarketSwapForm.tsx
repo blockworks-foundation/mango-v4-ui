@@ -81,7 +81,11 @@ const MarketSwapForm = ({
   const { mangoAccount } = useMangoAccount()
   const quoteAmount =
     swapMode === 'ExactIn' ? amountInFormValue : amountOutFormValue
-  const { bestRoute } = useQuoteRoutes({
+  const {
+    bestRoute,
+    isFetching: fetchingRoute,
+    refetch: refetchRoute,
+  } = useQuoteRoutes({
     inputMint: inputBank?.mint.toString(),
     outputMint: outputBank?.mint.toString(),
     amount: quoteAmount,
@@ -296,8 +300,10 @@ const MarketSwapForm = ({
     <>
       <SwapReviewRouteInfo
         amountIn={amountInAsDecimal}
+        loadingRoute={fetchingRoute}
         onClose={() => setShowConfirm(false)}
         onSuccess={onSuccess}
+        refetchRoute={refetchRoute}
         routes={bestRoute ? [bestRoute] : undefined}
         selectedRoute={selectedRoute}
         setSelectedRoute={setSelectedRoute}
