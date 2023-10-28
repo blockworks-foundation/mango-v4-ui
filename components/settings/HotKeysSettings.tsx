@@ -76,6 +76,7 @@ const HotKeysSettings = () => {
           <tbody>
             {hotKeys.map((hk: HotKey) => {
               const {
+                custom,
                 name,
                 keySequence,
                 orderSide,
@@ -121,13 +122,20 @@ const HotKeysSettings = () => {
                   <Td className="text-right">{size}</Td>
                   <Td className="text-right">{price}</Td>
                   <Td className="text-right">
-                    {Object.entries(options).map((e) => {
-                      return e[1]
-                        ? `${e[0] !== 'margin' ? ', ' : ''}${t(
-                            `trade:${e[0]}`,
-                          )}`
-                        : ''
-                    })}
+                    {!custom ? (
+                      <div className="flex items-center justify-end space-x-2">
+                        {Object.entries(options).map((e) => {
+                          return e[1] ? (
+                            <div
+                              className="rounded border border-th-fgd-4 px-1 text-xxs text-th-fgd-4"
+                              key={e[0]}
+                            >
+                              {t(`trade:${e[0]}`)}
+                            </div>
+                          ) : null
+                        })}
+                      </div>
+                    ) : null}
                   </Td>
                   <Td>
                     <div className="flex justify-end">
