@@ -17,14 +17,8 @@ import { JupiterV6RouteInfo } from 'types/jupiter'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { DEFAULT_PERCENTAGE_VALUES } from './PercentageSelectButtons'
 import BuyTokenInput from './BuyTokenInput'
-import Button from '@components/shared/Button'
 import SwapReviewRouteInfo from './SwapReviewRouteInfo'
-import useIpAddress from 'hooks/useIpAddress'
-import { useTranslation } from 'react-i18next'
 import useQuoteRoutes from './useQuoteRoutes'
-import Loading from '@components/shared/Loading'
-import InlineNotification from '@components/shared/InlineNotification'
-import SecondaryConnectButton from '@components/shared/SecondaryConnectButton'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { floorToDecimal } from 'utils/numbers'
@@ -33,6 +27,7 @@ import WalletSellTokenInput from './WalletSellTokenInput'
 import { walletBalanceForToken } from '@components/DepositForm'
 import WalletSwapSlider from './WalletSwapSlider'
 import ButtonGroup from '@components/forms/ButtonGroup'
+import SwapFormSubmitButton from './SwapFormSubmitButton'
 
 dayjs.extend(relativeTime)
 
@@ -43,7 +38,6 @@ type WalletSwapFormProps = {
 const set = mangoStore.getState().set
 
 const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
-  const { t } = useTranslation(['common', 'swap', 'trade'])
   //initial state is undefined null is returned on error
   const [selectedRoute, setSelectedRoute] =
     useState<JupiterV6RouteInfo | null>()
@@ -52,7 +46,6 @@ const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
   const [sizePercentage, setSizePercentage] = useState('')
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const {
-    margin: useMargin,
     slippage,
     inputBank,
     outputBank,
@@ -73,7 +66,6 @@ const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
     mangoAccount: undefined,
     mode: 'JUPITER',
   })
-  const { ipAllowed, ipCountry } = useIpAddress()
 
   const walletTokens = mangoStore((s) => s.wallet.tokens)
 
@@ -278,81 +270,15 @@ const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
         loading={loadingSwapDetails}
         setShowTokenSelect={setShowTokenSelect}
       />
-      {ipAllowed ? (
-        <SwapFormSubmitButton
-          loadingSwapDetails={loadingSwapDetails}
-          useMargin={useMargin}
-          selectedRoute={selectedRoute}
-          setShowConfirm={setShowConfirm}
-          amountIn={amountInAsDecimal}
-          inputSymbol={inputBank?.name}
-          amountOut={selectedRoute ? amountOutAsDecimal.toNumber() : undefined}
-        />
-      ) : (
-        <Button
-          disabled
-          className="mb-4 mt-6 flex w-full items-center justify-center text-base"
-          size="large"
-        >
-          {t('country-not-allowed', {
-            country: ipCountry ? `(${ipCountry})` : '',
-          })}
-        </Button>
-      )}
+      <SwapFormSubmitButton
+        loadingSwapDetails={loadingSwapDetails}
+        selectedRoute={selectedRoute}
+        setShowConfirm={setShowConfirm}
+        amountIn={amountInAsDecimal}
+        amountOut={selectedRoute ? amountOutAsDecimal.toNumber() : undefined}
+      />
     </>
   )
 }
 
 export default WalletSwapForm
-
-const SwapFormSubmitButton = ({
-  amountIn,
-  amountOut,
-  loadingSwapDetails,
-  selectedRoute,
-  setShowConfirm,
-}: {
-  amountIn: Decimal
-  amountOut: number | undefined
-  inputSymbol: string | undefined
-  loadingSwapDetails: boolean
-  selectedRoute: JupiterV6RouteInfo | undefined | null
-  setShowConfirm: (x: boolean) => void
-  useMargin: boolean
-}) => {
-  const { t } = useTranslation('common')
-  const { connected } = useWallet()
-
-  const disabled =
-    (connected && !amountIn.toNumber()) || !amountOut || !selectedRoute
-
-  return (
-    <>
-      {connected ? (
-        <Button
-          onClick={() => setShowConfirm(true)}
-          className="mb-4 mt-6 flex w-full items-center justify-center text-base"
-          disabled={disabled}
-          size="large"
-        >
-          {loadingSwapDetails ? (
-            <Loading />
-          ) : (
-            <span>{t('swap:review-swap')}</span>
-          )}
-        </Button>
-      ) : (
-        <SecondaryConnectButton
-          className="mb-4 mt-6 flex w-full items-center justify-center"
-          isLarge
-        />
-      )}
-      {(selectedRoute === null && amountIn.gt(0)) ||
-      (selectedRoute && !!selectedRoute.error) ? (
-        <div className="mb-4">
-          <InlineNotification type="error" desc={t('swap:no-swap-found')} />
-        </div>
-      ) : null}
-    </>
-  )
-}

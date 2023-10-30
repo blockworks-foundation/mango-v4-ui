@@ -46,8 +46,8 @@ const fetchIpGeolocation = async () => {
 }
 
 export default function useIpAddress() {
-  const [ipAllowed, setIpAllowed] = useState(false)
-  const [spotAllowed, setSpotAllowed] = useState(false)
+  const [ipAllowed, setIpAllowed] = useState(true)
+  const [spotAllowed, setSpotAllowed] = useState(true)
   const [ipCountry, setIpCountry] = useState('')
 
   const ipCountryCode = useQuery<string, Error>(
