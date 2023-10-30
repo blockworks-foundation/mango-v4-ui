@@ -305,7 +305,7 @@ const ClaimPage = () => {
       <Loading />
     </div>
   ) : (
-    <div className="flex min-h-[calc(100vh-112px)] flex-col bg-[url('/images/rewards/claim-bg.png')] bg-cover bg-fixed bg-center sm:min-h-[calc(100vh-92px)]">
+    <div className="flex min-h-[calc(100vh-112px)] flex-col bg-[url('/images/rewards/claim-bg.jpg')] bg-cover bg-fixed bg-center sm:min-h-[calc(100vh-92px)]">
       <div className="flex flex-1 flex-col justify-around pb-20 pt-8 md:pb-16">
         <div className="flex items-center justify-center">
           <div className="flex items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-red-400 px-4 py-1">
