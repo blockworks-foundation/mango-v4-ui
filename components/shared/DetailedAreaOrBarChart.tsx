@@ -144,17 +144,18 @@ const DetailedAreaOrBarChart: FunctionComponent<
           (d: any) => d[xKey] === mouseData[xKey],
         )
         const currentValue = filteredData[index][yKey]
+
         const change =
           index >= 0
             ? changeAsPercent
-              ? ((currentValue - firstValue) / firstValue) * 100
+              ? ((currentValue - firstValue) / Math.abs(firstValue)) * 100
               : currentValue - firstValue
             : 0
         return isNaN(change) ? 0 : change
       } else {
         const currentValue = filteredData[filteredData.length - 1][yKey]
         return changeAsPercent
-          ? ((currentValue - firstValue) / firstValue) * 100
+          ? ((currentValue - firstValue) / Math.abs(firstValue)) * 100
           : currentValue - firstValue
       }
     }
