@@ -430,20 +430,26 @@ const AdvancedTradeForm = () => {
         })
       } else if (selectedMarket instanceof PerpMarket) {
         const perpOrderType =
-          tradeForm.tradeType === 'Market'
-            ? PerpOrderType.market
-            : tradeForm.ioc
+          tradeForm.tradeType === 'Market' || tradeForm.ioc
             ? PerpOrderType.immediateOrCancel
             : tradeForm.postOnly
             ? PerpOrderType.postOnly
             : PerpOrderType.limit
+
+        let orderPrice = price
+        if (tradeForm.tradeType === 'Market') {
+          const maxSlippage = 0.025
+          orderPrice =
+            price *
+            (tradeForm.side === 'buy' ? 1 + maxSlippage : 1 - maxSlippage)
+        }
 
         const { signature: tx } = await client.perpPlaceOrder(
           group,
           mangoAccount,
           selectedMarket.perpMarketIndex,
           tradeForm.side === 'buy' ? PerpOrderSide.bid : PerpOrderSide.ask,
-          price,
+          orderPrice,
           Math.abs(baseSize),
           undefined, // maxQuoteQuantity
           Date.now(),
@@ -830,6 +836,15 @@ const AdvancedTradeForm = () => {
               )}
             </div>
           </form>
+          {tradeForm.tradeType === 'Market' &&
+          selectedMarket instanceof PerpMarket ? (
+            <div className="mb-4 px-3 md:px-4">
+              <InlineNotification
+                type="warning"
+                desc={t('trade:price-expect')}
+              />
+            </div>
+          ) : null}
           {borrowExceedsLimitInPeriod &&
           remainingBorrowsInPeriod &&
           timeToNextPeriod ? (
