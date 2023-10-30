@@ -3,7 +3,7 @@ import Button from './Button'
 import { useWallet } from '@solana/wallet-adapter-react'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { WalletName, WalletReadyState } from '@solana/wallet-adapter-base'
-import { AUTO_CONNECT_WALLET, LAST_WALLET_NAME } from 'utils/constants'
+import { IS_ONBOARDED_KEY, LAST_WALLET_NAME } from 'utils/constants'
 import { notify } from 'utils/notifications'
 import { LinkIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
@@ -24,10 +24,10 @@ const SecondaryConnectButton = ({
     LAST_WALLET_NAME,
     '',
   )
-  const [autoConnect] = useLocalStorageState(AUTO_CONNECT_WALLET, true)
+  const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
 
   const handleConnect = useCallback(() => {
-    if (!autoConnect) {
+    if (!isOnboarded) {
       set((s) => {
         s.showUserSetup = true
       })
@@ -48,7 +48,7 @@ const SecondaryConnectButton = ({
         })
       }
     }
-  }, [autoConnect, lastWalletName, select, wallets])
+  }, [isOnboarded, lastWalletName, select, wallets])
 
   return (
     <Button

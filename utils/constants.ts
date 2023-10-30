@@ -144,6 +144,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   eth: true,
   ethpo: true,
   'eth (portal)': true,
+  guac: true,
   hnt: true,
   jitosol: true,
   kin: true,

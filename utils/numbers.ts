@@ -79,7 +79,10 @@ const roundValue = (
   })
 }
 
-const digits2 = new Intl.NumberFormat('en', { maximumFractionDigits: 2 })
+const digits2 = new Intl.NumberFormat('en', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+})
 const digits3 = new Intl.NumberFormat('en', { maximumFractionDigits: 3 })
 const digits4 = new Intl.NumberFormat('en', { maximumFractionDigits: 4 })
 const digits5 = new Intl.NumberFormat('en', { maximumFractionDigits: 5 })

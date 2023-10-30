@@ -17,6 +17,7 @@ import Input from '@components/forms/Input'
 import { getInputTokenBalance } from './TriggerSwapForm'
 import { walletBalanceForToken } from '@components/DepositForm'
 import TokenReduceOnlyDesc from '@components/shared/TokenReduceOnlyDesc'
+import PopularSwapTokens from './PopularSwapTokens'
 
 export type SwapFormTokenListType =
   | 'input'
@@ -349,7 +350,7 @@ const SwapFormTokenList = ({
       >
         <XMarkIcon className="h-6 w-6" />
       </IconButton>
-      <div className="relative mb-4">
+      <div className="relative">
         <Input
           className="pl-10"
           type="text"
@@ -361,13 +362,24 @@ const SwapFormTokenList = ({
         />
         <MagnifyingGlassIcon className="absolute left-3 top-3.5 h-5 w-5 text-th-fgd-3" />
       </div>
-      <div className="flex justify-between rounded bg-th-bkg-2 p-2">
+      {!type?.includes('reduce') ? (
+        <div className="pt-2">
+          <PopularSwapTokens setSwapToken={handleTokenSelect} />
+        </div>
+      ) : null}
+      <div className="mt-4 flex justify-between rounded bg-th-bkg-2 p-2">
         <p className="text-xs text-th-fgd-4">{t('token')}</p>
         {!type?.includes('output') ? (
           <p className="text-xs text-th-fgd-4">{t('max')}</p>
         ) : null}
       </div>
-      <div className="thin-scroll h-[calc(100%-128px)] overflow-auto py-2">
+      <div
+        className={`thin-scroll ${
+          !type?.includes('reduce')
+            ? 'h-[calc(100%-170px)]'
+            : 'h-[calc(100%-128px)]'
+        } overflow-auto py-2`}
+      >
         {sortedTokens?.length ? (
           sortedTokens.map((token) => (
             <TokenItem

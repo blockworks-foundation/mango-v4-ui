@@ -9,6 +9,7 @@
     "perp-volume": "合约交易量",
     "pnl-liquidation-fee": "正数盈亏清算费用",
     "settle-pnl-factor": "结清盈亏因素",
+    "show-as-apr": "Show as APR",
     "six-hourly": "6-小时",
     "tooltip-base-liquidation-fee": "当清算者接管持仓时，被清算者将支付此费用。",
     "tooltip-funding-limits": "资金费用的最高与最低（一天）。",
