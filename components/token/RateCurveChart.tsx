@@ -51,7 +51,7 @@ const RateCurveChart = ({ bank }: { bank: Bank | undefined }) => {
   const [currentRate, currentUtil] = useMemo(() => {
     if (!bank) return [0, 0]
     const currentRate = bank.getDepositRateUi()
-    const currentUtil = (bank.uiBorrows() / bank.uiDeposits()) * 100
+    const currentUtil = (bank.uiBorrows() / bank.uiDeposits()) * 100 || 0
     return [currentRate, currentUtil]
   }, [bank])
 
