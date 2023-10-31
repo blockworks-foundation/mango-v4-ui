@@ -7,7 +7,6 @@ import FlipNumbers from 'react-flip-numbers'
 import { formatCurrencyValue } from 'utils/numbers'
 import Link from 'next/link'
 import SheenLoader from '@components/shared/SheenLoader'
-import Tooltip from '@components/shared/Tooltip'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useLocalStorageState from 'hooks/useLocalStorageState'
@@ -23,6 +22,7 @@ import TokenParams from './TokenParams'
 import { formatTokenSymbol } from 'utils/tokens'
 import TokenLogo from '@components/shared/TokenLogo'
 import { ArrowLeftIcon } from '@heroicons/react/20/solid'
+import RateCurveChart from './RateCurveChart'
 
 const DEFAULT_COINGECKO_VALUES = {
   ath: 0,
@@ -183,23 +183,8 @@ const TokenPage = () => {
             <ActionPanel bank={bank} />
           </div>
           <ChartTabs bank={bank} />
-          <div className="flex items-center justify-center border-y border-th-bkg-3 px-6 py-4 text-center">
-            <Tooltip
-              content={'The percentage of deposits that have been lent out.'}
-            >
-              <p className="tooltip-underline mr-1">{t('utilization')}:</p>
-            </Tooltip>
-            <span className="font-mono text-th-fgd-2 no-underline">
-              {bank.uiDeposits() > 0 ? (
-                <FormatNumericValue
-                  value={(bank.uiBorrows() / bank.uiDeposits()) * 100}
-                  decimals={1}
-                />
-              ) : (
-                '0.0'
-              )}
-              %
-            </span>
+          <div className="border-y border-th-bkg-3 px-6 pb-2 pt-6">
+            <RateCurveChart bank={bank} />
           </div>
           <TopTokenAccounts bank={bank} />
           {coingeckoTokenInfo?.market_data ? (
