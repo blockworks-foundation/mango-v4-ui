@@ -19,7 +19,11 @@ import ContentBox from './ContentBox'
 import SheenLoader from './SheenLoader'
 import { COLORS } from '../../styles/colors'
 import { IconButton } from './Button'
-import { ArrowLeftIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
+import {
+  ArrowLeftIcon,
+  ArrowsRightLeftIcon,
+  NoSymbolIcon,
+} from '@heroicons/react/20/solid'
 import { FadeInFadeOut } from './Transitions'
 import ChartRangeButtons from './ChartRangeButtons'
 import Change from './Change'
@@ -103,6 +107,9 @@ const DetailedAreaOrBarChart: FunctionComponent<
 }) => {
   const { t } = useTranslation('common')
   const [mouseData, setMouseData] = useState<any>(null)
+  const [showChangePercentage, setShowChangePercentage] = useState(
+    changeAsPercent || false,
+  )
   const { theme } = useThemeWrapper()
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
@@ -147,14 +154,14 @@ const DetailedAreaOrBarChart: FunctionComponent<
 
         const change =
           index >= 0
-            ? changeAsPercent
+            ? showChangePercentage
               ? ((currentValue - firstValue) / Math.abs(firstValue)) * 100
               : currentValue - firstValue
             : 0
         return isNaN(change) ? 0 : change
       } else {
         const currentValue = filteredData[filteredData.length - 1][yKey]
-        return changeAsPercent
+        return showChangePercentage
           ? ((currentValue - firstValue) / Math.abs(firstValue)) * 100
           : currentValue - firstValue
       }
@@ -243,14 +250,22 @@ const DetailedAreaOrBarChart: FunctionComponent<
                         )}
                         {!hideChange ? (
                           <div
-                            className={`ml-3 ${small ? 'mb-[3px]' : 'mb-0.5'}`}
+                            className={`ml-3 flex items-center ${
+                              small ? 'mb-[3px]' : 'mb-0.5'
+                            }`}
                           >
                             <Change
                               change={calculateChartChange()}
-                              decimals={!changeAsPercent ? yDecimals : 2}
-                              prefix={!changeAsPercent ? prefix : ''}
-                              suffix={!changeAsPercent ? suffix : '%'}
+                              decimals={!showChangePercentage ? yDecimals : 2}
+                              prefix={!showChangePercentage ? prefix : ''}
+                              suffix={!showChangePercentage ? suffix : '%'}
                             />
+                            {changeAsPercent ? (
+                              <ToggleChangeTypeButton
+                                changeType={showChangePercentage}
+                                setChangeType={setShowChangePercentage}
+                              />
+                            ) : null}
                           </div>
                         ) : null}
                       </div>
@@ -310,14 +325,22 @@ const DetailedAreaOrBarChart: FunctionComponent<
                         )}
                         {!hideChange ? (
                           <div
-                            className={`ml-3 ${small ? 'mb-[3px]' : 'mb-0.5'}`}
+                            className={`ml-3 flex items-center ${
+                              small ? 'mb-[3px]' : 'mb-0.5'
+                            }`}
                           >
                             <Change
                               change={calculateChartChange()}
-                              decimals={!changeAsPercent ? yDecimals : 2}
-                              prefix={!changeAsPercent ? prefix : ''}
-                              suffix={!changeAsPercent ? suffix : '%'}
+                              decimals={!showChangePercentage ? yDecimals : 2}
+                              prefix={!showChangePercentage ? prefix : ''}
+                              suffix={!showChangePercentage ? suffix : '%'}
                             />
+                            {changeAsPercent ? (
+                              <ToggleChangeTypeButton
+                                changeType={showChangePercentage}
+                                setChangeType={setShowChangePercentage}
+                              />
+                            ) : null}
                           </div>
                         ) : null}
                       </div>
@@ -581,3 +604,22 @@ const DetailedAreaOrBarChart: FunctionComponent<
 }
 
 export default DetailedAreaOrBarChart
+
+const ToggleChangeTypeButton = ({
+  changeType,
+  setChangeType,
+}: {
+  changeType: boolean
+  setChangeType: (isPercent: boolean) => void
+}) => {
+  return (
+    <IconButton
+      className="text-th-fgd-3"
+      hideBg
+      size="small"
+      onClick={() => setChangeType(!changeType)}
+    >
+      <ArrowsRightLeftIcon className="h-3.5 w-3.5" />
+    </IconButton>
+  )
+}
