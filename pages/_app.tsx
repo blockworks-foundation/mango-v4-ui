@@ -16,15 +16,11 @@ import {
 } from '@solana/wallet-adapter-react'
 import {
   PhantomWalletAdapter,
-  GlowWalletAdapter,
-  BackpackWalletAdapter,
-  BraveWalletAdapter,
   CoinbaseWalletAdapter,
   MathWalletAdapter,
   Coin98WalletAdapter,
   CloverWalletAdapter,
   LedgerWalletAdapter,
-  ExodusWalletAdapter,
   WalletConnectWalletAdapter,
 } from '@solana/wallet-adapter-wallets'
 import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare'
@@ -67,15 +63,11 @@ function MyApp({ Component, pageProps }: AppProps) {
     return [
       new PhantomWalletAdapter(),
       new SolflareWalletAdapter(),
-      new BackpackWalletAdapter(),
-      new GlowWalletAdapter(),
-      new BraveWalletAdapter(),
       new CoinbaseWalletAdapter(),
       new MathWalletAdapter(),
       new Coin98WalletAdapter(),
       new CloverWalletAdapter(),
       new LedgerWalletAdapter(),
-      new ExodusWalletAdapter(),
       new WalletConnectWalletAdapter({ network, options: {} }),
     ]
   }, [network])
