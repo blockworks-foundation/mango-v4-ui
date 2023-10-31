@@ -113,9 +113,6 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
 
   const handleDeposit = useCallback(
     async (amount: string) => {
-      //to not leave some dust on account we round amount by this number
-      //with reduce only set to true we take only what is needed to be
-      //deposited in need to repay borrow
       const mangoAccount = mangoStore.getState().mangoAccount.current
       const client = mangoStore.getState().client
       const group = mangoStore.getState().group
@@ -126,9 +123,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
       // we don't want to leave negative dust in the account if someone wants to repay the full amount
       const actualAmount =
         sizePercentage === '100'
-          ? borrowAmount.toNumber() > parseFloat(amount)
-            ? borrowAmount.toNumber()
-            : parseFloat(amount)
+          ? borrowAmount.toNumber() * 1.01
           : parseFloat(amount)
 
       setSubmitting(true)
