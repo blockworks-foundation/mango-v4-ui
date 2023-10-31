@@ -25,7 +25,7 @@ import { useTranslation } from 'react-i18next'
 import { NoSymbolIcon } from '@heroicons/react/20/solid'
 
 type RateCurveData = {
-  util: string
+  util: number
   rate: number
 }
 
@@ -49,33 +49,30 @@ const RateCurveChart = ({ bank }: { bank: Bank | undefined }) => {
   }
 
   const [currentRate, currentUtil] = useMemo(() => {
-    if (!bank) return [0, '0']
+    if (!bank) return [0, 0]
     const currentRate = bank.getDepositRateUi()
-    const currentUtil = (
-      (bank.uiBorrows() / bank.uiDeposits()) *
-      100
-    ).toString()
+    const currentUtil = (bank.uiBorrows() / bank.uiDeposits()) * 100
     return [currentRate, currentUtil]
   }, [bank])
 
   const rateCurveChartData = useMemo(() => {
     if (!bank) return []
     const defaults = [
-      { util: '0', rate: 0 },
+      { util: 0, rate: 0 },
       {
-        util: (bank.util0.toNumber() * 100).toString(),
+        util: bank.util0.toNumber() * 100,
         rate: bank.rate0.toNumber() * 100,
       },
       {
-        util: (bank.util1.toNumber() * 100).toString(),
+        util: bank.util1.toNumber() * 100,
         rate: bank.rate1.toNumber() * 100,
       },
-      { util: '100', rate: bank.maxRate.toNumber() * 100 },
+      { util: 100, rate: bank.maxRate.toNumber() * 100 },
     ]
     if (currentRate && currentUtil) {
       defaults.push({ util: currentUtil, rate: currentRate })
     }
-    return defaults.sort((a, b) => parseInt(a.util) - parseInt(b.util))
+    return defaults.sort((a, b) => a.util - b.util)
   }, [bank, currentRate, currentUtil])
 
   return (
@@ -177,7 +174,7 @@ const RateCurveChart = ({ bank }: { bank: Bank | undefined }) => {
                   </defs>
                   <Area
                     isAnimationActive={false}
-                    type="monotone"
+                    type="linear"
                     dataKey="rate"
                     stroke={COLORS.UP[theme]}
                     strokeWidth={1.5}
@@ -194,6 +191,7 @@ const RateCurveChart = ({ bank }: { bank: Bank | undefined }) => {
                     }}
                     tickLine={false}
                     tickFormatter={(d) => `${floorToDecimal(d, 2).toString()}%`}
+                    type="number"
                   />
                   <YAxis
                     axisLine={false}
