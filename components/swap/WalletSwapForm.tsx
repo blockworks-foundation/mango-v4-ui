@@ -10,8 +10,7 @@ import { ArrowDownIcon } from '@heroicons/react/20/solid'
 import { NumberFormatValues, SourceInfo } from 'react-number-format'
 import Decimal from 'decimal.js'
 import mangoStore from '@store/mangoStore'
-import useDebounce from '../shared/useDebounce'
-import { MANGO_MINT, SIZE_INPUT_UI_KEY, USDC_MINT } from '../../utils/constants'
+import { SIZE_INPUT_UI_KEY } from '../../utils/constants'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { JupiterV6RouteInfo } from 'types/jupiter'
 import useLocalStorageState from 'hooks/useLocalStorageState'
@@ -44,6 +43,7 @@ const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
   const [animateSwitchArrow, setAnimateSwitchArrow] = useState(0)
   const [showConfirm, setShowConfirm] = useState(false)
   const [sizePercentage, setSizePercentage] = useState('')
+  const [isDraggingSlider, setIsDraggingSlider] = useState(false)
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const {
     slippage,
@@ -53,18 +53,29 @@ const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
     amountOut: amountOutFormValue,
     swapMode,
   } = mangoStore((s) => s.swap)
-  const [debouncedAmountIn] = useDebounce(amountInFormValue, 300)
-  const [debouncedAmountOut] = useDebounce(amountOutFormValue, 300)
   const { connected, publicKey } = useWallet()
-  const { bestRoute } = useQuoteRoutes({
-    inputMint: inputBank?.mint.toString() || USDC_MINT,
-    outputMint: outputBank?.mint.toString() || MANGO_MINT,
-    amount: swapMode === 'ExactIn' ? debouncedAmountIn : debouncedAmountOut,
+  const quoteAmount =
+    swapMode === 'ExactIn' ? amountInFormValue : amountOutFormValue
+  const {
+    bestRoute,
+    isFetching: fetchingRoute,
+    refetch: refetchRoute,
+  } = useQuoteRoutes({
+    inputMint: inputBank?.mint.toString(),
+    outputMint: outputBank?.mint.toString(),
+    amount: quoteAmount,
     slippage,
     swapMode,
     wallet: publicKey?.toBase58(),
     mangoAccount: undefined,
     mode: 'JUPITER',
+    enabled: () =>
+      !!(
+        inputBank?.mint &&
+        outputBank?.mint &&
+        quoteAmount &&
+        !isDraggingSlider
+      ),
   })
 
   const walletTokens = mangoStore((s) => s.wallet.tokens)
@@ -80,16 +91,16 @@ const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
   }, [walletTokens, inputBank])
 
   const amountInAsDecimal: Decimal | null = useMemo(() => {
-    return Number(debouncedAmountIn)
-      ? new Decimal(debouncedAmountIn)
+    return Number(amountInFormValue)
+      ? new Decimal(amountInFormValue)
       : new Decimal(0)
-  }, [debouncedAmountIn])
+  }, [amountInFormValue])
 
   const amountOutAsDecimal: Decimal | null = useMemo(() => {
-    return Number(debouncedAmountOut)
-      ? new Decimal(debouncedAmountOut)
+    return Number(amountOutFormValue)
+      ? new Decimal(amountOutFormValue)
       : new Decimal(0)
-  }, [debouncedAmountOut])
+  }, [amountOutFormValue])
 
   const setAmountInFormValue = useCallback(
     (amountIn: string, setSwapMode?: boolean) => {
@@ -125,6 +136,9 @@ const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
     (e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
       setAmountInFormValue(e.value)
+      set((s) => {
+        s.swap.amountOut = ''
+      })
       if (swapMode === 'ExactOut') {
         set((s) => {
           s.swap.swapMode = 'ExactIn'
@@ -137,19 +151,47 @@ const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
   const handleAmountOutChange = useCallback(
     (e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
+      setAmountOutFormValue(e.value)
+      set((s) => {
+        s.swap.amountIn = ''
+      })
       if (swapMode === 'ExactIn') {
         set((s) => {
           s.swap.swapMode = 'ExactOut'
         })
       }
-      setAmountOutFormValue(e.value)
     },
     [swapMode, setAmountOutFormValue],
+  )
+
+  const handleSliderDrag = useCallback(() => {
+    if (!isDraggingSlider) {
+      setIsDraggingSlider(true)
+    }
+  }, [isDraggingSlider])
+
+  const handleSliderDragEnd = useCallback(() => {
+    if (isDraggingSlider) {
+      setIsDraggingSlider(false)
+    }
+  }, [isDraggingSlider])
+
+  const handleSliderChange = useCallback(
+    (amountIn: string) => {
+      setAmountInFormValue(amountIn, true)
+      set((s) => {
+        s.swap.amountOut = ''
+      })
+    },
+    [setAmountInFormValue],
   )
 
   const handleMax = useCallback(
     (amountIn: string) => {
       setAmountInFormValue(amountIn, true)
+      set((s) => {
+        s.swap.amountOut = ''
+      })
     },
     [setAmountInFormValue],
   )
@@ -185,19 +227,51 @@ const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
     set((s) => {
       s.swap.inputBank = outputBank
       s.swap.outputBank = inputBank
+      s.swap.amountIn = ''
+      s.swap.amountOut = ''
     })
     setAnimateSwitchArrow(
       (prevanimateSwitchArrow) => prevanimateSwitchArrow + 1,
     )
   }, [setAmountInFormValue, amountOutAsDecimal, amountInAsDecimal])
 
-  const loadingSwapDetails: boolean = useMemo(() => {
+  const loadingExactIn: boolean = useMemo(() => {
     return (
-      !!(amountInAsDecimal.toNumber() || amountOutAsDecimal.toNumber()) &&
-      connected &&
-      typeof selectedRoute === 'undefined'
+      (!!(amountInAsDecimal.toNumber() || amountOutAsDecimal.toNumber()) &&
+        connected &&
+        typeof selectedRoute === 'undefined') ||
+      !!(
+        swapMode === 'ExactIn' &&
+        amountInAsDecimal.toNumber() &&
+        !amountOutAsDecimal.toNumber()
+      )
     )
-  }, [amountInAsDecimal, amountOutAsDecimal, connected, selectedRoute])
+  }, [
+    amountInAsDecimal,
+    amountOutAsDecimal,
+    connected,
+    selectedRoute,
+    swapMode,
+  ])
+
+  const loadingExactOut: boolean = useMemo(() => {
+    return (
+      (!!(amountInAsDecimal.toNumber() || amountOutAsDecimal.toNumber()) &&
+        connected &&
+        typeof selectedRoute === 'undefined') ||
+      !!(
+        swapMode === 'ExactOut' &&
+        amountOutAsDecimal.toNumber() &&
+        !amountInAsDecimal.toNumber()
+      )
+    )
+  }, [
+    amountInAsDecimal,
+    amountOutAsDecimal,
+    connected,
+    selectedRoute,
+    swapMode,
+  ])
 
   const handleSizePercentage = (percentage: string) => {
     setSizePercentage(percentage)
@@ -207,7 +281,10 @@ const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
       if (percentage !== '100') {
         amount = floorToDecimal(amount, inputDecimals)
       }
-      setAmountInFormValue(amount.toFixed())
+      setAmountInFormValue(amount.toFixed(), true)
+      set((s) => {
+        s.swap.amountOut = ''
+      })
     } else {
       setAmountInFormValue('0')
     }
@@ -217,8 +294,10 @@ const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
     <>
       <SwapReviewRouteInfo
         amountIn={amountInAsDecimal}
+        loadingRoute={fetchingRoute}
         isWalletSwap
         onClose={() => setShowConfirm(false)}
+        refetchRoute={refetchRoute}
         routes={bestRoute ? [bestRoute] : undefined}
         selectedRoute={selectedRoute}
         setSelectedRoute={setSelectedRoute}
@@ -230,14 +309,17 @@ const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
         setShowTokenSelect={setShowTokenSelect}
         handleMax={handleMax}
         max={walletMax}
+        loading={loadingExactOut}
       />
       <div className="rounded-b-xl bg-th-bkg-2 p-3 pt-0">
         {swapFormSizeUi === 'slider' ? (
           <WalletSwapSlider
             amount={amountInAsDecimal.toNumber()}
-            onChange={(v) => setAmountInFormValue(v, true)}
+            onChange={(v) => handleSliderChange(v)}
             step={1 / 10 ** (inputBank?.mintDecimals || 6)}
             maxAmount={parseFloat(walletMax)}
+            handleStartDrag={handleSliderDrag}
+            handleEndDrag={handleSliderDragEnd}
           />
         ) : (
           <div className="col-span-2">
@@ -267,11 +349,11 @@ const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
       </div>
       <BuyTokenInput
         handleAmountOutChange={handleAmountOutChange}
-        loading={loadingSwapDetails}
+        loading={loadingExactIn}
         setShowTokenSelect={setShowTokenSelect}
       />
       <SwapFormSubmitButton
-        loadingSwapDetails={loadingSwapDetails}
+        loadingSwapDetails={loadingExactIn || loadingExactOut}
         selectedRoute={selectedRoute}
         setShowConfirm={setShowConfirm}
         amountIn={amountInAsDecimal}

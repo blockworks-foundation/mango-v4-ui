@@ -6,11 +6,15 @@ const WalletSwapSlider = ({
   onChange,
   step,
   maxAmount,
+  handleStartDrag,
+  handleEndDrag,
 }: {
   amount: number
   onChange: (x: string) => void
   step: number
   maxAmount: number
+  handleStartDrag: () => void
+  handleEndDrag: () => void
 }) => {
   const { inputBank } = mangoStore((s) => s.swap)
   return (
@@ -20,6 +24,8 @@ const WalletSwapSlider = ({
       leverageMax={maxAmount}
       onChange={onChange}
       step={step}
+      handleStartDrag={handleStartDrag}
+      handleEndDrag={handleEndDrag}
     />
   )
 }

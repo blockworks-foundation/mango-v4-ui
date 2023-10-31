@@ -178,7 +178,15 @@ const SwapHistoryArrows = (props: ExtendedReferenceDotProps) => {
 
 const SwapTokenChart = () => {
   const { t } = useTranslation('common')
-  const { inputBank, outputBank, flipPrices } = mangoStore((s) => s.swap)
+  const {
+    amountIn,
+    amountOut,
+    inputBank,
+    outputBank,
+    flipPrices,
+    swapMode,
+    swapOrTrigger,
+  } = mangoStore((s) => s.swap)
   const { inputCoingeckoId, outputCoingeckoId } = useJupiterSwapData()
   const { isDesktop } = useViewport()
   const [baseTokenId, setBaseTokenId] = useState(inputCoingeckoId)
@@ -333,15 +341,7 @@ const SwapTokenChart = () => {
     isFetching,
   } = useQuery(
     ['swap-chart-data', baseTokenId, quoteTokenId, daysToShow, flipPrices],
-    () =>
-      fetchSwapChartData(
-        baseTokenId,
-        inputBank,
-        quoteTokenId,
-        outputBank,
-        daysToShow,
-        flipPrices,
-      ),
+    () => fetchSwapChartData(baseTokenId, quoteTokenId, daysToShow, flipPrices),
     {
       cacheTime: 1000 * 60 * 15,
       staleTime: 1000 * 60 * 1,
@@ -407,13 +407,52 @@ const SwapTokenChart = () => {
       return []
     const minTime = coingeckoData[0].time
     const maxTime = coingeckoData[coingeckoData.length - 1].time
+    let data = coingeckoData
     if (swapHistoryPoints.length && showSwaps) {
       const swapPoints = swapHistoryPoints.filter(
         (point) => point.time >= minTime && point.time <= maxTime,
       )
-      return coingeckoData.concat(swapPoints).sort((a, b) => a.time - b.time)
-    } else return coingeckoData
-  }, [coingeckoData, swapHistoryPoints, showSwaps])
+      data = coingeckoData.concat(swapPoints).sort((a, b) => a.time - b.time)
+    }
+    if (amountIn && amountOut && swapOrTrigger === 'swap') {
+      const latestPrice = flipPrices
+        ? parseFloat(amountIn) / parseFloat(amountOut)
+        : parseFloat(amountOut) / parseFloat(amountIn)
+      const item: SwapChartDataItem[] = [
+        {
+          price: latestPrice,
+          time: Date.now(),
+          inputTokenPrice: 0,
+          outputTokenPrice: 0,
+        },
+      ]
+      return data.concat(item)
+    } else if (inputBank && outputBank) {
+      const latestPrice = flipPrices
+        ? outputBank.uiPrice / inputBank.uiPrice
+        : inputBank.uiPrice / outputBank.uiPrice
+      const item: SwapChartDataItem[] = [
+        {
+          price: latestPrice,
+          time: Date.now(),
+          inputTokenPrice: inputBank.uiPrice,
+          outputTokenPrice: outputBank.uiPrice,
+        },
+      ]
+      return data.concat(item)
+    }
+    return data
+  }, [
+    amountIn,
+    amountOut,
+    coingeckoData,
+    flipPrices,
+    inputBank,
+    outputBank,
+    showSwaps,
+    swapHistoryPoints,
+    swapOrTrigger,
+  ])
 
   const handleMouseMove: CategoricalChartFunc = useCallback(
     (coords) => {
@@ -453,6 +492,13 @@ const SwapTokenChart = () => {
     }
   }, [chartData, mouseData])
 
+  const loadingSwapPrice = useMemo(() => {
+    return (
+      !!(swapMode === 'ExactIn' && Number(amountIn) && !Number(amountOut)) ||
+      !!(swapMode === 'ExactOut' && Number(amountOut) && !Number(amountIn))
+    )
+  }, [amountIn, amountOut, swapMode])
+
   const chartNumberHeight = isDesktop ? 48 : 40
   const chartNumberWidth = isDesktop ? 35 : 27
 
@@ -463,8 +509,8 @@ const SwapTokenChart = () => {
           <SheenLoader className="w-[148px] rounded-md">
             <div className="h-[18px] bg-th-bkg-2" />
           </SheenLoader>
-          <SheenLoader className="mt-2 w-[148px] rounded-md">
-            <div className="h-[48px] bg-th-bkg-2" />
+          <SheenLoader className="mt-2 w-[180px] rounded-md">
+            <div className="h-[40px] bg-th-bkg-2" />
           </SheenLoader>
           <SheenLoader className="mt-2 w-[148px] rounded-md">
             <div className="h-[18px] bg-th-bkg-2" />
@@ -521,7 +567,11 @@ const SwapTokenChart = () => {
               ) : (
                 <>
                   <div className="mb-1 flex flex-col font-display text-4xl text-th-fgd-1 md:flex-row md:items-end md:text-5xl">
-                    {animationSettings['number-scroll'] ? (
+                    {loadingSwapPrice ? (
+                      <SheenLoader className="mt-2 w-[180px] rounded-md">
+                        <div className="h-9 bg-th-bkg-2 md:h-10" />
+                      </SheenLoader>
+                    ) : animationSettings['number-scroll'] ? (
                       <FlipNumbers
                         height={chartNumberHeight}
                         width={chartNumberWidth}

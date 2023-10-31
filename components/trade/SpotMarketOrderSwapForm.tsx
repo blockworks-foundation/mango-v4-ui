@@ -65,6 +65,7 @@ export default function SpotMarketOrderSwapForm() {
   const { baseSize, quoteSize, side } = mangoStore((s) => s.tradeForm)
   const { isUnownedAccount } = useUnownedAccount()
   const [placingOrder, setPlacingOrder] = useState(false)
+  const [isDraggingSlider, setIsDraggingSlider] = useState(false)
   const { ipAllowed, ipCountry } = useIpAddress()
   const { connected, publicKey, connect } = useWallet()
   const { mangoAccount } = useMangoAccount()
@@ -157,6 +158,18 @@ export default function SpotMarketOrderSwapForm() {
     [handleBaseSizeChange],
   )
 
+  const handleSliderDrag = useCallback(() => {
+    if (!isDraggingSlider) {
+      setIsDraggingSlider(true)
+    }
+  }, [isDraggingSlider])
+
+  const handleSliderDragEnd = useCallback(() => {
+    if (isDraggingSlider) {
+      setIsDraggingSlider(false)
+    }
+  }, [isDraggingSlider])
+
   const setAmountFromSlider = useCallback(
     (amount: string) => {
       if (side === 'buy') {
@@ -201,17 +214,25 @@ export default function SpotMarketOrderSwapForm() {
   }, [selectedMarket, side])
 
   const slippage = mangoStore.getState().swap.slippage
-
-  const { bestRoute: selectedRoute, isLoading: loadingRoute } = useQuoteRoutes({
-    inputMint: inputBank?.mint.toString() || '',
-    outputMint: outputBank?.mint.toString() || '',
-    amount: side === 'buy' ? quoteSize : baseSize,
-    slippage,
-    swapMode: 'ExactIn',
-    wallet: publicKey?.toBase58(),
-    mangoAccount,
-    mode: 'JUPITER',
-  })
+  const jupiterQuoteAmount = side === 'buy' ? quoteSize : baseSize
+  const { bestRoute: selectedRoute, isInitialLoading: loadingRoute } =
+    useQuoteRoutes({
+      inputMint: inputBank?.mint.toString() || '',
+      outputMint: outputBank?.mint.toString() || '',
+      amount: jupiterQuoteAmount,
+      slippage,
+      swapMode: 'ExactIn',
+      wallet: publicKey?.toBase58(),
+      mangoAccount,
+      mode: 'JUPITER',
+      enabled: () =>
+        !!(
+          inputBank?.mint &&
+          outputBank?.mint &&
+          jupiterQuoteAmount &&
+          !isDraggingSlider
+        ),
+    })
 
   const handlePlaceOrder = useCallback(async () => {
     const client = mangoStore.getState().client
@@ -481,6 +502,8 @@ export default function SpotMarketOrderSwapForm() {
                 onChange={setAmountFromSlider}
                 step={1 / 10 ** (inputBank?.mintDecimals || 6)}
                 maxAmount={useTokenMax}
+                handleStartDrag={handleSliderDrag}
+                handleEndDrag={handleSliderDragEnd}
               />
             </div>
           ) : (

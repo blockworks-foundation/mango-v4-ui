@@ -13,11 +13,13 @@ import { NUMBER_FORMAT_CLASSNAMES, withValueLimit } from './MarketSwapForm'
 import InlineNotification from '@components/shared/InlineNotification'
 import { SwapFormTokenListType } from './SwapFormTokenList'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
+import Loading from '@components/shared/Loading'
 
 const WalletSellTokenInput = ({
   handleAmountInChange,
   setShowTokenSelect,
   handleMax,
+  loading,
   max,
   className,
   error,
@@ -25,6 +27,7 @@ const WalletSellTokenInput = ({
   handleAmountInChange: (e: NumberFormatValues, info: SourceInfo) => void
   setShowTokenSelect: Dispatch<SetStateAction<SwapFormTokenListType>>
   handleMax: (amountIn: string) => void
+  loading?: boolean
   max: string
   className?: string
   error?: string
@@ -61,29 +64,37 @@ const WalletSellTokenInput = ({
         />
       </div>
       <div className="relative col-span-1">
-        <NumberFormat
-          inputMode="decimal"
-          thousandSeparator=","
-          allowNegative={false}
-          isNumericString={true}
-          decimalScale={inputBank?.mintDecimals || 6}
-          name="amountIn"
-          id="amountIn"
-          className={NUMBER_FORMAT_CLASSNAMES}
-          placeholder="0.00"
-          value={amountInFormValue}
-          onValueChange={handleAmountInChange}
-          isAllowed={withValueLimit}
-        />
-        {!isNaN(Number(amountInFormValue)) ? (
-          <span className="absolute bottom-1.5 right-3 text-xxs text-th-fgd-4">
-            {inputBank
-              ? formatCurrencyValue(
-                  inputBank.uiPrice * Number(amountInFormValue),
-                )
-              : '–'}
-          </span>
-        ) : null}
+        {loading ? (
+          <div className="flex h-[56px] w-full items-center justify-center rounded-l-none rounded-r-lg border-l border-th-bkg-2 bg-th-input-bkg">
+            <Loading />
+          </div>
+        ) : (
+          <>
+            <NumberFormat
+              inputMode="decimal"
+              thousandSeparator=","
+              allowNegative={false}
+              isNumericString={true}
+              decimalScale={inputBank?.mintDecimals || 6}
+              name="amountIn"
+              id="amountIn"
+              className={NUMBER_FORMAT_CLASSNAMES}
+              placeholder="0.00"
+              value={amountInFormValue}
+              onValueChange={handleAmountInChange}
+              isAllowed={withValueLimit}
+            />
+            {!isNaN(Number(amountInFormValue)) ? (
+              <span className="absolute bottom-1.5 right-3 text-xxs text-th-fgd-4">
+                {inputBank
+                  ? formatCurrencyValue(
+                      inputBank.uiPrice * Number(amountInFormValue),
+                    )
+                  : '–'}
+              </span>
+            ) : null}
+          </>
+        )}
       </div>
       {error ? (
         <div className="col-span-2 mt-1 flex justify-center">

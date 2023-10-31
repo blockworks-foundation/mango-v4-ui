@@ -63,18 +63,6 @@ const SwapSummaryInfo = ({
       : Math.trunc(simulatedHealthRatio)
   }, [inputBank, outputBank, amountInFormValue, amountOutFormValue])
 
-  const estSlippage = useMemo(() => {
-    const { group } = mangoStore.getState()
-    const amountIn = parseFloat(amountInFormValue) || 0
-    if (!group || !inputBank || amountIn <= 0) return 0
-    const value = amountIn * inputBank.uiPrice
-    const slippage = group.getPriceImpactByTokenIndex(
-      inputBank.tokenIndex,
-      value,
-    )
-    return slippage
-  }, [amountInFormValue, inputBank])
-
   const handleSetMargin = () => {
     set((s) => {
       s.swap.margin = !s.swap.margin
@@ -114,16 +102,6 @@ const SwapSummaryInfo = ({
               <span className="mr-1.5">{slippage}%</span>
               <PencilIcon className="h-4 w-4" />
             </LinkButton>
-          </div>
-        </>
-      ) : null}
-      {estSlippage ? (
-        <>
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-th-fgd-3">{t('trade:est-slippage')}</p>
-            <span className="font-mono text-th-fgd-2">
-              {estSlippage.toFixed(2)}%
-            </span>
           </div>
         </>
       ) : null}
