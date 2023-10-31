@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@blockworks-foundation/mango-feeds": "0.1.7",
-    "@blockworks-foundation/mango-mints-redemption": "^0.0.8",
+    "@blockworks-foundation/mango-mints-redemption": "^0.0.10",
     "@blockworks-foundation/mango-v4": "^0.19.38",
     "@blockworks-foundation/mango-v4-settings": "0.2.16",
     "@blockworks-foundation/mangolana": "0.0.1-beta.15",
@@ -114,7 +114,8 @@
   "resolutions": {
     "@coral-xyz/anchor": "^0.27.0",
     "eslint-config-next/eslint-import-resolver-typescript/tsconfig-paths/json5": "1.0.2",
-    "@solana/wallet-adapter-solflare": "0.6.27"
+    "@solana/wallet-adapter-solflare": "0.6.27",
+    "crypto-js": ">=4.1.1"
   },
   "lavamoat": {
     "allowScripts": {
