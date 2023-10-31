@@ -3,6 +3,7 @@ import {
   toUiDecimals,
   I80F48,
   PriceImpact,
+  OracleProvider,
 } from '@blockworks-foundation/mango-v4'
 import ExplorerLink from '@components/shared/ExplorerLink'
 import { coder } from '@project-serum/anchor/dist/cjs/spl/token'
@@ -11,7 +12,10 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import type { NextPage } from 'next'
 import { ReactNode, useCallback, useEffect, useState } from 'react'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
-import { ChevronDownIcon } from '@heroicons/react/20/solid'
+import {
+  ArrowTopRightOnSquareIcon,
+  ChevronDownIcon,
+} from '@heroicons/react/20/solid'
 import { Disclosure } from '@headlessui/react'
 import MarketLogos from '@components/trade/MarketLogos'
 import Button from '@components/shared/Button'
@@ -182,9 +186,22 @@ const Dashboard: NextPage = () => {
                                   <KeyValuePair
                                     label="Oracle"
                                     value={
-                                      <ExplorerLink
-                                        address={formattedBankValues.oracle}
-                                      />
+                                      bank.oracleProvider ==
+                                      OracleProvider.Switchboard ? (
+                                        <a
+                                          href={`https://app.switchboard.xyz/solana/mainnet-beta/feed/${bank.oracle.toString()}`}
+                                          className={`flex items-center break-all text-th-fgd-2 hover:text-th-fgd-3`}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                        >
+                                          {bank.oracle.toString()}
+                                          <ArrowTopRightOnSquareIcon className="ml-2 h-5 w-5 whitespace-nowrap" />
+                                        </a>
+                                      ) : (
+                                        <ExplorerLink
+                                          address={formattedBankValues.oracle}
+                                        />
+                                      )
                                     }
                                   />
                                   <KeyValuePair
