@@ -613,13 +613,11 @@ const ToggleChangeTypeButton = ({
   setChangeType: (isPercent: boolean) => void
 }) => {
   return (
-    <IconButton
-      className="text-th-fgd-3"
-      hideBg
-      size="small"
+    <button
+      className="ml-2 flex h-4 w-4 items-center justify-center text-th-fgd-3 focus:outline-none md:hover:text-th-active"
       onClick={() => setChangeType(!changeType)}
     >
       <ArrowsRightLeftIcon className="h-3.5 w-3.5" />
-    </IconButton>
+    </button>
   )
 }
