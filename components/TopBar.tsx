@@ -115,11 +115,13 @@ const TopBar = () => {
       <div className="flex w-full items-center justify-between md:space-x-4">
         <span className="mb-0 flex items-center">
           <div className="flex h-[63px] w-16 items-center justify-center bg-th-bkg-1 md:hidden">
-            <img
-              className="h-8 w-8 flex-shrink-0"
-              src={themeData.logoPath}
-              alt="logo"
-            />
+            <Link href="/" shallow={true}>
+              <img
+                className="h-8 w-8 flex-shrink-0"
+                src={themeData.logoPath}
+                alt="logo"
+              />
+            </Link>
           </div>
           {!connected ? (
             mangoAccount ? (
