@@ -151,8 +151,8 @@ const TokenPage = () => {
                   <h1 className="text-base font-normal">{bank.name}</h1>
                 )}
               </div>
-              <div className="flex flex-wrap items-end font-display text-5xl text-th-fgd-1">
-                <div className="mb-2 mr-3">
+              <div className="flex flex-wrap items-end font-display text-4xl text-th-fgd-1 sm:text-5xl">
+                <div className="mb-0.5 mr-3 sm:mb-2">
                   {animationSettings['number-scroll'] ? (
                     <FlipNumbers
                       height={48}

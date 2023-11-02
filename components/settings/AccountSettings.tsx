@@ -211,7 +211,7 @@ const AccountSettings = () => {
           {t('settings:account-address')}
         </h3>
         <div className="flex items-center space-x-2">
-          <p>{mangoAccount.publicKey.toString()}</p>
+          <p className="truncate">{mangoAccount.publicKey.toString()}</p>
           <IconButton
             hideBg
             onClick={() =>
