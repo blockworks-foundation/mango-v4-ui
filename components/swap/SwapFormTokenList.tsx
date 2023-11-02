@@ -18,6 +18,7 @@ import { getInputTokenBalance } from './TriggerSwapForm'
 import { walletBalanceForToken } from '@components/DepositForm'
 import TokenReduceOnlyDesc from '@components/shared/TokenReduceOnlyDesc'
 import PopularSwapTokens from './PopularSwapTokens'
+import { useViewport } from 'hooks/useViewport'
 
 export type SwapFormTokenListType =
   | 'input'
@@ -174,6 +175,7 @@ const SwapFormTokenList = ({
   const { group } = useMangoGroup()
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const focusRef = useRef<HTMLInputElement>(null)
+  const { isDesktop } = useViewport()
 
   const handleTokenSelect = (mintAddress: string) => {
     onTokenSelect(mintAddress, onClose)
@@ -316,10 +318,10 @@ const SwapFormTokenList = ({
   const sortedTokens = search ? startSearch(tokenInfos, search) : tokenInfos
 
   useEffect(() => {
-    if (focusRef?.current) {
+    if (focusRef?.current && isDesktop) {
       focusRef.current.focus()
     }
-  }, [focusRef])
+  }, [focusRef, isDesktop])
 
   const listTitle = useMemo(() => {
     if (!type) return ''
@@ -355,7 +357,6 @@ const SwapFormTokenList = ({
           className="pl-10"
           type="text"
           placeholder="Search by token or paste address"
-          autoFocus
           value={search}
           onChange={handleUpdateSearch}
           ref={focusRef}
