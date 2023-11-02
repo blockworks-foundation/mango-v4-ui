@@ -24,6 +24,7 @@ import Decimal from 'decimal.js'
 import { useCallback } from 'react'
 import { useSortableData } from 'hooks/useSortableData'
 import TableTokenName from '@components/shared/TableTokenName'
+import { formatTokenSymbol } from 'utils/tokens'
 
 export const goToTokenPage = (token: string, router: NextRouter) => {
   const query = { ...router.query, ['token']: token }
@@ -401,7 +402,9 @@ const TokenOverviewTable = () => {
                                 goToTokenPage(bank.name.split(' ')[0], router)
                               }
                             >
-                              {t('token:token-stats', { token: bank.name })}
+                              {t('token:token-stats', {
+                                token: formatTokenSymbol(bank.name),
+                              })}
                               <ChevronRightIcon className="ml-2 h-5 w-5" />
                             </LinkButton>
                           </div>

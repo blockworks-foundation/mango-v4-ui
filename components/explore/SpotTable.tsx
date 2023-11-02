@@ -32,6 +32,8 @@ import { SerumMarketWithMarketData } from 'hooks/useListedMarketsWithMarketData'
 import Tooltip from '@components/shared/Tooltip'
 import dayjs from 'dayjs'
 import TableTokenName from '@components/shared/TableTokenName'
+import { LinkButton } from '@components/shared/Button'
+import { formatTokenSymbol } from 'utils/tokens'
 
 type TableData = {
   assetWeight: string
@@ -366,6 +368,7 @@ export default SpotTable
 const MobileSpotItem = ({ data }: { data: TableData }) => {
   const { t } = useTranslation('common')
   const { theme } = useThemeWrapper()
+  const router = useRouter()
 
   const {
     available,
@@ -410,7 +413,12 @@ const MobileSpotItem = ({ data }: { data: TableData }) => {
                 ) : !market ? null : (
                   <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
                 )}
-                {market ? <Change change={change} suffix="%" /> : null}
+                <div className="flex flex-col items-end">
+                  <p className="font-mono text-th-fgd-2">
+                    {price ? <FormatNumericValue value={price} isUsd /> : '-'}
+                  </p>
+                  {market ? <Change change={change} suffix="%" /> : null}
+                </div>
                 <ChevronDownIcon
                   className={`${
                     open ? 'rotate-180' : 'rotate-360'
@@ -426,12 +434,6 @@ const MobileSpotItem = ({ data }: { data: TableData }) => {
           >
             <Disclosure.Panel>
               <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pb-4 pt-4">
-                <div className="col-span-1">
-                  <p className="text-xs text-th-fgd-3">{t('price')}</p>
-                  <p className="font-mono text-th-fgd-2">
-                    {price ? <FormatNumericValue value={price} isUsd /> : '-'}
-                  </p>
-                </div>
                 <div className="col-span-1">
                   <p className="text-xs text-th-fgd-3">
                     {t('trade:24h-volume')}
@@ -468,14 +470,27 @@ const MobileSpotItem = ({ data }: { data: TableData }) => {
                 <div className="col-span-1">
                   <p className="text-xs text-th-fgd-3">{t('rates')}</p>
                   <div className="flex space-x-1.5">
-                    <p className="text-th-up">
+                    <p className="font-mono text-th-up">
                       <FormatNumericValue value={depositRate} decimals={2} />%
                     </p>
                     <span className="text-th-fgd-4">|</span>
-                    <p className="text-th-down">
+                    <p className="font-mono text-th-down">
                       <FormatNumericValue value={borrowRate} decimals={2} />%
                     </p>
                   </div>
+                </div>
+                <div className="col-span-1">
+                  <LinkButton
+                    className="flex items-center"
+                    onClick={() =>
+                      goToTokenPage(baseBank.name.split(' ')[0], router)
+                    }
+                  >
+                    {t('token:token-stats', {
+                      token: formatTokenSymbol(baseBank.name),
+                    })}
+                    <ChevronRightIcon className="ml-2 h-5 w-5" />
+                  </LinkButton>
                 </div>
               </div>
             </Disclosure.Panel>
