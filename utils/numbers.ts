@@ -12,7 +12,7 @@ export const formatNumericValue = (
       ? roundValue(numberValue, decimals, true)
       : roundValue(numberValue, decimals)
   } else if (numberValue > -0.0000000001 && numberValue < 0.000000001) {
-    formattedValue = '0'
+    formattedValue = numberValue.toExponential(3)
   } else if (Math.abs(numberValue) >= 1000) {
     formattedValue = roundUp
       ? roundValue(numberValue, 0, true)
@@ -23,8 +23,8 @@ export const formatNumericValue = (
       : roundValue(numberValue, 3)
   } else {
     formattedValue = roundUp
-      ? roundValue(numberValue, 9, true)
-      : roundValue(numberValue, 9)
+      ? roundValue(numberValue, countLeadingZeros(numberValue) + 3, true)
+      : roundValue(numberValue, countLeadingZeros(numberValue) + 3)
   }
   return formattedValue
 }
