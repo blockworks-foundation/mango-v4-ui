@@ -415,7 +415,10 @@ const DetailedAreaOrBarChart: FunctionComponent<
                         type="monotone"
                         dataKey={yKey}
                         stroke={
-                          calculateChartChange() >= 0
+                          calculateChartChange() === 0 ||
+                          isNaN(calculateChartChange())
+                            ? COLORS.FGD4[theme]
+                            : calculateChartChange() >= 0
                             ? COLORS.UP[theme]
                             : COLORS.DOWN[theme]
                         }

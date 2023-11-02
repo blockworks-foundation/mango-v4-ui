@@ -11,6 +11,8 @@ export const formatNumericValue = (
     formattedValue = roundUp
       ? roundValue(numberValue, decimals, true)
       : roundValue(numberValue, decimals)
+  } else if (numberValue === 0) {
+    formattedValue = numberValue.toFixed(decimals || 0)
   } else if (numberValue > -0.0000000001 && numberValue < 0.000000001) {
     formattedValue = numberValue.toExponential(3)
   } else if (Math.abs(numberValue) >= 1000) {
