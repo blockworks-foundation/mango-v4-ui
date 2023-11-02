@@ -145,10 +145,11 @@ const usdFormatter3Sig = Intl.NumberFormat('en', {
 })
 
 export const countLeadingZeros = (x: number) => {
-  if (x % 1 == 0) {
+  const absoluteX = Math.abs(x)
+  if (absoluteX % 1 == 0) {
     return 0
   } else {
-    return -1 - Math.floor(Math.log10(x % 1))
+    return -1 - Math.floor(Math.log10(absoluteX % 1))
   }
 }
 
