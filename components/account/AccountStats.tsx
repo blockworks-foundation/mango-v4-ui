@@ -94,6 +94,7 @@ const AccountStats = ({ hideView }: { hideView: () => void }) => {
             xKey="time"
             yKey="pnl"
             small
+            isPrivate
           />
         </div>
         <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 md:pl-6">
@@ -111,6 +112,7 @@ const AccountStats = ({ hideView }: { hideView: () => void }) => {
             xKey="time"
             yKey="interest_value"
             small
+            isPrivate
           />
         </div>
         <div className="col-span-2 border-b border-th-bkg-3 md:col-span-1 md:border-r">
@@ -135,6 +137,7 @@ const AccountStats = ({ hideView }: { hideView: () => void }) => {
                   value={fundingTotalValue}
                   decimals={2}
                   isUsd={true}
+                  isPrivate
                 />
               </p>
             )}
@@ -154,7 +157,11 @@ const AccountStats = ({ hideView }: { hideView: () => void }) => {
               </SheenLoader>
             ) : (
               <p className="mt-0.5 text-2xl font-bold text-th-fgd-1">
-                <FormatNumericValue value={volumeTotalData || 0} isUsd />
+                <FormatNumericValue
+                  value={volumeTotalData || 0}
+                  isUsd
+                  isPrivate
+                />
               </p>
             )}
           </div>

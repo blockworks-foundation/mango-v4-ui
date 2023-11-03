@@ -28,7 +28,12 @@ import { FadeInFadeOut } from './Transitions'
 import ChartRangeButtons from './ChartRangeButtons'
 import Change from './Change'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { ANIMATION_SETTINGS_KEY, DAILY_MILLISECONDS } from 'utils/constants'
+import {
+  ANIMATION_SETTINGS_KEY,
+  DAILY_MILLISECONDS,
+  PRIVACY_MODE,
+  PRIVATE_MODE_STRING,
+} from 'utils/constants'
 import { formatNumericValue } from 'utils/numbers'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import { AxisDomain } from 'recharts/types/util/types'
@@ -53,6 +58,7 @@ interface DetailedAreaOrBarChartProps {
   hideChange?: boolean
   hideChart?: () => void
   hideAxis?: boolean
+  isPrivate?: boolean
   loaderHeightClass?: string
   loading?: boolean
   prefix?: string
@@ -90,6 +96,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
   hideChange,
   hideChart,
   hideAxis,
+  isPrivate,
   loaderHeightClass,
   loading,
   prefix = '',
@@ -115,6 +122,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
     ANIMATION_SETTINGS_KEY,
     INITIAL_ANIMATION_SETTINGS,
   )
+  const [privacyMode] = useLocalStorageState(PRIVACY_MODE)
 
   const handleMouseMove = (coords: any) => {
     if (coords.activePayload) {
@@ -226,17 +234,21 @@ const DetailedAreaOrBarChart: FunctionComponent<
                         } font-display text-th-fgd-1`}
                       >
                         {animationSettings['number-scroll'] ? (
-                          <FlipNumbers
-                            height={small ? 24 : 40}
-                            width={small ? 17 : 30}
-                            play
-                            numbers={`${
-                              mouseData[yKey] < 0 ? '-' : ''
-                            }${prefix}${formatNumericValue(
-                              Math.abs(mouseData[yKey]),
-                              yDecimals,
-                            )}${suffix}`}
-                          />
+                          isPrivate && privacyMode ? (
+                            <span>{PRIVATE_MODE_STRING}</span>
+                          ) : (
+                            <FlipNumbers
+                              height={small ? 24 : 40}
+                              width={small ? 17 : 30}
+                              play
+                              numbers={`${
+                                mouseData[yKey] < 0 ? '-' : ''
+                              }${prefix}${formatNumericValue(
+                                Math.abs(mouseData[yKey]),
+                                yDecimals,
+                              )}${suffix}`}
+                            />
+                          )
                         ) : (
                           <span className="tabular-nums">
                             {mouseData[yKey] < 0 ? '-' : ''}
@@ -244,6 +256,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
                             <FormatNumericValue
                               value={Math.abs(mouseData[yKey])}
                               decimals={yDecimals}
+                              isPrivate={isPrivate}
                             />
                             {suffix}
                           </span>
@@ -259,6 +272,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
                               decimals={!showChangePercentage ? yDecimals : 2}
                               prefix={!showChangePercentage ? prefix : ''}
                               suffix={!showChangePercentage ? suffix : '%'}
+                              isPrivate={isPrivate}
                             />
                             {changeAsPercent ? (
                               <ToggleChangeTypeButton
@@ -289,21 +303,25 @@ const DetailedAreaOrBarChart: FunctionComponent<
                         } font-display text-th-fgd-1`}
                       >
                         {animationSettings['number-scroll'] ? (
-                          <FlipNumbers
-                            height={small ? 24 : 40}
-                            width={small ? 17 : 30}
-                            play
-                            numbers={`${
-                              filteredData[filteredData.length - 1][yKey] < 0
-                                ? '-'
-                                : ''
-                            }${prefix}${formatNumericValue(
-                              Math.abs(
-                                filteredData[filteredData.length - 1][yKey],
-                              ),
-                              yDecimals,
-                            )}${suffix}`}
-                          />
+                          isPrivate && privacyMode ? (
+                            <span>{PRIVATE_MODE_STRING}</span>
+                          ) : (
+                            <FlipNumbers
+                              height={small ? 24 : 40}
+                              width={small ? 17 : 30}
+                              play
+                              numbers={`${
+                                filteredData[filteredData.length - 1][yKey] < 0
+                                  ? '-'
+                                  : ''
+                              }${prefix}${formatNumericValue(
+                                Math.abs(
+                                  filteredData[filteredData.length - 1][yKey],
+                                ),
+                                yDecimals,
+                              )}${suffix}`}
+                            />
+                          )
                         ) : (
                           <span>
                             {filteredData[filteredData.length - 1][yKey] < 0
@@ -318,6 +336,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
                                     : 0
                                 }
                                 decimals={yDecimals}
+                                isPrivate={isPrivate}
                               />
                             </span>
                             {suffix}
@@ -334,6 +353,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
                               decimals={!showChangePercentage ? yDecimals : 2}
                               prefix={!showChangePercentage ? prefix : ''}
                               suffix={!showChangePercentage ? suffix : '%'}
+                              isPrivate={isPrivate}
                             />
                             {changeAsPercent ? (
                               <ToggleChangeTypeButton

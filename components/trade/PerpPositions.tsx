@@ -236,6 +236,7 @@ const PerpPositions = () => {
                                 Math.abs(floorBasePosition) * market._uiPrice
                               }
                               isUsd
+                              isPrivate
                             />
                           </div>
                         ) : (
@@ -250,6 +251,7 @@ const PerpPositions = () => {
                                 Math.abs(floorBasePosition) * market._uiPrice
                               }
                               isUsd
+                              isPrivate
                             />
                           </div>
                         )}
@@ -275,6 +277,7 @@ const PerpPositions = () => {
                             value={estLiqPrice}
                             decimals={getDecimalCount(market.tickSize)}
                             isUsd
+                            isPrivate
                           />
                         ) : (
                           '–'
@@ -304,6 +307,7 @@ const PerpPositions = () => {
                                 value={unrealizedPnl}
                                 isUsd
                                 decimals={2}
+                                isPrivate
                               />
                             </span>
                           </Tooltip>
@@ -386,6 +390,7 @@ const PerpPositions = () => {
                                 value={totalPnlStats.unrealized}
                                 isUsd
                                 decimals={2}
+                                isPrivate
                               />
                             </span>
                           </div>
@@ -478,7 +483,11 @@ const PerpPositions = () => {
                               </span>
                               <span className="text-th-fgd-4">|</span>
                               <span className="font-mono">
-                                <FormatNumericValue value={notional} isUsd />
+                                <FormatNumericValue
+                                  value={notional}
+                                  isUsd
+                                  isPrivate
+                                />
                               </span>
                             </div>
                           </div>
@@ -493,6 +502,7 @@ const PerpPositions = () => {
                               value={unrealizedPnl}
                               isUsd
                               decimals={2}
+                              isPrivate
                             />
                           </span>
                           <ChevronDownIcon
@@ -535,6 +545,7 @@ const PerpPositions = () => {
                                     classNames="text-xs text-th-fgd-3"
                                     value={notional}
                                     isUsd
+                                    isPrivate
                                   />
                                 </div>
                               ) : (
@@ -552,6 +563,7 @@ const PerpPositions = () => {
                                       market._uiPrice
                                     }
                                     isUsd
+                                    isPrivate
                                   />
                                 </div>
                               )}
@@ -589,6 +601,7 @@ const PerpPositions = () => {
                                     value={estLiqPrice}
                                     decimals={getDecimalCount(market.tickSize)}
                                     isUsd
+                                    isPrivate
                                   />
                                 ) : (
                                   '–'
@@ -604,6 +617,7 @@ const PerpPositions = () => {
                                   value={unsettledPnl}
                                   isUsd
                                   decimals={2}
+                                  isPrivate
                                 />
                               </p>
                             </div>
@@ -706,6 +720,7 @@ const PerpPositions = () => {
                       value={totalPnlStats.unrealized}
                       isUsd
                       decimals={2}
+                      isPrivate
                     />
                   </span>
                 </span>

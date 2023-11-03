@@ -370,6 +370,7 @@ const TokenList = () => {
                         amount={balance}
                         bank={bank}
                         stacked
+                        isPrivate
                       />
                     </Td>
                     <Td className="text-right">
@@ -378,6 +379,7 @@ const TokenList = () => {
                           value={collateralValue}
                           decimals={2}
                           isUsd
+                          isPrivate
                         />
                       </p>
                       <p className="text-sm text-th-fgd-4">
@@ -395,6 +397,7 @@ const TokenList = () => {
                           amount={inOrders}
                           bank={bank}
                           stacked
+                          isPrivate
                         />
                       ) : (
                         <p className="text-th-fgd-4">–</p>
@@ -412,6 +415,7 @@ const TokenList = () => {
                               value={interestValue}
                               isUsd
                               decimals={2}
+                              isPrivate
                             />
                           </p>
                         ) : (
@@ -521,6 +525,7 @@ const MobileTokenListItem = ({ data }: { data: TableData }) => {
                       value={mangoAccount ? balance * bank.uiPrice : 0}
                       decimals={2}
                       isUsd
+                      isPrivate
                     />
                   </span>
                 </div>
@@ -550,6 +555,7 @@ const MobileTokenListItem = ({ data }: { data: TableData }) => {
                       value={collateralValue}
                       decimals={2}
                       isUsd
+                      isPrivate
                     />
                     <span className="text-th-fgd-3">
                       {' '}
@@ -566,13 +572,21 @@ const MobileTokenListItem = ({ data }: { data: TableData }) => {
                   <p className="text-xs text-th-fgd-3">
                     {t('trade:in-orders')}
                   </p>
-                  <BankAmountWithValue amount={inOrders} bank={bank} />
+                  <BankAmountWithValue
+                    amount={inOrders}
+                    bank={bank}
+                    isPrivate
+                  />
                 </div>
                 <div className="col-span-1">
                   <p className="text-xs text-th-fgd-3">
                     {t('trade:unsettled')}
                   </p>
-                  <BankAmountWithValue amount={unsettled} bank={bank} />
+                  <BankAmountWithValue
+                    amount={unsettled}
+                    bank={bank}
+                    isPrivate
+                  />
                 </div>
                 <div className="col-span-1">
                   <p className="text-xs text-th-fgd-3">
@@ -582,6 +596,7 @@ const MobileTokenListItem = ({ data }: { data: TableData }) => {
                     amount={interestAmount}
                     bank={bank}
                     value={interestValue}
+                    isPrivate
                   />
                 </div>
                 <div className="col-span-1">

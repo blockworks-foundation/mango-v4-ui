@@ -5,12 +5,14 @@ import FormatNumericValue from './FormatNumericValue'
 const Change = ({
   change,
   decimals,
+  isPrivate,
   prefix,
   size,
   suffix,
 }: {
   change: number | typeof NaN
   decimals?: number
+  isPrivate?: boolean
   prefix?: string
   size?: 'small' | 'large'
   suffix?: string
@@ -51,6 +53,7 @@ const Change = ({
         <FormatNumericValue
           value={isNaN(change) ? '0.00' : Math.abs(change)}
           decimals={decimals ? decimals : 2}
+          isPrivate={isPrivate}
         />
         {suffix ? suffix : ''}
       </p>
@@ -72,7 +75,11 @@ const Change = ({
         }`}
       >
         {prefix ? prefix : ''}
-        <FormatNumericValue value="0.00" decimals={decimals ? decimals : 2} />
+        <FormatNumericValue
+          value="0.00"
+          decimals={decimals ? decimals : 2}
+          isPrivate={isPrivate}
+        />
         {suffix ? suffix : ''}
       </p>
     </div>

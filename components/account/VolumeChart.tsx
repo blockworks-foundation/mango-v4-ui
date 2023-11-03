@@ -163,7 +163,11 @@ const VolumeChart = () => {
                 </h2>
                 {totalForTimePeriod ? (
                   <span className="font-display text-2xl text-th-fgd-1">
-                    <FormatNumericValue value={totalForTimePeriod} isUsd />
+                    <FormatNumericValue
+                      value={totalForTimePeriod}
+                      isUsd
+                      isPrivate
+                    />
                   </span>
                 ) : null}
               </div>

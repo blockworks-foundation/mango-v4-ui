@@ -190,3 +190,5 @@ export enum TOKEN_REDUCE_ONLY_OPTIONS {
   ENABLED,
   NO_BORROWS,
 }
+
+export const PRIVATE_MODE_STRING = '****'

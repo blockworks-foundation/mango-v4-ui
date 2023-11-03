@@ -76,6 +76,7 @@ const AccountOverview = () => {
                   title={t('account-value')}
                   xKey="time"
                   yKey="account_equity"
+                  isPrivate
                 />
               </div>
             ) : connected ? (
