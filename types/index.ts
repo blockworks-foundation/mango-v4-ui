@@ -337,7 +337,6 @@ export function isSpotTradeActivityFeedItem(
 export function isSwapActivityFeedItem(
   item: ActivityFeed,
 ): item is SwapActivity {
-  console.log(item)
   if (item.activity_type === 'swap') {
     return true
   }

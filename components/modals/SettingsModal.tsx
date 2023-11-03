@@ -117,6 +117,7 @@ const TabContent = ({
             title={activeTab}
           />
           <DisplaySettings />
+          <AnimationSettings />
         </>
       )
     case ACCOUNT:
@@ -158,7 +159,6 @@ const TabContent = ({
           />
           <AutoConnectSettings />
           <PreferredExplorerSettings />
-          <AnimationSettings />
           <SoundSettings />
           <TelemetrySettings />
         </>
