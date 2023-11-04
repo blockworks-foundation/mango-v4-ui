@@ -73,6 +73,7 @@
     "orders": "订单",
     "place-order": "下{{side}}单",
     "placing-order": "正在下单",
+    "position": "Position",
     "positions": "持仓",
     "post": "Post",
     "preview-sound": "声音预览",

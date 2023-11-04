@@ -1,4 +1,8 @@
-import { MangoAccount, Serum3Market } from '@blockworks-foundation/mango-v4'
+import {
+  MangoAccount,
+  PerpMarket,
+  Serum3Market,
+} from '@blockworks-foundation/mango-v4'
 import LeverageSlider from '@components/shared/LeverageSlider'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
@@ -60,17 +64,48 @@ const SpotSlider = ({
   tickDecimals,
   step,
   useMargin,
+  isTriggerOrder,
 }: {
   minOrderDecimals: number
   tickDecimals: number
   step: number
   useMargin: boolean
+  isTriggerOrder: boolean
 }) => {
-  const side = mangoStore((s) => s.tradeForm.side)
+  const { baseSize, quoteSize, side } = mangoStore((s) => s.tradeForm)
   const { selectedMarket, price: marketPrice } = useSelectedMarket()
   const { mangoAccount } = useMangoAccount()
-  const tradeForm = mangoStore((s) => s.tradeForm)
-  const max = useSpotMarketMax(mangoAccount, selectedMarket, side, useMargin)
+  const standardOrderMax = useSpotMarketMax(
+    mangoAccount,
+    selectedMarket,
+    side,
+    useMargin,
+  )
+
+  const max = useMemo(() => {
+    if (!isTriggerOrder) return standardOrderMax
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+    const { group } = mangoStore.getState()
+    if (
+      !group ||
+      !mangoAccount ||
+      !selectedMarket ||
+      selectedMarket instanceof PerpMarket
+    )
+      return 0
+    const positionBank = group.getFirstBankByTokenIndex(
+      selectedMarket.baseTokenIndex,
+    )
+    let max = 0
+    const balance = mangoAccount.getTokenBalanceUi(positionBank)
+    const roundedBalance = floorToDecimal(balance, minOrderDecimals).toNumber()
+    if (side === 'buy') {
+      max = roundedBalance < 0 ? roundedBalance : 0
+    } else {
+      max = roundedBalance > 0 ? roundedBalance : 0
+    }
+    return max
+  }, [isTriggerOrder, selectedMarket, side, standardOrderMax])
 
   const handleSlide = useCallback(
     (val: string) => {
@@ -113,9 +148,9 @@ const SpotSlider = ({
     <div className="w-full px-3 md:px-4">
       <LeverageSlider
         amount={
-          tradeForm.side === 'buy'
-            ? parseFloat(tradeForm.quoteSize)
-            : parseFloat(tradeForm.baseSize)
+          side === 'buy' && !isTriggerOrder
+            ? parseFloat(quoteSize)
+            : parseFloat(baseSize)
         }
         leverageMax={max}
         onChange={handleSlide}

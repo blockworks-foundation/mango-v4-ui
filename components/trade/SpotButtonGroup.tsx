@@ -2,24 +2,57 @@ import ButtonGroup from '@components/forms/ButtonGroup'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { floorToDecimal } from 'utils/numbers'
 import { useSpotMarketMax } from './SpotSlider'
+import { PerpMarket } from '@blockworks-foundation/mango-v4'
 
 const SpotButtonGroup = ({
   minOrderDecimals,
   tickDecimals,
   useMargin,
+  isTriggerOrder,
 }: {
   minOrderDecimals: number
   tickDecimals: number
   useMargin: boolean
+  isTriggerOrder: boolean
 }) => {
-  const side = mangoStore((s) => s.tradeForm.side)
+  const { side } = mangoStore((s) => s.tradeForm)
   const { selectedMarket } = useSelectedMarket()
   const { mangoAccount } = useMangoAccount()
   const [sizePercentage, setSizePercentage] = useState('')
-  const max = useSpotMarketMax(mangoAccount, selectedMarket, side, useMargin)
+  const standardOrderMax = useSpotMarketMax(
+    mangoAccount,
+    selectedMarket,
+    side,
+    useMargin,
+  )
+
+  const max = useMemo(() => {
+    if (!isTriggerOrder) return standardOrderMax
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+    const { group } = mangoStore.getState()
+    if (
+      !group ||
+      !mangoAccount ||
+      !selectedMarket ||
+      selectedMarket instanceof PerpMarket
+    )
+      return 0
+    const positionBank = group.getFirstBankByTokenIndex(
+      selectedMarket.baseTokenIndex,
+    )
+    let max = 0
+    const balance = mangoAccount.getTokenBalanceUi(positionBank)
+    const roundedBalance = floorToDecimal(balance, minOrderDecimals).toNumber()
+    if (side === 'buy') {
+      max = roundedBalance < 0 ? roundedBalance : 0
+    } else {
+      max = roundedBalance > 0 ? roundedBalance : 0
+    }
+    return max
+  }, [isTriggerOrder, selectedMarket, side, standardOrderMax])
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {

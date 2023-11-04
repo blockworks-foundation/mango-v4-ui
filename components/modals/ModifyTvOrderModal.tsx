@@ -171,12 +171,15 @@ const ModifyTvOrderModal = ({
         />
       </div>
       <div className="mb-6">
-        <MaxSizeButton
-          minOrderDecimals={minOrderDecimals}
-          tickDecimals={tickDecimals}
-          useMargin={savedCheckboxSettings.margin}
-          large
-        />
+        <div className="mb-2 mt-3 flex items-center justify-between">
+          <p className="text-th-fgd-3">{t('trade:size')}</p>
+          <MaxSizeButton
+            minOrderDecimals={minOrderDecimals}
+            tickDecimals={tickDecimals}
+            useMargin={savedCheckboxSettings.margin}
+            large
+          />
+        </div>
         <NumberFormat
           name="size"
           id="size"
