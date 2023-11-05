@@ -76,7 +76,7 @@
     "positions": "持倉",
     "post": "Post",
     "preview-sound": "聲音預覽",
-    "price-expect": "您收到的價格可能與您預期有差異，並且無法保證完全執行。為了您的安全，最大滑點保持為 2.5%。超過 2.5%滑點的部分不會被平倉。",
+    "price-expect": "The execution price may be worse than you expect and full execution is not guaranteed. Your order will be filled up to a max slippage of 2.5%",
     "price-provided-by": "預言機來自",
     "quote": "計價",
     "realized-pnl": "已實現的盈虧",
