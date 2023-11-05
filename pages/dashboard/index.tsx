@@ -1,4 +1,10 @@
-import { Bank, toUiDecimals, I80F48 } from '@blockworks-foundation/mango-v4'
+import {
+  Bank,
+  toUiDecimals,
+  I80F48,
+  PriceImpact,
+  OracleProvider,
+} from '@blockworks-foundation/mango-v4'
 import ExplorerLink from '@components/shared/ExplorerLink'
 import { coder } from '@project-serum/anchor/dist/cjs/spl/token'
 import mangoStore from '@store/mangoStore'
@@ -6,7 +12,10 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import type { NextPage } from 'next'
 import { ReactNode, useCallback, useEffect, useState } from 'react'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
-import { ChevronDownIcon } from '@heroicons/react/20/solid'
+import {
+  ArrowTopRightOnSquareIcon,
+  ChevronDownIcon,
+} from '@heroicons/react/20/solid'
 import { Disclosure } from '@headlessui/react'
 import MarketLogos from '@components/trade/MarketLogos'
 import Button from '@components/shared/Button'
@@ -14,7 +23,6 @@ import BN from 'bn.js'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import {
-  PriceImpact,
   getFormattedBankValues,
   getPriceImpacts,
 } from 'utils/governance/listingTools'
@@ -178,9 +186,22 @@ const Dashboard: NextPage = () => {
                                   <KeyValuePair
                                     label="Oracle"
                                     value={
-                                      <ExplorerLink
-                                        address={formattedBankValues.oracle}
-                                      />
+                                      bank.oracleProvider ==
+                                      OracleProvider.Switchboard ? (
+                                        <a
+                                          href={`https://app.switchboard.xyz/solana/mainnet-beta/feed/${bank.oracle.toString()}`}
+                                          className={`flex items-center break-all text-th-fgd-2 hover:text-th-fgd-3`}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                        >
+                                          {bank.oracle.toString()}
+                                          <ArrowTopRightOnSquareIcon className="ml-2 h-5 w-5 whitespace-nowrap" />
+                                        </a>
+                                      ) : (
+                                        <ExplorerLink
+                                          address={formattedBankValues.oracle}
+                                        />
+                                      )
                                     }
                                   />
                                   <KeyValuePair
@@ -296,11 +317,17 @@ const Dashboard: NextPage = () => {
                                   />
                                   <KeyValuePair
                                     label="Oracle: Conf Filter"
-                                    value={`${formattedBankValues.oracleConfFilter}%`}
+                                    value={`${
+                                      formattedBankValues.oracleConfFilter
+                                    }% (Last known confidence ${bank._oracleLastKnownDeviation
+                                      ?.div(bank.price)
+                                      .mul(I80F48.fromNumber(100))
+                                      .toNumber()
+                                      .toFixed(2)}%)`}
                                   />
                                   <KeyValuePair
                                     label="Oracle: Max Staleness"
-                                    value={`${bank.oracleConfig.maxStalenessSlots} slots`}
+                                    value={`${bank.oracleConfig.maxStalenessSlots} slots (Last updated slot ${bank._oracleLastUpdatedSlot})`}
                                   />
                                   <KeyValuePair
                                     label="Group Insurance Fund"

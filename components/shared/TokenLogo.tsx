@@ -50,18 +50,36 @@ const TokenLogo = ({
               View Details
             </a>
           </>
+        ) : bank?.name === 'bSOL' ? (
+          <>
+            <p className="mb-2">
+              Earn BLZE tokens for holding your bSOL on Mango
+            </p>
+            <a
+              href="https://rewards.solblaze.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View Details
+            </a>
+          </>
         ) : null
       }
     >
       <div
         className={`h-[${logoSize}px] w-[${logoSize}px] relative rounded-full bg-th-bkg-2 ${
-          bank?.name === 'MSOL' ? 'cursor-help' : ''
+          bank?.name === 'MSOL' || bank?.name === 'bSOL' ? 'cursor-help' : ''
         }`}
       >
         <Image alt="" width={logoSize} height={logoSize} src={logoUri} />
         {bank?.name === 'MSOL' ? (
           <div className="absolute -right-1.5 -top-1.5 shadow">
             <Image alt="" width={16} height={16} src={'/icons/mnde.svg'} />
+          </div>
+        ) : null}
+        {bank?.name === 'bSOL' ? (
+          <div className="absolute -right-1.5 -top-1.5 shadow">
+            <Image alt="" width={16} height={16} src={'/icons/blze.svg'} />
           </div>
         ) : null}
       </div>

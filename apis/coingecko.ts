@@ -8,21 +8,19 @@ type CoingeckoOhlcv = [
   close: number,
 ][]
 
-export type ChartDataItem = {
+export type SwapChartDataItem = {
   time: number
   price: number
   inputTokenPrice: number
   outputTokenPrice: number
 }
 
-export const fetchChartData = async (
+export const fetchSwapChartData = async (
   baseTokenId: string | undefined,
-  inputBank: Bank | undefined,
   quoteTokenId: string | undefined,
-  outputBank: Bank | undefined,
   daysToShow: string,
   flipPrices: boolean,
-): Promise<ChartDataItem[]> => {
+): Promise<SwapChartDataItem[]> => {
   if (!baseTokenId || !quoteTokenId) return []
   const baseId = flipPrices ? baseTokenId : quoteTokenId
   const quoteId = flipPrices ? quoteTokenId : baseTokenId
@@ -40,34 +38,22 @@ export const fetchChartData = async (
       await Promise.all([inputResponse.json(), outputResponse.json()])
 
     if (Array.isArray(inputTokenData) && Array.isArray(outputTokenData)) {
-      const parsedData: ChartDataItem[] = []
+      const parsedData: SwapChartDataItem[] = []
       for (const inputTokenCandle of inputTokenData) {
         const outputTokenCandle = outputTokenData.find(
           (outputTokenCandle) => outputTokenCandle[0] === inputTokenCandle[0],
         )
-        if (outputTokenCandle) {
+        const curentTimestamp = Date.now()
+        if (outputTokenCandle && inputTokenCandle[0] < curentTimestamp) {
           parsedData.push({
             time: inputTokenCandle[0],
-            price: outputTokenCandle[4] / inputTokenCandle[4],
-            inputTokenPrice: inputTokenCandle[4],
-            outputTokenPrice: outputTokenCandle[4],
+            price: outputTokenCandle[1] / inputTokenCandle[1],
+            inputTokenPrice: inputTokenCandle[1],
+            outputTokenPrice: outputTokenCandle[1],
           })
         }
       }
-      if (inputBank && outputBank) {
-        const latestPrice = flipPrices
-          ? outputBank.uiPrice / inputBank.uiPrice
-          : inputBank.uiPrice / outputBank.uiPrice
-        const item: ChartDataItem[] = [
-          {
-            price: latestPrice,
-            time: Date.now(),
-            inputTokenPrice: inputBank.uiPrice,
-            outputTokenPrice: outputBank.uiPrice,
-          },
-        ]
-        return parsedData.concat(item)
-      } else return parsedData
+      return parsedData
     } else {
       return []
     }

@@ -8,11 +8,18 @@ import { Notification } from 'apis/notifications/notifications'
 import { tryParse } from 'utils/formatting'
 import { NotificationsWebSocket } from 'apis/notifications/websocket'
 import useMangoAccount from 'hooks/useMangoAccount'
+import { useAccountPointsAndRank, useCurrentSeason } from 'hooks/useRewards'
 
 export function useNotificationSocket() {
   const isAuth = useIsAuthorized()
   const { publicKey } = useWallet()
   const { mangoAccountAddress } = useMangoAccount()
+  const { data: seasonData } = useCurrentSeason()
+  const { refetch } = useAccountPointsAndRank(
+    mangoAccountAddress,
+    seasonData?.season_id,
+  )
+
   const token = NotificationCookieStore((s) => s.currentToken)
 
   const queryClient = useQueryClient()
@@ -55,6 +62,9 @@ export function useNotificationSocket() {
               return [newNotification, ...prevData]
             },
           )
+          if (newNotification.title.toLowerCase().includes('points')) {
+            refetch()
+          }
         }
       })
 

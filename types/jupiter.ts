@@ -105,36 +105,38 @@ export interface Fee {
   mint: string
   pct: number
 }
-export interface MarketInfo {
-  id: string
-  inAmount: number
+
+export interface JupiterV6RouteInfo {
   inputMint: string
-  label: string
-  lpFee: Fee
-  notEnoughLiquidity: boolean
-  outAmount: number
-  outputMint: string
-  platformFee: Fee
-  priceImpactPct: number
-}
-
-export interface RouteInfo {
-  amount: number
   inAmount: number
-  marketInfos: MarketInfo[]
-  otherAmountThreshold: number
+  outputMint: string
   outAmount: number
-  priceImpactPct: number
-  slippageBps: number
+  otherAmountThreshold: number
   swapMode: SwapMode
-  instructions?: TransactionInstruction[]
-  mints?: PublicKey[]
-  routerName?: 'Mango'
+  slippageBps: number
+  platformFee?: {
+    amount: string
+    feeBps: number
+  }
+  priceImpactPct: number
+  routePlan: JupiterV6RoutePlan[]
+  contextSlot?: number
+  timeTaken?: number
+  error?: string
 }
 
-export type Routes = {
-  routesInfos: RouteInfo[]
-  cached: boolean
+export interface JupiterV6RoutePlan {
+  swapInfo: {
+    ammKey: string
+    label?: string
+    inputMint: string
+    outputMint: string
+    inAmount: number
+    outAmount: number
+    feeAmount: number
+    feeMint: string
+  }
+  percent: number
 }
 
 export type Token = {

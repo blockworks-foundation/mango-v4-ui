@@ -16,14 +16,15 @@ import { LinkButton } from '@components/shared/Button'
 import SoonBadge from '@components/shared/SoonBadge'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
-import { PerpMarket } from '@blockworks-foundation/mango-v4'
 
 export const goToPerpMarketDetails = (
-  market: PerpMarket,
+  market: string | undefined,
   router: NextRouter,
 ) => {
-  const query = { ...router.query, ['market']: market.name }
-  router.push({ pathname: router.pathname, query })
+  if (market) {
+    const query = { ...router.query, ['market']: market }
+    router.push({ pathname: router.pathname, query })
+  }
 }
 
 const PerpMarketDetailsTable = () => {
@@ -95,7 +96,7 @@ const PerpMarketDetailsTable = () => {
                 <TrBody
                   className="default-transition md:hover:cursor-pointer md:hover:bg-th-bkg-2"
                   key={publicKey.toString()}
-                  onClick={() => goToPerpMarketDetails(market, router)}
+                  onClick={() => goToPerpMarketDetails(market.name, router)}
                 >
                   <Td>
                     <div className="flex items-center">
@@ -323,7 +324,7 @@ const PerpMarketDetailsTable = () => {
                             <LinkButton
                               className="flex items-center"
                               onClick={() =>
-                                goToPerpMarketDetails(market, router)
+                                goToPerpMarketDetails(market.name, router)
                               }
                             >
                               {t('stats:perp-details', { market: market.name })}

@@ -285,6 +285,28 @@ export interface SpotTradeActivity {
   symbol: string
 }
 
+export interface SwapHistoryItem {
+  block_datetime: string
+  mango_account: string
+  signature: string
+  swap_in_amount: number
+  swap_in_loan: number
+  swap_in_loan_origination_fee: number
+  swap_in_price_usd: number
+  swap_in_symbol: string
+  swap_out_amount: number
+  loan: number
+  loan_origination_fee: number
+  swap_out_price_usd: number
+  swap_out_symbol: string
+}
+
+export interface SwapActivity {
+  activity_details: SwapHistoryItem
+  block_datetime: string
+  activity_type: string
+}
+
 export function isLiquidationActivityFeedItem(
   item: ActivityFeed,
 ): item is LiquidationActivity {
@@ -312,6 +334,15 @@ export function isSpotTradeActivityFeedItem(
   return false
 }
 
+export function isSwapActivityFeedItem(
+  item: ActivityFeed,
+): item is SwapActivity {
+  if (item.activity_type === 'swap') {
+    return true
+  }
+  return false
+}
+
 export function isPerpLiquidation(
   activityDetails: SpotOrPerpLiquidationItem,
 ): activityDetails is PerpLiquidationFeedItem {
@@ -319,22 +350,6 @@ export function isPerpLiquidation(
     return true
   }
   return false
-}
-
-export interface SwapHistoryItem {
-  block_datetime: string
-  mango_account: string
-  signature: string
-  swap_in_amount: number
-  swap_in_loan: number
-  swap_in_loan_origination_fee: number
-  swap_in_price_usd: number
-  swap_in_symbol: string
-  swap_out_amount: number
-  loan: number
-  loan_origination_fee: number
-  swap_out_price_usd: number
-  swap_out_symbol: string
 }
 
 export interface NFT {
@@ -375,7 +390,7 @@ export type GroupedDataItem = PerpStatsItem & Record<string, any>
 export type ActivityFeed = {
   activity_type: string
   block_datetime: string
-  symbol: string
+  symbol?: string
   activity_details:
     | DepositWithdrawFeedItem
     | SpotLiquidationFeedItem

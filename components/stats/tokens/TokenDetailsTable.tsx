@@ -24,9 +24,9 @@ import { getOracleProvider } from 'hooks/useOracleProvider'
 import { useRouter } from 'next/router'
 import { goToTokenPage } from './TokenOverviewTable'
 import { LinkButton } from '@components/shared/Button'
-import TokenLogo from '@components/shared/TokenLogo'
 import { useCallback } from 'react'
 import { useSortableData } from 'hooks/useSortableData'
+import TableTokenName from '@components/shared/TableTokenName'
 
 const TokenDetailsTable = () => {
   const { t } = useTranslation(['common', 'activity', 'token', 'trade'])
@@ -190,12 +190,7 @@ const TokenDetailsTable = () => {
                     onClick={() => goToTokenPage(symbol.split(' ')[0], router)}
                   >
                     <Td>
-                      <div className="flex items-center">
-                        <div className="mr-2.5 flex flex-shrink-0 items-center">
-                          <TokenLogo bank={bank} />
-                        </div>
-                        <p className="font-body">{symbol}</p>
-                      </div>
+                      <TableTokenName bank={bank} symbol={symbol} />
                     </Td>
                     <Td>
                       <div className="flex justify-end space-x-1.5 text-right">
@@ -259,12 +254,7 @@ const TokenDetailsTable = () => {
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <div className="mr-2.5 flex flex-shrink-0 items-center">
-                            <TokenLogo bank={bank} />
-                          </div>
-                          <p className="text-th-fgd-1">{bank.name}</p>
-                        </div>
+                        <TableTokenName bank={bank} symbol={bank.name} />
                         <ChevronDownIcon
                           className={`${
                             open ? 'rotate-180' : 'rotate-360'

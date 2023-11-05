@@ -78,7 +78,7 @@ const MarketLogos = ({
           : size === 'small'
           ? 'mr-1.5 h-4'
           : size === 'large'
-          ? 'mr-2.5 h-6'
+          ? 'mr-3 h-6'
           : 'mr-2 h-5'
       } ${
         market instanceof Serum3Market

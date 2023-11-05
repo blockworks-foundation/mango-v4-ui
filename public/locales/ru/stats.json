@@ -9,6 +9,8 @@
     "perp-volume": "Perp Volume",
     "pnl-liquidation-fee": "Positive PnL Liquidation Fee",
     "settle-pnl-factor": "Settle PnL Factor",
+    "show-as-apr": "Show as APR",
+    "show-cumulative": "Show Cumulative",
     "six-hourly": "6-Hourly",
     "tooltip-base-liquidation-fee": "The liqee pays this liquidation fee when a liquidator has to take over a perp base position.",
     "tooltip-funding-limits": "The minimum and maximum funding rates (in percent per day).",

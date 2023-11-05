@@ -48,6 +48,7 @@ import { formatTokenSymbol } from 'utils/tokens'
 import Tooltip from '@components/shared/Tooltip'
 import Link from 'next/link'
 import useTokenPositionsFull from 'hooks/useTokenPositionsFull'
+import TopBarStore from '@store/topBarStore'
 
 dayjs.extend(relativeTime)
 
@@ -112,6 +113,7 @@ const TriggerSwapForm = ({
   const { t } = useTranslation(['common', 'swap', 'trade'])
   const { mangoAccountAddress } = useMangoAccount()
   const { ipAllowed, ipCountry } = useIpAddress()
+  const { setShowSettingsModal } = TopBarStore()
   // const [triggerPrice, setTriggerPrice] = useState('')
   const [orderType, setOrderType] = useState(ORDER_TYPES[0])
   const [submitting, setSubmitting] = useState(false)
@@ -263,8 +265,8 @@ const TriggerSwapForm = ({
     const balance = mangoAccount.getTokenDepositsUi(outputBank)
     const remainingBalance = balance - amountOutAsDecimal.toNumber()
     const borrowAmount = remainingBalance < 0 ? Math.abs(remainingBalance) : 0
-
-    return borrowAmount > remainingBorrowsInPeriod
+    const borrowAmountNotional = borrowAmount * outputBank.uiPrice
+    return borrowAmountNotional > remainingBorrowsInPeriod
   }, [
     amountOutAsDecimal,
     outputBank,
@@ -854,7 +856,6 @@ const TriggerSwapForm = ({
       ) : null}
       {ipAllowed ? (
         <Button
-          disabled={borrowExceedsLimitInPeriod || tokenPositionsFull}
           onClick={onClick}
           className="mb-4 mt-6 flex w-full items-center justify-center text-base"
           size="large"
@@ -890,7 +891,7 @@ const TriggerSwapForm = ({
             desc={
               <>
                 {t('error-token-positions-full')}{' '}
-                <Link href="/settings" shallow>
+                <Link href={''} onClick={() => setShowSettingsModal(true)}>
                   {t('manage')}
                 </Link>
               </>

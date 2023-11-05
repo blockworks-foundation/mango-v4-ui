@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 import {
-  ArrowLeftIcon,
   ArrowRightIcon,
   CheckCircleIcon,
   ChevronRightIcon,
@@ -12,17 +11,14 @@ import {
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 import WalletIcon from './icons/WalletIcon'
-import Button from './shared/Button'
 import ConnectedMenu from './wallet/ConnectedMenu'
 import ConnectWalletButton from './wallet/ConnectWalletButton'
 import CreateAccountModal from './modals/CreateAccountModal'
-import { useRouter } from 'next/router'
 // import SolanaTps from './SolanaTps'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useOnlineStatus from 'hooks/useOnlineStatus'
 import { abbreviateAddress } from 'utils/formatting'
 import DepositWithdrawModal from './modals/DepositWithdrawModal'
-import { useViewport } from 'hooks/useViewport'
 import AccountsButton from './AccountsButton'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import NotificationsButton from './notifications/NotificationsButton'
@@ -34,14 +30,17 @@ import { IS_ONBOARDED_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import SettingsModal from './modals/SettingsModal'
 import DepositWithdrawIcon from './icons/DepositWithdrawIcon'
-import { useCurrentSeason, useWalletPoints } from 'hooks/useRewards'
-import { formatNumericValue } from 'utils/numbers'
+import { useAccountPointsAndRank, useCurrentSeason } from 'hooks/useRewards'
 import SheenLoader from './shared/SheenLoader'
 import Link from 'next/link'
 import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
+import FormatNumericValue from './shared/FormatNumericValue'
+import { useRouter } from 'next/router'
+import TopBarStore from '@store/topBarStore'
+import MedalIcon from './icons/MedalIcon'
 
 export const TOPBAR_ICON_BUTTON_CLASSES =
-  'relative flex h-16 w-16 items-center justify-center border-l border-th-bkg-3 focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2'
+  'relative flex h-16 w-10 sm:w-16 items-center justify-center sm:border-l sm:border-th-bkg-3 focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2'
 
 const set = mangoStore.getState().set
 
@@ -50,9 +49,13 @@ const TopBar = () => {
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const { connected, wallet } = useWallet()
   const { data: seasonData } = useCurrentSeason()
-  const { data: walletPoints, isLoading: loadingWalletRewardsData } =
-    useWalletPoints(mangoAccountAddress, seasonData?.season_id, wallet)
+  const {
+    data: accountPointsAndRank,
+    isInitialLoading: loadingAccountPointsAndRank,
+    refetch: refetchPoints,
+  } = useAccountPointsAndRank(mangoAccountAddress, seasonData?.season_id)
   const { data: isWhiteListed } = useIsWhiteListed()
+  const router = useRouter()
   const themeData = mangoStore((s) => s.themeData)
 
   const [action, setAction] = useState<'deposit' | 'withdraw'>('deposit')
@@ -60,13 +63,8 @@ const TopBar = () => {
   const [showDepositWithdrawModal, setShowDepositWithdrawModal] =
     useState(false)
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
-  const [showSettingsModal, setShowSettingsModal] = useState(false)
+  const { showSettingsModal, setShowSettingsModal } = TopBarStore()
   const isOnline = useOnlineStatus()
-
-  const router = useRouter()
-  const { query } = router
-
-  const { isDesktop } = useViewport()
 
   const { isUnownedAccount } = useUnownedAccount()
   const showUserSetup = mangoStore((s) => s.showUserSetup)
@@ -103,6 +101,12 @@ const TopBar = () => {
     setTimeout(() => setCopied(''), 2000)
   }, [copied])
 
+  useEffect(() => {
+    if (router.pathname === '/rewards') {
+      refetchPoints()
+    }
+  }, [router])
+
   return (
     <div
       className={`flex h-16 items-center justify-between border-b border-th-bkg-3 bg-th-bkg-1 bg-contain`}
@@ -110,20 +114,14 @@ const TopBar = () => {
     >
       <div className="flex w-full items-center justify-between md:space-x-4">
         <span className="mb-0 flex items-center">
-          {query.token || query.market ? (
-            <button
-              className="flex h-16 w-16 items-center justify-center border-r border-th-bkg-3 focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2"
-              onClick={() => router.back()}
-            >
-              <ArrowLeftIcon className="h-5 w-5" />
-            </button>
-          ) : null}
           <div className="flex h-[63px] w-16 items-center justify-center bg-th-bkg-1 md:hidden">
-            <img
-              className="h-9 w-9 flex-shrink-0"
-              src={themeData.logoPath}
-              alt="logo"
-            />
+            <Link href="/" shallow={true}>
+              <img
+                className="h-8 w-8 flex-shrink-0"
+                src={themeData.logoPath}
+                alt="logo"
+              />
+            </Link>
           </div>
           {!connected ? (
             mangoAccount ? (
@@ -189,18 +187,50 @@ const TopBar = () => {
             )
           ) : isWhiteListed ? (
             <Link href="/rewards" shallow={true}>
-              <div className="flex h-16 items-center justify-between bg-gradient-to-br from-th-bkg-2 to-th-bkg-3 px-4 lg:pl-6">
+              <div className="flex h-16 items-center justify-between border-x border-th-bkg-3 bg-th-bkg-1 px-4 md:border-l-0">
+                {accountPointsAndRank?.rank ? (
+                  <div
+                    className={`relative hidden h-6 w-6 flex-shrink-0 items-center justify-center rounded-full sm:flex ${
+                      accountPointsAndRank.rank < 4 ? '' : 'bg-th-bkg-3'
+                    } mr-2`}
+                  >
+                    <p
+                      className={`relative z-10 text-xs font-bold ${
+                        accountPointsAndRank.rank < 4
+                          ? 'text-th-bkg-1'
+                          : 'text-th-fgd-1'
+                      }`}
+                    >
+                      {accountPointsAndRank.rank}
+                    </p>
+                    {accountPointsAndRank.rank < 4 ? (
+                      <MedalIcon
+                        className="absolute"
+                        rank={accountPointsAndRank.rank}
+                      />
+                    ) : null}
+                  </div>
+                ) : loadingAccountPointsAndRank ? (
+                  <SheenLoader className="mr-2 hidden sm:block">
+                    <div className="h-6 w-6 bg-th-bkg-2" />
+                  </SheenLoader>
+                ) : null}
                 <div>
                   <span className="whitespace-nowrap font-bold text-th-fgd-2">
                     Points
                   </span>
-                  {!loadingWalletRewardsData ? (
+                  {!loadingAccountPointsAndRank ? (
                     <p className="bg-gradient-to-br from-yellow-400 to-red-400 bg-clip-text font-display text-base text-transparent">
-                      {walletPoints
-                        ? formatNumericValue(walletPoints)
-                        : wallet?.adapter.publicKey
-                        ? 0
-                        : '–'}
+                      {accountPointsAndRank?.total_points ? (
+                        <FormatNumericValue
+                          value={accountPointsAndRank.total_points}
+                          decimals={0}
+                        />
+                      ) : wallet?.adapter.publicKey ? (
+                        0
+                      ) : (
+                        '–'
+                      )}
                     </p>
                   ) : (
                     <SheenLoader className="mt-1.5">
@@ -208,7 +238,7 @@ const TopBar = () => {
                     </SheenLoader>
                   )}
                 </div>
-                <ChevronRightIcon className="ml-2 hidden h-7 w-7 text-th-fgd-4 lg:block" />
+                <ChevronRightIcon className="ml-2 hidden h-6 w-6 text-th-fgd-4 lg:block" />
               </div>
             </Link>
           ) : null}
@@ -222,8 +252,7 @@ const TopBar = () => {
           </div>
         ) : null}
         <div className="flex items-center">
-          {isUnownedAccount ||
-          (!connected && !isDesktop) ? null : !isDesktop ? (
+          {isUnownedAccount || !connected ? null : (
             <div className="h-[63px] bg-th-bkg-1">
               <button
                 onClick={() => handleDepositWithdrawModal('deposit')}
@@ -232,12 +261,6 @@ const TopBar = () => {
                 <DepositWithdrawIcon className="h-6 w-6" />
               </button>
             </div>
-          ) : (
-            <Button
-              onClick={() => handleDepositWithdrawModal('deposit')}
-              secondary
-              className="mr-4"
-            >{`${t('deposit')} / ${t('withdraw')}`}</Button>
           )}
           <div className="h-[63px] bg-th-bkg-1">
             <button
@@ -252,10 +275,14 @@ const TopBar = () => {
             <div className="flex h-[63px] items-center bg-th-bkg-1">
               {mangoAccountAddress && <NotificationsButton />}
               <AccountsButton />
-              <ConnectedMenu />
+              <div className="pl-2 sm:pl-0">
+                <ConnectedMenu />
+              </div>
             </div>
           ) : (
-            <ConnectWalletButton handleShowSetup={handleShowSetup} />
+            <div className="pl-2 sm:pl-0">
+              <ConnectWalletButton handleShowSetup={handleShowSetup} />
+            </div>
           )}
         </div>
       </div>

@@ -1,4 +1,3 @@
-import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
 import MarketLogos from '@components/trade/MarketLogos'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
@@ -10,7 +9,7 @@ import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { getDecimalCount, numberCompacter } from 'utils/numbers'
 import Tooltip from '@components/shared/Tooltip'
-import { NextRouter, useRouter } from 'next/router'
+import { useRouter } from 'next/router'
 import SimpleAreaChart from '@components/shared/SimpleAreaChart'
 import { Disclosure, Transition } from '@headlessui/react'
 import { LinkButton } from '@components/shared/Button'
@@ -25,14 +24,7 @@ import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import ContentBox from '@components/shared/ContentBox'
 import { COLORS } from 'styles/colors'
-
-export const goToPerpMarketDetails = (
-  market: PerpMarket,
-  router: NextRouter,
-) => {
-  const query = { ...router.query, ['market']: market.name }
-  router.push({ pathname: router.pathname, query })
-}
+import { goToPerpMarketDetails } from '@components/stats/perps/PerpMarketDetailsTable'
 
 const PerpMarketsTable = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -106,7 +98,7 @@ const PerpMarketsTable = () => {
                   <TrBody
                     className="default-transition md:hover:cursor-pointer md:hover:bg-th-bkg-2"
                     key={market.publicKey.toString()}
-                    onClick={() => goToPerpMarketDetails(market, router)}
+                    onClick={() => goToPerpMarketDetails(market.name, router)}
                   >
                     <Td>
                       <div className="flex items-center">
@@ -436,7 +428,7 @@ const MobilePerpMarketItem = ({
                 <div className="col-span-1">
                   <LinkButton
                     className="flex items-center"
-                    onClick={() => goToPerpMarketDetails(market, router)}
+                    onClick={() => goToPerpMarketDetails(market.name, router)}
                   >
                     {t('token:token-stats', { token: market.name })}
                     <ChevronRightIcon className="ml-2 h-5 w-5" />

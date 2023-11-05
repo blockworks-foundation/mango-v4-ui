@@ -49,6 +49,8 @@ export const FAVORITE_SWAPS_KEY = 'favoriteSwaps-0.1'
 
 export const THEME_KEY = 'theme-0.1'
 
+export const CUSTOM_THEME_SUFFIX = 'CUSTOM_NFT_THEME'
+
 export const RPC_PROVIDER_KEY = 'rpcProviderKey-0.9'
 
 export const PRIORITY_FEE_KEY = 'priorityFeeKey-0.2'
@@ -67,7 +69,7 @@ export const STATS_TAB_KEY = 'activeStatsTab-0.1'
 
 export const USE_ORDERBOOK_FEED_KEY = 'useOrderbookFeed-0.1'
 
-export const HOT_KEYS_KEY = 'hotKeys-0.1'
+export const HOT_KEYS_KEY = 'hotKeys-0.2'
 
 export const AUTO_CONNECT_WALLET = 'auto-connect-0.1'
 
@@ -76,6 +78,8 @@ export const LAST_WALLET_NAME = 'lastWalletName'
 export const PRIVACY_MODE = 'privacy-mode-0.1'
 
 export const MANGO_MINTS_BANNER_KEY = 'mangoMintsBanner-0.1'
+
+export const SEND_TELEMETRY_KEY = 'sendTelemetry-0.1'
 
 // Unused
 export const PROFILE_CATEGORIES = [
@@ -102,9 +106,9 @@ export const MIN_SOL_BALANCE = 0.001
 
 export const MAX_PRIORITY_FEE_KEYS = 128
 
-export const ACCOUNT_ACTION_MODAL_HEIGHT = '462px'
+export const ACCOUNT_ACTION_MODAL_HEIGHT = '488px'
 
-export const ACCOUNT_ACTION_MODAL_INNER_HEIGHT = '400px'
+export const ACCOUNT_ACTION_MODAL_INNER_HEIGHT = '426px'
 
 export const TRADE_VOLUME_ALERT_KEY = 'tradeVolumeAlert-0.1'
 
@@ -114,7 +118,9 @@ export const JUPITER_API_MAINNET = 'https://token.jup.ag/strict'
 
 export const JUPITER_API_DEVNET = 'https://api.jup.ag/api/tokens/devnet'
 
-export const JUPITER_PRICE_API_MAINNET = 'https://price.jup.ag/v4/'
+export const JUPITER_PRICE_API_MAINNET = 'https://price.jup.ag/v4/' // V6 Does not yet support /price requests as of 16/10/2023
+
+export const JUPITER_V6_QUOTE_API_MAINNET = 'https://quote-api.jup.ag/v6'
 
 export const NOTIFICATION_API = 'https://notifications-api.herokuapp.com/'
 
@@ -132,11 +138,13 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   bonk: true,
   btc: true,
   chai: true,
+  crown: true,
   dai: true,
   dual: true,
   eth: true,
   ethpo: true,
   'eth (portal)': true,
+  guac: true,
   hnt: true,
   jitosol: true,
   kin: true,
@@ -149,6 +157,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   rndr: true,
   sol: true,
   stsol: true,
+  tbtc: true,
   usdc: true,
   usdh: true,
   usdt: true,
@@ -175,3 +184,11 @@ export const MAX_ACCOUNTS = {
   perpOpenOrders: '64',
   tcsOrders: '64',
 }
+
+export enum TOKEN_REDUCE_ONLY_OPTIONS {
+  DISABLED,
+  ENABLED,
+  NO_BORROWS,
+}
+
+export const PRIVATE_MODE_STRING = '****'

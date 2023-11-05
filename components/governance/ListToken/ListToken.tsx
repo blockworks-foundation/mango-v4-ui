@@ -251,6 +251,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         mode,
         FEE,
         walletForCheck,
+        undefined, // mangoAccount
         'JUPITER',
         onlyDirect,
       )
@@ -287,10 +288,11 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           (acc: { amount: string; priceImpactPct: number }[], val) => {
             if (val.swapMode === 'ExactIn') {
               const exactOutRoute = bestRoutesSwaps.find(
-                (x) => x.amount === val.amount && x.swapMode === 'ExactOut',
+                (x) =>
+                  x.outAmount === val.outAmount && x.swapMode === 'ExactOut',
               )
               acc.push({
-                amount: val.amount.toString(),
+                amount: val.outAmount.toString(),
                 priceImpactPct: exactOutRoute?.priceImpactPct
                   ? (val.priceImpactPct + exactOutRoute.priceImpactPct) / 2
                   : val.priceImpactPct,
@@ -346,15 +348,15 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       true,
     )
 
-    const marketInfos = swaps.routes.flatMap((x) => x.marketInfos)
-    const orcaPool = marketInfos.find((x) =>
-      x.label.toLowerCase().includes('orca'),
+    const swapInfos = swaps?.bestRoute?.routePlan.map((x) => x.swapInfo)
+    const orcaPool = swapInfos?.find(
+      (x) => x.label?.toLowerCase().includes('orca'),
     )
-    const raydiumPool = marketInfos.find((x) =>
-      x.label.toLowerCase().includes('raydium'),
+    const raydiumPool = swapInfos?.find(
+      (x) => x.label?.toLowerCase().includes('raydium'),
     )
-    setOrcaPoolAddress(orcaPool?.id || '')
-    setRaydiumPoolAddress(raydiumPool?.id || '')
+    setOrcaPoolAddress(orcaPool?.ammKey || '')
+    setRaydiumPoolAddress(raydiumPool?.ammKey || '')
   }
 
   const handleTokenFind = useCallback(async () => {
@@ -368,7 +370,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     }
     const tokenInfo = jupiterTokens.find((x) => x.address === mint)
     const priceInfo = await (
-      await fetch(`${JUPITER_PRICE_API_MAINNET}/price?ids=${mint}`)
+      await fetch(`${JUPITER_PRICE_API_MAINNET}price?ids=${mint}`)
     ).json()
     setBaseTokenPrice(priceInfo.data[mint]?.price || 0)
     setCurrentTokenInfo(tokenInfo)

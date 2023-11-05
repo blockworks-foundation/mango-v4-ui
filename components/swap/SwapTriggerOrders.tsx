@@ -516,13 +516,15 @@ const SwapOrders = () => {
       </div>
     )
   ) : mangoAccountAddress || connected ? (
-    <div className="flex flex-col items-center p-8">
-      <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
-      <p>{t('trade:no-orders')}</p>
+    <div className="flex flex-1 flex-col items-center justify-center">
+      <div className="flex flex-col items-center p-8">
+        <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
+        <p>{t('trade:no-trigger-orders')}</p>
+      </div>
     </div>
   ) : (
-    <div className="p-8">
-      <ConnectEmptyState text={t('connect-orders')} />
+    <div className="flex flex-1 flex-col items-center justify-center p-8">
+      <ConnectEmptyState text={t('trade:connect-trigger-orders')} />
     </div>
   )
 }

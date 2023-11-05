@@ -16,7 +16,6 @@ import ContentBox from './shared/ContentBox'
 import Tooltip from './shared/Tooltip'
 import { formatTokenSymbol } from 'utils/tokens'
 import useMangoAccount from 'hooks/useMangoAccount'
-import useJupiterMints from '../hooks/useJupiterMints'
 import {
   SortableColumnHeader,
   Table,
@@ -28,7 +27,12 @@ import {
 import DepositWithdrawModal from './modals/DepositWithdrawModal'
 import BorrowRepayModal from './modals/BorrowRepayModal'
 import { WRAPPED_SOL_MINT } from '@project-serum/serum/lib/token-instructions'
-import { SHOW_ZERO_BALANCES_KEY, USDC_MINT } from 'utils/constants'
+import {
+  MANGO_DATA_API_URL,
+  SHOW_ZERO_BALANCES_KEY,
+  TOKEN_REDUCE_ONLY_OPTIONS,
+  USDC_MINT,
+} from 'utils/constants'
 import { PublicKey } from '@solana/web3.js'
 import ActionsLinkButton from './account/ActionsLinkButton'
 import FormatNumericValue from './shared/FormatNumericValue'
@@ -41,6 +45,36 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import TokenLogo from './shared/TokenLogo'
 import useHealthContributions from 'hooks/useHealthContributions'
 import { useSortableData } from 'hooks/useSortableData'
+import TableTokenName from './shared/TableTokenName'
+import CloseBorrowModal from './modals/CloseBorrowModal'
+import { floorToDecimal } from 'utils/numbers'
+import { useQuery } from '@tanstack/react-query'
+import { TotalInterestDataItem } from 'types'
+import SheenLoader from './shared/SheenLoader'
+
+export const fetchInterestData = async (mangoAccountPk: string) => {
+  try {
+    const response = await fetch(
+      `${MANGO_DATA_API_URL}/stats/interest-account-total?mango-account=${mangoAccountPk}`,
+    )
+    const parsedResponse: Omit<TotalInterestDataItem, 'symbol'>[] | null =
+      await response.json()
+    if (parsedResponse) {
+      const entries: [string, Omit<TotalInterestDataItem, 'symbol'>][] =
+        Object.entries(parsedResponse).sort((a, b) => b[0].localeCompare(a[0]))
+
+      const stats: TotalInterestDataItem[] = entries
+        .map(([key, value]) => {
+          return { ...value, symbol: key }
+        })
+        .filter((x) => x)
+      return stats
+    } else return []
+  } catch (e) {
+    console.log('Failed to fetch account funding', e)
+    return []
+  }
+}
 
 type TableData = {
   bank: Bank
@@ -57,8 +91,12 @@ type TableData = {
   borrowRate: number
 }
 
+const set = mangoStore.getState().set
+
 const TokenList = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
+  const [showCloseBorrowModal, setCloseBorrowModal] = useState(false)
+  const [closeBorrowBank, setCloseBorrowBank] = useState<Bank | undefined>()
   const [showZeroBalances, setShowZeroBalances] = useLocalStorageState(
     SHOW_ZERO_BALANCES_KEY,
     true,
@@ -66,23 +104,35 @@ const TokenList = () => {
   const { mangoAccountAddress } = useMangoAccount()
   const { initContributions } = useHealthContributions()
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
-  const totalInterestData = mangoStore(
-    (s) => s.mangoAccount.interestTotals.data,
-  )
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const banks = useBanksWithBalances('balance')
+
+  const {
+    data: totalInterestData,
+    isInitialLoading: loadingTotalInterestData,
+  } = useQuery(
+    ['account-interest-data', mangoAccountAddress],
+    () => fetchInterestData(mangoAccountAddress),
+    {
+      cacheTime: 1000 * 60 * 10,
+      staleTime: 1000 * 60,
+      retry: 3,
+      refetchOnWindowFocus: false,
+      enabled: !!mangoAccountAddress,
+    },
+  )
 
   const formattedTableData = useCallback(
     (banks: BankWithBalance[]) => {
       const formatted = []
       for (const b of banks) {
         const bank = b.bank
-        const balance = b.balance
+        const balance = floorToDecimal(b.balance, bank.mintDecimals).toNumber()
         const balanceValue = balance * bank.uiPrice
         const symbol = bank.name === 'MSOL' ? 'mSOL' : bank.name
 
-        const hasInterestEarned = totalInterestData.find(
+        const hasInterestEarned = totalInterestData?.find(
           (d) =>
             d.symbol.toLowerCase() === symbol.toLowerCase() ||
             (symbol === 'ETH (Portal)' && d.symbol === 'ETH'),
@@ -150,10 +200,62 @@ const TokenList = () => {
     sortConfig,
   } = useSortableData(unsortedTableData)
 
+  const handleOpenCloseBorrowModal = (borrowBank: Bank) => {
+    const group = mangoStore.getState().group
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+    setCloseBorrowModal(true)
+    setCloseBorrowBank(borrowBank)
+    if (borrowBank.name === 'USDC') {
+      const solBank = group?.getFirstBankByMint(WRAPPED_SOL_MINT)
+      set((state) => {
+        state.swap.inputBank = solBank
+      })
+    } else {
+      const usdcBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
+      set((state) => {
+        state.swap.inputBank = usdcBank
+      })
+    }
+    if (mangoAccount) {
+      const balance = mangoAccount.getTokenBalanceUi(borrowBank)
+      const roundedBalance = floorToDecimal(
+        balance,
+        borrowBank.mintDecimals,
+      ).toNumber()
+      set((state) => {
+        state.swap.swapMode = 'ExactOut'
+        state.swap.outputBank = borrowBank
+        state.swap.amountOut = Math.abs(roundedBalance).toString()
+      })
+    }
+  }
+
+  const handleCloseBorrowModal = () => {
+    setCloseBorrowModal(false)
+    set((state) => {
+      state.swap.inputBank = undefined
+      state.swap.outputBank = undefined
+      state.swap.amountIn = ''
+      state.swap.amountOut = ''
+      state.swap.swapMode = 'ExactIn'
+    })
+  }
+
+  const balancesNumber = useMemo(() => {
+    if (!banks.length) return 0
+    const activeBalancesNumber = banks.filter(
+      (bank) => Math.abs(bank.balance) > 0,
+    ).length
+    return activeBalancesNumber
+  }, [banks])
+
   return (
     <ContentBox hideBorder hidePadding>
       {mangoAccountAddress ? (
-        <div className="flex w-full items-center justify-end border-b border-th-bkg-3 px-6 py-3 lg:-mt-[36px] lg:mb-4 lg:mr-12 lg:w-auto lg:border-0 lg:py-0">
+        <div className="flex w-full items-center justify-between border-b border-th-bkg-3 px-6 py-3">
+          <p className="text-xs text-th-fgd-2">{`${balancesNumber} ${t(
+            'balances',
+          )}`}</p>
           <Switch
             checked={showZeroBalances}
             disabled={!mangoAccountAddress}
@@ -214,16 +316,6 @@ const TokenList = () => {
                 </Th>
                 <Th>
                   <div className="flex justify-end">
-                    <SortableColumnHeader
-                      sortKey="unsettled"
-                      sort={() => requestSort('unsettled')}
-                      sortConfig={sortConfig}
-                      title={t('trade:unsettled')}
-                    />
-                  </div>
-                </Th>
-                <Th>
-                  <div className="flex justify-end">
                     <Tooltip content="The sum of interest earned and interest paid for each token">
                       <SortableColumnHeader
                         sortKey="interestValue"
@@ -259,10 +351,8 @@ const TokenList = () => {
                   balance,
                   bank,
                   symbol,
-                  interestAmount,
                   interestValue,
                   inOrders,
-                  unsettled,
                   collateralValue,
                   assetWeight,
                   liabWeight,
@@ -273,18 +363,14 @@ const TokenList = () => {
                 return (
                   <TrBody key={symbol}>
                     <Td>
-                      <div className="flex items-center">
-                        <div className="mr-2.5 flex flex-shrink-0 items-center">
-                          <TokenLogo bank={bank} />
-                        </div>
-                        <p className="font-body">{symbol}</p>
-                      </div>
+                      <TableTokenName bank={bank} symbol={symbol} />
                     </Td>
                     <Td className="text-right">
                       <BankAmountWithValue
                         amount={balance}
                         bank={bank}
                         stacked
+                        isPrivate
                       />
                     </Td>
                     <Td className="text-right">
@@ -293,6 +379,7 @@ const TokenList = () => {
                           value={collateralValue}
                           decimals={2}
                           isUsd
+                          isPrivate
                         />
                       </p>
                       <p className="text-sm text-th-fgd-4">
@@ -305,47 +392,70 @@ const TokenList = () => {
                       </p>
                     </Td>
                     <Td className="text-right">
-                      <BankAmountWithValue
-                        amount={inOrders}
-                        bank={bank}
-                        stacked
-                      />
-                    </Td>
-                    <Td className="text-right">
-                      <BankAmountWithValue
-                        amount={unsettled}
-                        bank={bank}
-                        stacked
-                      />
+                      {inOrders ? (
+                        <BankAmountWithValue
+                          amount={inOrders}
+                          bank={bank}
+                          stacked
+                          isPrivate
+                        />
+                      ) : (
+                        <p className="text-th-fgd-4">–</p>
+                      )}
                     </Td>
                     <Td>
-                      <div className="flex flex-col text-right">
-                        <BankAmountWithValue
-                          amount={interestAmount}
-                          bank={bank}
-                          value={interestValue}
-                          stacked
-                        />
+                      <div className="flex justify-end">
+                        {loadingTotalInterestData ? (
+                          <SheenLoader>
+                            <div className="h-4 w-12 bg-th-bkg-2" />
+                          </SheenLoader>
+                        ) : Math.abs(interestValue) > 0 ? (
+                          <p>
+                            <FormatNumericValue
+                              value={interestValue}
+                              isUsd
+                              decimals={2}
+                              isPrivate
+                            />
+                          </p>
+                        ) : (
+                          <p className="text-th-fgd-4">–</p>
+                        )}
                       </div>
                     </Td>
                     <Td>
                       <div className="flex justify-end space-x-1.5">
-                        <p className="text-th-up">
-                          <FormatNumericValue
-                            value={depositRate}
-                            decimals={2}
-                          />
-                          %
-                        </p>
+                        <Tooltip content={t('deposit-rate')}>
+                          <p className="cursor-help text-th-up">
+                            <FormatNumericValue
+                              value={depositRate}
+                              decimals={2}
+                            />
+                            %
+                          </p>
+                        </Tooltip>
                         <span className="text-th-fgd-4">|</span>
-                        <p className="text-th-down">
-                          <FormatNumericValue value={borrowRate} decimals={2} />
-                          %
-                        </p>
+                        <Tooltip content={t('borrow-rate')}>
+                          <p className="cursor-help text-th-down">
+                            <FormatNumericValue
+                              value={borrowRate}
+                              decimals={2}
+                            />
+                            %
+                          </p>
+                        </Tooltip>
                       </div>
                     </Td>
                     <Td>
-                      <div className="flex items-center justify-end">
+                      <div className="flex items-center justify-end space-x-2">
+                        {balance < 0 ? (
+                          <button
+                            className="rounded-md border border-th-fgd-4 px-2 py-1.5 text-xs font-bold text-th-fgd-2 focus:outline-none md:hover:border-th-fgd-3"
+                            onClick={() => handleOpenCloseBorrowModal(bank)}
+                          >
+                            {t('close-borrow', { token: '' })}
+                          </button>
+                        ) : null}
                         <ActionsMenu bank={bank} />
                       </div>
                     </Td>
@@ -362,6 +472,13 @@ const TokenList = () => {
           })}
         </div>
       )}
+      {showCloseBorrowModal ? (
+        <CloseBorrowModal
+          borrowBank={closeBorrowBank}
+          isOpen={showCloseBorrowModal}
+          onClose={handleCloseBorrowModal}
+        />
+      ) : null}
     </ContentBox>
   )
 }
@@ -394,14 +511,7 @@ const MobileTokenListItem = ({ data }: { data: TableData }) => {
             className={`w-full border-t border-th-bkg-3 p-4 text-left first:border-t-0 focus:outline-none`}
           >
             <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="mr-2.5">
-                  <TokenLogo bank={bank} />
-                </div>
-                <div>
-                  <p className="mb-0.5 leading-none text-th-fgd-1">{symbol}</p>
-                </div>
-              </div>
+              <TableTokenName bank={bank} symbol={symbol} />
               <div className="flex items-center space-x-2">
                 <div className="text-right">
                   <p className="font-mono text-sm text-th-fgd-2">
@@ -415,6 +525,7 @@ const MobileTokenListItem = ({ data }: { data: TableData }) => {
                       value={mangoAccount ? balance * bank.uiPrice : 0}
                       decimals={2}
                       isUsd
+                      isPrivate
                     />
                   </span>
                 </div>
@@ -444,6 +555,7 @@ const MobileTokenListItem = ({ data }: { data: TableData }) => {
                       value={collateralValue}
                       decimals={2}
                       isUsd
+                      isPrivate
                     />
                     <span className="text-th-fgd-3">
                       {' '}
@@ -460,13 +572,21 @@ const MobileTokenListItem = ({ data }: { data: TableData }) => {
                   <p className="text-xs text-th-fgd-3">
                     {t('trade:in-orders')}
                   </p>
-                  <BankAmountWithValue amount={inOrders} bank={bank} />
+                  <BankAmountWithValue
+                    amount={inOrders}
+                    bank={bank}
+                    isPrivate
+                  />
                 </div>
                 <div className="col-span-1">
                   <p className="text-xs text-th-fgd-3">
                     {t('trade:unsettled')}
                   </p>
-                  <BankAmountWithValue amount={unsettled} bank={bank} />
+                  <BankAmountWithValue
+                    amount={unsettled}
+                    bank={bank}
+                    isPrivate
+                  />
                 </div>
                 <div className="col-span-1">
                   <p className="text-xs text-th-fgd-3">
@@ -476,6 +596,7 @@ const MobileTokenListItem = ({ data }: { data: TableData }) => {
                     amount={interestAmount}
                     bank={bank}
                     value={interestValue}
+                    isPrivate
                   />
                 </div>
                 <div className="col-span-1">
@@ -518,7 +639,6 @@ export const ActionsMenu = ({
   const [selectedToken, setSelectedToken] = useState('')
   const set = mangoStore.getState().set
   const router = useRouter()
-  const { mangoTokens } = useJupiterMints()
   const spotMarkets = mangoStore((s) => s.serumMarkets)
   const { isUnownedAccount } = useUnownedAccount()
   const { isDesktop } = useViewport()
@@ -553,41 +673,38 @@ export const ActionsMenu = ({
   }, [bank, mangoAccountAddress])
 
   const handleSwap = useCallback(() => {
-    const tokenInfo = mangoTokens.find(
-      (t) => t.address === bank.mint.toString(),
-    )
     const group = mangoStore.getState().group
-    if (balance && balance > 0) {
-      if (tokenInfo?.symbol === 'SOL') {
-        const usdcTokenInfo = mangoTokens.find((t) => t.address === USDC_MINT)
+    if (balance > 0) {
+      if (bank.name === 'USDC') {
+        const solBank = group?.getFirstBankByMint(WRAPPED_SOL_MINT)
+        set((s) => {
+          s.swap.inputBank = bank
+          s.swap.outputBank = solBank
+        })
+      } else {
         const usdcBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
         set((s) => {
-          s.swap.inputBank = usdcBank
-          s.swap.inputTokenInfo = usdcTokenInfo
+          s.swap.inputBank = bank
+          s.swap.outputBank = usdcBank
         })
       }
-      set((s) => {
-        s.swap.inputBank = bank
-        s.swap.inputTokenInfo = tokenInfo
-      })
     } else {
-      if (tokenInfo?.symbol === 'USDC') {
-        const solTokenInfo = mangoTokens.find(
-          (t) => t.address === WRAPPED_SOL_MINT.toString(),
-        )
+      if (bank.name === 'USDC') {
         const solBank = group?.getFirstBankByMint(WRAPPED_SOL_MINT)
         set((s) => {
           s.swap.inputBank = solBank
-          s.swap.inputTokenInfo = solTokenInfo
+          s.swap.outputBank = bank
+        })
+      } else {
+        const usdcBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
+        set((s) => {
+          s.swap.inputBank = usdcBank
+          s.swap.outputBank = bank
         })
       }
-      set((s) => {
-        s.swap.outputBank = bank
-        s.swap.outputTokenInfo = tokenInfo
-      })
     }
     router.push('/swap', undefined, { shallow: true })
-  }, [bank, router, set, mangoTokens, mangoAccountAddress])
+  }, [bank, router, set])
 
   const handleTrade = useCallback(() => {
     router.push(`/trade?name=${spotMarket?.name}`, undefined, { shallow: true })
@@ -643,11 +760,15 @@ export const ActionsMenu = ({
                       </p>
                     </div>
                   ) : null}
-                  <ActionsLinkButton
-                    onClick={() => handleShowActionModals(bank.name, 'deposit')}
-                  >
-                    {t('deposit')}
-                  </ActionsLinkButton>
+                  {bank.reduceOnly !== TOKEN_REDUCE_ONLY_OPTIONS.ENABLED ? (
+                    <ActionsLinkButton
+                      onClick={() =>
+                        handleShowActionModals(bank.name, 'deposit')
+                      }
+                    >
+                      {t('deposit')}
+                    </ActionsLinkButton>
+                  ) : null}
                   {balance < 0 ? (
                     <ActionsLinkButton
                       onClick={() => handleShowActionModals(bank.name, 'repay')}
@@ -664,11 +785,15 @@ export const ActionsMenu = ({
                       {t('withdraw')}
                     </ActionsLinkButton>
                   ) : null}
-                  <ActionsLinkButton
-                    onClick={() => handleShowActionModals(bank.name, 'borrow')}
-                  >
-                    {t('borrow')}
-                  </ActionsLinkButton>
+                  {bank.reduceOnly === TOKEN_REDUCE_ONLY_OPTIONS.DISABLED ? (
+                    <ActionsLinkButton
+                      onClick={() =>
+                        handleShowActionModals(bank.name, 'borrow')
+                      }
+                    >
+                      {t('borrow')}
+                    </ActionsLinkButton>
+                  ) : null}
                   <ActionsLinkButton onClick={handleSwap}>
                     {t('swap')}
                   </ActionsLinkButton>

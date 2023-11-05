@@ -2,8 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { ModalProps } from '../../types/modal'
 import Modal from '../shared/Modal'
 import { useTranslation } from 'next-i18next'
-import useMangoAccount from 'hooks/useMangoAccount'
-import useUnownedAccount from 'hooks/useUnownedAccount'
 import { ArrowLeftIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import RpcSettings from '@components/settings/RpcSettings'
 import DisplaySettings from '@components/settings/DisplaySettings'
@@ -15,6 +13,8 @@ import { useViewport } from 'hooks/useViewport'
 import { IconButton } from '@components/shared/Button'
 import AnimationSettings from '@components/settings/AnimationSettings'
 import SoundSettings from '@components/settings/SoundSettings'
+import TelemetrySettings from '@components/settings/TelemetrySettings'
+import AutoConnectSettings from '@components/settings/AutoConnectSettings'
 
 enum SettingsCategories {
   NETWORK = 'settings:network',
@@ -25,7 +25,8 @@ enum SettingsCategories {
   HOTKEYS = 'settings:hot-keys',
 }
 
-const DEFAULT_TABS = [
+const TABS = [
+  SettingsCategories.ACCOUNT,
   SettingsCategories.NETWORK,
   SettingsCategories.DISPLAY,
   SettingsCategories.NOTIFICATIONS,
@@ -35,27 +36,21 @@ const DEFAULT_TABS = [
 
 const SettingsModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation(['common', 'settings'])
-  const { mangoAccountAddress } = useMangoAccount()
-  const { isUnownedAccount } = useUnownedAccount()
   const { isDesktop } = useViewport()
   const [activeTab, setActiveTab] = useState<SettingsCategories | null>(
-    isDesktop ? DEFAULT_TABS[0] : null,
+    isDesktop ? TABS[0] : null,
   )
 
   const tabsToShow = useMemo(() => {
-    if (!mangoAccountAddress || isUnownedAccount) return DEFAULT_TABS
-    const tabs = [
-      ...DEFAULT_TABS.slice(0, 2),
-      SettingsCategories.ACCOUNT,
-      ...DEFAULT_TABS.slice(2),
-    ]
-    return isDesktop ? tabs : tabs.slice(0, -1)
-  }, [mangoAccountAddress, isDesktop, isUnownedAccount])
+    if (isDesktop) {
+      return TABS
+    } else return TABS.slice(0, -1)
+  }, [isDesktop])
 
   // set an active tab is screen width is desktop and no tab is set
   useEffect(() => {
     if (!activeTab && isDesktop) {
-      setActiveTab(DEFAULT_TABS[0])
+      setActiveTab(TABS[0])
     }
   }, [activeTab, isDesktop])
 
@@ -70,7 +65,7 @@ const SettingsModal = ({ isOpen, onClose }: ModalProps) => {
         <h2 className="mb-6">{t('settings')}</h2>
         <div className="grid grid-cols-12 md:gap-8">
           {isDesktop || !activeTab ? (
-            <div className="col-span-12 space-y-2 md:col-span-3 lg:col-span-4">
+            <div className="col-span-12 space-y-2 md:col-span-3 2xl:col-span-4">
               {tabsToShow.map((tab) => (
                 <TabButton
                   activeTab={activeTab}
@@ -82,7 +77,7 @@ const SettingsModal = ({ isOpen, onClose }: ModalProps) => {
             </div>
           ) : null}
           {isDesktop || activeTab ? (
-            <div className="col-span-12 md:col-span-9 lg:col-span-8">
+            <div className="col-span-12 md:col-span-9 2xl:col-span-8">
               <TabContent activeTab={activeTab} setActiveTab={setActiveTab} />
             </div>
           ) : null}
@@ -122,6 +117,7 @@ const TabContent = ({
             title={activeTab}
           />
           <DisplaySettings />
+          <AnimationSettings />
         </>
       )
     case ACCOUNT:
@@ -161,9 +157,10 @@ const TabContent = ({
             setActiveTab={setActiveTab}
             title={activeTab}
           />
+          <AutoConnectSettings />
           <PreferredExplorerSettings />
-          <AnimationSettings />
           <SoundSettings />
+          <TelemetrySettings />
         </>
       )
     default:

@@ -2,7 +2,7 @@ import MedalIcon from '@components/icons/MedalIcon'
 import ProfileImage from '@components/profile/ProfileImage'
 import { ArrowLeftIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useViewport } from 'hooks/useViewport'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Select from '@components/forms/Select'
 import { IconButton } from '@components/shared/Button'
 import AcornIcon from '@components/icons/AcornIcon'
@@ -13,7 +13,6 @@ import { useQuery } from '@tanstack/react-query'
 import SheenLoader from '@components/shared/SheenLoader'
 import { abbreviateAddress } from 'utils/formatting'
 import { PublicKey } from '@solana/web3.js'
-import { formatNumericValue } from 'utils/numbers'
 import { useTranslation } from 'next-i18next'
 import { fetchLeaderboard } from 'apis/rewards'
 import {
@@ -24,6 +23,7 @@ import {
 import Badge from './Badge'
 import { tiers } from './RewardsPage'
 import useMangoAccount from 'hooks/useMangoAccount'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 
 const Leaderboards = ({
   goBack,
@@ -80,6 +80,13 @@ const Leaderboards = ({
     }
   }, [])
 
+  const isInTop20 = useMemo(() => {
+    if (!leadersForTier.length || !mangoAccountAddress) return true
+    return !!leadersForTier.find(
+      (leader) => leader.mango_account === mangoAccountAddress,
+    )
+  }, [leadersForTier, mangoAccountAddress])
+
   return (
     <div className="mx-auto min-h-screen max-w-[1140px] flex-col items-center p-8 lg:p-10">
       <div className="mb-4 flex items-center justify-between">
@@ -111,8 +118,9 @@ const Leaderboards = ({
       </div>
       <div className="space-y-2">
         {accountTier?.tier === leaderboardToShow &&
-        accountPointsAndRank?.rank ? (
-          <div className="flex w-full items-center justify-between rounded-lg border border-th-active p-3 md:rounded-xl">
+        accountPointsAndRank?.rank &&
+        !isInTop20 ? (
+          <div className="flex w-full items-center justify-between rounded-lg border border-th-active p-3 md:rounded-xl md:p-4">
             <div className="flex items-center space-x-3">
               <div
                 className={`relative flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full ${
@@ -146,7 +154,10 @@ const Leaderboards = ({
             </div>
             <div>
               <span className="mr-3 text-right font-mono md:text-base">
-                {formatNumericValue(accountPointsAndRank.total_points)}
+                <FormatNumericValue
+                  value={accountPointsAndRank.total_points}
+                  decimals={0}
+                />
               </span>
             </div>
           </div>
@@ -189,10 +200,15 @@ const LeaderboardCard = ({
   }
 }) => {
   const { isDesktop } = useViewport()
+  const { mangoAccountAddress } = useMangoAccount()
   const { mango_account, total_points } = account
   return (
     <a
-      className="flex w-full items-center justify-between rounded-lg border border-th-bkg-3 p-3 md:rounded-xl md:p-4 md:hover:bg-th-bkg-2"
+      className={`flex w-full items-center justify-between rounded-lg border p-3 md:rounded-xl md:p-4 md:hover:bg-th-bkg-2 ${
+        mango_account === mangoAccountAddress
+          ? 'pointer-events-none border-th-active'
+          : 'border-th-bkg-3'
+      }`}
       href={`/?address=${mango_account}`}
       rel="noopener noreferrer"
       target="_blank"
@@ -219,15 +235,21 @@ const LeaderboardCard = ({
         />
         <div className="text-left">
           <p className="capitalize text-th-fgd-2 md:text-base">
-            {abbreviateAddress(new PublicKey(mango_account))}
+            {mango_account !== mangoAccountAddress
+              ? abbreviateAddress(new PublicKey(mango_account))
+              : 'YOU'}
           </p>
         </div>
       </div>
       <div className="flex items-center">
         <span className="mr-3 text-right font-mono md:text-base">
-          {formatNumericValue(total_points)}
+          <FormatNumericValue value={total_points} decimals={0} />
         </span>
-        <ChevronRightIcon className="h-6 w-6 text-th-fgd-3" />
+        {mango_account !== mangoAccountAddress ? (
+          <ChevronRightIcon className="h-6 w-6 text-th-fgd-3" />
+        ) : (
+          <div className="h-6 w-6" />
+        )}
       </div>
     </a>
   )

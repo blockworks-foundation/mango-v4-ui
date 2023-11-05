@@ -21,9 +21,10 @@ import FormatNumericValue from '@components/shared/FormatNumericValue'
 import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
 import Decimal from 'decimal.js'
-import TokenLogo from '@components/shared/TokenLogo'
 import { useCallback } from 'react'
 import { useSortableData } from 'hooks/useSortableData'
+import TableTokenName from '@components/shared/TableTokenName'
+import { formatTokenSymbol } from 'utils/tokens'
 
 export const goToTokenPage = (token: string, router: NextRouter) => {
   const query = { ...router.query, ['token']: token }
@@ -208,12 +209,7 @@ const TokenOverviewTable = () => {
                     }
                   >
                     <Td>
-                      <div className="flex items-center">
-                        <div className="mr-2.5 flex flex-shrink-0 items-center">
-                          <TokenLogo bank={bank} />
-                        </div>
-                        <p className="font-body">{symbol}</p>
-                      </div>
+                      <TableTokenName bank={bank} symbol={symbol} />
                     </Td>
                     <Td>
                       <div className="flex flex-col text-right">
@@ -312,12 +308,7 @@ const TokenOverviewTable = () => {
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <div className="mr-2.5 flex flex-shrink-0 items-center">
-                            <TokenLogo bank={bank} />
-                          </div>
-                          <p className="text-th-fgd-1">{symbol}</p>
-                        </div>
+                        <TableTokenName bank={bank} symbol={symbol} />
                         <ChevronDownIcon
                           className={`${
                             open ? 'rotate-180' : 'rotate-360'
@@ -411,7 +402,9 @@ const TokenOverviewTable = () => {
                                 goToTokenPage(bank.name.split(' ')[0], router)
                               }
                             >
-                              {t('token:token-stats', { token: bank.name })}
+                              {t('token:token-stats', {
+                                token: formatTokenSymbol(bank.name),
+                              })}
                               <ChevronRightIcon className="ml-2 h-5 w-5" />
                             </LinkButton>
                           </div>

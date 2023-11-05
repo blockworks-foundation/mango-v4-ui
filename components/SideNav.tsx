@@ -15,7 +15,6 @@ import {
   ArchiveBoxArrowDownIcon,
   ExclamationTriangleIcon,
   DocumentTextIcon,
-  SparklesIcon,
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
@@ -35,7 +34,7 @@ import { CUSTOM_SKINS, breakpoints } from 'utils/theme'
 import { NFT } from 'types'
 import { useViewport } from 'hooks/useViewport'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { SIDEBAR_COLLAPSE_KEY } from 'utils/constants'
+import { CUSTOM_THEME_SUFFIX, SIDEBAR_COLLAPSE_KEY } from 'utils/constants'
 import { createTransferInstruction } from '@solana/spl-token'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 
@@ -52,6 +51,10 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { mangoAccount } = useMangoAccount()
   const setPrependedGlobalAdditionalInstructions = mangoStore(
     (s) => s.actions.setPrependedGlobalAdditionalInstructions,
+  )
+  const [customTheme] = useLocalStorageState(
+    `${publicKey}${CUSTOM_THEME_SUFFIX}`,
+    '',
   )
 
   const router = useRouter()
@@ -140,13 +143,17 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   // change theme if switching to wallet without nft
   useEffect(() => {
     if (loadingNfts || !theme) return
-    if (theme.toLowerCase() in CUSTOM_SKINS) {
-      const hasSkin = mangoNfts.find(
-        (nft) => nft.collectionAddress === CUSTOM_SKINS[theme.toLowerCase()],
+    const hasSkin = mangoNfts.find(
+      (nft) =>
+        nft.collectionAddress === CUSTOM_SKINS[customTheme.toLowerCase()],
+    )
+
+    if (hasSkin && customTheme && theme !== customTheme) {
+      setTheme(customTheme)
+    } else if (!hasSkin) {
+      setTheme(
+        CUSTOM_SKINS[theme.toLowerCase()] ? t('settings:mango-classic') : theme,
       )
-      if (!hasSkin) {
-        setTheme(t('settings:mango-classic'))
-      }
     }
   }, [loadingNfts, mangoNfts, publicKey, theme])
 
@@ -155,11 +162,11 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
       className={`transition-all duration-${sideBarAnimationDuration} ${
         collapsed ? 'w-[64px]' : 'w-[200px]'
       } border-r border-th-bkg-3 bg-th-bkg-1 bg-contain`}
-      style={
-        collapsed
-          ? { backgroundImage: `url(${themeData.sideTilePath})` }
-          : { backgroundImage: `url(${themeData.sideTilePathExpanded})` }
-      }
+      // style={
+      //   collapsed
+      //     ? { backgroundImage: `url(${themeData.sideTilePath})` }
+      //     : { backgroundImage: `url(${themeData.sideTilePathExpanded})` }
+      // }
     >
       {sidebarImageUrl && !collapsed ? (
         <img
@@ -223,13 +230,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               icon={<ArrowTrendingUpIcon className="h-5 w-5" />}
               title={t('trade')}
               pagePath="/trade"
-            />
-            <MenuItem
-              active={pathname === '/explore'}
-              collapsed={collapsed}
-              icon={<SparklesIcon className="h-5 w-5" />}
-              title={t('explore')}
-              pagePath="/explore"
             />
             <MenuItem
               active={pathname === '/borrow'}

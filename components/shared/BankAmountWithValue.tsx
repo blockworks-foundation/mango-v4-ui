@@ -8,12 +8,14 @@ const BankAmountWithValue = ({
   fixDecimals = true,
   stacked,
   value,
+  isPrivate,
 }: {
   amount: Decimal | number | string
   bank: Bank
   fixDecimals?: boolean
   stacked?: boolean
   value?: number
+  isPrivate?: boolean
 }) => {
   return (
     <p className={`font-mono text-th-fgd-2 ${stacked ? 'text-right' : ''}`}>
@@ -27,6 +29,7 @@ const BankAmountWithValue = ({
             value={value ? value : Number(amount) * bank.uiPrice}
             decimals={fixDecimals ? 2 : undefined}
             isUsd={true}
+            isPrivate={isPrivate}
           />
         </span>
       </>

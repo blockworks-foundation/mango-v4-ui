@@ -1,10 +1,10 @@
 import { ThemeData } from 'types'
 import {
+  comicNeueBody,
+  comicNeueDisplay,
   lalezar,
   nunitoBody,
   nunitoDisplay,
-  shortStackBody,
-  shortStackDisplay,
   ttCommons,
   ttCommonsExpanded,
   ttCommonsMono,
@@ -76,8 +76,8 @@ export const nftThemeMeta: NftThemeMeta = {
   Pepe: {
     buttonStyle: 'raised',
     fonts: {
-      body: shortStackBody,
-      display: shortStackDisplay,
+      body: comicNeueBody,
+      display: comicNeueDisplay,
       mono: ttCommonsMono,
       rewards: lalezar,
     },
@@ -95,6 +95,5 @@ export const nftThemeMeta: NftThemeMeta = {
 }
 
 export const CUSTOM_SKINS: { [key: string]: string } = {
-  bonk: '6FUYsgvSPiLsMpKZqLWswkw7j4juudZyVopU6RYKLkQ3',
-  pepe: 'B4QhXJaSnUBT8aWiPz5GmB9sjXdQDtHXv8x1WsRFHNJx',
+  pepe: 'GJHEhovHn8UT98xUbWWWAC9J5iaRs6M5grBUzs8zqTd6',
 }

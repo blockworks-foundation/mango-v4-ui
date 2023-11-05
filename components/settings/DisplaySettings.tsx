@@ -17,16 +17,15 @@ import { useTheme } from 'next-themes'
 import { useCallback } from 'react'
 import { useRouter } from 'next/router'
 import {
-  AUTO_CONNECT_WALLET,
+  CUSTOM_THEME_SUFFIX,
   NOTIFICATION_POSITION_KEY,
-  PRIVACY_MODE,
   SIZE_INPUT_UI_KEY,
   TRADE_CHART_UI_KEY,
   TRADE_LAYOUT_KEY,
 } from 'utils/constants'
 import mangoStore from '@store/mangoStore'
-import Switch from '@components/forms/Switch'
 import { CUSTOM_SKINS } from 'utils/theme'
+import { useWallet } from '@solana/wallet-adapter-react'
 
 const NOTIFICATION_POSITIONS = [
   'bottom-left',
@@ -68,6 +67,7 @@ const DisplaySettings = () => {
   const { theme, setTheme } = useTheme()
   const [themes, setThemes] = useState(DEFAULT_THEMES)
   const nfts = mangoStore((s) => s.wallet.nfts.data)
+  const { publicKey } = useWallet()
 
   const [savedLanguage, setSavedLanguage] = useLocalStorageState(
     'language',
@@ -87,22 +87,23 @@ const DisplaySettings = () => {
     TRADE_CHART_UI_KEY,
     'trading-view',
   )
-  const [, setTradeLayout] = useLocalStorageState(TRADE_LAYOUT_KEY, 'chartLeft')
-  const [autoConnect, setAutoConnect] = useLocalStorageState(
-    AUTO_CONNECT_WALLET,
-    true,
-  )
 
-  const [privacyMode, setPrivacyMode] = useLocalStorageState(PRIVACY_MODE)
+  const [, setCustomTheme] = useLocalStorageState(
+    `${publicKey}${CUSTOM_THEME_SUFFIX}`,
+    '',
+  )
+  const [, setTradeLayout] = useLocalStorageState(TRADE_LAYOUT_KEY, 'chartLeft')
 
   // add nft skins to theme selection list
   useEffect(() => {
     if (nfts.length) {
       const customThemes = []
-      for (const nft of nfts) {
-        const collectionAddress = nft?.collectionAddress
+      const ownedCollections = [
+        ...new Set(nfts.map((x) => x.collectionAddress)),
+      ]
+      for (const collection of ownedCollections) {
         for (const themeKey in CUSTOM_SKINS) {
-          if (CUSTOM_SKINS[themeKey] === collectionAddress) {
+          if (CUSTOM_SKINS[themeKey] === collection) {
             customThemes.push(themeKey)
           }
         }
@@ -133,7 +134,14 @@ const DisplaySettings = () => {
         <div className="w-full min-w-[140px] md:w-auto">
           <Select
             value={theme || DEFAULT_THEMES[0]}
-            onChange={(t: string) => setTheme(t)}
+            onChange={(t: string) => {
+              setTheme(t)
+              if (CUSTOM_SKINS[t.toLowerCase()]) {
+                setCustomTheme(t)
+              } else {
+                setCustomTheme('')
+              }
+            }}
             className="w-full"
           >
             {themes.map((theme) => (
@@ -225,22 +233,6 @@ const DisplaySettings = () => {
             names={TRADING_CHARTS.map((val) => t(`settings:${val}`))}
           />
         </div>
-      </div>
-      <div className="flex items-center justify-between border-t border-th-bkg-3 p-4">
-        <p className="">Auto Connect Wallet</p>
-        <Switch
-          checked={autoConnect}
-          onChange={() => setAutoConnect(!autoConnect)}
-        />
-      </div>
-      <div className="flex items-center justify-between border-t border-th-bkg-3 p-4">
-        <Tooltip content={t('settings:tooltip-privacy-mode')}>
-          <p className="tooltip-underline">{t('settings:privacy-mode')}</p>
-        </Tooltip>
-        <Switch
-          checked={privacyMode}
-          onChange={() => setPrivacyMode(!privacyMode)}
-        />
       </div>
     </div>
   )

@@ -15,6 +15,7 @@ import useUnownedAccount from 'hooks/useUnownedAccount'
 import InlineNotification from '@components/shared/InlineNotification'
 import { SwapFormTokenListType } from './SwapFormTokenList'
 import { useTokenMax } from './useTokenMax'
+import Loading from '@components/shared/Loading'
 
 const SellTokenInput = ({
   handleAmountInChange,
@@ -23,6 +24,7 @@ const SellTokenInput = ({
   className,
   error,
   isTriggerOrder,
+  loading,
 }: {
   handleAmountInChange: (e: NumberFormatValues, info: SourceInfo) => void
   setShowTokenSelect: Dispatch<SetStateAction<SwapFormTokenListType>>
@@ -30,6 +32,7 @@ const SellTokenInput = ({
   className?: string
   error?: string
   isTriggerOrder?: boolean
+  loading?: boolean
 }) => {
   const { t } = useTranslation('common')
   const { group } = useMangoGroup()
@@ -64,29 +67,37 @@ const SellTokenInput = ({
         />
       </div>
       <div className="relative col-span-1">
-        <NumberFormat
-          inputMode="decimal"
-          thousandSeparator=","
-          allowNegative={false}
-          isNumericString={true}
-          decimalScale={inputBank?.mintDecimals || 6}
-          name="amountIn"
-          id="amountIn"
-          className={NUMBER_FORMAT_CLASSNAMES}
-          placeholder="0.00"
-          value={amountInFormValue}
-          onValueChange={handleAmountInChange}
-          isAllowed={withValueLimit}
-        />
-        {!isNaN(Number(amountInFormValue)) ? (
-          <span className="absolute bottom-1.5 right-3 text-xxs text-th-fgd-4">
-            {inputBank
-              ? formatCurrencyValue(
-                  inputBank.uiPrice * Number(amountInFormValue),
-                )
-              : '–'}
-          </span>
-        ) : null}
+        {loading ? (
+          <div className="flex h-[56px] w-full items-center justify-center rounded-l-none rounded-r-lg border-l border-th-bkg-2 bg-th-input-bkg">
+            <Loading />
+          </div>
+        ) : (
+          <>
+            <NumberFormat
+              inputMode="decimal"
+              thousandSeparator=","
+              allowNegative={false}
+              isNumericString={true}
+              decimalScale={inputBank?.mintDecimals || 6}
+              name="amountIn"
+              id="amountIn"
+              className={NUMBER_FORMAT_CLASSNAMES}
+              placeholder="0.00"
+              value={amountInFormValue}
+              onValueChange={handleAmountInChange}
+              isAllowed={withValueLimit}
+            />
+            {!isNaN(Number(amountInFormValue)) ? (
+              <span className="absolute bottom-1.5 right-3 text-xxs text-th-fgd-4">
+                {inputBank
+                  ? formatCurrencyValue(
+                      inputBank.uiPrice * Number(amountInFormValue),
+                    )
+                  : '–'}
+              </span>
+            ) : null}
+          </>
+        )}
       </div>
       {/* {mangoAccountAddress ? (
         <div className="col-span-2 mt-1 flex justify-center">

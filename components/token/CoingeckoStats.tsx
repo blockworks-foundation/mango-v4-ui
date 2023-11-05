@@ -1,9 +1,7 @@
 import { Bank } from '@blockworks-foundation/mango-v4'
 import Change from '@components/shared/Change'
-import ChartRangeButtons from '@components/shared/ChartRangeButtons'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
-import SheenLoader from '@components/shared/SheenLoader'
-import { ArrowSmallUpIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
+import { ArrowSmallUpIcon } from '@heroicons/react/20/solid'
 import { useQuery } from '@tanstack/react-query'
 import { makeApiRequest } from 'apis/birdeye/helpers'
 import dayjs from 'dayjs'
@@ -12,8 +10,9 @@ import { BirdeyePriceResponse } from 'hooks/useBirdeyeMarketPrices'
 import parse from 'html-react-parser'
 import { useTranslation } from 'next-i18next'
 import { useMemo, useState } from 'react'
-import PriceChart from '@components/token/PriceChart'
 import { DAILY_SECONDS } from 'utils/constants'
+import DetailedAreaOrBarChart from '@components/shared/DetailedAreaOrBarChart'
+import { countLeadingZeros, formatCurrencyValue } from 'utils/numbers'
 dayjs.extend(relativeTime)
 
 const DEFAULT_COINGECKO_VALUES = {
@@ -68,11 +67,7 @@ const CoingeckoStats = ({
   const [showFullDesc, setShowFullDesc] = useState(false)
   const [daysToShow, setDaysToShow] = useState<string>('1')
 
-  const {
-    data: birdeyePrices,
-    isLoading: loadingBirdeyePrices,
-    isFetching: fetchingBirdeyePrices,
-  } = useQuery(
+  const { data: birdeyePrices, isLoading: loadingBirdeyePrices } = useQuery(
     ['birdeye-token-prices', daysToShow, bank.mint],
     () => fetchBirdeyePrices(daysToShow, bank.mint.toString()),
     {
@@ -83,6 +78,19 @@ const CoingeckoStats = ({
       refetchOnWindowFocus: false,
     },
   )
+
+  const chartData = useMemo(() => {
+    if (!birdeyePrices || !birdeyePrices.length) return []
+    return birdeyePrices.map((item) => {
+      const decimals = countLeadingZeros(item.value) + 3
+      const floatPrice = parseFloat(item.value.toString())
+      const roundedPrice = +floatPrice.toFixed(decimals)
+      return {
+        unixTime: item.unixTime * 1000,
+        value: roundedPrice,
+      }
+    })
+  }, [birdeyePrices])
 
   const {
     ath,
@@ -134,31 +142,33 @@ const CoingeckoStats = ({
           </div>
         </div>
       ) : null}
-      <div className="mt-4 flex w-full items-center justify-between px-6">
-        <h2 className="text-base">{bank.name} Price Chart</h2>
-        <ChartRangeButtons
-          activeValue={daysToShow}
-          names={['24H', '7D', '30D']}
-          values={['1', '7', '30']}
-          onChange={(v) => setDaysToShow(v)}
+      <div className="p-6 pb-4">
+        <DetailedAreaOrBarChart
+          changeAsPercent
+          data={chartData.concat([
+            {
+              unixTime: Date.now(),
+              value: parseFloat(
+                bank.uiPrice.toFixed(countLeadingZeros(bank.uiPrice) + 3),
+              ),
+            },
+          ])}
+          daysToShow={daysToShow}
+          setDaysToShow={setDaysToShow}
+          loading={loadingBirdeyePrices}
+          heightClass="h-64"
+          loaderHeightClass="h-[350px]"
+          prefix="$"
+          tickFormat={(x) =>
+            x < 0.00001 ? x.toExponential() : formatCurrencyValue(x)
+          }
+          title={`${bank.name} Price Chart`}
+          xKey="unixTime"
+          yKey="value"
+          yDecimals={countLeadingZeros(bank.uiPrice) + 3}
+          domain={['dataMin', 'dataMax']}
         />
       </div>
-      {birdeyePrices?.length ? (
-        <PriceChart daysToShow={parseInt(daysToShow)} prices={birdeyePrices} />
-      ) : loadingBirdeyePrices || fetchingBirdeyePrices ? (
-        <div className="p-6">
-          <SheenLoader className="flex flex-1">
-            <div className="h-72 w-full rounded-lg bg-th-bkg-2 md:h-80" />
-          </SheenLoader>
-        </div>
-      ) : (
-        <div className="m-6 flex h-72 items-center justify-center rounded-lg border border-th-bkg-3 md:h-80">
-          <div className="flex flex-col items-center">
-            <NoSymbolIcon className="mb-2 h-7 w-7 text-th-fgd-4" />
-            <p>{t('chart-unavailable')}</p>
-          </div>
-        </div>
-      )}
       <div className="grid grid-cols-1 border-b border-th-bkg-3 md:grid-cols-2">
         <div className="col-span-1 border-y border-th-bkg-3 px-6 py-4 md:col-span-2">
           <h2 className="text-base">{bank.name} Stats</h2>

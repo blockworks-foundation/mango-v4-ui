@@ -19,12 +19,21 @@ import ContentBox from './ContentBox'
 import SheenLoader from './SheenLoader'
 import { COLORS } from '../../styles/colors'
 import { IconButton } from './Button'
-import { ArrowLeftIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
+import {
+  ArrowLeftIcon,
+  ArrowsRightLeftIcon,
+  NoSymbolIcon,
+} from '@heroicons/react/20/solid'
 import { FadeInFadeOut } from './Transitions'
 import ChartRangeButtons from './ChartRangeButtons'
 import Change from './Change'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { ANIMATION_SETTINGS_KEY, DAILY_MILLISECONDS } from 'utils/constants'
+import {
+  ANIMATION_SETTINGS_KEY,
+  DAILY_MILLISECONDS,
+  PRIVACY_MODE,
+  PRIVATE_MODE_STRING,
+} from 'utils/constants'
 import { formatNumericValue } from 'utils/numbers'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import { AxisDomain } from 'recharts/types/util/types'
@@ -36,15 +45,20 @@ import useThemeWrapper from 'hooks/useThemeWrapper'
 
 dayjs.extend(relativeTime)
 
+const titleClasses = 'mb-0.5 text-base'
+
 interface DetailedAreaOrBarChartProps {
+  changeAsPercent?: boolean
   chartType?: 'area' | 'bar'
   customTooltip?: ContentType<number, string>
-  data: any[]
+  data: any[] | undefined
   daysToShow?: string
   domain?: AxisDomain
   heightClass?: string
   hideChange?: boolean
   hideChart?: () => void
+  hideAxis?: boolean
+  isPrivate?: boolean
   loaderHeightClass?: string
   loading?: boolean
   prefix?: string
@@ -72,6 +86,7 @@ export const formatDateAxis = (date: string, days: number) => {
 const DetailedAreaOrBarChart: FunctionComponent<
   DetailedAreaOrBarChartProps
 > = ({
+  changeAsPercent,
   chartType = 'area',
   customTooltip,
   data,
@@ -80,28 +95,34 @@ const DetailedAreaOrBarChart: FunctionComponent<
   heightClass,
   hideChange,
   hideChart,
+  hideAxis,
+  isPrivate,
   loaderHeightClass,
   loading,
   prefix = '',
   setDaysToShow,
+  showZeroLine,
   small,
   suffix = '',
   tickFormat,
   title,
   tooltipContent,
+  tooltipDateFormat,
   xKey,
   yDecimals,
   yKey,
-  showZeroLine,
-  tooltipDateFormat,
 }) => {
   const { t } = useTranslation('common')
   const [mouseData, setMouseData] = useState<any>(null)
+  const [showChangePercentage, setShowChangePercentage] = useState(
+    changeAsPercent || false,
+  )
   const { theme } = useThemeWrapper()
   const [animationSettings] = useLocalStorageState(
     ANIMATION_SETTINGS_KEY,
     INITIAL_ANIMATION_SETTINGS,
   )
+  const [privacyMode] = useLocalStorageState(PRIVACY_MODE)
 
   const handleMouseMove = (coords: any) => {
     if (coords.activePayload) {
@@ -114,12 +135,12 @@ const DetailedAreaOrBarChart: FunctionComponent<
   }
 
   const flipGradientCoords = useMemo(() => {
-    if (!data.length) return
+    if (!data || !data.length) return
     return data[0][yKey] <= 0 && data[data.length - 1][yKey] < 0
   }, [data])
 
   const filteredData = useMemo(() => {
-    if (!data.length) return []
+    if (!data || !data.length) return []
     const start = Number(daysToShow) * DAILY_MILLISECONDS
     const filtered = data.filter((d: any) => {
       const dataTime = new Date(d[xKey]).getTime()
@@ -131,23 +152,30 @@ const DetailedAreaOrBarChart: FunctionComponent<
   }, [data, daysToShow])
 
   const calculateChartChange = () => {
+    const firstValue = filteredData[0][yKey]
     if (filteredData.length) {
       if (mouseData) {
         const index = filteredData.findIndex(
           (d: any) => d[xKey] === mouseData[xKey],
         )
+        const currentValue = filteredData[index][yKey]
+
         const change =
-          index >= 0 ? filteredData[index][yKey] - filteredData[0][yKey] : 0
+          index >= 0
+            ? showChangePercentage
+              ? ((currentValue - firstValue) / Math.abs(firstValue)) * 100
+              : currentValue - firstValue
+            : 0
         return isNaN(change) ? 0 : change
-      } else
-        return (
-          filteredData[filteredData.length - 1][yKey] - filteredData[0][yKey]
-        )
+      } else {
+        const currentValue = filteredData[filteredData.length - 1][yKey]
+        return showChangePercentage
+          ? ((currentValue - firstValue) / Math.abs(firstValue)) * 100
+          : currentValue - firstValue
+      }
     }
     return 0
   }
-
-  const titleClasses = `${small ? 'text-sm' : 'mb-0.5 text-base'} text-th-fgd-3`
 
   return (
     <FadeInFadeOut show={true}>
@@ -201,44 +229,58 @@ const DetailedAreaOrBarChart: FunctionComponent<
                   {mouseData ? (
                     <div>
                       <div
-                        className={`flex ${
-                          small
-                            ? 'h-8 items-center text-2xl'
-                            : 'mb-1 items-end text-4xl'
+                        className={`flex items-end ${
+                          small ? 'h-8 text-2xl' : 'mb-1 text-4xl'
                         } font-display text-th-fgd-1`}
                       >
                         {animationSettings['number-scroll'] ? (
-                          <FlipNumbers
-                            height={small ? 24 : 40}
-                            width={small ? 17 : 30}
-                            play
-                            numbers={`${
-                              mouseData[yKey] < 0 ? '-' : ''
-                            }${prefix}${formatNumericValue(
-                              Math.abs(mouseData[yKey]),
-                              yDecimals,
-                            )}${suffix}`}
-                          />
+                          isPrivate && privacyMode ? (
+                            <span>{PRIVATE_MODE_STRING}</span>
+                          ) : (
+                            <FlipNumbers
+                              height={small ? 24 : 40}
+                              width={small ? 17 : 30}
+                              play
+                              numbers={`${
+                                mouseData[yKey] < 0 ? '-' : ''
+                              }${prefix}${formatNumericValue(
+                                Math.abs(mouseData[yKey]),
+                                yDecimals,
+                              )}${suffix}`}
+                            />
+                          )
                         ) : (
-                          <span>
+                          <span className="tabular-nums">
                             {mouseData[yKey] < 0 ? '-' : ''}
                             {prefix}
                             <FormatNumericValue
                               value={Math.abs(mouseData[yKey])}
                               decimals={yDecimals}
+                              isPrivate={isPrivate}
                             />
                             {suffix}
                           </span>
                         )}
                         {!hideChange ? (
-                          <span className="ml-3">
+                          <div
+                            className={`ml-3 flex items-center ${
+                              small ? 'mb-[3px]' : 'mb-0.5'
+                            }`}
+                          >
                             <Change
                               change={calculateChartChange()}
-                              decimals={yDecimals}
-                              prefix={prefix}
-                              suffix={suffix}
+                              decimals={!showChangePercentage ? yDecimals : 2}
+                              prefix={!showChangePercentage ? prefix : ''}
+                              suffix={!showChangePercentage ? suffix : '%'}
+                              isPrivate={isPrivate}
                             />
-                          </span>
+                            {changeAsPercent ? (
+                              <ToggleChangeTypeButton
+                                changeType={showChangePercentage}
+                                setChangeType={setShowChangePercentage}
+                              />
+                            ) : null}
+                          </div>
                         ) : null}
                       </div>
                       <p
@@ -256,50 +298,70 @@ const DetailedAreaOrBarChart: FunctionComponent<
                   ) : (
                     <div>
                       <div
-                        className={`flex ${
-                          small
-                            ? 'h-8 items-center text-2xl'
-                            : 'mb-1 items-end text-4xl'
+                        className={`flex items-end ${
+                          small ? 'h-8 text-2xl' : 'mb-1 text-4xl'
                         } font-display text-th-fgd-1`}
                       >
                         {animationSettings['number-scroll'] ? (
-                          <FlipNumbers
-                            height={small ? 24 : 40}
-                            width={small ? 17 : 30}
-                            play
-                            numbers={`${
-                              filteredData[filteredData.length - 1][yKey] < 0
-                                ? '-'
-                                : ''
-                            }${prefix}${formatNumericValue(
-                              Math.abs(
-                                filteredData[filteredData.length - 1][yKey],
-                              ),
-                              yDecimals,
-                            )}${suffix}`}
-                          />
+                          isPrivate && privacyMode ? (
+                            <span>{PRIVATE_MODE_STRING}</span>
+                          ) : (
+                            <FlipNumbers
+                              height={small ? 24 : 40}
+                              width={small ? 17 : 30}
+                              play
+                              numbers={`${
+                                filteredData[filteredData.length - 1][yKey] < 0
+                                  ? '-'
+                                  : ''
+                              }${prefix}${formatNumericValue(
+                                Math.abs(
+                                  filteredData[filteredData.length - 1][yKey],
+                                ),
+                                yDecimals,
+                              )}${suffix}`}
+                            />
+                          )
                         ) : (
                           <span>
                             {filteredData[filteredData.length - 1][yKey] < 0
                               ? '-'
                               : ''}
                             {prefix}
-                            <FormatNumericValue
-                              value={Math.abs(data[data.length - 1][yKey])}
-                              decimals={yDecimals}
-                            />
+                            <span className="tabular-nums">
+                              <FormatNumericValue
+                                value={
+                                  data
+                                    ? Math.abs(data[data.length - 1][yKey])
+                                    : 0
+                                }
+                                decimals={yDecimals}
+                                isPrivate={isPrivate}
+                              />
+                            </span>
                             {suffix}
                           </span>
                         )}
                         {!hideChange ? (
-                          <span className="ml-3">
+                          <div
+                            className={`ml-3 flex items-center ${
+                              small ? 'mb-[3px]' : 'mb-0.5'
+                            }`}
+                          >
                             <Change
                               change={calculateChartChange()}
-                              decimals={yDecimals}
-                              prefix={prefix}
-                              suffix={suffix}
+                              decimals={!showChangePercentage ? yDecimals : 2}
+                              prefix={!showChangePercentage ? prefix : ''}
+                              suffix={!showChangePercentage ? suffix : '%'}
+                              isPrivate={isPrivate}
                             />
-                          </span>
+                            {changeAsPercent ? (
+                              <ToggleChangeTypeButton
+                                changeType={showChangePercentage}
+                                setChangeType={setShowChangePercentage}
+                              />
+                            ) : null}
+                          </div>
                         ) : null}
                       </div>
                       <p
@@ -373,7 +435,10 @@ const DetailedAreaOrBarChart: FunctionComponent<
                         type="monotone"
                         dataKey={yKey}
                         stroke={
-                          calculateChartChange() >= 0
+                          calculateChartChange() === 0 ||
+                          isNaN(calculateChartChange())
+                            ? COLORS.FGD4[theme]
+                            : calculateChartChange() >= 0
                             ? COLORS.UP[theme]
                             : COLORS.DOWN[theme]
                         }
@@ -386,6 +451,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
                       <XAxis
                         axisLine={false}
                         dataKey={xKey}
+                        hide={hideAxis}
                         minTickGap={20}
                         padding={{ left: 20, right: 20 }}
                         tick={{
@@ -400,6 +466,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
                       <YAxis
                         axisLine={false}
                         dataKey={yKey}
+                        hide={hideAxis}
                         minTickGap={20}
                         type="number"
                         domain={
@@ -560,3 +627,20 @@ const DetailedAreaOrBarChart: FunctionComponent<
 }
 
 export default DetailedAreaOrBarChart
+
+const ToggleChangeTypeButton = ({
+  changeType,
+  setChangeType,
+}: {
+  changeType: boolean
+  setChangeType: (isPercent: boolean) => void
+}) => {
+  return (
+    <button
+      className="ml-2 flex h-4 w-4 items-center justify-center text-th-fgd-3 focus:outline-none md:hover:text-th-active"
+      onClick={() => setChangeType(!changeType)}
+    >
+      <ArrowsRightLeftIcon className="h-3.5 w-3.5" />
+    </button>
+  )
+}

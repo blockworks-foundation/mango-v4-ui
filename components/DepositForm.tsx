@@ -37,8 +37,9 @@ import { ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES, BackButton } from './BorrowForm'
 import TokenLogo from './shared/TokenLogo'
 import SecondaryConnectButton from './shared/SecondaryConnectButton'
 import InlineNotification from './shared/InlineNotification'
-import Link from 'next/link'
 import useTokenPositionsFull from 'hooks/useTokenPositionsFull'
+import TopBarStore from '@store/topBarStore'
+import Link from 'next/link'
 
 interface DepositFormProps {
   onSuccess: () => void
@@ -77,6 +78,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
   const [sizePercentage, setSizePercentage] = useState('')
   const [refreshingWalletTokens, setRefreshingWalletTokens] = useState(false)
   const { maxSolDeposit } = useSolBalance()
+  const { setShowSettingsModal } = TopBarStore()
   const banks = useBanksWithBalances('walletBalance')
 
   const bank = useMemo(() => {
@@ -330,7 +332,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
                 desc={
                   <>
                     {t('error-token-positions-full')}{' '}
-                    <Link href="/settings" onClick={() => onSuccess()} shallow>
+                    <Link href={''} onClick={() => setShowSettingsModal(true)}>
                       {t('manage')}
                     </Link>
                   </>

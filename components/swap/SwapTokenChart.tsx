@@ -28,7 +28,7 @@ import ChartRangeButtons from '../shared/ChartRangeButtons'
 import { useViewport } from 'hooks/useViewport'
 import { formatTokenSymbol } from 'utils/tokens'
 import { useQuery } from '@tanstack/react-query'
-import { ChartDataItem, fetchChartData } from 'apis/coingecko'
+import { SwapChartDataItem, fetchSwapChartData } from 'apis/coingecko'
 import mangoStore from '@store/mangoStore'
 import useJupiterSwapData from './useJupiterSwapData'
 import useLocalStorageState from 'hooks/useLocalStorageState'
@@ -61,7 +61,7 @@ const CustomizedLabel = ({
   value,
   index,
 }: {
-  chartData: ChartDataItem[]
+  chartData: SwapChartDataItem[]
   x?: number
   y?: string | number
   value?: number
@@ -178,11 +178,20 @@ const SwapHistoryArrows = (props: ExtendedReferenceDotProps) => {
 
 const SwapTokenChart = () => {
   const { t } = useTranslation('common')
-  const { inputBank, outputBank, flipPrices } = mangoStore((s) => s.swap)
+  const {
+    amountIn,
+    amountOut,
+    inputBank,
+    outputBank,
+    flipPrices,
+    swapMode,
+    swapOrTrigger,
+  } = mangoStore((s) => s.swap)
   const { inputCoingeckoId, outputCoingeckoId } = useJupiterSwapData()
+  const { isDesktop } = useViewport()
   const [baseTokenId, setBaseTokenId] = useState(inputCoingeckoId)
   const [quoteTokenId, setQuoteTokenId] = useState(outputCoingeckoId)
-  const [mouseData, setMouseData] = useState<ChartDataItem>()
+  const [mouseData, setMouseData] = useState<SwapChartDataItem>()
   const [daysToShow, setDaysToShow] = useState('1')
   const { theme } = useThemeWrapper()
   const [animationSettings] = useLocalStorageState(
@@ -332,15 +341,7 @@ const SwapTokenChart = () => {
     isFetching,
   } = useQuery(
     ['swap-chart-data', baseTokenId, quoteTokenId, daysToShow, flipPrices],
-    () =>
-      fetchChartData(
-        baseTokenId,
-        inputBank,
-        quoteTokenId,
-        outputBank,
-        daysToShow,
-        flipPrices,
-      ),
+    () => fetchSwapChartData(baseTokenId, quoteTokenId, daysToShow, flipPrices),
     {
       cacheTime: 1000 * 60 * 15,
       staleTime: 1000 * 60 * 1,
@@ -375,15 +376,19 @@ const SwapTokenChart = () => {
     if (!coingeckoData || !coingeckoData.length || !chartSwapTimes.length)
       return []
     return chartSwapTimes.map((x) => {
-      const makeChartDataItem = { inputTokenPrice: 1, outputTokenPrice: 1 }
+      const makeSwapChartDataItem = { inputTokenPrice: 1, outputTokenPrice: 1 }
       const index = coingeckoData.findIndex((d) => d.time > x) // find index of data point with x value greater than highlight x
       if (index === 0) {
-        return { time: x, price: coingeckoData[0].price, ...makeChartDataItem } // return first data point y value if highlight x is less than first data point x
+        return {
+          time: x,
+          price: coingeckoData[0].price,
+          ...makeSwapChartDataItem,
+        } // return first data point y value if highlight x is less than first data point x
       } else if (index === -1) {
         return {
           time: x,
           price: coingeckoData[coingeckoData.length - 1].price,
-          ...makeChartDataItem,
+          ...makeSwapChartDataItem,
         } // return last data point y value if highlight x is greater than last data point x
       } else {
         const x0 = coingeckoData[index - 1].time
@@ -392,7 +397,7 @@ const SwapTokenChart = () => {
         const y1 = coingeckoData[index].price
         const interpolateY = interpolateNumber(y0, y1) // create interpolate function for y values
         const y = interpolateY((x - x0) / (x1 - x0)) // estimate y value at highlight x using interpolate function
-        return { time: x, price: y, ...makeChartDataItem }
+        return { time: x, price: y, ...makeSwapChartDataItem }
       }
     })
   }, [coingeckoData, chartSwapTimes])
@@ -402,13 +407,52 @@ const SwapTokenChart = () => {
       return []
     const minTime = coingeckoData[0].time
     const maxTime = coingeckoData[coingeckoData.length - 1].time
+    let data = coingeckoData
     if (swapHistoryPoints.length && showSwaps) {
       const swapPoints = swapHistoryPoints.filter(
         (point) => point.time >= minTime && point.time <= maxTime,
       )
-      return coingeckoData.concat(swapPoints).sort((a, b) => a.time - b.time)
-    } else return coingeckoData
-  }, [coingeckoData, swapHistoryPoints, showSwaps])
+      data = coingeckoData.concat(swapPoints).sort((a, b) => a.time - b.time)
+    }
+    if (amountIn && amountOut && swapOrTrigger === 'swap') {
+      const latestPrice = flipPrices
+        ? parseFloat(amountIn) / parseFloat(amountOut)
+        : parseFloat(amountOut) / parseFloat(amountIn)
+      const item: SwapChartDataItem[] = [
+        {
+          price: latestPrice,
+          time: Date.now(),
+          inputTokenPrice: 0,
+          outputTokenPrice: 0,
+        },
+      ]
+      return data.concat(item)
+    } else if (inputBank && outputBank) {
+      const latestPrice = flipPrices
+        ? outputBank.uiPrice / inputBank.uiPrice
+        : inputBank.uiPrice / outputBank.uiPrice
+      const item: SwapChartDataItem[] = [
+        {
+          price: latestPrice,
+          time: Date.now(),
+          inputTokenPrice: inputBank.uiPrice,
+          outputTokenPrice: outputBank.uiPrice,
+        },
+      ]
+      return data.concat(item)
+    }
+    return data
+  }, [
+    amountIn,
+    amountOut,
+    coingeckoData,
+    flipPrices,
+    inputBank,
+    outputBank,
+    showSwaps,
+    swapHistoryPoints,
+    swapOrTrigger,
+  ])
 
   const handleMouseMove: CategoricalChartFunc = useCallback(
     (coords) => {
@@ -448,19 +492,34 @@ const SwapTokenChart = () => {
     }
   }, [chartData, mouseData])
 
+  const loadingSwapPrice = useMemo(() => {
+    return (
+      !!(swapMode === 'ExactIn' && Number(amountIn) && !Number(amountOut)) ||
+      !!(swapMode === 'ExactOut' && Number(amountOut) && !Number(amountIn))
+    )
+  }, [amountIn, amountOut, swapMode])
+
+  const chartNumberHeight = isDesktop ? 48 : 40
+  const chartNumberWidth = isDesktop ? 35 : 27
+
   return (
-    <ContentBox hideBorder hidePadding className="h-full px-6 py-3">
+    <ContentBox hideBorder hidePadding className="h-full px-4 py-3 md:px-6">
       {isLoading || isFetching ? (
         <>
           <SheenLoader className="w-[148px] rounded-md">
             <div className="h-[18px] bg-th-bkg-2" />
           </SheenLoader>
-          <SheenLoader className="mt-2 w-[148px] rounded-md">
-            <div className="h-[48px] bg-th-bkg-2" />
+          <SheenLoader className="mt-2 w-[180px] rounded-md">
+            <div className="h-[40px] bg-th-bkg-2" />
           </SheenLoader>
           <SheenLoader className="mt-2 w-[148px] rounded-md">
             <div className="h-[18px] bg-th-bkg-2" />
           </SheenLoader>
+          {!isDesktop ? (
+            <SheenLoader className="mt-2 w-full rounded-md">
+              <div className="h-44 bg-th-bkg-2 sm:h-52" />
+            </SheenLoader>
+          ) : null}
         </>
       ) : chartData?.length && baseTokenId && quoteTokenId ? (
         <div className="relative h-full">
@@ -489,60 +548,64 @@ const SwapTokenChart = () => {
               ) : null}
               {mouseData ? (
                 <>
-                  <div className="mb-1 flex flex-col font-display text-5xl text-th-fgd-1 md:flex-row md:items-end">
+                  <div className="mb-1 flex flex-col font-display text-4xl text-th-fgd-1 md:flex-row md:items-end md:text-5xl">
                     {animationSettings['number-scroll'] ? (
                       <FlipNumbers
-                        height={48}
-                        width={35}
+                        height={chartNumberHeight}
+                        width={chartNumberWidth}
                         play
                         numbers={formatNumericValue(mouseData.price)}
                       />
                     ) : (
-                      <FormatNumericValue value={mouseData.price} />
+                      <span className="tabular-nums">
+                        <FormatNumericValue value={mouseData.price} />
+                      </span>
                     )}
-                    <span
-                      className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0`}
-                    >
-                      <Change change={calculateChartChange()} suffix="%" />
-                    </span>
                   </div>
-                  <p className="text-sm text-th-fgd-4">
-                    {dayjs(mouseData.time).format('DD MMM YY, h:mma')}
-                  </p>
+                  <div className="flex space-x-3">
+                    <Change change={calculateChartChange()} suffix="%" />
+                    <p className="text-sm text-th-fgd-4">
+                      {dayjs(mouseData.time).format('DD MMM YY, h:mma')}
+                    </p>
+                  </div>
                 </>
               ) : (
                 <>
-                  <div className="mb-1 flex flex-col font-display text-5xl text-th-fgd-1 md:flex-row md:items-end">
-                    {animationSettings['number-scroll'] ? (
+                  <div className="mb-1 flex flex-col font-display text-4xl text-th-fgd-1 md:flex-row md:items-end md:text-5xl">
+                    {loadingSwapPrice ? (
+                      <SheenLoader className="mt-2 w-[180px] rounded-md">
+                        <div className="h-9 bg-th-bkg-2 md:h-10" />
+                      </SheenLoader>
+                    ) : animationSettings['number-scroll'] ? (
                       <FlipNumbers
-                        height={48}
-                        width={35}
+                        height={chartNumberHeight}
+                        width={chartNumberWidth}
                         play
                         numbers={formatNumericValue(
                           chartData[chartData.length - 1].price,
                         )}
                       />
                     ) : (
-                      <FormatNumericValue
-                        value={chartData[chartData.length - 1].price}
-                      />
+                      <span className="tabular-nums">
+                        <FormatNumericValue
+                          value={chartData[chartData.length - 1].price}
+                        />
+                      </span>
                     )}
-                    <span
-                      className={`ml-0 mt-2 flex items-center text-sm md:ml-3 md:mt-0`}
-                    >
-                      <Change change={calculateChartChange()} suffix="%" />
-                    </span>
                   </div>
-                  <p className="text-sm text-th-fgd-4">
-                    {dayjs(chartData[chartData.length - 1].time).format(
-                      'DD MMM YY, h:mma',
-                    )}
-                  </p>
+                  <div className="flex space-x-3">
+                    <Change change={calculateChartChange()} suffix="%" />
+                    <p className="text-sm text-th-fgd-4">
+                      {dayjs(chartData[chartData.length - 1].time).format(
+                        'DD MMM YY, h:mma',
+                      )}
+                    </p>
+                  </div>
                 </>
               )}
             </div>
           </div>
-          <div className="mt-2 h-40 w-auto md:h-96">
+          <div className="mt-2 h-44 w-auto sm:h-52 md:h-96">
             <div className="absolute right-0 top-[2px] -mb-2 flex items-center justify-end space-x-4">
               <FavoriteSwapButton
                 inputToken={inputBank!.name}

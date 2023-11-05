@@ -8,44 +8,44 @@ import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
 import mangoStore from '@store/mangoStore'
 import PerpPositions from '@components/trade/PerpPositions'
 import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
-import OpenOrders from '@components/trade/OpenOrders'
 import HistoryTabs from './HistoryTabs'
 import ManualRefresh from '@components/shared/ManualRefresh'
 import useMangoAccount from 'hooks/useMangoAccount'
-import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
 import SwapTriggerOrders from '@components/swap/SwapTriggerOrders'
+import AccountOverview from './AccountOverview'
+import AccountOrders from './AccountOrders'
 
 const AccountTabs = () => {
-  const [activeTab, setActiveTab] = useState('balances')
+  const [activeTab, setActiveTab] = useState('overview')
   const { mangoAccount } = useMangoAccount()
   const { isMobile, isTablet } = useViewport()
   const unsettledSpotBalances = useUnsettledSpotBalances()
   const unsettledPerpPositions = useUnsettledPerpPositions()
   const openPerpPositions = useOpenPerpPositions()
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
-  const { data: isWhiteListed } = useIsWhiteListed()
 
   const tabsWithCount: [string, number][] = useMemo(() => {
     const unsettledTradeCount =
       Object.values(unsettledSpotBalances).flat().length +
       unsettledPerpPositions?.length
 
+    const stopOrdersCount =
+      mangoAccount?.tokenConditionalSwaps.filter((tcs) => tcs.hasData)
+        ?.length || 0
+
     const tabs: [string, number][] = [
+      ['overview', 0],
       ['balances', 0],
       ['trade:positions', openPerpPositions.length],
-      ['trade:orders', Object.values(openOrders).flat().length],
+      [
+        'trade:orders',
+        Object.values(openOrders).flat().length + stopOrdersCount,
+      ],
       ['trade:unsettled', unsettledTradeCount],
       ['history', 0],
     ]
-    if (isWhiteListed) {
-      const stopOrdersCount =
-        mangoAccount?.tokenConditionalSwaps.filter((tcs) => tcs.hasData)
-          ?.length || 0
-      tabs.splice(3, 0, ['trade:trigger-orders', stopOrdersCount])
-    }
     return tabs
   }, [
-    isWhiteListed,
     mangoAccount,
     openPerpPositions,
     unsettledPerpPositions,
@@ -69,7 +69,9 @@ const AccountTabs = () => {
           size={isTablet ? 'large' : 'small'}
         />
       </div>
-      <TabContent activeTab={activeTab} />
+      <div className="flex min-h-[calc(100vh-140px)] flex-col">
+        <TabContent activeTab={activeTab} />
+      </div>
     </>
   )
 }
@@ -78,12 +80,14 @@ const TabContent = ({ activeTab }: { activeTab: string }) => {
   const unsettledSpotBalances = useUnsettledSpotBalances()
   const unsettledPerpPositions = useUnsettledPerpPositions()
   switch (activeTab) {
+    case 'overview':
+      return <AccountOverview />
     case 'balances':
       return <TokenList />
     case 'trade:positions':
       return <PerpPositions />
     case 'trade:orders':
-      return <OpenOrders />
+      return <AccountOrders />
     case 'trade:trigger-orders':
       return <SwapTriggerOrders />
     case 'trade:unsettled':
@@ -96,7 +100,7 @@ const TabContent = ({ activeTab }: { activeTab: string }) => {
     case 'history':
       return <HistoryTabs />
     default:
-      return <TokenList />
+      return <AccountOverview />
   }
 }
 

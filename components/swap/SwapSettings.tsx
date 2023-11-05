@@ -23,10 +23,13 @@ const SwapSettings = ({ onClose }: { onClose: () => void }) => {
     }
   }, [])
 
-  const handleSetSlippage = (slippage: string) => {
+  const handleSetSlippage = (slippage: string, close?: boolean) => {
     set((s) => {
       s.swap.slippage = parseFloat(slippage)
     })
+    if (close) {
+      onClose()
+    }
   }
 
   useEffect(() => {
@@ -72,19 +75,24 @@ const SwapSettings = ({ onClose }: { onClose: () => void }) => {
                 parseFloat(inputValue) <= 0
               }
               className="mt-4"
-              onClick={() => handleSetSlippage(inputValue)}
+              onClick={() => handleSetSlippage(inputValue, true)}
             >
               {t('save')}
             </Button>
           </>
         ) : (
-          <ButtonGroup
-            activeValue={slippage.toString()}
-            className="h-10 font-mono"
-            onChange={(v) => handleSetSlippage(v)}
-            unit="%"
-            values={slippagePresets}
-          />
+          <>
+            <ButtonGroup
+              activeValue={slippage.toString()}
+              className="h-10 font-mono"
+              onChange={(v) => handleSetSlippage(v)}
+              unit="%"
+              values={slippagePresets}
+            />
+            <Button className="mt-4" onClick={() => onClose()}>
+              {t('save')}
+            </Button>
+          </>
         )}
       </div>
     </>
