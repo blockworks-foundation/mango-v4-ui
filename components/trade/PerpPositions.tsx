@@ -151,6 +151,7 @@ const PerpPositions = () => {
                   </Th>
                   <Th className="text-right">{t('trade:unrealized-pnl')}</Th>
                   <Th className="text-right">ROE</Th>
+                  <Th className="text-right">{t('trade:position-funding')}</Th>
                   {!isUnownedAccount ? (
                     <Th>
                       {openPerpPositions?.length > 1 ? (
@@ -192,6 +193,8 @@ const PerpPositions = () => {
                     position.cumulativePnlOverPositionLifetimeUi(market)
                   const unrealizedPnl = position.getUnRealizedPnlUi(market)
                   const realizedPnl = position.getRealizedPnlUi()
+                  const positionFunding =
+                    position.getCumulativeFundingUi(market)
                   const roe =
                     (unrealizedPnl / (Math.abs(basePosition) * avgEntryPrice)) *
                     100
@@ -318,6 +321,19 @@ const PerpPositions = () => {
                           className={roe >= 0 ? 'text-th-up' : 'text-th-down'}
                         >
                           <FormatNumericValue value={roe} decimals={2} />%
+                        </span>
+                      </Td>
+                      <Td className="text-right font-mono">
+                        <span
+                          className={
+                            positionFunding >= 0 ? 'text-th-up' : 'text-th-down'
+                          }
+                        >
+                          <FormatNumericValue
+                            value={positionFunding}
+                            decimals={2}
+                            isUsd
+                          />
                         </span>
                       </Td>
                       {!isUnownedAccount ? (
