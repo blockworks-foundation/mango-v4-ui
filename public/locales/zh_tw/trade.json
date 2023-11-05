@@ -59,7 +59,7 @@
     "no-unsettled": "無未結清餘額",
     "notional": "名義",
     "notional-volume": "名義交易量($)",
-    "open-interest": "未平倉",
+    "open-interest": "未平倉量",
     "oracle": "預言機",
     "oracle-not-updated": "此預言機最近沒更新。",
     "oracle-not-updated-warning": "有該幣種持倉的賬戶，操作將會失敗。",
