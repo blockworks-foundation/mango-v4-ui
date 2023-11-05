@@ -14,7 +14,7 @@ import { NUMBER_FORMAT_CLASSNAMES } from './MarketSwapForm'
 import InlineNotification from '@components/shared/InlineNotification'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { SwapFormTokenListType } from './SwapFormTokenList'
-import { getInputTokenBalance } from './TriggerSwapForm'
+import { getTokenBalance } from './TriggerSwapForm'
 
 const ReduceOutputTokenInput = ({
   error,
@@ -38,7 +38,7 @@ const ReduceOutputTokenInput = ({
 
   const reducingLong = useMemo(() => {
     if (!inputBank || !mangoAccountAddress) return false
-    const inputBalance = getInputTokenBalance(inputBank)
+    const inputBalance = getTokenBalance(inputBank)
     return inputBalance > 0
   }, [inputBank, mangoAccountAddress])
 

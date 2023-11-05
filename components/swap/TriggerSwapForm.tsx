@@ -72,10 +72,10 @@ const ORDER_TYPES = [TriggerOrderTypes.STOP_LOSS, TriggerOrderTypes.TAKE_PROFIT]
 
 const set = mangoStore.getState().set
 
-export const getInputTokenBalance = (inputBank: Bank | undefined) => {
+export const getTokenBalance = (bank: Bank | undefined) => {
   const mangoAccount = mangoStore.getState().mangoAccount.current
-  if (!inputBank || !mangoAccount) return 0
-  const balance = mangoAccount.getTokenBalanceUi(inputBank)
+  if (!bank || !mangoAccount) return 0
+  const balance = mangoAccount.getTokenBalanceUi(bank)
   return balance
 }
 
@@ -108,7 +108,6 @@ const TriggerSwapForm = ({
   const { mangoAccountAddress } = useMangoAccount()
   const { ipAllowed, ipCountry } = useIpAddress()
   const { setShowSettingsModal } = TopBarStore()
-  // const [triggerPrice, setTriggerPrice] = useState('')
   const [orderType, setOrderType] = useState(ORDER_TYPES[0])
   const [submitting, setSubmitting] = useState(false)
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
@@ -179,7 +178,7 @@ const TriggerSwapForm = ({
 
   const isReducingShort = useMemo(() => {
     if (!mangoAccountAddress || !inputBank) return false
-    const inputBalance = getInputTokenBalance(inputBank)
+    const inputBalance = getTokenBalance(inputBank)
     return inputBalance < 0
   }, [inputBank, mangoAccountAddress])
 
@@ -270,7 +269,7 @@ const TriggerSwapForm = ({
         'triggerPrice',
       ]
       const triggerPriceNumber = parseFloat(form.triggerPrice)
-      const inputTokenBalance = getInputTokenBalance(inputBank)
+      const inputTokenBalance = getTokenBalance(inputBank)
       const shouldFlip = flipPrices !== isReducingShort
       for (const key of requiredFields) {
         const value = form[key] as string
@@ -280,22 +279,18 @@ const TriggerSwapForm = ({
       }
       if (orderType === TriggerOrderTypes.STOP_LOSS) {
         if (shouldFlip && triggerPriceNumber <= quotePrice) {
-          invalidFields.triggerPrice =
-            'Trigger price must be above oracle price'
+          invalidFields.triggerPrice = t('trade:error-trigger-above')
         }
         if (!shouldFlip && triggerPriceNumber >= quotePrice) {
-          invalidFields.triggerPrice =
-            'Trigger price must be below oracle price'
+          invalidFields.triggerPrice = t('trade:error-trigger-below')
         }
       }
       if (orderType === TriggerOrderTypes.TAKE_PROFIT) {
         if (shouldFlip && triggerPriceNumber >= quotePrice) {
-          invalidFields.triggerPrice =
-            'Trigger price must be below oracle price'
+          invalidFields.triggerPrice = t('trade:error-trigger-below')
         }
         if (!shouldFlip && triggerPriceNumber <= quotePrice) {
-          invalidFields.triggerPrice =
-            'Trigger price must be above oracle price'
+          invalidFields.triggerPrice = t('trade:error-trigger-above')
         }
       }
       if (form.amountIn > Math.abs(inputTokenBalance)) {
@@ -442,115 +437,6 @@ const TriggerSwapForm = ({
     },
     [amountInFormValue, flipPrices, setFormErrors],
   )
-
-  // const handlePlaceStopLoss = useCallback(async () => {
-  //   const invalidFields = isFormValid({
-  //     amountIn: amountInAsDecimal.toNumber(),
-  //     triggerPrice,
-  //   })
-  //   if (Object.keys(invalidFields).length) {
-  //     return
-  //   }
-  //   try {
-  //     const client = mangoStore.getState().client
-  //     const group = mangoStore.getState().group
-  //     const actions = mangoStore.getState().actions
-  //     const mangoAccount = mangoStore.getState().mangoAccount.current
-  //     const inputBank = mangoStore.getState().swap.inputBank
-  //     const outputBank = mangoStore.getState().swap.outputBank
-
-  //     if (!mangoAccount || !group || !inputBank || !outputBank || !triggerPrice)
-  //       return
-  //     setSubmitting(true)
-
-  //     const amountIn = amountInAsDecimal.toNumber()
-
-  //     const isReduceLong = !isReducingShort
-
-  //     try {
-  //       let tx
-  //       if (orderType === TriggerOrderTypes.STOP_LOSS) {
-  //         if (isReduceLong) {
-  //           tx = await client.tcsStopLossOnDeposit(
-  //             group,
-  //             mangoAccount,
-  //             inputBank,
-  //             outputBank,
-  //             parseFloat(triggerPrice),
-  //             flipPrices,
-  //             amountIn,
-  //             null,
-  //             null,
-  //           )
-  //         } else {
-  //           tx = await client.tcsStopLossOnBorrow(
-  //             group,
-  //             mangoAccount,
-  //             outputBank,
-  //             inputBank,
-  //             parseFloat(triggerPrice),
-  //             !flipPrices,
-  //             amountIn,
-  //             null,
-  //             true,
-  //             null,
-  //           )
-  //         }
-  //       }
-  //       if (orderType === TriggerOrderTypes.TAKE_PROFIT) {
-  //         if (isReduceLong) {
-  //           tx = await client.tcsTakeProfitOnDeposit(
-  //             group,
-  //             mangoAccount,
-  //             inputBank,
-  //             outputBank,
-  //             parseFloat(triggerPrice),
-  //             flipPrices,
-  //             amountIn,
-  //             null,
-  //             null,
-  //           )
-  //         } else {
-  //           tx = await client.tcsTakeProfitOnBorrow(
-  //             group,
-  //             mangoAccount,
-  //             outputBank,
-  //             inputBank,
-  //             parseFloat(triggerPrice),
-  //             !flipPrices,
-  //             amountIn,
-  //             null,
-  //             true,
-  //             null,
-  //           )
-  //         }
-  //       }
-  //       notify({
-  //         title: 'Transaction confirmed',
-  //         type: 'success',
-  //         txid: tx?.signature,
-  //         noSound: true,
-  //       })
-  //       actions.fetchGroup()
-  //       await actions.reloadMangoAccount(tx?.slot)
-  //     } catch (e) {
-  //       console.error('onSwap error: ', e)
-  //       sentry.captureException(e)
-  //       if (isMangoError(e)) {
-  //         notify({
-  //           title: 'Transaction failed',
-  //           description: e.message,
-  //           txid: e?.txid,
-  //           type: 'error',
-  //         })
-  //       }
-  //     }
-  //   } catch (e) {
-  //     console.error('Swap error:', e)
-  //   } finally {
-  //     setSubmitting(false)
-  //   }
-  // }, [flipPrices, orderType, triggerPrice, amountInAsDecimal, isReducingShort])
 
   const orderDescription = useMemo(() => {
     if (

@@ -98,7 +98,6 @@ export const handlePlaceTriggerOrder = async (
   flipPrices: boolean,
   setSubmitting: (s: boolean) => void,
 ) => {
-  console.log(amountIn)
   try {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group

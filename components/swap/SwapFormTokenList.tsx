@@ -14,7 +14,7 @@ import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { formatTokenSymbol } from 'utils/tokens'
 import TokenLogo from '@components/shared/TokenLogo'
 import Input from '@components/forms/Input'
-import { getInputTokenBalance } from './TriggerSwapForm'
+import { getTokenBalance } from './TriggerSwapForm'
 import { walletBalanceForToken } from '@components/DepositForm'
 import TokenReduceOnlyDesc from '@components/shared/TokenReduceOnlyDesc'
 import PopularSwapTokens from './PopularSwapTokens'
@@ -333,7 +333,7 @@ const SwapFormTokenList = ({
       return t('swap:reduce-position')
     } else {
       if (!mangoAccountAddress || !inputBank) return ''
-      const uiPos = getInputTokenBalance(inputBank)
+      const uiPos = getTokenBalance(inputBank)
       if (uiPos > 0) {
         return t('swap:reduce-position-buy')
       } else if (uiPos < 0) {
