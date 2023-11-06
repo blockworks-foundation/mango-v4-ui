@@ -263,7 +263,7 @@ const Dashboard: NextPage = () => {
                                     label="Reduce Only"
                                     value={`${
                                       bank.reduceOnly
-                                    } (Are deposits reduce only - ${bank.areDepositsReduceOnly()}, Are borrows reduce only - $${bank.areBorrowsReduceOnly()})`}
+                                    } (Are deposits reduce only - ${bank.areDepositsReduceOnly()}, Are borrows reduce only - ${bank.areBorrowsReduceOnly()})`}
                                   />
                                   <KeyValuePair
                                     label="Avg Utilization"
