@@ -6,6 +6,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { floorToDecimal } from 'utils/numbers'
 import { useSpotMarketMax } from './SpotSlider'
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
+import Decimal from 'decimal.js'
 
 const SpotButtonGroup = ({
   minOrderDecimals,
@@ -51,7 +52,7 @@ const SpotButtonGroup = ({
     } else {
       max = roundedBalance > 0 ? roundedBalance : 0
     }
-    return max
+    return Math.abs(max)
   }, [isTriggerOrder, selectedMarket, side, standardOrderMax])
 
   const handleSizePercentage = useCallback(
@@ -61,30 +62,46 @@ const SpotButtonGroup = ({
       const size = max * (Number(percentage) / 100)
 
       set((s) => {
-        if (s.tradeForm.side === 'buy') {
-          s.tradeForm.quoteSize = floorToDecimal(size, tickDecimals).toString()
-
-          if (Number(s.tradeForm.price)) {
-            s.tradeForm.baseSize = floorToDecimal(
-              size / Number(s.tradeForm.price),
-              minOrderDecimals,
-            ).toString()
-          } else {
-            s.tradeForm.baseSize = ''
+        const price = Number(s.tradeForm.price)
+        if (isTriggerOrder) {
+          const baseSize = floorToDecimal(size, minOrderDecimals)
+          s.tradeForm.baseSize = baseSize.toFixed()
+          if (price) {
+            const quoteSize = floorToDecimal(
+              new Decimal(size).mul(price),
+              tickDecimals,
+            )
+            s.tradeForm.quoteSize = quoteSize.toFixed()
           }
-        } else if (s.tradeForm.side === 'sell') {
-          s.tradeForm.baseSize = floorToDecimal(size, tickDecimals).toString()
-
-          if (Number(s.tradeForm.price)) {
+        } else {
+          if (s.tradeForm.side === 'buy') {
             s.tradeForm.quoteSize = floorToDecimal(
-              size * Number(s.tradeForm.price),
+              size,
               tickDecimals,
             ).toString()
+
+            if (price) {
+              s.tradeForm.baseSize = floorToDecimal(
+                size / Number(s.tradeForm.price),
+                minOrderDecimals,
+              ).toString()
+            } else {
+              s.tradeForm.baseSize = ''
+            }
+          } else if (s.tradeForm.side === 'sell') {
+            s.tradeForm.baseSize = floorToDecimal(size, tickDecimals).toString()
+
+            if (Number(s.tradeForm.price)) {
+              s.tradeForm.quoteSize = floorToDecimal(
+                size * Number(s.tradeForm.price),
+                tickDecimals,
+              ).toString()
+            }
           }
         }
       })
     },
-    [minOrderDecimals, tickDecimals, max],
+    [minOrderDecimals, tickDecimals, max, isTriggerOrder],
   )
 
   return (

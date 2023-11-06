@@ -104,7 +104,7 @@ const SpotSlider = ({
     } else {
       max = roundedBalance > 0 ? roundedBalance : 0
     }
-    return max
+    return Math.abs(max)
   }, [isTriggerOrder, selectedMarket, side, standardOrderMax])
 
   const handleSlide = useCallback(
@@ -116,32 +116,41 @@ const SpotSlider = ({
           s.tradeForm.tradeType === 'Market'
             ? marketPrice
             : Number(s.tradeForm.price)
-
-        if (s.tradeForm.side === 'buy') {
-          if (Number(price)) {
-            const baseSize = floorToDecimal(
-              parseFloat(val) / price,
-              minOrderDecimals,
-            )
-            const quoteSize = floorToDecimal(baseSize.mul(price), tickDecimals)
-            s.tradeForm.baseSize = baseSize.toFixed()
-            s.tradeForm.quoteSize = quoteSize.toFixed()
-          } else {
-            s.tradeForm.baseSize = ''
-            s.tradeForm.quoteSize = val
-          }
-        } else if (s.tradeForm.side === 'sell') {
-          s.tradeForm.baseSize = val
-          if (Number(price)) {
-            s.tradeForm.quoteSize = floorToDecimal(
-              parseFloat(val) * price,
-              tickDecimals,
-            ).toFixed()
+        if (isTriggerOrder) {
+          const baseSize = floorToDecimal(parseFloat(val), minOrderDecimals)
+          const quoteSize = floorToDecimal(baseSize.mul(price), tickDecimals)
+          s.tradeForm.baseSize = baseSize.toFixed()
+          s.tradeForm.quoteSize = quoteSize.toFixed()
+        } else {
+          if (s.tradeForm.side === 'buy') {
+            if (Number(price)) {
+              const baseSize = floorToDecimal(
+                parseFloat(val) / price,
+                minOrderDecimals,
+              )
+              const quoteSize = floorToDecimal(
+                baseSize.mul(price),
+                tickDecimals,
+              )
+              s.tradeForm.baseSize = baseSize.toFixed()
+              s.tradeForm.quoteSize = quoteSize.toFixed()
+            } else {
+              s.tradeForm.baseSize = ''
+              s.tradeForm.quoteSize = val
+            }
+          } else if (s.tradeForm.side === 'sell') {
+            s.tradeForm.baseSize = val
+            if (Number(price)) {
+              s.tradeForm.quoteSize = floorToDecimal(
+                parseFloat(val) * price,
+                tickDecimals,
+              ).toFixed()
+            }
           }
         }
       })
     },
-    [marketPrice, minOrderDecimals, tickDecimals],
+    [marketPrice, minOrderDecimals, tickDecimals, isTriggerOrder],
   )
 
   return (

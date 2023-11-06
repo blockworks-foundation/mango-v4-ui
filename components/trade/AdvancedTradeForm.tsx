@@ -625,10 +625,15 @@ const AdvancedTradeForm = () => {
     const orderTypesArray = Object.values(OrderTypes)
     if (!selectedMarket || selectedMarket instanceof PerpMarket)
       return orderTypesArray
-
+    const baseBalance = floorToDecimal(
+      getTokenBalance(baseBank),
+      minOrderDecimals,
+    ).toNumber()
     const triggerOrderTypesArray = Object.values(TriggerOrderTypes)
-    return [...orderTypesArray, ...triggerOrderTypesArray]
-  }, [selectedMarket])
+    return Math.abs(baseBalance) > 0
+      ? [...orderTypesArray, ...triggerOrderTypesArray]
+      : orderTypesArray
+  }, [baseBank, minOrderDecimals, selectedMarket])
 
   const isFormValid = useCallback(
     (form: TradeForm) => {
