@@ -260,6 +260,12 @@ const Dashboard: NextPage = () => {
                                     value={`${formattedBankValues.borrows} ($${formattedBankValues.borrowsPrice})`}
                                   />
                                   <KeyValuePair
+                                    label="Reduce Only"
+                                    value={`${
+                                      bank.reduceOnly
+                                    } (Are deposits reduce only - ${bank.areDepositsReduceOnly()}, Are borrows reduce only - $${bank.areBorrowsReduceOnly()})`}
+                                  />
+                                  <KeyValuePair
                                     label="Avg Utilization"
                                     value={`${formattedBankValues.avgUtilization}%`}
                                   />
