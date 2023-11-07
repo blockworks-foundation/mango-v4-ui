@@ -151,6 +151,7 @@ const PerpPositions = () => {
                   </Th>
                   <Th className="text-right">{t('trade:unrealized-pnl')}</Th>
                   <Th className="text-right">ROE</Th>
+                  <Th className="text-right">{t('funding')}</Th>
                   {!isUnownedAccount ? (
                     <Th>
                       {openPerpPositions?.length > 1 ? (
@@ -192,6 +193,8 @@ const PerpPositions = () => {
                     position.cumulativePnlOverPositionLifetimeUi(market)
                   const unrealizedPnl = position.getUnRealizedPnlUi(market)
                   const realizedPnl = position.getRealizedPnlUi()
+                  const positionFunding =
+                    position.getCumulativeFundingUi(market)
                   const roe =
                     (unrealizedPnl / (Math.abs(basePosition) * avgEntryPrice)) *
                     100
@@ -318,6 +321,19 @@ const PerpPositions = () => {
                           className={roe >= 0 ? 'text-th-up' : 'text-th-down'}
                         >
                           <FormatNumericValue value={roe} decimals={2} />%
+                        </span>
+                      </Td>
+                      <Td className="text-right font-mono">
+                        <span
+                          className={
+                            positionFunding >= 0 ? 'text-th-up' : 'text-th-down'
+                          }
+                        >
+                          <FormatNumericValue
+                            value={positionFunding}
+                            decimals={2}
+                            isUsd
+                          />
                         </span>
                       </Td>
                       {!isUnownedAccount ? (
@@ -450,6 +466,7 @@ const PerpPositions = () => {
                 group,
                 mangoAccount,
               )
+              const positionFunding = position.getCumulativeFundingUi(market)
               const unsettledPnl = position.getUnsettledPnlUi(market)
               const notional = Math.abs(floorBasePosition) * market._uiPrice
               return (
@@ -659,6 +676,24 @@ const PerpPositions = () => {
                                 }`}
                               >
                                 <FormatNumericValue value={roe} decimals={2} />%
+                              </p>
+                            </div>
+                            <div className="col-span-1">
+                              <p className="text-xs text-th-fgd-3">
+                                {t('funding')}
+                              </p>
+                              <p
+                                className={`font-mono ${
+                                  positionFunding >= 0
+                                    ? 'text-th-up'
+                                    : 'text-th-down'
+                                }`}
+                              >
+                                <FormatNumericValue
+                                  value={positionFunding}
+                                  decimals={2}
+                                  isUsd
+                                />
                               </p>
                             </div>
                             <div className="col-span-2 mt-3 flex space-x-3">
