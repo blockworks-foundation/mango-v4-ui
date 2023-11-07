@@ -74,7 +74,6 @@
     "place-order": "下{{side}}單",
     "placing-order": "正在下單",
     "positions": "持倉",
-    "position-funding": "Position Funding",
     "post": "Post",
     "preview-sound": "聲音預覽",
     "price-expect": "您收到的價格可能與您預期有差異，並且無法保證完全執行。為了您的安全，最大滑點保持為 2.5%。超過 2.5%滑點的部分不會被平倉。",
