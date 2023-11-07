@@ -34,7 +34,7 @@ import { CUSTOM_SKINS, breakpoints } from 'utils/theme'
 import { NFT } from 'types'
 import { useViewport } from 'hooks/useViewport'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { CUSTOM_THEME_SUFFIX, SIDEBAR_COLLAPSE_KEY } from 'utils/constants'
+import { SIDEBAR_COLLAPSE_KEY } from 'utils/constants'
 import { createTransferInstruction } from '@solana/spl-token'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 
@@ -43,18 +43,13 @@ const set = mangoStore.getState().set
 const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation(['common', 'search'])
   const { connected, publicKey } = useWallet()
-  const { theme, setTheme } = useTheme()
+  const { theme } = useTheme()
   const group = mangoStore.getState().group
   const themeData = mangoStore((s) => s.themeData)
   const nfts = mangoStore((s) => s.wallet.nfts.data)
-  const loadingNfts = mangoStore((s) => s.wallet.nfts.initialLoad)
   const { mangoAccount } = useMangoAccount()
   const setPrependedGlobalAdditionalInstructions = mangoStore(
     (s) => s.actions.setPrependedGlobalAdditionalInstructions,
-  )
-  const [customTheme] = useLocalStorageState(
-    `${publicKey}${CUSTOM_THEME_SUFFIX}`,
-    '',
   )
 
   const router = useRouter()
@@ -139,23 +134,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
     }
     return themeData.sideImagePath
   }, [mangoNfts, theme, themeData])
-
-  // change theme if switching to wallet without nft
-  useEffect(() => {
-    if (loadingNfts || !theme) return
-    const hasSkin = mangoNfts.find(
-      (nft) =>
-        nft.collectionAddress === CUSTOM_SKINS[customTheme.toLowerCase()],
-    )
-
-    if (hasSkin && customTheme && theme !== customTheme) {
-      setTheme(customTheme)
-    } else if (!hasSkin) {
-      setTheme(
-        CUSTOM_SKINS[theme.toLowerCase()] ? t('settings:mango-classic') : theme,
-      )
-    }
-  }, [loadingNfts, mangoNfts, publicKey, theme])
 
   return (
     <div

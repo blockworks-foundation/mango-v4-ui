@@ -17,7 +17,6 @@ import { useTheme } from 'next-themes'
 import { useCallback } from 'react'
 import { useRouter } from 'next/router'
 import {
-  CUSTOM_THEME_SUFFIX,
   NOTIFICATION_POSITION_KEY,
   SIZE_INPUT_UI_KEY,
   TRADE_CHART_UI_KEY,
@@ -25,7 +24,6 @@ import {
 } from 'utils/constants'
 import mangoStore from '@store/mangoStore'
 import { CUSTOM_SKINS } from 'utils/theme'
-import { useWallet } from '@solana/wallet-adapter-react'
 
 const NOTIFICATION_POSITIONS = [
   'bottom-left',
@@ -67,7 +65,6 @@ const DisplaySettings = () => {
   const { theme, setTheme } = useTheme()
   const [themes, setThemes] = useState(DEFAULT_THEMES)
   const nfts = mangoStore((s) => s.wallet.nfts.data)
-  const { publicKey } = useWallet()
 
   const [savedLanguage, setSavedLanguage] = useLocalStorageState(
     'language',
@@ -88,10 +85,6 @@ const DisplaySettings = () => {
     'trading-view',
   )
 
-  const [, setCustomTheme] = useLocalStorageState(
-    `${publicKey}${CUSTOM_THEME_SUFFIX}`,
-    '',
-  )
   const [, setTradeLayout] = useLocalStorageState(TRADE_LAYOUT_KEY, 'chartLeft')
 
   // add nft skins to theme selection list
@@ -136,11 +129,6 @@ const DisplaySettings = () => {
             value={theme || DEFAULT_THEMES[0]}
             onChange={(t: string) => {
               setTheme(t)
-              if (CUSTOM_SKINS[t.toLowerCase()]) {
-                setCustomTheme(t)
-              } else {
-                setCustomTheme('')
-              }
             }}
             className="w-full"
           >
