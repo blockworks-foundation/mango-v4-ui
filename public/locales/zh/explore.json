@@ -1,8 +1,8 @@
 {
-    "collateral-weight": "Collateral Weight",
-    "gainers": "Gainers",
-    "losers": "Losers",
-    "no-gainers": "No Gainers...",
-    "no-losers": "No Losers...",
-    "recently-listed": "Recently Listed"
+    "collateral-weight": "质押品权重",
+    "gainers": "赢家",
+    "losers": "输家",
+    "no-gainers": "无赢家...",
+    "no-losers": "无输家...",
+    "recently-listed": "最近上架"
 }
