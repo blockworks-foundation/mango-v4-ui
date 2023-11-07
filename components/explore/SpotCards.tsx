@@ -34,7 +34,7 @@ const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
         const available = Decimal.max(
           0,
           availableVaultBalance.toFixed(bank.mintDecimals),
-        )
+        ).mul(bank.uiPrice)
         const depositRate = bank.getDepositRateUi()
         const borrowRate = bank.getBorrowRateUi()
         const assetWeight = bank.scaledInitAssetWeight(bank.price).toFixed(2)
@@ -120,7 +120,7 @@ const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
                   <p className="tooltip-underline mb-1">{t('available')}</p>
                 </Tooltip>
                 <span className="font-mono text-th-fgd-2">
-                  <FormatNumericValue value={available} />
+                  <FormatNumericValue value={available} isUsd />
                 </span>
               </div>
               <div>

@@ -84,6 +84,7 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
 
         let availableVaultBalance = 0
         let available = new Decimal(0)
+        let availableValue = 0
         let depositRate = 0
         let borrowRate = 0
         let assetWeight = '0'
@@ -97,6 +98,7 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
             0,
             availableVaultBalance.toFixed(baseBank.mintDecimals),
           )
+          availableValue = available.mul(price).toNumber()
           depositRate = baseBank.getDepositRateUi()
           borrowRate = baseBank.getBorrowRateUi()
           assetWeight = baseBank
@@ -109,6 +111,7 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
 
         const data = {
           available,
+          availableValue,
           assetWeight,
           borrowRate,
           baseBank,
@@ -184,8 +187,8 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
                   <div className="flex justify-end">
                     <Tooltip content={t('tooltip-available', { token: '' })}>
                       <SortableColumnHeader
-                        sortKey="available"
-                        sort={() => requestSort('available')}
+                        sortKey="availableValue"
+                        sort={() => requestSort('availableValue')}
                         sortConfig={sortConfig}
                         title={t('available')}
                         titleClass="tooltip-underline"
