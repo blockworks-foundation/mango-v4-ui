@@ -51,7 +51,7 @@ const LeverageSlider = ({
       onChange(amount)
       setValue(parseFloat(amount))
     },
-    [decimals, leverageMax],
+    [decimals, leverageMax, onChange],
   )
 
   useEffect(() => {
@@ -65,18 +65,21 @@ const LeverageSlider = ({
     }
   }, [amount, leverageMax])
 
-  const handleSliderChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const target = e.target
-    const min = parseFloat(target.min)
-    const max = parseFloat(target.max)
-    const val = parseFloat(target.value)
-    const percent = ((val - min) * 100) / (max - min)
-    target.style.backgroundSize = percent + '% 100%'
+  const handleSliderChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const target = e.target
+      const min = parseFloat(target.min)
+      const max = parseFloat(target.max)
+      const val = parseFloat(target.value)
+      const percent = ((val - min) * 100) / (max - min)
+      target.style.backgroundSize = percent + '% 100%'
 
-    onChange(e.target.value)
-    setValue(parseFloat(e.target.value))
-    setPercent(Math.round(percent))
-  }
+      onChange(e.target.value)
+      setValue(parseFloat(e.target.value))
+      setPercent(Math.round(percent))
+    },
+    [onChange],
+  )
 
   return (
     <>
