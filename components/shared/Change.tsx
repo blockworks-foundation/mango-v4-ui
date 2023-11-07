@@ -27,13 +27,7 @@ const Change = ({
         <div className="mt-[1px]">
           <DownTriangle size={size} />
         </div>
-      ) : (
-        <MinusSmallIcon
-          className={`-mr-1 ${
-            size === 'small' ? 'h-4 w-4' : 'h-6 w-6'
-          } text-th-fgd-4`}
-        />
-      )}
+      ) : null}
       <p
         className={`font-mono font-normal ${
           size === 'small'
