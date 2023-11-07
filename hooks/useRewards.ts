@@ -52,7 +52,7 @@ export const useDistribution = (seasonId: number | undefined) => {
   const { client } = mangoStore()
   const provider = client.program.provider
   return useQuery(
-    ['distribution', seasonId],
+    ['distribution', seasonId, client.program.provider.publicKey?.toBase58()],
     () => fetchDistribution(client.program.provider, seasonId!),
     {
       cacheTime: 1000 * 60 * 10,
