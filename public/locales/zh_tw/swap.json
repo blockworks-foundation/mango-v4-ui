@@ -55,7 +55,7 @@
     "tooltip-favorite-swap-add": "Add pair to favorites",
     "tooltip-favorite-swap-remove": "Remove pair from favorites",
     "tooltip-wallet-swap": "When enabled, you'll swap tokens in your wallet. When disabled, you'll swap tokens in your Mango Account.",
-    "trigger-beta": "Trigger orders are in beta. Use with caution.",
+    "trigger-beta": "Trigger orders are in beta",
     "use-margin": "允許槓桿",
     "wallet-swap": "Wallet Swap",
     "warning-no-collateral": "你沒有可用質押品",

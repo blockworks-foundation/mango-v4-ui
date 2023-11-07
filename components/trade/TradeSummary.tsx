@@ -22,7 +22,10 @@ import {
 } from 'utils/numbers'
 import { formatTokenSymbol } from 'utils/tokens'
 import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
-import { calculateEstPriceForBaseSize } from 'utils/tradeForm'
+import {
+  TriggerOrderTypes,
+  calculateEstPriceForBaseSize,
+} from 'utils/tradeForm'
 
 const TradeSummary = ({
   balanceBank,
@@ -174,6 +177,10 @@ const TradeSummary = ({
     )
   }, [quoteBank, tradeForm])
 
+  const isTriggerOrder =
+    tradeForm.tradeType === TriggerOrderTypes.STOP_LOSS ||
+    tradeForm.tradeType === TriggerOrderTypes.TAKE_PROFIT
+
   return (
     <div className="space-y-2 px-3 md:px-4">
       <div className="flex justify-between text-xs">
@@ -277,7 +284,7 @@ const TradeSummary = ({
           </p>
         </div>
       ) : null}
-      {selectedMarket instanceof Serum3Market ? (
+      {selectedMarket instanceof Serum3Market && !isTriggerOrder ? (
         <div className="flex justify-between text-xs">
           <p>{t('common:route')}</p>
           <p className="text-th-fgd-2">Openbook</p>

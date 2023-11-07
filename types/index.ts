@@ -11,6 +11,7 @@ import { JsonMetadata } from '@metaplex-foundation/js'
 import { Event } from '@project-serum/serum/lib/queue'
 import { PublicKey } from '@solana/web3.js'
 import { formatTradeHistory } from 'hooks/useTradeHistory'
+import { OrderTypes, TriggerOrderTypes } from 'utils/tradeForm'
 
 export type EmptyObject = { [K in keyof never]?: never }
 export interface OrderbookL2 {
@@ -441,7 +442,7 @@ export interface TradeForm {
   price: string | undefined
   baseSize: string
   quoteSize: string
-  tradeType: 'Market' | 'Limit'
+  tradeType: OrderTypes | TriggerOrderTypes
   triggerPrice?: string
   postOnly: boolean
   ioc: boolean
@@ -553,4 +554,4 @@ export interface FilledOrder {
   quantity: number
 }
 
-export type TriggerOrderTypes = 'swap' | 'trade:trigger-order'
+export type SwapTypes = 'swap' | 'trade:trigger-order'

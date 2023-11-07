@@ -33,6 +33,56 @@ import { Disclosure, Transition } from '@headlessui/react'
 import SheenLoader from '@components/shared/SheenLoader'
 import { formatTokenSymbol } from 'utils/tokens'
 
+export const handleCancelTriggerOrder = async (
+  id: BN,
+  setCancelId?: (id: string) => void,
+) => {
+  try {
+    const client = mangoStore.getState().client
+    const group = mangoStore.getState().group
+    const actions = mangoStore.getState().actions
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+
+    if (!mangoAccount || !group) return
+    if (setCancelId) {
+      setCancelId(id.toString())
+    }
+
+    try {
+      const { signature: tx, slot } = await client.tokenConditionalSwapCancel(
+        group,
+        mangoAccount,
+        id,
+      )
+      notify({
+        title: 'Transaction confirmed',
+        type: 'success',
+        txid: tx,
+        noSound: true,
+      })
+      actions.fetchGroup()
+      await actions.reloadMangoAccount(slot)
+    } catch (e) {
+      console.error('failed to cancel swap order', e)
+      sentry.captureException(e)
+      if (isMangoError(e)) {
+        notify({
+          title: 'Transaction failed',
+          description: e.message,
+          txid: e?.txid,
+          type: 'error',
+        })
+      }
+    }
+  } catch (e) {
+    console.error('failed to cancel trigger order', e)
+  } finally {
+    if (setCancelId) {
+      setCancelId('')
+    }
+  }
+}
+
 export const handleCancelAll = async (
   setCancelId: (id: '' | 'all') => void,
 ) => {
@@ -161,49 +211,6 @@ const SwapOrders = () => {
     requestSort,
     sortConfig,
   } = useSortableData(formattedTableData())
-
-  const handleCancel = async (id: BN) => {
-    try {
-      const client = mangoStore.getState().client
-      const group = mangoStore.getState().group
-      const actions = mangoStore.getState().actions
-      const mangoAccount = mangoStore.getState().mangoAccount.current
-
-      if (!mangoAccount || !group) return
-      setCancelId(id.toString())
-
-      try {
-        const { signature: tx, slot } = await client.tokenConditionalSwapCancel(
-          group,
-          mangoAccount,
-          id,
-        )
-        notify({
-          title: 'Transaction confirmed',
-          type: 'success',
-          txid: tx,
-          noSound: true,
-        })
-        actions.fetchGroup()
-        await actions.reloadMangoAccount(slot)
-      } catch (e) {
-        console.error('failed to cancel swap order', e)
-        sentry.captureException(e)
-        if (isMangoError(e)) {
-          notify({
-            title: 'Transaction failed',
-            description: e.message,
-            txid: e?.txid,
-            type: 'error',
-          })
-        }
-      }
-    } catch (e) {
-      console.error('failed to cancel trigger order', e)
-    } finally {
-      setCancelId('')
-    }
-  }
 
   return orders.length ? (
     showTableView ? (
@@ -358,7 +365,9 @@ const SwapOrders = () => {
                     disabled={
                       cancelId === data.id.toString() || cancelId === 'all'
                     }
-                    onClick={() => handleCancel(data.id)}
+                    onClick={() =>
+                      handleCancelTriggerOrder(data.id, setCancelId)
+                    }
                     size="small"
                   >
                     {cancelId === data.id.toString() || cancelId === 'all' ? (
@@ -495,7 +504,11 @@ const SwapOrders = () => {
 
                         <div className="col-span-1">
                           <p className="text-xs text-th-fgd-3">{t('cancel')}</p>
-                          <LinkButton onClick={() => handleCancel(data.id)}>
+                          <LinkButton
+                            onClick={() =>
+                              handleCancelTriggerOrder(data.id, setCancelId)
+                            }
+                          >
                             {cancelId === data.id.toString() ? (
                               <SheenLoader className="mt-1">
                                 <div className="h-3.5 w-20 bg-th-bkg-2" />

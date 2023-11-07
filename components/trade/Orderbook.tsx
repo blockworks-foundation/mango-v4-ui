@@ -39,6 +39,7 @@ import isEqual from 'lodash/isEqual'
 import { useViewport } from 'hooks/useViewport'
 import TokenLogo from '@components/shared/TokenLogo'
 import MarketLogos from './MarketLogos'
+import { OrderTypes } from 'utils/tradeForm'
 
 const sizeCompacter = Intl.NumberFormat('en', {
   maximumFractionDigits: 6,
@@ -698,12 +699,6 @@ const OrderbookRow = ({
     return floorToDecimal(sizeToShow, decimals)
   }, [minOrderSizeDecimals, price, size, sizeInBase, tickSizeDecimals])
 
-  // const formattedSize = useMemo(() => {
-  //   return minOrderSize && !isNaN(size)
-  //     ? floorToDecimal(size, getDecimalCount(minOrderSize))
-  //     : new Decimal(size ?? -1)
-  // }, [size, minOrderSize, sizeInBase, tickSize])
-
   const formattedPrice = useMemo(() => {
     return tickSizeDecimals && !isNaN(price)
       ? floorToDecimal(price, tickSizeDecimals)
@@ -714,7 +709,7 @@ const OrderbookRow = ({
     const set = mangoStore.getState().set
     set((state) => {
       state.tradeForm.price = formattedPrice.toFixed()
-      state.tradeForm.tradeType = 'Limit'
+      state.tradeForm.tradeType = OrderTypes.LIMIT
       if (state.tradeForm.baseSize) {
         const quoteSize = floorToDecimal(
           formattedPrice.mul(new Decimal(state.tradeForm.baseSize)),
