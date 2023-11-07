@@ -410,6 +410,20 @@ const AdvancedTradeForm = () => {
     tradeForm.tradeType === TriggerOrderTypes.STOP_LOSS ||
     tradeForm.tradeType === TriggerOrderTypes.TAKE_PROFIT
 
+  // default to correct side for trigger orders
+  useEffect(() => {
+    if (isTriggerOrder) {
+      const balance = getTokenBalance(baseBank)
+      set((state) => {
+        if (balance > 0) {
+          state.tradeForm.side = 'sell'
+        } else {
+          state.tradeForm.side = 'buy'
+        }
+      })
+    }
+  }, [isTriggerOrder])
+
   // set default trigger price
   useEffect(() => {
     if (isTriggerOrder) {
