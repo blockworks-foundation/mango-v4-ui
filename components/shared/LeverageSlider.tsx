@@ -1,18 +1,11 @@
 import Decimal from 'decimal.js'
-import {
-  ChangeEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { floorToDecimal } from 'utils/numbers'
 
 const PERCENTAGE_SHORTCUTS = [10, 25, 50, 75, 100]
 
 const LeverageSlider = ({
-  amount = 0,
+  amount,
   decimals,
   handleStartDrag,
   handleEndDrag,
@@ -28,13 +21,9 @@ const LeverageSlider = ({
   onChange: (x: string) => void
   step: number
 }) => {
+  const [value, setValue] = useState(0)
   const [percent, setPercent] = useState(0)
   const inputEl = useRef<HTMLInputElement>(null)
-
-  const sliderValue = useMemo(() => {
-    if (!amount || isNaN(amount)) return 0
-    return amount
-  }, [amount])
 
   useEffect(() => {
     if (inputEl.current) {
@@ -45,9 +34,9 @@ const LeverageSlider = ({
       target.style.backgroundSize =
         max - min === 0
           ? '0% 100%'
-          : ((sliderValue - min) * 100) / (max - min) + '% 100%'
+          : ((value - min) * 100) / (max - min) + '% 100%'
     }
-  }, [leverageMax, sliderValue])
+  }, [leverageMax, value])
 
   const handleShortcutButtons = useCallback(
     (percent: number) => {
@@ -60,6 +49,7 @@ const LeverageSlider = ({
         amount = floorToDecimal(amountDecimal, decimals).toFixed()
       }
       onChange(amount)
+      setValue(parseFloat(amount))
     },
     [decimals, leverageMax],
   )
@@ -67,9 +57,10 @@ const LeverageSlider = ({
   useEffect(() => {
     if (amount) {
       const percent = ((amount - leverageMax) / leverageMax) * 100 + 100
-      onChange(amount.toString())
+      setValue(amount)
       setPercent(Math.ceil(percent))
     } else {
+      setValue(0)
       setPercent(0)
     }
   }, [amount, leverageMax])
@@ -83,6 +74,7 @@ const LeverageSlider = ({
     target.style.backgroundSize = percent + '% 100%'
 
     onChange(e.target.value)
+    setValue(parseFloat(e.target.value))
     setPercent(Math.round(percent))
   }
 
@@ -98,7 +90,7 @@ const LeverageSlider = ({
         step={step}
         className="w-full focus:outline-none"
         onChange={handleSliderChange}
-        value={sliderValue}
+        value={value}
         onMouseDown={handleStartDrag}
         onMouseUp={handleEndDrag}
         onKeyDown={handleStartDrag}

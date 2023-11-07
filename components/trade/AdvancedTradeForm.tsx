@@ -406,9 +406,12 @@ const AdvancedTradeForm = () => {
     }
   }, [oraclePrice, selectedMarket, tickDecimals, tradeForm])
 
-  const isTriggerOrder =
-    tradeForm.tradeType === TriggerOrderTypes.STOP_LOSS ||
-    tradeForm.tradeType === TriggerOrderTypes.TAKE_PROFIT
+  const isTriggerOrder = useMemo(() => {
+    return (
+      tradeForm.tradeType === TriggerOrderTypes.STOP_LOSS ||
+      tradeForm.tradeType === TriggerOrderTypes.TAKE_PROFIT
+    )
+  }, [tradeForm.tradeType])
 
   // default to correct side for trigger orders
   useEffect(() => {
@@ -424,7 +427,7 @@ const AdvancedTradeForm = () => {
     }
   }, [isTriggerOrder])
 
-  // set default trigger price
+  // // set default trigger price
   useEffect(() => {
     if (isTriggerOrder) {
       let triggerPrice = oraclePrice
