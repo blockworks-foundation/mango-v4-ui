@@ -1,7 +1,7 @@
 {
   "short_name": "Mango",
   "name": "Mango Markets",
-  "description": "Mango Markets - Decentralised, cross-margin trading up to 10x leverage with lightning speed and near-zero fees",
+  "description": "A magical new way to interact with DeFi. Groundbreaking safety features designed to keep your funds secure. The easiest way to margin trade any token pair. All powered by flashloans.",
   "icons": [
     {
       "src": "192x192.png",
@@ -15,6 +15,6 @@
     }
   ],
   "start_url": ".",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#1C1924",
+  "background_color": "#1C1924"
 }
