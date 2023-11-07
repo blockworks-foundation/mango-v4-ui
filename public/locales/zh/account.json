@@ -1,5 +1,5 @@
 {
-    "account-stats": "Account Stats",
+    "account-stats": "帐户统计",
     "assets": "资产",
     "assets-liabilities": "资产和债务",
     "collateral-value": "质押品价值",
@@ -16,7 +16,7 @@
     "maint-health": "维持健康度",
     "maint-health-contribution": "维持健康贡献",
     "maint-health-contributions": "维持健康度",
-    "more-account-stats": "More Account Stats",
+    "more-account-stats": "更多帐户统计",
     "no-data": "无数据可显示",
     "no-pnl-history": "无盈亏历史",
     "pnl-chart": "盈亏图表",

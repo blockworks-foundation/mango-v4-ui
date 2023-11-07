@@ -27,11 +27,16 @@ import {
   PerpOrder,
   Serum3Market,
   Serum3Side,
+  TokenConditionalSwap,
 } from '@blockworks-foundation/mango-v4'
 import { Order } from '@project-serum/serum/lib/market'
 import { PublicKey } from '@solana/web3.js'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { formatNumericValue, getDecimalCount } from 'utils/numbers'
+import {
+  floorToDecimal,
+  formatNumericValue,
+  getDecimalCount,
+} from 'utils/numbers'
 import { BN } from '@coral-xyz/anchor'
 import Datafeed from 'apis/datafeed'
 // import PerpDatafeed from 'apis/mngo/datafeed'
@@ -43,6 +48,7 @@ import ModifyTvOrderModal from '@components/modals/ModifyTvOrderModal'
 import { findSerum3MarketPkInOpenOrders } from './OpenOrders'
 import { Transition } from '@headlessui/react'
 import useThemeWrapper from 'hooks/useThemeWrapper'
+import { handleCancelTriggerOrder } from '@components/swap/SwapTriggerOrders'
 
 export interface ChartContainerProps {
   container: ChartingLibraryWidgetOptions['container']
@@ -68,6 +74,15 @@ function hexToRgb(hex: string) {
         16,
       )})`
     : null
+}
+
+const getTriggerOrders = () => {
+  const mangoAccount = mangoStore.getState().mangoAccount.current
+  if (!mangoAccount) return []
+  const triggerOrders = mangoAccount.tokenConditionalSwaps.filter(
+    (tcs) => tcs.hasData,
+  )
+  return triggerOrders
 }
 
 const TradingViewChart = () => {
@@ -146,9 +161,10 @@ const TradingViewChart = () => {
           tvWidgetRef.current.activeChart().resolution(),
           () => {
             if (showOrderLinesLocalStorage) {
-              const openOrders = mangoStore.getState().mangoAccount.openOrders
+              const { openOrders } = mangoStore.getState().mangoAccount
               deleteLines()
-              drawLinesForMarket(openOrders)
+              const triggerOrders = getTriggerOrders()
+              drawLinesForMarket(openOrders, triggerOrders)
             }
             return
           },
@@ -297,6 +313,7 @@ const TradingViewChart = () => {
         order.size,
         minOrderDecimals,
       )
+      const sideColor = isLong ? COLORS.UP[theme] : COLORS.DOWN[theme]
       if (!tvWidgetRef?.current?.chart()) return
       return (
         tvWidgetRef.current
@@ -363,20 +380,126 @@ const TradingViewChart = () => {
           //     ? `${order.orderType} Order #: ${order.orderId}`
           //     : `Order #: ${order.orderId}`
           // )
-          .setBodyTextColor(isLong ? COLORS.UP[theme] : COLORS.DOWN[theme])
-          .setQuantityTextColor(isLong ? COLORS.UP[theme] : COLORS.DOWN[theme])
+          .setBodyTextColor(sideColor)
+          .setQuantityTextColor(sideColor)
           .setCancelButtonIconColor(COLORS.FGD4[theme])
-          .setBodyBorderColor(isLong ? COLORS.UP[theme] : COLORS.DOWN[theme])
-          .setQuantityBorderColor(
-            isLong ? COLORS.UP[theme] : COLORS.DOWN[theme],
-          )
-          .setCancelButtonBorderColor(
-            isLong ? COLORS.UP[theme] : COLORS.DOWN[theme],
-          )
+          .setBodyBorderColor(sideColor)
+          .setQuantityBorderColor(sideColor)
+          .setCancelButtonBorderColor(sideColor)
           .setBodyBackgroundColor(COLORS.BKG1[theme])
           .setQuantityBackgroundColor(COLORS.BKG1[theme])
           .setCancelButtonBackgroundColor(COLORS.BKG1[theme])
-          .setLineColor(isLong ? COLORS.UP[theme] : COLORS.DOWN[theme])
+          .setLineColor(sideColor)
+          .setLineLength(3)
+          .setLineWidth(1)
+          .setLineStyle(1)
+      )
+    },
+    [
+      cancelPerpOrder,
+      cancelSpotOrder,
+      selectedMarketName,
+      t,
+      theme,
+      getOrderDecimals,
+    ],
+  )
+
+  const drawTriggerOrderLine = useCallback(
+    (order: TokenConditionalSwap) => {
+      const { group } = mangoStore.getState()
+      const selectedMarket = mangoStore.getState().selectedMarket.current
+      if (!group) return
+      const buyBank = group.getFirstBankByTokenIndex(order.buyTokenIndex)
+      const sellBank = group.getFirstBankByTokenIndex(order.sellTokenIndex)
+      const maxBuy = floorToDecimal(
+        order.getMaxBuyUi(group),
+        buyBank.mintDecimals,
+      ).toNumber()
+      const maxSell = floorToDecimal(
+        order.getMaxSellUi(group),
+        sellBank.mintDecimals,
+      ).toNumber()
+      let side: string
+      let orderSizeUi: number
+      if (maxBuy === 0 || maxBuy > maxSell) {
+        orderSizeUi = maxSell
+        side = 'sell'
+      } else {
+        orderSizeUi = maxBuy
+        side = 'buy'
+      }
+      const price = order.getThresholdPriceUi(group)
+      const isReducingShort = side.toLowerCase() === 'buy'
+      let orderType
+      if (selectedMarket && selectedMarket instanceof Serum3Market) {
+        const baseBank =
+          selectedMarket.baseTokenIndex === buyBank.tokenIndex
+            ? buyBank
+            : sellBank
+        const quoteBank =
+          selectedMarket.quoteTokenIndex === buyBank.tokenIndex
+            ? buyBank
+            : sellBank
+        const currentPrice = baseBank.uiPrice / quoteBank.uiPrice
+        orderType =
+          (isReducingShort && price > currentPrice) ||
+          (!isReducingShort && price < currentPrice)
+            ? t('trade:stop-loss')
+            : t('trade:take-profit')
+      }
+      const [
+        // minOrderDecimals,
+        tickSizeDecimals,
+      ] = getOrderDecimals()
+      const sideColor = isReducingShort ? COLORS.UP[theme] : COLORS.DOWN[theme]
+
+      if (!tvWidgetRef?.current?.chart()) return
+      return (
+        tvWidgetRef.current
+          .chart()
+          .createOrderLine({ disableUndo: false })
+          .onMove(function (this: IOrderLineAdapter) {
+            tvWidgetRef.current?.showNoticeDialog({
+              title: 'Edit trigger order',
+              body: 'Editing trigger orders is coming soon',
+              callback: () => this.setPrice(price),
+            })
+          })
+          .onCancel(function () {
+            tvWidgetRef.current?.showConfirmDialog({
+              title: t('tv-chart:cancel-order'),
+              body: t('tv-chart:cancel-order-details', {
+                marketName: selectedMarketName,
+                orderSize: orderSizeUi,
+                orderSide: side.toUpperCase(),
+                orderPrice: formatNumericValue(price, tickSizeDecimals),
+              }),
+              callback: (res) => {
+                if (res) {
+                  handleCancelTriggerOrder(order.id)
+                }
+              },
+            })
+          })
+          .setPrice(price)
+          .setQuantity(orderSizeUi.toString())
+          .setText(orderType ? orderType.toUpperCase() : side.toUpperCase())
+          // .setTooltip(
+          //   order.perpTrigger?.clientOrderId
+          //     ? `${order.orderType} Order #: ${order.orderId}`
+          //     : `Order #: ${order.orderId}`
+          // )
+          .setBodyTextColor(sideColor)
+          .setQuantityTextColor(sideColor)
+          .setCancelButtonIconColor(COLORS.FGD4[theme])
+          .setBodyBorderColor(sideColor)
+          .setQuantityBorderColor(sideColor)
+          .setCancelButtonBorderColor(sideColor)
+          .setBodyBackgroundColor(COLORS.BKG1[theme])
+          .setQuantityBackgroundColor(COLORS.BKG1[theme])
+          .setCancelButtonBackgroundColor(COLORS.BKG1[theme])
+          .setLineColor(sideColor)
           .setLineLength(3)
           .setLineWidth(1)
           .setLineStyle(1)
@@ -393,15 +516,18 @@ const TradingViewChart = () => {
   )
 
   const drawLinesForMarket = useCallback(
-    (openOrders: Record<string, Order[] | PerpOrder[]>) => {
+    (
+      openOrders: Record<string, Order[] | PerpOrder[]>,
+      triggerOrders: TokenConditionalSwap[],
+    ) => {
       const set = mangoStore.getState().set
       const newOrderLines = new Map()
       const oOrders = Object.entries(openOrders).map(([marketPk, orders]) => ({
         orders,
         marketPk,
       }))
+      const selectedMarket = mangoStore.getState().selectedMarket.current
       if (oOrders?.length) {
-        const selectedMarket = mangoStore.getState().selectedMarket.current
         const selectedMarketPk =
           selectedMarket instanceof Serum3Market
             ? selectedMarket?.serumMarketExternal.toString()
@@ -411,6 +537,24 @@ const TradingViewChart = () => {
             for (const order of orders) {
               newOrderLines.set(order.orderId.toString(), drawLine(order))
             }
+          }
+        }
+      }
+      if (triggerOrders.length && selectedMarket instanceof Serum3Market) {
+        const { baseTokenIndex, quoteTokenIndex } = selectedMarket
+        for (const triggerOrder of triggerOrders) {
+          const { buyTokenIndex, sellTokenIndex } = triggerOrder
+
+          if (
+            (baseTokenIndex === buyTokenIndex ||
+              quoteTokenIndex === buyTokenIndex) &&
+            (baseTokenIndex === sellTokenIndex ||
+              quoteTokenIndex === sellTokenIndex)
+          ) {
+            newOrderLines.set(
+              triggerOrder.id.toString(),
+              drawTriggerOrderLine(triggerOrder),
+            )
           }
         }
       }
@@ -429,7 +573,8 @@ const TradingViewChart = () => {
         el.style.color = COLORS.FGD4[theme]
       } else {
         const openOrders = mangoStore.getState().mangoAccount.openOrders
-        drawLinesForMarket(openOrders)
+        const triggerOrders = getTriggerOrders()
+        drawLinesForMarket(openOrders, triggerOrders)
         el.style.color = COLORS.ACTIVE[theme]
       }
     },
@@ -438,9 +583,10 @@ const TradingViewChart = () => {
 
   const closeModifyOrderModal = useCallback(() => {
     const openOrders = mangoStore.getState().mangoAccount.openOrders
+    const triggerOrders = getTriggerOrders()
     setOrderToModify(null)
     deleteLines()
-    drawLinesForMarket(openOrders)
+    drawLinesForMarket(openOrders, triggerOrders)
   }, [deleteLines, drawLinesForMarket])
 
   const toggleTradeExecutions = useCallback(
@@ -674,9 +820,14 @@ const TradingViewChart = () => {
     let subscription
     if (chartReady && tvWidgetRef?.current) {
       subscription = mangoStore.subscribe(
-        (state) => state.mangoAccount.openOrders,
-        (openOrders) => {
+        (state) => state.mangoAccount,
+        (account) => {
           if (showOrderLines) {
+            const openOrders = account.openOrders
+            const triggerOrders =
+              account.current?.tokenConditionalSwaps.filter(
+                (tcs) => tcs.hasData,
+              ) || []
             const orderLines = mangoStore.getState().tradingView.orderLines
             tvWidgetRef.current?.onChartReady(() => {
               let matchingOrderLines = 0
@@ -697,6 +848,11 @@ const TradingViewChart = () => {
                     }
                   }
                 })
+                triggerOrders?.forEach((order) => {
+                  if (order.id.toString() == key) {
+                    matchingOrderLines += 1
+                  }
+                })
               }
 
               const selectedMarket =
@@ -706,11 +862,29 @@ const TradingViewChart = () => {
                   ? selectedMarket?.serumMarketExternal.toString()
                   : selectedMarket?.publicKey.toString()
 
+              let ordersForMarket = 0
               oOrders?.forEach(({ marketPk, orders }) => {
                 if (marketPk === selectedMarketPk) {
-                  openOrdersForMarket = orders.length
+                  ordersForMarket = orders.length
                 }
               })
+              let triggerOrdersForMarket = 0
+              triggerOrders.forEach((order) => {
+                if (selectedMarket instanceof Serum3Market) {
+                  const { baseTokenIndex, quoteTokenIndex } = selectedMarket
+                  const { buyTokenIndex, sellTokenIndex } = order
+                  if (
+                    (baseTokenIndex === buyTokenIndex ||
+                      quoteTokenIndex === buyTokenIndex) &&
+                    (baseTokenIndex === sellTokenIndex ||
+                      quoteTokenIndex === sellTokenIndex)
+                  ) {
+                    triggerOrdersForMarket += 1
+                  }
+                }
+              })
+
+              openOrdersForMarket = ordersForMarket + triggerOrdersForMarket
 
               tvWidgetRef.current?.activeChart().dataReady(() => {
                 if (
@@ -718,7 +892,9 @@ const TradingViewChart = () => {
                   orderLines?.size !== matchingOrderLines
                 ) {
                   deleteLines()
-                  drawLinesForMarket(openOrders)
+                  // might need to change
+                  const triggerOrders = getTriggerOrders()
+                  drawLinesForMarket(openOrders, triggerOrders)
                 }
               })
             })

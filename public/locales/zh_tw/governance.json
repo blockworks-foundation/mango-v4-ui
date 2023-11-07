@@ -5,7 +5,7 @@
     "base-bank": "基準Bank",
     "base-mint": "基準鑄幣",
     "base-token": "基準幣種",
-    "before-listing-1": "你必須存入10,0000 MNGO以上",
+    "before-listing-1": "你必須存入100000 MNGO以上",
     "before-listing-2": "新幣種需要有",
     "before-listing-3": "是否有足夠相對USDC與SOL的流動性？",
     "before-listing-4": "新幣種由DAO確認。過程需要3天的時間。",
