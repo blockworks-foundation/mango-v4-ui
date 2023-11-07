@@ -14,7 +14,7 @@ import MarketSwapForm from './MarketSwapForm'
 import Switch from '@components/forms/Switch'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { SwapFormTokenListType } from './SwapFormTokenList'
-import { TriggerOrderTypes } from 'types'
+import { SwapTypes } from 'types'
 import TriggerSwapForm from './TriggerSwapForm'
 import WalletSwapForm from './WalletSwapForm'
 import TabButtons from '@components/shared/TabButtons'
@@ -101,7 +101,7 @@ const SwapForm = () => {
   }, [groupLoaded, query])
 
   const handleSwapOrTrigger = useCallback(
-    (orderType: TriggerOrderTypes) => {
+    (orderType: SwapTypes) => {
       set((state) => {
         state.swap.swapOrTrigger = orderType
         if (orderType !== 'swap' && outputBank?.name === OUTPUT_TOKEN_DEFAULT) {

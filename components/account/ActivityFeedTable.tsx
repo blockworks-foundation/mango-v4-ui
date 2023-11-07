@@ -70,19 +70,19 @@ export const getFee = (activity: any, mangoAccountAddress: string) => {
     fee = { value: fee_cost, symbol: quote_symbol }
   }
   if (activity_type === 'liquidate_token_with_token') {
-    const { side, liab_amount, liab_symbol, asset_amount, asset_price } =
+    const { side, liab_amount, liab_symbol, asset_amount } =
       activity.activity_details
     if (side === 'liqee') {
       fee = {
         value: formatNumericValue(
-          Math.abs(liab_amount) - Math.abs(asset_amount * asset_price),
+          Math.abs(liab_amount) - Math.abs(asset_amount),
         ),
         symbol: liab_symbol,
       }
     } else {
       fee = {
         value: formatNumericValue(
-          Math.abs(asset_amount * asset_price) - Math.abs(liab_amount),
+          Math.abs(asset_amount) - Math.abs(liab_amount),
         ),
         symbol: liab_symbol,
       }

@@ -32,6 +32,7 @@ import DashboardSuggestedValues from '@components/modals/DashboardSuggestedValue
 import { USDC_MINT } from 'utils/constants'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
+import useBanks from 'hooks/useBanks'
 
 dayjs.extend(relativeTime)
 
@@ -55,9 +56,34 @@ export async function getStaticProps({ locale }: { locale: string }) {
 const Dashboard: NextPage = () => {
   const { group } = useMangoGroup()
   const connection = mangoStore((s) => s.connection)
-
+  const { banks } = useBanks()
   const [isOpenSuggestionModal, setIsOpenSuggestionModal] = useState(false)
   const [priceImpacts, setPriceImapcts] = useState<PriceImpact[]>([])
+  const [stickyIndex, setStickyIndex] = useState(-1)
+
+  const handleScroll = useCallback(() => {
+    for (let i = 0; i < banks.length; i++) {
+      const element = document.getElementById(`parent-item-${i}`)
+
+      if (element) {
+        const rect = element.getBoundingClientRect()
+
+        if (rect.top <= 0) {
+          setStickyIndex(i)
+        }
+      }
+    }
+  }, [banks])
+
+  useEffect(() => {
+    if (banks.length) {
+      window.addEventListener('scroll', handleScroll)
+
+      return () => {
+        window.removeEventListener('scroll', handleScroll)
+      }
+    }
+  }, [banks])
 
   useEffect(() => {
     const handleGetPriceImapcts = async () => {
@@ -114,28 +140,35 @@ const Dashboard: NextPage = () => {
                 </div>
                 <h3 className="mb-3 mt-6 text-base text-th-fgd-3">Banks</h3>
                 <div className="border-b border-th-bkg-3">
-                  {Array.from(group.banksMapByMint)
-                    .sort((a, b) => a[0].localeCompare(b[0]))
-                    .map(([mintAddress, banks]) =>
-                      banks.map((bank) => {
-                        const mintInfo = group.mintInfosMapByMint.get(
-                          bank.mint.toString(),
-                        )
+                  {banks
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map((bank, i) => {
+                      const mintInfo = group.mintInfosMapByMint.get(
+                        bank.mint.toString(),
+                      )
 
-                        const formattedBankValues = getFormattedBankValues(
-                          group,
-                          bank,
-                        )
+                      const formattedBankValues = getFormattedBankValues(
+                        group,
+                        bank,
+                      )
 
-                        return (
-                          <Disclosure key={bank.publicKey.toString()}>
-                            {({ open }) => (
-                              <>
+                      return (
+                        <Disclosure key={bank.publicKey.toString()}>
+                          {({ open }) => (
+                            <>
+                              <div
+                                className={`w-full border-t border-th-bkg-3 p-4 md:hover:bg-th-bkg-4 ${
+                                  open
+                                    ? i === stickyIndex
+                                      ? 'sticky top-0 bg-th-bkg-4'
+                                      : 'bg-th-bkg-4'
+                                    : ''
+                                }`}
+                                id={`parent-item-${i}`}
+                              >
                                 <Disclosure.Button
+                                  className="flex w-full items-center justify-between"
                                   aria-label="panel"
-                                  className={`flex w-full items-center justify-between border-t border-th-bkg-3 p-4 md:hover:bg-th-bkg-4 ${
-                                    open ? 'bg-th-bkg-4' : ''
-                                  }`}
                                 >
                                   <div className="flex items-center">
                                     <TokenLogo bank={bank} />
@@ -149,237 +182,245 @@ const Dashboard: NextPage = () => {
                                     } h-5 w-5 text-th-fgd-3`}
                                   />
                                 </Disclosure.Button>
-                                <Disclosure.Panel>
-                                  <KeyValuePair
-                                    label="Mint"
-                                    value={
-                                      <ExplorerLink address={mintAddress} />
-                                    }
-                                  />
-                                  <KeyValuePair
-                                    label="Bank"
-                                    value={
-                                      <ExplorerLink
-                                        address={formattedBankValues.publicKey.toString()}
-                                        anchorData
-                                      />
-                                    }
-                                  />
-                                  <KeyValuePair
-                                    label="MintInfo"
-                                    value={
-                                      <ExplorerLink
-                                        address={mintInfo!.publicKey.toString()}
-                                        anchorData
-                                      />
-                                    }
-                                  />
-                                  <KeyValuePair
-                                    label="Vault"
-                                    value={
-                                      <ExplorerLink
-                                        address={formattedBankValues.vault}
-                                        anchorData
-                                      />
-                                    }
-                                  />
-                                  <KeyValuePair
-                                    label="Oracle"
-                                    value={
-                                      bank.oracleProvider ==
-                                      OracleProvider.Switchboard ? (
-                                        <a
-                                          href={`https://app.switchboard.xyz/solana/mainnet-beta/feed/${bank.oracle.toString()}`}
-                                          className={`flex items-center break-all text-th-fgd-2 hover:text-th-fgd-3`}
-                                          target="_blank"
-                                          rel="noreferrer"
-                                        >
-                                          {bank.oracle.toString()}
-                                          <ArrowTopRightOnSquareIcon className="ml-2 h-5 w-5 whitespace-nowrap" />
-                                        </a>
-                                      ) : (
-                                        <ExplorerLink
-                                          address={formattedBankValues.oracle}
-                                        />
-                                      )
-                                    }
-                                  />
-                                  <KeyValuePair
-                                    label="Token Index"
-                                    value={formattedBankValues.tokenIndex}
-                                  />
-                                  <KeyValuePair
-                                    label="Mint Decimals"
-                                    value={formattedBankValues.mintDecimals}
-                                  />
-                                  <KeyValuePair
-                                    label="Oracle Price"
-                                    value={`$${bank.uiPrice}`}
-                                  />
-                                  <KeyValuePair
-                                    label="Stable Price"
-                                    value={`$${formattedBankValues.stablePrice}`}
-                                  />
-                                  <KeyValuePair
-                                    label="Last stable price updated"
-                                    value={
-                                      formattedBankValues.lastStablePriceUpdated
-                                    }
-                                  />
-                                  <KeyValuePair
-                                    label="Stable Price: delay interval"
-                                    value={`${formattedBankValues.stablePriceModel.delayIntervalSeconds}s`}
-                                  />
-                                  <KeyValuePair
-                                    label="Stable Price: growth limits"
-                                    value={`${formattedBankValues.stablePriceGrowthLimitsDelay}% delay / ${formattedBankValues.stablePriceGrowthLimitsStable}% stable`}
-                                  />
-                                  <VaultData bank={bank} />
-                                  <KeyValuePair
-                                    label="Loan Fee Rate"
-                                    value={`${formattedBankValues.loanFeeRate} bps`}
-                                  />
-                                  <KeyValuePair
-                                    label="Loan origination fee rate"
-                                    value={`${formattedBankValues.loanOriginationFeeRate} bps`}
-                                  />
-                                  <KeyValuePair
-                                    label="Collected fees native"
-                                    value={`${formattedBankValues.collectedFeesNative} ($${formattedBankValues.collectedFeesNativePrice})`}
-                                  />
-                                  <KeyValuePair
-                                    label="Dust"
-                                    value={formattedBankValues.dust}
-                                  />
-                                  <KeyValuePair
-                                    label="Deposits"
-                                    value={`${formattedBankValues.deposits} ($${formattedBankValues.depositsPrice})`}
-                                  />
-                                  <KeyValuePair
-                                    label="Borrows"
-                                    value={`${formattedBankValues.borrows} ($${formattedBankValues.borrowsPrice})`}
-                                  />
-                                  <KeyValuePair
-                                    label="Avg Utilization"
-                                    value={`${formattedBankValues.avgUtilization}%`}
-                                  />
-                                  <KeyValuePair
-                                    label="Maint Asset/Liab Weight"
-                                    value={`${formattedBankValues.maintAssetWeight} /
-                              ${formattedBankValues.maintLiabWeight}`}
-                                  />
-                                  <KeyValuePair
-                                    label="Init Asset/Liab Weight"
-                                    value={`${formattedBankValues.initAssetWeight} /
-                              ${formattedBankValues.initLiabWeight}`}
-                                  />
-                                  <KeyValuePair
-                                    label="Scaled Init Asset/Liab Weight"
-                                    value={`${formattedBankValues.scaledInitAssetWeight} / ${formattedBankValues.scaledInitLiabWeight}`}
-                                  />
-                                  <KeyValuePair
-                                    label="Deposit weight scale start quote"
-                                    value={`$${formattedBankValues.depositWeightScaleStartQuote}`}
-                                  />
-                                  <KeyValuePair
-                                    label="Borrow weight scale start quote"
-                                    value={`$${formattedBankValues.borrowWeightScaleStartQuote}`}
-                                  />
-                                  <KeyValuePair
-                                    label="Rate params"
-                                    value={
-                                      <span className="text-right">
-                                        {`${formattedBankValues.rate0}% @ ${formattedBankValues.util0}% util, `}
-                                        {`${formattedBankValues.rate1}% @ ${formattedBankValues.util1}% util, `}
-                                        {`${formattedBankValues.maxRate}% @ 100% util`}
-                                      </span>
-                                    }
-                                  />
-                                  <KeyValuePair
-                                    label="Adjustment factor"
-                                    value={`${formattedBankValues.adjustmentFactor}%`}
-                                  />
-                                  <KeyValuePair
-                                    label="Deposit rate"
-                                    value={`${formattedBankValues.depositRate}%`}
-                                  />
-                                  <KeyValuePair
-                                    label="Borrow rate"
-                                    value={`${formattedBankValues.borrowRate}%`}
-                                  />
-                                  <KeyValuePair
-                                    label="Last index update"
-                                    value={formattedBankValues.lastIndexUpdate}
-                                  />
-                                  <KeyValuePair
-                                    label="Last rates updated"
-                                    value={formattedBankValues.lastRatesUpdate}
-                                  />
-                                  <KeyValuePair
-                                    label="Oracle: Conf Filter"
-                                    value={`${
-                                      formattedBankValues.oracleConfFilter
-                                    }% (Last known confidence ${bank._oracleLastKnownDeviation
-                                      ?.div(bank.price)
-                                      .mul(I80F48.fromNumber(100))
-                                      .toNumber()
-                                      .toFixed(2)}%)`}
-                                  />
-                                  <KeyValuePair
-                                    label="Oracle: Max Staleness"
-                                    value={`${bank.oracleConfig.maxStalenessSlots} slots (Last updated slot ${bank._oracleLastUpdatedSlot})`}
-                                  />
-                                  <KeyValuePair
-                                    label="Group Insurance Fund"
-                                    value={`${mintInfo!.groupInsuranceFund}`}
-                                  />
-                                  <KeyValuePair
-                                    label="Min vault to deposits ratio"
-                                    value={`${formattedBankValues.minVaultToDepositsRatio}%`}
-                                  />
-                                  <KeyValuePair
-                                    label={`Net borrows in window (next window starts ${dayjs().to(
-                                      dayjs().add(
-                                        bank.getTimeToNextBorrowLimitWindowStartsTs(),
-                                        'second',
-                                      ),
-                                    )})`}
-                                    value={`$${formattedBankValues.minVaultToDepositsRatio} / $${formattedBankValues.netBorrowLimitPerWindowQuote}`}
-                                  />
-                                  <KeyValuePair
-                                    label="Liquidation fee"
-                                    value={`${formattedBankValues.liquidationFee}%`}
-                                  />
-                                  {bank.mint.toBase58() !== USDC_MINT && (
-                                    <div className="mb-4 mt-2 flex">
-                                      <Button
-                                        className=" ml-auto"
-                                        onClick={() =>
-                                          setIsOpenSuggestionModal(true)
-                                        }
+                              </div>
+                              <Disclosure.Panel>
+                                <KeyValuePair
+                                  label="Mint"
+                                  value={
+                                    <ExplorerLink
+                                      address={bank.mint.toString()}
+                                    />
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="Bank"
+                                  value={
+                                    <ExplorerLink
+                                      address={formattedBankValues.publicKey.toString()}
+                                      anchorData
+                                    />
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="MintInfo"
+                                  value={
+                                    <ExplorerLink
+                                      address={mintInfo!.publicKey.toString()}
+                                      anchorData
+                                    />
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="Vault"
+                                  value={
+                                    <ExplorerLink
+                                      address={formattedBankValues.vault}
+                                      anchorData
+                                    />
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="Oracle"
+                                  value={
+                                    bank.oracleProvider ==
+                                    OracleProvider.Switchboard ? (
+                                      <a
+                                        href={`https://app.switchboard.xyz/solana/mainnet-beta/feed/${bank.oracle.toString()}`}
+                                        className={`flex items-center break-all text-th-fgd-2 hover:text-th-fgd-3`}
+                                        target="_blank"
+                                        rel="noreferrer"
                                       >
-                                        Check suggested values
-                                        {isOpenSuggestionModal && (
-                                          <DashboardSuggestedValues
-                                            priceImpacts={priceImpacts}
-                                            group={group}
-                                            bank={bank}
-                                            isOpen={isOpenSuggestionModal}
-                                            onClose={() =>
-                                              setIsOpenSuggestionModal(false)
-                                            }
-                                          ></DashboardSuggestedValues>
-                                        )}
-                                      </Button>
-                                    </div>
-                                  )}
-                                </Disclosure.Panel>
-                              </>
-                            )}
-                          </Disclosure>
-                        )
-                      }),
-                    )}
+                                        {bank.oracle.toString()}
+                                        <ArrowTopRightOnSquareIcon className="ml-2 h-5 w-5 whitespace-nowrap" />
+                                      </a>
+                                    ) : (
+                                      <ExplorerLink
+                                        address={formattedBankValues.oracle}
+                                      />
+                                    )
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="Token Index"
+                                  value={formattedBankValues.tokenIndex}
+                                />
+                                <KeyValuePair
+                                  label="Mint Decimals"
+                                  value={formattedBankValues.mintDecimals}
+                                />
+                                <KeyValuePair
+                                  label="Oracle Price"
+                                  value={`$${bank.uiPrice}`}
+                                />
+                                <KeyValuePair
+                                  label="Stable Price"
+                                  value={`$${formattedBankValues.stablePrice}`}
+                                />
+                                <KeyValuePair
+                                  label="Last stable price updated"
+                                  value={
+                                    formattedBankValues.lastStablePriceUpdated
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="Stable Price: delay interval"
+                                  value={`${formattedBankValues.stablePriceModel.delayIntervalSeconds}s`}
+                                />
+                                <KeyValuePair
+                                  label="Stable Price: growth limits"
+                                  value={`${formattedBankValues.stablePriceGrowthLimitsDelay}% delay / ${formattedBankValues.stablePriceGrowthLimitsStable}% stable`}
+                                />
+                                <VaultData bank={bank} />
+                                <KeyValuePair
+                                  label="Loan Fee Rate"
+                                  value={`${formattedBankValues.loanFeeRate} bps`}
+                                />
+                                <KeyValuePair
+                                  label="Loan origination fee rate"
+                                  value={`${formattedBankValues.loanOriginationFeeRate} bps`}
+                                />
+                                <KeyValuePair
+                                  label="Collected fees native"
+                                  value={`${formattedBankValues.collectedFeesNative} ($${formattedBankValues.collectedFeesNativePrice})`}
+                                />
+                                <KeyValuePair
+                                  label="Dust"
+                                  value={formattedBankValues.dust}
+                                />
+                                <KeyValuePair
+                                  label="Deposits"
+                                  value={`${formattedBankValues.deposits} ($${formattedBankValues.depositsPrice})`}
+                                />
+                                <KeyValuePair
+                                  label="Borrows"
+                                  value={`${formattedBankValues.borrows} ($${formattedBankValues.borrowsPrice})`}
+                                />
+                                <KeyValuePair
+                                  label="Reduce Only"
+                                  value={`${
+                                    bank.reduceOnly
+                                  } (Are deposits reduce only - ${bank.areDepositsReduceOnly()}, Are borrows reduce only - ${bank.areBorrowsReduceOnly()})`}
+                                />
+                                <KeyValuePair
+                                  label="Avg Utilization"
+                                  value={`${formattedBankValues.avgUtilization}%`}
+                                />
+                                <KeyValuePair
+                                  label="Maint Asset/Liab Weight"
+                                  value={`${formattedBankValues.maintAssetWeight} /
+                              ${formattedBankValues.maintLiabWeight}`}
+                                />
+                                <KeyValuePair
+                                  label="Init Asset/Liab Weight"
+                                  value={`${formattedBankValues.initAssetWeight} /
+                              ${formattedBankValues.initLiabWeight}`}
+                                />
+                                <KeyValuePair
+                                  label="Scaled Init Asset/Liab Weight"
+                                  value={`${formattedBankValues.scaledInitAssetWeight} / ${formattedBankValues.scaledInitLiabWeight}`}
+                                />
+                                <KeyValuePair
+                                  label="Deposit weight scale start quote"
+                                  value={`$${formattedBankValues.depositWeightScaleStartQuote}`}
+                                />
+                                <KeyValuePair
+                                  label="Borrow weight scale start quote"
+                                  value={`$${formattedBankValues.borrowWeightScaleStartQuote}`}
+                                />
+                                <KeyValuePair
+                                  label="Rate params"
+                                  value={
+                                    <span className="text-right">
+                                      {`${formattedBankValues.rate0}% @ ${formattedBankValues.util0}% util, `}
+                                      {`${formattedBankValues.rate1}% @ ${formattedBankValues.util1}% util, `}
+                                      {`${formattedBankValues.maxRate}% @ 100% util`}
+                                    </span>
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="Adjustment factor"
+                                  value={`${formattedBankValues.adjustmentFactor}%`}
+                                />
+                                <KeyValuePair
+                                  label="Deposit rate"
+                                  value={`${formattedBankValues.depositRate}%`}
+                                />
+                                <KeyValuePair
+                                  label="Borrow rate"
+                                  value={`${formattedBankValues.borrowRate}%`}
+                                />
+                                <KeyValuePair
+                                  label="Last index update"
+                                  value={formattedBankValues.lastIndexUpdate}
+                                />
+                                <KeyValuePair
+                                  label="Last rates updated"
+                                  value={formattedBankValues.lastRatesUpdate}
+                                />
+                                <KeyValuePair
+                                  label="Oracle: Conf Filter"
+                                  value={`${
+                                    formattedBankValues.oracleConfFilter
+                                  }% (Last known confidence ${bank._oracleLastKnownDeviation
+                                    ?.div(bank.price)
+                                    .mul(I80F48.fromNumber(100))
+                                    .toNumber()
+                                    .toFixed(2)}%)`}
+                                />
+                                <KeyValuePair
+                                  label="Oracle: Max Staleness"
+                                  value={`${bank.oracleConfig.maxStalenessSlots} slots (Last updated slot ${bank._oracleLastUpdatedSlot})`}
+                                />
+                                <KeyValuePair
+                                  label="Group Insurance Fund"
+                                  value={`${mintInfo!.groupInsuranceFund}`}
+                                />
+                                <KeyValuePair
+                                  label="Min vault to deposits ratio"
+                                  value={`${formattedBankValues.minVaultToDepositsRatio}%`}
+                                />
+                                <KeyValuePair
+                                  label={`Net borrows in window (next window starts ${dayjs().to(
+                                    dayjs().add(
+                                      bank.getTimeToNextBorrowLimitWindowStartsTs(),
+                                      'second',
+                                    ),
+                                  )})`}
+                                  value={`$${formattedBankValues.minVaultToDepositsRatio} / $${formattedBankValues.netBorrowLimitPerWindowQuote}`}
+                                />
+                                <KeyValuePair
+                                  label="Liquidation fee"
+                                  value={`${formattedBankValues.liquidationFee}%`}
+                                />
+                                {bank.mint.toBase58() !== USDC_MINT && (
+                                  <div className="mb-4 mt-2 flex">
+                                    <Button
+                                      className=" ml-auto"
+                                      onClick={() =>
+                                        setIsOpenSuggestionModal(true)
+                                      }
+                                    >
+                                      Check suggested values
+                                      {isOpenSuggestionModal && (
+                                        <DashboardSuggestedValues
+                                          priceImpacts={priceImpacts}
+                                          group={group}
+                                          bank={bank}
+                                          isOpen={isOpenSuggestionModal}
+                                          onClose={() =>
+                                            setIsOpenSuggestionModal(false)
+                                          }
+                                        ></DashboardSuggestedValues>
+                                      )}
+                                    </Button>
+                                  </div>
+                                )}
+                              </Disclosure.Panel>
+                            </>
+                          )}
+                        </Disclosure>
+                      )
+                    })}
                 </div>
 
                 <h3 className="mb-3 mt-6 text-base text-th-fgd-3">

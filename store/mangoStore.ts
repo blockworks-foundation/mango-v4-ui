@@ -59,7 +59,6 @@ import {
   SpotBalances,
   SpotTradeHistory,
   SwapHistoryItem,
-  TotalInterestDataItem,
   TradeForm,
   TokenStatsItem,
   NFT,
@@ -69,7 +68,7 @@ import {
   ThemeData,
   PositionStat,
   OrderbookTooltip,
-  TriggerOrderTypes,
+  SwapTypes,
 } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
@@ -88,6 +87,7 @@ import mapValues from 'lodash/mapValues'
 import groupBy from 'lodash/groupBy'
 import sampleSize from 'lodash/sampleSize'
 import { fetchTokenStatsData, processTokenStatsData } from 'apis/mngo'
+import { OrderTypes, TriggerOrderTypes } from 'utils/tradeForm'
 
 const GROUP = new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX')
 
@@ -146,7 +146,7 @@ export const DEFAULT_TRADE_FORM: TradeForm = {
   price: undefined,
   baseSize: '',
   quoteSize: '',
-  tradeType: 'Limit',
+  tradeType: OrderTypes.LIMIT,
   triggerPrice: '',
   postOnly: false,
   ioc: false,
@@ -241,7 +241,7 @@ export type MangoStore = {
     amountIn: string
     amountOut: string
     flipPrices: boolean
-    swapOrTrigger: TriggerOrderTypes
+    swapOrTrigger: SwapTypes
     triggerPrice: string
   }
   set: (x: (x: MangoStore) => void) => void

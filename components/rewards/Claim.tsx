@@ -33,7 +33,7 @@ import dayjs from 'dayjs'
 import { onClick, unmute } from 'lib/render'
 import { usePlausible } from 'next-plausible'
 import { TelemetryEvents } from 'utils/telemetry'
-import { Prize, getClaimsAsPrizes, getFallbackImg } from './RewardsComponents'
+import { Prize, getClaimsAsPrizes } from './RewardsComponents'
 import { notify } from 'utils/notifications'
 
 const CLAIM_BUTTON_CLASSES =
@@ -281,7 +281,18 @@ const ClaimPage = () => {
     } finally {
       setIsClaiming(false)
     }
-  }, [distribution, wallet, claims, rewardsClient, connection])
+  }, [
+    distribution,
+    publicKey,
+    claims,
+    rewardsClient,
+    claimed,
+    connection,
+    wallet,
+    telemetry,
+    refetch,
+    claimProgress,
+  ])
 
   useEffect(() => {
     if (tokenRewardsInfo.length && claims?.length) {
@@ -292,7 +303,7 @@ const ClaimPage = () => {
       )
       setPrizes(claimsAsPrizes)
     }
-  }, [claims, getFallbackImg, tokenRewardsInfo])
+  }, [claims, nftsRewardsInfo, tokenRewardsInfo])
 
   return claims === undefined && !loadingClaims ? (
     <div className="flex min-h-[calc(100vh-92px)] items-center justify-center p-8">
