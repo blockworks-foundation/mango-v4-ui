@@ -52,6 +52,54 @@ import { useQuery } from '@tanstack/react-query'
 import { TotalInterestDataItem } from 'types'
 import SheenLoader from './shared/SheenLoader'
 
+export const handleOpenCloseBorrowModal = (borrowBank: Bank) => {
+  const group = mangoStore.getState().group
+  const mangoAccount = mangoStore.getState().mangoAccount.current
+  let repayBank: Bank | undefined
+  if (borrowBank.name === 'USDC') {
+    const solBank = group?.getFirstBankByMint(WRAPPED_SOL_MINT)
+    repayBank = solBank
+  } else {
+    const usdcBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
+    repayBank = usdcBank
+  }
+  if (mangoAccount && repayBank) {
+    const borrowBalance = mangoAccount.getTokenBalanceUi(borrowBank)
+    const roundedBorrowBalance = floorToDecimal(
+      borrowBalance,
+      borrowBank.mintDecimals,
+    ).toNumber()
+    const repayBalance = mangoAccount.getTokenBalanceUi(repayBank)
+    const roundedRepayBalance = floorToDecimal(
+      repayBalance,
+      repayBank.mintDecimals,
+    ).toNumber()
+    const hasSufficientRepayBalance =
+      Math.abs(roundedRepayBalance) * repayBank.uiPrice >
+      Math.abs(roundedBorrowBalance) * borrowBank.uiPrice
+    set((state) => {
+      state.swap.swapMode = hasSufficientRepayBalance ? 'ExactOut' : 'ExactIn'
+      state.swap.inputBank = repayBank
+      state.swap.outputBank = borrowBank
+      if (hasSufficientRepayBalance) {
+        state.swap.amountOut = Math.abs(roundedBorrowBalance).toString()
+      } else {
+        state.swap.amountIn = Math.abs(roundedRepayBalance).toString()
+      }
+    })
+  }
+}
+
+export const handleCloseBorrowModal = () => {
+  set((state) => {
+    state.swap.inputBank = undefined
+    state.swap.outputBank = undefined
+    state.swap.amountIn = ''
+    state.swap.amountOut = ''
+    state.swap.swapMode = 'ExactIn'
+  })
+}
+
 export const fetchInterestData = async (mangoAccountPk: string) => {
   try {
     const response = await fetch(
@@ -200,45 +248,15 @@ const TokenList = () => {
     sortConfig,
   } = useSortableData(unsortedTableData)
 
-  const handleOpenCloseBorrowModal = (borrowBank: Bank) => {
-    const group = mangoStore.getState().group
-    const mangoAccount = mangoStore.getState().mangoAccount.current
+  const openCloseBorrowModal = (borrowBank: Bank) => {
     setCloseBorrowModal(true)
     setCloseBorrowBank(borrowBank)
-    if (borrowBank.name === 'USDC') {
-      const solBank = group?.getFirstBankByMint(WRAPPED_SOL_MINT)
-      set((state) => {
-        state.swap.inputBank = solBank
-      })
-    } else {
-      const usdcBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
-      set((state) => {
-        state.swap.inputBank = usdcBank
-      })
-    }
-    if (mangoAccount) {
-      const balance = mangoAccount.getTokenBalanceUi(borrowBank)
-      const roundedBalance = floorToDecimal(
-        balance,
-        borrowBank.mintDecimals,
-      ).toNumber()
-      set((state) => {
-        state.swap.swapMode = 'ExactOut'
-        state.swap.outputBank = borrowBank
-        state.swap.amountOut = Math.abs(roundedBalance).toString()
-      })
-    }
+    handleOpenCloseBorrowModal(borrowBank)
   }
 
-  const handleCloseBorrowModal = () => {
+  const closeBorrowModal = () => {
     setCloseBorrowModal(false)
-    set((state) => {
-      state.swap.inputBank = undefined
-      state.swap.outputBank = undefined
-      state.swap.amountIn = ''
-      state.swap.amountOut = ''
-      state.swap.swapMode = 'ExactIn'
-    })
+    handleCloseBorrowModal()
   }
 
   const balancesNumber = useMemo(() => {
@@ -451,7 +469,7 @@ const TokenList = () => {
                         {balance < 0 ? (
                           <button
                             className="rounded-md border border-th-fgd-4 px-2 py-1.5 text-xs font-bold text-th-fgd-2 focus:outline-none md:hover:border-th-fgd-3"
-                            onClick={() => handleOpenCloseBorrowModal(bank)}
+                            onClick={() => openCloseBorrowModal(bank)}
                           >
                             {t('close-borrow', { token: '' })}
                           </button>
@@ -476,7 +494,7 @@ const TokenList = () => {
         <CloseBorrowModal
           borrowBank={closeBorrowBank}
           isOpen={showCloseBorrowModal}
-          onClose={handleCloseBorrowModal}
+          onClose={closeBorrowModal}
         />
       ) : null}
     </ContentBox>
