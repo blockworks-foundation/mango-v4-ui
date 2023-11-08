@@ -26,7 +26,7 @@ import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
 import { useCallback, useState } from 'react'
 import { PAGINATION_PAGE_LENGTH, PREFERRED_EXPLORER_KEY } from 'utils/constants'
-import { formatNumericValue } from 'utils/numbers'
+import { formatCurrencyValue, formatNumericValue } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 import LiquidationActivityDetails from './LiquidationActivityDetails'
 import PerpTradeActivityDetails from './PerpTradeActivityDetails'
@@ -70,21 +70,23 @@ export const getFee = (activity: any, mangoAccountAddress: string) => {
     fee = { value: fee_cost, symbol: quote_symbol }
   }
   if (activity_type === 'liquidate_token_with_token') {
-    const { side, liab_amount, liab_symbol, asset_amount } =
+    const { side, liab_amount, liab_price, asset_amount, asset_price } =
       activity.activity_details
     if (side === 'liqee') {
       fee = {
-        value: formatNumericValue(
-          Math.abs(liab_amount) - Math.abs(asset_amount),
+        value: formatCurrencyValue(
+          Math.abs(liab_amount * liab_price) -
+            Math.abs(asset_amount * asset_price),
         ),
-        symbol: liab_symbol,
+        symbol: '',
       }
     } else {
       fee = {
-        value: formatNumericValue(
-          Math.abs(asset_amount) - Math.abs(liab_amount),
+        value: formatCurrencyValue(
+          Math.abs(asset_amount * asset_price) -
+            Math.abs(liab_amount * liab_price),
         ),
-        symbol: liab_symbol,
+        symbol: '',
       }
     }
   }
