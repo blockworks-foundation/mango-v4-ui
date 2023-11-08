@@ -615,7 +615,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
               heightClass ? heightClass : 'h-96'
             } items-center justify-center p-4 text-th-fgd-3`}
           >
-            <div className="">
+            <div>
               <NoSymbolIcon className="mx-auto mb-1 h-6 w-6 text-th-fgd-4" />
               <p className="text-th-fgd-4">{t('chart-unavailable')}</p>
             </div>
