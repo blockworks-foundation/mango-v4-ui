@@ -49,6 +49,7 @@ import { findSerum3MarketPkInOpenOrders } from './OpenOrders'
 import { Transition } from '@headlessui/react'
 import useThemeWrapper from 'hooks/useThemeWrapper'
 import { handleCancelTriggerOrder } from '@components/swap/SwapTriggerOrders'
+import ModifyTvTriggerOrderModal from '@components/modals/ModifyTvTriggerOrderModal'
 
 export interface ChartContainerProps {
   container: ChartingLibraryWidgetOptions['container']
@@ -94,6 +95,8 @@ const TradingViewChart = () => {
   const [orderToModify, setOrderToModify] = useState<Order | PerpOrder | null>(
     null,
   )
+  const [triggerOrderToModify, setTriggerOrderToModify] =
+    useState<TokenConditionalSwap | null>(null)
   const [modifiedPrice, setModifiedPrice] = useState('')
   const [showOrderLinesLocalStorage, toggleShowOrderLinesLocalStorage] =
     useLocalStorageState(SHOW_ORDER_LINES_KEY, true)
@@ -460,11 +463,11 @@ const TradingViewChart = () => {
           .chart()
           .createOrderLine({ disableUndo: false })
           .onMove(function (this: IOrderLineAdapter) {
-            tvWidgetRef.current?.showNoticeDialog({
-              title: 'Edit trigger order',
-              body: 'Editing trigger orders is coming soon',
-              callback: () => this.setPrice(price),
-            })
+            const updatedOrderPrice = this.getPrice()
+            setTriggerOrderToModify(order)
+            setModifiedPrice(
+              formatNumericValue(updatedOrderPrice, tickSizeDecimals),
+            )
           })
           .onCancel(function () {
             tvWidgetRef.current?.showConfirmDialog({
@@ -585,6 +588,7 @@ const TradingViewChart = () => {
     const openOrders = mangoStore.getState().mangoAccount.openOrders
     const triggerOrders = getTriggerOrders()
     setOrderToModify(null)
+    setTriggerOrderToModify(null)
     deleteLines()
     drawLinesForMarket(openOrders, triggerOrders)
   }, [deleteLines, drawLinesForMarket])
@@ -1033,6 +1037,14 @@ const TradingViewChart = () => {
           onClose={closeModifyOrderModal}
           price={modifiedPrice}
           order={orderToModify}
+        />
+      ) : null}
+      {triggerOrderToModify ? (
+        <ModifyTvTriggerOrderModal
+          isOpen={!!triggerOrderToModify}
+          onClose={closeModifyOrderModal}
+          price={modifiedPrice}
+          order={triggerOrderToModify}
         />
       ) : null}
     </>

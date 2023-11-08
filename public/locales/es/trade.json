@@ -24,6 +24,7 @@
     "current-price": "Current Price",
     "depth": "Depth",
     "edit-order": "Edit Order",
+    "edit-trigger-order": "Edit Trigger Order",
     "error-no-long": "No long position to reduce",
     "error-no-short": "No borrow position to reduce",
     "error-trigger-above": "Trigger price must be above oracle price",
