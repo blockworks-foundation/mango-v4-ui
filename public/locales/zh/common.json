@@ -176,6 +176,7 @@
   "tooltip-collateral-value": "您可以交易或借入的美元金额",
   "tooltip-collateral-weight": "适用于 {{token}} 抵押品名义价值的乘数",
   "tooltip-interest-rates": "存款利率（绿/左）和借贷利率（红/右）",
+  "tooltip-scaled-collateral-weight": "Collateral weight is currently scaled down due to the value of {{token}} deposits being above the threshold. The default weight for {{token}} is {{init}}x. If deposits are withdrawn the collateral weight will increase. This is a safety precaution to prevent positions that could be difficult to liquidate. It does not affect the health of your account.",
   "total": "总计",
   "total-borrow-value": "总借贷价值",
   "total-borrows": "总借贷",

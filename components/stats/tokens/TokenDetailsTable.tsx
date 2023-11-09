@@ -27,6 +27,7 @@ import { LinkButton } from '@components/shared/Button'
 import { useCallback } from 'react'
 import { useSortableData } from 'hooks/useSortableData'
 import TableTokenName from '@components/shared/TableTokenName'
+import CollateralWeightDisplay from '@components/shared/CollateralWeightDisplay'
 
 const TokenDetailsTable = () => {
   const { t } = useTranslation(['common', 'activity', 'token', 'trade'])
@@ -173,7 +174,6 @@ const TokenDetailsTable = () => {
               {tableData.map((data) => {
                 const {
                   bank,
-                  initAssetWeight,
                   initLiabWeight,
                   isInsured,
                   liquidationFee,
@@ -193,10 +193,10 @@ const TokenDetailsTable = () => {
                       <TableTokenName bank={bank} symbol={symbol} />
                     </Td>
                     <Td>
-                      <div className="flex justify-end space-x-1.5 text-right">
-                        <p>{initAssetWeight.toFixed(2)}</p>
+                      <div className="flex justify-end space-x-1.5 text-right font-mono">
+                        <CollateralWeightDisplay bank={bank} />
                         <span className="text-th-fgd-4">|</span>
-                        <p>{initLiabWeight.toFixed(2)}</p>
+                        <p>{initLiabWeight.toFixed(2)}x</p>
                       </div>
                     </Td>
                     <Td>
@@ -278,18 +278,15 @@ const TokenDetailsTable = () => {
                                 {t('asset-liability-weight')}
                               </p>
                             </Tooltip>
-                            <div className="flex space-x-1.5 text-right font-mono">
-                              <p className="text-th-fgd-1">
-                                {bank
-                                  .scaledInitAssetWeight(bank.price)
-                                  .toFixed(2)}
-                              </p>
+                            <div className="flex space-x-1.5 text-right font-mono text-th-fgd-1">
+                              <CollateralWeightDisplay bank={bank} />
                               <span className="text-th-fgd-4">|</span>
-                              <p className="text-th-fgd-1">
+                              <span>
                                 {bank
                                   .scaledInitLiabWeight(bank.price)
                                   .toFixed(2)}
-                              </p>
+                                x
+                              </span>
                             </div>
                           </div>
                           <div className="col-span-1">
