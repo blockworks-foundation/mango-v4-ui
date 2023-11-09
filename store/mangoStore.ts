@@ -321,9 +321,15 @@ const mangoStore = create<MangoStore>()(
 
     let connection: Connection
     try {
-      connection = new web3.Connection(rpcUrl, CONNECTION_COMMITMENT)
+      connection = new web3.Connection(
+        `${rpcUrl}/whirligig/`,
+        CONNECTION_COMMITMENT,
+      )
     } catch {
-      connection = new web3.Connection(ENDPOINT.url, CONNECTION_COMMITMENT)
+      connection = new web3.Connection(
+        `${ENDPOINT.url}/whirligig/`,
+        CONNECTION_COMMITMENT,
+      )
     }
     const provider = new AnchorProvider(connection, emptyWallet, options)
     provider.opts.skipPreflight = true
