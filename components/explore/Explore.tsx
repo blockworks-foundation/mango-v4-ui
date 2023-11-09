@@ -9,12 +9,14 @@ import RecentGainersLosers from './RecentGainersLosers'
 import Spot from './Spot'
 dayjs.extend(relativeTime)
 
-const TABS = ['spot', 'perp']
+const EXPLORE_TABS = ['markets', 'accounts']
+const MARKET_TABS = ['spot', 'perp']
 
 const Explore = () => {
   const { t } = useTranslation(['common'])
   const perpStats = mangoStore((s) => s.perpStats.data)
-  const [activeTab, setActiveTab] = useState('spot')
+  const [activeExploreTab, setActiveExploreTab] = useState('markets')
+  const [activeMarketTab, setActiveMarketTab] = useState('spot')
 
   useEffect(() => {
     if (!perpStats || !perpStats.length) {
@@ -26,9 +28,19 @@ const Explore = () => {
   return (
     <>
       <div className="px-4 pt-8 md:px-6">
-        <h2 className="mb-4 text-center text-lg md:text-left xl:text-xl">
-          {t('explore')}
-        </h2>
+        <div className="mb-4 flex flex-col md:flex-row md:items-center md:space-x-4">
+          <h2 className="text-center text-lg md:text-left xl:text-xl">
+            {t('explore')}
+          </h2>
+          <div className="md:w-[164px]">
+            <ButtonGroup
+              activeValue={activeExploreTab}
+              onChange={(t) => setActiveExploreTab(t)}
+              names={EXPLORE_TABS.map((tab) => t(tab))}
+              values={EXPLORE_TABS}
+            />
+          </div>
+        </div>
       </div>
       <RecentGainersLosers />
       <div className="mb-6 flex flex-col px-4 pt-8 md:mb-0 md:flex-row md:items-center md:space-x-4 md:px-6">
@@ -37,14 +49,14 @@ const Explore = () => {
         </h2>
         <div className="mx-auto max-w-[112px]">
           <ButtonGroup
-            activeValue={activeTab}
-            onChange={(t) => setActiveTab(t)}
-            names={TABS.map((tab) => t(tab))}
-            values={TABS}
+            activeValue={activeMarketTab}
+            onChange={(t) => setActiveMarketTab(t)}
+            names={MARKET_TABS.map((tab) => t(tab))}
+            values={MARKET_TABS}
           />
         </div>
       </div>
-      <TabContent activeTab={activeTab} />
+      <TabContent activeTab={activeMarketTab} />
     </>
   )
 }
