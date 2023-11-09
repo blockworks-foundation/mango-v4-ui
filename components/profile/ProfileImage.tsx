@@ -1,4 +1,4 @@
-import mangoStore from '../../store/mangoStore'
+import useProfileDetails from 'hooks/useProfileDetails'
 import ProfileIcon from '../icons/ProfileIcon'
 
 const ProfileImage = ({
@@ -12,7 +12,7 @@ const ProfileImage = ({
   imageUrl?: string | null
   isOwnerProfile?: boolean
 }) => {
-  const profile = mangoStore((s) => s.profile.details)
+  const { data: profile } = useProfileDetails()
 
   return imageUrl || (isOwnerProfile && profile?.profile_image_url) ? (
     <img

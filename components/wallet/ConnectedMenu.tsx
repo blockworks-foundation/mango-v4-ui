@@ -18,6 +18,7 @@ import { TV_USER_ID_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import Loading from '@components/shared/Loading'
 import SheenLoader from '@components/shared/SheenLoader'
+import useProfileDetails from 'hooks/useProfileDetails'
 
 const set = mangoStore.getState().set
 const actions = mangoStore.getState().actions
@@ -29,9 +30,11 @@ const ConnectedMenu = () => {
   const [tvUserId, setTvUserId] = useLocalStorageState(TV_USER_ID_KEY, '')
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)
   const [showMangoAccountsModal, setShowMangoAccountsModal] = useState(false)
-
-  const profileDetails = mangoStore((s) => s.profile.details)
-  const loadProfileDetails = mangoStore((s) => s.profile.loadDetails)
+  const {
+    data: profileDetails,
+    isInitialLoading: loadProfileDetails,
+    refetch: refetchProfileDetails,
+  } = useProfileDetails()
   const groupLoaded = mangoStore((s) => s.groupLoaded)
   const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
 
@@ -54,7 +57,7 @@ const ConnectedMenu = () => {
     if (publicKey && wallet && groupLoaded) {
       actions.connectMangoClientWithWallet(wallet)
       actions.fetchMangoAccounts(publicKey)
-      actions.fetchProfileDetails(publicKey.toString())
+      refetchProfileDetails()
       actions.fetchWalletTokens(publicKey)
       if (!tvUserId) {
         setTvUserId(publicKey.toString())

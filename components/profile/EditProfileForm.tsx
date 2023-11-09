@@ -10,13 +10,13 @@ import {
 } from '@heroicons/react/20/solid'
 import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes'
 import { useWallet } from '@solana/wallet-adapter-react'
-import mangoStore from '@store/mangoStore'
 import startCase from 'lodash/startCase'
 import { useTranslation } from 'next-i18next'
 import { ChangeEvent, useState } from 'react'
 import { MANGO_DATA_API_URL } from 'utils/constants'
 import { notify } from 'utils/notifications'
 import ProfileImage from './ProfileImage'
+import useProfileDetails from 'hooks/useProfileDetails'
 
 const EditProfileForm = ({
   onFinish,
@@ -28,7 +28,7 @@ const EditProfileForm = ({
   onboarding?: boolean
 }) => {
   const { t } = useTranslation(['profile', 'onboarding'])
-  const profile = mangoStore((s) => s.profile.details)
+  const { data: profile, refetch: refetchProfileDetails } = useProfileDetails()
   const { publicKey, signMessage } = useWallet()
   const [profileName, setProfileName] = useState(
     startCase(profile?.profile_name) || '',
@@ -37,7 +37,6 @@ const EditProfileForm = ({
   const [loadUniquenessCheck, setLoadUniquenessCheck] = useState(false)
   const [loadUpdateProfile, setLoadUpdateProfile] = useState(false)
   const [updateError, setUpdateError] = useState('')
-  const actions = mangoStore.getState().actions
 
   const validateProfileNameUniqueness = async (name: string) => {
     try {
@@ -109,7 +108,7 @@ const EditProfileForm = ({
         )
         if (response.status === 200) {
           setLoadUpdateProfile(false)
-          await actions.fetchProfileDetails(publicKey.toString())
+          await refetchProfileDetails()
           onFinish()
           notify({
             type: 'success',

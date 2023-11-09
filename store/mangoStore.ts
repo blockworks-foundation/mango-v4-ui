@@ -63,7 +63,6 @@ import {
   TokenStatsItem,
   NFT,
   TourSettings,
-  ProfileDetails,
   MangoTokenStatsItem,
   ThemeData,
   PositionStat,
@@ -87,7 +86,7 @@ import mapValues from 'lodash/mapValues'
 import groupBy from 'lodash/groupBy'
 import sampleSize from 'lodash/sampleSize'
 import { fetchTokenStatsData, processTokenStatsData } from 'apis/mngo'
-import { OrderTypes, TriggerOrderTypes } from 'utils/tradeForm'
+import { OrderTypes } from 'utils/tradeForm'
 
 const GROUP = new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX')
 
@@ -199,10 +198,6 @@ export type MangoStore = {
     }
   }
   orderbookTooltip: OrderbookTooltip | undefined
-  profile: {
-    details: ProfileDetails | null
-    loadDetails: boolean
-  }
   prependedGlobalAdditionalInstructions: TransactionInstruction[]
   priorityFee: number
   selectedMarket: {
@@ -283,7 +278,6 @@ export type MangoStore = {
     fetchOpenOrders: (refetchMangoAccount?: boolean) => Promise<void>
     fetchPerpStats: () => void
     fetchPositionsStats: () => void
-    fetchProfileDetails: (walletPk: string) => void
     fetchSwapHistory: (
       mangoAccountPk: string,
       timeout?: number,
@@ -368,10 +362,6 @@ const mangoStore = create<MangoStore>()(
         },
       },
       orderbookTooltip: undefined,
-      profile: {
-        loadDetails: false,
-        details: { profile_name: '', trader_category: '', wallet_pk: '' },
-      },
       priorityFee: DEFAULT_PRIORITY_FEE,
       prependedGlobalAdditionalInstructions: [],
       selectedMarket: {
@@ -1005,27 +995,6 @@ const mangoStore = create<MangoStore>()(
             s.client = newClient
             s.prependedGlobalAdditionalInstructions = instructions
           })
-        },
-        async fetchProfileDetails(walletPk: string) {
-          const set = get().set
-          set((state) => {
-            state.profile.loadDetails = true
-          })
-          try {
-            const response = await fetch(
-              `${MANGO_DATA_API_URL}/user-data/profile-details?wallet-pk=${walletPk}`,
-            )
-            const data = await response.json()
-            set((state) => {
-              state.profile.details = data
-              state.profile.loadDetails = false
-            })
-          } catch (e) {
-            console.error(e)
-            set((state) => {
-              state.profile.loadDetails = false
-            })
-          }
         },
         async fetchTourSettings(walletPk: string) {
           const set = get().set
