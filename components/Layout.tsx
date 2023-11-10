@@ -120,7 +120,6 @@ const Layout = ({ children }: { children: ReactNode }) => {
             <SideNav collapsed={isCollapsed} />
           </div>
         </div>
-        {/* note: overflow-x-hidden below prevents position sticky from working in activity feed  */}
         <div
           className={`w-full transition-all duration-${sideBarAnimationDuration} ease-in-out ${
             isCollapsed ? 'md:pl-[64px]' : 'pl-[200px]'
