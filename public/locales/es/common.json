@@ -79,6 +79,7 @@
   "edit-account": "Edit Account Name",
   "edit-profile-image": "Edit Profile Image",
   "enable-notifications": "Enable Notifications",
+  "equity": "Equity",
   "error-borrow-exceeds-limit": "Maximum borrow for the current period is {{remaining}}. New period starts {{resetTime}}",
   "error-repay-insufficient-funds": "Not enough {{token}} in your wallet to repay this amount",
   "error-token-positions-full": "Not enough token positions available in your account",

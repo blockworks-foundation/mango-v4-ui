@@ -79,6 +79,7 @@
   "edit-account": "编辑帐户标签",
   "edit-profile-image": "切换头像",
   "enable-notifications": "开启通知",
+  "equity": "Equity",
   "error-borrow-exceeds-limit": "目前期间的最大借贷为{{remaining}}.新期间从{{resetTime}}开始",
   "error-repay-insufficient-funds": "钱包里的{{token}}不足归还",
   "error-token-positions-full": "你帐户的币位已占满",

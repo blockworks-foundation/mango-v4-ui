@@ -79,6 +79,7 @@
   "edit-account": "編輯帳戶標籤",
   "edit-profile-image": "切換頭像",
   "enable-notifications": "開啟通知",
+  "equity": "Equity",
   "error-borrow-exceeds-limit": "目前期間的最大借貸為{{remaining}}.新期間從{{resetTime}}開始",
   "error-repay-insufficient-funds": "錢包裡的{{token}}不足歸還",
   "error-token-positions-full": "你帳戶的幣位已占滿",
