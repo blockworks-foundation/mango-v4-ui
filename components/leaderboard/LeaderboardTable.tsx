@@ -4,14 +4,21 @@ import SheenLoader from '@components/shared/SheenLoader'
 import { ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useViewport } from 'hooks/useViewport'
 import { formatCurrencyValue } from 'utils/numbers'
-import { LeaderboardRes } from './LeaderboardPage'
+import {
+  EquityLeaderboardRes,
+  PnlLeaderboardRes,
+  isEquityLeaderboard,
+  isPnlLeaderboard,
+} from './LeaderboardPage'
 
 const LeaderboardTable = ({
   data,
   loading,
+  type,
 }: {
-  data: LeaderboardRes[]
+  data: PnlLeaderboardRes[] | EquityLeaderboardRes[]
   loading: boolean
+  type: string
 }) => {
   return (
     <>
@@ -21,7 +28,8 @@ const LeaderboardTable = ({
             item={d}
             loading={loading}
             rank={i + 1}
-            key={d.mango_account + d.pnl + i}
+            key={d.mango_account + i}
+            type={type}
           />
         ))}
       </div>
@@ -35,13 +43,20 @@ const LeaderboardRow = ({
   item,
   loading,
   rank,
+  type,
 }: {
-  item: LeaderboardRes
+  item: PnlLeaderboardRes | EquityLeaderboardRes
   loading?: boolean
   rank: number
+  type: string
 }) => {
-  const { profile_name, profile_image_url, mango_account, pnl, wallet_pk } =
-    item
+  const { profile_name, profile_image_url, mango_account, wallet_pk } = item
+  const value =
+    type === 'pnl' && isPnlLeaderboard(item)
+      ? item.pnl
+      : isEquityLeaderboard(item)
+      ? item.account_equity
+      : 0
   const { isTablet } = useViewport()
 
   return !loading ? (
@@ -83,7 +98,7 @@ const LeaderboardRow = ({
       </div>
       <div className="flex items-center">
         <span className="mr-3 text-right font-mono md:text-base">
-          {formatCurrencyValue(pnl, 2)}
+          {formatCurrencyValue(value, 2)}
         </span>
         <ChevronRightIcon className="h-5 w-5 text-th-fgd-3" />
       </div>

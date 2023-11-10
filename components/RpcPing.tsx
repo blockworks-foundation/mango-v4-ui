@@ -7,7 +7,7 @@ const RpcPing = ({ rpcPing }: { rpcPing: number }) => {
     <div>
       <div className="flex items-center">
         <StatusDot
-          status={rpcPing}
+          status={rpcPing ? rpcPing : 1000}
           alert={rpcAlertThreshold}
           warning={rpcWarningThreshold}
         />

@@ -43,13 +43,7 @@ export const StatusDot = ({
     } else return status > threshold
   }
 
-  const dotColor = isLessThan
-    ? greaterOrLessThan(status, alert)
-      ? 'bg-th-warning'
-      : greaterOrLessThan(status, warning)
-      ? 'bg-th-error'
-      : 'bg-th-success'
-    : greaterOrLessThan(status, warning)
+  const dotColor = greaterOrLessThan(status, warning)
     ? 'bg-th-error'
     : greaterOrLessThan(status, alert)
     ? 'bg-th-warning'

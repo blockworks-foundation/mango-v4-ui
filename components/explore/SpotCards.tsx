@@ -16,6 +16,7 @@ import { COLORS } from 'styles/colors'
 import useThemeWrapper from 'hooks/useThemeWrapper'
 import dayjs from 'dayjs'
 import TokenReduceOnlyDesc from '@components/shared/TokenReduceOnlyDesc'
+import CollateralWeightDisplay from '@components/shared/CollateralWeightDisplay'
 
 const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
   const { t } = useTranslation(['common', 'explore', 'trade'])
@@ -37,7 +38,6 @@ const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
         ).mul(bank.uiPrice)
         const depositRate = bank.getDepositRateUi()
         const borrowRate = bank.getBorrowRateUi()
-        const assetWeight = bank.scaledInitAssetWeight(bank.price).toFixed(2)
         const pastPrice = token.market?.marketData?.price_24h
         const volume = token.market?.marketData?.quote_volume_24h || 0
         const change =
@@ -132,7 +132,9 @@ const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
                     {t('explore:collateral-weight')}
                   </p>
                 </Tooltip>
-                <span className="font-mono text-th-fgd-2">{assetWeight}x</span>
+                <span className="font-mono text-th-fgd-2">
+                  <CollateralWeightDisplay bank={bank} />
+                </span>
               </div>
               <div>
                 <Tooltip

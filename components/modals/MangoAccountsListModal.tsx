@@ -30,6 +30,7 @@ import Tooltip from '@components/shared/Tooltip'
 import { abbreviateAddress } from 'utils/formatting'
 import { handleCopyAddress } from '@components/account/AccountActions'
 import useUnownedAccount from 'hooks/useUnownedAccount'
+import { floorToDecimal, numberCompacter } from 'utils/numbers'
 
 const MangoAccountsListModal = ({
   isOpen,
@@ -116,9 +117,10 @@ const MangoAccountsListModal = ({
                   ) {
                     acc = mangoAccount
                   }
-                  const accountValue = toUiDecimalsForQuote(
-                    Number(acc.getEquity(group!)),
-                  ).toFixed(2)
+                  const accountValue = floorToDecimal(
+                    toUiDecimalsForQuote(Number(acc.getEquity(group!))),
+                    2,
+                  )
                   const maintHealth = acc.getHealthRatioUi(
                     group!,
                     HealthType.maint,
@@ -172,9 +174,9 @@ const MangoAccountsListModal = ({
                               </div>
                             </div>
                           </div>
-                          <div className="flex">
-                            <span className="text-sm text-th-fgd-2">
-                              ${accountValue}
+                          <div className="flex font-mono">
+                            <span className="text-th-fgd-2">
+                              ${numberCompacter.format(accountValue.toNumber())}
                             </span>
                             <span className="mx-2 text-th-fgd-4">|</span>
                             <div
@@ -189,7 +191,7 @@ const MangoAccountsListModal = ({
                               }`}
                             >
                               <HeartIcon className="mr-1 h-4 w-4 flex-shrink-0" />
-                              <span className="text-sm">{maintHealth}%</span>
+                              <span>{maintHealth}%</span>
                             </div>
                           </div>
                         </div>

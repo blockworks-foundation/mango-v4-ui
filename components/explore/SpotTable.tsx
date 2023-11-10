@@ -34,6 +34,7 @@ import dayjs from 'dayjs'
 import TableTokenName from '@components/shared/TableTokenName'
 import { LinkButton } from '@components/shared/Button'
 import { formatTokenSymbol } from 'utils/tokens'
+import CollateralWeightDisplay from '@components/shared/CollateralWeightDisplay'
 
 type TableData = {
   assetWeight: string
@@ -231,7 +232,6 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
               {tableData.map((data) => {
                 const {
                   available,
-                  assetWeight,
                   baseBank,
                   borrowRate,
                   change,
@@ -327,7 +327,11 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
                         />
                       </div>
                     </Td>
-                    <Td className="text-right font-mono">{assetWeight}x</Td>
+                    <Td className="font-mono">
+                      <div className="flex justify-end">
+                        <CollateralWeightDisplay bank={baseBank} />
+                      </div>
+                    </Td>
                     <Td>
                       <div className="flex justify-end space-x-1.5">
                         <p className="text-th-up">
@@ -375,7 +379,6 @@ const MobileSpotItem = ({ data }: { data: TableData }) => {
 
   const {
     available,
-    assetWeight,
     baseBank,
     borrowRate,
     change,
@@ -468,7 +471,9 @@ const MobileSpotItem = ({ data }: { data: TableData }) => {
                   <p className="text-xs text-th-fgd-3">
                     {t('explore:collateral-weight')}
                   </p>
-                  <p className="font-mono text-th-fgd-2">{assetWeight}x</p>
+                  <div className="font-mono text-th-fgd-2">
+                    <CollateralWeightDisplay bank={baseBank} />
+                  </div>
                 </div>
                 <div className="col-span-1">
                   <p className="text-xs text-th-fgd-3">{t('rates')}</p>
