@@ -31,7 +31,7 @@
     "@metaplex-foundation/js": "0.19.4",
     "@project-serum/anchor": "0.25.0",
     "@pythnetwork/client": "2.15.0",
-    "@sentry/nextjs": "7.58.0",
+    "@sentry/nextjs": "7.80.0",
     "@solana/spl-governance": "0.3.27",
     "@solana/spl-token": "0.3.7",
     "@solana/wallet-adapter-base": "0.9.23",
@@ -115,7 +115,8 @@
     "@coral-xyz/anchor": "^0.27.0",
     "eslint-config-next/eslint-import-resolver-typescript/tsconfig-paths/json5": "1.0.2",
     "@solana/wallet-adapter-solflare": "0.6.27",
-    "crypto-js": ">=4.1.1"
+    "crypto-js": ">=4.1.1",
+    "@sentry/nextjs": ">=7.77.0"
   },
   "lavamoat": {
     "allowScripts": {
