@@ -154,9 +154,12 @@ const HotKeysDrawer = ({
                                     {t('trade:margin')}
                                   </div>
                                 ) : null}
-                                {Object.entries(options).map((e) => {
+                                {Object.entries(options).map((e, i) => {
                                   return e[1] ? (
-                                    <div className={BADGE_CLASSNAMES}>
+                                    <div
+                                      className={BADGE_CLASSNAMES}
+                                      key={e[0] + i}
+                                    >
                                       {t(`trade:${e[0]}`)}
                                     </div>
                                   ) : null
