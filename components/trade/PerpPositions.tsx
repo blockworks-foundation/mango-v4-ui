@@ -151,6 +151,7 @@ const PerpPositions = () => {
                   </Th>
                   <Th className="text-right">{t('trade:unrealized-pnl')}</Th>
                   <Th className="text-right">ROE</Th>
+                  <Th className="text-right">{t('funding')}</Th>
                   {!isUnownedAccount ? (
                     <Th>
                       {openPerpPositions?.length > 1 ? (
@@ -192,6 +193,8 @@ const PerpPositions = () => {
                     position.cumulativePnlOverPositionLifetimeUi(market)
                   const unrealizedPnl = position.getUnRealizedPnlUi(market)
                   const realizedPnl = position.getRealizedPnlUi()
+                  const positionFunding =
+                    position.getCumulativeFundingUi(market)
                   const roe =
                     (unrealizedPnl / (Math.abs(basePosition) * avgEntryPrice)) *
                     100
@@ -236,6 +239,7 @@ const PerpPositions = () => {
                                 Math.abs(floorBasePosition) * market._uiPrice
                               }
                               isUsd
+                              isPrivate
                             />
                           </div>
                         ) : (
@@ -250,6 +254,7 @@ const PerpPositions = () => {
                                 Math.abs(floorBasePosition) * market._uiPrice
                               }
                               isUsd
+                              isPrivate
                             />
                           </div>
                         )}
@@ -275,6 +280,7 @@ const PerpPositions = () => {
                             value={estLiqPrice}
                             decimals={getDecimalCount(market.tickSize)}
                             isUsd
+                            isPrivate
                           />
                         ) : (
                           '–'
@@ -304,6 +310,7 @@ const PerpPositions = () => {
                                 value={unrealizedPnl}
                                 isUsd
                                 decimals={2}
+                                isPrivate
                               />
                             </span>
                           </Tooltip>
@@ -314,6 +321,19 @@ const PerpPositions = () => {
                           className={roe >= 0 ? 'text-th-up' : 'text-th-down'}
                         >
                           <FormatNumericValue value={roe} decimals={2} />%
+                        </span>
+                      </Td>
+                      <Td className="text-right font-mono">
+                        <span
+                          className={
+                            positionFunding >= 0 ? 'text-th-up' : 'text-th-down'
+                          }
+                        >
+                          <FormatNumericValue
+                            value={positionFunding}
+                            decimals={2}
+                            isUsd
+                          />
                         </span>
                       </Td>
                       {!isUnownedAccount ? (
@@ -386,6 +406,7 @@ const PerpPositions = () => {
                                 value={totalPnlStats.unrealized}
                                 isUsd
                                 decimals={2}
+                                isPrivate
                               />
                             </span>
                           </div>
@@ -445,6 +466,7 @@ const PerpPositions = () => {
                 group,
                 mangoAccount,
               )
+              const positionFunding = position.getCumulativeFundingUi(market)
               const unsettledPnl = position.getUnsettledPnlUi(market)
               const notional = Math.abs(floorBasePosition) * market._uiPrice
               return (
@@ -478,7 +500,11 @@ const PerpPositions = () => {
                               </span>
                               <span className="text-th-fgd-4">|</span>
                               <span className="font-mono">
-                                <FormatNumericValue value={notional} isUsd />
+                                <FormatNumericValue
+                                  value={notional}
+                                  isUsd
+                                  isPrivate
+                                />
                               </span>
                             </div>
                           </div>
@@ -493,6 +519,7 @@ const PerpPositions = () => {
                               value={unrealizedPnl}
                               isUsd
                               decimals={2}
+                              isPrivate
                             />
                           </span>
                           <ChevronDownIcon
@@ -535,6 +562,7 @@ const PerpPositions = () => {
                                     classNames="text-xs text-th-fgd-3"
                                     value={notional}
                                     isUsd
+                                    isPrivate
                                   />
                                 </div>
                               ) : (
@@ -552,6 +580,7 @@ const PerpPositions = () => {
                                       market._uiPrice
                                     }
                                     isUsd
+                                    isPrivate
                                   />
                                 </div>
                               )}
@@ -589,6 +618,7 @@ const PerpPositions = () => {
                                     value={estLiqPrice}
                                     decimals={getDecimalCount(market.tickSize)}
                                     isUsd
+                                    isPrivate
                                   />
                                 ) : (
                                   '–'
@@ -604,6 +634,7 @@ const PerpPositions = () => {
                                   value={unsettledPnl}
                                   isUsd
                                   decimals={2}
+                                  isPrivate
                                 />
                               </p>
                             </div>
@@ -645,6 +676,24 @@ const PerpPositions = () => {
                                 }`}
                               >
                                 <FormatNumericValue value={roe} decimals={2} />%
+                              </p>
+                            </div>
+                            <div className="col-span-1">
+                              <p className="text-xs text-th-fgd-3">
+                                {t('funding')}
+                              </p>
+                              <p
+                                className={`font-mono ${
+                                  positionFunding >= 0
+                                    ? 'text-th-up'
+                                    : 'text-th-down'
+                                }`}
+                              >
+                                <FormatNumericValue
+                                  value={positionFunding}
+                                  decimals={2}
+                                  isUsd
+                                />
                               </p>
                             </div>
                             <div className="col-span-2 mt-3 flex space-x-3">
@@ -706,6 +755,7 @@ const PerpPositions = () => {
                       value={totalPnlStats.unrealized}
                       isUsd
                       decimals={2}
+                      isPrivate
                     />
                   </span>
                 </span>
@@ -730,12 +780,14 @@ const PerpPositions = () => {
           </div>
         )
       ) : mangoAccount || connected ? (
-        <div className="flex flex-col items-center p-8">
-          <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
-          <p>{t('trade:no-positions')}</p>
+        <div className="flex flex-1 flex-col items-center justify-center">
+          <div className="flex flex-col items-center p-8">
+            <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
+            <p>{t('trade:no-positions')}</p>
+          </div>
         </div>
       ) : (
-        <div className="p-8">
+        <div className="flex flex-1 flex-col items-center justify-center p-8">
           <ConnectEmptyState text={t('trade:connect-positions')} />
         </div>
       )}

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import TabButtons from '@components/shared/TabButtons'
-import OpenOrders from './OpenOrders'
 import SwapTradeBalances from '../shared/BalancesTable'
 import UnsettledTrades from './UnsettledTrades'
 import mangoStore from '@store/mangoStore'
@@ -12,6 +11,7 @@ import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
 import TradeHistory from './TradeHistory'
 import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
 import ManualRefresh from '@components/shared/ManualRefresh'
+import AccountOrders from '@components/account/AccountOrders'
 
 const TradeInfoTabs = () => {
   const [selectedTab, setSelectedTab] = useState('balances')
@@ -30,13 +30,22 @@ const TradeInfoTabs = () => {
   }, [selectedMarketName])
 
   const tabsWithCount: [string, number][] = useMemo(() => {
+    const mangoAccount = mangoStore.getState().mangoAccount.current
     const unsettledTradeCount =
       Object.values(unsettledSpotBalances).flat().length +
       unsettledPerpPositions?.length
+
+    const stopOrdersCount =
+      mangoAccount?.tokenConditionalSwaps.filter((tcs) => tcs.hasData)
+        ?.length || 0
+
     return [
       ['balances', 0],
       ['trade:positions', openPerpPositions.length],
-      ['trade:orders', Object.values(openOrders).flat().length],
+      [
+        'trade:orders',
+        Object.values(openOrders).flat().length + stopOrdersCount,
+      ],
       ['trade:unsettled', unsettledTradeCount],
       ['trade-history', 0],
     ]
@@ -79,7 +88,7 @@ const TabContent = ({ selectedTab }: { selectedTab: string }) => {
     case 'balances':
       return <SwapTradeBalances />
     case 'trade:orders':
-      return <OpenOrders />
+      return <AccountOrders />
     case 'trade:unsettled':
       return (
         <UnsettledTrades

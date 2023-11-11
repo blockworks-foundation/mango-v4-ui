@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ModalProps } from '../../types/modal'
 import Modal from '../shared/Modal'
 import { useTranslation } from 'next-i18next'
@@ -13,6 +13,7 @@ import { useViewport } from 'hooks/useViewport'
 import { IconButton } from '@components/shared/Button'
 import AnimationSettings from '@components/settings/AnimationSettings'
 import SoundSettings from '@components/settings/SoundSettings'
+import TelemetrySettings from '@components/settings/TelemetrySettings'
 import AutoConnectSettings from '@components/settings/AutoConnectSettings'
 
 enum SettingsCategories {
@@ -40,6 +41,12 @@ const SettingsModal = ({ isOpen, onClose }: ModalProps) => {
     isDesktop ? TABS[0] : null,
   )
 
+  const tabsToShow = useMemo(() => {
+    if (isDesktop) {
+      return TABS
+    } else return TABS.slice(0, -1)
+  }, [isDesktop])
+
   // set an active tab is screen width is desktop and no tab is set
   useEffect(() => {
     if (!activeTab && isDesktop) {
@@ -58,8 +65,8 @@ const SettingsModal = ({ isOpen, onClose }: ModalProps) => {
         <h2 className="mb-6">{t('settings')}</h2>
         <div className="grid grid-cols-12 md:gap-8">
           {isDesktop || !activeTab ? (
-            <div className="col-span-12 space-y-2 md:col-span-3 lg:col-span-4">
-              {TABS.map((tab) => (
+            <div className="col-span-12 space-y-2 md:col-span-3 2xl:col-span-4">
+              {tabsToShow.map((tab) => (
                 <TabButton
                   activeTab={activeTab}
                   key={tab}
@@ -70,7 +77,7 @@ const SettingsModal = ({ isOpen, onClose }: ModalProps) => {
             </div>
           ) : null}
           {isDesktop || activeTab ? (
-            <div className="col-span-12 md:col-span-9 lg:col-span-8">
+            <div className="col-span-12 md:col-span-9 2xl:col-span-8">
               <TabContent activeTab={activeTab} setActiveTab={setActiveTab} />
             </div>
           ) : null}
@@ -110,6 +117,7 @@ const TabContent = ({
             title={activeTab}
           />
           <DisplaySettings />
+          <AnimationSettings />
         </>
       )
     case ACCOUNT:
@@ -151,8 +159,8 @@ const TabContent = ({
           />
           <AutoConnectSettings />
           <PreferredExplorerSettings />
-          <AnimationSettings />
           <SoundSettings />
+          <TelemetrySettings />
         </>
       )
     default:

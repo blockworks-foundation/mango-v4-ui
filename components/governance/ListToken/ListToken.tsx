@@ -251,6 +251,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         mode,
         FEE,
         walletForCheck,
+        undefined, // mangoAccount
         'JUPITER',
         onlyDirect,
       )
@@ -369,7 +370,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     }
     const tokenInfo = jupiterTokens.find((x) => x.address === mint)
     const priceInfo = await (
-      await fetch(`${JUPITER_PRICE_API_MAINNET}/price?ids=${mint}`)
+      await fetch(`${JUPITER_PRICE_API_MAINNET}price?ids=${mint}`)
     ).json()
     setBaseTokenPrice(priceInfo.data[mint]?.price || 0)
     setCurrentTokenInfo(tokenInfo)

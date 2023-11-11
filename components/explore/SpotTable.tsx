@@ -32,6 +32,9 @@ import { SerumMarketWithMarketData } from 'hooks/useListedMarketsWithMarketData'
 import Tooltip from '@components/shared/Tooltip'
 import dayjs from 'dayjs'
 import TableTokenName from '@components/shared/TableTokenName'
+import { LinkButton } from '@components/shared/Button'
+import { formatTokenSymbol } from 'utils/tokens'
+import CollateralWeightDisplay from '@components/shared/CollateralWeightDisplay'
 
 type TableData = {
   assetWeight: string
@@ -82,6 +85,7 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
 
         let availableVaultBalance = 0
         let available = new Decimal(0)
+        let availableValue = 0
         let depositRate = 0
         let borrowRate = 0
         let assetWeight = '0'
@@ -95,6 +99,7 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
             0,
             availableVaultBalance.toFixed(baseBank.mintDecimals),
           )
+          availableValue = available.mul(price).toNumber()
           depositRate = baseBank.getDepositRateUi()
           borrowRate = baseBank.getBorrowRateUi()
           assetWeight = baseBank
@@ -107,6 +112,7 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
 
         const data = {
           available,
+          availableValue,
           assetWeight,
           borrowRate,
           baseBank,
@@ -135,212 +141,224 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
   return (
     <ContentBox hideBorder hidePadding>
       {showTableView ? (
-        <Table>
-          <thead>
-            <TrHead>
-              <Th className="text-left">
-                <SortableColumnHeader
-                  sortKey="tokenName"
-                  sort={() => requestSort('tokenName')}
-                  sortConfig={sortConfig}
-                  title={t('token')}
-                />
-              </Th>
-              <Th>
-                <div className="flex justify-end">
+        <div className="thin-scroll overflow-x-auto">
+          <Table>
+            <thead>
+              <TrHead>
+                <Th className="text-left">
                   <SortableColumnHeader
-                    sortKey="price"
-                    sort={() => requestSort('price')}
+                    sortKey="tokenName"
+                    sort={() => requestSort('tokenName')}
                     sortConfig={sortConfig}
-                    title={t('price')}
+                    title={t('token')}
                   />
-                </div>
-              </Th>
-              <Th>
-                <div className="flex justify-end">
-                  <SortableColumnHeader
-                    sortKey="change"
-                    sort={() => requestSort('change')}
-                    sortConfig={sortConfig}
-                    title={t('rolling-change')}
-                  />
-                </div>
-              </Th>
-              <Th className="hidden text-right md:block"></Th>
-              <Th>
-                <div className="flex justify-end">
-                  <SortableColumnHeader
-                    sortKey="volume"
-                    sort={() => requestSort('volume')}
-                    sortConfig={sortConfig}
-                    title={t('trade:24h-volume')}
-                  />
-                </div>
-              </Th>
-              <Th>
-                <div className="flex justify-end">
-                  <Tooltip content={t('tooltip-available', { token: '' })}>
+                </Th>
+                <Th>
+                  <div className="flex justify-end">
                     <SortableColumnHeader
-                      sortKey="available"
-                      sort={() => requestSort('available')}
+                      sortKey="price"
+                      sort={() => requestSort('price')}
                       sortConfig={sortConfig}
-                      title={t('available')}
-                      titleClass="tooltip-underline"
+                      title={t('price')}
                     />
-                  </Tooltip>
-                </div>
-              </Th>
-              <Th>
-                <div className="flex justify-end">
-                  <Tooltip
-                    content={t('tooltip-collateral-weight', { token: '' })}
+                  </div>
+                </Th>
+                <Th>
+                  <div className="flex justify-end">
+                    <SortableColumnHeader
+                      sortKey="change"
+                      sort={() => requestSort('change')}
+                      sortConfig={sortConfig}
+                      title={t('rolling-change')}
+                    />
+                  </div>
+                </Th>
+                <Th className="hidden text-right md:block"></Th>
+                <Th>
+                  <div className="flex justify-end">
+                    <SortableColumnHeader
+                      sortKey="volume"
+                      sort={() => requestSort('volume')}
+                      sortConfig={sortConfig}
+                      title={t('trade:24h-volume')}
+                    />
+                  </div>
+                </Th>
+                <Th>
+                  <div className="flex justify-end">
+                    <Tooltip content={t('tooltip-available', { token: '' })}>
+                      <SortableColumnHeader
+                        sortKey="availableValue"
+                        sort={() => requestSort('availableValue')}
+                        sortConfig={sortConfig}
+                        title={t('available')}
+                        titleClass="tooltip-underline"
+                      />
+                    </Tooltip>
+                  </div>
+                </Th>
+                <Th>
+                  <div className="flex justify-end">
+                    <Tooltip
+                      content={t('tooltip-collateral-weight', { token: '' })}
+                    >
+                      <SortableColumnHeader
+                        sortKey="assetWeight"
+                        sort={() => requestSort('assetWeight')}
+                        sortConfig={sortConfig}
+                        title={t('explore:collateral-weight')}
+                        titleClass="tooltip-underline"
+                      />
+                    </Tooltip>
+                  </div>
+                </Th>
+                <Th>
+                  <div className="flex justify-end">
+                    <Tooltip content={t('tooltip-interest-rates')}>
+                      <SortableColumnHeader
+                        sortKey="depositRate"
+                        sort={() => requestSort('depositRate')}
+                        sortConfig={sortConfig}
+                        title={t('rates')}
+                        titleClass="tooltip-underline"
+                      />
+                    </Tooltip>
+                  </div>
+                </Th>
+                <Th />
+              </TrHead>
+            </thead>
+            <tbody>
+              {tableData.map((data) => {
+                const {
+                  available,
+                  baseBank,
+                  borrowRate,
+                  change,
+                  depositRate,
+                  market,
+                  price,
+                  priceHistory,
+                  tokenName,
+                  volume,
+                  isUp,
+                } = data
+
+                if (!baseBank) return null
+
+                return (
+                  <TrBody
+                    className="default-transition md:hover:cursor-pointer md:hover:bg-th-bkg-2"
+                    key={tokenName}
+                    onClick={() =>
+                      goToTokenPage(tokenName.split(' ')[0], router)
+                    }
                   >
-                    <SortableColumnHeader
-                      sortKey="assetWeight"
-                      sort={() => requestSort('assetWeight')}
-                      sortConfig={sortConfig}
-                      title={t('explore:collateral-weight')}
-                      titleClass="tooltip-underline"
-                    />
-                  </Tooltip>
-                </div>
-              </Th>
-              <Th>
-                <div className="flex justify-end">
-                  <Tooltip content={t('tooltip-interest-rates')}>
-                    <SortableColumnHeader
-                      sortKey="depositRate"
-                      sort={() => requestSort('depositRate')}
-                      sortConfig={sortConfig}
-                      title={t('rates')}
-                      titleClass="tooltip-underline"
-                    />
-                  </Tooltip>
-                </div>
-              </Th>
-              <Th />
-            </TrHead>
-          </thead>
-          <tbody>
-            {tableData.map((data) => {
-              const {
-                available,
-                assetWeight,
-                baseBank,
-                borrowRate,
-                change,
-                depositRate,
-                market,
-                price,
-                priceHistory,
-                tokenName,
-                volume,
-                isUp,
-              } = data
-
-              if (!baseBank) return null
-
-              return (
-                <TrBody
-                  className="default-transition md:hover:cursor-pointer md:hover:bg-th-bkg-2"
-                  key={tokenName}
-                  onClick={() => goToTokenPage(tokenName.split(' ')[0], router)}
-                >
-                  <Td>
-                    <TableTokenName bank={baseBank} symbol={tokenName} />
-                  </Td>
-                  <Td>
-                    <div className="flex flex-col text-right">
-                      <p>
-                        {price ? (
-                          <>
-                            <FormatNumericValue value={price} isUsd />
-                          </>
+                    <Td>
+                      <TableTokenName bank={baseBank} symbol={tokenName} />
+                    </Td>
+                    <Td>
+                      <div className="flex flex-col text-right">
+                        <p>
+                          {price ? (
+                            <>
+                              <FormatNumericValue value={price} isUsd />
+                            </>
+                          ) : (
+                            '–'
+                          )}
+                        </p>
+                      </div>
+                    </Td>
+                    <Td>
+                      <div className="flex flex-col items-end">
+                        {market ? (
+                          <Change change={change} suffix="%" />
                         ) : (
-                          '–'
+                          <span>–</span>
                         )}
-                      </p>
-                    </div>
-                  </Td>
-                  <Td>
-                    <div className="flex flex-col items-end">
-                      {market ? (
-                        <Change change={change} suffix="%" />
-                      ) : (
-                        <span>–</span>
+                      </div>
+                    </Td>
+                    <Td>
+                      {priceHistory.length ? (
+                        <div className="h-10 w-24">
+                          <SimpleAreaChart
+                            color={isUp ? COLORS.UP[theme] : COLORS.DOWN[theme]}
+                            data={priceHistory}
+                            name={tokenName}
+                            xKey="time"
+                            yKey="price"
+                          />
+                        </div>
+                      ) : !market ? null : (
+                        <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
                       )}
-                    </div>
-                  </Td>
-                  <Td>
-                    {priceHistory.length ? (
-                      <div className="h-10 w-24">
-                        <SimpleAreaChart
-                          color={isUp ? COLORS.UP[theme] : COLORS.DOWN[theme]}
-                          data={priceHistory}
-                          name={tokenName}
-                          xKey="time"
-                          yKey="price"
+                    </Td>
+                    <Td>
+                      <div className="flex flex-col text-right">
+                        <p>
+                          {!market ? (
+                            '–'
+                          ) : volume ? (
+                            <span>
+                              {numberCompacter.format(volume)}{' '}
+                              <span className="font-body text-th-fgd-4">
+                                USDC
+                              </span>
+                            </span>
+                          ) : (
+                            <span>
+                              0{' '}
+                              <span className="font-body text-th-fgd-4">
+                                USDC
+                              </span>
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                    </Td>
+                    <Td>
+                      <div className="flex flex-col text-right">
+                        <BankAmountWithValue
+                          amount={available}
+                          bank={baseBank}
+                          fixDecimals={false}
+                          stacked
                         />
                       </div>
-                    ) : !market ? null : (
-                      <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
-                    )}
-                  </Td>
-                  <Td>
-                    <div className="flex flex-col text-right">
-                      <p>
-                        {!market ? (
-                          '–'
-                        ) : volume ? (
-                          <span>
-                            {numberCompacter.format(volume)}{' '}
-                            <span className="font-body text-th-fgd-4">
-                              USDC
-                            </span>
-                          </span>
-                        ) : (
-                          <span>
-                            0{' '}
-                            <span className="font-body text-th-fgd-4">
-                              USDC
-                            </span>
-                          </span>
-                        )}
-                      </p>
-                    </div>
-                  </Td>
-                  <Td>
-                    <div className="flex flex-col text-right">
-                      <BankAmountWithValue
-                        amount={available}
-                        bank={baseBank}
-                        fixDecimals={false}
-                        stacked
-                      />
-                    </div>
-                  </Td>
-                  <Td className="text-right font-mono">{assetWeight}x</Td>
-                  <Td>
-                    <div className="flex justify-end space-x-1.5">
-                      <p className="text-th-up">
-                        <FormatNumericValue value={depositRate} decimals={2} />%
-                      </p>
-                      <span className="text-th-fgd-4">|</span>
-                      <p className="text-th-down">
-                        <FormatNumericValue value={borrowRate} decimals={2} />%
-                      </p>
-                    </div>
-                  </Td>
-                  <Td>
-                    <div className="flex justify-end">
-                      <ChevronRightIcon className="h-5 w-5 text-th-fgd-3" />
-                    </div>
-                  </Td>
-                </TrBody>
-              )
-            })}
-          </tbody>
-        </Table>
+                    </Td>
+                    <Td className="font-mono">
+                      <div className="flex justify-end">
+                        <CollateralWeightDisplay bank={baseBank} />
+                      </div>
+                    </Td>
+                    <Td>
+                      <div className="flex justify-end space-x-1.5">
+                        <p className="text-th-up">
+                          <FormatNumericValue
+                            value={depositRate}
+                            decimals={2}
+                          />
+                          %
+                        </p>
+                        <span className="text-th-fgd-4">|</span>
+                        <p className="text-th-down">
+                          <FormatNumericValue value={borrowRate} decimals={2} />
+                          %
+                        </p>
+                      </div>
+                    </Td>
+                    <Td>
+                      <div className="flex justify-end">
+                        <ChevronRightIcon className="h-5 w-5 text-th-fgd-3" />
+                      </div>
+                    </Td>
+                  </TrBody>
+                )
+              })}
+            </tbody>
+          </Table>
+        </div>
       ) : (
         <div className="border-b border-th-bkg-3">
           {tableData.map((data) => {
@@ -357,10 +375,10 @@ export default SpotTable
 const MobileSpotItem = ({ data }: { data: TableData }) => {
   const { t } = useTranslation('common')
   const { theme } = useThemeWrapper()
+  const router = useRouter()
 
   const {
     available,
-    assetWeight,
     baseBank,
     borrowRate,
     change,
@@ -401,7 +419,12 @@ const MobileSpotItem = ({ data }: { data: TableData }) => {
                 ) : !market ? null : (
                   <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
                 )}
-                {market ? <Change change={change} suffix="%" /> : null}
+                <div className="flex flex-col items-end">
+                  <p className="font-mono text-th-fgd-2">
+                    {price ? <FormatNumericValue value={price} isUsd /> : '-'}
+                  </p>
+                  {market ? <Change change={change} suffix="%" /> : null}
+                </div>
                 <ChevronDownIcon
                   className={`${
                     open ? 'rotate-180' : 'rotate-360'
@@ -417,12 +440,6 @@ const MobileSpotItem = ({ data }: { data: TableData }) => {
           >
             <Disclosure.Panel>
               <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pb-4 pt-4">
-                <div className="col-span-1">
-                  <p className="text-xs text-th-fgd-3">{t('price')}</p>
-                  <p className="font-mono text-th-fgd-2">
-                    {price ? <FormatNumericValue value={price} isUsd /> : '-'}
-                  </p>
-                </div>
                 <div className="col-span-1">
                   <p className="text-xs text-th-fgd-3">
                     {t('trade:24h-volume')}
@@ -454,19 +471,34 @@ const MobileSpotItem = ({ data }: { data: TableData }) => {
                   <p className="text-xs text-th-fgd-3">
                     {t('explore:collateral-weight')}
                   </p>
-                  <p className="font-mono text-th-fgd-2">{assetWeight}x</p>
+                  <div className="font-mono text-th-fgd-2">
+                    <CollateralWeightDisplay bank={baseBank} />
+                  </div>
                 </div>
                 <div className="col-span-1">
                   <p className="text-xs text-th-fgd-3">{t('rates')}</p>
                   <div className="flex space-x-1.5">
-                    <p className="text-th-up">
+                    <p className="font-mono text-th-up">
                       <FormatNumericValue value={depositRate} decimals={2} />%
                     </p>
                     <span className="text-th-fgd-4">|</span>
-                    <p className="text-th-down">
+                    <p className="font-mono text-th-down">
                       <FormatNumericValue value={borrowRate} decimals={2} />%
                     </p>
                   </div>
+                </div>
+                <div className="col-span-1">
+                  <LinkButton
+                    className="flex items-center"
+                    onClick={() =>
+                      goToTokenPage(baseBank.name.split(' ')[0], router)
+                    }
+                  >
+                    {t('token:token-stats', {
+                      token: formatTokenSymbol(baseBank.name),
+                    })}
+                    <ChevronRightIcon className="ml-2 h-5 w-5" />
+                  </LinkButton>
                 </div>
               </div>
             </Disclosure.Panel>

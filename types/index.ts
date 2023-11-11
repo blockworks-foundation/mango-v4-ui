@@ -11,6 +11,7 @@ import { JsonMetadata } from '@metaplex-foundation/js'
 import { Event } from '@project-serum/serum/lib/queue'
 import { PublicKey } from '@solana/web3.js'
 import { formatTradeHistory } from 'hooks/useTradeHistory'
+import { OrderTypes, TriggerOrderTypes } from 'utils/tradeForm'
 
 export type EmptyObject = { [K in keyof never]?: never }
 export interface OrderbookL2 {
@@ -285,6 +286,28 @@ export interface SpotTradeActivity {
   symbol: string
 }
 
+export interface SwapHistoryItem {
+  block_datetime: string
+  mango_account: string
+  signature: string
+  swap_in_amount: number
+  swap_in_loan: number
+  swap_in_loan_origination_fee: number
+  swap_in_price_usd: number
+  swap_in_symbol: string
+  swap_out_amount: number
+  loan: number
+  loan_origination_fee: number
+  swap_out_price_usd: number
+  swap_out_symbol: string
+}
+
+export interface SwapActivity {
+  activity_details: SwapHistoryItem
+  block_datetime: string
+  activity_type: string
+}
+
 export function isLiquidationActivityFeedItem(
   item: ActivityFeed,
 ): item is LiquidationActivity {
@@ -312,6 +335,15 @@ export function isSpotTradeActivityFeedItem(
   return false
 }
 
+export function isSwapActivityFeedItem(
+  item: ActivityFeed,
+): item is SwapActivity {
+  if (item.activity_type === 'swap') {
+    return true
+  }
+  return false
+}
+
 export function isPerpLiquidation(
   activityDetails: SpotOrPerpLiquidationItem,
 ): activityDetails is PerpLiquidationFeedItem {
@@ -319,22 +351,6 @@ export function isPerpLiquidation(
     return true
   }
   return false
-}
-
-export interface SwapHistoryItem {
-  block_datetime: string
-  mango_account: string
-  signature: string
-  swap_in_amount: number
-  swap_in_loan: number
-  swap_in_loan_origination_fee: number
-  swap_in_price_usd: number
-  swap_in_symbol: string
-  swap_out_amount: number
-  loan: number
-  loan_origination_fee: number
-  swap_out_price_usd: number
-  swap_out_symbol: string
 }
 
 export interface NFT {
@@ -375,7 +391,7 @@ export type GroupedDataItem = PerpStatsItem & Record<string, any>
 export type ActivityFeed = {
   activity_type: string
   block_datetime: string
-  symbol: string
+  symbol?: string
   activity_details:
     | DepositWithdrawFeedItem
     | SpotLiquidationFeedItem
@@ -426,7 +442,7 @@ export interface TradeForm {
   price: string | undefined
   baseSize: string
   quoteSize: string
-  tradeType: 'Market' | 'Limit'
+  tradeType: OrderTypes | TriggerOrderTypes
   triggerPrice?: string
   postOnly: boolean
   ioc: boolean
@@ -538,4 +554,4 @@ export interface FilledOrder {
   quantity: number
 }
 
-export type TriggerOrderTypes = 'swap' | 'trade:trigger-order'
+export type SwapTypes = 'swap' | 'trade:trigger-order'

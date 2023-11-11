@@ -26,7 +26,7 @@ import { useTranslation } from 'next-i18next'
 import Image from 'next/legacy/image'
 import { useCallback, useState } from 'react'
 import { PAGINATION_PAGE_LENGTH, PREFERRED_EXPLORER_KEY } from 'utils/constants'
-import { formatNumericValue } from 'utils/numbers'
+import { formatCurrencyValue, formatNumericValue } from 'utils/numbers'
 import { breakpoints } from 'utils/theme'
 import LiquidationActivityDetails from './LiquidationActivityDetails'
 import PerpTradeActivityDetails from './PerpTradeActivityDetails'
@@ -36,6 +36,7 @@ import {
   isSpotTradeActivityFeedItem,
 } from 'types'
 import SpotTradeActivityDetails from './SpotTradeActivityDetails'
+import { formatTokenSymbol } from 'utils/tokens'
 
 export const formatFee = (value: number) => {
   return value.toLocaleString(undefined, {
@@ -69,21 +70,23 @@ export const getFee = (activity: any, mangoAccountAddress: string) => {
     fee = { value: fee_cost, symbol: quote_symbol }
   }
   if (activity_type === 'liquidate_token_with_token') {
-    const { side, liab_amount, liab_symbol, asset_amount, asset_price } =
+    const { side, liab_amount, liab_price, asset_amount, asset_price } =
       activity.activity_details
     if (side === 'liqee') {
       fee = {
-        value: formatNumericValue(
-          Math.abs(liab_amount) - Math.abs(asset_amount * asset_price),
+        value: formatCurrencyValue(
+          Math.abs(liab_amount * liab_price) -
+            Math.abs(asset_amount * asset_price),
         ),
-        symbol: liab_symbol,
+        symbol: '',
       }
     } else {
       fee = {
-        value: formatNumericValue(
-          Math.abs(asset_amount * asset_price) - Math.abs(liab_amount),
+        value: formatCurrencyValue(
+          Math.abs(asset_amount * asset_price) -
+            Math.abs(liab_amount * liab_price),
         ),
-        symbol: liab_symbol,
+        symbol: '',
       }
     }
   }
@@ -447,12 +450,14 @@ const ActivityFeedTable = () => {
       ) : null}
     </>
   ) : mangoAccountAddress || connected ? (
-    <div className="flex flex-col items-center p-8">
-      <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
-      <p>{t('activity:no-activity')}</p>
+    <div className="flex flex-1 flex-col items-center justify-center">
+      <div className="flex flex-col items-center p-8">
+        <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
+        <p>{t('activity:no-activity')}</p>
+      </div>
     </div>
   ) : (
-    <div className="p-8">
+    <div className="flex flex-1 flex-col items-center justify-center p-8">
       <ConnectEmptyState text={t('activity:connect-activity')} />
     </div>
   )
@@ -491,11 +496,15 @@ const SharedTableBody = ({
       <Td className="text-right">{t(`activity:${activity_type}`)}</Td>
       <Td className="text-right font-mono">
         {amounts.credit.value}{' '}
-        <span className="font-body text-th-fgd-3">{amounts.credit.symbol}</span>
+        <span className="font-body text-th-fgd-3">
+          {formatTokenSymbol(amounts.credit.symbol)}
+        </span>
       </Td>
       <Td className="text-right font-mono">
         {amounts.debit.value}{' '}
-        <span className="font-body text-th-fgd-3">{amounts.debit.symbol}</span>
+        <span className="font-body text-th-fgd-3">
+          {formatTokenSymbol(amounts.debit.symbol)}
+        </span>
       </Td>
       <Td className="text-right font-mono">
         {fee.value}{' '}

@@ -25,6 +25,21 @@ const HydrateStore = () => {
 
   const [, setLastWalletName] = useLocalStorageState(LAST_WALLET_NAME, '')
 
+  // Handle scroll restoration when the route changes
+  useEffect(() => {
+    const handleRouteChange = () => {
+      if (typeof window !== 'undefined') {
+        window.scrollTo(0, 0)
+      }
+    }
+
+    router.events.on('routeChangeComplete', handleRouteChange)
+
+    return () => {
+      router.events.off('routeChangeComplete', handleRouteChange)
+    }
+  }, [])
+
   const handleWindowResize = useCallback(() => {
     if (typeof window !== 'undefined') {
       set((s) => {

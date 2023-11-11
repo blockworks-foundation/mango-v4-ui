@@ -20,7 +20,7 @@ import { useTranslation } from 'next-i18next'
 import { useCallback, useMemo, useState } from 'react'
 import { MAX_ACCOUNTS, PRIVACY_MODE } from 'utils/constants'
 import mangoStore from '@store/mangoStore'
-import { PublicKey, TransactionInstruction } from '@solana/web3.js'
+import { PublicKey } from '@solana/web3.js'
 import { notify } from 'utils/notifications'
 import { isMangoError } from 'types'
 import { getMaxWithdrawForBank } from '@components/swap/useTokenMax'
@@ -40,13 +40,7 @@ import useUnownedAccount from 'hooks/useUnownedAccount'
 import { useWallet } from '@solana/wallet-adapter-react'
 import CreateAccountForm from '@components/account/CreateAccountForm'
 import ConnectEmptyState from '@components/shared/ConnectEmptyState'
-
-enum CLOSE_TYPE {
-  TOKEN,
-  PERP,
-  SERUMOO,
-  PERPOO,
-}
+import { Serum3Market } from '@blockworks-foundation/mango-v4'
 
 const CLOSE_WRAPPER_CLASSNAMES =
   'mb-4 flex flex-col md:flex-row md:items-center md:justify-between rounded-md bg-th-bkg-2 px-4 py-3'
@@ -103,7 +97,6 @@ const AccountSettings = () => {
     async (tokenMint: PublicKey) => {
       const client = mangoStore.getState().client
       const group = mangoStore.getState().group
-      const mangoAccount = mangoStore.getState().mangoAccount.current
       const actions = mangoStore.getState().actions
       if (!mangoAccount || !group) return
 
@@ -135,54 +128,23 @@ const AccountSettings = () => {
         })
       }
     },
-    [setSubmitting],
+    [mangoAccount, setSubmitting],
   )
 
-  const handleCloseSlots = useCallback(
-    async (closeType: CLOSE_TYPE) => {
+  const handleCloseSerumOos = useCallback(
+    async (market: Serum3Market) => {
       const client = mangoStore.getState().client
       const group = mangoStore.getState().group
-      const mangoAccount = mangoStore.getState().mangoAccount.current
       const actions = mangoStore.getState().actions
       if (!mangoAccount || !group) return
       setSubmitting(true)
       try {
-        let ixs: TransactionInstruction[] = []
-        if (closeType === CLOSE_TYPE.PERP) {
-          try {
-            ixs = await Promise.all(
-              emptyPerps.map((p) =>
-                client.perpDeactivatePositionIx(
-                  group,
-                  mangoAccount,
-                  p.marketIndex,
-                ),
-              ),
-            )
-          } catch (e) {
-            console.log('error closing unused perp positions', e)
-          }
-        } else if (closeType === CLOSE_TYPE.SERUMOO) {
-          try {
-            ixs = await Promise.all(
-              emptySerum3.map((s) => {
-                const market = group.getSerum3MarketByMarketIndex(s.marketIndex)
-                return client.serum3CloseOpenOrdersIx(
-                  group,
-                  mangoAccount,
-                  market.serumMarketExternal,
-                )
-              }),
-            )
-          } catch (e) {
-            console.log('error closing unused serum open orders', e)
-          }
-        } else if (closeType === CLOSE_TYPE.PERPOO) {
-          // No instruction yet
-        }
-
-        if (ixs.length === 0) return
-        const tx = await client.sendAndConfirmTransaction(ixs)
+        const ix = await client.serum3CloseOpenOrdersIx(
+          group,
+          mangoAccount,
+          market.serumMarketExternal,
+        )
+        const tx = await client.sendAndConfirmTransaction([ix])
 
         notify({
           title: 'Transaction confirmed',
@@ -190,10 +152,8 @@ const AccountSettings = () => {
           txid: tx.signature,
         })
         await actions.reloadMangoAccount()
-        setSubmitting(false)
       } catch (e) {
         console.error(e)
-        setSubmitting(false)
         if (!isMangoError(e)) return
         notify({
           title: 'Transaction failed',
@@ -201,9 +161,47 @@ const AccountSettings = () => {
           txid: e?.txid,
           type: 'error',
         })
+      } finally {
+        setSubmitting(false)
       }
     },
-    [emptyPerps, emptySerum3],
+    [mangoAccount],
+  )
+
+  const handleClosePerpAccounts = useCallback(
+    async (marketIndex: number) => {
+      const client = mangoStore.getState().client
+      const group = mangoStore.getState().group
+      const actions = mangoStore.getState().actions
+      if (!mangoAccount || !group) return
+      setSubmitting(true)
+      try {
+        const ix = await client.perpDeactivatePositionIx(
+          group,
+          mangoAccount,
+          marketIndex,
+        )
+        const tx = await client.sendAndConfirmTransaction([ix])
+        notify({
+          title: 'Transaction confirmed',
+          type: 'success',
+          txid: tx.signature,
+        })
+        await actions.reloadMangoAccount()
+      } catch (e) {
+        console.error(e)
+        if (!isMangoError(e)) return
+        notify({
+          title: 'Transaction failed',
+          description: e.message,
+          txid: e?.txid,
+          type: 'error',
+        })
+      } finally {
+        setSubmitting(false)
+      }
+    },
+    [mangoAccount],
   )
 
   return mangoAccount && group && !isDelegatedAccount && !isUnownedAccount ? (
@@ -213,7 +211,7 @@ const AccountSettings = () => {
           {t('settings:account-address')}
         </h3>
         <div className="flex items-center space-x-2">
-          <p>{mangoAccount.publicKey.toString()}</p>
+          <p className="truncate">{mangoAccount.publicKey.toString()}</p>
           <IconButton
             hideBg
             onClick={() =>
@@ -422,15 +420,6 @@ const AccountSettings = () => {
                   </p>
                   <p className="mt-1">{t('settings:close-spot-oo-desc')}</p>
                 </div>
-                <Button
-                  className="mt-4 whitespace-nowrap md:ml-4 md:mt-0"
-                  disabled={!emptySerum3.length || submitting}
-                  onClick={() => handleCloseSlots(CLOSE_TYPE.SERUMOO)}
-                  secondary
-                  size="small"
-                >
-                  {t('settings:close-unused')}
-                </Button>
               </div>
               {usedSerum3.length ? (
                 usedSerum3.map((mkt, i) => {
@@ -447,7 +436,17 @@ const AccountSettings = () => {
                         <MarketLogos market={market} />
                         <p className="text-th-fgd-2">{market.name}</p>
                       </div>
-                      <IsUnusedBadge isUnused={isUnused} />
+                      {isUnused ? (
+                        <Button
+                          disabled={submitting}
+                          onClick={() => handleCloseSerumOos(market)}
+                          size="small"
+                        >
+                          {t('close')}
+                        </Button>
+                      ) : (
+                        <IsUnusedBadge isUnused={isUnused} />
+                      )}
                     </div>
                   )
                 })
@@ -493,15 +492,6 @@ const AccountSettings = () => {
                   </p>
                   <p className="mt-1">{t('settings:close-perp-desc')}</p>
                 </div>
-                <Button
-                  className="mt-4 whitespace-nowrap md:ml-4 md:mt-0"
-                  disabled={!emptyPerps.length || submitting}
-                  onClick={() => handleCloseSlots(CLOSE_TYPE.PERP)}
-                  secondary
-                  size="small"
-                >
-                  {t('settings:close-unused')}
-                </Button>
               </div>
               {usedPerps.length ? (
                 usedPerps.map((perp, i) => {
@@ -518,7 +508,19 @@ const AccountSettings = () => {
                         <MarketLogos market={market} />
                         <p className="text-th-fgd-2">{market.name}</p>
                       </div>
-                      <IsUnusedBadge isUnused={isUnused} />
+                      {isUnused ? (
+                        <Button
+                          disabled={submitting}
+                          onClick={() =>
+                            handleClosePerpAccounts(perp.marketIndex)
+                          }
+                          size="small"
+                        >
+                          {t('close')}
+                        </Button>
+                      ) : (
+                        <IsUnusedBadge isUnused={isUnused} />
+                      )}
                     </div>
                   )
                 })

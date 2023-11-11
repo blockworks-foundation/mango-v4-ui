@@ -5,7 +5,7 @@
     "base-bank": "基准Bank",
     "base-mint": "基准铸币",
     "base-token": "基准币种",
-    "before-listing-1": "你必须存入10,0000 MNGO以上",
+    "before-listing-1": "你必须存入100000 MNGO以上",
     "before-listing-2": "新币种需要有",
     "before-listing-3": "是否有足够相对USDC与SOL的流动性？",
     "before-listing-4": "新币种由DAO确认。过程需要3天的时间。",

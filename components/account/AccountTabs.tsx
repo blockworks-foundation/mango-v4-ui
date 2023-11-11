@@ -8,14 +8,14 @@ import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
 import mangoStore from '@store/mangoStore'
 import PerpPositions from '@components/trade/PerpPositions'
 import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
-import OpenOrders from '@components/trade/OpenOrders'
 import HistoryTabs from './HistoryTabs'
 import ManualRefresh from '@components/shared/ManualRefresh'
 import useMangoAccount from 'hooks/useMangoAccount'
-import SwapTriggerOrders from '@components/swap/SwapTriggerOrders'
+import AccountOverview from './AccountOverview'
+import AccountOrders from './AccountOrders'
 
 const AccountTabs = () => {
-  const [activeTab, setActiveTab] = useState('balances')
+  const [activeTab, setActiveTab] = useState('overview')
   const { mangoAccount } = useMangoAccount()
   const { isMobile, isTablet } = useViewport()
   const unsettledSpotBalances = useUnsettledSpotBalances()
@@ -28,17 +28,21 @@ const AccountTabs = () => {
       Object.values(unsettledSpotBalances).flat().length +
       unsettledPerpPositions?.length
 
-    const tabs: [string, number][] = [
-      ['balances', 0],
-      ['trade:positions', openPerpPositions.length],
-      ['trade:orders', Object.values(openOrders).flat().length],
-      ['trade:unsettled', unsettledTradeCount],
-      ['history', 0],
-    ]
     const stopOrdersCount =
       mangoAccount?.tokenConditionalSwaps.filter((tcs) => tcs.hasData)
         ?.length || 0
-    tabs.splice(3, 0, ['trade:trigger-orders', stopOrdersCount])
+
+    const tabs: [string, number][] = [
+      ['overview', 0],
+      ['balances', 0],
+      ['trade:positions', openPerpPositions.length],
+      [
+        'trade:orders',
+        Object.values(openOrders).flat().length + stopOrdersCount,
+      ],
+      ['trade:unsettled', unsettledTradeCount],
+      ['history', 0],
+    ]
     return tabs
   }, [
     mangoAccount,
@@ -64,7 +68,9 @@ const AccountTabs = () => {
           size={isTablet ? 'large' : 'small'}
         />
       </div>
-      <TabContent activeTab={activeTab} />
+      <div className="flex min-h-[calc(100vh-140px)] flex-col">
+        <TabContent activeTab={activeTab} />
+      </div>
     </>
   )
 }
@@ -73,14 +79,14 @@ const TabContent = ({ activeTab }: { activeTab: string }) => {
   const unsettledSpotBalances = useUnsettledSpotBalances()
   const unsettledPerpPositions = useUnsettledPerpPositions()
   switch (activeTab) {
+    case 'overview':
+      return <AccountOverview />
     case 'balances':
       return <TokenList />
     case 'trade:positions':
       return <PerpPositions />
     case 'trade:orders':
-      return <OpenOrders />
-    case 'trade:trigger-orders':
-      return <SwapTriggerOrders />
+      return <AccountOrders />
     case 'trade:unsettled':
       return (
         <UnsettledTrades
@@ -91,7 +97,7 @@ const TabContent = ({ activeTab }: { activeTab: string }) => {
     case 'history':
       return <HistoryTabs />
     default:
-      return <TokenList />
+      return <AccountOverview />
   }
 }
 

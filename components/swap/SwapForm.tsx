@@ -14,7 +14,7 @@ import MarketSwapForm from './MarketSwapForm'
 import Switch from '@components/forms/Switch'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { SwapFormTokenListType } from './SwapFormTokenList'
-import { TriggerOrderTypes } from 'types'
+import { SwapTypes } from 'types'
 import TriggerSwapForm from './TriggerSwapForm'
 import WalletSwapForm from './WalletSwapForm'
 import TabButtons from '@components/shared/TabButtons'
@@ -101,7 +101,7 @@ const SwapForm = () => {
   }, [groupLoaded, query])
 
   const handleSwapOrTrigger = useCallback(
-    (orderType: TriggerOrderTypes) => {
+    (orderType: SwapTypes) => {
       set((state) => {
         state.swap.swapOrTrigger = orderType
         if (orderType !== 'swap' && outputBank?.name === OUTPUT_TOKEN_DEFAULT) {
@@ -162,7 +162,7 @@ const SwapForm = () => {
           {swapOrTrigger === 'swap' ? (
             <>
               <div className="flex justify-end pb-3 pt-4">
-                <div className="flex justify-between px-6">
+                <div className="flex justify-between px-4 md:px-6">
                   <Switch
                     checked={walletSwap}
                     onChange={() => setWalletSwap(!walletSwap)}
@@ -177,24 +177,24 @@ const SwapForm = () => {
                 </div>
               </div>
               {walletSwap ? (
-                <div className="px-6">
+                <div className="px-4 md:px-6">
                   <WalletSwapForm setShowTokenSelect={setShowTokenSelect} />
                 </div>
               ) : (
-                <div className="px-6">
+                <div className="px-4 md:px-6">
                   <MarketSwapForm setShowTokenSelect={setShowTokenSelect} />
                 </div>
               )}
             </>
           ) : (
-            <div className="px-6 pt-4">
+            <div className="px-4 pt-4 md:px-6">
               <TriggerSwapForm
                 showTokenSelect={showTokenSelect}
                 setShowTokenSelect={setShowTokenSelect}
               />
             </div>
           )}
-          <div className="px-6 pb-6">
+          <div className="px-4 pb-6 md:px-6">
             {inputBank && !walletSwap ? (
               <TokenVaultWarnings bank={inputBank} type="swap" />
             ) : null}

@@ -15,7 +15,6 @@ import {
   ArchiveBoxArrowDownIcon,
   ExclamationTriangleIcon,
   DocumentTextIcon,
-  SparklesIcon,
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
@@ -44,11 +43,10 @@ const set = mangoStore.getState().set
 const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation(['common', 'search'])
   const { connected, publicKey } = useWallet()
-  const { theme, setTheme } = useTheme()
+  const { theme } = useTheme()
   const group = mangoStore.getState().group
   const themeData = mangoStore((s) => s.themeData)
   const nfts = mangoStore((s) => s.wallet.nfts.data)
-  const loadingNfts = mangoStore((s) => s.wallet.nfts.initialLoad)
   const { mangoAccount } = useMangoAccount()
   const setPrependedGlobalAdditionalInstructions = mangoStore(
     (s) => s.actions.setPrependedGlobalAdditionalInstructions,
@@ -59,8 +57,9 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
 
   const { width } = useViewport()
   const [, setIsCollapsed] = useLocalStorageState(SIDEBAR_COLLAPSE_KEY, false)
+
   useEffect(() => {
-    if (width !== 0 && width < breakpoints['2xl']) {
+    if (width !== 0 && width < breakpoints['xl']) {
       setIsCollapsed(true)
     }
   }, [width, setIsCollapsed])
@@ -137,29 +136,16 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
     return themeData.sideImagePath
   }, [mangoNfts, theme, themeData])
 
-  // change theme if switching to wallet without nft
-  useEffect(() => {
-    if (loadingNfts || !theme) return
-    if (theme.toLowerCase() in CUSTOM_SKINS) {
-      const hasSkin = mangoNfts.find(
-        (nft) => nft.collectionAddress === CUSTOM_SKINS[theme.toLowerCase()],
-      )
-      if (!hasSkin) {
-        setTheme(t('settings:mango-classic'))
-      }
-    }
-  }, [loadingNfts, mangoNfts, publicKey, theme])
-
   return (
     <div
       className={`transition-all duration-${sideBarAnimationDuration} ${
         collapsed ? 'w-[64px]' : 'w-[200px]'
       } border-r border-th-bkg-3 bg-th-bkg-1 bg-contain`}
-      style={
-        collapsed
-          ? { backgroundImage: `url(${themeData.sideTilePath})` }
-          : { backgroundImage: `url(${themeData.sideTilePathExpanded})` }
-      }
+      // style={
+      //   collapsed
+      //     ? { backgroundImage: `url(${themeData.sideTilePath})` }
+      //     : { backgroundImage: `url(${themeData.sideTilePathExpanded})` }
+      // }
     >
       {sidebarImageUrl && !collapsed ? (
         <img
@@ -223,13 +209,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               icon={<ArrowTrendingUpIcon className="h-5 w-5" />}
               title={t('trade')}
               pagePath="/trade"
-            />
-            <MenuItem
-              active={pathname === '/explore'}
-              collapsed={collapsed}
-              icon={<SparklesIcon className="h-5 w-5" />}
-              title={t('explore')}
-              pagePath="/explore"
             />
             <MenuItem
               active={pathname === '/borrow'}

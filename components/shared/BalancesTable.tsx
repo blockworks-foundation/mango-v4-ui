@@ -47,7 +47,7 @@ const BalancesTable = () => {
   const { initContributions } = useHealthContributions()
 
   const filteredBanks = useMemo(() => {
-    if (banks.length) {
+    if (banks.length && mangoAccountAddress) {
       return banks.filter((b) => {
         return (
           Math.abs(floorToDecimal(b.balance, b.bank.mintDecimals).toNumber()) >
@@ -58,7 +58,7 @@ const BalancesTable = () => {
       })
     }
     return []
-  }, [banks])
+  }, [banks, mangoAccountAddress])
 
   const formattedTableData = useCallback(() => {
     const formatted = []

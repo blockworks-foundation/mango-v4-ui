@@ -29,6 +29,7 @@ import { isMangoError } from 'types'
 import TokenListButton from './shared/TokenListButton'
 import { ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES, BackButton } from './BorrowForm'
 import TokenLogo from './shared/TokenLogo'
+import InlineNotification from './shared/InlineNotification'
 
 interface RepayFormProps {
   onSuccess: () => void
@@ -38,6 +39,7 @@ interface RepayFormProps {
 function RepayForm({ onSuccess, token }: RepayFormProps) {
   const { t } = useTranslation('common')
   const { mangoAccount } = useMangoAccount()
+  const walletTokens = mangoStore((s) => s.wallet.tokens)
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [selectedToken, setSelectedToken] = useState(
@@ -62,6 +64,17 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
     ).toDecimalPlaces(bank.mintDecimals, Decimal.ROUND_UP)
     return amount
   }, [bank, mangoAccount])
+
+  const hasWalletBalanceToRepay = useMemo(() => {
+    if (!bank || !inputAmount) return true
+    if (!walletTokens?.length) return false
+    const hasBorrowToken = walletTokens.find(
+      (token) => token.mint.toString() === bank.mint.toString(),
+    )
+    if (hasBorrowToken) {
+      return hasBorrowToken.uiAmount >= parseFloat(inputAmount)
+    } else return false
+  }, [bank, inputAmount, walletTokens])
 
   useEffect(() => {
     if (token && !borrowAmount.eq(0)) {
@@ -100,9 +113,6 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
 
   const handleDeposit = useCallback(
     async (amount: string) => {
-      //to not leave some dust on account we round amount by this number
-      //with reduce only set to true we take only what is needed to be
-      //deposited in need to repay borrow
       const mangoAccount = mangoStore.getState().mangoAccount.current
       const client = mangoStore.getState().client
       const group = mangoStore.getState().group
@@ -113,9 +123,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
       // we don't want to leave negative dust in the account if someone wants to repay the full amount
       const actualAmount =
         sizePercentage === '100'
-          ? borrowAmount.toNumber() > parseFloat(amount)
-            ? borrowAmount.toNumber()
-            : parseFloat(amount)
+          ? borrowAmount.toNumber() * 1.01
           : parseFloat(amount)
 
       setSubmitting(true)
@@ -281,21 +289,33 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
               </div>
             ) : null}
           </div>
-          <Button
-            onClick={() => handleDeposit(inputAmount)}
-            className="flex w-full items-center justify-center"
-            disabled={!inputAmount}
-            size="large"
-          >
-            {submitting ? (
-              <Loading className="mr-2 h-5 w-5" />
-            ) : (
-              <div className="flex items-center">
-                <ArrowDownRightIcon className="mr-2 h-5 w-5" />
-                {isDeposit ? t('repay-deposit') : t('repay')}
+          <div>
+            {!hasWalletBalanceToRepay ? (
+              <div className="pb-3">
+                <InlineNotification
+                  desc={t('error-repay-insufficient-funds', {
+                    token: bank?.name,
+                  })}
+                  type="error"
+                />
               </div>
-            )}
-          </Button>
+            ) : null}
+            <Button
+              onClick={() => handleDeposit(inputAmount)}
+              className="flex w-full items-center justify-center"
+              disabled={!inputAmount}
+              size="large"
+            >
+              {submitting ? (
+                <Loading className="mr-2 h-5 w-5" />
+              ) : (
+                <div className="flex items-center">
+                  <ArrowDownRightIcon className="mr-2 h-5 w-5" />
+                  {isDeposit ? t('repay-deposit') : t('repay')}
+                </div>
+              )}
+            </Button>
+          </div>
         </div>
       </FadeInFadeOut>
     </>

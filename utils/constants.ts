@@ -67,7 +67,7 @@ export const STATS_TAB_KEY = 'activeStatsTab-0.1'
 
 export const USE_ORDERBOOK_FEED_KEY = 'useOrderbookFeed-0.1'
 
-export const HOT_KEYS_KEY = 'hotKeys-0.1'
+export const HOT_KEYS_KEY = 'hotKeys-0.2'
 
 export const AUTO_CONNECT_WALLET = 'auto-connect-0.1'
 
@@ -76,6 +76,8 @@ export const LAST_WALLET_NAME = 'lastWalletName'
 export const PRIVACY_MODE = 'privacy-mode-0.1'
 
 export const MANGO_MINTS_BANNER_KEY = 'mangoMintsBanner-0.1'
+
+export const SEND_TELEMETRY_KEY = 'sendTelemetry-0.1'
 
 // Unused
 export const PROFILE_CATEGORIES = [
@@ -140,6 +142,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   eth: true,
   ethpo: true,
   'eth (portal)': true,
+  guac: true,
   hnt: true,
   jitosol: true,
   kin: true,
@@ -185,3 +188,5 @@ export enum TOKEN_REDUCE_ONLY_OPTIONS {
   ENABLED,
   NO_BORROWS,
 }
+
+export const PRIVATE_MODE_STRING = '****'

@@ -122,6 +122,7 @@ export interface JupiterV6RouteInfo {
   routePlan: JupiterV6RoutePlan[]
   contextSlot?: number
   timeTaken?: number
+  error?: string
 }
 
 export interface JupiterV6RoutePlan {

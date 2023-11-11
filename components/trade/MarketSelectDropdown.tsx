@@ -34,6 +34,7 @@ import {
 import Input from '@components/forms/Input'
 import { useSortableData } from 'hooks/useSortableData'
 import { SortableColumnHeader } from '@components/shared/TableElements'
+import { useViewport } from 'hooks/useViewport'
 
 const MARKET_LINK_CLASSES =
   'grid grid-cols-3 sm:grid-cols-4 flex items-center w-full py-2 px-4 rounded-r-md focus:outline-none focus-visible:text-th-active md:hover:cursor-pointer md:hover:bg-th-bkg-3 md:hover:text-th-fgd-1'
@@ -54,6 +55,7 @@ const MarketSelectDropdown = () => {
   const [spotBaseFilter, setSpotBaseFilter] = useState('All')
   const { perpMarketsWithData, serumMarketsWithData, isLoading, isFetching } =
     useListedMarketsWithMarketData()
+  const { isDesktop } = useViewport()
   const focusRef = useRef<HTMLInputElement>(null)
 
   const unsortedPerpMarketsToShow = useMemo(() => {
@@ -111,10 +113,10 @@ const MarketSelectDropdown = () => {
   } = useSortableData(unsortedSerumMarketsToShow)
 
   useEffect(() => {
-    if (focusRef?.current && spotOrPerp === 'spot') {
+    if (focusRef?.current && spotOrPerp === 'spot' && isDesktop && isOpen) {
       focusRef.current.focus()
     }
-  }, [focusRef, isOpen, spotOrPerp])
+  }, [focusRef, isDesktop, isOpen, spotOrPerp])
 
   const loadingMarketData = isLoading || isFetching
 

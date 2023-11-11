@@ -84,16 +84,19 @@ const DisplaySettings = () => {
     TRADE_CHART_UI_KEY,
     'trading-view',
   )
+
   const [, setTradeLayout] = useLocalStorageState(TRADE_LAYOUT_KEY, 'chartLeft')
 
   // add nft skins to theme selection list
   useEffect(() => {
     if (nfts.length) {
       const customThemes = []
-      for (const nft of nfts) {
-        const collectionAddress = nft?.collectionAddress
+      const ownedCollections = [
+        ...new Set(nfts.map((x) => x.collectionAddress)),
+      ]
+      for (const collection of ownedCollections) {
         for (const themeKey in CUSTOM_SKINS) {
-          if (CUSTOM_SKINS[themeKey] === collectionAddress) {
+          if (CUSTOM_SKINS[themeKey] === collection) {
             customThemes.push(themeKey)
           }
         }
@@ -124,7 +127,9 @@ const DisplaySettings = () => {
         <div className="w-full min-w-[140px] md:w-auto">
           <Select
             value={theme || DEFAULT_THEMES[0]}
-            onChange={(t: string) => setTheme(t)}
+            onChange={(t: string) => {
+              setTheme(t)
+            }}
             className="w-full"
           >
             {themes.map((theme) => (

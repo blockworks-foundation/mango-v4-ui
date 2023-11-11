@@ -3,7 +3,7 @@ import { Provider } from '@project-serum/anchor'
 import { MANGO_DATA_API_URL } from 'utils/constants'
 import { AnchorProvider } from '@coral-xyz/anchor'
 
-export const DISTRIBUTION_NUMBER_PREFIX = 111
+export const DISTRIBUTION_NUMBER_PREFIX = 115
 
 type AccountTier = {
   mango_account: string
@@ -32,22 +32,6 @@ type LeaderboardItem = {
     total_points: number
   }[]
   tier: string
-}
-
-export const fetchRewardsPoints = async (
-  mangoAccountPk: string,
-  seasonId: number,
-) => {
-  try {
-    const data = await fetch(
-      `${MANGO_DATA_API_URL}/seasons/season-total-points-account?mango-account=${mangoAccountPk}&seasons-id=${seasonId}`,
-    )
-    const res = await data.json()
-    return res?.total_points || 0
-  } catch (e) {
-    console.log('Failed to fetch points', e)
-    return 0
-  }
 }
 
 export const fetchDistribution = async (provider: Provider, season: number) => {

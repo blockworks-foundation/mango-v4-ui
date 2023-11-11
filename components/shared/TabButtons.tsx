@@ -25,7 +25,7 @@ const TabButtons = <T extends Values>({
       {values.map(([label, count], i) => (
         <div className={fillWidth ? 'flex-1' : ''} key={`${label}` + i}>
           <button
-            className={`flex h-12 w-full items-center justify-center px-4 font-normal focus-visible:bg-th-bkg-2 focus-visible:text-th-fgd-1 md:px-6 ${
+            className={`flex h-12 w-full items-center justify-center px-4 focus-visible:bg-th-bkg-2 focus-visible:text-th-fgd-1 md:px-6 ${
               rounded ? 'rounded-md' : 'rounded-none'
             } ${
               showBorders
@@ -49,7 +49,7 @@ const TabButtons = <T extends Values>({
               className={`${
                 label === 'buy' || label === 'sell'
                   ? 'font-display'
-                  : 'font-medium'
+                  : 'font-bold'
               } whitespace-nowrap`}
             >
               {t(label)}

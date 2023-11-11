@@ -7,7 +7,6 @@ import FlipNumbers from 'react-flip-numbers'
 import { formatCurrencyValue } from 'utils/numbers'
 import Link from 'next/link'
 import SheenLoader from '@components/shared/SheenLoader'
-import Tooltip from '@components/shared/Tooltip'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useJupiterMints from 'hooks/useJupiterMints'
 import useLocalStorageState from 'hooks/useLocalStorageState'
@@ -22,6 +21,8 @@ import TopTokenAccounts from './TopTokenAccounts'
 import TokenParams from './TokenParams'
 import { formatTokenSymbol } from 'utils/tokens'
 import TokenLogo from '@components/shared/TokenLogo'
+import { ArrowLeftIcon } from '@heroicons/react/20/solid'
+import RateCurveChart from './RateCurveChart'
 
 const DEFAULT_COINGECKO_VALUES = {
   ath: 0,
@@ -121,6 +122,21 @@ const TokenPage = () => {
 
   return (
     <>
+      <div className="flex h-14 items-center space-x-4 border-b border-th-bkg-3">
+        <button
+          className="flex h-14 w-14 flex-shrink-0 items-center justify-center border-r border-th-bkg-3 focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2"
+          onClick={() =>
+            router.push(router.pathname, undefined, { shallow: true })
+          }
+        >
+          <ArrowLeftIcon className="h-5 w-5" />
+        </button>
+        {bank ? (
+          <span className="text-lg font-bold text-th-fgd-1">
+            {formatTokenSymbol(bank.name)}
+          </span>
+        ) : null}
+      </div>
       {bank && bankName ? (
         <>
           <div className="flex flex-col border-b border-th-bkg-3 px-6 py-5 md:flex-row md:items-center md:justify-between">
@@ -129,17 +145,14 @@ const TokenPage = () => {
                 <TokenLogo bank={bank} />
                 {coingeckoTokenInfo ? (
                   <h1 className="text-base font-normal">
-                    {coingeckoTokenInfo.name}{' '}
-                    <span className="text-th-fgd-4">
-                      {formatTokenSymbol(bank.name)}
-                    </span>
+                    {coingeckoTokenInfo.name}
                   </h1>
                 ) : (
                   <h1 className="text-base font-normal">{bank.name}</h1>
                 )}
               </div>
-              <div className="flex flex-wrap items-end font-display text-5xl text-th-fgd-1">
-                <div className="mb-2 mr-3">
+              <div className="flex flex-wrap items-end font-display text-4xl text-th-fgd-1 sm:text-5xl">
+                <div className="mb-0.5 mr-3 sm:mb-2">
                   {animationSettings['number-scroll'] ? (
                     <FlipNumbers
                       height={48}
@@ -170,23 +183,8 @@ const TokenPage = () => {
             <ActionPanel bank={bank} />
           </div>
           <ChartTabs bank={bank} />
-          <div className="flex items-center justify-center border-y border-th-bkg-3 px-6 py-4 text-center">
-            <Tooltip
-              content={'The percentage of deposits that have been lent out.'}
-            >
-              <p className="tooltip-underline mr-1">{t('utilization')}:</p>
-            </Tooltip>
-            <span className="font-mono text-th-fgd-2 no-underline">
-              {bank.uiDeposits() > 0 ? (
-                <FormatNumericValue
-                  value={(bank.uiBorrows() / bank.uiDeposits()) * 100}
-                  decimals={1}
-                />
-              ) : (
-                '0.0'
-              )}
-              %
-            </span>
+          <div className="border-y border-th-bkg-3 px-6 pb-2 pt-6">
+            <RateCurveChart bank={bank} />
           </div>
           <TopTokenAccounts bank={bank} />
           {coingeckoTokenInfo?.market_data ? (

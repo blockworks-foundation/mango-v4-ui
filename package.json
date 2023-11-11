@@ -22,8 +22,8 @@
   },
   "dependencies": {
     "@blockworks-foundation/mango-feeds": "0.1.7",
-    "@blockworks-foundation/mango-mints-redemption": "^0.0.8",
-    "@blockworks-foundation/mango-v4": "^0.19.33",
+    "@blockworks-foundation/mango-mints-redemption": "^0.0.10",
+    "@blockworks-foundation/mango-v4": "0.19.43",
     "@blockworks-foundation/mango-v4-settings": "0.2.16",
     "@blockworks-foundation/mangolana": "0.0.1-beta.15",
     "@headlessui/react": "1.6.6",
@@ -32,7 +32,7 @@
     "@moongate/moongate-adapter": "^0.0.94",
     "@project-serum/anchor": "0.25.0",
     "@pythnetwork/client": "2.15.0",
-    "@sentry/nextjs": "7.58.0",
+    "@sentry/nextjs": "7.80.0",
     "@solana/spl-governance": "0.3.27",
     "@solana/spl-token": "0.3.7",
     "@solana/wallet-adapter-base": "0.9.23",
@@ -62,6 +62,7 @@
     "lodash": "4.17.21",
     "next": "13.4.17",
     "next-i18next": "14.0.0",
+    "next-plausible": "3.11.1",
     "next-themes": "0.2.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
@@ -114,7 +115,9 @@
   "resolutions": {
     "@coral-xyz/anchor": "^0.27.0",
     "eslint-config-next/eslint-import-resolver-typescript/tsconfig-paths/json5": "1.0.2",
-    "@solana/wallet-adapter-solflare": "0.6.27"
+    "@solana/wallet-adapter-solflare": "0.6.27",
+    "crypto-js": ">=4.1.1",
+    "@sentry/nextjs": ">=7.77.0"
   },
   "lavamoat": {
     "allowScripts": {

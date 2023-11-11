@@ -7,6 +7,7 @@ import {
   Group,
   I80F48,
   OPENBOOK_PROGRAM_ID,
+  PriceImpact,
   toUiDecimals,
   toUiDecimalsForQuote,
 } from '@blockworks-foundation/mango-v4'
@@ -410,15 +411,6 @@ function isWithinLastXHours(timestampInSeconds: number, hoursNumber: number) {
   const differenceInHours = now.diff(inputDate, 'hour')
 
   return differenceInHours < hoursNumber
-}
-
-export type PriceImpact = {
-  symbol: string
-  side: 'bid' | 'ask'
-  target_amount: number
-  avg_price_impact_percent: number
-  min_price_impact_percent: number
-  max_price_impact_percent: number
 }
 
 export type MidPriceImpact = Omit<

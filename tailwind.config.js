@@ -462,10 +462,10 @@ module.exports = {
           'bkg-2': 'hsl(104, 35%, 26%)',
           'bkg-3': 'hsl(104, 35%, 32%)',
           'bkg-4': 'hsl(104, 35%, 38%)',
-          'fgd-1': 'hsl(104, 35%, 90%)',
-          'fgd-2': 'hsl(104, 35%, 80%)',
-          'fgd-3': 'hsl(104, 35%, 70%)',
-          'fgd-4': 'hsl(104, 35%, 60%)',
+          'fgd-1': 'hsl(104, 35%, 95%)',
+          'fgd-2': 'hsl(104, 35%, 85%)',
+          'fgd-3': 'hsl(104, 35%, 75%)',
+          'fgd-4': 'hsl(104, 35%, 65%)',
         },
         'th-bkg-1': 'var(--bkg-1)',
         'th-bkg-2': 'var(--bkg-2)',
@@ -520,13 +520,5 @@ module.exports = {
       },
     },
   },
-  // variants: {
-  //   extend: {
-  //     cursor: ['hover', 'focus', 'disabled'],
-  //     opacity: ['disabled'],
-  //     backgroundColor: ['disabled'],
-  //     textColor: ['disabled'],
-  //   },
-  // },
   plugins: [],
 }

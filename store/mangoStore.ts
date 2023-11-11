@@ -59,17 +59,15 @@ import {
   SpotBalances,
   SpotTradeHistory,
   SwapHistoryItem,
-  TotalInterestDataItem,
   TradeForm,
   TokenStatsItem,
   NFT,
   TourSettings,
-  ProfileDetails,
   MangoTokenStatsItem,
   ThemeData,
   PositionStat,
   OrderbookTooltip,
-  TriggerOrderTypes,
+  SwapTypes,
 } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4/'
@@ -88,6 +86,7 @@ import mapValues from 'lodash/mapValues'
 import groupBy from 'lodash/groupBy'
 import sampleSize from 'lodash/sampleSize'
 import { fetchTokenStatsData, processTokenStatsData } from 'apis/mngo'
+import { OrderTypes } from 'utils/tradeForm'
 
 const GROUP = new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX')
 
@@ -146,7 +145,7 @@ export const DEFAULT_TRADE_FORM: TradeForm = {
   price: undefined,
   baseSize: '',
   quoteSize: '',
-  tradeType: 'Limit',
+  tradeType: OrderTypes.LIMIT,
   triggerPrice: '',
   postOnly: false,
   ioc: false,
@@ -173,7 +172,6 @@ export type MangoStore = {
     openOrders: Record<string, Order[] | PerpOrder[]>
     perpPositions: PerpPosition[]
     spotBalances: SpotBalances
-    interestTotals: { data: TotalInterestDataItem[]; loading: boolean }
     swapHistory: {
       data: SwapHistoryItem[]
       initialLoad: boolean
@@ -200,10 +198,6 @@ export type MangoStore = {
     }
   }
   orderbookTooltip: OrderbookTooltip | undefined
-  profile: {
-    details: ProfileDetails | null
-    loadDetails: boolean
-  }
   prependedGlobalAdditionalInstructions: TransactionInstruction[]
   priorityFee: number
   selectedMarket: {
@@ -242,7 +236,7 @@ export type MangoStore = {
     amountIn: string
     amountOut: string
     flipPrices: boolean
-    swapOrTrigger: TriggerOrderTypes
+    swapOrTrigger: SwapTypes
     triggerPrice: string
   }
   set: (x: (x: MangoStore) => void) => void
@@ -271,7 +265,6 @@ export type MangoStore = {
     height: number
   }
   actions: {
-    fetchAccountInterestTotals: (mangoAccountPk: string) => Promise<void>
     fetchActivityFeed: (
       mangoAccountPk: string,
       offset?: number,
@@ -285,7 +278,6 @@ export type MangoStore = {
     fetchOpenOrders: (refetchMangoAccount?: boolean) => Promise<void>
     fetchPerpStats: () => void
     fetchPositionsStats: () => void
-    fetchProfileDetails: (walletPk: string) => void
     fetchSwapHistory: (
       mangoAccountPk: string,
       timeout?: number,
@@ -323,7 +315,16 @@ const mangoStore = create<MangoStore>()(
 
     let connection: Connection
     try {
-      connection = new web3.Connection(rpcUrl, CONNECTION_COMMITMENT)
+      // if connection is using Triton RpcPool then use whirligig
+      // https://docs.triton.one/project-yellowstone/whirligig-websockets
+      if (rpcUrl.includes('rpcpool')) {
+        connection = new web3.Connection(rpcUrl, {
+          wsEndpoint: `${rpcUrl.replace('http', 'ws')}/whirligig`,
+          commitment: CONNECTION_COMMITMENT,
+        })
+      } else {
+        connection = new web3.Connection(rpcUrl, CONNECTION_COMMITMENT)
+      }
     } catch {
       connection = new web3.Connection(ENDPOINT.url, CONNECTION_COMMITMENT)
     }
@@ -351,7 +352,6 @@ const mangoStore = create<MangoStore>()(
         openOrders: {},
         perpPositions: [],
         spotBalances: {},
-        interestTotals: { data: [], loading: false },
         swapHistory: { data: [], loading: true, initialLoad: true },
         tradeHistory: { data: [], loading: true },
       },
@@ -371,10 +371,6 @@ const mangoStore = create<MangoStore>()(
         },
       },
       orderbookTooltip: undefined,
-      profile: {
-        loadDetails: false,
-        details: { profile_name: '', trader_category: '', wallet_pk: '' },
-      },
       priorityFee: DEFAULT_PRIORITY_FEE,
       prependedGlobalAdditionalInstructions: [],
       selectedMarket: {
@@ -450,45 +446,6 @@ const mangoStore = create<MangoStore>()(
         height: 0,
       },
       actions: {
-        fetchAccountInterestTotals: async (mangoAccountPk: string) => {
-          const set = get().set
-          set((state) => {
-            state.mangoAccount.interestTotals.loading = true
-          })
-          try {
-            const response = await fetch(
-              `${MANGO_DATA_API_URL}/stats/interest-account-total?mango-account=${mangoAccountPk}`,
-            )
-            const parsedResponse:
-              | Omit<TotalInterestDataItem, 'symbol'>[]
-              | null = await response.json()
-            if (parsedResponse) {
-              const entries: [string, Omit<TotalInterestDataItem, 'symbol'>][] =
-                Object.entries(parsedResponse).sort((a, b) =>
-                  b[0].localeCompare(a[0]),
-                )
-
-              const stats: TotalInterestDataItem[] = entries
-                .map(([key, value]) => {
-                  return { ...value, symbol: key }
-                })
-                .filter((x) => x)
-
-              set((state) => {
-                state.mangoAccount.interestTotals.data = stats
-                state.mangoAccount.interestTotals.loading = false
-              })
-            }
-          } catch {
-            set((state) => {
-              state.mangoAccount.interestTotals.loading = false
-            })
-            console.error({
-              title: 'Failed to load account interest totals',
-              type: 'error',
-            })
-          }
-        },
         fetchActivityFeed: async (
           mangoAccountPk: string,
           offset = 0,
@@ -663,7 +620,10 @@ const mangoStore = create<MangoStore>()(
               client.getMangoAccountsForOwner(group, ownerPk),
               client.getMangoAccountsForDelegate(group, ownerPk),
             ])
-            const mangoAccounts = [...ownerMangoAccounts, ...delegateAccounts]
+            const mangoAccounts = [
+              ...ownerMangoAccounts,
+              ...delegateAccounts,
+            ].filter((acc) => !acc.name.includes('Leverage Stake'))
             const selectedAccountIsNotInAccountsList = mangoAccounts.find(
               (x) =>
                 x.publicKey.toBase58() ===
@@ -1044,27 +1004,6 @@ const mangoStore = create<MangoStore>()(
             s.client = newClient
             s.prependedGlobalAdditionalInstructions = instructions
           })
-        },
-        async fetchProfileDetails(walletPk: string) {
-          const set = get().set
-          set((state) => {
-            state.profile.loadDetails = true
-          })
-          try {
-            const response = await fetch(
-              `${MANGO_DATA_API_URL}/user-data/profile-details?wallet-pk=${walletPk}`,
-            )
-            const data = await response.json()
-            set((state) => {
-              state.profile.details = data
-              state.profile.loadDetails = false
-            })
-          } catch (e) {
-            console.error(e)
-            set((state) => {
-              state.profile.loadDetails = false
-            })
-          }
         },
         async fetchTourSettings(walletPk: string) {
           const set = get().set

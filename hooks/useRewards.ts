@@ -1,4 +1,3 @@
-import { Wallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
 import { useQuery } from '@tanstack/react-query'
@@ -8,7 +7,6 @@ import {
   fetchCurrentSeason,
   fetchDistribution,
   fetchLeaderboard,
-  fetchRewardsPoints,
 } from 'apis/rewards'
 import { useEffect, useState } from 'react'
 
@@ -54,31 +52,13 @@ export const useDistribution = (seasonId: number | undefined) => {
   const { client } = mangoStore()
   const provider = client.program.provider
   return useQuery(
-    ['distribution', seasonId],
+    ['distribution', seasonId, client.program.provider.publicKey?.toBase58()],
     () => fetchDistribution(client.program.provider, seasonId!),
     {
       cacheTime: 1000 * 60 * 10,
       staleTime: 1000 * 60,
       retry: 3,
       enabled: !!provider && !!seasonId,
-    },
-  )
-}
-
-export const useWalletPoints = (
-  mangoAccountAddress: string,
-  season_id: number | undefined,
-  wallet: Wallet | null,
-) => {
-  return useQuery(
-    ['rewards-points', mangoAccountAddress, season_id],
-    () => fetchRewardsPoints(mangoAccountAddress, season_id!),
-    {
-      cacheTime: 1000 * 60 * 10,
-      staleTime: 1000 * 60,
-      retry: 3,
-      refetchOnWindowFocus: false,
-      enabled: !!wallet?.adapter && !!mangoAccountAddress,
     },
   )
 }
@@ -101,7 +81,8 @@ export const useIsAllClaimed = (
   prevSeason: number | undefined,
   walletPk: PublicKey | null,
 ) => {
-  const [isAllClaimed, setIsAllCliamed] = useState(false)
+  const [isAllClaimed, setIsAllCliamed] = useState(true)
+  const [showClaim, setShowClaim] = useState(false)
   const { data: distributionDataAndClient } = useDistribution(prevSeason)
   const distributionData = distributionDataAndClient?.distribution
 
@@ -121,5 +102,19 @@ export const useIsAllClaimed = (
     handleGetIsAllClaimed()
   }, [distributionData, walletPk])
 
-  return isAllClaimed
+  useEffect(() => {
+    if (distributionData && walletPk) {
+      const start = distributionData.start.getTime()
+      const currentTimestamp = new Date().getTime()
+      const isClaimActive =
+        start < currentTimestamp &&
+        start + distributionData.duration * 1000 > currentTimestamp &&
+        !isAllClaimed
+
+      setShowClaim(isClaimActive)
+    } else {
+      setShowClaim(false)
+    }
+  }, [distributionData, walletPk, isAllClaimed])
+  return { isAllClaimed, showClaim }
 }
