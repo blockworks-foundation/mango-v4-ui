@@ -34,6 +34,7 @@ import {
   isSwapActivityFeedItem,
 } from 'types'
 import Tooltip from '@components/shared/Tooltip'
+import { useHiddenMangoAccounts } from 'hooks/useHiddenMangoAccounts'
 
 const fetchSeasonTradesData = async (
   startDate: string,
@@ -65,6 +66,7 @@ const Season = ({
   setShowLeaderboards: (x: string) => void
 }) => {
   const { t } = useTranslation(['common', 'governance', 'rewards'])
+  const { hiddenAccounts } = useHiddenMangoAccounts()
   const telemetry = usePlausible<TelemetryEvents>()
   const { wallet } = useWallet()
   const faqRef = useRef<HTMLDivElement>(null)
@@ -138,11 +140,18 @@ const Season = ({
     isLoading: loadingTopAccountsLeaderboardData,
   } = useTopAccountsLeaderBoard(seasonData?.season_id)
 
-  const leadersForTier =
-    topAccountsLeaderboardData && topAccountsLeaderboardData.length
-      ? topAccountsLeaderboardData?.find((x) => x.tier === topAccountsTier)
-          ?.leaderboard || []
-      : []
+  const leadersForTier = useMemo(() => {
+    if (!topAccountsLeaderboardData || !topAccountsLeaderboardData.length)
+      return []
+    const data =
+      topAccountsLeaderboardData.find((x) => x.tier === topAccountsTier)
+        ?.leaderboard || []
+    if (hiddenAccounts) {
+      return data.filter((d) => !hiddenAccounts.includes(d.mango_account))
+    } else {
+      return data
+    }
+  }, [topAccountsLeaderboardData, topAccountsTier, hiddenAccounts])
 
   const isLoadingLeaderboardData =
     fetchingTopAccountsLeaderboardData || loadingTopAccountsLeaderboardData
