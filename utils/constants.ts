@@ -163,12 +163,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   'wbtc (portal)': true,
 }
 
-export const DEFAULT_FAVORITE_MKTS = [
-  'SOL-PERP',
-  'ETH-PERP',
-  'BTC-PERP',
-  'RNDR-PERP',
-]
+export const DEFAULT_FAVORITE_MKTS = ['SOL-PERP', 'ETH-PERP', 'BTC-PERP']
 
 export const WHITE_LIST_API = 'https://api.mngo.cloud/whitelist/v1/'
 export const DAILY_SECONDS = 86400
