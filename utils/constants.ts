@@ -152,7 +152,6 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   orca: true,
   ray: true,
   rlb: true,
-  rndr: true,
   sol: true,
   stsol: true,
   tbtc: true,
