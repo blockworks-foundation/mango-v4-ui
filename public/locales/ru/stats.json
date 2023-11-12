@@ -4,6 +4,7 @@
     "daily": "Daily",
     "hourly": "Hourly",
     "largest-perp-positions": "Largest Positions",
+    "net-deposits": "Net Deposits",
     "perp-details": "{{market}} Stats",
     "perp-open-interest": "Perp Open Interest",
     "perp-volume": "Perp Volume",
