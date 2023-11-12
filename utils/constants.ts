@@ -151,6 +151,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   msol: true,
   orca: true,
   ray: true,
+  render: true,
   rlb: true,
   sol: true,
   stsol: true,
