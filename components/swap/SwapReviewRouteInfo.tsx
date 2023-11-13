@@ -146,6 +146,61 @@ const deserializeJupiterIxAndAlt = async (
 //   return [instructions, []]
 // }
 
+/**  Given a Jupiter route, fetch the transaction for the user to sign.
+ **This function should ONLY be used for wallet swaps* */
+export const fetchJupiterWalletSwapTransaction = async (
+  selectedRoute: JupiterV6RouteInfo,
+  userPublicKey: PublicKey,
+  slippage: number,
+  outputMint: PublicKey,
+): Promise<VersionedTransaction> => {
+  // TODO: replace by something that belongs to the DAO
+  // https://referral.jup.ag/
+  // EV4qhLE2yPKdUPdQ74EWJUn21xT3eGQxG3DRR1g9NNFc belongs to 8SSLjXBEVk9nesbhi9UMCA32uijbVBUqWoKPPQPTekzt
+  // for now
+  const feeAccountPdas = await PublicKey.findProgramAddressSync(
+    [
+      Buffer.from('referral_ata'),
+      new PublicKey('EV4qhLE2yPKdUPdQ74EWJUn21xT3eGQxG3DRR1g9NNFc').toBuffer(),
+      outputMint.toBuffer(),
+    ],
+    new PublicKey('REFER4ZgmyYx9c6He5XfaTMiGfdLwRnkV4RPp9t9iF3'),
+  )
+  const feeAccount = feeAccountPdas[0]
+
+  // docs https://station.jup.ag/api-v6/post-swap
+  const transactions = await (
+    await fetch(`${JUPITER_V6_QUOTE_API_MAINNET}/swap`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        // response from /quote api
+        quoteResponse: selectedRoute,
+        // user public key to be used for the swap
+        userPublicKey,
+        slippageBps: Math.ceil(slippage * 100),
+        // docs
+        // https://station.jup.ag/docs/additional-topics/referral-program
+        // https://github.com/TeamRaccoons/referral
+        // https://github.com/TeamRaccoons/referral/blob/main/packages/sdk/src/referral.ts
+        platformFeeBps: 1,
+        feeAccount,
+        // limits
+      }),
+    })
+  ).json()
+
+  const { swapTransaction } = transactions
+
+  const parsedSwapTransaction = VersionedTransaction.deserialize(
+    Buffer.from(swapTransaction, 'base64'),
+  )
+  return parsedSwapTransaction
+}
+/**  Given a Jupiter route, fetch the transaction for the user to sign.
+ **This function should be used for margin swaps* */
 export const fetchJupiterTransaction = async (
   connection: Connection,
   selectedRoute: JupiterV6RouteInfo,
@@ -153,7 +208,6 @@ export const fetchJupiterTransaction = async (
   slippage: number,
   inputMint: PublicKey,
   outputMint: PublicKey,
-  isDirectWalletSwap = false,
 ): Promise<[TransactionInstruction[], AddressLookupTableAccount[]]> => {
   // TODO: replace by something that belongs to the DAO
   // https://referral.jup.ag/
@@ -212,10 +266,10 @@ export const fetchJupiterTransaction = async (
     )
   }
 
-  //if its in wallet swap we need ATA creation
+  //remove ATA and compute setup from swaps in margin trades
   const filtered_jup_ixs = ixs
-    .filter((ix) => (!isDirectWalletSwap ? !isSetupIx(ix.programId) : true))
-    .filter((ix) => (!isDirectWalletSwap ? !isDuplicateAta(ix) : true))
+    .filter((ix) => !isSetupIx(ix.programId))
+    .filter((ix) => !isDuplicateAta(ix))
 
   return [filtered_jup_ixs, alts]
 }
@@ -321,21 +375,26 @@ const SwapReviewRouteInfo = ({
   const onWalletSwap = useCallback(async () => {
     if (!selectedRoute || !inputBank || !outputBank || !wallet.publicKey) return
     const actions = mangoStore.getState().actions
-    const client = mangoStore.getState().client
     const connection = mangoStore.getState().connection
     setSubmitting(true)
     try {
-      const [ixs] = await fetchJupiterTransaction(
-        connection,
+      const vtx = await fetchJupiterWalletSwapTransaction(
         selectedRoute,
         wallet.publicKey,
         slippage,
-        inputBank.mint,
         outputBank.mint,
-        true,
       )
 
-      const tx = await client.sendAndConfirmTransaction(ixs)
+      const sign = wallet.signTransaction!
+      const signed = await sign(vtx)
+      const rawTransaction = signed.serialize()
+
+      const txid = await connection.sendRawTransaction(rawTransaction, {
+        skipPreflight: true,
+        maxRetries: 2,
+      })
+
+      await connection.confirmTransaction(txid)
       set((s) => {
         s.swap.amountIn = ''
         s.swap.amountOut = ''
@@ -343,7 +402,7 @@ const SwapReviewRouteInfo = ({
       notify({
         title: 'Transaction confirmed',
         type: 'success',
-        txid: tx.signature,
+        txid,
       })
       actions.fetchWalletTokens(wallet.publicKey)
     } catch (e) {
