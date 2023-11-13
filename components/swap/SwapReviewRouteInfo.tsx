@@ -159,11 +159,13 @@ export const fetchJupiterTransaction = async (
   // https://referral.jup.ag/
   // EV4qhLE2yPKdUPdQ74EWJUn21xT3eGQxG3DRR1g9NNFc belongs to 8SSLjXBEVk9nesbhi9UMCA32uijbVBUqWoKPPQPTekzt
   // for now
+
+  const feeMint = selectedRoute.swapMode === 'ExactIn' ? outputMint : inputMint
   const feeAccountPdas = await PublicKey.findProgramAddressSync(
     [
       Buffer.from('referral_ata'),
       new PublicKey('EV4qhLE2yPKdUPdQ74EWJUn21xT3eGQxG3DRR1g9NNFc').toBuffer(),
-      outputMint.toBuffer(),
+      feeMint.toBuffer(),
     ],
     new PublicKey('REFER4ZgmyYx9c6He5XfaTMiGfdLwRnkV4RPp9t9iF3'),
   )
