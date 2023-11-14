@@ -33,7 +33,7 @@ import { useTranslation } from 'next-i18next'
 import { formatNumericValue } from '../../utils/numbers'
 import { notify } from '../../utils/notifications'
 import useJupiterMints from '../../hooks/useJupiterMints'
-import { JupiterV6RouteInfo } from 'types/jupiter'
+import { JupiterV6RouteInfo, JupiterV6RoutePlan } from 'types/jupiter'
 import useJupiterSwapData from './useJupiterSwapData'
 // import { Transaction } from '@solana/web3.js'
 import {
@@ -52,6 +52,7 @@ import { isMangoError } from 'types'
 import { useWallet } from '@solana/wallet-adapter-react'
 import TokenLogo from '@components/shared/TokenLogo'
 import {
+  Bank,
   TransactionErrors,
   parseTxForKnownErrors,
 } from '@blockworks-foundation/mango-v4'
@@ -110,6 +111,34 @@ const deserializeJupiterIxAndAlt = async (
   })
 
   return [decompiledMessage.instructions, addressLookupTables]
+}
+
+const calculateOutFees = (
+  routePlan: JupiterV6RoutePlan[],
+  inputBank: Bank,
+  outputBank: Bank,
+  outputDecimals: number,
+): [number, number] => {
+  let outFee = 0
+  for (let i = 0; i < routePlan.length; i++) {
+    const r = routePlan[i].swapInfo
+    const price = r.outAmount / r.inAmount
+    outFee *= price
+    if (r.feeMint === r.outputMint) {
+      outFee += r.feeAmount
+    } else {
+      outFee += r.feeAmount * price
+    }
+  }
+  const jupiterFee = outFee / 10 ** outputDecimals
+
+  const flashLoanSwapFeeRate = Math.max(
+    inputBank.flashLoanSwapFeeRate,
+    outputBank.flashLoanSwapFeeRate,
+  )
+  const mangoSwapFee = routePlan[0].swapInfo.inAmount * flashLoanSwapFeeRate
+
+  return [jupiterFee, mangoSwapFee]
 }
 
 // const prepareMangoRouterInstructions = async (
@@ -552,6 +581,24 @@ const SwapReviewRouteInfo = ({
     return [balance, borrowAmount]
   }, [amountIn])
 
+  const [jupiterFees] = useMemo(() => {
+    if (
+      !selectedRoute?.routePlan ||
+      !inputBank ||
+      !outputBank ||
+      !outputTokenInfo
+    ) {
+      return [0, 0]
+    }
+
+    return calculateOutFees(
+      selectedRoute?.routePlan,
+      inputBank,
+      outputBank,
+      outputTokenInfo.decimals,
+    )
+  }, [selectedRoute])
+
   const coinGeckoPriceDifference = useMemo(() => {
     return amountOut?.toNumber()
       ? amountIn
@@ -766,6 +813,46 @@ const SwapReviewRouteInfo = ({
                   : `${(selectedRoute?.priceImpactPct * 100).toFixed(2)}%`}
               </p>
             </div>
+            <div className="flex justify-between">
+              <Tooltip
+                content={
+                  <>
+                    <p>
+                      The fee displayed here is an estimate and is displayed in
+                      destination tokens for convenience. Note that each leg of
+                      the swap may collect its fee in different tokens, so fees
+                      may vary.
+                    </p>
+                  </>
+                }
+              >
+                <p className="tooltip-underline">Jupiter Fees</p>
+              </Tooltip>
+              <p className="text-right font-mono text-sm text-th-fgd-2">
+                ≈{' '}
+                <FormatNumericValue
+                  value={jupiterFees}
+                  decimals={outputTokenInfo.decimals}
+                />{' '}
+                <span className="font-body text-th-fgd-3">
+                  {outputTokenInfo?.symbol}
+                </span>
+              </p>
+            </div>
+
+            {/* <div className="flex justify-between">
+              <p className="text-th-fgd-3">Mango Fees</p>
+              <p className="text-right font-mono text-sm text-th-fgd-2">
+                ≈{' '}
+                <FormatNumericValue
+                  value={mangoFees}
+                  decimals={outputTokenInfo.decimals}
+                />{' '}
+                <span className="font-body text-th-fgd-3">
+                  {outputTokenInfo?.symbol}
+                </span>
+              </p>
+            </div> */}
             {borrowAmount ? (
               <>
                 <div className="flex justify-between">
