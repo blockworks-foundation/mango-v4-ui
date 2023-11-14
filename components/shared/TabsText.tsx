@@ -17,7 +17,9 @@ const TabsText = ({
       {tabs.map((tab) => (
         <button
           className={`flex items-center space-x-2 font-bold focus:outline-none ${
-            activeTab === tab[0] ? 'text-th-active' : ''
+            activeTab === tab[0]
+              ? 'text-th-active md:hover:text-th-active'
+              : 'text-th-fgd-2 md:hover:text-th-fgd-3'
           } ${className}`}
           onClick={() => onChange(tab[0])}
           key={tab[0]}

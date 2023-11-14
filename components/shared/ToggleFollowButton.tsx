@@ -13,8 +13,9 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import useFollowedAccounts from 'hooks/useFollowedAccounts'
 import Tooltip from './Tooltip'
 import { useTranslation } from 'react-i18next'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { FollowedAccountApi } from '@components/explore/FollowedAccounts'
+import Loading from './Loading'
 
 const toggleFollowAccount = async (
   type: string,
@@ -24,11 +25,13 @@ const toggleFollowAccount = async (
   refetch: <TPageData>(
     options?: (RefetchOptions & RefetchQueryFilters<TPageData>) | undefined,
   ) => Promise<QueryObserverResult>,
+  setLoading: (loading: boolean) => void,
 ) => {
   try {
     if (!publicKey) throw new Error('Wallet not connected!')
     if (!signMessage) throw new Error('Wallet does not support message signing')
 
+    setLoading(true)
     const messageObject = {
       mango_account: mangoAccountPk,
       action: type,
@@ -56,13 +59,11 @@ const toggleFollowAccount = async (
     )
     if (response.status === 200) {
       await refetch()
-      const notificationMessage = isPost
-        ? 'Account followed'
-        : 'Account unfollowed'
-      notify({ type: 'success', title: notificationMessage })
     }
   } catch {
     notify({ type: 'error', title: 'Failed to follow account' })
+  } finally {
+    setLoading(false)
   }
 }
 
@@ -77,6 +78,7 @@ const ToggleFollowButton = ({
   const { publicKey, signMessage } = useWallet()
   const { data: followedAccounts, refetch: refetchFollowedAccounts } =
     useFollowedAccounts()
+  const [loading, setLoading] = useState(false)
 
   const [isFollowed, type] = useMemo(() => {
     if (!followedAccounts || !followedAccounts.length) return [false, 'insert']
@@ -87,6 +89,13 @@ const ToggleFollowButton = ({
       return [true, 'delete']
     } else return [false, 'insert']
   }, [accountPk, followedAccounts])
+
+  const disabled =
+    !accountPk ||
+    loading ||
+    !publicKey ||
+    !signMessage ||
+    (!isFollowed && followedAccounts?.length >= 10)
 
   return (
     <Tooltip
@@ -102,12 +111,7 @@ const ToggleFollowButton = ({
     >
       <button
         className="flex items-center focus:outline-none disabled:opacity-50 md:hover:text-th-fgd-3"
-        disabled={
-          !accountPk ||
-          !publicKey ||
-          !signMessage ||
-          (!isFollowed && followedAccounts?.length >= 10)
-        }
+        disabled={disabled}
         onClick={() =>
           toggleFollowAccount(
             type,
@@ -115,13 +119,16 @@ const ToggleFollowButton = ({
             publicKey,
             signMessage!,
             refetchFollowedAccounts,
+            setLoading,
           )
         }
       >
-        {isFollowed ? (
-          <FilledStarIcon className="h-4 w-4 text-th-active" />
+        {loading ? (
+          <Loading />
+        ) : isFollowed ? (
+          <FilledStarIcon className="h-5 w-5 text-th-active" />
         ) : (
-          <StarIcon className="h-4 w-4 text-th-fgd-3" />
+          <StarIcon className="h-5 w-5 text-th-fgd-3" />
         )}
         {showText ? (
           <span className="ml-1.5">

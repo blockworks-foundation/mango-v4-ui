@@ -11,6 +11,7 @@ import SheenLoader from '@components/shared/SheenLoader'
 import ToggleFollowButton from '@components/shared/ToggleFollowButton'
 import { Disclosure } from '@headlessui/react'
 import {
+  ArrowPathIcon,
   ArrowTopRightOnSquareIcon,
   ChevronDownIcon,
   NoSymbolIcon,
@@ -69,6 +70,7 @@ const getFollowedMangoAccounts = async (accounts: FollowedAccount[]) => {
 }
 
 const FollowedAccounts = () => {
+  const { t } = useTranslation('account')
   const { data: followedAccounts, isInitialLoading: loadingFollowedAccounts } =
     useFollowedAccounts()
   const [followedMangoAccounts, setFollowedMangoAccounts] = useState<
@@ -88,11 +90,11 @@ const FollowedAccounts = () => {
   }, [followedAccounts])
 
   return (
-    <div className="px-4 pb-10 pt-4 md:px-6">
+    <div className="px-4 pt-4 md:px-6 md:pb-10">
       {loadingFollowedAccounts || loading ? (
-        [...Array(4)].map((x, i) => (
+        [...Array(3)].map((x, i) => (
           <SheenLoader className="mt-2 flex flex-1" key={i}>
-            <div className="h-16 w-full bg-th-bkg-2" />
+            <div className="h-[94px] w-full bg-th-bkg-2" />
           </SheenLoader>
         ))
       ) : followedMangoAccounts?.length ? (
@@ -104,9 +106,9 @@ const FollowedAccounts = () => {
       ) : (
         <div className="mt-2 flex flex-col items-center rounded-md border border-th-bkg-3 p-4">
           <NoSymbolIcon className="mb-1 h-7 w-7 text-th-fgd-4" />
-          <p className="mb-1">Your not following any accounts yet...</p>
+          <p className="mb-1 text-base">{t('account:not-following-yet')}</p>
           <Link href="/leaderboard" shallow>
-            <span className="font-bold">Find accounts to follow</span>
+            <span className="font-bold">{t('account:find-accounts')}</span>
           </Link>
         </div>
       )}
@@ -166,18 +168,22 @@ const AccountDisplay = ({ account }: { account: FollowedAccount }) => {
     return hiddenAccounts.find((acc) => acc === publicKey.toString())
   }, [publicKey, hiddenAccounts])
 
-  const { data: activityData, isInitialLoading: loadingActivityData } =
-    useQuery(
-      ['followed-account-activity', publicKey],
-      () => fetchActivityData(publicKey),
-      {
-        cacheTime: 1000 * 60 * 10,
-        staleTime: 1000 * 60,
-        retry: 3,
-        refetchOnWindowFocus: false,
-        enabled: publicKey && !isPrivateAccount && !loadingHiddenAccounts,
-      },
-    )
+  const {
+    data: activityData,
+    isInitialLoading: loadingActivityData,
+    isFetching: fetchingActivityData,
+    refetch: refetchActivityData,
+  } = useQuery(
+    ['followed-account-activity', publicKey],
+    () => fetchActivityData(publicKey),
+    {
+      cacheTime: 1000 * 60 * 10,
+      staleTime: 1000 * 60,
+      retry: 3,
+      refetchOnWindowFocus: false,
+      enabled: publicKey && !isPrivateAccount && !loadingHiddenAccounts,
+    },
+  )
 
   const accountValue = useMemo(() => {
     if (!group) return 0
@@ -201,55 +207,72 @@ const AccountDisplay = ({ account }: { account: FollowedAccount }) => {
       {({ open }) => (
         <>
           <Disclosure.Button
-            className={`mt-2 flex w-full items-center justify-between rounded-lg border border-th-bkg-3 p-4 ${
+            className={`mt-2 flex w-full items-center rounded-lg border border-th-bkg-3 p-4 md:hover:border-th-bkg-4 ${
               open ? 'rounded-b-none border-b-0' : ''
             }`}
           >
-            <AccountNameDisplay
-              accountName={name}
-              accountPk={publicKey}
-              profileImageUrl={profile_image_url}
-              profileName={profile_name}
-              walletPk={owner}
-            />
-            <div className="flex items-center space-x-4">
-              <div className="grid grid-cols-2 gap-6">
-                <div className="flex flex-col items-end">
-                  <p className="mb-1">{t('value')}</p>
-                  <span className="font-mono">
-                    <FormatNumericValue value={accountValue} isUsd />
-                  </span>
-                  <Change
-                    change={rollingDailyValueChange}
-                    prefix="$"
-                    size="small"
-                  />
-                </div>
-                <div className="flex flex-col items-end">
-                  <p className="mb-1">{t('pnl')}</p>
-                  <span className="font-mono">
-                    <FormatNumericValue value={accountPnl} isUsd />
-                  </span>
-                  <Change
-                    change={rollingDailyPnlChange}
-                    prefix="$"
-                    size="small"
-                  />
+            <div className="grid w-full grid-cols-2">
+              <div className="col-span-2 flex h-full items-center md:col-span-1">
+                <AccountNameDisplay
+                  accountName={name}
+                  accountPk={publicKey}
+                  profileImageUrl={profile_image_url}
+                  profileName={profile_name}
+                  walletPk={owner}
+                />
+              </div>
+              <div className="col-span-2 mt-3 border-t border-th-bkg-3 pt-3 md:col-span-1 md:mt-0 md:border-t-0 md:pt-0">
+                <div className="grid grid-cols-2">
+                  <div className="flex flex-col items-start md:items-end">
+                    <p className="mb-1">{t('value')}</p>
+                    <span className="font-mono">
+                      <FormatNumericValue value={accountValue} isUsd />
+                    </span>
+                    <Change
+                      change={rollingDailyValueChange}
+                      prefix="$"
+                      size="small"
+                    />
+                  </div>
+                  <div className="flex flex-col items-start md:items-end">
+                    <p className="mb-1">{t('pnl')}</p>
+                    <span className="font-mono">
+                      <FormatNumericValue value={accountPnl} isUsd />
+                    </span>
+                    <Change
+                      change={rollingDailyPnlChange}
+                      prefix="$"
+                      size="small"
+                    />
+                  </div>
                 </div>
               </div>
-              <ChevronDownIcon
-                className={`${
-                  open ? 'rotate-180' : 'rotate-360'
-                } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
-              />
             </div>
+            <ChevronDownIcon
+              className={`${
+                open ? 'rotate-180' : 'rotate-360'
+              } ml-4 h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+            />
           </Disclosure.Button>
           <Disclosure.Panel>
             <div className="rounded-lg rounded-t-none border border-t-0 border-th-bkg-3 p-4 pt-0">
               <div className="border-t border-th-bkg-3 pt-4">
-                <div className="mb-4 flex items-center justify-between">
-                  <h3 className="text-base">{t('activity:latest-activity')}</h3>
-                  <div className="flex items-center space-x-4">
+                <div className="mb-4 flex flex-wrap items-center justify-between">
+                  <h3 className="mr-3 text-base">
+                    {t('activity:latest-activity')}
+                  </h3>
+                  <div className="mt-0.5 flex items-center space-x-4">
+                    <button
+                      className="flex items-center focus:outline-none"
+                      onClick={() => refetchActivityData()}
+                    >
+                      <ArrowPathIcon
+                        className={`mr-1.5 h-4 w-4 ${
+                          fetchingActivityData ? 'animate-spin' : null
+                        }`}
+                      />
+                      <span>{t('refresh')}</span>
+                    </button>
                     <ToggleFollowButton
                       accountPk={publicKey.toString()}
                       showText
@@ -343,7 +366,8 @@ const ActivityContent = ({ activity }: { activity: ActivityFeed }) => {
   }
   if (isSpotTradeActivityFeedItem(activity)) {
     const { activity_type, block_datetime } = activity
-    const { price, market, side, size } = activity.activity_details
+    const { base_symbol, price, quote_symbol, side, size } =
+      activity.activity_details
     return (
       <div className="flex items-center justify-between">
         <div>
@@ -352,7 +376,7 @@ const ActivityContent = ({ activity }: { activity: ActivityFeed }) => {
           </p>
           <p className="mb-0.5 text-th-fgd-2">{`${t(
             side,
-          )} ${size} ${market}`}</p>
+          )} ${size} ${base_symbol}/${quote_symbol}`}</p>
           <p className="text-xs">
             {dayjs(block_datetime).format('DD MMM YYYY, h:mma')}
           </p>
@@ -429,9 +453,9 @@ const AccountNameDisplay = ({
   return (
     <div className="flex items-center space-x-3">
       <ProfileImage
-        imageSize={'40'}
+        imageSize={'48'}
         imageUrl={profileImageUrl}
-        placeholderSize={'24'}
+        placeholderSize={'32'}
       />
       <div>
         <p className="mb-1 text-left font-bold text-th-fgd-2">

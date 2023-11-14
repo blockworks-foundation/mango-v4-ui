@@ -30,7 +30,7 @@ const Explore = () => {
     const perpMarkets = mangoStore.getState().perpMarkets
     const tabs: [string, number][] = [
       ['tokens', banks.length],
-      ['perp-markets', perpMarkets.length],
+      ['perp', perpMarkets.length],
       ['account:followed-accounts', followedAccounts?.length],
     ]
     return tabs
@@ -54,7 +54,7 @@ const Explore = () => {
             activeTab={activeTab}
             onChange={setActiveTab}
             tabs={tabsWithCount}
-            className="text-lg"
+            className="xl:text-lg"
           />
         </div>
       </div>

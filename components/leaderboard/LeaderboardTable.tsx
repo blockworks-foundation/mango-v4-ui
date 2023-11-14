@@ -62,7 +62,7 @@ const LeaderboardRow = ({
 
   return !loading ? (
     <div className="flex">
-      <div className="flex flex-1 items-center rounded-l-md bg-th-bkg-2 px-3">
+      <div className="flex flex-1 items-center rounded-l-md border border-r-0 border-th-bkg-3 bg-th-bkg-2 px-3">
         <ToggleFollowButton accountPk={mango_account} />
       </div>
       <a
@@ -71,11 +71,11 @@ const LeaderboardRow = ({
         rel="noopener noreferrer"
         target="_blank"
       >
-        <div className="flex items-center space-x-3">
+        <div className="flex w-full items-center space-x-3">
           <div
             className={`relative flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full ${
               rank < 4 ? '' : 'bg-th-bkg-3'
-            } md:mr-2`}
+            }`}
           >
             <p
               className={`relative z-10 font-bold ${
@@ -91,22 +91,23 @@ const LeaderboardRow = ({
             imageUrl={profile_image_url}
             placeholderSize={isTablet ? '20' : '24'}
           />
-          <div className="text-left">
-            <p className="capitalize text-th-fgd-2 md:text-base">
-              {profile_name ||
-                wallet_pk.slice(0, 4) + '...' + wallet_pk.slice(-4)}
-            </p>
-            <p className="text-xs text-th-fgd-4">
-              Acc: {mango_account.slice(0, 4) + '...' + mango_account.slice(-4)}
-            </p>
+          <div className="flex w-full flex-col items-start sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="capitalize text-th-fgd-2 md:text-base">
+                {profile_name ||
+                  wallet_pk.slice(0, 4) + '...' + wallet_pk.slice(-4)}
+              </p>
+              <p className="text-xs text-th-fgd-4">
+                Acc:{' '}
+                {mango_account.slice(0, 4) + '...' + mango_account.slice(-4)}
+              </p>
+            </div>
+            <span className="mr-3 mt-1 text-right font-mono sm:mt-0 md:text-base">
+              {formatCurrencyValue(value, 2)}
+            </span>
           </div>
         </div>
-        <div className="flex items-center">
-          <span className="mr-3 text-right font-mono md:text-base">
-            {formatCurrencyValue(value, 2)}
-          </span>
-          <ChevronRightIcon className="h-5 w-5 text-th-fgd-3" />
-        </div>
+        <ChevronRightIcon className="h-5 w-5 text-th-fgd-3" />
       </a>
     </div>
   ) : (
