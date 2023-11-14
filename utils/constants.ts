@@ -112,7 +112,7 @@ export const TRADE_VOLUME_ALERT_KEY = 'tradeVolumeAlert-0.1'
 
 export const PAGINATION_PAGE_LENGTH = 250
 
-export const JUPITER_API_MAINNET = 'https://token.jup.ag/strict'
+export const JUPITER_API_MAINNET = 'https://token.jup.ag/all'
 
 export const JUPITER_API_DEVNET = 'https://api.jup.ag/api/tokens/devnet'
 
