@@ -348,7 +348,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       true,
     )
 
-    const swapInfos = swaps?.bestRoute?.routePlan.map((x) => x.swapInfo)
+    const swapInfos = swaps?.bestRoute?.routePlan?.map((x) => x.swapInfo)
     const orcaPool = swapInfos?.find(
       (x) => x.label?.toLowerCase().includes('orca'),
     )

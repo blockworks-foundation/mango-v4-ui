@@ -50,7 +50,7 @@ const RateCurveChart = ({ bank }: { bank: Bank | undefined }) => {
 
   const [currentRate, currentUtil] = useMemo(() => {
     if (!bank) return [0, 0]
-    const currentRate = bank.getDepositRateUi()
+    const currentRate = bank.getBorrowRateUi()
     const currentUtil = (bank.uiBorrows() / bank.uiDeposits()) * 100 || 0
     return [currentRate, currentUtil]
   }, [bank])
@@ -81,7 +81,7 @@ const RateCurveChart = ({ bank }: { bank: Bank | undefined }) => {
         {rateCurveChartData.length && bank ? (
           <>
             <div>
-              <p className="mb-0.5 text-base">{t('token:rate-curve')}</p>
+              <p className="mb-0.5 text-base">{t('token:borrow-rate-curve')}</p>
               {mouseData ? (
                 <div>
                   <div
@@ -212,7 +212,7 @@ const RateCurveChart = ({ bank }: { bank: Bank | undefined }) => {
                       (bank.uiBorrows() / bank.uiDeposits()) *
                       100
                     ).toString()}
-                    y={bank.getDepositRateUi()}
+                    y={bank.getBorrowRateUi()}
                     r={4}
                     fill={COLORS.BKG1[theme]}
                     stroke={'var(--active)'}

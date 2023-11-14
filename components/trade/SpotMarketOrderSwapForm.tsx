@@ -708,11 +708,12 @@ export default function SpotMarketOrderSwapForm() {
               ) : (
                 <div className="flex items-center overflow-hidden text-th-fgd-2">
                   <Tooltip
-                    content={selectedRoute?.routePlan.map((info, index) => {
+                    content={selectedRoute?.routePlan?.map((info, index) => {
                       let includeSeparator = false
                       if (
-                        selectedRoute?.routePlan.length > 1 &&
-                        index !== selectedRoute?.routePlan.length - 1
+                        selectedRoute?.routePlan &&
+                        selectedRoute?.routePlan?.length > 1 &&
+                        index !== selectedRoute?.routePlan?.length - 1
                       ) {
                         includeSeparator = true
                       }
@@ -724,11 +725,12 @@ export default function SpotMarketOrderSwapForm() {
                     })}
                   >
                     <div className="tooltip-underline max-w-[140px] truncate whitespace-nowrap">
-                      {selectedRoute?.routePlan.map((info, index) => {
+                      {selectedRoute?.routePlan?.map((info, index) => {
                         let includeSeparator = false
                         if (
-                          selectedRoute?.routePlan.length > 1 &&
-                          index !== selectedRoute?.routePlan.length - 1
+                          selectedRoute?.routePlan &&
+                          selectedRoute?.routePlan?.length > 1 &&
+                          index !== selectedRoute?.routePlan?.length - 1
                         ) {
                           includeSeparator = true
                         }

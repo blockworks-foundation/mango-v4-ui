@@ -9,18 +9,18 @@ import { OUTPUT_TOKEN_DEFAULT, SWAP_MARGIN_KEY } from '../../utils/constants'
 import TokenVaultWarnings from '@components/shared/TokenVaultWarnings'
 import SwapSettings from './SwapSettings'
 import InlineNotification from '@components/shared/InlineNotification'
-// import Tooltip from '@components/shared/Tooltip'
+import Tooltip from '@components/shared/Tooltip'
 import MarketSwapForm from './MarketSwapForm'
-// import Switch from '@components/forms/Switch'
+import Switch from '@components/forms/Switch'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { SwapFormTokenListType } from './SwapFormTokenList'
 import { SwapTypes } from 'types'
 import TriggerSwapForm from './TriggerSwapForm'
 import WalletSwapForm from './WalletSwapForm'
 import TabButtons from '@components/shared/TabButtons'
-// import useMangoAccount from 'hooks/useMangoAccount'
-// import { useWallet } from '@solana/wallet-adapter-react'
-// import { useRouter } from 'next/router'
+import useMangoAccount from 'hooks/useMangoAccount'
+import { useWallet } from '@solana/wallet-adapter-react'
+import { useRouter } from 'next/router'
 import SwapSummaryInfo from './SwapSummaryInfo'
 
 const set = mangoStore.getState().set
@@ -52,17 +52,14 @@ export const handleTokenOutSelect = (
 
 const SwapForm = () => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
-  // const groupLoaded = mangoStore((s) => s.groupLoaded)
-  // const { mangoAccountAddress, initialLoad } = useMangoAccount()
-  // const { connected } = useWallet()
-  // const { query } = useRouter()
+  const groupLoaded = mangoStore((s) => s.groupLoaded)
+  const { mangoAccountAddress, initialLoad } = useMangoAccount()
+  const { connected } = useWallet()
+  const { query } = useRouter()
   const [showTokenSelect, setShowTokenSelect] =
     useState<SwapFormTokenListType>()
   const [showSettings, setShowSettings] = useState(false)
-  const [
-    walletSwap,
-    // setWalletSwap
-  ] = useState(false)
+  const [walletSwap, setWalletSwap] = useState(false)
   const [, setSavedSwapMargin] = useLocalStorageState<boolean>(
     SWAP_MARGIN_KEY,
     true,
@@ -76,32 +73,32 @@ const SwapForm = () => {
   } = mangoStore((s) => s.swap)
 
   // enable wallet swap when connected and no mango account
-  // useEffect(() => {
-  //   if (connected && !mangoAccountAddress && !initialLoad) {
-  //     setWalletSwap(true)
-  //   }
-  // }, [connected, mangoAccountAddress, initialLoad])
+  useEffect(() => {
+    if (connected && !mangoAccountAddress && !initialLoad) {
+      setWalletSwap(true)
+    }
+  }, [connected, mangoAccountAddress, initialLoad])
 
   // setup swap from url query
-  // useEffect(() => {
-  //   const { group } = mangoStore.getState()
-  //   if ('walletSwap' in query) {
-  //     setWalletSwap(true)
-  //   }
-  //   if (!groupLoaded) return
-  //   if (query.in) {
-  //     const inBank = group?.banksMapByName.get(query.in.toString())?.[0]
-  //     set((state) => {
-  //       state.swap.inputBank = inBank
-  //     })
-  //   }
-  //   if (query.out) {
-  //     const outBank = group?.banksMapByName.get(query.out.toString())?.[0]
-  //     set((state) => {
-  //       state.swap.outputBank = outBank
-  //     })
-  //   }
-  // }, [groupLoaded, query])
+  useEffect(() => {
+    const { group } = mangoStore.getState()
+    if ('walletSwap' in query) {
+      setWalletSwap(true)
+    }
+    if (!groupLoaded) return
+    if (query.in) {
+      const inBank = group?.banksMapByName.get(query.in.toString())?.[0]
+      set((state) => {
+        state.swap.inputBank = inBank
+      })
+    }
+    if (query.out) {
+      const outBank = group?.banksMapByName.get(query.out.toString())?.[0]
+      set((state) => {
+        state.swap.outputBank = outBank
+      })
+    }
+  }, [groupLoaded, query])
 
   const handleSwapOrTrigger = useCallback(
     (orderType: SwapTypes) => {
@@ -164,7 +161,7 @@ const SwapForm = () => {
         <div className="relative">
           {swapOrTrigger === 'swap' ? (
             <>
-              {/* <div className="flex justify-end pb-3 pt-4">
+              <div className="flex justify-end pb-3 pt-4">
                 <div className="flex justify-between px-4 md:px-6">
                   <Switch
                     checked={walletSwap}
@@ -178,13 +175,13 @@ const SwapForm = () => {
                     </Tooltip>
                   </Switch>
                 </div>
-              </div> */}
+              </div>
               {walletSwap ? (
                 <div className="px-4 md:px-6">
                   <WalletSwapForm setShowTokenSelect={setShowTokenSelect} />
                 </div>
               ) : (
-                <div className="px-4 pt-4 md:px-6 md:pt-6">
+                <div className="px-4 md:px-6">
                   <MarketSwapForm setShowTokenSelect={setShowTokenSelect} />
                 </div>
               )}

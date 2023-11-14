@@ -358,6 +358,7 @@ const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
         setShowConfirm={setShowConfirm}
         amountIn={amountInAsDecimal}
         amountOut={selectedRoute ? amountOutAsDecimal.toNumber() : undefined}
+        walletSwap
       />
     </>
   )
