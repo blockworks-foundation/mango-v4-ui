@@ -11,9 +11,6 @@ import {
   isPnlLeaderboard,
 } from './LeaderboardPage'
 import ToggleFollowButton from '@components/shared/ToggleFollowButton'
-import useFollowedAccounts from 'hooks/useFollowedAccounts'
-import { useMemo } from 'react'
-import { FollowedAccount } from '@components/explore/FollowedAccounts'
 
 const LeaderboardTable = ({
   data,
@@ -62,19 +59,11 @@ const LeaderboardRow = ({
       ? item.account_equity
       : 0
   const { isTablet } = useViewport()
-  const { data: followedAccounts } = useFollowedAccounts()
-
-  const isFollowed = useMemo(() => {
-    if (!followedAccounts || !followedAccounts.length) return false
-    return !!followedAccounts.find(
-      (acc: FollowedAccount) => acc.mango_account === mango_account,
-    )
-  }, [followedAccounts])
 
   return !loading ? (
     <div className="flex">
       <div className="flex flex-1 items-center rounded-l-md bg-th-bkg-2 px-3">
-        <ToggleFollowButton isFollowed={isFollowed} />
+        <ToggleFollowButton accountPk={mango_account} />
       </div>
       <a
         className="flex w-full items-center justify-between rounded-md rounded-l-none border border-l-0 border-th-bkg-3 px-3 py-3 md:px-4 md:hover:bg-th-bkg-2"

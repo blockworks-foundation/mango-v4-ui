@@ -20,11 +20,10 @@ import mangoStore from '@store/mangoStore'
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import useAccountPerformanceData from 'hooks/useAccountPerformanceData'
-// import useFollowedAccounts from 'hooks/useFollowedAccounts'
+import useFollowedAccounts from 'hooks/useFollowedAccounts'
 import { useHiddenMangoAccounts } from 'hooks/useHiddenMangoAccounts'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
-import useProfileDetails from 'hooks/useProfileDetails'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -41,13 +40,16 @@ import { abbreviateAddress } from 'utils/formatting'
 import { formatCurrencyValue, formatNumericValue } from 'utils/numbers'
 import { formatTokenSymbol } from 'utils/tokens'
 
-export type FollowedAccount = {
+export type FollowedAccountApi = {
   mango_account: string
+  profile_image_url: string
+  profile_name: string
+  wallet_pk: string
 }
 
-const followedAccounts = [
-  { mango_account: '4g1RtA1uL79UKuawEUztFEnWCWgzJbJYrmoyyJAY2rDh' },
-]
+export interface FollowedAccount extends FollowedAccountApi {
+  mangoAccount: MangoAccount
+}
 
 const getFollowedMangoAccounts = async (accounts: FollowedAccount[]) => {
   const client = mangoStore.getState().client
@@ -55,8 +57,10 @@ const getFollowedMangoAccounts = async (accounts: FollowedAccount[]) => {
   for (const account of accounts) {
     try {
       const publicKey = new PublicKey(account.mango_account)
-      const mangoAccount = await client.getMangoAccount(publicKey)
-      mangoAccounts.push(mangoAccount)
+      const mangoAccount = await client.getMangoAccount(publicKey, true)
+      if (mangoAccount) {
+        mangoAccounts.push({ ...account, mangoAccount: mangoAccount })
+      }
     } catch (e) {
       console.log('failed to load followed mango account', e)
     }
@@ -65,31 +69,40 @@ const getFollowedMangoAccounts = async (accounts: FollowedAccount[]) => {
 }
 
 const FollowedAccounts = () => {
-  //   const { data: followedAccounts, isInitialLoading: loadingFollowedAccounts } =
-  //     useFollowedAccounts()
+  const { data: followedAccounts, isInitialLoading: loadingFollowedAccounts } =
+    useFollowedAccounts()
   const [followedMangoAccounts, setFollowedMangoAccounts] = useState<
-    MangoAccount[]
+    FollowedAccount[]
   >([])
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (!followedAccounts || !followedAccounts.length) return
     const getAccounts = async () => {
+      setLoading(true)
       const accounts = await getFollowedMangoAccounts(followedAccounts)
       setFollowedMangoAccounts(accounts)
+      setLoading(false)
     }
     getAccounts()
   }, [followedAccounts])
 
   return (
-    <div className="px-4 pb-12 pt-4 md:px-6">
-      {followedMangoAccounts?.length ? (
+    <div className="px-4 pb-10 pt-4 md:px-6">
+      {loadingFollowedAccounts || loading ? (
+        [...Array(4)].map((x, i) => (
+          <SheenLoader className="mt-2 flex flex-1" key={i}>
+            <div className="h-16 w-full bg-th-bkg-2" />
+          </SheenLoader>
+        ))
+      ) : followedMangoAccounts?.length ? (
         <>
-          {followedMangoAccounts.map((acc: MangoAccount) => (
-            <AccountDisplay account={acc} key={acc.publicKey.toString()} />
+          {followedMangoAccounts.map((acc: FollowedAccount) => (
+            <AccountDisplay account={acc} key={acc.mango_account} />
           ))}
         </>
       ) : (
-        <div className="flex flex-col items-center rounded-md border border-th-bkg-3 p-4">
+        <div className="mt-2 flex flex-col items-center rounded-md border border-th-bkg-3 p-4">
           <NoSymbolIcon className="mb-1 h-7 w-7 text-th-fgd-4" />
           <p className="mb-1">Your not following any accounts yet...</p>
           <Link href="/leaderboard" shallow>
@@ -106,7 +119,7 @@ export default FollowedAccounts
 const fetchActivityData = async (publicKey: PublicKey) => {
   try {
     const response = await fetch(
-      `${MANGO_DATA_API_URL}/stats/activity-feed?mango-account=${publicKey.toString()}&limit=5`,
+      `${MANGO_DATA_API_URL}/stats/activity-feed?mango-account=${publicKey.toString()}&limit=10`,
     )
     const parsedResponse: null | EmptyObject | Array<ActivityFeed> =
       await response.json()
@@ -139,19 +152,19 @@ const fetchActivityData = async (publicKey: PublicKey) => {
   }
 }
 
-const AccountDisplay = ({ account }: { account: MangoAccount }) => {
-  const { name, owner, publicKey } = account
+const AccountDisplay = ({ account }: { account: FollowedAccount }) => {
+  const { mangoAccount, profile_image_url, profile_name } = account
+  const { name, owner, publicKey } = mangoAccount
   const { group } = useMangoGroup()
 
   const { t } = useTranslation(['common', 'account', 'activity'])
   const { hiddenAccounts, loadingHiddenAccounts } = useHiddenMangoAccounts()
-  const { data: profileData } = useProfileDetails(owner.toString())
   const { rollingDailyData } = useAccountPerformanceData(publicKey.toString())
 
   const isPrivateAccount = useMemo(() => {
     if (!hiddenAccounts?.length) return false
-    return hiddenAccounts.find((acc) => acc === account.publicKey.toString())
-  }, [account, hiddenAccounts])
+    return hiddenAccounts.find((acc) => acc === publicKey.toString())
+  }, [publicKey, hiddenAccounts])
 
   const { data: activityData, isInitialLoading: loadingActivityData } =
     useQuery(
@@ -168,13 +181,13 @@ const AccountDisplay = ({ account }: { account: MangoAccount }) => {
 
   const accountValue = useMemo(() => {
     if (!group) return 0
-    return toUiDecimalsForQuote(account.getEquity(group).toNumber())
-  }, [account, group])
+    return toUiDecimalsForQuote(mangoAccount.getEquity(group).toNumber())
+  }, [mangoAccount, group])
 
   const accountPnl = useMemo(() => {
     if (!group) return 0
-    return toUiDecimalsForQuote(account.getPnl(group).toNumber())
-  }, [account, group])
+    return toUiDecimalsForQuote(mangoAccount.getPnl(group).toNumber())
+  }, [mangoAccount, group])
 
   const [rollingDailyValueChange, rollingDailyPnlChange] = useMemo(() => {
     if (!accountPnl || !rollingDailyData.length) return [0, 0]
@@ -188,39 +201,41 @@ const AccountDisplay = ({ account }: { account: MangoAccount }) => {
       {({ open }) => (
         <>
           <Disclosure.Button
-            className={`flex w-full items-center justify-between rounded-md border border-th-bkg-3 p-4 ${
+            className={`mt-2 flex w-full items-center justify-between rounded-lg border border-th-bkg-3 p-4 ${
               open ? 'rounded-b-none border-b-0' : ''
             }`}
           >
             <AccountNameDisplay
               accountName={name}
               accountPk={publicKey}
-              profileImageUrl={profileData?.profile_image_url}
-              profileName={profileData?.profile_name}
+              profileImageUrl={profile_image_url}
+              profileName={profile_name}
               walletPk={owner}
             />
             <div className="flex items-center space-x-4">
-              <div className="flex flex-col items-end">
-                <p className="mb-1">{t('value')}</p>
-                <span className="font-mono">
-                  <FormatNumericValue value={accountValue} isUsd />
-                </span>
-                <Change
-                  change={rollingDailyValueChange}
-                  prefix="$"
-                  size="small"
-                />
-              </div>
-              <div className="flex flex-col items-end">
-                <p className="mb-1">{t('pnl')}</p>
-                <span className="font-mono">
-                  <FormatNumericValue value={accountPnl} isUsd />
-                </span>
-                <Change
-                  change={rollingDailyPnlChange}
-                  prefix="$"
-                  size="small"
-                />
+              <div className="grid grid-cols-2 gap-6">
+                <div className="flex flex-col items-end">
+                  <p className="mb-1">{t('value')}</p>
+                  <span className="font-mono">
+                    <FormatNumericValue value={accountValue} isUsd />
+                  </span>
+                  <Change
+                    change={rollingDailyValueChange}
+                    prefix="$"
+                    size="small"
+                  />
+                </div>
+                <div className="flex flex-col items-end">
+                  <p className="mb-1">{t('pnl')}</p>
+                  <span className="font-mono">
+                    <FormatNumericValue value={accountPnl} isUsd />
+                  </span>
+                  <Change
+                    change={rollingDailyPnlChange}
+                    prefix="$"
+                    size="small"
+                  />
+                </div>
               </div>
               <ChevronDownIcon
                 className={`${
@@ -230,12 +245,15 @@ const AccountDisplay = ({ account }: { account: MangoAccount }) => {
             </div>
           </Disclosure.Button>
           <Disclosure.Panel>
-            <div className="rounded-md rounded-t-none border border-t-0 border-th-bkg-3 p-4 pt-0">
+            <div className="rounded-lg rounded-t-none border border-t-0 border-th-bkg-3 p-4 pt-0">
               <div className="border-t border-th-bkg-3 pt-4">
                 <div className="mb-4 flex items-center justify-between">
                   <h3 className="text-base">{t('activity:latest-activity')}</h3>
                   <div className="flex items-center space-x-4">
-                    <ToggleFollowButton isFollowed={true} showText />
+                    <ToggleFollowButton
+                      accountPk={publicKey.toString()}
+                      showText
+                    />
                     <a
                       className="flex items-center text-th-fgd-2"
                       href={`/?address=${publicKey.toString()}`}
@@ -272,17 +290,17 @@ const AccountDisplay = ({ account }: { account: MangoAccount }) => {
       )}
     </Disclosure>
   ) : (
-    <div className="flex w-full items-center justify-between rounded-md border border-th-bkg-3 p-4">
+    <div className="mt-2 flex w-full items-center justify-between rounded-md border border-th-bkg-3 p-4">
       <AccountNameDisplay
         accountName={name}
         accountPk={publicKey}
-        profileImageUrl={profileData?.profile_image_url}
-        profileName={profileData?.profile_name}
+        profileImageUrl={profile_image_url}
+        profileName={profile_name}
         walletPk={owner}
       />
       <div className="flex flex-col items-end">
         <p className="mb-1">{t('account:account-is-private')}</p>
-        <ToggleFollowButton isFollowed={true} showText />
+        <ToggleFollowButton accountPk={publicKey.toString()} showText />
       </div>
     </div>
   )
@@ -351,8 +369,8 @@ const ActivityContent = ({ activity }: { activity: ActivityFeed }) => {
       taker === mangoAccountAddress
         ? taker_side
         : taker_side === 'bid'
-        ? 'short'
-        : 'long'
+        ? 'trade:short'
+        : 'trade:long'
     return (
       <div className="flex items-center justify-between">
         <div>
@@ -381,9 +399,9 @@ const ActivityContent = ({ activity }: { activity: ActivityFeed }) => {
           <p className="mb-1 font-bold text-th-fgd-1">
             {t(`activity:${activity_type}`)}
           </p>
-          <p className="mb-0.5 text-th-fgd-2">{`${quantity} ${formatTokenSymbol(
-            symbol,
-          )}`}</p>
+          <p className="mb-0.5 text-th-fgd-2">{`${formatNumericValue(
+            quantity,
+          )} ${formatTokenSymbol(symbol)}`}</p>
           <p className="text-xs text-th-fgd-4">
             {dayjs(block_datetime).format('DD MMM YYYY, h:mma')}
           </p>
@@ -421,7 +439,13 @@ const AccountNameDisplay = ({
         </p>
         <div className="flex items-center">
           <WalletIcon className="mr-1.5 h-4 w-4" />
-          <p>{profileName ? profileName : abbreviateAddress(walletPk)}</p>
+          <p>
+            {profileName ? (
+              <span className="capitalize">{profileName}</span>
+            ) : (
+              abbreviateAddress(walletPk)
+            )}
+          </p>
         </div>
       </div>
     </div>
