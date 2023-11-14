@@ -25,12 +25,14 @@ const SwapFormSubmitButton = ({
   loadingSwapDetails,
   selectedRoute,
   setShowConfirm,
+  walletSwap,
 }: {
   amountIn: Decimal
   amountOut: number | undefined
   loadingSwapDetails: boolean
   selectedRoute: JupiterV6RouteInfo | undefined | null
   setShowConfirm: (x: boolean) => void
+  walletSwap?: boolean
 }) => {
   const { t } = useTranslation('common')
   const { mangoAccountAddress } = useMangoAccount()
@@ -45,7 +47,8 @@ const SwapFormSubmitButton = ({
   // check if the borrowed amount exceeds the net borrow limit in the current period
   const borrowExceedsLimitInPeriod = useMemo(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
-    if (!mangoAccount || !inputBank || !remainingBorrowsInPeriod) return false
+    if (!mangoAccount || !inputBank || !remainingBorrowsInPeriod || walletSwap)
+      return false
 
     const balance = mangoAccount.getTokenDepositsUi(inputBank)
     const remainingBalance = balance - amountIn.toNumber()
@@ -81,7 +84,7 @@ const SwapFormSubmitButton = ({
           isLarge
         />
       )}
-      {tokenPositionsFull ? (
+      {tokenPositionsFull && !walletSwap ? (
         <div className="pb-4">
           <InlineNotification
             type="error"
