@@ -288,14 +288,6 @@ const Dashboard: NextPage = () => {
                                   value={formattedBankValues.dust}
                                 />
                                 <KeyValuePair
-                                  label="Deposits"
-                                  value={`${formattedBankValues.deposits} ($${formattedBankValues.depositsPrice})`}
-                                />
-                                <KeyValuePair
-                                  label="Borrows"
-                                  value={`${formattedBankValues.borrows} ($${formattedBankValues.borrowsPrice})`}
-                                />
-                                <KeyValuePair
                                   label="Reduce Only"
                                   value={`${
                                     bank.reduceOnly
@@ -316,8 +308,20 @@ const Dashboard: NextPage = () => {
                               ${formattedBankValues.initLiabWeight}`}
                                 />
                                 <KeyValuePair
+                                  label="Liquidation fee"
+                                  value={`${formattedBankValues.liquidationFee}%`}
+                                />
+                                <KeyValuePair
                                   label="Scaled Init Asset/Liab Weight"
                                   value={`${formattedBankValues.scaledInitAssetWeight} / ${formattedBankValues.scaledInitLiabWeight}`}
+                                />
+                                <KeyValuePair
+                                  label="Deposits"
+                                  value={`${formattedBankValues.deposits} ($${formattedBankValues.depositsPrice})`}
+                                />
+                                <KeyValuePair
+                                  label="Borrows"
+                                  value={`${formattedBankValues.borrows} ($${formattedBankValues.borrowsPrice})`}
                                 />
                                 <KeyValuePair
                                   label="Deposit weight scale start quote"
@@ -326,6 +330,23 @@ const Dashboard: NextPage = () => {
                                 <KeyValuePair
                                   label="Borrow weight scale start quote"
                                   value={`$${formattedBankValues.borrowWeightScaleStartQuote}`}
+                                />
+                                <KeyValuePair
+                                  label={`Net borrows in window (next window starts ${dayjs().to(
+                                    dayjs().add(
+                                      bank.getTimeToNextBorrowLimitWindowStartsTs(),
+                                      'second',
+                                    ),
+                                  )})`}
+                                  value={`$${formattedBankValues.minVaultToDepositsRatio} / $${formattedBankValues.netBorrowLimitPerWindowQuote}`}
+                                />
+                                <KeyValuePair
+                                  label="Group Insurance Fund"
+                                  value={`${mintInfo!.groupInsuranceFund}`}
+                                />
+                                <KeyValuePair
+                                  label="Min vault to deposits ratio"
+                                  value={`${formattedBankValues.minVaultToDepositsRatio}%`}
                                 />
                                 <KeyValuePair
                                   label="Rate params"
@@ -371,27 +392,7 @@ const Dashboard: NextPage = () => {
                                   label="Oracle: Max Staleness"
                                   value={`${bank.oracleConfig.maxStalenessSlots} slots (Last updated slot ${bank._oracleLastUpdatedSlot})`}
                                 />
-                                <KeyValuePair
-                                  label="Group Insurance Fund"
-                                  value={`${mintInfo!.groupInsuranceFund}`}
-                                />
-                                <KeyValuePair
-                                  label="Min vault to deposits ratio"
-                                  value={`${formattedBankValues.minVaultToDepositsRatio}%`}
-                                />
-                                <KeyValuePair
-                                  label={`Net borrows in window (next window starts ${dayjs().to(
-                                    dayjs().add(
-                                      bank.getTimeToNextBorrowLimitWindowStartsTs(),
-                                      'second',
-                                    ),
-                                  )})`}
-                                  value={`$${formattedBankValues.minVaultToDepositsRatio} / $${formattedBankValues.netBorrowLimitPerWindowQuote}`}
-                                />
-                                <KeyValuePair
-                                  label="Liquidation fee"
-                                  value={`${formattedBankValues.liquidationFee}%`}
-                                />
+
                                 {bank.mint.toBase58() !== USDC_MINT && (
                                   <div className="mb-4 mt-2 flex">
                                     <Button
