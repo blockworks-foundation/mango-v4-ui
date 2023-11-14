@@ -127,10 +127,10 @@ const Spot = () => {
   }
 
   return (
-    <div className="md:-mt-10">
-      <div className="flex flex-col px-4 sm:flex-row sm:items-center sm:justify-end md:px-6 2xl:px-12">
-        <div className="flex w-full flex-col sm:flex-row sm:space-x-3 md:w-auto">
-          <div className="relative mb-3 w-full sm:mb-0 md:w-40">
+    <div className="lg:-mt-10">
+      <div className="flex flex-col px-4 lg:flex-row lg:items-center lg:justify-end lg:px-6 2xl:px-12">
+        <div className="flex w-full flex-col lg:w-auto lg:flex-row lg:space-x-3">
+          <div className="relative mb-3 w-full lg:mb-0 xl:w-40">
             <Input
               heightClass="h-10 pl-8"
               type="text"
@@ -140,7 +140,7 @@ const Spot = () => {
             <MagnifyingGlassIcon className="absolute left-2 top-3 h-4 w-4" />
           </div>
           <div className="flex space-x-3">
-            <div className="w-full sm:w-48">
+            <div className="w-full lg:w-48">
               <ButtonGroup
                 activeValue={sortByKey}
                 onChange={(v) => setSortByKey(v)}

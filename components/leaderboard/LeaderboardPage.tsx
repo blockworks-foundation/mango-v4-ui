@@ -156,7 +156,7 @@ const LeaderboardPage = () => {
       }
     }
     return []
-  }, [pnlData, daysToShow])
+  }, [hiddenAccounts, pnlData, daysToShow])
 
   const equityLeaderboardData = useMemo(() => {
     if (equityData?.pages.length) {

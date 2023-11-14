@@ -43,9 +43,9 @@ export const NOTIFICATION_POSITION_KEY = 'notificationPosition-0.2'
 
 export const TRADE_CHART_UI_KEY = 'tradeChart-0.3'
 
-export const FAVORITE_MARKETS_KEY = 'favoriteMarkets-0.2'
+export const FAVORITE_MARKETS_KEY = 'favoriteMarkets-0.3'
 
-export const FAVORITE_SWAPS_KEY = 'favoriteSwaps-0.1'
+export const FAVORITE_SWAPS_KEY = 'favoriteSwaps-0.2'
 
 export const THEME_KEY = 'theme-0.1'
 
@@ -151,8 +151,8 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   msol: true,
   orca: true,
   ray: true,
+  render: true,
   rlb: true,
-  rndr: true,
   sol: true,
   stsol: true,
   tbtc: true,
@@ -163,12 +163,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   'wbtc (portal)': true,
 }
 
-export const DEFAULT_FAVORITE_MKTS = [
-  'SOL-PERP',
-  'ETH-PERP',
-  'BTC-PERP',
-  'RNDR-PERP',
-]
+export const DEFAULT_FAVORITE_MKTS = ['SOL-PERP', 'ETH-PERP', 'BTC-PERP']
 
 export const WHITE_LIST_API = 'https://api.mngo.cloud/whitelist/v1/'
 export const DAILY_SECONDS = 86400

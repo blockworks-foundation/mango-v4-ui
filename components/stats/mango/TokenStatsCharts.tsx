@@ -5,6 +5,7 @@ import { formatYAxis } from 'utils/formatting'
 import DetailedAreaOrBarChart from '@components/shared/DetailedAreaOrBarChart'
 import { MangoTokenStatsItem } from 'types'
 import Switch from '@components/forms/Switch'
+import NetDepositsChart from './NetDepositsChart'
 
 interface GroupedDataItem extends MangoTokenStatsItem {
   intervalStartMillis: number
@@ -115,7 +116,10 @@ const TokenStatsCharts = () => {
           yKey={'borrowValue'}
         />
       </div>
-      <div className="col-span-2 flex flex-col justify-between border-b border-th-bkg-3 md:col-span-1 md:border-r">
+      <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 md:border-r md:pl-6">
+        <NetDepositsChart />
+      </div>
+      <div className="col-span-2 flex flex-col justify-between border-b border-th-bkg-3 md:col-span-1">
         <div className="px-4 pt-4 md:px-6">
           <DetailedAreaOrBarChart
             changeAsPercent

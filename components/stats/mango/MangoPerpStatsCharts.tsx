@@ -180,7 +180,7 @@ const MangoPerpStatsCharts = () => {
   return (
     <>
       {feeValues.length ? (
-        <div className="col-span-2 flex flex-col justify-between border-b border-th-bkg-3 md:col-span-1">
+        <div className="col-span-2 flex flex-col justify-between border-b border-th-bkg-3 md:col-span-1 md:border-r">
           <div className="px-4 pt-4 md:px-6">
             <DetailedAreaOrBarChart
               changeAsPercent
@@ -209,7 +209,7 @@ const MangoPerpStatsCharts = () => {
         </div>
       ) : null}
       {openInterestValues.length ? (
-        <div className="col-span-2 border-b border-th-bkg-3 px-4 py-4 md:col-span-1 md:border-r md:px-6">
+        <div className="col-span-2 border-b border-th-bkg-3 px-4 py-4 md:col-span-1 md:px-6">
           <DetailedAreaOrBarChart
             changeAsPercent
             data={openInterestValues}
@@ -227,7 +227,7 @@ const MangoPerpStatsCharts = () => {
         </div>
       ) : null}
       {volumeValues.length ? (
-        <div className="col-span-2 border-b border-th-bkg-3 md:col-span-1">
+        <div className="col-span-2 border-b border-th-bkg-3 md:col-span-1 md:border-r">
           <div className="px-4 pt-4 md:px-6">
             <DetailedAreaOrBarChart
               changeAsPercent

@@ -15,16 +15,13 @@ const fetchAllHiddenMangoAccounts = async (): Promise<string[]> => {
 }
 
 export function useHiddenMangoAccounts() {
-  const { data: hiddenAccounts, isLoading: loadingHiddenAccounts } = useQuery(
-    ['all-hidden-accounts'],
-    () => fetchAllHiddenMangoAccounts(),
-    {
+  const { data: hiddenAccounts, isInitialLoading: loadingHiddenAccounts } =
+    useQuery(['all-hidden-accounts'], () => fetchAllHiddenMangoAccounts(), {
       cacheTime: 1000 * 60 * 10,
       staleTime: 1000 * 60,
       retry: 3,
       refetchOnWindowFocus: false,
-    },
-  )
+    })
 
   return {
     hiddenAccounts,

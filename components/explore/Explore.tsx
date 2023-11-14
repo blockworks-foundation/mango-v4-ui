@@ -1,22 +1,23 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import PerpMarketsTable from './PerpMarketsTable'
 import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import mangoStore from '@store/mangoStore'
-import ButtonGroup from '@components/forms/ButtonGroup'
 import RecentGainersLosers from './RecentGainersLosers'
 import Spot from './Spot'
+import useBanks from 'hooks/useBanks'
+import TabsText from '@components/shared/TabsText'
+import useFollowedAccounts from 'hooks/useFollowedAccounts'
+import FollowedAccounts from './FollowedAccounts'
 dayjs.extend(relativeTime)
-
-const EXPLORE_TABS = ['markets', 'accounts']
-const MARKET_TABS = ['spot', 'perp']
 
 const Explore = () => {
   const { t } = useTranslation(['common'])
+  const { banks } = useBanks()
+  const { data: followedAccounts } = useFollowedAccounts()
   const perpStats = mangoStore((s) => s.perpStats.data)
-  const [activeExploreTab, setActiveExploreTab] = useState('markets')
-  const [activeMarketTab, setActiveMarketTab] = useState('spot')
+  const [activeTab, setActiveTab] = useState('tokens')
 
   useEffect(() => {
     if (!perpStats || !perpStats.length) {
@@ -25,38 +26,39 @@ const Explore = () => {
     }
   }, [perpStats])
 
+  const tabsWithCount: [string, number][] = useMemo(() => {
+    const perpMarkets = mangoStore.getState().perpMarkets
+    const tabs: [string, number][] = [
+      ['tokens', banks.length],
+      ['perp-markets', perpMarkets.length],
+      ['account:followed-accounts', followedAccounts?.length],
+    ]
+    return tabs
+  }, [banks, followedAccounts])
+
   return (
     <>
-      <div className="px-4 pt-8 md:px-6">
-        <div className="mb-4 flex flex-col md:flex-row md:items-center md:space-x-4">
-          <h2 className="text-center text-lg md:text-left xl:text-xl">
-            {t('explore')}
-          </h2>
-          <div className="md:w-[164px]">
-            <ButtonGroup
-              activeValue={activeExploreTab}
-              onChange={(t) => setActiveExploreTab(t)}
-              names={EXPLORE_TABS.map((tab) => t(tab))}
-              values={EXPLORE_TABS}
-            />
-          </div>
-        </div>
+      <div className="px-4 pt-10 md:px-6">
+        <h2 className="mb-4 text-center text-lg md:text-left">
+          {t('explore')}
+        </h2>
       </div>
       <RecentGainersLosers />
-      <div className="mb-6 flex flex-col px-4 pt-8 md:mb-0 md:flex-row md:items-center md:space-x-4 md:px-6">
-        <h2 className="mb-3 text-center text-lg md:mb-0 md:text-left xl:text-xl">
-          {t('markets')}
-        </h2>
-        <div className="mx-auto max-w-[112px]">
-          <ButtonGroup
-            activeValue={activeMarketTab}
-            onChange={(t) => setActiveMarketTab(t)}
-            names={MARKET_TABS.map((tab) => t(tab))}
-            values={MARKET_TABS}
+      <div className="z-10 w-max px-4 pt-8 md:px-6">
+        <div
+          className={`flex h-10 flex-col items-center justify-end md:items-start ${
+            activeTab === 'tokens' ? 'mb-4 lg:mb-0' : ''
+          }`}
+        >
+          <TabsText
+            activeTab={activeTab}
+            onChange={setActiveTab}
+            tabs={tabsWithCount}
+            className="text-lg"
           />
         </div>
       </div>
-      <TabContent activeTab={activeMarketTab} />
+      <TabContent activeTab={activeTab} />
     </>
   )
 }
@@ -65,14 +67,16 @@ export default Explore
 
 const TabContent = ({ activeTab }: { activeTab: string }) => {
   switch (activeTab) {
-    case 'spot':
+    case 'tokens':
       return <Spot />
-    case 'perp':
+    case 'perp-markets':
       return (
         <div className="mt-6 border-t border-th-bkg-3">
           <PerpMarketsTable />
         </div>
       )
+    case 'account:followed-accounts':
+      return <FollowedAccounts />
     default:
       return <Spot />
   }

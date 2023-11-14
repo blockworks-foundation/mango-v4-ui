@@ -57,8 +57,9 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
 
   const { width } = useViewport()
   const [, setIsCollapsed] = useLocalStorageState(SIDEBAR_COLLAPSE_KEY, false)
+
   useEffect(() => {
-    if (width !== 0 && width < breakpoints['2xl']) {
+    if (width !== 0 && width < breakpoints['xl']) {
       setIsCollapsed(true)
     }
   }, [width, setIsCollapsed])
@@ -413,7 +414,7 @@ const MenuItem = ({
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
             >
-              <span className="ml-3 xl:text-base">{title}</span>
+              <span className="ml-3 2xl:text-base">{title}</span>
             </Transition>
           </div>
           {isExternal ? (
@@ -523,7 +524,7 @@ export const ExpandableMenuItem = ({
                 leaveFrom="opacity-100"
                 leaveTo="opacity-0"
               >
-                <span className="ml-3 truncate xl:text-base">{title}</span>
+                <span className="ml-3 truncate 2xl:text-base">{title}</span>
               </Transition>
             </div>
             <ChevronDownIcon

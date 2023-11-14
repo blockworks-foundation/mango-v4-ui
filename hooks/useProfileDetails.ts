@@ -14,17 +14,18 @@ const fetchProfileDetails = async (walletPk: string | undefined) => {
   }
 }
 
-export default function useProfileDetails() {
+export default function useProfileDetails(unownedPk?: string) {
   const { publicKey } = useWallet()
+  const pkToFetch = unownedPk ? unownedPk : publicKey?.toString()
   const { data, isInitialLoading, refetch } = useQuery(
-    ['profile-details', publicKey],
-    () => fetchProfileDetails(publicKey?.toString()),
+    ['profile-details', pkToFetch],
+    () => fetchProfileDetails(pkToFetch),
     {
       cacheTime: 1000 * 60 * 10,
       staleTime: 1000 * 60,
       retry: 3,
       refetchOnWindowFocus: false,
-      enabled: !!publicKey,
+      enabled: !!pkToFetch,
     },
   )
   return { data, isInitialLoading, refetch }

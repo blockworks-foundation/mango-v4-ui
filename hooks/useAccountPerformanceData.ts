@@ -5,22 +5,24 @@ import { useMemo } from 'react'
 import { PerformanceDataItem } from 'types'
 import { DAILY_MILLISECONDS } from 'utils/constants'
 
-export default function useAccountPerformanceData() {
+export default function useAccountPerformanceData(unownedPk?: string) {
   const { mangoAccountAddress } = useMangoAccount()
+
+  const accountPkToFetch = unownedPk ? unownedPk : mangoAccountAddress
 
   const {
     data: performanceData,
     isFetching: fetchingPerformanceData,
     isInitialLoading: loadingPerformanceData,
   } = useQuery(
-    ['performance', mangoAccountAddress],
-    () => fetchAccountPerformance(mangoAccountAddress, 31),
+    ['performance', accountPkToFetch],
+    () => fetchAccountPerformance(accountPkToFetch, 31),
     {
       cacheTime: 1000 * 60 * 10,
       staleTime: 1000 * 60,
       retry: 3,
       refetchOnWindowFocus: false,
-      enabled: !!mangoAccountAddress,
+      enabled: !!accountPkToFetch,
     },
   )
 

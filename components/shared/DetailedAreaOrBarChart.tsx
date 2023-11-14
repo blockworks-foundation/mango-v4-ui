@@ -13,6 +13,7 @@ import {
   BarChart,
   Bar,
   Cell,
+  Label,
 } from 'recharts'
 import FlipNumbers from 'react-flip-numbers'
 import ContentBox from './ContentBox'
@@ -69,6 +70,9 @@ interface DetailedAreaOrBarChartProps {
   title?: string
   tooltipContent?: string
   xKey: string
+  formatXKeyHeading?: (k: string | number) => string
+  xAxisLabel?: string
+  xAxisType?: 'number' | 'category' | undefined
   yDecimals?: number
   yKey: string
   showZeroLine?: boolean
@@ -109,6 +113,9 @@ const DetailedAreaOrBarChart: FunctionComponent<
   tooltipContent,
   tooltipDateFormat,
   xKey,
+  formatXKeyHeading,
+  xAxisLabel,
+  xAxisType,
   yDecimals,
   yKey,
 }) => {
@@ -141,6 +148,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
 
   const filteredData = useMemo(() => {
     if (!data || !data.length) return []
+    if (xAxisType === 'number') return data
     const start = Number(daysToShow) * DAILY_MILLISECONDS
     const filtered = data.filter((d: any) => {
       const dataTime = new Date(d[xKey]).getTime()
@@ -149,7 +157,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
       return dataTime >= limit
     })
     return filtered
-  }, [data, daysToShow])
+  }, [data, daysToShow, xAxisType])
 
   const calculateChartChange = () => {
     const firstValue = filteredData[0][yKey]
@@ -288,11 +296,13 @@ const DetailedAreaOrBarChart: FunctionComponent<
                           small ? 'text-xs' : 'text-sm'
                         } text-th-fgd-4`}
                       >
-                        {dayjs(mouseData[xKey]).format(
-                          tooltipDateFormat
-                            ? tooltipDateFormat
-                            : 'DD MMM YY, h:mma',
-                        )}
+                        {formatXKeyHeading
+                          ? formatXKeyHeading(mouseData[xKey])
+                          : dayjs(mouseData[xKey]).format(
+                              tooltipDateFormat
+                                ? tooltipDateFormat
+                                : 'DD MMM YY, h:mma',
+                            )}
                       </p>
                     </div>
                   ) : (
@@ -369,13 +379,17 @@ const DetailedAreaOrBarChart: FunctionComponent<
                           small ? 'text-xs' : 'text-sm'
                         } text-th-fgd-4`}
                       >
-                        {dayjs(
-                          filteredData[filteredData.length - 1][xKey],
-                        ).format(
-                          tooltipDateFormat
-                            ? tooltipDateFormat
-                            : 'DD MMM YY, h:mma',
-                        )}
+                        {formatXKeyHeading
+                          ? formatXKeyHeading(
+                              filteredData[filteredData.length - 1][xKey],
+                            )
+                          : dayjs(
+                              filteredData[filteredData.length - 1][xKey],
+                            ).format(
+                              tooltipDateFormat
+                                ? tooltipDateFormat
+                                : 'DD MMM YY, h:mma',
+                            )}
                       </p>
                     </div>
                   )}
@@ -459,10 +473,23 @@ const DetailedAreaOrBarChart: FunctionComponent<
                           fontSize: 10,
                         }}
                         tickLine={false}
-                        tickFormatter={(d) =>
-                          formatDateAxis(d, parseInt(daysToShow))
+                        tickFormatter={
+                          xAxisType !== 'number'
+                            ? (d) => formatDateAxis(d, parseInt(daysToShow))
+                            : undefined
                         }
-                      />
+                        type={xAxisType}
+                      >
+                        {xAxisLabel ? (
+                          <Label
+                            value={xAxisLabel}
+                            offset={-2}
+                            position="insideBottom"
+                            fontSize={10}
+                            fill="var(--fgd-3)"
+                          />
+                        ) : null}
+                      </XAxis>
                       <YAxis
                         axisLine={false}
                         dataKey={yKey}
