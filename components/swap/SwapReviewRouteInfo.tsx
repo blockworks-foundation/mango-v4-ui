@@ -875,9 +875,10 @@ const SwapReviewRouteInfo = ({
                         onClick={() => setShowRoutesModal(true)}
                       >
                         <span className="overflow-ellipsis whitespace-nowrap">
-                          {selectedRoute?.routePlan.map((info, index) => {
+                          {selectedRoute?.routePlan?.map((info, index) => {
                             let includeSeparator = false
                             if (
+                              selectedRoute.routePlan &&
                               selectedRoute?.routePlan.length > 1 &&
                               index !== selectedRoute?.routePlan.length - 1
                             ) {
@@ -903,7 +904,7 @@ const SwapReviewRouteInfo = ({
                         </div>
                       </div>
                     ) : (
-                      selectedRoute?.routePlan.map((info, index) => {
+                      selectedRoute?.routePlan?.map((info, index) => {
                         const feeToken = jupiterTokens.find(
                           (item) => item?.address === info.swapInfo.feeMint,
                         )

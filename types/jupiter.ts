@@ -1,4 +1,4 @@
-import { AccountInfo, PublicKey, TransactionInstruction } from '@solana/web3.js'
+import { AccountInfo } from '@solana/web3.js'
 
 export declare type SideType = typeof Side.Ask | typeof Side.Bid
 export declare const Side: {
@@ -119,7 +119,7 @@ export interface JupiterV6RouteInfo {
     feeBps: number
   }
   priceImpactPct: number
-  routePlan: JupiterV6RoutePlan[]
+  routePlan: JupiterV6RoutePlan[] | undefined
   contextSlot?: number
   timeTaken?: number
   error?: string
