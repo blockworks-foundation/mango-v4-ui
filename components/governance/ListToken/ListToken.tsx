@@ -495,7 +495,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           Number(tierPreset.reduceOnly),
           Number(tierPreset.tokenConditionalSwapTakerFeeRate),
           Number(tierPreset.tokenConditionalSwapMakerFeeRate),
-          Number(tierPreset.flashLoanDepositFeeRate),
+          Number(tierPreset.flashLoanSwapFeeRate),
         )
         .accounts({
           admin: MANGO_DAO_WALLET,
