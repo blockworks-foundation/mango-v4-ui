@@ -521,9 +521,12 @@ const mangoStore = create<MangoStore>()(
             const serumMarkets = Array.from(
               group.serum3MarketsMapByExternal.values(),
             ).map((m) => {
-              // remove this when market name is updated
+              // remove this when market name is updated on chain via governance
               if (m.name === 'MSOL/SOL') {
                 m.name = 'mSOL/SOL'
+              }
+              if (m.name === 'RNDR/USDC') {
+                m.name = 'RENDER/USDC'
               }
               return m
             })
