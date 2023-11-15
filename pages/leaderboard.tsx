@@ -10,6 +10,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
         'common',
         'leaderboard',
         'notifications',
+        'onboarding',
         'profile',
         'search',
         'settings',
