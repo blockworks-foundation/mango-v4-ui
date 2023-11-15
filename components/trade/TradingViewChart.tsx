@@ -90,7 +90,6 @@ const TradingViewChart = () => {
   const { theme } = useThemeWrapper()
   const { isMobile } = useViewport()
   const [chartReady, setChartReady] = useState(false)
-  const [headerReady, setHeaderReady] = useState(false)
   const [orderToModify, setOrderToModify] = useState<Order | PerpOrder | null>(
     null,
   )
@@ -614,7 +613,8 @@ const TradingViewChart = () => {
   )
 
   const createOLButton = useCallback(() => {
-    const button = tvWidgetRef?.current?.createButton()
+    if (!tvWidgetRef?.current) return
+    const button = tvWidgetRef.current.createButton()
     if (!button) {
       return
     }
@@ -627,10 +627,11 @@ const TradingViewChart = () => {
       button.style.color = COLORS.FGD4[theme]
     }
     orderLinesButtonRef.current = button
-  }, [t, toggleOrderLines, showOrderLinesLocalStorage, theme])
+  }, [t, toggleOrderLines, tvWidgetRef, showTradeExecutions, theme])
 
   const createTEButton = useCallback(() => {
-    const button = tvWidgetRef?.current?.createButton()
+    if (!tvWidgetRef?.current) return
+    const button = tvWidgetRef.current.createButton()
     if (!button) {
       return
     }
@@ -642,10 +643,11 @@ const TradingViewChart = () => {
     } else {
       button.style.color = COLORS.FGD4[theme]
     }
-  }, [t, toggleTradeExecutions, showTradeExecutions, theme])
+  }, [t, toggleTradeExecutions, tvWidgetRef, showTradeExecutions, theme])
 
   const createEasterEggButton = useCallback(() => {
-    const button = tvWidgetRef?.current?.createButton()
+    if (!tvWidgetRef?.current) return
+    const button = tvWidgetRef.current.createButton()
     if (!button) {
       return
     }
@@ -656,7 +658,7 @@ const TradingViewChart = () => {
     } else {
       button.style.color = COLORS.FGD4[theme]
     }
-  }, [toggleThemeEasterEgg, showTradeExecutions, theme])
+  }, [toggleThemeEasterEgg, tvWidgetRef, showThemeEasterEgg, theme])
 
   useEffect(() => {
     if (window) {
@@ -770,9 +772,13 @@ const TradingViewChart = () => {
       tvWidget.onChartReady(() => {
         tvWidgetRef.current = tvWidget
         setChartReady(true)
-      })
-      tvWidget.headerReady().then(() => {
-        setHeaderReady(true)
+        tvWidget.headerReady().then(() => {
+          createOLButton()
+          createTEButton()
+          if (themeData.tvImagePath) {
+            createEasterEggButton()
+          }
+        })
       })
     }
   }, [theme, themeData, defaultProps, isMobile, userId])
@@ -803,17 +809,6 @@ const TradingViewChart = () => {
       })
     }
   }, [chartReady, tvWidgetRef])
-
-  // draw custom buttons when chart is ready
-  useEffect(() => {
-    if (chartReady && headerReady && !orderLinesButtonRef.current) {
-      createOLButton()
-      createTEButton()
-      if (themeData.tvImagePath) {
-        createEasterEggButton()
-      }
-    }
-  }, [createOLButton, createTEButton, chartReady, headerReady, themeData])
 
   // update order lines if a user's open orders change
   useEffect(() => {
