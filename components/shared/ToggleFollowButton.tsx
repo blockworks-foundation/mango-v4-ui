@@ -100,7 +100,9 @@ const ToggleFollowButton = ({
   return (
     <Tooltip
       content={
-        !isFollowed && followedAccounts?.length >= 10
+        !publicKey
+          ? t('account:tooltip-connect-to-follow')
+          : !isFollowed && followedAccounts?.length >= 10
           ? t('account:tooltip-follow-max-reached')
           : showText
           ? ''
