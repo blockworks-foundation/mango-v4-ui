@@ -135,6 +135,7 @@ const TokenStatsCharts = () => {
             tooltipContent={t('token:tooltip-token-fees-collected')}
             xKey="date"
             yKey={'feesCollected'}
+            chartType={showCumulativeFees ? 'area' : 'bar'}
           />
         </div>
         <div className="mt-2 flex justify-end border-t border-th-bkg-3 px-4 py-2 md:px-6">

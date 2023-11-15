@@ -195,6 +195,7 @@ const MangoPerpStatsCharts = () => {
               title="Perp Fees"
               xKey="date"
               yKey="value"
+              chartType={showCumulativeFees ? 'area' : 'bar'}
             />
           </div>
           <div className="mt-2 flex justify-end border-t border-th-bkg-3 px-4 py-2 md:px-6">
@@ -242,6 +243,7 @@ const MangoPerpStatsCharts = () => {
               title={t('stats:perp-volume')}
               xKey="date"
               yKey="value"
+              chartType={showCumulativeVolume ? 'area' : 'bar'}
             />
           </div>
           <div className="mt-2 flex justify-end border-t border-th-bkg-3 px-4 py-2 md:px-6">
