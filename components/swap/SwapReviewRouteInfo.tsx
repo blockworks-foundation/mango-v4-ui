@@ -267,6 +267,7 @@ export const fetchJupiterTransaction = async (
         // user public key to be used for the swap
         userPublicKey,
         slippageBps: Math.ceil(slippage * 100),
+        wrapAndUnwrapSol: false,
         // docs
         // https://station.jup.ag/docs/additional-topics/referral-program
         // https://github.com/TeamRaccoons/referral
