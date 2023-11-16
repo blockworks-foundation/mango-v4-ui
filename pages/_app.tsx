@@ -27,7 +27,7 @@ import {
   ExodusWalletAdapter,
   WalletConnectWalletAdapter,
 } from '@solana/wallet-adapter-wallets'
-import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare'
+import { SolflareWalletAdapter } from '@solflare-wallet/wallet-adapter'
 import { clusterApiUrl } from '@solana/web3.js'
 import TransactionNotification from '@components/notifications/TransactionNotification'
 import { ThemeProvider, useTheme } from 'next-themes'
