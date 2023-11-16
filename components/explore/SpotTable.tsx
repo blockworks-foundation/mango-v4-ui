@@ -73,7 +73,7 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
 
         const priceHistory =
           token.market?.marketData?.price_history
-            .sort((a, b) => a.time.localeCompare(b.time))
+            ?.sort((a, b) => a.time.localeCompare(b.time))
             .concat([{ price: price, time: dayjs().toISOString() }]) || []
 
         const volume = token.market?.marketData?.quote_volume_24h || 0

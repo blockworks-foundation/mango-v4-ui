@@ -36,7 +36,7 @@ export default function useListedMarketsWithMarketData() {
   }, [marketsData])
 
   const currentPrices = useMemo(() => {
-    let prices: { [key: string]: number } = {}
+    const prices: { [key: string]: number } = {}
     const group = mangoStore.getState().group
     serumMarkets.forEach((market) => {
       if (!group || !market || market instanceof PerpMarket) {

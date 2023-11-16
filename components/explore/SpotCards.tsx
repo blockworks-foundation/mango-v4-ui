@@ -47,7 +47,7 @@ const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
 
         const chartData =
           token.market?.marketData?.price_history
-            .sort((a, b) => a.time.localeCompare(b.time))
+            ?.sort((a, b) => a.time.localeCompare(b.time))
             .concat([{ price: bank.uiPrice, time: dayjs().toISOString() }]) ||
           []
 

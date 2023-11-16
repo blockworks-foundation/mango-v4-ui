@@ -495,7 +495,7 @@ export type MarketsDataItem = {
   last_price: number
   price_1h: number
   price_24h: number
-  price_history: { price: number; time: string }[]
+  price_history: { price: number; time: string }[] | undefined
   quote_volume_1h: number
   quote_volume_24h: number
 }
