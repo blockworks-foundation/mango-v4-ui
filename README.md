@@ -50,9 +50,9 @@ Add commits for each self-contained change and give your commits clear messages 
 
 All PRs should have a meaningful name and include a description of what the changes are.
 
-If there are visual changes, include screenshots in the description.
+- If there are visual changes, include screenshots in the description.
 
-If the PR is unfinished include a "TODO" section with work not yet completed. If there are known issues/bugs include a section outlining what they are.
+- If the PR is unfinished include a "TODO" section with work not yet completed. If there are known issues/bugs include a section outlining what they are.
 
 #### Drafts
 
