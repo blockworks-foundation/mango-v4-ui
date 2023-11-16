@@ -11,6 +11,7 @@ import { useTranslation } from 'next-i18next'
 import Link from 'next/link'
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react'
 import {
+  countLeadingZeros,
   floorToDecimal,
   formatCurrencyValue,
   formatNumericValue,
@@ -415,7 +416,7 @@ const MarketSelectDropdown = () => {
                               {price && market?.tickSize ? (
                                 <span className="font-mono text-xs text-th-fgd-2">
                                   {quoteBank?.name === 'USDC' ? '$' : ''}
-                                  {getDecimalCount(market.tickSize) <= 6
+                                  {countLeadingZeros(price) <= 4
                                     ? formatNumericValue(
                                         price,
                                         getDecimalCount(market.tickSize),
