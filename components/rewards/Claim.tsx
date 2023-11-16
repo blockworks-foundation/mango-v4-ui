@@ -35,6 +35,7 @@ import { usePlausible } from 'next-plausible'
 import { TelemetryEvents } from 'utils/telemetry'
 import { Prize, getClaimsAsPrizes } from './RewardsComponents'
 import { notify } from 'utils/notifications'
+import { sleep } from 'utils'
 
 const CLAIM_BUTTON_CLASSES =
   'raised-button group mx-auto block h-12 px-6 pt-1 font-rewards text-xl after:rounded-lg focus:outline-none lg:h-14'
@@ -245,9 +246,14 @@ const ClaimPage = () => {
           afterBatchSign: (signedCount) => {
             console.log('afterBatchSign', signedCount)
           },
-          afterAllTxConfirmed: () => {
+          afterAllTxConfirmed: async () => {
             console.log('afterAllTxConfirmed')
+            notify({
+              type: 'success',
+              title: 'All rewards successfully claimed',
+            })
             setClaimProgress(100)
+            await sleep(1000)
             refetch()
           },
           afterEveryTxConfirmation: () => {
