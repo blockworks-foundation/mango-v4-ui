@@ -192,8 +192,8 @@ const LeaderboardPage = () => {
       <div className="grid grid-cols-12">
         <div className="col-span-12 lg:col-span-8 lg:col-start-3">
           <h1 className="mb-2">{t('leaderboard')}</h1>
-          <div className="mb-4 flex items-center justify-between">
-            <div>
+          <div className="mb-4 flex w-full flex-col md:flex-row md:items-center md:justify-between">
+            <div className="mb-3 md:mb-0">
               <TabsText
                 activeTab={leaderboardToShow}
                 onChange={(v: string) => setLeaderboardToShow(v)}

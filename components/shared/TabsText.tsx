@@ -11,13 +11,15 @@ const TabsText = ({
   onChange: (tab: string) => void
   className?: string
 }) => {
-  const { t } = useTranslation(['common', 'trade'])
+  const { t } = useTranslation(['common', 'account', 'trade'])
   return (
     <div className="flex space-x-6 text-base">
       {tabs.map((tab) => (
         <button
           className={`flex items-center space-x-2 font-bold focus:outline-none ${
-            activeTab === tab[0] ? 'text-th-active' : ''
+            activeTab === tab[0]
+              ? 'text-th-active md:hover:text-th-active'
+              : 'text-th-fgd-2 md:hover:text-th-fgd-3'
           } ${className}`}
           onClick={() => onChange(tab[0])}
           key={tab[0]}

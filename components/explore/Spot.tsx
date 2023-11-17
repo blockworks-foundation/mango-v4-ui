@@ -128,9 +128,9 @@ const Spot = () => {
 
   return (
     <div className="lg:-mt-10">
-      <div className="flex flex-col px-4 lg:flex-row lg:items-center lg:justify-end lg:px-6 2xl:px-12">
+      <div className="flex flex-col px-4 md:px-6 lg:flex-row lg:items-center lg:justify-end 2xl:px-12">
         <div className="flex w-full flex-col lg:w-auto lg:flex-row lg:space-x-3">
-          <div className="relative mb-3 w-full lg:mb-0 xl:w-40">
+          <div className="relative mb-3 w-full lg:mb-0 lg:w-40">
             <Input
               heightClass="h-10 pl-8"
               type="text"
