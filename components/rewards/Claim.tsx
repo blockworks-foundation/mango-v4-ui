@@ -339,7 +339,7 @@ const ClaimPage = () => {
                   const { info, item, itemUrl, rarity, stencilUrl } = prize
                   return (
                     <div
-                      className="m-2 flex rounded-xl border border-white sm:w-[200px] sm:flex-col sm:pt-4"
+                      className="m-2 flex rounded-xl border border-white/20 backdrop-blur-md sm:w-[200px] sm:flex-col sm:pt-4"
                       key={itemUrl + i}
                     >
                       <div className="p-4 sm:p-0">
@@ -350,7 +350,7 @@ const ClaimPage = () => {
                           </div>
                         </div>
                       </div>
-                      <div className="w-full rounded-r-xl border-l border-white bg-[rgba(0,0,0,0.4)] p-4 sm:mt-4 sm:rounded-b-xl sm:rounded-r-none sm:border-l-0 sm:border-t sm:pt-2">
+                      <div className="backdrop-blur-md w-full rounded-r-xl border-l border-white/20 bg-[rgba(0,0,0,0.4)] p-4 sm:mt-4 sm:rounded-b-xl sm:rounded-none sm:border-l-0 sm:border-t sm:pt-2">
                         <p className="-mb-1.5 font-rewards text-base text-white">
                           {item}
                         </p>
