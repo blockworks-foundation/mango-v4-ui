@@ -6,8 +6,8 @@ on:
   push:
 
 jobs:
-  build:
-    name: Build
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -19,27 +19,39 @@ jobs:
           node-version: '18'
           cache: 'yarn'
 
-      - name: Check dep dupes
-        run: yarn ci-dupe-check
-
       - name: Install dependencies
         run: yarn ci
 
-      - name: Build
-        run: yarn build
+      - name: Check dep dupes
+        run: yarn ci-dupe-check
 
-  semgrep:
-    name: Code Scan
+      - name: Lint
+        run: yarn lint-all
+
+  sast:
+    name: Security Scan
     runs-on: ubuntu-latest
-    container:
-      image: returntocorp/semgrep
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['javascript']
+
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - run: semgrep ci --exclude 'public/charting_library'
-        env:
-          SEMGREP_RULES: p/typescript
+      - name: Initialise CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Run CodeQL
+        uses: github/codeql-action/analyze@v2
 
   sca:
     name: Dependency Scan
@@ -48,15 +60,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Report all vulnerabilities in CI output
-      - name: Report on all vulnerabilities
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'fs'
-          ignore-unfixed: true
-          hide-progress: true
-          format: 'table'
-
       # Fail the job on critical vulnerabiliies with fix available
       - name: Fail on critical vulnerabilities
         uses: aquasecurity/trivy-action@master
@@ -64,7 +67,13 @@ jobs:
           scan-type: 'fs'
           ignore-unfixed: true
           hide-progress: true
-          security-checks: 'vuln' # disable secrets scanning until public
           format: 'table'
           severity: 'CRITICAL'
           exit-code: '1'
+
+  all-pass:
+    name: All tests pass 🚀
+    needs: ['lint', 'sast', 'sca']
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ok
