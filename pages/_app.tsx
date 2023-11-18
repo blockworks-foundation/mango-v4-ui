@@ -28,6 +28,7 @@ import {
   WalletConnectWalletAdapter,
 } from '@solana/wallet-adapter-wallets'
 import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare'
+import { MoongateWalletAdapter } from '@moongate/moongate-adapter'
 import { clusterApiUrl } from '@solana/web3.js'
 import TransactionNotification from '@components/notifications/TransactionNotification'
 import { ThemeProvider, useTheme } from 'next-themes'
@@ -65,6 +66,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter()
   const wallets = useMemo(() => {
     return [
+      new MoongateWalletAdapter({ position: 'bottom-left' }),
       new PhantomWalletAdapter(),
       new SolflareWalletAdapter(),
       new BackpackWalletAdapter(),
