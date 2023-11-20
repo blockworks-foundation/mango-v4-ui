@@ -47,6 +47,7 @@ import {
   calculateMarketTradingParams,
   LISTING_PRESETS_PYTH,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
+import Checkbox from '@components/forms/Checkbox'
 
 type FormErrors = Partial<Record<keyof TokenListForm, string>>
 
@@ -63,6 +64,7 @@ type TokenListForm = {
   marketName: string
   proposalTitle: string
   proposalDescription: string
+  listForSwapOnly: boolean
 }
 
 const defaultTokenListFormValues: TokenListForm = {
@@ -78,6 +80,7 @@ const defaultTokenListFormValues: TokenListForm = {
   marketName: '',
   proposalTitle: '',
   proposalDescription: '',
+  listForSwapOnly: false,
 }
 
 const TWENTY_K_USDC_BASE = '20000000000'
@@ -173,7 +176,10 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       : {}
   }, [listingTier])
 
-  const handleSetAdvForm = (propertyName: string, value: string | number) => {
+  const handleSetAdvForm = (
+    propertyName: string,
+    value: string | number | boolean,
+  ) => {
     setFormErrors({})
     setAdvForm({ ...advForm, [propertyName]: value })
   }
@@ -417,6 +423,9 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
 
       for (const key of pubkeyFields) {
         if (!tryGetPubKey(advForm[key] as string)) {
+          if (advForm.listForSwapOnly && key === 'openBookMarketExternalPk') {
+            continue
+          }
           invalidFields[key] = t('invalid-pk')
         }
       }
@@ -584,7 +593,9 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         group: group!.publicKey,
         admin: MANGO_DAO_WALLET,
         serumProgram: new PublicKey(advForm.openBookProgram),
-        serumMarketExternal: new PublicKey(advForm.openBookMarketExternalPk),
+        serumMarketExternal: advForm.listForSwapOnly
+          ? undefined
+          : new PublicKey(advForm.openBookMarketExternalPk),
         baseBank: new PublicKey(advForm.baseBankPk),
         quoteBank: new PublicKey(advForm.quoteBankPk),
         payer: MANGO_DAO_WALLET,
@@ -813,22 +824,46 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                               </div>
                             )}
                           </div>
+                          {!advForm.listForSwapOnly && (
+                            <div>
+                              <Label text={t('openbook-market-external')} />
+                              <Input
+                                hasError={
+                                  formErrors.openBookMarketExternalPk !==
+                                  undefined
+                                }
+                                type="text"
+                                value={advForm.openBookMarketExternalPk.toString()}
+                                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                  handleSetAdvForm(
+                                    'openBookMarketExternalPk',
+                                    e.target.value,
+                                  )
+                                }
+                              />
+                              {formErrors.openBookMarketExternalPk && (
+                                <div className="mt-1.5 flex items-center space-x-1">
+                                  <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
+                                  <p className="mb-0 text-xs text-th-down">
+                                    {formErrors.openBookMarketExternalPk}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          )}
                           <div>
-                            <Label text={t('openbook-market-external')} />
-                            <Input
-                              hasError={
-                                formErrors.openBookMarketExternalPk !==
-                                undefined
-                              }
-                              type="text"
-                              value={advForm.openBookMarketExternalPk.toString()}
+                            <Label text={t('list-for-swap-only')} />
+                            <Checkbox
+                              checked={advForm.listForSwapOnly}
                               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                                 handleSetAdvForm(
-                                  'openBookMarketExternalPk',
-                                  e.target.value,
+                                  'listForSwapOnly',
+                                  e.target.checked,
                                 )
                               }
-                            />
+                            >
+                              <></>
+                            </Checkbox>
                             {formErrors.openBookMarketExternalPk && (
                               <div className="mt-1.5 flex items-center space-x-1">
                                 <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
@@ -973,6 +1008,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
               </div>
               <ol className="list-decimal pl-4">
                 {!advForm.openBookMarketExternalPk &&
+                !advForm.listForSwapOnly &&
                 listingTier &&
                 !loadingListingParams ? (
                   <li className="pl-2">
@@ -1050,7 +1086,8 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                       loadingRealm ||
                       loadingVoter ||
                       (!advForm.openBookMarketExternalPk &&
-                        !loadingListingParams)
+                        !loadingListingParams &&
+                        !advForm.listForSwapOnly)
                     }
                     size="large"
                   >
