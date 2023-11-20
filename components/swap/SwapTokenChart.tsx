@@ -1,10 +1,4 @@
-import React, {
-  MouseEventHandler,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
+import React, { MouseEventHandler, useCallback, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import {
@@ -29,7 +23,6 @@ import { useViewport } from 'hooks/useViewport'
 import { formatTokenSymbol } from 'utils/tokens'
 import { useQuery } from '@tanstack/react-query'
 import mangoStore from '@store/mangoStore'
-import useJupiterSwapData from './useJupiterSwapData'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
@@ -105,7 +98,7 @@ interface ExtendedReferenceDotProps extends ReferenceDotProps {
   flipPrices: boolean
   mouseEnter: (
     swap: SwapHistoryItem | undefined,
-    coingeckoPrice: string | number | undefined,
+    birdeyePrice: string | number | undefined,
   ) => void
   mouseLeave: MouseEventHandler
 }
@@ -126,7 +119,8 @@ const SwapHistoryArrows = (props: ExtendedReferenceDotProps) => {
     (swap) => dayjs(swap.block_datetime).unix() * 1000 === x,
   )
   const side =
-    swapDetails?.swap_in_symbol === swapMarketName.split('/')[0]
+    swapDetails?.swap_in_symbol.toLowerCase() ===
+    swapMarketName.split('/')[0].toLowerCase()
       ? !flipPrices
         ? 'sell'
         : 'buy'
@@ -150,7 +144,7 @@ const SwapHistoryArrows = (props: ExtendedReferenceDotProps) => {
   const sideArrowProps =
     side === 'buy' ? (!flipPrices ? buy : sell) : !flipPrices ? sell : buy
 
-  const coingeckoPrice = y ? Number(y) : 0
+  const birdeyePrice = y ? Number(y) : 0
   return cx && cy ? (
     <svg
       className="cursor-pointer"
@@ -161,7 +155,7 @@ const SwapHistoryArrows = (props: ExtendedReferenceDotProps) => {
       xmlns="http://www.w3.org/2000/svg"
       x={cx - 11}
       y={cy + sideArrowProps.yOffset}
-      onMouseEnter={() => mouseEnter(swapDetails, coingeckoPrice)}
+      onMouseEnter={() => mouseEnter(swapDetails, birdeyePrice)}
       onMouseLeave={mouseLeave}
     >
       <path
@@ -187,10 +181,7 @@ const SwapTokenChart = () => {
     swapMode,
     swapOrTrigger,
   } = mangoStore((s) => s.swap)
-  const { inputCoingeckoId, outputCoingeckoId } = useJupiterSwapData()
   const { isDesktop } = useViewport()
-  const [baseTokenId, setBaseTokenId] = useState(inputCoingeckoId)
-  const [quoteTokenId, setQuoteTokenId] = useState(outputCoingeckoId)
   const [mouseData, setMouseData] = useState<SwapChartDataItem>()
   const [daysToShow, setDaysToShow] = useState('1')
   const { theme } = useThemeWrapper()
@@ -203,7 +194,7 @@ const SwapTokenChart = () => {
   const [showSwaps, setShowSwaps] = useState(true)
   const [swapTooltipData, setSwapTooltipData] =
     useState<SwapHistoryItem | null>(null)
-  const [swapTooltipCoingeckoPrice, setSwapTooltipCoingeckoPrice] = useState<
+  const [swapTooltipBirdeyePrice, setSwapTooltipBirdeyePrice] = useState<
     string | number | undefined
   >(undefined)
 
@@ -224,16 +215,16 @@ const SwapTokenChart = () => {
   const handleSwapMouseEnter = useCallback(
     (
       swap: SwapHistoryItem | undefined,
-      coingeckoPrice: string | number | undefined,
+      birdeyePrice: string | number | undefined,
     ) => {
       if (swap) {
         setSwapTooltipData(swap)
       }
-      if (coingeckoPrice) {
-        setSwapTooltipCoingeckoPrice(coingeckoPrice)
+      if (birdeyePrice) {
+        setSwapTooltipBirdeyePrice(birdeyePrice)
       }
     },
-    [setSwapTooltipData, setSwapTooltipCoingeckoPrice],
+    [setSwapTooltipData, setSwapTooltipBirdeyePrice],
   )
 
   const handleSwapMouseLeave = useCallback(() => {
@@ -252,10 +243,10 @@ const SwapTokenChart = () => {
 
       const swapOutValue = swap_out_price_usd * swap_out_amount
 
-      const baseMarketToken = swapMarketName.split('/')[0]
+      const baseMarketToken = swapMarketName.split('/')[0].toLowerCase()
 
       const swapSide =
-        swap_in_symbol === baseMarketToken
+        swap_in_symbol.toLowerCase() === baseMarketToken
           ? !flipPrices
             ? 'sell'
             : 'buy'
@@ -265,19 +256,19 @@ const SwapTokenChart = () => {
 
       const buy = {
         price: swap_in_amount / swap_out_amount,
-        priceSymbol: swap_in_symbol,
+        priceSymbol: formatTokenSymbol(swap_in_symbol),
         amount: swap_out_amount,
         side: 'buy',
-        symbol: swap_out_symbol,
+        symbol: formatTokenSymbol(swap_out_symbol),
         value: swapOutValue,
       }
 
       const sell = {
         price: swap_out_amount / swap_in_amount,
-        priceSymbol: swap_out_symbol,
+        priceSymbol: formatTokenSymbol(swap_out_symbol),
         amount: swap_in_amount,
         side: 'sell',
-        symbol: swap_in_symbol,
+        symbol: formatTokenSymbol(swap_in_symbol),
         value: swapOutValue,
       }
 
@@ -292,23 +283,23 @@ const SwapTokenChart = () => {
 
       const { amount, price, priceSymbol, side, symbol, value } = swapProps
 
-      let coingeckoPercentageDifference = 0
+      let birdeyePercentageDifference = 0
       if (
-        swapTooltipCoingeckoPrice &&
-        typeof swapTooltipCoingeckoPrice === 'number'
+        swapTooltipBirdeyePrice &&
+        typeof swapTooltipBirdeyePrice === 'number'
       ) {
-        const difference = ((price - swapTooltipCoingeckoPrice) / price) * 100
-        coingeckoPercentageDifference = difference
+        const difference = ((price - swapTooltipBirdeyePrice) / price) * 100
+        birdeyePercentageDifference = difference
       }
 
-      const betterThanCoingecko =
+      const betterThanBirdeye =
         swapSide === 'buy'
           ? flipPrices
-            ? coingeckoPercentageDifference > 0
-            : coingeckoPercentageDifference < 0
+            ? birdeyePercentageDifference > 0
+            : birdeyePercentageDifference < 0
           : flipPrices
-          ? coingeckoPercentageDifference < 0
-          : coingeckoPercentageDifference > 0
+          ? birdeyePercentageDifference < 0
+          : birdeyePercentageDifference > 0
 
       return (
         <>
@@ -317,22 +308,22 @@ const SwapTokenChart = () => {
           )} ${amount} ${symbol} at ${formatNumericValue(
             price,
           )} ${priceSymbol} for ${formatCurrencyValue(value)}`}</p>
-          {coingeckoPercentageDifference ? (
+          {birdeyePercentageDifference ? (
             <p
               className={`mt-0.5 text-center text-xs ${
-                betterThanCoingecko ? 'text-th-up' : 'text-th-down'
+                betterThanBirdeye ? 'text-th-up' : 'text-th-down'
               }`}
             >
               <span className="font-mono">
-                {coingeckoPercentageDifference.toFixed(2)}%
+                {birdeyePercentageDifference.toFixed(2)}%
               </span>{' '}
-              {betterThanCoingecko ? 'better than' : 'worse than'} Coingecko
+              {betterThanBirdeye ? 'better than' : 'worse than'} Birdeye
             </p>
           ) : null}
         </>
       )
     },
-    [flipPrices, swapMarketName, swapTooltipCoingeckoPrice],
+    [flipPrices, swapMarketName, swapTooltipBirdeyePrice],
   )
 
   const {
@@ -493,12 +484,6 @@ const SwapTokenChart = () => {
     setMouseData(undefined)
   }, [setMouseData])
 
-  useEffect(() => {
-    if (!inputCoingeckoId || !outputCoingeckoId) return
-    setBaseTokenId(inputCoingeckoId)
-    setQuoteTokenId(outputCoingeckoId)
-  }, [inputCoingeckoId, outputCoingeckoId])
-
   const calculateChartChange = useCallback(() => {
     if (!chartData?.length) return 0
     if (mouseData) {
@@ -547,7 +532,7 @@ const SwapTokenChart = () => {
             </SheenLoader>
           ) : null}
         </>
-      ) : chartData?.length && baseTokenId && quoteTokenId ? (
+      ) : chartData?.length ? (
         <div className="relative h-full">
           {swapTooltipData ? (
             <div className="absolute bottom-2 left-1/2 z-10 w-full -translate-x-1/2 rounded-md border border-th-bkg-3 bg-th-bkg-1 px-4 py-2">
