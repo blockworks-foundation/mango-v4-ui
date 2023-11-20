@@ -48,7 +48,6 @@ import Tooltip from '@components/shared/Tooltip'
 import { SwapHistoryItem } from 'types'
 import useThemeWrapper from 'hooks/useThemeWrapper'
 import FavoriteSwapButton from './FavoriteSwapButton'
-import { cloneDeep } from 'lodash'
 import { SwapChartDataItem, fetchSwapChartPrices } from 'apis/birdeye/helpers'
 
 dayjs.extend(relativeTime)
@@ -356,6 +355,25 @@ const SwapTokenChart = () => {
     },
   )
 
+  const handleFlippedPriceData = useMemo(() => {
+    if (
+      !birdeyePriceData ||
+      !birdeyePriceData.length ||
+      birdeyePriceData.length < 2
+    )
+      return []
+    if (flipPrices) {
+      const flippedPrices = []
+      for (const item of birdeyePriceData) {
+        const flippedPrice = item.outputTokenPrice / item.inputTokenPrice
+        flippedPrices.push({ ...item, price: flippedPrice })
+      }
+      return flippedPrices
+    } else {
+      return birdeyePriceData
+    }
+  }, [birdeyePriceData, flipPrices])
+
   const chartSwapTimes = useMemo(() => {
     if (
       loadSwapHistory ||
@@ -379,58 +397,48 @@ const SwapTokenChart = () => {
   }, [swapHistory, loadSwapHistory, inputBankName, outputBankName])
 
   const swapHistoryPoints = useMemo(() => {
-    if (!birdeyePriceData || !birdeyePriceData.length || !chartSwapTimes.length)
-      return []
+    if (!handleFlippedPriceData.length || !chartSwapTimes.length) return []
     return chartSwapTimes.map((x) => {
       const makeSwapChartDataItem = { inputTokenPrice: 1, outputTokenPrice: 1 }
-      const index = birdeyePriceData.findIndex((d) => d.time > x) // find index of data point with x value greater than highlight x
+      const index = handleFlippedPriceData.findIndex((d) => d.time > x) // find index of data point with x value greater than highlight x
       if (index === 0) {
         return {
           time: x,
-          price: birdeyePriceData[0].price,
+          price: handleFlippedPriceData[0].price,
           ...makeSwapChartDataItem,
         } // return first data point y value if highlight x is less than first data point x
       } else if (index === -1) {
         return {
           time: x,
-          price: birdeyePriceData[birdeyePriceData.length - 1].price,
+          price:
+            handleFlippedPriceData[handleFlippedPriceData.length - 1].price,
           ...makeSwapChartDataItem,
         } // return last data point y value if highlight x is greater than last data point x
       } else {
-        const x0 = birdeyePriceData[index - 1].time
-        const x1 = birdeyePriceData[index].time
-        const y0 = birdeyePriceData[index - 1].price
-        const y1 = birdeyePriceData[index].price
+        const x0 = handleFlippedPriceData[index - 1].time
+        const x1 = handleFlippedPriceData[index].time
+        const y0 = handleFlippedPriceData[index - 1].price
+        const y1 = handleFlippedPriceData[index].price
         const interpolateY = interpolateNumber(y0, y1) // create interpolate function for y values
         const y = interpolateY((x - x0) / (x1 - x0)) // estimate y value at highlight x using interpolate function
         return { time: x, price: y, ...makeSwapChartDataItem }
       }
     })
-  }, [birdeyePriceData, chartSwapTimes])
+  }, [handleFlippedPriceData, chartSwapTimes])
 
   const chartData = useMemo(() => {
-    if (
-      !birdeyePriceData ||
-      !birdeyePriceData.length ||
-      birdeyePriceData.length < 2
-    )
-      return []
-    let sourceData = cloneDeep(birdeyePriceData)
-    if (flipPrices) {
-      for (const item of sourceData) {
-        item.price = item.outputTokenPrice / item.inputTokenPrice
-      }
-    } else {
-      sourceData = birdeyePriceData
-    }
-    const minTime = sourceData[0].time
-    const maxTime = sourceData[sourceData.length - 1].time
-    let data = sourceData
+    if (!handleFlippedPriceData.length) return []
+    const minTime = handleFlippedPriceData[0].time
+    const maxTime =
+      handleFlippedPriceData[handleFlippedPriceData.length - 1].time
+    let data = handleFlippedPriceData
     if (swapHistoryPoints.length && showSwaps) {
       const swapPoints = swapHistoryPoints.filter(
         (point) => point.time >= minTime && point.time <= maxTime,
       )
-      data = sourceData.concat(swapPoints).sort((a, b) => a.time - b.time)
+      data = handleFlippedPriceData
+        .concat(swapPoints)
+        .sort((a, b) => a.time - b.time)
     }
     if (amountIn && amountOut && swapOrTrigger === 'swap') {
       const latestPrice = flipPrices
@@ -439,7 +447,7 @@ const SwapTokenChart = () => {
       const item: SwapChartDataItem[] = [
         {
           price: latestPrice,
-          time: Math.floor(Date.now() / 1000),
+          time: Date.now(),
           inputTokenPrice: 0,
           outputTokenPrice: 0,
         },
@@ -452,7 +460,7 @@ const SwapTokenChart = () => {
       const item: SwapChartDataItem[] = [
         {
           price: latestPrice,
-          time: Math.floor(Date.now() / 1000),
+          time: Date.now(),
           inputTokenPrice: inputBank.uiPrice,
           outputTokenPrice: outputBank.uiPrice,
         },
@@ -463,7 +471,7 @@ const SwapTokenChart = () => {
   }, [
     amountIn,
     amountOut,
-    birdeyePriceData,
+    handleFlippedPriceData,
     flipPrices,
     inputBank,
     outputBank,

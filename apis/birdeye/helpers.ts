@@ -184,7 +184,7 @@ export const fetchSwapChartPrices = async (
 
         if (outputDataItem && item.unixTime <= curentTimestamp) {
           parsedData.push({
-            time: item.unixTime,
+            time: Math.floor(item.unixTime * 1000),
             price: item.value / outputDataItem.value,
             inputTokenPrice: item.value,
             outputTokenPrice: outputDataItem.value,
