@@ -13,6 +13,7 @@
     "deposits": "Deposits",
     "execution-price": "Execution Price",
     "filter-results": "Filter",
+    "latest-activity": "Latest Activity",
     "liquidate_perp_base_position_or_positive_pnl": "Perp Liquidation",
     "liquidate_token_with_token": "Spot Liquidation",
     "liquidated": "Liquidated",

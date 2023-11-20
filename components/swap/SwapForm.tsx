@@ -125,7 +125,7 @@ const SwapForm = () => {
     >
       <div>
         <EnterBottomExitBottom
-          className="thin-scroll absolute bottom-0 left-0 z-10 h-full w-full overflow-auto bg-th-bkg-1 p-6 pb-0"
+          className="thin-scroll absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-1 p-6 pb-0"
           show={!!showTokenSelect}
         >
           <SwapFormTokenList
@@ -142,7 +142,7 @@ const SwapForm = () => {
           />
         </EnterBottomExitBottom>
         <EnterBottomExitBottom
-          className="thin-scroll absolute bottom-0 left-0 z-10 h-full w-full overflow-auto bg-th-bkg-1 p-6 pb-0"
+          className="thin-scroll absolute bottom-0 left-0 z-20 h-full w-full overflow-auto bg-th-bkg-1 p-6 pb-0"
           show={showSettings}
         >
           <SwapSettings onClose={() => setShowSettings(false)} />

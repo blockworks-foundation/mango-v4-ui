@@ -35,7 +35,7 @@ const Tooltip = ({
         content={
           content ? (
             <div
-              className={`${themeData.fonts.body.variable} ${themeData.fonts.display.variable} ${themeData.fonts.mono.variable} font-sans font-sans rounded-md bg-th-bkg-2 p-3 font-body text-xs leading-4 text-th-fgd-3 outline-none focus:outline-none ${className}`}
+              className={`${themeData.fonts.body.variable} ${themeData.fonts.display.variable} ${themeData.fonts.mono.variable} font-sans rounded-md bg-th-bkg-2 p-3 font-body text-xs leading-4 text-th-fgd-3 outline-none focus:outline-none ${className}`}
               style={{ boxShadow: '0px 0px 8px 0px rgba(0,0,0,0.25)' }}
             >
               {content}

@@ -8,11 +8,14 @@ import RecentGainersLosers from './RecentGainersLosers'
 import Spot from './Spot'
 import useBanks from 'hooks/useBanks'
 import TabsText from '@components/shared/TabsText'
+import useFollowedAccounts from 'hooks/useFollowedAccounts'
+import FollowedAccounts from './FollowedAccounts'
 dayjs.extend(relativeTime)
 
 const Explore = () => {
   const { t } = useTranslation(['common'])
   const { banks } = useBanks()
+  const { data: followedAccounts } = useFollowedAccounts()
   const perpStats = mangoStore((s) => s.perpStats.data)
   const [activeTab, setActiveTab] = useState('tokens')
 
@@ -27,10 +30,11 @@ const Explore = () => {
     const perpMarkets = mangoStore.getState().perpMarkets
     const tabs: [string, number][] = [
       ['tokens', banks.length],
-      ['perp-markets', perpMarkets.length],
+      ['perp', perpMarkets.length],
+      ['account:followed-accounts', followedAccounts?.length],
     ]
     return tabs
-  }, [banks])
+  }, [banks, followedAccounts])
 
   return (
     <>
@@ -50,7 +54,7 @@ const Explore = () => {
             activeTab={activeTab}
             onChange={setActiveTab}
             tabs={tabsWithCount}
-            className="text-lg"
+            className="xl:text-lg"
           />
         </div>
       </div>
@@ -71,6 +75,8 @@ const TabContent = ({ activeTab }: { activeTab: string }) => {
           <PerpMarketsTable />
         </div>
       )
+    case 'account:followed-accounts':
+      return <FollowedAccounts />
     default:
       return <Spot />
   }

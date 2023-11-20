@@ -13,6 +13,7 @@
     "deposits": "存款",
     "execution-price": "成交价格",
     "filter-results": "筛选",
+    "latest-activity": "Latest Activity",
     "liquidate_perp_base_position_or_positive_pnl": "合约清算",
     "liquidate_token_with_token": "现货清算",
     "liquidated": "被清算",

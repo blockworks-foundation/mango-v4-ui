@@ -1,4 +1,3 @@
-import { MinusSmallIcon } from '@heroicons/react/20/solid'
 import { DownTriangle, UpTriangle } from './DirectionTriangles'
 import FormatNumericValue from './FormatNumericValue'
 
@@ -53,30 +52,23 @@ const Change = ({
       </p>
     </div>
   ) : (
-    <div className="flex items-center space-x-1.5">
-      <MinusSmallIcon
-        className={`-mr-1 ${
-          size === 'small' ? 'h-4 w-4' : 'h-6 w-6'
-        } text-th-fgd-4`}
+    <p
+      className={`font-mono font-normal ${
+        size === 'small'
+          ? 'text-xs'
+          : size === 'large'
+          ? 'text-base'
+          : 'text-sm'
+      }`}
+    >
+      {prefix ? prefix : ''}
+      <FormatNumericValue
+        value="0.00"
+        decimals={decimals ? decimals : 2}
+        isPrivate={isPrivate}
       />
-      <p
-        className={`font-mono font-normal ${
-          size === 'small'
-            ? 'text-xs'
-            : size === 'large'
-            ? 'text-base'
-            : 'text-sm'
-        }`}
-      >
-        {prefix ? prefix : ''}
-        <FormatNumericValue
-          value="0.00"
-          decimals={decimals ? decimals : 2}
-          isPrivate={isPrivate}
-        />
-        {suffix ? suffix : ''}
-      </p>
-    </div>
+      {suffix ? suffix : ''}
+    </p>
   )
 }
 

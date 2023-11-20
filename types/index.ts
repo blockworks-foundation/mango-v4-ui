@@ -308,6 +308,12 @@ export interface SwapActivity {
   activity_type: string
 }
 
+interface DepositWithdrawActivity {
+  activity_details: DepositWithdrawFeedItem
+  block_datetime: string
+  activity_type: string
+}
+
 export function isLiquidationActivityFeedItem(
   item: ActivityFeed,
 ): item is LiquidationActivity {
@@ -339,6 +345,15 @@ export function isSwapActivityFeedItem(
   item: ActivityFeed,
 ): item is SwapActivity {
   if (item.activity_type === 'swap') {
+    return true
+  }
+  return false
+}
+
+export function isDepositWithdrawActivityFeedItem(
+  item: ActivityFeed,
+): item is DepositWithdrawActivity {
+  if (item.activity_type === 'deposit' || item.activity_type === 'withdraw') {
     return true
   }
   return false

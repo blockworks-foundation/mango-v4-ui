@@ -166,7 +166,7 @@ const DetailedAreaOrBarChart: FunctionComponent<
         const index = filteredData.findIndex(
           (d: any) => d[xKey] === mouseData[xKey],
         )
-        const currentValue = filteredData[index][yKey]
+        const currentValue = filteredData[index]?.[yKey]
 
         const change =
           index >= 0

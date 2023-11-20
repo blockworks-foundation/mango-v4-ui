@@ -561,7 +561,7 @@ const MobileTokenListItem = ({ data }: { data: TableData }) => {
             enterTo="opacity-100"
           >
             <Disclosure.Panel>
-              <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pb-4 pt-4">
+              <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 py-4">
                 <div className="col-span-1">
                   <Tooltip content={t('tooltip-collateral-value')}>
                     <p className="tooltip-underline text-xs text-th-fgd-3">
