@@ -628,7 +628,7 @@ const SwapReviewRouteInfo = ({
     outputTokenInfo &&
     amountOut ? (
     <Transition
-      className="absolute right-0 top-0 z-10 h-full w-full bg-th-bkg-1 pb-0"
+      className="absolute right-0 top-0 z-20 h-full w-full bg-th-bkg-1 pb-0"
       show={show}
       enter="transition ease-in duration-300"
       enterFrom="-translate-x-full"
