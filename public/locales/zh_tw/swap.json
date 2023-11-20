@@ -54,6 +54,7 @@
     "tooltip-max-slippage": "如果價格下滑超過您的最大滑點，換幣交易將不會被執行",
     "tooltip-favorite-swap-add": "Add pair to favorites",
     "tooltip-favorite-swap-remove": "Remove pair from favorites",
+    "tooltip-price-chart-source": "Price history by birdeye",
     "tooltip-wallet-swap": "When enabled, you'll swap tokens in your wallet. When disabled, you'll swap tokens in your Mango Account.",
     "trigger-beta": "觸發訂單還在開發中。請小心一點。",
     "use-margin": "允許槓桿",
