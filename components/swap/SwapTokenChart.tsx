@@ -28,7 +28,6 @@ import ChartRangeButtons from '../shared/ChartRangeButtons'
 import { useViewport } from 'hooks/useViewport'
 import { formatTokenSymbol } from 'utils/tokens'
 import { useQuery } from '@tanstack/react-query'
-import { SwapChartDataItem, fetchSwapChartData } from 'apis/coingecko'
 import mangoStore from '@store/mangoStore'
 import useJupiterSwapData from './useJupiterSwapData'
 import useLocalStorageState from 'hooks/useLocalStorageState'
@@ -49,6 +48,8 @@ import Tooltip from '@components/shared/Tooltip'
 import { SwapHistoryItem } from 'types'
 import useThemeWrapper from 'hooks/useThemeWrapper'
 import FavoriteSwapButton from './FavoriteSwapButton'
+import { cloneDeep } from 'lodash'
+import { SwapChartDataItem, fetchSwapChartPrices } from 'apis/birdeye/helpers'
 
 dayjs.extend(relativeTime)
 
@@ -336,16 +337,21 @@ const SwapTokenChart = () => {
   )
 
   const {
-    data: coingeckoData,
-    isLoading,
-    isFetching,
+    data: birdeyePriceData,
+    isLoading: loadingBirdeye,
+    isFetching: fetchingBirdeye,
   } = useQuery(
-    ['swap-chart-data', baseTokenId, quoteTokenId, daysToShow, flipPrices],
-    () => fetchSwapChartData(baseTokenId, quoteTokenId, daysToShow, flipPrices),
+    ['swap-chart-price-data', inputBank?.mint, outputBank?.mint, daysToShow],
+    () =>
+      fetchSwapChartPrices(
+        inputBank?.mint.toString(),
+        outputBank?.mint.toString(),
+        daysToShow,
+      ),
     {
       cacheTime: 1000 * 60 * 15,
       staleTime: 1000 * 60 * 1,
-      enabled: !!(baseTokenId && quoteTokenId),
+      enabled: !!(inputBank && outputBank),
       refetchOnWindowFocus: false,
     },
   )
@@ -373,46 +379,58 @@ const SwapTokenChart = () => {
   }, [swapHistory, loadSwapHistory, inputBankName, outputBankName])
 
   const swapHistoryPoints = useMemo(() => {
-    if (!coingeckoData || !coingeckoData.length || !chartSwapTimes.length)
+    if (!birdeyePriceData || !birdeyePriceData.length || !chartSwapTimes.length)
       return []
     return chartSwapTimes.map((x) => {
       const makeSwapChartDataItem = { inputTokenPrice: 1, outputTokenPrice: 1 }
-      const index = coingeckoData.findIndex((d) => d.time > x) // find index of data point with x value greater than highlight x
+      const index = birdeyePriceData.findIndex((d) => d.time > x) // find index of data point with x value greater than highlight x
       if (index === 0) {
         return {
           time: x,
-          price: coingeckoData[0].price,
+          price: birdeyePriceData[0].price,
           ...makeSwapChartDataItem,
         } // return first data point y value if highlight x is less than first data point x
       } else if (index === -1) {
         return {
           time: x,
-          price: coingeckoData[coingeckoData.length - 1].price,
+          price: birdeyePriceData[birdeyePriceData.length - 1].price,
           ...makeSwapChartDataItem,
         } // return last data point y value if highlight x is greater than last data point x
       } else {
-        const x0 = coingeckoData[index - 1].time
-        const x1 = coingeckoData[index].time
-        const y0 = coingeckoData[index - 1].price
-        const y1 = coingeckoData[index].price
+        const x0 = birdeyePriceData[index - 1].time
+        const x1 = birdeyePriceData[index].time
+        const y0 = birdeyePriceData[index - 1].price
+        const y1 = birdeyePriceData[index].price
         const interpolateY = interpolateNumber(y0, y1) // create interpolate function for y values
         const y = interpolateY((x - x0) / (x1 - x0)) // estimate y value at highlight x using interpolate function
         return { time: x, price: y, ...makeSwapChartDataItem }
       }
     })
-  }, [coingeckoData, chartSwapTimes])
+  }, [birdeyePriceData, chartSwapTimes])
 
   const chartData = useMemo(() => {
-    if (!coingeckoData || !coingeckoData.length || coingeckoData.length < 2)
+    if (
+      !birdeyePriceData ||
+      !birdeyePriceData.length ||
+      birdeyePriceData.length < 2
+    )
       return []
-    const minTime = coingeckoData[0].time
-    const maxTime = coingeckoData[coingeckoData.length - 1].time
-    let data = coingeckoData
+    let sourceData = cloneDeep(birdeyePriceData)
+    if (flipPrices) {
+      for (const item of sourceData) {
+        item.price = item.outputTokenPrice / item.inputTokenPrice
+      }
+    } else {
+      sourceData = birdeyePriceData
+    }
+    const minTime = sourceData[0].time
+    const maxTime = sourceData[sourceData.length - 1].time
+    let data = sourceData
     if (swapHistoryPoints.length && showSwaps) {
       const swapPoints = swapHistoryPoints.filter(
         (point) => point.time >= minTime && point.time <= maxTime,
       )
-      data = coingeckoData.concat(swapPoints).sort((a, b) => a.time - b.time)
+      data = sourceData.concat(swapPoints).sort((a, b) => a.time - b.time)
     }
     if (amountIn && amountOut && swapOrTrigger === 'swap') {
       const latestPrice = flipPrices
@@ -421,7 +439,7 @@ const SwapTokenChart = () => {
       const item: SwapChartDataItem[] = [
         {
           price: latestPrice,
-          time: Date.now(),
+          time: Math.floor(Date.now() / 1000),
           inputTokenPrice: 0,
           outputTokenPrice: 0,
         },
@@ -434,7 +452,7 @@ const SwapTokenChart = () => {
       const item: SwapChartDataItem[] = [
         {
           price: latestPrice,
-          time: Date.now(),
+          time: Math.floor(Date.now() / 1000),
           inputTokenPrice: inputBank.uiPrice,
           outputTokenPrice: outputBank.uiPrice,
         },
@@ -445,7 +463,7 @@ const SwapTokenChart = () => {
   }, [
     amountIn,
     amountOut,
-    coingeckoData,
+    birdeyePriceData,
     flipPrices,
     inputBank,
     outputBank,
@@ -504,7 +522,7 @@ const SwapTokenChart = () => {
 
   return (
     <ContentBox hideBorder hidePadding className="h-full px-4 py-3 md:px-6">
-      {isLoading || isFetching ? (
+      {loadingBirdeye || fetchingBirdeye ? (
         <>
           <SheenLoader className="w-[148px] rounded-md">
             <div className="h-[18px] bg-th-bkg-2" />

@@ -1,4 +1,6 @@
 import Decimal from 'decimal.js'
+import { BirdeyePriceResponse } from 'hooks/useBirdeyeMarketPrices'
+import { DAILY_SECONDS } from 'utils/constants'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const NEXT_PUBLIC_BIRDEYE_API_KEY =
@@ -137,4 +139,62 @@ export const formatPrice = (
   }
 
   return formated
+}
+
+export type SwapChartDataItem = {
+  time: number
+  price: number
+  inputTokenPrice: number
+  outputTokenPrice: number
+}
+
+export const fetchSwapChartPrices = async (
+  inputMint: string | undefined,
+  outputMint: string | undefined,
+  daysToShow: string,
+) => {
+  if (!inputMint || !outputMint) return []
+  const interval = daysToShow === '1' ? '30m' : daysToShow === '7' ? '1H' : '4H'
+  const queryEnd = Math.floor(Date.now() / 1000)
+  const queryStart = queryEnd - parseInt(daysToShow) * DAILY_SECONDS
+  const inputQuery = `defi/history_price?address=${inputMint}&address_type=token&type=${interval}&time_from=${queryStart}&time_to=${queryEnd}`
+  const outputQuery = `defi/history_price?address=${outputMint}&address_type=token&type=${interval}&time_from=${queryStart}&time_to=${queryEnd}`
+  try {
+    const [inputResponse, outputResponse] = await Promise.all([
+      makeApiRequest(inputQuery),
+      makeApiRequest(outputQuery),
+    ])
+
+    if (
+      inputResponse.success &&
+      inputResponse?.data?.items?.length &&
+      outputResponse.success &&
+      outputResponse?.data?.items?.length
+    ) {
+      const parsedData: SwapChartDataItem[] = []
+      const inputData = inputResponse.data.items
+      const outputData = outputResponse.data.items
+
+      for (const item of inputData) {
+        const outputDataItem = outputData.find(
+          (data: BirdeyePriceResponse) => data.unixTime === item.unixTime,
+        )
+
+        const curentTimestamp = Date.now() / 1000
+
+        if (outputDataItem && item.unixTime <= curentTimestamp) {
+          parsedData.push({
+            time: item.unixTime,
+            price: item.value / outputDataItem.value,
+            inputTokenPrice: item.value,
+            outputTokenPrice: outputDataItem.value,
+          })
+        }
+      }
+      return parsedData
+    } else return []
+  } catch (e) {
+    console.log('failed to fetch swap chart data from birdeye', e)
+    return []
+  }
 }
