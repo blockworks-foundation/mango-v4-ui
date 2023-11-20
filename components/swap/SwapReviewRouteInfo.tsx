@@ -277,8 +277,7 @@ export const fetchJupiterTransaction = async (
         // https://station.jup.ag/docs/additional-topics/referral-program
         // https://github.com/TeamRaccoons/referral
         // https://github.com/TeamRaccoons/referral/blob/main/packages/sdk/src/referral.ts
-        ...(feeMint.toBase58() ===
-        'HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3'
+        ...([''].includes(feeMint.toBase58())
           ? {}
           : { platformFeeBps: 1, feeAccount }),
       }),
