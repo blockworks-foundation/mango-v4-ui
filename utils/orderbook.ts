@@ -118,7 +118,7 @@ export const getCumulativeOrderbookSide = (
 }
 
 export const groupBy = (
-  ordersArray: number[][],
+  ordersArray: number[][] | undefined,
   market: PerpMarket | Market,
   grouping: number,
   isBids: boolean,
@@ -165,4 +165,71 @@ export const groupBy = (
       return isBids ? b[0] - a[0] : a[0] - b[0]
     })
   return sortedGroups
+}
+
+export const formatOrderbookData = (
+  rawBids: number[][] | undefined,
+  rawAsks: number[][] | undefined,
+  depth: 12 | 30,
+  market: PerpMarket | Market,
+  grouping: number,
+  usersOpenOrderPrices: number[],
+) => {
+  const bids = groupBy(rawBids, market, grouping, true) || []
+  const asks = groupBy(rawAsks, market, grouping, false) || []
+
+  const sum = (total: number, [, size]: number[], index: number) =>
+    index < depth ? total + size : total
+  const totalSize = bids.reduce(sum, 0) + asks.reduce(sum, 0)
+
+  const maxSize =
+    Math.max(
+      ...bids.map((b: number[]) => {
+        return b[1]
+      }),
+    ) +
+    Math.max(
+      ...asks.map((a: number[]) => {
+        return a[1]
+      }),
+    )
+  const isGrouped = grouping !== market.tickSize
+  const bidsToDisplay = getCumulativeOrderbookSide(
+    bids,
+    totalSize,
+    maxSize,
+    depth,
+    usersOpenOrderPrices,
+    grouping,
+    isGrouped,
+  )
+  const asksToDisplay = getCumulativeOrderbookSide(
+    asks,
+    totalSize,
+    maxSize,
+    depth,
+    usersOpenOrderPrices,
+    grouping,
+    isGrouped,
+  )
+
+  if (bidsToDisplay[0] || asksToDisplay[0]) {
+    const bid = bidsToDisplay[0]?.price
+    const ask = asksToDisplay[0]?.price
+    let spread = 0,
+      spreadPercentage = 0
+    if (bid && ask) {
+      spread = parseFloat((ask - bid).toFixed(getDecimalCount(market.tickSize)))
+      spreadPercentage = (spread / ask) * 100
+    }
+
+    return {
+      bids: bidsToDisplay,
+      asks: asksToDisplay.reverse(),
+      spread,
+      spreadPercentage,
+    }
+  } else {
+    return null
+  }
 }
