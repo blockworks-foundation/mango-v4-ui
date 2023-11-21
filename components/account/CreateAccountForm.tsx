@@ -113,7 +113,7 @@ const CreateAccountForm = ({
   }
 
   return loading ? (
-    <div className="flex h-full flex-col items-center justify-between">
+    <div className="flex flex-1 flex-col items-center justify-center">
       <BounceLoader loadingMessage={t('creating-account')} />
     </div>
   ) : (
