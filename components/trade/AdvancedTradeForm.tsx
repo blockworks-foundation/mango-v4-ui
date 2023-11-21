@@ -75,6 +75,9 @@ import Select from '@components/forms/Select'
 import TriggerOrderMaxButton from './TriggerOrderMaxButton'
 import TradePriceDifference from '@components/shared/TradePriceDifference'
 import { getTokenBalance } from '@components/swap/TriggerSwapForm'
+import useMangoAccountAccounts from 'hooks/useMangoAccountAccounts'
+import Link from 'next/link'
+import TopBarStore from '@store/topBarStore'
 
 dayjs.extend(relativeTime)
 
@@ -109,6 +112,8 @@ type FormErrors = Partial<Record<keyof TradeForm, string>>
 const AdvancedTradeForm = () => {
   const { t } = useTranslation(['common', 'settings', 'swap', 'trade'])
   const { mangoAccount } = useMangoAccount()
+  const { usedSerum3, totalSerum3 } = useMangoAccountAccounts()
+  const { setShowSettingsModal } = TopBarStore()
   const tradeForm = mangoStore((s) => s.tradeForm)
   const themeData = mangoStore((s) => s.themeData)
   const [placingOrder, setPlacingOrder] = useState(false)
@@ -134,6 +139,15 @@ const AdvancedTradeForm = () => {
   } = useSelectedMarket()
   const { remainingBorrowsInPeriod, timeToNextPeriod } =
     useRemainingBorrowsInPeriod()
+
+  // check for available serum account slots if serum market
+  const serumSlotsFull = useMemo(() => {
+    if (!selectedMarket || selectedMarket instanceof PerpMarket) return false
+    const hasSlot = usedSerum3.find(
+      (market) => market.marketIndex === selectedMarket.marketIndex,
+    )
+    return usedSerum3.length >= totalSerum3.length && !hasSlot
+  }, [usedSerum3, totalSerum3, selectedMarket])
 
   const baseBank = useMemo(() => {
     const group = mangoStore.getState().group
@@ -708,7 +722,7 @@ const AdvancedTradeForm = () => {
     [baseBank, isTriggerOrder, minOrderSize, oraclePrice, setFormErrors],
   )
 
-  const disabled = !serumOrPerpMarket || !isMarketEnabled
+  const disabled = !serumOrPerpMarket || !isMarketEnabled || serumSlotsFull
 
   return (
     <div>
@@ -1066,6 +1080,21 @@ const AdvancedTradeForm = () => {
               <InlineNotification
                 type="warning"
                 desc={t('trade:price-expect')}
+              />
+            </div>
+          ) : null}
+          {serumSlotsFull ? (
+            <div className="mb-4 px-4">
+              <InlineNotification
+                type="error"
+                desc={
+                  <>
+                    {t('trade:error-serum-positions-full')}{' '}
+                    <Link href={''} onClick={() => setShowSettingsModal(true)}>
+                      {t('manage')}
+                    </Link>
+                  </>
+                }
               />
             </div>
           ) : null}
