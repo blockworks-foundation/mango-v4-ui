@@ -102,7 +102,7 @@ const Orderbook = () => {
         element.scrollTop = (element.scrollHeight - element.offsetHeight) / 2
       }
     }
-  }, [orderbookElRef])
+  }, [])
 
   useEffect(() => {
     window.addEventListener('resize', verticallyCenterOrderbook)
