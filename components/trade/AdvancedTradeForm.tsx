@@ -924,14 +924,14 @@ const AdvancedTradeForm = () => {
                     tickDecimals={tickDecimals}
                     step={tradeForm.side === 'buy' ? tickSize : minOrderSize}
                     useMargin={savedCheckboxSettings.margin}
-                    isTriggerOrder
+                    isTriggerOrder={isTriggerOrder}
                   />
                 ) : (
                   <SpotButtonGroup
                     minOrderDecimals={minOrderDecimals}
                     tickDecimals={tickDecimals}
                     useMargin={savedCheckboxSettings.margin}
-                    isTriggerOrder
+                    isTriggerOrder={isTriggerOrder}
                   />
                 )
               ) : tradeFormSizeUi === 'slider' ? (
