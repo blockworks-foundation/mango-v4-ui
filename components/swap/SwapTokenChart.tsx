@@ -42,7 +42,6 @@ import { SwapHistoryItem } from 'types'
 import useThemeWrapper from 'hooks/useThemeWrapper'
 import FavoriteSwapButton from './FavoriteSwapButton'
 import { SwapChartDataItem, fetchSwapChartPrices } from 'apis/birdeye/helpers'
-import Image from 'next/image'
 
 dayjs.extend(relativeTime)
 
@@ -545,15 +544,10 @@ const SwapTokenChart = () => {
               {inputBankName && outputBankName ? (
                 <div className="mb-0.5 flex items-center">
                   <Tooltip content={t('swap:tooltip-price-chart-source')}>
-                    <Image
-                      className="mr-1.5 cursor-help"
-                      src="/images/birdeye.png"
-                      alt="birdeye"
-                      height={20}
-                      width={20}
-                    />
+                    <p className="cursor-help text-base text-th-fgd-3">
+                      {swapMarketName}
+                    </p>
                   </Tooltip>
-                  <p className="text-base text-th-fgd-3">{swapMarketName}</p>
                   <IconButton
                     className="px-2 text-th-fgd-3"
                     onClick={() =>
