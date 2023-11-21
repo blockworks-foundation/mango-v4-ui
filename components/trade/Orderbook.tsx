@@ -431,6 +431,7 @@ const Orderbook = () => {
           usersOpenOrderPrices,
         )
         setOrderbookData(updatedOrderbook)
+        verticallyCenterOrderbook()
       }
     },
     [currentOrderbookData, depth, market, usersOpenOrderPrices],
