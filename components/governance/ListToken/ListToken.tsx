@@ -316,7 +316,9 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           (x) => x?.priceImpactPct && x?.priceImpactPct * 100 < 1,
         )
         const tier =
-          indexForTierFromSwaps > -1 ? TIERS[indexForTierFromSwaps] : 'SHIT'
+          indexForTierFromSwaps > -1
+            ? TIERS[indexForTierFromSwaps]
+            : 'UNTRUSTED'
         setLiqudityTier(tier)
         setPriceImpact(midTierCheck ? midTierCheck.priceImpactPct * 100 : 100)
         handleGetPoolParams(tier, tokenMint)
@@ -327,7 +329,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           description: `${e}`,
           type: 'error',
         })
-        return 'SHIT'
+        return 'UNTRUSTED'
       }
     },
     [t, handleGetRoutesWithFixedArgs],
@@ -372,16 +374,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       })
       return
     }
-    const tokenInfo = {
-      name: 'Pyth Network',
-      address: 'HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3',
-      symbol: 'PYTH',
-      decimals: 6,
-      chainId: 1,
-      logoURI: '',
-      extensions: {},
-      tags: [],
-    }
+    const tokenInfo = jupiterTokens.find((x) => x.address === mint)
     const priceInfo = await (
       await fetch(`${JUPITER_PRICE_API_MAINNET}price?ids=${mint}`)
     ).json()
