@@ -5,7 +5,11 @@ import { ChangeEvent, useCallback, useMemo, useState } from 'react'
 import mangoStore, { CLUSTER } from '@store/mangoStore'
 import { Token } from 'types/jupiter'
 import { handleGetRoutes } from '@components/swap/useQuoteRoutes'
-import { JUPITER_PRICE_API_MAINNET, USDC_MINT } from 'utils/constants'
+import {
+  JUPITER_PRICE_API_MAINNET,
+  JUPITER_REFERRAL_PK,
+  USDC_MINT,
+} from 'utils/constants'
 import { AccountMeta, PublicKey, SYSVAR_RENT_PUBKEY } from '@solana/web3.js'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { OPENBOOK_PROGRAM_ID, toNative } from '@blockworks-foundation/mango-v4'
@@ -48,6 +52,7 @@ import {
   LISTING_PRESETS_PYTH,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 import Checkbox from '@components/forms/Checkbox'
+import { ReferralProvider } from '@jup-ag/referral-sdk'
 
 type FormErrors = Partial<Record<keyof TokenListForm, string>>
 
@@ -457,13 +462,10 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       })
       return
     }
+    const mint = new PublicKey(advForm.mintPk)
 
     const [mintInfoPk] = PublicKey.findProgramAddressSync(
-      [
-        Buffer.from('MintInfo'),
-        group!.publicKey.toBuffer(),
-        new PublicKey(advForm.mintPk).toBuffer(),
-      ],
+      [Buffer.from('MintInfo'), group!.publicKey.toBuffer(), mint.toBuffer()],
       client.programId,
     )
 
@@ -509,7 +511,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         .accounts({
           admin: MANGO_DAO_WALLET,
           group: group!.publicKey,
-          mint: new PublicKey(advForm.mintPk),
+          mint: mint,
           oracle: new PublicKey(advForm.oraclePk),
           payer: MANGO_DAO_WALLET,
           rent: SYSVAR_RENT_PUBKEY,
@@ -568,7 +570,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       const trustlessIx = await client!.program.methods
         .tokenRegisterTrustless(Number(advForm.tokenIndex), advForm.name)
         .accounts({
-          mint: new PublicKey(advForm.mintPk),
+          mint: mint,
           payer: MANGO_DAO_FAST_LISTING_WALLET,
           rent: SYSVAR_RENT_PUBKEY,
           oracle: new PublicKey(advForm.oraclePk),
@@ -597,6 +599,17 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     if (listingTier !== 'UNTRUSTED') {
       proposalTx.push(registerMarketix)
     }
+    const rp = new ReferralProvider(connection)
+
+    const tx = await rp.initializeReferralTokenAccount({
+      payerPubKey:
+        listingTier === 'UNTRUSTED'
+          ? MANGO_DAO_FAST_LISTING_WALLET
+          : MANGO_DAO_WALLET,
+      referralAccountPubKey: JUPITER_REFERRAL_PK,
+      mint: mint,
+    })
+    proposalTx.push(...tx.tx.instructions)
 
     const walletSigner = wallet as never
     setCreatingProposal(true)
