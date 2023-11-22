@@ -43,11 +43,10 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import { SwapFormTokenListType } from './SwapFormTokenList'
 import { formatTokenSymbol } from 'utils/tokens'
 import Tooltip from '@components/shared/Tooltip'
-import Link from 'next/link'
 import useTokenPositionsFull from 'hooks/useTokenPositionsFull'
-import TopBarStore from '@store/topBarStore'
 import { TriggerOrderTypes, handlePlaceTriggerOrder } from 'utils/tradeForm'
 import TradePriceDifference from '@components/shared/TradePriceDifference'
+import AccountSlotsFullNotification from '@components/shared/AccountSlotsFullNotification'
 
 dayjs.extend(relativeTime)
 
@@ -107,7 +106,6 @@ const TriggerSwapForm = ({
   const { t } = useTranslation(['common', 'swap', 'trade'])
   const { mangoAccountAddress } = useMangoAccount()
   const { ipAllowed, ipCountry } = useIpAddress()
-  const { setShowSettingsModal } = TopBarStore()
   const [orderType, setOrderType] = useState(ORDER_TYPES[0])
   const [submitting, setSubmitting] = useState(false)
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
@@ -763,16 +761,8 @@ const TriggerSwapForm = ({
       )}
       {tokenPositionsFull ? (
         <div className="pb-4">
-          <InlineNotification
-            type="error"
-            desc={
-              <>
-                {t('error-token-positions-full')}{' '}
-                <Link href={''} onClick={() => setShowSettingsModal(true)}>
-                  {t('manage')}
-                </Link>
-              </>
-            }
+          <AccountSlotsFullNotification
+            message={t('error-token-positions-full')}
           />
         </div>
       ) : null}

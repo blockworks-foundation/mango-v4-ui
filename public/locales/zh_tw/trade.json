@@ -26,7 +26,7 @@
     "edit-order": "編輯訂單",
     "error-no-long": "No long position to reduce",
     "error-no-short": "No borrow position to reduce",
-    "error-serum-positions-full": "You've used all of your spot market account slots. Close unused slots to trade this market.",
+    "error-serum-positions-full": "You've used all of your spot market account slots. Close unused slots to trade this market or open a new account.",
     "error-trigger-above": "Trigger price must be above oracle price",
     "error-trigger-below": "Trigger price must be below oracle price",
     "est-liq-price": "預計清算價格",
