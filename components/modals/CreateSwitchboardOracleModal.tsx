@@ -11,13 +11,15 @@ import { OracleJob } from '@switchboard-xyz/common'
 import Button from '@components/shared/Button'
 import { MANGO_DAO_WALLET } from 'utils/governance/constants'
 import { USDC_MINT } from 'utils/constants'
-import { Transaction } from '@solana/web3.js'
+import { PublicKey, Transaction } from '@solana/web3.js'
 import chunk from 'lodash/chunk'
 import { useTranslation } from 'next-i18next'
 import { notify } from 'utils/notifications'
 import { isMangoError } from 'types'
 import { useCallback, useState } from 'react'
 import Loading from '@components/shared/Loading'
+import { WhirlpoolContext, buildWhirlpoolClient } from '@orca-so/whirlpools-sdk'
+import { LIQUIDITY_STATE_LAYOUT_V4 } from '@raydium-io/raydium-sdk'
 
 const poolAddressError = 'no-pool-address-found'
 
@@ -95,6 +97,25 @@ const CreateSwitchboardOracleModal = ({
 
   const [creatingOracle, setCreatingOracle] = useState(false)
 
+  const isPoolReversed = async (type: 'orca' | 'raydium', poolPk: string) => {
+    if (type === 'orca') {
+      const context = WhirlpoolContext.from(
+        connection,
+        wallet as never,
+        new PublicKey('whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'),
+      )
+      const whirlPoolClient = buildWhirlpoolClient(context)
+      const whirlpool = await whirlPoolClient.getPool(new PublicKey(poolPk))
+      return whirlpool.getTokenAInfo().mint.toBase58() == USDC_MINT || false
+    }
+    if (type === 'raydium') {
+      const info = await connection.getAccountInfo(new PublicKey(poolPk))
+      const poolState = LIQUIDITY_STATE_LAYOUT_V4.decode(info!.data)
+      return poolState.quoteMint.toBase58() === USDC_MINT || false
+    }
+    return false
+  }
+
   const create = useCallback(async () => {
     try {
       const swapValue = tierToSwapValue[tier]
@@ -107,6 +128,10 @@ const CreateSwitchboardOracleModal = ({
         ? 'orcaPoolAddress'
         : 'raydiumPoolAddress'
       const poolAddress = orcaPoolAddress ? orcaPoolAddress : raydiumPoolAddress
+      const isReversePool = await isPoolReversed(
+        orcaPoolAddress ? 'orca' : 'raydium',
+        poolAddress!,
+      )
 
       const program = await SwitchboardProgram.load(CLUSTER, connection)
 
@@ -114,6 +139,38 @@ const CreateSwitchboardOracleModal = ({
         QueueAccount.load(program, SWITCHBOARD_PERMISSIONLESS_QUE),
         CrankAccount.load(program, SWITCHBOARD_PERMISSIONLESS_CRANK),
       ])
+
+      let onFailureTaskDesc
+      if (isReversePool) {
+        onFailureTaskDesc = [
+          {
+            lpExchangeRateTask: {
+              [poolPropertyName]: poolAddress,
+            },
+          },
+        ]
+      } else {
+        onFailureTaskDesc = [
+          {
+            valueTask: {
+              big: 1,
+            },
+          },
+          {
+            divideTask: {
+              job: {
+                tasks: [
+                  {
+                    lpExchangeRateTask: {
+                      [poolPropertyName]: poolAddress,
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        ]
+      }
 
       const [aggregatorAccount, txArray1] =
         await queueAccount.createFeedInstructions(payer, {
@@ -233,13 +290,7 @@ const CreateSwitchboardOracleModal = ({
                             },
                           },
                         ],
-                        onFailure: [
-                          {
-                            lpExchangeRateTask: {
-                              [poolPropertyName]: poolAddress,
-                            },
-                          },
-                        ],
+                        onFailure: onFailureTaskDesc,
                       },
                     },
                     {
