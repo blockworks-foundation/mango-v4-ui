@@ -78,6 +78,7 @@ import { getTokenBalance } from '@components/swap/TriggerSwapForm'
 import useMangoAccountAccounts from 'hooks/useMangoAccountAccounts'
 import Link from 'next/link'
 import TopBarStore from '@store/topBarStore'
+import useTokenPositionsFull from 'hooks/useTokenPositionsFull'
 
 dayjs.extend(relativeTime)
 
@@ -156,6 +157,8 @@ const AdvancedTradeForm = () => {
     const bank = group.getFirstBankByTokenIndex(selectedMarket.baseTokenIndex)
     return bank
   }, [selectedMarket])
+
+  const tokenPositionsFull = useTokenPositionsFull([baseBank, quoteBank])
 
   const setTradeType = useCallback(
     (tradeType: OrderTypes | TriggerOrderTypes) => {
@@ -722,7 +725,7 @@ const AdvancedTradeForm = () => {
     [baseBank, isTriggerOrder, minOrderSize, oraclePrice, setFormErrors],
   )
 
-  const disabled = !serumOrPerpMarket || !isMarketEnabled || serumSlotsFull
+  const disabled = !serumOrPerpMarket || !isMarketEnabled
 
   return (
     <div>
@@ -1083,13 +1086,28 @@ const AdvancedTradeForm = () => {
               />
             </div>
           ) : null}
-          {serumSlotsFull ? (
+          {serumSlotsFull && selectedMarket instanceof Serum3Market ? (
             <div className="mb-4 px-4">
               <InlineNotification
                 type="error"
                 desc={
                   <>
                     {t('trade:error-serum-positions-full')}{' '}
+                    <Link href={''} onClick={() => setShowSettingsModal(true)}>
+                      {t('manage')}
+                    </Link>
+                  </>
+                }
+              />
+            </div>
+          ) : null}
+          {tokenPositionsFull && selectedMarket instanceof Serum3Market ? (
+            <div className="mb-4 px-4">
+              <InlineNotification
+                type="error"
+                desc={
+                  <>
+                    {t('error-token-positions-full')}{' '}
                     <Link href={''} onClick={() => setShowSettingsModal(true)}>
                       {t('manage')}
                     </Link>
