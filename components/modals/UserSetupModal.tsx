@@ -47,6 +47,9 @@ import { ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES } from '@components/BorrowForm'
 import { WalletReadyState } from '@solana/wallet-adapter-base'
 import Switch from '@components/forms/Switch'
 import NotificationCookieStore from '@store/notificationCookieStore'
+import { usePlausible } from 'next-plausible'
+import { TelemetryEvents } from 'utils/telemetry'
+import { waitForSlot } from 'utils/network'
 
 const UserSetupModal = ({
   isOpen,
@@ -59,6 +62,7 @@ const UserSetupModal = ({
   const { connected, select, wallet, wallets, publicKey, connect } = useWallet()
   const { mangoAccount } = useMangoAccount()
   const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
+  const telemetry = usePlausible<TelemetryEvents>()
   const [accountName, setAccountName] = useState('')
   const [loadingAccount, setLoadingAccount] = useState(false)
   const [showSetupStep, setShowSetupStep] = useState(0)
@@ -105,10 +109,11 @@ const UserSetupModal = ({
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     const actions = mangoStore.getState().actions
+    const connection = mangoStore.getState().connection
     if (!group || !publicKey) return
     setLoadingAccount(true)
     try {
-      const { signature: tx } = await client.createMangoAccount(
+      const { signature: tx, slot } = await client.createMangoAccount(
         group,
         0,
         accountName || 'Account 1',
@@ -122,8 +127,14 @@ const UserSetupModal = ({
         if (signToNotifications) {
           createSolanaMessage(walletContext, setCookie)
         }
-        actions.fetchWalletTokens(publicKey) // need to update sol balance after account rent
-        setShowSetupStep(3)
+        await waitForSlot(connection, slot)
+        await actions.fetchWalletTokens(publicKey) // need to update sol balance after account rent
+        telemetry('accountCreate', {
+          props: {
+            accountNum: 0,
+            enableNotifications: signToNotifications,
+          },
+        })
         notify({
           title: t('new-account-success'),
           type: 'success',
@@ -185,9 +196,9 @@ const UserSetupModal = ({
 
   useEffect(() => {
     if (mangoAccount && showSetupStep === 2) {
-      onClose()
+      setShowSetupStep(3)
     }
-  }, [mangoAccount, showSetupStep, onClose])
+  }, [mangoAccount, showSetupStep])
 
   const depositBank = useMemo(() => {
     return banks.find((b) => b.bank.name === depositToken)?.bank
