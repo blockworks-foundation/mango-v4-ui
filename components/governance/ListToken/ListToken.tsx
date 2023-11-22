@@ -609,7 +609,12 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       referralAccountPubKey: JUPITER_REFERRAL_PK,
       mint: mint,
     })
-    proposalTx.push(...tx.tx.instructions)
+    const isExistingAccount =
+      (await connection.getBalance(tx.referralTokenAccountPubKey)) > 1
+
+    if (!isExistingAccount) {
+      proposalTx.push(...tx.tx.instructions)
+    }
 
     const walletSigner = wallet as never
     setCreatingProposal(true)
