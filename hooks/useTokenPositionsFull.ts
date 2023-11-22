@@ -21,19 +21,16 @@ export default function useTokenPositionsFull(banks: Array<Bank | undefined>) {
       }
     }
     const availableTokenPositions = totalTokens.length - usedTokens.length
+
     if (
-      banks.length === 2 &&
-      (alreadyHasPositionCount === 2 || availableTokenPositions >= 2)
+      alreadyHasPositionCount === banks.length ||
+      availableTokenPositions >= banks.length ||
+      (banks.length === 2 &&
+        alreadyHasPositionCount &&
+        alreadyHasPositionCount === availableTokenPositions)
     ) {
       return false
-    }
-    if (
-      banks.length === 1 &&
-      (alreadyHasPositionCount === 1 || availableTokenPositions >= 1)
-    ) {
-      return false
-    }
-    return true
+    } else return true
   }, [banks, usedTokens, totalTokens])
 
   return tokenPositionsFull
