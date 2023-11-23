@@ -33,7 +33,7 @@
     "token-slots-full": "You're out of token slots",
     "token-slots-manage": "You can manage your account slots here:",
     "token-slots-nearly-full": "You have one token slot left",
-    "token-slots-warning-desc": "Mango Accounts are limited in the number of tokens they can hold at one time. When you fully withdraw a token or fully repay a borrow a slot will become available again.",
+    "token-slots-warning-desc": "Mango Accounts are limited in the number of tokens they can hold at one time. When you fully withdraw a token or fully repay a borrow, a slot will become available again.",
     "tooltip-collateral-value": "The amount of capital this token gives you to use for trades and loans.",
     "tooltip-connect-to-follow": "Connect to follow accounts",
     "tooltip-follow-account": "Follow account on your account page",
