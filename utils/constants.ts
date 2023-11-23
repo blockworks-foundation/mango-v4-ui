@@ -79,6 +79,8 @@ export const MANGO_MINTS_BANNER_KEY = 'mangoMintsBanner-0.1'
 
 export const SEND_TELEMETRY_KEY = 'sendTelemetry-0.1'
 
+export const SLOTS_WARNING_KEY = 'tokenSlotsWarning-0.1'
+
 // Unused
 export const PROFILE_CATEGORIES = [
   'borrower',
