@@ -1,14 +1,16 @@
-import LiquidationsCharts from './LiquidationsCharts'
-import MangoPerpStatsCharts from './MangoPerpStatsCharts'
-import TokenStatsCharts from './TokenStatsCharts'
+import Liquidations from './Liquidations'
+import DepositsAndBorrows from './DepositsAndBorrows'
+import Fees from './Fees'
+import Volume from './Volume'
 
 const MangoStats = () => {
   return (
-    <div className="grid grid-cols-2">
-      <TokenStatsCharts />
-      <MangoPerpStatsCharts />
-      <LiquidationsCharts />
-    </div>
+    <>
+      <DepositsAndBorrows />
+      <Fees />
+      <Volume />
+      <Liquidations />
+    </>
   )
 }
 
