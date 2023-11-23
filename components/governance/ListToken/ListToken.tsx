@@ -366,6 +366,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     const raydiumPool = swapInfos?.find(
       (x) => x.label?.toLowerCase().includes('raydium'),
     )
+
     setOrcaPoolAddress(orcaPool?.ammKey || '')
     setRaydiumPoolAddress(raydiumPool?.ammKey || '')
   }
