@@ -18,7 +18,7 @@ import useMangoAccountAccounts from 'hooks/useMangoAccountAccounts'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useMemo, useState } from 'react'
-import { MAX_ACCOUNTS, PRIVACY_MODE } from 'utils/constants'
+import { PRIVACY_MODE } from 'utils/constants'
 import mangoStore from '@store/mangoStore'
 import { PublicKey } from '@solana/web3.js'
 import { notify } from 'utils/notifications'
@@ -204,6 +204,14 @@ const AccountSettings = () => {
     [mangoAccount],
   )
 
+  const getSlotsUsedColor = (used: number, total: number) => {
+    if (used === total) {
+      return 'text-th-error'
+    } else if (used / total >= 0.75) {
+      return 'text-th-warning'
+    } else return 'text-th-success'
+  }
+
   return mangoAccount && group && !isDelegatedAccount && !isUnownedAccount ? (
     <div className="border-b border-th-bkg-3">
       <div className="pb-6">
@@ -260,7 +268,7 @@ const AccountSettings = () => {
           <TrashIcon className="h-5 w-5 text-th-fgd-2" />
         </button>
       </div>
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4">
         <div>
           <h3 className="mb-1 text-sm text-th-fgd-2">
             {t('settings:account-slots')}
@@ -269,11 +277,13 @@ const AccountSettings = () => {
         </div>
         {!isAccountFull ? (
           <LinkButton
-            className="flex items-center"
+            className="mt-3 flex items-center"
             onClick={() => setShowAccountSizeModal(true)}
           >
-            <SquaresPlusIcon className="mr-1.5 h-4 w-4" />
-            {t('settings:increase-account-slots')}
+            <SquaresPlusIcon className="mr-1.5 h-4 w-4 flex-shrink-0" />
+            <span className="whitespace-nowrap">
+              {t('settings:increase-account-slots')}
+            </span>
           </LinkButton>
         ) : null}
       </div>
@@ -283,13 +293,23 @@ const AccountSettings = () => {
             <>
               <Disclosure.Button className="w-full border-t border-th-bkg-3 py-4 md:px-4 md:hover:bg-th-bkg-2">
                 <div className="flex items-center justify-between">
-                  <Tooltip
-                    content={t('settings:tooltip-token-accounts', {
-                      max: MAX_ACCOUNTS.tokenAccounts,
-                    })}
-                  >
-                    <p className="tooltip-underline">{t('tokens')}</p>
-                  </Tooltip>
+                  <div>
+                    <p className="text-left font-bold text-th-fgd-2">
+                      {t('tokens')}
+                    </p>
+                    <p
+                      className={`mt-1 ${getSlotsUsedColor(
+                        usedTokens.length,
+                        totalTokens.length,
+                      )}`}
+                    >
+                      {t('settings:slots-used', {
+                        used: usedTokens.length,
+                        total: totalTokens.length,
+                        type: t('tokens').toLowerCase(),
+                      })}
+                    </p>
+                  </div>
                   <ChevronDownIcon
                     className={`${
                       open ? 'rotate-180' : 'rotate-360'
@@ -299,18 +319,9 @@ const AccountSettings = () => {
               </Disclosure.Button>
               <Disclosure.Panel className="py-2 md:px-4">
                 <div className={CLOSE_WRAPPER_CLASSNAMES}>
-                  <div>
-                    <p className="font-bold text-th-fgd-2">
-                      {t('settings:slots-used', {
-                        used: usedTokens.length,
-                        total: totalTokens.length,
-                        type: t('tokens').toLowerCase(),
-                      })}
-                    </p>
-                    <p className="mt-1">
-                      {t('settings:close-token-positions-desc')}
-                    </p>
-                  </div>
+                  <p className="mt-1">
+                    {t('settings:close-token-positions-desc')}
+                  </p>
                 </div>
                 {usedTokens.length ? (
                   usedTokens.map((token, i) => {
@@ -391,15 +402,23 @@ const AccountSettings = () => {
             <>
               <Disclosure.Button className="w-full border-t border-th-bkg-3 py-4 md:px-4 md:hover:bg-th-bkg-2">
                 <div className="flex items-center justify-between">
-                  <Tooltip
-                    content={t('settings:tooltip-spot-markets', {
-                      max: MAX_ACCOUNTS.spotOpenOrders,
-                    })}
-                  >
-                    <p className="tooltip-underline">
+                  <div>
+                    <p className="text-left font-bold text-th-fgd-2">
                       {t('settings:spot-markets')}
                     </p>
-                  </Tooltip>
+                    <p
+                      className={`mt-1 ${getSlotsUsedColor(
+                        usedSerum3.length,
+                        totalSerum3.length,
+                      )}`}
+                    >
+                      {t('settings:slots-used', {
+                        used: usedSerum3.length,
+                        total: totalSerum3.length,
+                        type: t('settings:spot-markets').toLowerCase(),
+                      })}
+                    </p>
+                  </div>
                   <ChevronDownIcon
                     className={`${
                       open ? 'rotate-180' : 'rotate-360'
@@ -409,16 +428,7 @@ const AccountSettings = () => {
               </Disclosure.Button>
               <Disclosure.Panel className="py-2 md:px-4">
                 <div className={CLOSE_WRAPPER_CLASSNAMES}>
-                  <div>
-                    <p className="font-bold text-th-fgd-2">
-                      {t('settings:slots-used', {
-                        used: usedSerum3.length,
-                        total: totalSerum3.length,
-                        type: t('settings:spot-markets').toLowerCase(),
-                      })}
-                    </p>
-                    <p className="mt-1">{t('settings:close-spot-oo-desc')}</p>
-                  </div>
+                  <p className="mt-1">{t('settings:close-spot-oo-desc')}</p>
                 </div>
                 {usedSerum3.length ? (
                   usedSerum3.map((mkt, i) => {
@@ -466,15 +476,23 @@ const AccountSettings = () => {
             <>
               <Disclosure.Button className="w-full border-t border-th-bkg-3 py-4 md:px-4 md:hover:bg-th-bkg-2">
                 <div className="flex items-center justify-between">
-                  <Tooltip
-                    content={t('settings:tooltip-perp-markets', {
-                      max: MAX_ACCOUNTS.perpAccounts,
-                    })}
-                  >
-                    <p className="tooltip-underline">
+                  <div>
+                    <p className="text-left font-bold text-th-fgd-2">
                       {t('settings:perp-markets')}
                     </p>
-                  </Tooltip>
+                    <p
+                      className={`mt-1 ${getSlotsUsedColor(
+                        usedPerps.length,
+                        totalPerps.length,
+                      )}`}
+                    >
+                      {t('settings:slots-used', {
+                        used: usedPerps.length,
+                        total: totalPerps.length,
+                        type: t('settings:perp-positions').toLowerCase(),
+                      })}
+                    </p>
+                  </div>
                   <ChevronDownIcon
                     className={`${
                       open ? 'rotate-180' : 'rotate-360'
@@ -484,16 +502,7 @@ const AccountSettings = () => {
               </Disclosure.Button>
               <Disclosure.Panel className="py-2 md:px-4">
                 <div className={CLOSE_WRAPPER_CLASSNAMES}>
-                  <div>
-                    <p className="font-bold text-th-fgd-2">
-                      {t('settings:slots-used', {
-                        used: usedPerps.length,
-                        total: totalPerps.length,
-                        type: t('settings:perp-positions').toLowerCase(),
-                      })}
-                    </p>
-                    <p className="mt-1">{t('settings:close-perp-desc')}</p>
-                  </div>
+                  <p className="mt-1">{t('settings:close-perp-desc')}</p>
                 </div>
                 {usedPerps.length ? (
                   usedPerps.map((perp, i) => {
@@ -543,15 +552,23 @@ const AccountSettings = () => {
             <>
               <Disclosure.Button className="w-full border-t border-th-bkg-3 py-4 md:px-4 md:hover:bg-th-bkg-2">
                 <div className="flex items-center justify-between">
-                  <Tooltip
-                    content={t('settings:tooltip-perp-open-orders', {
-                      max: MAX_ACCOUNTS.perpOpenOrders,
-                    })}
-                  >
-                    <p className="tooltip-underline">
+                  <div>
+                    <p className="text-left font-bold text-th-fgd-2">
                       {t('settings:perp-open-orders')}
                     </p>
-                  </Tooltip>
+                    <p
+                      className={`mt-1 ${getSlotsUsedColor(
+                        usedPerpOo.length,
+                        totalPerpOpenOrders.length,
+                      )}`}
+                    >
+                      {t('settings:slots-used', {
+                        used: usedPerpOo.length,
+                        total: totalPerpOpenOrders.length,
+                        type: t('settings:perp-open-orders').toLowerCase(),
+                      })}
+                    </p>
+                  </div>
                   <ChevronDownIcon
                     className={`${
                       open ? 'rotate-180' : 'rotate-360'
@@ -560,15 +577,6 @@ const AccountSettings = () => {
                 </div>
               </Disclosure.Button>
               <Disclosure.Panel className="py-2 md:px-4">
-                <div className={CLOSE_WRAPPER_CLASSNAMES}>
-                  <p className="font-bold text-th-fgd-2">
-                    {t('settings:slots-used', {
-                      used: usedPerpOo.length,
-                      total: totalPerpOpenOrders.length,
-                      type: t('settings:perp-open-orders').toLowerCase(),
-                    })}
-                  </p>
-                </div>
                 {usedPerpOo.length ? (
                   usedPerpOo.map((perp, i) => {
                     const market = group.getPerpMarketByMarketIndex(
