@@ -79,7 +79,7 @@ const AccountStats = ({ hideView }: { hideView: () => void }) => {
         <h2 className="text-lg">{t('account:account-stats')}</h2>
       </div>
       <div className="grid grid-cols-2">
-        <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 md:border-r">
+        <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 lg:py-6">
           <DetailedAreaOrBarChart
             changeAsPercent
             data={chartData}
@@ -97,7 +97,7 @@ const AccountStats = ({ hideView }: { hideView: () => void }) => {
             isPrivate
           />
         </div>
-        <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 md:pl-6">
+        <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 md:pl-6 lg:py-6">
           <DetailedAreaOrBarChart
             changeAsPercent
             data={chartData}
@@ -115,8 +115,8 @@ const AccountStats = ({ hideView }: { hideView: () => void }) => {
             isPrivate
           />
         </div>
-        <div className="col-span-2 border-b border-th-bkg-3 md:col-span-1 md:border-r">
-          <div className="border-b border-th-bkg-3 px-4 pb-4 pt-3 md:px-6">
+        <div className="col-span-2 border-b border-th-bkg-3 md:col-span-1">
+          <div className="border-b border-th-bkg-3 px-4 py-4 md:px-6 lg:py-6">
             <Tooltip
               content={t('account:tooltip-total-funding')}
               maxWidth="20rem"
@@ -147,7 +147,7 @@ const AccountStats = ({ hideView }: { hideView: () => void }) => {
           </div>
         </div>
         <div className="col-span-2 border-b border-th-bkg-3 md:col-span-1">
-          <div className="border-b border-th-bkg-3 px-4 pb-4 pt-3 md:px-6">
+          <div className="border-b border-th-bkg-3 px-4 py-4 md:px-6 lg:py-6">
             <p className="tooltip-underline text-base leading-tight">
               {t('account:lifetime-volume')}
             </p>
@@ -165,7 +165,7 @@ const AccountStats = ({ hideView }: { hideView: () => void }) => {
               </p>
             )}
           </div>
-          <div className="px-6 py-4">
+          <div className="px-6 py-4 lg:py-6">
             <VolumeChart />
           </div>
         </div>
