@@ -22,42 +22,39 @@ const DepositsAndBorrows = () => {
 
   return (
     <>
-      <h2 className="my-4 px-6 text-lg">Deposits and Borrows</h2>
-      <div className="grid grid-cols-2 border-t border-th-bkg-3">
-        <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 ">
-          <DetailedAreaOrBarChart
-            changeAsPercent
-            data={mangoStats}
-            daysToShow={depositDaysToShow}
-            setDaysToShow={setDepositDaysToShow}
-            loading={loadingStats}
-            heightClass="h-64"
-            loaderHeightClass="h-[350px]"
-            prefix="$"
-            tickFormat={(x) => `$${formatYAxis(x)}`}
-            title={t('total-deposit-value')}
-            xKey="date"
-            yKey={'depositValue'}
-          />
-        </div>
-        <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 md:pl-6">
-          <DetailedAreaOrBarChart
-            changeAsPercent
-            data={mangoStats}
-            daysToShow={borrowDaysToShow}
-            setDaysToShow={setBorrowDaysToShow}
-            heightClass="h-64"
-            loaderHeightClass="h-[350px]"
-            loading={loadingStats}
-            prefix="$"
-            tickFormat={(x) => `$${formatYAxis(x)}`}
-            title={t('total-borrow-value')}
-            xKey="date"
-            yKey={'borrowValue'}
-          />
-        </div>
+      <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 lg:py-6 ">
+        <DetailedAreaOrBarChart
+          changeAsPercent
+          data={mangoStats}
+          daysToShow={depositDaysToShow}
+          setDaysToShow={setDepositDaysToShow}
+          loading={loadingStats}
+          heightClass="h-64"
+          loaderHeightClass="h-[350px]"
+          prefix="$"
+          tickFormat={(x) => `$${formatYAxis(x)}`}
+          title={t('total-deposit-value')}
+          xKey="date"
+          yKey={'depositValue'}
+        />
       </div>
-      <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 md:pl-6">
+      <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 md:pl-6 lg:py-6">
+        <DetailedAreaOrBarChart
+          changeAsPercent
+          data={mangoStats}
+          daysToShow={borrowDaysToShow}
+          setDaysToShow={setBorrowDaysToShow}
+          heightClass="h-64"
+          loaderHeightClass="h-[350px]"
+          loading={loadingStats}
+          prefix="$"
+          tickFormat={(x) => `$${formatYAxis(x)}`}
+          title={t('total-borrow-value')}
+          xKey="date"
+          yKey={'borrowValue'}
+        />
+      </div>
+      <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:pl-6 lg:py-6">
         <NetDepositsChart />
       </div>
     </>

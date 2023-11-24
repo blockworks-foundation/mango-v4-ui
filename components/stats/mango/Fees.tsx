@@ -106,66 +106,61 @@ const Fees = () => {
 
   return (
     <>
-      <h2 className="my-4 px-6 text-lg">Fees</h2>
-      <div className="grid grid-cols-2 border-t border-th-bkg-3">
-        <div className="col-span-2 flex flex-col justify-between border-b border-th-bkg-3 md:col-span-1">
-          <div className="px-4 pt-4 md:px-6">
-            <DetailedAreaOrBarChart
-              changeAsPercent
-              data={tokenFeesChartData}
-              daysToShow={feesDaysToShow}
-              setDaysToShow={setFeesDaysToShow}
-              heightClass="h-64"
-              loaderHeightClass="h-[350px]"
-              loading={loadingStats}
-              prefix="$"
-              tickFormat={(x) => `$${formatYAxis(x)}`}
-              title={t('token:token-fees-collected')}
-              tooltipContent={t('token:tooltip-token-fees-collected')}
-              xKey="date"
-              yKey={'feesCollected'}
-              chartType={showCumulativeFees ? 'area' : 'bar'}
-            />
-          </div>
-          <div className="flex justify-end px-4 pb-4 md:px-6">
-            <Switch
-              checked={showCumulativeFees}
-              onChange={() => setShowCumulativeFees(!showCumulativeFees)}
-              small
-            >
-              {t('stats:show-cumulative')}
-            </Switch>
-          </div>
+      <div className="col-span-2 flex flex-col justify-between border-b border-th-bkg-3 md:col-span-1">
+        <div className="px-4 pt-4 md:px-6 lg:pt-6">
+          <DetailedAreaOrBarChart
+            changeAsPercent
+            data={tokenFeesChartData}
+            daysToShow={feesDaysToShow}
+            setDaysToShow={setFeesDaysToShow}
+            heightClass="h-64"
+            loaderHeightClass="h-[350px]"
+            loading={loadingStats}
+            prefix="$"
+            tickFormat={(x) => `$${formatYAxis(x)}`}
+            title={t('token:token-fees-collected')}
+            tooltipContent={t('token:tooltip-token-fees-collected')}
+            xKey="date"
+            yKey={'feesCollected'}
+            chartType={showCumulativeFees ? 'area' : 'bar'}
+          />
         </div>
-        <div className="col-span-2 flex flex-col justify-between border-b border-th-bkg-3 md:col-span-1">
-          <div className="px-4 pt-4 md:px-6">
-            <DetailedAreaOrBarChart
-              changeAsPercent
-              data={perpFeeValues}
-              daysToShow={feesPerpDaysToShow}
-              setDaysToShow={setFeesPerpDaysToShow}
-              heightClass="h-64"
-              loading={loadingPerpStats}
-              loaderHeightClass="h-[350px]"
-              prefix="$"
-              tickFormat={(x) => `$${formatYAxis(x)}`}
-              title="Perp Fees"
-              xKey="date"
-              yKey="value"
-              chartType={showCumulativePerpFees ? 'area' : 'bar'}
-            />
-          </div>
-          <div className="flex justify-end px-4 pb-4 md:px-6">
-            <Switch
-              checked={showCumulativePerpFees}
-              onChange={() =>
-                setShowCumulativePerpFees(!showCumulativePerpFees)
-              }
-              small
-            >
-              {t('stats:show-cumulative')}
-            </Switch>
-          </div>
+        <div className="flex justify-end px-4 pb-4 md:px-6">
+          <Switch
+            checked={showCumulativeFees}
+            onChange={() => setShowCumulativeFees(!showCumulativeFees)}
+            small
+          >
+            {t('stats:show-cumulative')}
+          </Switch>
+        </div>
+      </div>
+      <div className="col-span-2 flex flex-col justify-between border-b border-th-bkg-3 md:col-span-1">
+        <div className="px-4 pt-4 md:px-6 lg:pt-6">
+          <DetailedAreaOrBarChart
+            changeAsPercent
+            data={perpFeeValues}
+            daysToShow={feesPerpDaysToShow}
+            setDaysToShow={setFeesPerpDaysToShow}
+            heightClass="h-64"
+            loading={loadingPerpStats}
+            loaderHeightClass="h-[350px]"
+            prefix="$"
+            tickFormat={(x) => `$${formatYAxis(x)}`}
+            title="Perp Fees"
+            xKey="date"
+            yKey="value"
+            chartType={showCumulativePerpFees ? 'area' : 'bar'}
+          />
+        </div>
+        <div className="flex justify-end px-4 pb-4 md:px-6">
+          <Switch
+            checked={showCumulativePerpFees}
+            onChange={() => setShowCumulativePerpFees(!showCumulativePerpFees)}
+            small
+          >
+            {t('stats:show-cumulative')}
+          </Switch>
         </div>
       </div>
     </>

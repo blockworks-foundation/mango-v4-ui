@@ -160,8 +160,15 @@ const DetailedAreaOrBarChart: FunctionComponent<
   }, [data, daysToShow, xAxisType])
 
   const calculateChartChange = () => {
-    const firstValue = filteredData[0][yKey]
     if (filteredData.length) {
+      let firstValue = filteredData[0][yKey]
+      if (xAxisType === 'number') {
+        const minValue = filteredData.reduce(
+          (min, current) => (current[xKey] < min[xKey] ? current : min),
+          filteredData[0],
+        )
+        firstValue = minValue[yKey]
+      }
       if (mouseData) {
         const index = filteredData.findIndex(
           (d: any) => d[xKey] === mouseData[xKey],
@@ -449,7 +456,6 @@ const DetailedAreaOrBarChart: FunctionComponent<
                         type="monotone"
                         dataKey={yKey}
                         stroke={
-                          calculateChartChange() === 0 ||
                           isNaN(calculateChartChange())
                             ? COLORS.FGD4[theme]
                             : calculateChartChange() >= 0
