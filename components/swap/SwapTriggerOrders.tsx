@@ -136,7 +136,7 @@ const SwapOrders = () => {
 
   const orders = useMemo(() => {
     if (!mangoAccount) return []
-    return mangoAccount.tokenConditionalSwaps.filter((tcs) => tcs.hasData)
+    return mangoAccount.tokenConditionalSwaps.filter((tcs) => tcs.isConfigured)
   }, [mangoAccount])
 
   const formattedTableData = useCallback(() => {

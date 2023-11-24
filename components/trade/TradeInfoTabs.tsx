@@ -36,7 +36,7 @@ const TradeInfoTabs = () => {
       unsettledPerpPositions?.length
 
     const stopOrdersCount =
-      mangoAccount?.tokenConditionalSwaps.filter((tcs) => tcs.hasData)
+      mangoAccount?.tokenConditionalSwaps.filter((tcs) => tcs.isConfigured)
         ?.length || 0
 
     return [
