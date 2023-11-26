@@ -27,6 +27,16 @@ const formatValue = (val: string | number | PublicKey) => {
 }
 const RiskDashboard: NextPage = () => {
   const { group } = useMangoGroup()
+  const heads = group
+    ? [
+        ...new Set([
+          'Token',
+          'Side',
+          ...group.pis.map((x) => formatValue(x.target_amount)),
+        ]),
+      ]
+    : []
+
   return (
     <div className="grid grid-cols-12">
       <div className="col-span-12 lg:col-span-8 lg:col-start-3">
@@ -42,20 +52,11 @@ const RiskDashboard: NextPage = () => {
                 <Table>
                   <thead>
                     <TrHead className="border">
-                      <Th xBorder className="text-left">
-                        Token
-                      </Th>
-                      <Th xBorder className="text-left">
-                        Side
-                      </Th>
-                      <Th xBorder className="text-left">
-                        Amount
-                      </Th>
-                      <Th xBorder>Avg PI %</Th>
-                      <Th xBorder>Min PI %</Th>
-                      <Th xBorder>Max PI %</Th>
-                      <Th xBorder>P90</Th>
-                      <Th xBorder>P95</Th>
+                      {heads.map((x) => (
+                        <Th key={x} xBorder className="text-left">
+                          {x}
+                        </Th>
+                      ))}
                     </TrHead>
                   </thead>
                   <tbody>
@@ -63,8 +64,13 @@ const RiskDashboard: NextPage = () => {
                       return (
                         <TrBody key={idx}>
                           {Object.entries(row).map(([key, val], valIdx) => {
-                            //ETH
-                            const banks = group?.banksMapByName?.get(row.symbol)
+                            const banks = group?.banksMapByName?.get(
+                              apiNameToBankName(row.symbol),
+                            )
+                            if (!banks?.length) {
+                              console.log(row.symbol, banks)
+                            }
+
                             const bank = banks && banks[0]
                             const uiBorrowWeightScaleStartQuote =
                               bank &&
@@ -104,7 +110,6 @@ const RiskDashboard: NextPage = () => {
                                 val < uiDepositWeightScaleStartQuote &&
                                 row.side === 'ask')
 
-                            console.log(isAmountBelowBorrowWeightScale, '@@@@')
                             return (
                               <Td
                                 xBorder
@@ -140,3 +145,10 @@ const RiskDashboard: NextPage = () => {
 }
 
 export default RiskDashboard
+
+const apiNameToBankName = (val: string) => {
+  if (val === 'ETH') {
+    return 'ETH (Portal)'
+  }
+  return val
+}
