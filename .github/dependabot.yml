@@ -1,0 +1,13 @@
+version: 2
+updates:
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'daily'
+    commit-message:
+      prefix: 'npm'
+      prefix-development: 'npm dev'
+    labels:
+      - 'deps'
+      - 'security'
+    open-pull-requests-limit: 0 # Security updates only
