@@ -33,7 +33,7 @@ import StatusBar from './StatusBar'
 
 export const sideBarAnimationDuration = 300
 const termsLastUpdated = 1679441610978
-
+console.log('test')
 const Layout = ({ children }: { children: ReactNode }) => {
   const themeData = mangoStore((s) => s.themeData)
   const { theme } = useTheme()
