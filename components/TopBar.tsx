@@ -187,7 +187,7 @@ const TopBar = () => {
             )
           ) : isWhiteListed ? (
             <Link href="/rewards" shallow={true}>
-              <div className="flex h-16 items-center justify-between border-x border-th-bkg-3 bg-th-bkg-1 px-4 md:border-l-0">
+              <div className="flex h-[63px] items-center justify-between border-x border-th-bkg-3 bg-th-bkg-1 px-4 md:border-l-0">
                 {accountPointsAndRank?.rank ? (
                   <div
                     className={`relative hidden h-6 w-6 flex-shrink-0 items-center justify-center rounded-full sm:flex ${
@@ -217,7 +217,7 @@ const TopBar = () => {
                 ) : null}
                 <div>
                   <span className="whitespace-nowrap font-bold text-th-fgd-2">
-                    Points
+                    <span className="hidden sm:inline">Rewards</span> Points
                   </span>
                   {!loadingAccountPointsAndRank ? (
                     <p className="bg-gradient-to-br from-yellow-400 to-red-400 bg-clip-text font-display text-base text-transparent">
@@ -238,7 +238,7 @@ const TopBar = () => {
                     </SheenLoader>
                   )}
                 </div>
-                <ChevronRightIcon className="ml-2 hidden h-6 w-6 text-th-fgd-4 lg:block" />
+                <ChevronRightIcon className="ml-2 h-6 w-6 text-th-fgd-4" />
               </div>
             </Link>
           ) : null}
