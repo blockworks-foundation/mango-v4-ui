@@ -41,7 +41,7 @@ const RiskDashboard: NextPage = () => {
           'Side',
           ...group.pis.map((x) => formatValue(x.target_amount)),
           'Borrows',
-          'Init Asset Weight',
+          'Init/Maint Weight',
         ]),
       ]
     : []
@@ -133,8 +133,9 @@ const RiskDashboard: NextPage = () => {
                       const bank = banks && banks[0]
                       const borrowsEnabled = bank?.reduceOnly === 0
                       const hasAssetWeight =
-                        bank?.initAssetWeight &&
-                        bank?.initAssetWeight?.toNumber() > 0
+                        bank &&
+                        (bank.initAssetWeight.toNumber() > 0 ||
+                          bank.maintAssetWeight.toNumber() > 0)
 
                       return (
                         <TrBody key={idx}>
@@ -187,13 +188,13 @@ const RiskDashboard: NextPage = () => {
 
                             const targetAmountVsAssetWeightScale =
                               targetAmount &&
-                              row.side === 'ask' &&
+                              row.side === 'bid' &&
                               (!uiBorrowWeightScaleStartQuote ||
                                 targetAmount <= uiBorrowWeightScaleStartQuote)
                             const targetAmountVsLiabWeightScale =
                               targetAmount &&
                               uiDepositWeightScaleStartQuote &&
-                              row.side === 'bid' &&
+                              row.side === 'ask' &&
                               (!uiDepositWeightScaleStartQuote ||
                                 targetAmount <= uiDepositWeightScaleStartQuote)
 
@@ -201,7 +202,7 @@ const RiskDashboard: NextPage = () => {
                               <Td
                                 xBorder
                                 key={valIdx}
-                                className={`!px-1 !py-1 ${
+                                className={`!p-1 ${
                                   isAboveLiqFee ? 'text-th-error' : ''
                                 }`}
                               >
@@ -212,27 +213,49 @@ const RiskDashboard: NextPage = () => {
                                   <div className="ml-auto flex w-2">
                                     {(targetAmountVsBorrows ||
                                       targetAmountVsDeposits) && (
-                                      <div className="w-1 bg-[#ffff99]"></div>
+                                      <div className="w-2 bg-[#ffff99]"></div>
                                     )}
                                     {(targetAmountVsAssetWeightScale ||
                                       targetAmountVsLiabWeightScale) && (
-                                      <div className="w-1 bg-[#0066ff]"></div>
+                                      <div className="w-2 bg-[#0066ff]"></div>
                                     )}
                                   </div>
                                 </div>
                               </Td>
                             )
                           })}
-                          <Td xBorder>{`${borrowsEnabled}`}</Td>
-                          <Td xBorder>{`${
-                            bank &&
-                            formatValue(bank?.initAssetWeight.toNumber())
-                          }`}</Td>
+                          <Td xBorder>
+                            {row.side === 'ask' && `${borrowsEnabled}`}
+                          </Td>
+                          <Td xBorder>
+                            {row.side === 'bid' &&
+                              `${
+                                bank &&
+                                formatValue(bank?.initAssetWeight.toNumber())
+                              } / ${
+                                bank &&
+                                formatValue(bank.maintAssetWeight.toNumber())
+                              }`}
+                          </Td>
                         </TrBody>
                       )
                     })}
                   </tbody>
                 </Table>
+                <pre className="mt-6">
+                  {`font color: Red  
+ask: liquidation fee < price impact && borrows enabled 
+bid: liquidation fee < price impact && init or main asset weight > 0
+
+strip color: Yellow
+ask: target amount <= notional amount of current deposit
+bid: target amount <= notional amount of current borrows
+
+strip color: Blue
+ask: target amount <= ui deposit weight scale start quote 
+bid: target amount <= ui borrows weight scale start quote
+`}
+                </pre>
               </div>
             </div>
           ) : (
