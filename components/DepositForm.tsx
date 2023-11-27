@@ -124,7 +124,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
   }, [publicKey])
 
   const handleDeposit = useCallback(async () => {
-    const client = mangoStore.getState().client
+    const client = mangoStore.getState().sendClient
     const group = mangoStore.getState().group
     const actions = mangoStore.getState().actions
     const mangoAccount = mangoStore.getState().mangoAccount.current

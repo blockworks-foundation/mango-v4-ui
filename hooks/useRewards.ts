@@ -49,11 +49,15 @@ export const useAccountPointsAndRank = (
   )
 }
 export const useDistribution = (seasonId: number | undefined) => {
-  const { client } = mangoStore()
-  const provider = client.program.provider
+  const { readClient } = mangoStore()
+  const provider = readClient.program.provider
   return useQuery(
-    ['distribution', seasonId, client.program.provider.publicKey?.toBase58()],
-    () => fetchDistribution(client.program.provider, seasonId!),
+    [
+      'distribution',
+      seasonId,
+      readClient.program.provider.publicKey?.toBase58(),
+    ],
+    () => fetchDistribution(readClient.program.provider, seasonId!),
     {
       cacheTime: 1000 * 60 * 10,
       staleTime: 1000 * 60,

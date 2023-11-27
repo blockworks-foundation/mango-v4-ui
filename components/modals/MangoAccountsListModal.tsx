@@ -66,7 +66,7 @@ const MangoAccountsListModal = ({
 
   const handleSelectMangoAccount = async (acc: MangoAccount) => {
     const set = mangoStore.getState().set
-    const client = mangoStore.getState().client
+    const client = mangoStore.getState().readClient
     if (!group) return
     set((s) => {
       s.activityFeed.feed = []

@@ -106,7 +106,7 @@ const UserSetupModal = ({
   }, [connected])
 
   const handleCreateAccount = useCallback(async () => {
-    const client = mangoStore.getState().client
+    const client = mangoStore.getState().readClient
     const group = mangoStore.getState().group
     const actions = mangoStore.getState().actions
     const connection = mangoStore.getState().connection
@@ -156,7 +156,7 @@ const UserSetupModal = ({
   }, [accountName, publicKey, t])
 
   const handleDeposit = useCallback(async () => {
-    const client = mangoStore.getState().client
+    const client = mangoStore.getState().sendClient
     const group = mangoStore.getState().group
     const actions = mangoStore.getState().actions
     const mangoAccount = mangoStore.getState().mangoAccount.current

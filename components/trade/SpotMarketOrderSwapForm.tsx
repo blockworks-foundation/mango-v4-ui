@@ -235,7 +235,7 @@ export default function SpotMarketOrderSwapForm() {
     })
 
   const handlePlaceOrder = useCallback(async () => {
-    const client = mangoStore.getState().client
+    const client = mangoStore.getState().sendClient
     const group = mangoStore.getState().group
     const mangoAccount = mangoStore.getState().mangoAccount.current
     const { baseSize, quoteSize, side } = mangoStore.getState().tradeForm

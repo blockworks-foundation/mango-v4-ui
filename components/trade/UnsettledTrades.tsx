@@ -38,7 +38,7 @@ const UnsettledTrades = ({
   const { isUnownedAccount } = useUnownedAccount()
 
   const handleSettleSerumFunds = useCallback(async (mktAddress: string) => {
-    const client = mangoStore.getState().client
+    const client = mangoStore.getState().sendClient
     const group = mangoStore.getState().group
     const mangoAccount = mangoStore.getState().mangoAccount.current
     const actions = mangoStore.getState().actions
@@ -74,7 +74,7 @@ const UnsettledTrades = ({
   }, [])
 
   const handleSettlePerpFunds = useCallback(async (market: PerpMarket) => {
-    const client = mangoStore.getState().client
+    const client = mangoStore.getState().sendClient
     const group = mangoStore.getState().group
     const mangoAccount = mangoStore.getState().mangoAccount.current
     const actions = mangoStore.getState().actions

@@ -27,7 +27,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
 const MangoAccountDashboard: NextPage = () => {
   const { group } = useMangoGroup()
   const { mangoAccount } = useMangoAccount()
-  const client = mangoStore((s) => s.client)
+  const client = mangoStore((s) => s.readClient)
   const [openOrders, setOpenOrders] = useState<Record<string, PerpOrder[]>>()
   const router = useRouter()
   console.log('router.query', router.query)

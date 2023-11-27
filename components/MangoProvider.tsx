@@ -133,7 +133,7 @@ const HydrateStore = () => {
 
   // watch selected Mango Account for changes
   useEffect(() => {
-    const client = mangoStore.getState().client
+    const client = mangoStore.getState().readClient
     if (!mangoAccountPk) return
     const subscriptionId = connection.onAccountChange(
       mangoAccountPk,
@@ -194,7 +194,7 @@ const ReadOnlyMangoAccount = () => {
       try {
         if (!ma || !group) return
 
-        const client = mangoStore.getState().client
+        const client = mangoStore.getState().readClient
         const pk = new PublicKey(ma)
         const readOnlyMangoAccount = await client.getMangoAccount(pk)
         await readOnlyMangoAccount.reloadSerum3OpenOrders(client)

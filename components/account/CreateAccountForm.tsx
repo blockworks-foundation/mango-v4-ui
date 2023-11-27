@@ -50,7 +50,7 @@ const CreateAccountForm = ({
   const setCookie = NotificationCookieStore((s) => s.setCookie)
 
   const handleNewAccount = async () => {
-    const client = mangoStore.getState().client
+    const client = mangoStore.getState().readClient
     const group = mangoStore.getState().group
     const existingMangoAccts = mangoStore.getState().mangoAccounts
     const set = mangoStore.getState().set

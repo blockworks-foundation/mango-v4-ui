@@ -162,7 +162,8 @@ export type MangoStore = {
   connection: Connection
   group: Group | undefined
   groupLoaded: boolean
-  client: MangoClient
+  readClient: MangoClient
+  sendClient: MangoClient
   showUserSetup: boolean
   mangoAccount: {
     current: MangoAccount | undefined
@@ -330,7 +331,19 @@ const mangoStore = create<MangoStore>()(
     }
     const provider = new AnchorProvider(connection, emptyWallet, options)
     provider.opts.skipPreflight = true
-    const client = initMangoClient(provider)
+    const readClient = initMangoClient(provider)
+
+    const sendConnection = new web3.Connection(
+      'https://api.mngo.cloud/lite-rpc/v1/',
+      CONNECTION_COMMITMENT,
+    )
+    const sendProvider = new AnchorProvider(
+      sendConnection,
+      emptyWallet,
+      options,
+    )
+    sendProvider.opts.skipPreflight = true
+    const sendClient = initMangoClient(sendProvider)
 
     return {
       activityFeed: {
@@ -342,7 +355,8 @@ const mangoStore = create<MangoStore>()(
       connection,
       group: undefined,
       groupLoaded: false,
-      client,
+      readClient,
+      sendClient,
       showUserSetup: false,
       mangoAccount: {
         current: undefined,
@@ -506,7 +520,7 @@ const mangoStore = create<MangoStore>()(
         fetchGroup: async () => {
           try {
             const set = get().set
-            const client = get().client
+            const client = get().readClient
             const group = await client.getGroup(GROUP)
             let selectedMarketName = get().selectedMarket.name
 
@@ -572,7 +586,7 @@ const mangoStore = create<MangoStore>()(
           const actions = get().actions
           try {
             const group = get().group
-            const client = get().client
+            const client = get().readClient
             const mangoAccount = get().mangoAccount.current
             if (!group) throw new Error('Group not loaded')
             if (!mangoAccount)
@@ -614,7 +628,7 @@ const mangoStore = create<MangoStore>()(
           const actions = get().actions
           try {
             const group = get().group
-            const client = get().client
+            const client = get().readClient
             const selectedMangoAccount = get().mangoAccount.current
             if (!group) throw new Error('Group not loaded')
             if (!client) throw new Error('Client not loaded')
@@ -705,7 +719,7 @@ const mangoStore = create<MangoStore>()(
         },
         fetchOpenOrders: async (refetchMangoAccount = false) => {
           const set = get().set
-          const client = get().client
+          const client = get().readClient
           const group = get().group
           if (refetchMangoAccount) {
             await get().actions.reloadMangoAccount()
@@ -801,7 +815,7 @@ const mangoStore = create<MangoStore>()(
         fetchPositionsStats: async () => {
           const set = get().set
           const group = get().group
-          const client = get().client
+          const client = get().readClient
           if (!group) return
           try {
             const allMangoAccounts = await client.getAllMangoAccounts(
@@ -962,22 +976,37 @@ const mangoStore = create<MangoStore>()(
         connectMangoClientWithWallet: async (wallet: WalletAdapter) => {
           const set = get().set
           try {
-            const provider = new AnchorProvider(
+            const priorityFee = get().priorityFee ?? DEFAULT_PRIORITY_FEE
+
+            const readProvider = new AnchorProvider(
               connection,
               wallet.adapter as unknown as Wallet,
               options,
             )
-            provider.opts.skipPreflight = true
-            const priorityFee = get().priorityFee ?? DEFAULT_PRIORITY_FEE
+            readProvider.opts.skipPreflight = true
 
-            const client = initMangoClient(provider, {
+            const readClient = initMangoClient(readProvider, {
+              prioritizationFee: priorityFee,
+              prependedGlobalAdditionalInstructions:
+                get().prependedGlobalAdditionalInstructions,
+            })
+
+            const sendProvider = new AnchorProvider(
+              connection,
+              wallet.adapter as unknown as Wallet,
+              options,
+            )
+            sendProvider.opts.skipPreflight = true
+
+            const sendClient = initMangoClient(sendProvider, {
               prioritizationFee: priorityFee,
               prependedGlobalAdditionalInstructions:
                 get().prependedGlobalAdditionalInstructions,
             })
 
             set((s) => {
-              s.client = client
+              s.sendClient = sendClient
+              s.readClient = readClient
             })
           } catch (e) {
             if (e instanceof Error && e.name.includes('WalletLoadError')) {
@@ -993,7 +1022,7 @@ const mangoStore = create<MangoStore>()(
           instructions: TransactionInstruction[],
         ) {
           const set = get().set
-          const client = mangoStore.getState().client
+          const client = mangoStore.getState().sendClient
 
           const provider = client.program.provider as AnchorProvider
           provider.opts.skipPreflight = true
@@ -1004,7 +1033,7 @@ const mangoStore = create<MangoStore>()(
           })
 
           set((s) => {
-            s.client = newClient
+            s.sendClient = newClient
             s.prependedGlobalAdditionalInstructions = instructions
           })
         },
@@ -1033,7 +1062,7 @@ const mangoStore = create<MangoStore>()(
           const set = get().set
           const selectedMarket = get().selectedMarket.current
           const group = get().group
-          const client = get().client
+          const client = get().readClient
           const connection = get().connection
           try {
             let serumMarket
@@ -1070,7 +1099,7 @@ const mangoStore = create<MangoStore>()(
         },
         updateConnection(endpointUrl) {
           const set = get().set
-          const client = mangoStore.getState().client
+          const client = mangoStore.getState().readClient
           const newConnection = new web3.Connection(
             endpointUrl,
             CONNECTION_COMMITMENT,
@@ -1089,13 +1118,13 @@ const mangoStore = create<MangoStore>()(
           })
           set((state) => {
             state.connection = newConnection
-            state.client = newClient
+            state.readClient = newClient
           })
         },
         estimatePriorityFee: async (feeMultiplier) => {
           const set = get().set
           const group = mangoStore.getState().group
-          const client = mangoStore.getState().client
+          const client = mangoStore.getState().sendClient
 
           const mangoAccount = get().mangoAccount.current
           if (!mangoAccount || !group || !client) return
@@ -1143,7 +1172,7 @@ const mangoStore = create<MangoStore>()(
           })
           set((state) => {
             state.priorityFee = feeEstimate
-            state.client = newClient
+            state.sendClient = newClient
           })
         },
       },

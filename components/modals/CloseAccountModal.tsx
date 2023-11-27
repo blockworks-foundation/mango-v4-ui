@@ -41,7 +41,7 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
   const [totalAccountSOL, setTotalAccountSOL] = useState(0)
 
   const handleCloseMangoAccount = async () => {
-    const client = mangoStore.getState().client
+    const client = mangoStore.getState().readClient
     const mangoAccount = mangoStore.getState().mangoAccount.current
     const mangoAccounts = mangoStore.getState().mangoAccounts
 

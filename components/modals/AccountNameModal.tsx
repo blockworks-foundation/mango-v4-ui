@@ -18,7 +18,7 @@ const AccountNameModal = ({ isOpen, onClose }: ModalProps) => {
   const [name, setName] = useState(mangoAccount?.name || '')
 
   const handleUpdateccountName = useCallback(async () => {
-    const client = mangoStore.getState().client
+    const client = mangoStore.getState().readClient
     const group = mangoStore.getState().group
     const actions = mangoStore.getState().actions
     if (!mangoAccount || !group) return

@@ -95,7 +95,7 @@ const AccountSettings = () => {
 
   const handleCloseToken = useCallback(
     async (tokenMint: PublicKey) => {
-      const client = mangoStore.getState().client
+      const client = mangoStore.getState().sendClient
       const group = mangoStore.getState().group
       const actions = mangoStore.getState().actions
       if (!mangoAccount || !group) return
@@ -133,7 +133,7 @@ const AccountSettings = () => {
 
   const handleCloseSerumOos = useCallback(
     async (market: Serum3Market) => {
-      const client = mangoStore.getState().client
+      const client = mangoStore.getState().sendClient
       const group = mangoStore.getState().group
       const actions = mangoStore.getState().actions
       if (!mangoAccount || !group) return
@@ -170,7 +170,7 @@ const AccountSettings = () => {
 
   const handleClosePerpAccounts = useCallback(
     async (marketIndex: number) => {
-      const client = mangoStore.getState().client
+      const client = mangoStore.getState().sendClient
       const group = mangoStore.getState().group
       const actions = mangoStore.getState().actions
       if (!mangoAccount || !group) return

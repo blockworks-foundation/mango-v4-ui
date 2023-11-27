@@ -63,7 +63,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
   // subscribe to the bids and asks orderbook accounts
   useEffect(() => {
     console.log('setting up orderbook websockets')
-    const client = mangoStore.getState().client
+    const client = mangoStore.getState().readClient
     if (!group || !perpMarket) return
 
     let bidSubscriptionId: number | undefined = undefined
@@ -140,7 +140,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
 
   const handleMarketClose = useCallback(
     async (bids: BidsAndAsks, asks: BidsAndAsks) => {
-      const client = mangoStore.getState().client
+      const client = mangoStore.getState().sendClient
       const mangoAccount = mangoStore.getState().mangoAccount.current
       const actions = mangoStore.getState().actions
 

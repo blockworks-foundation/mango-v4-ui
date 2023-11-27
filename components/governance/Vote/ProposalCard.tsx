@@ -45,7 +45,7 @@ const ProposalCard = ({
 }) => {
   const { t } = useTranslation('governance')
   const connection = mangoStore((s) => s.connection)
-  const client = mangoStore((s) => s.client)
+  const client = mangoStore((s) => s.readClient)
   const governances = GovernanceStore((s) => s.governances)
   const wallet = useWallet()
   const voter = GovernanceStore((s) => s.voter)

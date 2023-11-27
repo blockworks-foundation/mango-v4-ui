@@ -462,7 +462,7 @@ const SwapReviewRouteInfo = ({
   const onSwap = useCallback(async () => {
     if (!selectedRoute) return
     try {
-      const client = mangoStore.getState().client
+      const client = mangoStore.getState().sendClient
       const group = mangoStore.getState().group
       const actions = mangoStore.getState().actions
       const mangoAccount = mangoStore.getState().mangoAccount.current

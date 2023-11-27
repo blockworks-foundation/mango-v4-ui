@@ -469,7 +469,7 @@ const AdvancedTradeForm = () => {
   }, [isTriggerOrder, tickDecimals, tradeForm.side, tradeForm.tradeType])
 
   const handleStandardOrder = useCallback(async () => {
-    const { client } = mangoStore.getState()
+    const { sendClient } = mangoStore.getState()
     const { group } = mangoStore.getState()
     const mangoAccount = mangoStore.getState().mangoAccount.current
     const { tradeForm } = mangoStore.getState()
@@ -496,7 +496,7 @@ const AdvancedTradeForm = () => {
           : tradeForm.postOnly && tradeForm.tradeType !== 'Market'
           ? Serum3OrderType.postOnly
           : Serum3OrderType.limit
-        const { signature: tx } = await client.serum3PlaceOrder(
+        const { signature: tx } = await sendClient.serum3PlaceOrder(
           group,
           mangoAccount,
           selectedMarket.serumMarketExternal,
@@ -536,7 +536,7 @@ const AdvancedTradeForm = () => {
             (tradeForm.side === 'buy' ? 1 + maxSlippage : 1 - maxSlippage)
         }
 
-        const { signature: tx } = await client.perpPlaceOrder(
+        const { signature: tx } = await sendClient.perpPlaceOrder(
           group,
           mangoAccount,
           selectedMarket.perpMarketIndex,

@@ -864,7 +864,7 @@ type Vault = {
 
 const VaultData = ({ bank }: { bank: Bank }) => {
   const [vault, setVault] = useState<Vault>()
-  const client = mangoStore((s) => s.client)
+  const client = mangoStore((s) => s.readClient)
 
   const getVaultData = useCallback(async () => {
     const res = await client.program.provider.connection.getAccountInfo(

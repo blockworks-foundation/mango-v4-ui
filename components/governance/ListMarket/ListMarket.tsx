@@ -62,7 +62,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
   const { t } = useTranslation(['governance', 'trade'])
   const { group } = useMangoGroup()
   const connection = mangoStore((s) => s.connection)
-  const client = mangoStore((s) => s.client)
+  const client = mangoStore((s) => s.readClient)
   const voter = GovernanceStore((s) => s.voter)
 
   const vsrClient = GovernanceStore((s) => s.vsrClient)

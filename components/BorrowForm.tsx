@@ -119,7 +119,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
   }
 
   const handleBorrow = useCallback(async () => {
-    const client = mangoStore.getState().client
+    const client = mangoStore.getState().sendClient
     const group = mangoStore.getState().group
     const mangoAccount = mangoStore.getState().mangoAccount.current
     const actions = mangoStore.getState().actions

@@ -161,7 +161,7 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
     if (Object.keys(invalidFields).length) {
       return
     }
-    const client = mangoStore.getState().client
+    const client = mangoStore.getState().readClient
     const group = mangoStore.getState().group
     const mangoAccount = mangoStore.getState().mangoAccount.current
     const actions = mangoStore.getState().actions

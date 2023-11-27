@@ -114,7 +114,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
   const handleDeposit = useCallback(
     async (amount: string) => {
       const mangoAccount = mangoStore.getState().mangoAccount.current
-      const client = mangoStore.getState().client
+      const client = mangoStore.getState().sendClient
       const group = mangoStore.getState().group
       const actions = mangoStore.getState().actions
 

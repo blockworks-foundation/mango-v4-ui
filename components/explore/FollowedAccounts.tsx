@@ -53,7 +53,7 @@ export interface FollowedAccount extends FollowedAccountApi {
 }
 
 const getFollowedMangoAccounts = async (accounts: FollowedAccount[]) => {
-  const client = mangoStore.getState().client
+  const client = mangoStore.getState().readClient
   const mangoAccounts = []
   for (const account of accounts) {
     try {

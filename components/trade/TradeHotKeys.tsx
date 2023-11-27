@@ -173,7 +173,7 @@ const TradeHotKeys = ({ children }: { children: ReactNode }) => {
 
   const handlePlaceOrder = useCallback(
     async (hkOrder: HotKey) => {
-      const client = mangoStore.getState().client
+      const client = mangoStore.getState().sendClient
       const group = mangoStore.getState().group
       const mangoAccount = mangoStore.getState().mangoAccount.current
       const actions = mangoStore.getState().actions

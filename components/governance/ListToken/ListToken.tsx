@@ -95,7 +95,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const wallet = useWallet()
   const { jupiterTokens } = useJupiterMints()
   const connection = mangoStore((s) => s.connection)
-  const client = mangoStore((s) => s.client)
+  const client = mangoStore((s) => s.readClient)
   const { group } = useMangoGroup()
   const voter = GovernanceStore((s) => s.voter)
   const vsrClient = GovernanceStore((s) => s.vsrClient)

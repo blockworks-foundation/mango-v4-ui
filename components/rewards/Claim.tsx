@@ -82,7 +82,7 @@ const ClaimPage = () => {
   >(undefined)
   const [prizes, setPrizes] = useState<Prize[]>([])
 
-  const { client } = mangoStore()
+  const { readClient } = mangoStore()
   const { publicKey } = useWallet()
   const { data: seasonData } = useCurrentSeason()
   const currentSeason = seasonData?.season_id
@@ -91,7 +91,7 @@ const ClaimPage = () => {
   //needed for tx sign
   const wallet = useWallet()
 
-  const provider = client.program.provider
+  const provider = readClient.program.provider
   const connection = provider.connection
 
   const telemetry = usePlausible<TelemetryEvents>()

@@ -99,7 +99,7 @@ export const handlePlaceTriggerOrder = async (
   setSubmitting: (s: boolean) => void,
 ) => {
   try {
-    const client = mangoStore.getState().client
+    const client = mangoStore.getState().sendClient
     const group = mangoStore.getState().group
     const actions = mangoStore.getState().actions
     const mangoAccount = mangoStore.getState().mangoAccount.current

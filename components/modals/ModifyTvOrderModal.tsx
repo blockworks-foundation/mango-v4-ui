@@ -75,7 +75,7 @@ const ModifyTvOrderModal = ({
 
   const modifyOrder = useCallback(
     async (o: PerpOrder | Order) => {
-      const client = mangoStore.getState().client
+      const client = mangoStore.getState().sendClient
       const group = mangoStore.getState().group
       const mangoAccount = mangoStore.getState().mangoAccount.current
       const actions = mangoStore.getState().actions

@@ -18,7 +18,7 @@ export const handleCloseAll = async (
   setSubmitting?: (s: boolean) => void,
   onClose?: () => void,
 ) => {
-  const client = mangoStore.getState().client
+  const client = mangoStore.getState().sendClient
   const mangoAccount = mangoStore.getState().mangoAccount.current
   const actions = mangoStore.getState().actions
   const group = mangoStore.getState().group
@@ -76,7 +76,7 @@ const CloseAllPositionsModal: FunctionComponent<ModalProps> = ({
   const { group } = useMangoGroup()
 
   // const handleCloseAll = useCallback(async () => {
-  //   const client = mangoStore.getState().client
+  //   const client = mangoStore.getState().sendClient
   //   const mangoAccount = mangoStore.getState().mangoAccount.current
   //   const actions = mangoStore.getState().actions
 

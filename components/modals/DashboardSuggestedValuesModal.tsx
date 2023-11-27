@@ -47,7 +47,7 @@ const DashboardSuggestedValues = ({
   group: Group
   priceImpacts: PriceImpact[]
 }) => {
-  const client = mangoStore((s) => s.client)
+  const client = mangoStore((s) => s.readClient)
   //do not deconstruct wallet is used for anchor to sign
   const wallet = useWallet()
   const connection = mangoStore((s) => s.connection)

@@ -195,7 +195,7 @@ const Orderbook = () => {
   // subscribe to the bids and asks orderbook accounts
   useEffect(() => {
     const set = mangoStore.getState().set
-    const client = mangoStore.getState().client
+    const client = mangoStore.getState().readClient
     const group = mangoStore.getState().group
     const market = getMarket()
     if (!group || !market) return
