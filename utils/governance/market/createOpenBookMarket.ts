@@ -184,8 +184,8 @@ const makeCreateMarketInstruction = async ({
     SystemProgram.createAccount({
       fromPubkey: wallet,
       newAccountPubkey: marketInfo.eventQueue.publicKey,
-      lamports: await connection.getMinimumBalanceForRentExemption(1048564),
-      space: 1048564,
+      lamports: await connection.getMinimumBalanceForRentExemption(45100),
+      space: 45100,
       programId: marketInfo.programId,
     }),
     SystemProgram.createAccount({
