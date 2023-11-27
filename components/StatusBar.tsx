@@ -98,15 +98,20 @@ const StatusBar = ({ collapsed }: { collapsed: boolean }) => {
   const { offchainHealth, isLoading: loadingOffchainHealth } =
     useOffchainServicesHealth()
   const connection = mangoStore((s) => s.connection)
+  const readClient = mangoStore((s) => s.readClient)
+  const sendClient = mangoStore((s) => s.sendClient)
   const [tps, setTps] = useState(0)
   const [rpcPing, setRpcPing] = useState(0)
+  const [liteRpcPing, setLiteRpcPing] = useState(0)
 
   useEffect(() => {
-    getPingTime(connection, setRpcPing)
+    getPingTime(readClient.connection, setRpcPing)
+    getPingTime(sendClient.connection, setLiteRpcPing)
   }, [])
 
   useInterval(() => {
     getPingTime(connection, setRpcPing)
+    getPingTime(sendClient.connection, setLiteRpcPing)
   }, 30 * 1000)
 
   useEffect(() => {
@@ -150,8 +155,12 @@ const StatusBar = ({ collapsed }: { collapsed: boolean }) => {
                 <Tps tps={tps} />
               </div>
               <div>
-                <p className="mb-0.5">{t('rpc-ping')}</p>
+                <p className="mb-0.5">Read Ping</p>
                 <RpcPing rpcPing={rpcPing} />
+              </div>
+              <div>
+                <p className="mb-0.5">Send Ping</p>
+                <RpcPing rpcPing={liteRpcPing} />
               </div>
               {!loadingOffchainHealth ? (
                 <div className="flex items-center">
