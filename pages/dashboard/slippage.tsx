@@ -6,6 +6,8 @@ import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { PublicKey } from '@solana/web3.js'
 import { formatNumericValue } from 'utils/numbers'
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
+import { useState } from 'react'
+import Select from '@components/forms/Select'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -27,15 +29,64 @@ const formatValue = (val: string | number | PublicKey) => {
 }
 const RiskDashboard: NextPage = () => {
   const { group } = useMangoGroup()
+  const [currentFilter, setCurrentFilter] = useState<
+    'avg_price_impact' | 'p90' | 'p95'
+  >('avg_price_impact')
+  const filters = ['avg_price_impact', 'p90', 'p95']
+
   const heads = group
     ? [
         ...new Set([
           'Token',
           'Side',
           ...group.pis.map((x) => formatValue(x.target_amount)),
+          'Borrows',
+          'Init Asset Weight',
         ]),
       ]
     : []
+  type FixedProperties = {
+    symbol: string
+    side: string
+  }
+
+  type DynamicProperties = {
+    [key: string]:
+      | {
+          avg_price_impact: number
+          p90: number
+          p95: number
+        }
+      | string
+  }
+
+  type TransformedPis = FixedProperties & DynamicProperties
+  const transformedPis = group?.pis.reduce((acc, val) => {
+    const currentItem = acc.find(
+      (x) => x.symbol === val.symbol && x.side === val.side,
+    )
+
+    if (currentItem) {
+      currentItem['amount_' + val.target_amount] = {
+        avg_price_impact: val.avg_price_impact_percent,
+        p90: val.p90,
+        p95: val.p95,
+      }
+    } else {
+      const newItem = {
+        symbol: val.symbol,
+        side: val.side,
+        ['amount_' + val.target_amount]: {
+          avg_price_impact: val.avg_price_impact_percent,
+          p90: val.p90,
+          p95: val.p95,
+        },
+      }
+      acc.push(newItem)
+    }
+
+    return acc
+  }, [] as TransformedPis[])
 
   return (
     <div className="grid grid-cols-12">
@@ -47,7 +98,22 @@ const RiskDashboard: NextPage = () => {
             <div className="mt-4">
               <div className="mt-12">
                 <div className="mb-4">
-                  <p className="text-th-fgd-4">Slippage</p>
+                  <p className="text-th-fgd-4">
+                    Slippage
+                    <Select
+                      value={currentFilter}
+                      onChange={(filter) => setCurrentFilter(filter)}
+                      className="w-full"
+                    >
+                      {filters.map((filter) => (
+                        <Select.Option key={filter} value={filter}>
+                          <div className="flex w-full items-center justify-between">
+                            {filter}
+                          </div>
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </p>
                 </div>
                 <Table>
                   <thead>
@@ -60,18 +126,25 @@ const RiskDashboard: NextPage = () => {
                     </TrHead>
                   </thead>
                   <tbody>
-                    {group.pis.map((row, idx: number) => {
+                    {transformedPis?.map((row, idx: number) => {
+                      const banks = group?.banksMapByName?.get(
+                        apiNameToBankName(row.symbol),
+                      )
+                      const bank = banks && banks[0]
+                      const borrowsEnabled = bank?.reduceOnly === 0
+                      const hasAssetWeight =
+                        bank?.initAssetWeight &&
+                        bank?.initAssetWeight?.toNumber() > 0
+
                       return (
                         <TrBody key={idx}>
                           {Object.entries(row).map(([key, val], valIdx) => {
-                            const banks = group?.banksMapByName?.get(
-                              apiNameToBankName(row.symbol),
-                            )
-                            if (!banks?.length) {
-                              console.log(row.symbol, banks)
-                            }
+                            const visibleValue =
+                              typeof val === 'string' ? val : val[currentFilter]
+                            const targetAmount =
+                              key.includes('amount_') &&
+                              Number(key.replace('amount_', ''))
 
-                            const bank = banks && banks[0]
                             const uiBorrowWeightScaleStartQuote =
                               bank &&
                               toUiDecimals(bank.borrowWeightScaleStartQuote, 6)
@@ -79,53 +152,82 @@ const RiskDashboard: NextPage = () => {
                               bank &&
                               toUiDecimals(bank.depositWeightScaleStartQuote, 6)
 
-                            const keysForLiqFee = [
-                              'avg_price_impact_percent',
-                              'max_price_impact_percent',
-                              'min_price_impact_percent',
-                              'p95',
-                              'p90',
-                            ]
+                            const notionalDeposits =
+                              bank!.uiDeposits() * bank!.uiPrice
+                            const notionalBorrows =
+                              bank!.uiBorrows() * bank!.uiPrice
 
-                            //if liquidation fee is lower then price impact
+                            //   red font-color:
+                            //   liquidaiton fee vs price impact (on bid only if asset weight > 0, on ask only if borrows enabled)
+
+                            //   strip color: yellow
+                            //   ask target amount <= notional amount of current deposit
+                            //   bid  target amount <= notional amount of current borrows
+
+                            //   strip color: blue
+                            //   ask target amount <= asset weight scale start quote
+                            //   bid target amount <= liability weight scale start quote
+                            //   two background colors can mix -> use stripes
+
                             const isAboveLiqFee =
-                              keysForLiqFee.includes(key) &&
-                              bank &&
-                              typeof val === 'number' &&
-                              val > bank.liquidationFee.toNumber() * 100
+                              ((hasAssetWeight && row.side === 'bid') ||
+                                (row.side && borrowsEnabled)) &&
+                              typeof visibleValue === 'number' &&
+                              visibleValue >
+                                bank.liquidationFee.toNumber() * 100
 
-                            //if side is bid and borrowWeightScaleStartQuote is bigger then target_amount
-                            const isAmountBelowBorrowWeightScale =
-                              uiBorrowWeightScaleStartQuote === undefined ||
-                              (key === 'target_amount' &&
-                                typeof val === 'number' &&
-                                val < uiBorrowWeightScaleStartQuote &&
-                                row.side === 'bid')
+                            const targetAmountVsBorrows =
+                              targetAmount &&
+                              row.side === 'bid' &&
+                              targetAmount <= notionalDeposits
+                            const targetAmountVsDeposits =
+                              targetAmount &&
+                              row.side === 'ask' &&
+                              targetAmount <= notionalBorrows
 
-                            //if side is ask and borrowDepositWeightScaleStartQuote is bigger then target_amount
-                            const isAmountBelowDepositWeightScale =
-                              uiDepositWeightScaleStartQuote === undefined ||
-                              (key === 'target_amount' &&
-                                typeof val === 'number' &&
-                                val < uiDepositWeightScaleStartQuote &&
-                                row.side === 'ask')
+                            const targetAmountVsAssetWeightScale =
+                              targetAmount &&
+                              row.side === 'ask' &&
+                              (!uiBorrowWeightScaleStartQuote ||
+                                targetAmount <= uiBorrowWeightScaleStartQuote)
+                            const targetAmountVsLiabWeightScale =
+                              targetAmount &&
+                              uiDepositWeightScaleStartQuote &&
+                              row.side === 'bid' &&
+                              (!uiDepositWeightScaleStartQuote ||
+                                targetAmount <= uiDepositWeightScaleStartQuote)
 
                             return (
                               <Td
                                 xBorder
-                                className={`${
-                                  isAboveLiqFee ||
-                                  isAmountBelowBorrowWeightScale ||
-                                  isAmountBelowDepositWeightScale
-                                    ? 'text-th-error'
-                                    : ''
-                                }`}
                                 key={valIdx}
+                                className={`!px-1 !py-1 ${
+                                  isAboveLiqFee ? 'text-th-error' : ''
+                                }`}
                               >
-                                {formatValue(val)}
+                                <div className="flex">
+                                  <div className="mr-2 h-full">
+                                    {formatValue(visibleValue)}
+                                  </div>
+                                  <div className="ml-auto flex w-2">
+                                    {(targetAmountVsBorrows ||
+                                      targetAmountVsDeposits) && (
+                                      <div className="w-1 bg-[#ffff99]"></div>
+                                    )}
+                                    {(targetAmountVsAssetWeightScale ||
+                                      targetAmountVsLiabWeightScale) && (
+                                      <div className="w-1 bg-[#0066ff]"></div>
+                                    )}
+                                  </div>
+                                </div>
                               </Td>
                             )
                           })}
+                          <Td xBorder>{`${borrowsEnabled}`}</Td>
+                          <Td xBorder>{`${
+                            bank &&
+                            formatValue(bank?.initAssetWeight.toNumber())
+                          }`}</Td>
                         </TrBody>
                       )
                     })}
