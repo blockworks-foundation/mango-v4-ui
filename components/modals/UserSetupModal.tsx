@@ -272,7 +272,7 @@ const UserSetupModal = ({
         </div>
         <div className="col-span-1 flex flex-col items-center justify-center p-6 pt-24">
           <UserSetupTransition show={showSetupStep === 0}>
-            <h2 className="mb-4 font-display text-3xl tracking-normal md:text-5xl lg:max-w-[400px] lg:text-6xl">
+            <h2 className="mb-4 font-display text-3xl tracking-normal md:text-5xl lg:max-w-[400px]">
               {t('onboarding:intro-heading')}
             </h2>
             <p className="text-base sm:mb-2 lg:text-lg">
@@ -282,7 +282,23 @@ const UserSetupModal = ({
               <CheckBullet text={t('onboarding:bullet-1')} />
               <CheckBullet text={t('onboarding:bullet-2')} />
               <CheckBullet text={t('onboarding:bullet-3')} />
-              <CheckBullet text={t('onboarding:bullet-4')} />
+            </div>
+            <div className="mb-4 rounded-md bg-th-bkg-2 p-4">
+              <div className="flex items-center space-x-4">
+                <Image
+                  src="/images/rewards/chest.png"
+                  alt="Rewards"
+                  height={56}
+                  width={56}
+                />
+                <div>
+                  <h3 className="text-base">Trade. Win. Repeat.</h3>
+                  <p>
+                    Win amazing prizes every week. Create your account and start
+                    trading to earn rewards.
+                  </p>
+                </div>
+              </div>
             </div>
             <p className="mb-6 flex flex-wrap">
               <span className="mr-1">{t('accept-terms-desc')}</span>
@@ -313,7 +329,7 @@ const UserSetupModal = ({
           <UserSetupTransition delay show={showSetupStep === 1}>
             {showSetupStep === 1 ? (
               <div>
-                <h2 className="mb-6 font-display text-3xl tracking-normal md:text-5xl lg:text-6xl">
+                <h2 className="mb-6 font-display text-3xl tracking-normal md:text-5xl">
                   {t('onboarding:connect-wallet')}
                 </h2>
                 <p className="mb-2 text-base">
@@ -373,7 +389,7 @@ const UserSetupModal = ({
             {showSetupStep === 2 ? (
               <div>
                 <div className="pb-6">
-                  <h2 className="mb-4 font-display text-3xl tracking-normal md:text-5xl lg:text-6xl">
+                  <h2 className="mb-4 font-display text-3xl tracking-normal md:text-5xl">
                     {t('onboarding:create-account')}
                   </h2>
                   <p className="text-base">{t('insufficient-sol')}</p>
@@ -431,7 +447,7 @@ const UserSetupModal = ({
           <UserSetupTransition delay show={showSetupStep === 3}>
             {showSetupStep === 3 ? (
               <div className="relative">
-                <h2 className="mb-6 font-display text-3xl tracking-normal md:text-5xl lg:text-6xl">
+                <h2 className="mb-6 font-display text-3xl tracking-normal md:text-5xl">
                   {t('onboarding:fund-account')}
                 </h2>
                 <UserSetupTransition show={depositToken.length > 0}>
