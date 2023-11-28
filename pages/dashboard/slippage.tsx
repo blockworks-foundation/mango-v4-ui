@@ -158,18 +158,6 @@ const RiskDashboard: NextPage = () => {
                             const notionalBorrows =
                               bank!.uiBorrows() * bank!.uiPrice
 
-                            //   red font-color:
-                            //   liquidaiton fee vs price impact (on bid only if asset weight > 0, on ask only if borrows enabled)
-
-                            //   strip color: yellow
-                            //   ask target amount <= notional amount of current deposit
-                            //   bid  target amount <= notional amount of current borrows
-
-                            //   strip color: blue
-                            //   ask target amount <= asset weight scale start quote
-                            //   bid target amount <= liability weight scale start quote
-                            //   two background colors can mix -> use stripes
-
                             const isAboveLiqFee =
                               ((hasAssetWeight && row.side === 'bid') ||
                                 (row.side && borrowsEnabled)) &&
@@ -191,6 +179,7 @@ const RiskDashboard: NextPage = () => {
                               row.side === 'bid' &&
                               (!uiBorrowWeightScaleStartQuote ||
                                 targetAmount <= uiBorrowWeightScaleStartQuote)
+
                             const targetAmountVsLiabWeightScale =
                               targetAmount &&
                               uiDepositWeightScaleStartQuote &&
