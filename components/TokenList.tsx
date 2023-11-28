@@ -176,7 +176,14 @@ const TokenList = () => {
       const formatted = []
       for (const b of banks) {
         const bank = b.bank
-        const balance = floorToDecimal(b.balance, bank.mintDecimals).toNumber()
+        const roundedBalance = floorToDecimal(
+          b.balance,
+          bank.mintDecimals,
+        ).toNumber()
+        let balance = roundedBalance
+        if (b.balance && !roundedBalance) {
+          balance = b.balance
+        }
         const balanceValue = balance * bank.uiPrice
         const symbol = bank.name === 'MSOL' ? 'mSOL' : bank.name
 
@@ -378,6 +385,13 @@ const TokenList = () => {
                   borrowRate,
                 } = data
 
+                const decimals = floorToDecimal(
+                  balance,
+                  bank.mintDecimals,
+                ).toNumber()
+                  ? bank.mintDecimals
+                  : undefined
+
                 return (
                   <TrBody key={symbol}>
                     <Td>
@@ -386,9 +400,11 @@ const TokenList = () => {
                     <Td className="text-right">
                       <BankAmountWithValue
                         amount={balance}
+                        decimals={decimals}
                         bank={bank}
                         stacked
                         isPrivate
+                        fixDecimals={false}
                       />
                     </Td>
                     <Td className="text-right">
@@ -521,6 +537,10 @@ const MobileTokenListItem = ({ data }: { data: TableData }) => {
     borrowRate,
   } = data
 
+  const decimals = floorToDecimal(balance, bank.mintDecimals).toNumber()
+    ? bank.mintDecimals
+    : undefined
+
   return (
     <Disclosure>
       {({ open }) => (
@@ -533,15 +553,12 @@ const MobileTokenListItem = ({ data }: { data: TableData }) => {
               <div className="flex items-center space-x-2">
                 <div className="text-right">
                   <p className="font-mono text-sm text-th-fgd-2">
-                    <FormatNumericValue
-                      value={balance}
-                      decimals={bank.mintDecimals}
-                    />
+                    <FormatNumericValue value={balance} decimals={decimals} />
                   </p>
                   <span className="font-mono text-xs text-th-fgd-3">
                     <FormatNumericValue
                       value={mangoAccount ? balance * bank.uiPrice : 0}
-                      decimals={2}
+                      decimals={decimals ? 2 : undefined}
                       isUsd
                       isPrivate
                     />
