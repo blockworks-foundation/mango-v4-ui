@@ -321,9 +321,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           (x) => x?.priceImpactPct && x?.priceImpactPct * 100 < 1,
         )
         const tier =
-          indexForTierFromSwaps > -1
-            ? TIERS[indexForTierFromSwaps]
-            : 'UNTRUSTED'
+          indexForTierFromSwaps > -1 ? TIERS[indexForTierFromSwaps] : 'SHIT'
         setLiqudityTier(tier)
         setPriceImpact(midTierCheck ? midTierCheck.priceImpactPct * 100 : 100)
         handleGetPoolParams(tier, tokenMint)
@@ -334,7 +332,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           description: `${e}`,
           type: 'error',
         })
-        return 'UNTRUSTED'
+        return 'SHIT'
       }
     },
     [t, handleGetRoutesWithFixedArgs],

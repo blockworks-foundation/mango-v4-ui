@@ -3,16 +3,16 @@ import { ChevronDownIcon } from '@heroicons/react/20/solid'
 
 const FAQS = [
   {
-    q: 'What is Mango Mints?',
-    a: 'Mango Mints is a weekly rewards program with amazing prizes. Anyone can participate simply by performing actions on Mango.',
+    q: 'How do I participate in rewards?',
+    a: 'Simply by trading on Mango. Points are allocated for spot trades and swaps. Other actions may also earn points. The more volume you do the more points you earn. At the end of each week prizes are distributed to all wallets with points. The more points you have the more prizes you could win.',
   },
   {
-    q: 'How do I participate?',
-    a: "Simply by using Mango. Points are allocated for transactions across the platform (swaps, trades, orders and more). You'll receive a notificaton when you earn points (make sure notifications are enabled for your wallet).",
+    q: 'What can I win?',
+    a: 'Rewards are distributed as tokens like USDC and/or nfts and can differ from week-to-week.',
   },
   {
-    q: 'How do Seasons work?',
-    a: 'Each weekly cycle is called a Season and each Season has two periods. The first period is about earning points and runs from midnight Sunday UTC to midnight Friday UTC. The second period is allocated to claim prizes and runs from midnight Friday UTC to midnight Sunday UTC.',
+    q: 'What is a rewards season?',
+    a: 'Each weekly cycle is called a Season. They run from midnight Friday UTC to the following midnight Friday UTC.',
   },
   {
     q: 'What are the rewards tiers?',
@@ -20,11 +20,11 @@ const FAQS = [
   },
   {
     q: 'How do the prizes work?',
-    a: "At the end of each Season loot boxes are distributed based on the amount of points earned relative to the other participants in your tier. Each box contains a prize. So you're guaranteed to get something.",
+    a: "At the end of each Season loot boxes are distributed based on the amount of points earned relative to the other participants in your tier. Everyone will win one or more prizes so you're guaranteed to get something.",
   },
   {
-    q: 'What happens during the Season claim period?',
-    a: "During the claim period you can come back to this page and often as you like and open your loot boxes. However, if you don't claim your prizes during this time window they will be lost.",
+    q: 'How do I claim my rewards?',
+    a: 'At the end of each season (midnight Friday UTC) there is a 48 hour window where you can claim your prizes. Come back to this page to claim. If you fail to claim your prizes during this period they will be lost.',
   },
 ]
 
