@@ -8,6 +8,7 @@ import { formatNumericValue } from 'utils/numbers'
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import { useState } from 'react'
 import Select from '@components/forms/Select'
+import Input from '@components/forms/Input'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -32,10 +33,10 @@ const formatValue = (val: string | number | PublicKey) => {
   }
   if (typeof val === 'string') {
     if (val === 'ask') {
-      return 'sell'
+      return 'Sell'
     }
     if (val === 'bid') {
-      return 'buy'
+      return 'Buy'
     }
     return val
   } else {
@@ -47,6 +48,8 @@ const RiskDashboard: NextPage = () => {
   const [currentFilter, setCurrentFilter] = useState<
     'avg_price_impact' | 'p90' | 'p95'
   >('avg_price_impact')
+  const [currentSearch, setCurrentSearch] = useState('')
+
   const filters = ['avg_price_impact', 'p90', 'p95']
 
   const heads = group
@@ -55,7 +58,7 @@ const RiskDashboard: NextPage = () => {
           'Token',
           'Side',
           ...group.pis.map((x) => formatValue(x.target_amount)),
-          'Init/Maint Weight',
+          'Init/Main Weight',
         ]),
       ]
     : []
@@ -75,32 +78,34 @@ const RiskDashboard: NextPage = () => {
   }
 
   type TransformedPis = FixedProperties & DynamicProperties
-  const transformedPis = group?.pis.reduce((acc, val) => {
-    const currentItem = acc.find(
-      (x) => x.symbol === val.symbol && x.side === val.side,
-    )
+  const transformedPis = group?.pis
+    .filter((x) => x.symbol.toLowerCase().includes(currentSearch.toLowerCase()))
+    .reduce((acc, val) => {
+      const currentItem = acc.find(
+        (x) => x.symbol === val.symbol && x.side === val.side,
+      )
 
-    if (currentItem) {
-      currentItem['amount_' + val.target_amount] = {
-        avg_price_impact: val.avg_price_impact_percent,
-        p90: val.p90,
-        p95: val.p95,
-      }
-    } else {
-      const newItem = {
-        symbol: val.symbol,
-        side: val.side,
-        ['amount_' + val.target_amount]: {
+      if (currentItem) {
+        currentItem['amount_' + val.target_amount] = {
           avg_price_impact: val.avg_price_impact_percent,
           p90: val.p90,
           p95: val.p95,
-        },
+        }
+      } else {
+        const newItem = {
+          symbol: val.symbol,
+          side: val.side,
+          ['amount_' + val.target_amount]: {
+            avg_price_impact: val.avg_price_impact_percent,
+            p90: val.p90,
+            p95: val.p95,
+          },
+        }
+        acc.push(newItem)
       }
-      acc.push(newItem)
-    }
 
-    return acc
-  }, [] as TransformedPis[])
+      return acc
+    }, [] as TransformedPis[])
 
   return (
     <div className="grid grid-cols-12">
@@ -112,8 +117,8 @@ const RiskDashboard: NextPage = () => {
             <div className="mt-4">
               <div className="mt-12">
                 <div className="mb-4">
-                  <p className="text-th-fgd-4">
-                    Slippage
+                  <p className="flex items-center space-x-4 text-th-fgd-4">
+                    <span>Slippage</span>
                     <Select
                       value={currentFilter}
                       onChange={(filter) => setCurrentFilter(filter)}
@@ -127,11 +132,17 @@ const RiskDashboard: NextPage = () => {
                         </Select.Option>
                       ))}
                     </Select>
+                    <Input
+                      suffix="Token"
+                      type="text"
+                      value={currentSearch}
+                      onChange={(e) => setCurrentSearch(e.target.value)}
+                    ></Input>
                   </p>
                 </div>
                 <Table>
                   <thead>
-                    <TrHead className="border">
+                    <TrHead className="sticky top-0 border bg-th-bkg-1">
                       {heads.map((x) => (
                         <Th key={x} xBorder className="text-left">
                           {x}
@@ -150,56 +161,53 @@ const RiskDashboard: NextPage = () => {
                         bank &&
                         (bank.initAssetWeight.toNumber() > 0 ||
                           bank.maintAssetWeight.toNumber() > 0)
-
+                      const isBid = row.side === 'bid'
+                      const isAsk = row.side === 'ask'
+                      const collateralEnabled = bank?.maintAssetWeight.isPos()
                       return (
                         <TrBody key={idx}>
                           {Object.entries(row).map(([key, val], valIdx) => {
                             const visibleValue =
                               typeof val === 'string' ? val : val[currentFilter]
+                            const isNumericValue =
+                              typeof visibleValue === 'number'
                             const targetAmount =
-                              key.includes('amount_') &&
-                              Number(key.replace('amount_', ''))
-
+                              (key.includes('amount_') &&
+                                Number(key.replace('amount_', ''))) ||
+                              0
                             const uiBorrowWeightScaleStartQuote =
                               bank &&
                               toUiDecimals(bank.borrowWeightScaleStartQuote, 6)
                             const uiDepositWeightScaleStartQuote =
                               bank &&
                               toUiDecimals(bank.depositWeightScaleStartQuote, 6)
-
                             const notionalDeposits =
                               bank!.uiDeposits() * bank!.uiPrice
                             const notionalBorrows =
                               bank!.uiBorrows() * bank!.uiPrice
 
                             const isAboveLiqFee =
-                              ((hasAssetWeight && row.side === 'bid') ||
-                                (row.side && borrowsEnabled)) &&
-                              typeof visibleValue === 'number' &&
+                              (hasAssetWeight || borrowsEnabled) &&
+                              isNumericValue &&
                               visibleValue >
                                 bank.liquidationFee.toNumber() * 100
 
-                            const targetAmountVsBorrows =
-                              targetAmount &&
-                              row.side === 'bid' &&
-                              targetAmount <= notionalDeposits
                             const targetAmountVsDeposits =
-                              targetAmount &&
-                              row.side === 'ask' &&
-                              targetAmount <= notionalBorrows
+                              isBid && targetAmount <= notionalDeposits
+                            const targetAmountVsBorrows =
+                              isAsk && targetAmount <= notionalBorrows
 
                             const targetAmountVsAssetWeightScale =
-                              targetAmount &&
-                              row.side === 'bid' &&
-                              (!uiBorrowWeightScaleStartQuote ||
-                                targetAmount <= uiBorrowWeightScaleStartQuote)
+                              isBid &&
+                              collateralEnabled &&
+                              uiBorrowWeightScaleStartQuote &&
+                              targetAmount <= uiBorrowWeightScaleStartQuote
 
                             const targetAmountVsLiabWeightScale =
-                              targetAmount &&
+                              isAsk &&
+                              collateralEnabled &&
                               uiDepositWeightScaleStartQuote &&
-                              row.side === 'ask' &&
-                              (!uiDepositWeightScaleStartQuote ||
-                                targetAmount <= uiDepositWeightScaleStartQuote)
+                              targetAmount <= uiDepositWeightScaleStartQuote
 
                             return (
                               <Td
@@ -213,23 +221,25 @@ const RiskDashboard: NextPage = () => {
                                   <div className="mr-2 h-full">
                                     {formatValue(visibleValue)}
                                   </div>
-                                  <div className="ml-auto flex w-2">
-                                    {(targetAmountVsBorrows ||
-                                      targetAmountVsDeposits) && (
-                                      <div className="w-2 bg-[#ffff99]"></div>
-                                    )}
-                                    {(targetAmountVsAssetWeightScale ||
-                                      targetAmountVsLiabWeightScale) && (
-                                      <div className="w-2 bg-[#0066ff]"></div>
-                                    )}
-                                  </div>
+                                  {isNumericValue && (
+                                    <div className="ml-auto flex w-4">
+                                      {(targetAmountVsBorrows ||
+                                        targetAmountVsDeposits) && (
+                                        <div className="w-2 bg-[#ffff99]"></div>
+                                      )}
+                                      {(targetAmountVsAssetWeightScale ||
+                                        targetAmountVsLiabWeightScale) && (
+                                        <div className="w-2 bg-[#0066ff]"></div>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
                               </Td>
                             )
                           })}
                           <Td xBorder>
-                            {row.side === 'bid' &&
-                              bank?.maintAssetWeight.isPos() &&
+                            {isBid &&
+                              collateralEnabled &&
                               `${
                                 bank &&
                                 formatValue(
@@ -242,7 +252,7 @@ const RiskDashboard: NextPage = () => {
                                 formatValue(bank.maintAssetWeight.toNumber())
                               }`}
 
-                            {row.side === 'ask' &&
+                            {isAsk &&
                               borrowsEnabled &&
                               `${
                                 bank &&
@@ -271,8 +281,8 @@ sell: target amount <= notional amount of current deposit
 buy: target amount <= notional amount of current borrows
 
 strip color: Blue
-sell: target amount <= ui deposit weight scale start quote 
-buy: target amount <= ui borrows weight scale start quote
+sell: target amount <= ui deposit weight scale start quote && main asset weight > 0
+buy: target amount <= ui borrows weight scale start quote && main asset weight > 0
 `}
                 </pre>
               </div>
