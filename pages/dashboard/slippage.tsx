@@ -12,7 +12,16 @@ import Select from '@components/forms/Select'
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
     props: {
-      ...(await serverSideTranslations(locale, ['common', 'settings'])),
+      ...(await serverSideTranslations(locale, [
+        'common',
+        'notifications',
+        'onboarding',
+        'profile',
+        'search',
+        'settings',
+        'token',
+        'trade',
+      ])),
     },
   }
 }
@@ -22,6 +31,12 @@ const formatValue = (val: string | number | PublicKey) => {
     return val.toString()
   }
   if (typeof val === 'string') {
+    if (val === 'ask') {
+      return 'sell'
+    }
+    if (val === 'bid') {
+      return 'buy'
+    }
     return val
   } else {
     return formatNumericValue(val)
@@ -40,7 +55,6 @@ const RiskDashboard: NextPage = () => {
           'Token',
           'Side',
           ...group.pis.map((x) => formatValue(x.target_amount)),
-          'Borrows',
           'Init/Maint Weight',
         ]),
       ]
@@ -214,16 +228,32 @@ const RiskDashboard: NextPage = () => {
                             )
                           })}
                           <Td xBorder>
-                            {row.side === 'ask' && `${borrowsEnabled}`}
-                          </Td>
-                          <Td xBorder>
                             {row.side === 'bid' &&
+                              bank?.maintAssetWeight.isPos() &&
                               `${
                                 bank &&
-                                formatValue(bank?.initAssetWeight.toNumber())
+                                formatValue(
+                                  bank
+                                    ?.scaledInitAssetWeight(bank.price)
+                                    .toNumber(),
+                                )
                               } / ${
                                 bank &&
                                 formatValue(bank.maintAssetWeight.toNumber())
+                              }`}
+
+                            {row.side === 'ask' &&
+                              borrowsEnabled &&
+                              `${
+                                bank &&
+                                formatValue(
+                                  bank
+                                    ?.scaledInitLiabWeight(bank.price)
+                                    .toNumber(),
+                                )
+                              } / ${
+                                bank &&
+                                formatValue(bank.maintLiabWeight.toNumber())
                               }`}
                           </Td>
                         </TrBody>
@@ -233,16 +263,16 @@ const RiskDashboard: NextPage = () => {
                 </Table>
                 <pre className="mt-6">
                   {`font color: Red  
-ask: liquidation fee < price impact && borrows enabled 
-bid: liquidation fee < price impact && init or main asset weight > 0
+sell: liquidation fee < price impact && init or main asset weight > 0
+buy: liquidation fee < price impact && borrows enabled 
 
 strip color: Yellow
-ask: target amount <= notional amount of current deposit
-bid: target amount <= notional amount of current borrows
+sell: target amount <= notional amount of current deposit
+buy: target amount <= notional amount of current borrows
 
 strip color: Blue
-ask: target amount <= ui deposit weight scale start quote 
-bid: target amount <= ui borrows weight scale start quote
+sell: target amount <= ui deposit weight scale start quote 
+buy: target amount <= ui borrows weight scale start quote
 `}
                 </pre>
               </div>
