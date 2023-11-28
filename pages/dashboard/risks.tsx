@@ -17,7 +17,16 @@ import { AnchorProvider, web3 } from '@coral-xyz/anchor'
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
     props: {
-      ...(await serverSideTranslations(locale, ['common', 'settings'])),
+      ...(await serverSideTranslations(locale, [
+        'common',
+        'notifications',
+        'onboarding',
+        'profile',
+        'search',
+        'settings',
+        'token',
+        'trade',
+      ])),
     },
   }
 }

@@ -917,6 +917,19 @@ export const DashboardNavbar = () => {
         </Link>
       </div>
       <div>
+        <Link href={'/dashboard/slippage'} shallow={true}>
+          <h4
+            className={`${
+              asPath.includes('/dashboard/slippage')
+                ? 'bg-th-bkg-2 text-th-active'
+                : ''
+            } cursor-pointer border-r border-th-bkg-3 px-6 py-4`}
+          >
+            Slippage
+          </h4>
+        </Link>
+      </div>
+      <div>
         <Link
           href={
             '/dashboard/mangoaccount?address=DNjtajTW6PZps3gCerWEPBRvu1vZPEieVEoqXFrXWn3k'
