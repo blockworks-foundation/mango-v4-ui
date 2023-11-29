@@ -86,9 +86,12 @@ const MangoAccountDashboard: NextPage = () => {
               />
               <Button
                 className="flex items-center"
-                onClick={() =>
-                  router.push(`/dashboard/mangoaccount?address=${searchString}`)
-                }
+                onClick={() => {
+                  const encodedSearchString = encodeURIComponent(searchString)
+                  router.push(
+                    `/dashboard/mangoaccount?address=${encodedSearchString}`,
+                  )
+                }}
                 disabled={!searchString}
                 size="large"
               >
