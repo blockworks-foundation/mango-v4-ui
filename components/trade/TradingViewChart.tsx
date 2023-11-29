@@ -80,7 +80,7 @@ const getTriggerOrders = () => {
   const mangoAccount = mangoStore.getState().mangoAccount.current
   if (!mangoAccount) return []
   const triggerOrders = mangoAccount.tokenConditionalSwaps.filter(
-    (tcs) => tcs.hasData,
+    (tcs) => tcs.isConfigured,
   )
   return triggerOrders
 }
@@ -821,7 +821,7 @@ const TradingViewChart = () => {
             const openOrders = account.openOrders
             const triggerOrders =
               account.current?.tokenConditionalSwaps.filter(
-                (tcs) => tcs.hasData,
+                (tcs) => tcs.isConfigured,
               ) || []
             const orderLines = mangoStore.getState().tradingView.orderLines
             tvWidgetRef.current?.onChartReady(() => {

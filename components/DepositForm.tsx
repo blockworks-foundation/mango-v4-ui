@@ -36,10 +36,8 @@ import TokenListButton from './shared/TokenListButton'
 import { ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES, BackButton } from './BorrowForm'
 import TokenLogo from './shared/TokenLogo'
 import SecondaryConnectButton from './shared/SecondaryConnectButton'
-import InlineNotification from './shared/InlineNotification'
 import useTokenPositionsFull from 'hooks/useTokenPositionsFull'
-import TopBarStore from '@store/topBarStore'
-import Link from 'next/link'
+import AccountSlotsFullNotification from './shared/AccountSlotsFullNotification'
 
 interface DepositFormProps {
   onSuccess: () => void
@@ -78,7 +76,6 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
   const [sizePercentage, setSizePercentage] = useState('')
   const [refreshingWalletTokens, setRefreshingWalletTokens] = useState(false)
   const { maxSolDeposit } = useSolBalance()
-  const { setShowSettingsModal } = TopBarStore()
   const banks = useBanksWithBalances('walletBalance')
 
   const bank = useMemo(() => {
@@ -327,16 +324,8 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
           )}
           {tokenPositionsFull ? (
             <div className="mt-4">
-              <InlineNotification
-                type="error"
-                desc={
-                  <>
-                    {t('error-token-positions-full')}{' '}
-                    <Link href={''} onClick={() => setShowSettingsModal(true)}>
-                      {t('manage')}
-                    </Link>
-                  </>
-                }
+              <AccountSlotsFullNotification
+                message={t('error-token-positions-full')}
               />
             </div>
           ) : null}

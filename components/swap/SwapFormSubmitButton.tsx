@@ -7,7 +7,6 @@ import { JupiterV6RouteInfo } from 'types/jupiter'
 import { useTranslation } from 'react-i18next'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useWallet } from '@solana/wallet-adapter-react'
-import TopBarStore from '@store/topBarStore'
 import mangoStore from '@store/mangoStore'
 import useRemainingBorrowsInPeriod from 'hooks/useRemainingBorrowsInPeriod'
 import useTokenPositionsFull from 'hooks/useTokenPositionsFull'
@@ -15,8 +14,8 @@ import { useMemo } from 'react'
 import Button from '@components/shared/Button'
 import Loading from '@components/shared/Loading'
 import SecondaryConnectButton from '@components/shared/SecondaryConnectButton'
-import Link from 'next/link'
 import useIpAddress from 'hooks/useIpAddress'
+import AccountSlotsFullNotification from '@components/shared/AccountSlotsFullNotification'
 dayjs.extend(relativeTime)
 
 const SwapFormSubmitButton = ({
@@ -38,7 +37,6 @@ const SwapFormSubmitButton = ({
   const { mangoAccountAddress } = useMangoAccount()
   const { connected } = useWallet()
   const { ipAllowed, ipCountry } = useIpAddress()
-  const { setShowSettingsModal } = TopBarStore()
   const { inputBank, outputBank } = mangoStore((s) => s.swap)
   const { remainingBorrowsInPeriod, timeToNextPeriod } =
     useRemainingBorrowsInPeriod(true)
@@ -86,16 +84,8 @@ const SwapFormSubmitButton = ({
       )}
       {tokenPositionsFull && !walletSwap ? (
         <div className="pb-4">
-          <InlineNotification
-            type="error"
-            desc={
-              <>
-                {t('error-token-positions-full')}{' '}
-                <Link href={''} onClick={() => setShowSettingsModal(true)}>
-                  {t('manage')}
-                </Link>
-              </>
-            }
+          <AccountSlotsFullNotification
+            message={t('error-token-positions-full')}
           />
         </div>
       ) : null}

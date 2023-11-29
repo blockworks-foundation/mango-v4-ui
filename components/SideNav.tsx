@@ -37,6 +37,7 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { SIDEBAR_COLLAPSE_KEY } from 'utils/constants'
 import { createTransferInstruction } from '@solana/spl-token'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
+//import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
 
 const set = mangoStore.getState().set
 
@@ -48,6 +49,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const themeData = mangoStore((s) => s.themeData)
   const nfts = mangoStore((s) => s.wallet.nfts.data)
   const { mangoAccount } = useMangoAccount()
+  //const { data: isWhiteListed } = useIsWhiteListed()
   const setPrependedGlobalAdditionalInstructions = mangoStore(
     (s) => s.actions.setPrependedGlobalAdditionalInstructions,
   )
@@ -231,6 +233,15 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               title={t('leaderboard')}
               pagePath="/leaderboard"
             />
+            {/* {isWhiteListed ? (
+              <MenuItem
+                active={pathname === '/nft'}
+                collapsed={collapsed}
+                icon={<PhotoIcon className="h-5 w-5" />}
+                title={t('nft-market')}
+                pagePath="/nft"
+              />
+            ) : null} */}
             <ExpandableMenuItem
               collapsed={collapsed}
               icon={<EllipsisHorizontalIcon className="h-5 w-5" />}

@@ -75,6 +75,9 @@ import Select from '@components/forms/Select'
 import TriggerOrderMaxButton from './TriggerOrderMaxButton'
 import TradePriceDifference from '@components/shared/TradePriceDifference'
 import { getTokenBalance } from '@components/swap/TriggerSwapForm'
+import useMangoAccountAccounts from 'hooks/useMangoAccountAccounts'
+import useTokenPositionsFull from 'hooks/useTokenPositionsFull'
+import AccountSlotsFullNotification from '@components/shared/AccountSlotsFullNotification'
 
 dayjs.extend(relativeTime)
 
@@ -109,6 +112,7 @@ type FormErrors = Partial<Record<keyof TradeForm, string>>
 const AdvancedTradeForm = () => {
   const { t } = useTranslation(['common', 'settings', 'swap', 'trade'])
   const { mangoAccount } = useMangoAccount()
+  const { usedSerum3, totalSerum3 } = useMangoAccountAccounts()
   const tradeForm = mangoStore((s) => s.tradeForm)
   const themeData = mangoStore((s) => s.themeData)
   const [placingOrder, setPlacingOrder] = useState(false)
@@ -135,6 +139,15 @@ const AdvancedTradeForm = () => {
   const { remainingBorrowsInPeriod, timeToNextPeriod } =
     useRemainingBorrowsInPeriod()
 
+  // check for available serum account slots if serum market
+  const serumSlotsFull = useMemo(() => {
+    if (!selectedMarket || selectedMarket instanceof PerpMarket) return false
+    const hasSlot = usedSerum3.find(
+      (market) => market.marketIndex === selectedMarket.marketIndex,
+    )
+    return usedSerum3.length >= totalSerum3.length && !hasSlot
+  }, [usedSerum3, totalSerum3, selectedMarket])
+
   const baseBank = useMemo(() => {
     const group = mangoStore.getState().group
     if (!group || !selectedMarket || selectedMarket instanceof PerpMarket)
@@ -142,6 +155,8 @@ const AdvancedTradeForm = () => {
     const bank = group.getFirstBankByTokenIndex(selectedMarket.baseTokenIndex)
     return bank
   }, [selectedMarket])
+
+  const tokenPositionsFull = useTokenPositionsFull([baseBank, quoteBank])
 
   const setTradeType = useCallback(
     (tradeType: OrderTypes | TriggerOrderTypes) => {
@@ -910,14 +925,14 @@ const AdvancedTradeForm = () => {
                     tickDecimals={tickDecimals}
                     step={tradeForm.side === 'buy' ? tickSize : minOrderSize}
                     useMargin={savedCheckboxSettings.margin}
-                    isTriggerOrder
+                    isTriggerOrder={isTriggerOrder}
                   />
                 ) : (
                   <SpotButtonGroup
                     minOrderDecimals={minOrderDecimals}
                     tickDecimals={tickDecimals}
                     useMargin={savedCheckboxSettings.margin}
-                    isTriggerOrder
+                    isTriggerOrder={isTriggerOrder}
                   />
                 )
               ) : tradeFormSizeUi === 'slider' ? (
@@ -1066,6 +1081,20 @@ const AdvancedTradeForm = () => {
               <InlineNotification
                 type="warning"
                 desc={t('trade:price-expect')}
+              />
+            </div>
+          ) : null}
+          {serumSlotsFull && selectedMarket instanceof Serum3Market ? (
+            <div className="mb-4 px-4">
+              <AccountSlotsFullNotification
+                message={t('trade:error-serum-positions-full')}
+              />
+            </div>
+          ) : null}
+          {tokenPositionsFull && selectedMarket instanceof Serum3Market ? (
+            <div className="mb-4 px-4">
+              <AccountSlotsFullNotification
+                message={t('error-token-positions-full')}
               />
             </div>
           ) : null}

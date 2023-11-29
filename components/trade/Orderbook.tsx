@@ -29,9 +29,8 @@ import { OrderbookFeed } from '@blockworks-foundation/mango-feeds'
 import {
   decodeBook,
   decodeBookL2,
-  getCumulativeOrderbookSide,
+  formatOrderbookData,
   getMarket,
-  groupBy,
   updatePerpMarketOnGroup,
 } from 'utils/orderbook'
 import { OrderbookData, OrderbookL2 } from 'types'
@@ -57,7 +56,6 @@ const Orderbook = () => {
   const [grouping, setGrouping] = useState(0.01)
   const [useOrderbookFeed, setUseOrderbookFeed] = useState(false)
   const orderbookElRef = useRef<HTMLDivElement>(null)
-  const [isScrolled, setIsScrolled] = useState(false)
   const [sizeInBase, setSizeInBase] = useState(true)
   // const [useOrderbookFeed, setUseOrderbookFeed] = useState(
   //   localStorage.getItem(USE_ORDERBOOK_FEED_KEY) !== null
@@ -110,9 +108,12 @@ const Orderbook = () => {
     window.addEventListener('resize', verticallyCenterOrderbook)
   }, [verticallyCenterOrderbook])
 
-  const handleScroll = useCallback(() => {
-    setIsScrolled(true)
-  }, [])
+  // center orderbook on market change
+  useEffect(() => {
+    if (orderbookElRef?.current) {
+      verticallyCenterOrderbook()
+    }
+  }, [orderbookElRef, market])
 
   const orderbookFeed = useRef<OrderbookFeed | null>(null)
 
@@ -137,6 +138,33 @@ const Orderbook = () => {
     return asksPk.toString()
   }, [market])
 
+  const usersOpenOrderPrices = useMemo(() => {
+    if (!market) return []
+    const openOrders = mangoStore.getState().mangoAccount.openOrders
+    const marketPk = market.publicKey.toString()
+    const bids2 = mangoStore.getState().selectedMarket.bidsAccount
+    const asks2 = mangoStore.getState().selectedMarket.asksAccount
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+    let usersOpenOrderPrices: number[] = []
+    if (
+      mangoAccount &&
+      bids2 &&
+      asks2 &&
+      bids2 instanceof BookSide &&
+      asks2 instanceof BookSide
+    ) {
+      usersOpenOrderPrices = [...bids2.items(), ...asks2.items()]
+        .filter((order) => order.owner.equals(mangoAccount.publicKey))
+        .map((order) => order.price)
+    } else {
+      usersOpenOrderPrices =
+        marketPk && openOrders[marketPk]?.length
+          ? openOrders[marketPk]?.map((order) => order.price)
+          : []
+    }
+    return usersOpenOrderPrices
+  }, [market])
+
   useEffect(
     () =>
       mangoStore.subscribe(
@@ -147,100 +175,21 @@ const Orderbook = () => {
             market &&
             !isEqual(currentOrderbookData.current, newOrderbook)
           ) {
-            // check if user has open orders so we can highlight them on orderbook
-            const openOrders = mangoStore.getState().mangoAccount.openOrders
-            const marketPk = market.publicKey.toString()
-            const bids2 = mangoStore.getState().selectedMarket.bidsAccount
-            const asks2 = mangoStore.getState().selectedMarket.asksAccount
-            const mangoAccount = mangoStore.getState().mangoAccount.current
-            let usersOpenOrderPrices: number[] = []
-            if (
-              mangoAccount &&
-              bids2 &&
-              asks2 &&
-              bids2 instanceof BookSide &&
-              asks2 instanceof BookSide
-            ) {
-              usersOpenOrderPrices = [...bids2.items(), ...asks2.items()]
-                .filter((order) => order.owner.equals(mangoAccount.publicKey))
-                .map((order) => order.price)
-            } else {
-              usersOpenOrderPrices =
-                marketPk && openOrders[marketPk]?.length
-                  ? openOrders[marketPk]?.map((order) => order.price)
-                  : []
-            }
-
             // updated orderbook data
-            const bids =
-              groupBy(newOrderbook?.bids, market, grouping, true) || []
-            const asks =
-              groupBy(newOrderbook?.asks, market, grouping, false) || []
-
-            const sum = (total: number, [, size]: number[], index: number) =>
-              index < depth ? total + size : total
-            const totalSize = bids.reduce(sum, 0) + asks.reduce(sum, 0)
-
-            const maxSize =
-              Math.max(
-                ...bids.map((b: number[]) => {
-                  return b[1]
-                }),
-              ) +
-              Math.max(
-                ...asks.map((a: number[]) => {
-                  return a[1]
-                }),
-              )
-            const isGrouped = grouping !== market.tickSize
-            const bidsToDisplay = getCumulativeOrderbookSide(
-              bids,
-              totalSize,
-              maxSize,
+            const updatedOrderbook = formatOrderbookData(
+              newOrderbook?.bids,
+              newOrderbook?.asks,
               depth,
-              usersOpenOrderPrices,
+              market,
               grouping,
-              isGrouped,
-            )
-            const asksToDisplay = getCumulativeOrderbookSide(
-              asks,
-              totalSize,
-              maxSize,
-              depth,
               usersOpenOrderPrices,
-              grouping,
-              isGrouped,
             )
-
             currentOrderbookData.current = newOrderbook
-            if (bidsToDisplay[0] || asksToDisplay[0]) {
-              const bid = bidsToDisplay[0]?.price
-              const ask = asksToDisplay[0]?.price
-              let spread = 0,
-                spreadPercentage = 0
-              if (bid && ask) {
-                spread = parseFloat(
-                  (ask - bid).toFixed(getDecimalCount(market.tickSize)),
-                )
-                spreadPercentage = (spread / ask) * 100
-              }
-
-              setOrderbookData({
-                bids: bidsToDisplay,
-                asks: asksToDisplay.reverse(),
-                spread,
-                spreadPercentage,
-              })
-              if (!isScrolled) {
-                verticallyCenterOrderbook()
-              }
-            } else {
-              setOrderbookData(null)
-            }
+            setOrderbookData(updatedOrderbook)
           }
         },
       ),
-    [depth, grouping, market],
+    [depth, grouping, market, usersOpenOrderPrices],
   )
 
   // subscribe to the bids and asks orderbook accounts
@@ -469,9 +418,24 @@ const Orderbook = () => {
     })
   }, [bidAccountAddress])
 
-  const onGroupSizeChange = useCallback((groupSize: number) => {
-    setGrouping(groupSize)
-  }, [])
+  const onGroupSizeChange = useCallback(
+    (groupSize: number) => {
+      setGrouping(groupSize)
+      if (market) {
+        const updatedOrderbook = formatOrderbookData(
+          currentOrderbookData?.current?.bids,
+          currentOrderbookData?.current?.asks,
+          depth,
+          market,
+          groupSize,
+          usersOpenOrderPrices,
+        )
+        setOrderbookData(updatedOrderbook)
+        verticallyCenterOrderbook()
+      }
+    },
+    [currentOrderbookData, depth, market, usersOpenOrderPrices],
+  )
 
   return (
     <div className="flex h-full flex-col">
@@ -544,7 +508,6 @@ const Orderbook = () => {
       <div
         className="hide-scroll relative h-full overflow-y-scroll"
         ref={orderbookElRef}
-        onScroll={handleScroll}
       >
         {depthArray.map((_x, idx) => {
           let index = idx

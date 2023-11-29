@@ -79,6 +79,8 @@ export const MANGO_MINTS_BANNER_KEY = 'mangoMintsBanner-0.1'
 
 export const SEND_TELEMETRY_KEY = 'sendTelemetry-0.1'
 
+export const SLOTS_WARNING_KEY = 'tokenSlotsWarning-0.1'
+
 // Unused
 export const PROFILE_CATEGORIES = [
   'borrower',
@@ -151,6 +153,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   msol: true,
   neon: true,
   orca: true,
+  pyth: true,
   ray: true,
   render: true,
   rlb: true,
@@ -165,6 +168,10 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
 }
 
 export const DEFAULT_FAVORITE_MKTS = ['SOL-PERP', 'ETH-PERP', 'BTC-PERP']
+
+export const JUPITER_REFERRAL_PK = new PublicKey(
+  'EV4qhLE2yPKdUPdQ74EWJUn21xT3eGQxG3DRR1g9NNFc',
+)
 
 export const WHITE_LIST_API = 'https://api.mngo.cloud/whitelist/v1/'
 export const DAILY_SECONDS = 86400

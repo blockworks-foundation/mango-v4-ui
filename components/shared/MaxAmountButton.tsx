@@ -11,7 +11,7 @@ const MaxAmountButton = ({
   value,
 }: {
   className?: string
-  decimals: number
+  decimals?: number
   disabled?: boolean
   label: string
   onClick: () => void

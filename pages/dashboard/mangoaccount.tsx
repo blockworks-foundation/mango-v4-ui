@@ -19,7 +19,16 @@ import { MagnifyingGlassIcon } from '@heroicons/react/20/solid'
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
     props: {
-      ...(await serverSideTranslations(locale, ['common', 'settings'])),
+      ...(await serverSideTranslations(locale, [
+        'common',
+        'notifications',
+        'onboarding',
+        'profile',
+        'search',
+        'settings',
+        'token',
+        'trade',
+      ])),
     },
   }
 }
@@ -164,6 +173,22 @@ const MangoAccountDashboard: NextPage = () => {
               <KeyValuePair
                 label="Active Perp Position Count"
                 value={mangoAccount.perpActive().length}
+              />
+              <KeyValuePair
+                label="Token Position Count"
+                value={mangoAccount.tokens.length}
+              />
+              <KeyValuePair
+                label="Active Token Position Count"
+                value={mangoAccount.tokensActive().length}
+              />
+              <KeyValuePair
+                label="Serum OO Count"
+                value={mangoAccount.serum3.length}
+              />
+              <KeyValuePair
+                label="Active Serum OO Count"
+                value={mangoAccount.serum3Active().length}
               />
 
               <h3 className="mt-4">Token Active Positions</h3>

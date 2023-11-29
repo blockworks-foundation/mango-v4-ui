@@ -55,6 +55,7 @@
     "tooltip-favorite-swap-add": "将币对加入收藏夹",
     "tooltip-favorite-swap-remove": "从收藏夹移除币对",
     "tooltip-wallet-swap": "启用后，换币会在你的钱包中执行。 停用后，换币会在你的Mango帐户中执行。",
+    "tooltip-price-chart-source": "Price history by birdeye",
     "trigger-beta": "触发订单还在开发中。请小心一点。",
     "use-margin": "允许杠杆",
     "wallet-swap": "钱包换币",

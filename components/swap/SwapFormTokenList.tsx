@@ -192,26 +192,25 @@ const SwapFormTokenList = ({
   }, [onClose])
 
   const tokenInfos: TokenInfoWithAmounts[] = useMemo(() => {
-    if (
-      !mangoTokens.length ||
-      !group ||
-      !mangoAccount ||
-      !outputBank ||
-      !inputBank
-    )
-      return []
+    if (!mangoTokens.length || !group || !outputBank || !inputBank) return []
     if (type === 'input') {
       const filteredSortedTokens = mangoTokens
         .map((token) => {
           const tokenPk = new PublicKey(token.address)
           const tokenBank = group.getFirstBankByMint(tokenPk)
-          const max = getTokenInMax(
-            mangoAccount,
-            tokenPk,
-            outputBank.mint,
-            group,
-            useMargin,
-          )
+          const max = mangoAccount
+            ? getTokenInMax(
+                mangoAccount,
+                tokenPk,
+                outputBank.mint,
+                group,
+                useMargin,
+              )
+            : {
+                amount: new Decimal(0),
+                amountWithBorrow: new Decimal(0),
+                decimals: 0,
+              }
           const price = tokenBank.uiPrice
           return { ...token, ...max, price }
         })
@@ -230,7 +229,9 @@ const SwapFormTokenList = ({
           const tokenBank = group.getFirstBankByMint(
             new PublicKey(token.address),
           )
-          const uiAmount = mangoAccount.getTokenBalanceUi(tokenBank)
+          const uiAmount = mangoAccount
+            ? mangoAccount.getTokenBalanceUi(tokenBank)
+            : 0
           const uiDollarValue = uiAmount * tokenBank.uiPrice
           return {
             ...token,

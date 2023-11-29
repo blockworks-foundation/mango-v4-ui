@@ -10,6 +10,7 @@ import TabUnderline from '@components/shared/TabUnderline'
 import SellNftModal from '@components/nftMarket/SellNftModal'
 import MyBidsModal from '@components/nftMarket/MyBidsModal'
 import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
+import { useTranslation } from 'react-i18next'
 
 const LISTINGS = 'Listings'
 const BIDS_WITHOUT_LISTINGS = 'Offers'
@@ -34,7 +35,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
 }
 
 const Market: NextPage = () => {
-  // const { t } = useTranslation('nft-market')
+  const { t } = useTranslation(['common', 'nft-market'])
   useMetaplex()
   const [activeTab, setActiveTab] = useState(LISTINGS)
   const [sellNftModal, setSellNftModal] = useState(false)
@@ -67,7 +68,7 @@ const Market: NextPage = () => {
     <>
       <div className="mx-auto flex max-w-[1140px] flex-col px-6 pb-16">
         <div className="flex items-center justify-between pb-6 pt-8">
-          <h1>NFT Market</h1>
+          <h1>{t('nft-market')}</h1>
           <div className="flex space-x-2">
             <Button onClick={() => setSellNftModal(true)}>
               Sell your NFTs

@@ -216,7 +216,7 @@ const MangoAccountSizeModal = ({ isOpen, onClose }: ModalProps) => {
             {t('settings:max-all')}
           </LinkButton> */}
         <p className="mb-4 text-center text-xs">
-          {t('settings:account-slots-desc')}
+          {t('settings:increase-account-slots-desc')}
         </p>
         <div className="mb-4">
           <AccountSizeFormInput

@@ -55,6 +55,7 @@
     "tooltip-favorite-swap-add": "將幣對加入收藏夾",
     "tooltip-favorite-swap-remove": "從收藏夾移除幣對",
     "tooltip-wallet-swap": "啟用後，換幣會在你的錢包中執行。 停用後，換幣會在你的Mango帳戶中執行。",
+    "tooltip-price-chart-source": "Price history by birdeye",
     "trigger-beta": "觸發訂單還在開發中。請小心一點。",
     "use-margin": "允許槓桿",
     "wallet-swap": "錢包換幣",

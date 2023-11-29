@@ -196,10 +196,10 @@ const Season = ({
             </div>
           </div>
           <h1 className="my-2 text-center font-rewards text-5xl lg:text-6xl">
-            Mango Mints
+            Trade. Win. Repeat.
           </h1>
-          <p className="mb-6 max-w-2xl text-center text-base leading-snug lg:text-xl">
-            Earn points by performing actions on Mango. More points equals more
+          <p className="mb-6 max-w-2xl text-center text-base leading-snug text-th-fgd-2 lg:text-xl">
+            Earn rewards every week by trading on Mango. More points equals more
             chances to win big.
           </p>
           <button

@@ -17,6 +17,7 @@ import {
   ACCEPT_TERMS_KEY,
   SECONDS,
   SIDEBAR_COLLAPSE_KEY,
+  SLOTS_WARNING_KEY,
 } from '../utils/constants'
 import { useWallet } from '@solana/wallet-adapter-react'
 import SuccessParticles from './shared/SuccessParticles'
@@ -30,6 +31,12 @@ import { useTheme } from 'next-themes'
 import PromoBanner from './rewards/PromoBanner'
 import { useRouter } from 'next/router'
 import StatusBar from './StatusBar'
+import useMangoAccountAccounts from 'hooks/useMangoAccountAccounts'
+import TokenSlotsWarningModal, {
+  WARNING_LEVEL,
+} from './modals/TokenSlotsWarningModal'
+import useMangoAccount from 'hooks/useMangoAccount'
+import useUnownedAccount from 'hooks/useUnownedAccount'
 
 export const sideBarAnimationDuration = 300
 const termsLastUpdated = 1679441610978
@@ -41,7 +48,38 @@ const Layout = ({ children }: { children: ReactNode }) => {
     SIDEBAR_COLLAPSE_KEY,
     false,
   )
+  const [hasSeenSlotsWarning, setHasSeenSlotsWarning] = useLocalStorageState(
+    SLOTS_WARNING_KEY,
+    undefined,
+  )
   const { asPath } = useRouter()
+  const { usedTokens, totalTokens } = useMangoAccountAccounts()
+  const { mangoAccountAddress } = useMangoAccount()
+  const { isUnownedAccount } = useUnownedAccount()
+
+  const showSlotsNearlyFullWarning = useMemo(() => {
+    const slotsAvailable = totalTokens.length - usedTokens.length
+    if (
+      hasSeenSlotsWarning === 0 ||
+      !slotsAvailable ||
+      slotsAvailable > 1 ||
+      isUnownedAccount
+    )
+      return false
+    return true
+  }, [hasSeenSlotsWarning, usedTokens, totalTokens])
+
+  const showSlotsFullWarning = useMemo(() => {
+    const slotsAvailable = totalTokens.length - usedTokens.length
+    if (
+      hasSeenSlotsWarning === 1 ||
+      slotsAvailable ||
+      !mangoAccountAddress ||
+      isUnownedAccount
+    )
+      return false
+    return true
+  }, [hasSeenSlotsWarning, usedTokens, totalTokens, mangoAccountAddress])
 
   useEffect(() => {
     const animationFrames = 15
@@ -132,6 +170,20 @@ const Layout = ({ children }: { children: ReactNode }) => {
         </div>
         <DeployRefreshManager />
         <TermsOfUse />
+        {showSlotsNearlyFullWarning ? (
+          <TokenSlotsWarningModal
+            isOpen={showSlotsNearlyFullWarning}
+            onClose={() => setHasSeenSlotsWarning(WARNING_LEVEL.NEARLY_FULL)}
+            warningLevel={WARNING_LEVEL.NEARLY_FULL}
+          />
+        ) : null}
+        {showSlotsFullWarning ? (
+          <TokenSlotsWarningModal
+            isOpen={showSlotsFullWarning}
+            onClose={() => setHasSeenSlotsWarning(WARNING_LEVEL.FULL)}
+            warningLevel={WARNING_LEVEL.FULL}
+          />
+        ) : null}
       </div>
     </main>
   )

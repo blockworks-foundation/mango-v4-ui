@@ -5,7 +5,11 @@ import { ChangeEvent, useCallback, useMemo, useState } from 'react'
 import mangoStore, { CLUSTER } from '@store/mangoStore'
 import { Token } from 'types/jupiter'
 import { handleGetRoutes } from '@components/swap/useQuoteRoutes'
-import { JUPITER_PRICE_API_MAINNET, USDC_MINT } from 'utils/constants'
+import {
+  JUPITER_PRICE_API_MAINNET,
+  JUPITER_REFERRAL_PK,
+  USDC_MINT,
+} from 'utils/constants'
 import { AccountMeta, PublicKey, SYSVAR_RENT_PUBKEY } from '@solana/web3.js'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { OPENBOOK_PROGRAM_ID, toNative } from '@blockworks-foundation/mango-v4'
@@ -47,6 +51,8 @@ import {
   calculateMarketTradingParams,
   LISTING_PRESETS_PYTH,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
+import Checkbox from '@components/forms/Checkbox'
+import { ReferralProvider } from '@jup-ag/referral-sdk'
 
 type FormErrors = Partial<Record<keyof TokenListForm, string>>
 
@@ -63,6 +69,7 @@ type TokenListForm = {
   marketName: string
   proposalTitle: string
   proposalDescription: string
+  listForSwapOnly: boolean
 }
 
 const defaultTokenListFormValues: TokenListForm = {
@@ -78,6 +85,7 @@ const defaultTokenListFormValues: TokenListForm = {
   marketName: '',
   proposalTitle: '',
   proposalDescription: '',
+  listForSwapOnly: false,
 }
 
 const TWENTY_K_USDC_BASE = '20000000000'
@@ -173,7 +181,10 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       : {}
   }, [listingTier])
 
-  const handleSetAdvForm = (propertyName: string, value: string | number) => {
+  const handleSetAdvForm = (
+    propertyName: string,
+    value: string | number | boolean,
+  ) => {
     setFormErrors({})
     setAdvForm({ ...advForm, [propertyName]: value })
   }
@@ -310,9 +321,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           (x) => x?.priceImpactPct && x?.priceImpactPct * 100 < 1,
         )
         const tier =
-          indexForTierFromSwaps > -1
-            ? TIERS[indexForTierFromSwaps]
-            : 'UNTRUSTED'
+          indexForTierFromSwaps > -1 ? TIERS[indexForTierFromSwaps] : 'SHIT'
         setLiqudityTier(tier)
         setPriceImpact(midTierCheck ? midTierCheck.priceImpactPct * 100 : 100)
         handleGetPoolParams(tier, tokenMint)
@@ -323,7 +332,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           description: `${e}`,
           type: 'error',
         })
-        return 'UNTRUSTED'
+        return 'SHIT'
       }
     },
     [t, handleGetRoutesWithFixedArgs],
@@ -350,11 +359,14 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
 
     const swapInfos = swaps?.bestRoute?.routePlan?.map((x) => x.swapInfo)
     const orcaPool = swapInfos?.find(
-      (x) => x.label?.toLowerCase().includes('orca'),
+      (x) =>
+        x.label?.toLowerCase().includes('orca') ||
+        x.label?.toLowerCase().includes('whirlpool'),
     )
     const raydiumPool = swapInfos?.find(
       (x) => x.label?.toLowerCase().includes('raydium'),
     )
+
     setOrcaPoolAddress(orcaPool?.ammKey || '')
     setRaydiumPoolAddress(raydiumPool?.ammKey || '')
   }
@@ -410,6 +422,9 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
 
       for (const key of pubkeyFields) {
         if (!tryGetPubKey(advForm[key] as string)) {
+          if (advForm.listForSwapOnly && key === 'openBookMarketExternalPk') {
+            continue
+          }
           invalidFields[key] = t('invalid-pk')
         }
       }
@@ -448,13 +463,10 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       })
       return
     }
+    const mint = new PublicKey(advForm.mintPk)
 
     const [mintInfoPk] = PublicKey.findProgramAddressSync(
-      [
-        Buffer.from('MintInfo'),
-        group!.publicKey.toBuffer(),
-        new PublicKey(advForm.mintPk).toBuffer(),
-      ],
+      [Buffer.from('MintInfo'), group!.publicKey.toBuffer(), mint.toBuffer()],
       client.programId,
     )
 
@@ -500,7 +512,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         .accounts({
           admin: MANGO_DAO_WALLET,
           group: group!.publicKey,
-          mint: new PublicKey(advForm.mintPk),
+          mint: mint,
           oracle: new PublicKey(advForm.oraclePk),
           payer: MANGO_DAO_WALLET,
           rent: SYSVAR_RENT_PUBKEY,
@@ -559,7 +571,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       const trustlessIx = await client!.program.methods
         .tokenRegisterTrustless(Number(advForm.tokenIndex), advForm.name)
         .accounts({
-          mint: new PublicKey(advForm.mintPk),
+          mint: mint,
           payer: MANGO_DAO_FAST_LISTING_WALLET,
           rent: SYSVAR_RENT_PUBKEY,
           oracle: new PublicKey(advForm.oraclePk),
@@ -571,20 +583,36 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       proposalTx.push(trustlessIx)
     }
 
-    const registerMarketix = await client!.program.methods
-      .serum3RegisterMarket(Number(advForm.marketIndex), advForm.marketName)
-      .accounts({
-        group: group!.publicKey,
-        admin: MANGO_DAO_WALLET,
-        serumProgram: new PublicKey(advForm.openBookProgram),
-        serumMarketExternal: new PublicKey(advForm.openBookMarketExternalPk),
-        baseBank: new PublicKey(advForm.baseBankPk),
-        quoteBank: new PublicKey(advForm.quoteBankPk),
-        payer: MANGO_DAO_WALLET,
-      })
-      .instruction()
-    if (listingTier !== 'UNTRUSTED') {
+    if (listingTier !== 'UNTRUSTED' && !advForm.listForSwapOnly) {
+      const registerMarketix = await client!.program.methods
+        .serum3RegisterMarket(Number(advForm.marketIndex), advForm.marketName)
+        .accounts({
+          group: group!.publicKey,
+          admin: MANGO_DAO_WALLET,
+          serumProgram: new PublicKey(advForm.openBookProgram),
+          serumMarketExternal: new PublicKey(advForm.openBookMarketExternalPk),
+          baseBank: new PublicKey(advForm.baseBankPk),
+          quoteBank: new PublicKey(advForm.quoteBankPk),
+          payer: MANGO_DAO_WALLET,
+        })
+        .instruction()
       proposalTx.push(registerMarketix)
+    }
+    const rp = new ReferralProvider(connection)
+
+    const tx = await rp.initializeReferralTokenAccount({
+      payerPubKey:
+        listingTier === 'UNTRUSTED'
+          ? MANGO_DAO_FAST_LISTING_WALLET
+          : MANGO_DAO_WALLET,
+      referralAccountPubKey: JUPITER_REFERRAL_PK,
+      mint: mint,
+    })
+    const isExistingAccount =
+      (await connection.getBalance(tx.referralTokenAccountPubKey)) > 1
+
+    if (!isExistingAccount) {
+      proposalTx.push(...tx.tx.instructions)
     }
 
     const walletSigner = wallet as never
@@ -806,22 +834,46 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                               </div>
                             )}
                           </div>
+                          {!advForm.listForSwapOnly && (
+                            <div>
+                              <Label text={t('openbook-market-external')} />
+                              <Input
+                                hasError={
+                                  formErrors.openBookMarketExternalPk !==
+                                  undefined
+                                }
+                                type="text"
+                                value={advForm.openBookMarketExternalPk.toString()}
+                                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                  handleSetAdvForm(
+                                    'openBookMarketExternalPk',
+                                    e.target.value,
+                                  )
+                                }
+                              />
+                              {formErrors.openBookMarketExternalPk && (
+                                <div className="mt-1.5 flex items-center space-x-1">
+                                  <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
+                                  <p className="mb-0 text-xs text-th-down">
+                                    {formErrors.openBookMarketExternalPk}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          )}
                           <div>
-                            <Label text={t('openbook-market-external')} />
-                            <Input
-                              hasError={
-                                formErrors.openBookMarketExternalPk !==
-                                undefined
-                              }
-                              type="text"
-                              value={advForm.openBookMarketExternalPk.toString()}
+                            <Label text={t('list-for-swap-only')} />
+                            <Checkbox
+                              checked={advForm.listForSwapOnly}
                               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                                 handleSetAdvForm(
-                                  'openBookMarketExternalPk',
-                                  e.target.value,
+                                  'listForSwapOnly',
+                                  e.target.checked,
                                 )
                               }
-                            />
+                            >
+                              <></>
+                            </Checkbox>
                             {formErrors.openBookMarketExternalPk && (
                               <div className="mt-1.5 flex items-center space-x-1">
                                 <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
@@ -966,6 +1018,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
               </div>
               <ol className="list-decimal pl-4">
                 {!advForm.openBookMarketExternalPk &&
+                !advForm.listForSwapOnly &&
                 listingTier &&
                 !loadingListingParams ? (
                   <li className="pl-2">
@@ -1000,7 +1053,8 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                 {!advForm.oraclePk && listingTier && !loadingListingParams ? (
                   <li
                     className={`my-4 pl-2 ${
-                      !advForm.openBookMarketExternalPk
+                      !advForm.openBookMarketExternalPk &&
+                      !advForm.listForSwapOnly
                         ? 'disabled pointer-events-none opacity-60'
                         : ''
                     }`}
@@ -1043,7 +1097,8 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                       loadingRealm ||
                       loadingVoter ||
                       (!advForm.openBookMarketExternalPk &&
-                        !loadingListingParams)
+                        !loadingListingParams &&
+                        !advForm.listForSwapOnly)
                     }
                     size="large"
                   >

@@ -12,7 +12,7 @@ const AccountOrders = () => {
 
   const tabsWithCount: [string, number][] = useMemo(() => {
     const stopOrdersCount =
-      mangoAccount?.tokenConditionalSwaps.filter((tcs) => tcs.hasData)
+      mangoAccount?.tokenConditionalSwaps.filter((tcs) => tcs.isConfigured)
         ?.length || 0
     const tabs: [string, number][] = [
       ['trade:limit', Object.values(openOrders).flat().length],

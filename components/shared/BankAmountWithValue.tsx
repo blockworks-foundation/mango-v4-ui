@@ -5,6 +5,7 @@ import FormatNumericValue from './FormatNumericValue'
 const BankAmountWithValue = ({
   amount = 0,
   bank,
+  decimals,
   fixDecimals = true,
   stacked,
   value,
@@ -12,6 +13,7 @@ const BankAmountWithValue = ({
 }: {
   amount: Decimal | number | string
   bank: Bank
+  decimals?: number
   fixDecimals?: boolean
   stacked?: boolean
   value?: number
@@ -22,12 +24,18 @@ const BankAmountWithValue = ({
       <>
         <FormatNumericValue
           value={amount}
-          decimals={amount && fixDecimals ? bank.mintDecimals : undefined}
+          decimals={
+            decimals
+              ? decimals
+              : amount && fixDecimals
+              ? bank.mintDecimals
+              : undefined
+          }
         />{' '}
         <span className={`text-th-fgd-4 ${stacked ? 'block' : ''}`}>
           <FormatNumericValue
             value={value ? value : Number(amount) * bank.uiPrice}
-            decimals={fixDecimals ? 2 : undefined}
+            decimals={decimals || fixDecimals ? 2 : undefined}
             isUsd={true}
             isPrivate={isPrivate}
           />

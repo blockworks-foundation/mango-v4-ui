@@ -17,6 +17,7 @@ import Switch from '@components/forms/Switch'
 import NotificationCookieStore from '@store/notificationCookieStore'
 import { usePlausible } from 'next-plausible'
 import { TelemetryEvents } from 'utils/telemetry'
+import { waitForSlot } from 'utils/network'
 
 const getNextAccountNumber = (accounts: MangoAccount[]): number => {
   if (accounts.length > 1) {
@@ -51,13 +52,15 @@ const CreateAccountForm = ({
   const handleNewAccount = async () => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
-    const mangoAccounts = mangoStore.getState().mangoAccounts
+    const existingMangoAccts = mangoStore.getState().mangoAccounts
     const set = mangoStore.getState().set
+    const connection = mangoStore.getState().connection
+
     if (!group || !walletContext.wallet) return
     setLoading(true)
     try {
-      const newAccountNum = getNextAccountNumber(mangoAccounts)
-      const { signature: tx } = await client.createMangoAccount(
+      const newAccountNum = getNextAccountNumber(existingMangoAccts)
+      const { signature: tx, slot } = await client.createMangoAccount(
         group,
         newAccountNum,
         name || `Account ${newAccountNum + 1}`,
@@ -71,6 +74,8 @@ const CreateAccountForm = ({
           createSolanaMessage(walletContext, setCookie)
         }
         const pk = walletContext.wallet.adapter.publicKey
+
+        await waitForSlot(connection, slot)
         const mangoAccounts = await client.getMangoAccountsForOwner(group, pk!)
         const reloadedMangoAccounts = await Promise.all(
           mangoAccounts.map((ma) => ma.reloadSerum3OpenOrders(client)),
@@ -81,6 +86,7 @@ const CreateAccountForm = ({
         if (newAccount) {
           set((s) => {
             s.mangoAccount.current = newAccount
+            s.mangoAccount.lastSlot = slot
             s.mangoAccounts = reloadedMangoAccounts
           })
         }
@@ -113,7 +119,7 @@ const CreateAccountForm = ({
   }
 
   return loading ? (
-    <div className="flex h-full flex-col items-center justify-between">
+    <div className="flex flex-1 flex-col items-center justify-center">
       <BounceLoader loadingMessage={t('creating-account')} />
     </div>
   ) : (

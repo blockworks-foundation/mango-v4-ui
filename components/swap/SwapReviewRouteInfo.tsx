@@ -181,17 +181,19 @@ export const fetchJupiterWalletSwapTransaction = async (
   selectedRoute: JupiterV6RouteInfo,
   userPublicKey: PublicKey,
   slippage: number,
+  inputMint: PublicKey,
   outputMint: PublicKey,
 ): Promise<VersionedTransaction> => {
   // TODO: replace by something that belongs to the DAO
   // https://referral.jup.ag/
   // EV4qhLE2yPKdUPdQ74EWJUn21xT3eGQxG3DRR1g9NNFc belongs to 8SSLjXBEVk9nesbhi9UMCA32uijbVBUqWoKPPQPTekzt
   // for now
+  const feeMint = selectedRoute.swapMode === 'ExactIn' ? outputMint : inputMint
   const feeAccountPdas = await PublicKey.findProgramAddressSync(
     [
       Buffer.from('referral_ata'),
       new PublicKey('EV4qhLE2yPKdUPdQ74EWJUn21xT3eGQxG3DRR1g9NNFc').toBuffer(),
-      outputMint.toBuffer(),
+      feeMint.toBuffer(),
     ],
     new PublicKey('REFER4ZgmyYx9c6He5XfaTMiGfdLwRnkV4RPp9t9iF3'),
   )
@@ -214,8 +216,11 @@ export const fetchJupiterWalletSwapTransaction = async (
         // https://station.jup.ag/docs/additional-topics/referral-program
         // https://github.com/TeamRaccoons/referral
         // https://github.com/TeamRaccoons/referral/blob/main/packages/sdk/src/referral.ts
-        platformFeeBps: 1,
-        feeAccount,
+        ...(feeMint.toBase58() ===
+        'HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3'
+          ? {}
+          : { platformFeeBps: 1, feeAccount }),
+
         // limits
       }),
     })
@@ -272,8 +277,9 @@ export const fetchJupiterTransaction = async (
         // https://station.jup.ag/docs/additional-topics/referral-program
         // https://github.com/TeamRaccoons/referral
         // https://github.com/TeamRaccoons/referral/blob/main/packages/sdk/src/referral.ts
-        platformFeeBps: 1,
-        feeAccount,
+        ...([''].includes(feeMint.toBase58())
+          ? {}
+          : { platformFeeBps: 1, feeAccount }),
       }),
     })
   ).json()
@@ -414,6 +420,7 @@ const SwapReviewRouteInfo = ({
         selectedRoute,
         wallet.publicKey,
         slippage,
+        inputBank.mint,
         outputBank.mint,
       )
 
@@ -620,7 +627,7 @@ const SwapReviewRouteInfo = ({
     outputTokenInfo &&
     amountOut ? (
     <Transition
-      className="absolute right-0 top-0 z-10 h-full w-full bg-th-bkg-1 pb-0"
+      className="absolute right-0 top-0 z-20 h-full w-full bg-th-bkg-1 pb-0"
       show={show}
       enter="transition ease-in duration-300"
       enterFrom="-translate-x-full"
