@@ -36,6 +36,7 @@ import TokenSlotsWarningModal, {
   WARNING_LEVEL,
 } from './modals/TokenSlotsWarningModal'
 import useMangoAccount from 'hooks/useMangoAccount'
+import useUnownedAccount from 'hooks/useUnownedAccount'
 
 export const sideBarAnimationDuration = 300
 const termsLastUpdated = 1679441610978
@@ -53,21 +54,32 @@ const Layout = ({ children }: { children: ReactNode }) => {
   )
   const { asPath } = useRouter()
   const { usedTokens, totalTokens } = useMangoAccountAccounts()
-  const { initialLoad: loadingMangoAccount } = useMangoAccount()
+  const { mangoAccountAddress } = useMangoAccount()
+  const { isUnownedAccount } = useUnownedAccount()
 
   const showSlotsNearlyFullWarning = useMemo(() => {
     const slotsAvailable = totalTokens.length - usedTokens.length
-    if (hasSeenSlotsWarning === 0 || !slotsAvailable || slotsAvailable > 1)
+    if (
+      hasSeenSlotsWarning === 0 ||
+      !slotsAvailable ||
+      slotsAvailable > 1 ||
+      isUnownedAccount
+    )
       return false
     return true
   }, [hasSeenSlotsWarning, usedTokens, totalTokens])
 
   const showSlotsFullWarning = useMemo(() => {
     const slotsAvailable = totalTokens.length - usedTokens.length
-    if (hasSeenSlotsWarning === 1 || slotsAvailable || loadingMangoAccount)
+    if (
+      hasSeenSlotsWarning === 1 ||
+      slotsAvailable ||
+      !mangoAccountAddress ||
+      isUnownedAccount
+    )
       return false
     return true
-  }, [hasSeenSlotsWarning, usedTokens, totalTokens, loadingMangoAccount])
+  }, [hasSeenSlotsWarning, usedTokens, totalTokens, mangoAccountAddress])
 
   useEffect(() => {
     const animationFrames = 15
