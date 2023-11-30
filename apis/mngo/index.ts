@@ -39,10 +39,32 @@ export const processTokenStatsData = (
     mangoStatsMap[date].feesCollected += c.collected_fees * uiPrice
   })
 
+  // add most recent value
+  for (const banks of group.banksMapByTokenIndex.values()) {
+    const bank = banks[0]
+    const now = new Date().toISOString()
+
+    let tokenStatsItem: TokenStatsItem = {
+      borrow_apr: 0,
+      borrow_rate: bank.getBorrowRateUi(),
+      collected_fees: 0,
+      date_hour: now,
+      deposit_apr: 0,
+      deposit_rate: bank.getDepositRateUi(),
+      mango_group: bank.group.toBase58(),
+      price: bank.uiPrice,
+      symbol: bank.name,
+      token_index: bank.tokenIndex,
+      total_borrows: bank.uiBorrows(),
+      total_deposits: bank.uiDeposits(),
+    }
+    data.push(tokenStatsItem)
+  }
+
   const mangoStats: MangoTokenStatsItem[] = Object.values(mangoStatsMap)
   mangoStats.sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
   )
 
-  return mangoStats
+  return [data, mangoStats]
 }
