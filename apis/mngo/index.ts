@@ -1,4 +1,4 @@
-import { Group } from '@blockworks-foundation/mango-v4'
+import { Group, I64_MAX_BN } from '@blockworks-foundation/mango-v4'
 import { MangoTokenStatsItem, TokenStatsItem } from 'types'
 import { MANGO_DATA_API_URL } from 'utils/constants'
 
@@ -39,18 +39,26 @@ export const processTokenStatsData = (
     mangoStatsMap[date].feesCollected += c.collected_fees * uiPrice
   })
 
-  // add most recent value
+  // add most recent value, using most recent datapoint to patch difficult to compute stats
   for (const banks of group.banksMapByTokenIndex.values()) {
     const bank = banks[0]
     const now = new Date().toISOString()
-
+    const filtered = data.filter(
+      (x: TokenStatsItem) => bank.tokenIndex === x?.token_index,
+    )
+    if (!filtered || filtered.length === 0) {
+      continue
+    }
+    const previous = filtered.reduce((max, cur) =>
+      max.date_hour > cur.date_hour ? max : cur,
+    )
     let tokenStatsItem: TokenStatsItem = {
-      borrow_apr: 0,
-      borrow_rate: bank.getBorrowRateUi(),
-      collected_fees: 0,
+      borrow_apr: previous.borrow_apr,
+      borrow_rate: bank.getBorrowRateUi() / 100,
+      collected_fees: previous.collected_fees,
       date_hour: now,
-      deposit_apr: 0,
-      deposit_rate: bank.getDepositRateUi(),
+      deposit_apr: previous.deposit_apr,
+      deposit_rate: bank.getDepositRateUi() / 100,
       mango_group: bank.group.toBase58(),
       price: bank.uiPrice,
       symbol: bank.name,

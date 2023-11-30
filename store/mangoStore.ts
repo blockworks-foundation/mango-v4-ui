@@ -792,6 +792,7 @@ const mangoStore = create<MangoStore>()(
             set((state) => {
               state.perpStats.loading = false
             })
+            console.log('Failed to fetch perp stats data', error)
             notify({
               title: 'Failed to fetch perp stats data',
               type: 'error',
@@ -926,7 +927,7 @@ const mangoStore = create<MangoStore>()(
             set((state) => {
               state.tokenStats.loading = false
             })
-
+            console.log('Failed to fetch token stats data', error)
             notify({
               title: 'Failed to fetch token stats data',
               type: 'error',
