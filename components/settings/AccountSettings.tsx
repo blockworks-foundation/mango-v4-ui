@@ -42,6 +42,8 @@ import CreateAccountForm from '@components/account/CreateAccountForm'
 import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import { Serum3Market } from '@blockworks-foundation/mango-v4'
 
+export const SETTINGS_BUTTON_TITLE_CLASSES = 'text-th-fgd-1'
+
 const CLOSE_WRAPPER_CLASSNAMES =
   'mb-4 flex flex-col md:flex-row md:items-center md:justify-between rounded-md bg-th-bkg-2 px-4 py-3'
 
@@ -215,7 +217,7 @@ const AccountSettings = () => {
   return mangoAccount && group && !isDelegatedAccount && !isUnownedAccount ? (
     <div className="border-b border-th-bkg-3">
       <div className="pb-6">
-        <h3 className="mb-1 text-sm text-th-fgd-1">
+        <h3 className="mb-1 text-base text-th-fgd-1">
           {t('settings:account-address')}
         </h3>
         <div className="flex items-center space-x-2">
@@ -240,7 +242,7 @@ const AccountSettings = () => {
           className={ROW_BUTTON_CLASSNAMES}
           onClick={() => setShowEditAccountModal(true)}
         >
-          <p>{t('edit-account')}</p>
+          <p className={SETTINGS_BUTTON_TITLE_CLASSES}>{t('edit-account')}</p>
           <div className="flex items-center space-x-2">
             <p className="text-th-fgd-2">{mangoAccount.name}</p>
             <PencilIcon className="h-5 w-5 text-th-fgd-2" />
@@ -250,9 +252,20 @@ const AccountSettings = () => {
           className={ROW_BUTTON_CLASSNAMES}
           onClick={() => setShowDelegateModal(true)}
         >
-          <p>{t('delegate-account')}</p>
-          <div className="flex items-center space-x-2">
-            <p className="text-th-fgd-2">
+          <div>
+            <div className="w-max">
+              <Tooltip content={t('delegate-account-tooltip')}>
+                <p
+                  className={`tooltip-underline mb-1 text-left ${SETTINGS_BUTTON_TITLE_CLASSES}`}
+                >
+                  {t('delegate-account')}
+                </p>
+              </Tooltip>
+            </div>
+            <p className="text-left">{t('delegate-account-desc')}</p>
+          </div>
+          <div className="flex items-center space-x-2 pl-4">
+            <p className="whitespace-nowrap text-th-fgd-2">
               {mangoAccount.delegate.toString() !== DEFAULT_DELEGATE
                 ? abbreviateAddress(mangoAccount.delegate)
                 : ''}
@@ -264,13 +277,13 @@ const AccountSettings = () => {
           className={ROW_BUTTON_CLASSNAMES}
           onClick={() => setShowCloseAccountModal(true)}
         >
-          <p>{t('close-account')}</p>
+          <p className={SETTINGS_BUTTON_TITLE_CLASSES}>{t('close-account')}</p>
           <TrashIcon className="h-5 w-5 text-th-fgd-2" />
         </button>
       </div>
       <div className="mb-4">
         <div>
-          <h3 className="mb-1 text-sm text-th-fgd-2">
+          <h3 className="mb-1 text-base text-th-fgd-1">
             {t('settings:account-slots')}
           </h3>
           <p>{t('settings:account-slots-desc')}</p>
@@ -294,9 +307,7 @@ const AccountSettings = () => {
               <Disclosure.Button className="w-full border-t border-th-bkg-3 py-4 md:px-4 md:hover:bg-th-bkg-2">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-left font-bold text-th-fgd-2">
-                      {t('tokens')}
-                    </p>
+                    <p className="text-left text-th-fgd-1">{t('tokens')}</p>
                     <p
                       className={`mt-1 ${getSlotsUsedColor(
                         usedTokens.length,
@@ -403,7 +414,7 @@ const AccountSettings = () => {
               <Disclosure.Button className="w-full border-t border-th-bkg-3 py-4 md:px-4 md:hover:bg-th-bkg-2">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-left font-bold text-th-fgd-2">
+                    <p className="text-left text-th-fgd-1">
                       {t('settings:spot-markets')}
                     </p>
                     <p
@@ -477,7 +488,7 @@ const AccountSettings = () => {
               <Disclosure.Button className="w-full border-t border-th-bkg-3 py-4 md:px-4 md:hover:bg-th-bkg-2">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-left font-bold text-th-fgd-2">
+                    <p className="text-left text-th-fgd-1">
                       {t('settings:perp-markets')}
                     </p>
                     <p
@@ -553,7 +564,7 @@ const AccountSettings = () => {
               <Disclosure.Button className="w-full border-t border-th-bkg-3 py-4 md:px-4 md:hover:bg-th-bkg-2">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-left font-bold text-th-fgd-2">
+                    <p className="text-left text-th-fgd-1">
                       {t('settings:perp-open-orders')}
                     </p>
                     <p
@@ -607,7 +618,9 @@ const AccountSettings = () => {
             <>
               <Disclosure.Button className="w-full border-t border-th-bkg-3 py-4 md:px-4 md:hover:bg-th-bkg-2">
                 <div className="flex items-center justify-between">
-                  <p>{t('trade:trigger-orders')}</p>
+                  <p className={SETTINGS_BUTTON_TITLE_CLASSES}>
+                    {t('trade:trigger-orders')}
+                  </p>
                   <ChevronDownIcon
                     className={`${
                       open ? 'rotate-180' : 'rotate-360'
@@ -679,10 +692,14 @@ const AccountSettings = () => {
         </Disclosure>
       </div>
       <div className="pt-6">
-        <h3 className="mb-4 text-sm text-th-fgd-2">{t('settings:privacy')}</h3>
+        <h3 className="mb-4 text-base text-th-fgd-1">
+          {t('settings:privacy')}
+        </h3>
         <div className="flex items-center justify-between border-t border-th-bkg-3 py-4 md:px-4">
           <Tooltip content={t('settings:tooltip-privacy-mode')}>
-            <p className="tooltip-underline">{t('settings:privacy-mode')}</p>
+            <p className={`tooltip-underline ${SETTINGS_BUTTON_TITLE_CLASSES}`}>
+              {t('settings:privacy-mode')}
+            </p>
           </Tooltip>
           <Switch
             checked={privacyMode}
