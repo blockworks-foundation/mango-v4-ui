@@ -111,7 +111,7 @@ type FormErrors = Partial<Record<keyof TradeForm, string>>
 
 const AdvancedTradeForm = () => {
   const { t } = useTranslation(['common', 'settings', 'swap', 'trade'])
-  const { mangoAccount } = useMangoAccount()
+  const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const { usedSerum3, totalSerum3 } = useMangoAccountAccounts()
   const tradeForm = mangoStore((s) => s.tradeForm)
   const themeData = mangoStore((s) => s.themeData)
@@ -1084,14 +1084,18 @@ const AdvancedTradeForm = () => {
               />
             </div>
           ) : null}
-          {serumSlotsFull && selectedMarket instanceof Serum3Market ? (
+          {serumSlotsFull &&
+          selectedMarket instanceof Serum3Market &&
+          mangoAccountAddress ? (
             <div className="mb-4 px-4">
               <AccountSlotsFullNotification
                 message={t('trade:error-serum-positions-full')}
               />
             </div>
           ) : null}
-          {tokenPositionsFull && selectedMarket instanceof Serum3Market ? (
+          {tokenPositionsFull &&
+          selectedMarket instanceof Serum3Market &&
+          mangoAccountAddress ? (
             <div className="mb-4 px-4">
               <AccountSlotsFullNotification
                 message={t('error-token-positions-full')}
