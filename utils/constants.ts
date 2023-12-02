@@ -148,6 +148,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   hnt: true,
   jitosol: true,
   jlp: true,
+  jto: true,
   kin: true,
   ldo: true,
   mngo: true,
