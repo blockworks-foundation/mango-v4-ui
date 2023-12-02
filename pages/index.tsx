@@ -8,6 +8,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
       ...(await serverSideTranslations(locale, [
         'account',
         'activity',
+        'close-account',
         'common',
         'explore',
         'governance',
@@ -21,7 +22,6 @@ export async function getStaticProps({ locale }: { locale: string }) {
         'stats',
         'token',
         'trade',
-        'close-account',
       ])),
     },
   }
