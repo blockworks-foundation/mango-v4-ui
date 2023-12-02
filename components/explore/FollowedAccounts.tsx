@@ -43,8 +43,8 @@ import { formatTokenSymbol } from 'utils/tokens'
 
 export type FollowedAccountApi = {
   mango_account: string
-  profile_image_url: string
-  profile_name: string
+  profile_image_url: string | undefined
+  profile_name: string | undefined
   wallet_pk: string
 }
 
@@ -52,7 +52,7 @@ export interface FollowedAccount extends FollowedAccountApi {
   mangoAccount: MangoAccount
 }
 
-const getFollowedMangoAccounts = async (accounts: FollowedAccount[]) => {
+const getFollowedMangoAccounts = async (accounts: FollowedAccountApi[]) => {
   const client = mangoStore.getState().client
   const mangoAccounts = []
   for (const account of accounts) {
@@ -76,22 +76,25 @@ const FollowedAccounts = () => {
   const [followedMangoAccounts, setFollowedMangoAccounts] = useState<
     FollowedAccount[]
   >([])
-  const [loading, setLoading] = useState(false)
+  const [loadingMangoAccounts, setLoadingMangoAccounts] = useState(true)
 
   useEffect(() => {
-    if (!followedAccounts || !followedAccounts.length) return
+    if (!followedAccounts || !followedAccounts.length) {
+      setLoadingMangoAccounts(false)
+      return
+    }
     const getAccounts = async () => {
-      setLoading(true)
+      setLoadingMangoAccounts(true)
       const accounts = await getFollowedMangoAccounts(followedAccounts)
       setFollowedMangoAccounts(accounts)
-      setLoading(false)
+      setLoadingMangoAccounts(false)
     }
     getAccounts()
   }, [followedAccounts])
 
   return (
     <div className="px-4 pt-4 md:px-6 md:pb-10">
-      {loadingFollowedAccounts || loading ? (
+      {loadingFollowedAccounts || loadingMangoAccounts ? (
         [...Array(3)].map((x, i) => (
           <SheenLoader className="mt-2 flex flex-1" key={i}>
             <div className="h-[94px] w-full bg-th-bkg-2" />

@@ -1,3 +1,4 @@
+import { FollowedAccountApi } from '@components/explore/FollowedAccounts'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useQuery } from '@tanstack/react-query'
 import { isEmpty } from 'lodash'
@@ -8,8 +9,8 @@ const fetchFollowedAccounts = async (walletPk: string | undefined) => {
     const response = await fetch(
       `${MANGO_DATA_API_URL}/user-data/following?wallet-pk=${walletPk}`,
     )
-    const data = await response.json()
-    if (isEmpty(data)) {
+    const data: FollowedAccountApi[] = await response.json()
+    if (!data || isEmpty(data)) {
       return []
     } else return data
   } catch (e) {

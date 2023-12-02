@@ -28,10 +28,13 @@ const Explore = () => {
 
   const tabsWithCount: [string, number][] = useMemo(() => {
     const perpMarkets = mangoStore.getState().perpMarkets
+    const followedAccountsNumber = followedAccounts
+      ? followedAccounts.length
+      : 0
     const tabs: [string, number][] = [
       ['tokens', banks.length],
       ['perp', perpMarkets.length],
-      ['account:followed-accounts', followedAccounts?.length],
+      ['account:followed-accounts', followedAccountsNumber],
     ]
     return tabs
   }, [banks, followedAccounts])
