@@ -1,11 +1,39 @@
-import { PerpMarket } from '@blockworks-foundation/mango-v4'
+import { MangoAccount, PerpMarket } from '@blockworks-foundation/mango-v4'
 import LeverageSlider from '@components/shared/LeverageSlider'
 import mangoStore from '@store/mangoStore'
 import BN from 'bn.js'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useCallback, useMemo } from 'react'
+import { GenericMarket } from 'types'
 import { floorToDecimal } from 'utils/numbers'
+
+export const usePerpMarketMax = (
+  mangoAccount: MangoAccount | undefined,
+  selectedMarket: GenericMarket | undefined,
+  side: string,
+) => {
+  const group = mangoStore.getState().group
+  if (!mangoAccount || !group || !selectedMarket) return 0
+  if (!(selectedMarket instanceof PerpMarket)) return 0
+
+  try {
+    if (side === 'buy') {
+      return mangoAccount.getMaxQuoteForPerpBidUi(
+        group,
+        selectedMarket.perpMarketIndex,
+      )
+    } else {
+      return mangoAccount.getMaxBaseForPerpAskUi(
+        group,
+        selectedMarket.perpMarketIndex,
+      )
+    }
+  } catch (e) {
+    console.error('Error calculating max leverage: ', e)
+    return 0
+  }
+}
 
 const PerpSlider = ({
   minOrderDecimals,
@@ -18,6 +46,7 @@ const PerpSlider = ({
   const { selectedMarket, price: marketPrice } = useSelectedMarket()
   const { mangoAccount } = useMangoAccount()
   const tradeForm = mangoStore((s) => s.tradeForm)
+  const perpMax = usePerpMarketMax(mangoAccount, selectedMarket, side)
 
   const step = useMemo(() => {
     if (selectedMarket instanceof PerpMarket) {
@@ -25,29 +54,6 @@ const PerpSlider = ({
     }
     return 0.01
   }, [selectedMarket])
-
-  const leverageMax = useMemo(() => {
-    const group = mangoStore.getState().group
-    if (!mangoAccount || !group || !selectedMarket) return 100
-    if (!(selectedMarket instanceof PerpMarket)) return 100
-
-    try {
-      if (side === 'buy') {
-        return mangoAccount.getMaxQuoteForPerpBidUi(
-          group,
-          selectedMarket.perpMarketIndex,
-        )
-      } else {
-        return mangoAccount.getMaxBaseForPerpAskUi(
-          group,
-          selectedMarket.perpMarketIndex,
-        )
-      }
-    } catch (e) {
-      console.error('Error calculating max leverage for PerpSlider: ', e)
-      return 0
-    }
-  }, [side, selectedMarket, mangoAccount])
 
   const handleSlide = useCallback(
     (val: string) => {
@@ -94,7 +100,7 @@ const PerpSlider = ({
             ? parseFloat(tradeForm.quoteSize)
             : parseFloat(tradeForm.baseSize)
         }
-        leverageMax={leverageMax}
+        leverageMax={perpMax}
         onChange={handleSlide}
         step={step}
       />

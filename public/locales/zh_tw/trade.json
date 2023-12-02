@@ -58,6 +58,7 @@
     "min-order-size": "最小訂單量",
     "min-order-size-error": "訂單的最小數量是 {{minSize}} {{symbol}}",
     "more-details": "看細節",
+    "no-balance-to-trade": "No balance to trade. Deposit before placing an order.",
     "no-balances": "無餘額",
     "no-borrows": "借貸已停用",
     "no-markets-found": "無市場",
