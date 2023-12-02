@@ -69,7 +69,7 @@ const TabContent = ({ activeTab }: { activeTab: string }) => {
   switch (activeTab) {
     case 'tokens':
       return <Spot />
-    case 'perp-markets':
+    case 'perp':
       return (
         <div className="mt-6 border-t border-th-bkg-3">
           <PerpMarketsTable />
