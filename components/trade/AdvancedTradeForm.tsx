@@ -8,7 +8,6 @@ import {
   Serum3Side,
 } from '@blockworks-foundation/mango-v4'
 import Checkbox from '@components/forms/Checkbox'
-import Button from '@components/shared/Button'
 import Tooltip from '@components/shared/Tooltip'
 import mangoStore from '@store/mangoStore'
 import Decimal from 'decimal.js'
@@ -28,7 +27,7 @@ import NumberFormat, {
 import * as sentry from '@sentry/nextjs'
 
 import { notify } from 'utils/notifications'
-import SpotSlider, { useSpotMarketMax } from './SpotSlider'
+import SpotSlider from './SpotSlider'
 import {
   OrderTypes,
   TriggerOrderTypes,
@@ -37,9 +36,8 @@ import {
 } from 'utils/tradeForm'
 import Image from 'next/legacy/image'
 import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
-import Loading from '@components/shared/Loading'
 import TabUnderline from '@components/shared/TabUnderline'
-import PerpSlider, { usePerpMarketMax } from './PerpSlider'
+import PerpSlider from './PerpSlider'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import {
   SIZE_INPUT_UI_KEY,
@@ -56,18 +54,15 @@ import {
   getDecimalCount,
 } from 'utils/numbers'
 import LogoWithFallback from '@components/shared/LogoWithFallback'
-import useIpAddress from 'hooks/useIpAddress'
 import ButtonGroup from '@components/forms/ButtonGroup'
 import TradeSummary from './TradeSummary'
 import useMangoAccount from 'hooks/useMangoAccount'
 import MaxSizeButton from './MaxSizeButton'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 import { Howl } from 'howler'
-import { useWallet } from '@solana/wallet-adapter-react'
 import { isMangoError } from 'types'
 import InlineNotification from '@components/shared/InlineNotification'
 import SpotMarketOrderSwapForm from './SpotMarketOrderSwapForm'
-import SecondaryConnectButton from '@components/shared/SecondaryConnectButton'
 import useRemainingBorrowsInPeriod from 'hooks/useRemainingBorrowsInPeriod'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -80,6 +75,7 @@ import useTokenPositionsFull from 'hooks/useTokenPositionsFull'
 import AccountSlotsFullNotification from '@components/shared/AccountSlotsFullNotification'
 import DepositWithdrawModal from '@components/modals/DepositWithdrawModal'
 import CreateAccountModal from '@components/modals/CreateAccountModal'
+import TradeformSubmitButton from './TradeformSubmitButton'
 
 dayjs.extend(relativeTime)
 
@@ -113,14 +109,9 @@ type FormErrors = Partial<Record<keyof TradeForm, string>>
 
 const AdvancedTradeForm = () => {
   const { t } = useTranslation(['common', 'settings', 'swap', 'trade'])
-  const {
-    mangoAccount,
-    mangoAccountAddress,
-    initialLoad: mangoAccountLoading,
-  } = useMangoAccount()
+  const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const { usedSerum3, totalSerum3 } = useMangoAccountAccounts()
   const tradeForm = mangoStore((s) => s.tradeForm)
-  const themeData = mangoStore((s) => s.themeData)
   const [placingOrder, setPlacingOrder] = useState(false)
   const [formErrors, setFormErrors] = useState<FormErrors>({})
   const [showDepositModal, setShowDepositModal] = useState(false)
@@ -128,12 +119,10 @@ const AdvancedTradeForm = () => {
   const [tradeFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const [savedCheckboxSettings, setSavedCheckboxSettings] =
     useLocalStorageState(TRADE_CHECKBOXES_KEY, DEFAULT_CHECKBOX_SETTINGS)
-  const { ipAllowed, ipCountry } = useIpAddress()
   const [soundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,
     INITIAL_SOUND_SETTINGS,
   )
-  const { connected } = useWallet()
   const {
     selectedMarket,
     price: oraclePrice,
@@ -146,13 +135,6 @@ const AdvancedTradeForm = () => {
   } = useSelectedMarket()
   const { remainingBorrowsInPeriod, timeToNextPeriod } =
     useRemainingBorrowsInPeriod()
-  const spotMax = useSpotMarketMax(
-    mangoAccount,
-    selectedMarket,
-    tradeForm.side,
-    savedCheckboxSettings.margin,
-  )
-  const perpMax = usePerpMarketMax(mangoAccount, selectedMarket, tradeForm.side)
 
   // check for available serum account slots if serum market
   const serumSlotsFull = useMemo(() => {
@@ -1042,83 +1024,14 @@ const AdvancedTradeForm = () => {
               )}
             </div>
             <div className="mb-4 mt-6 flex px-3 md:px-4">
-              {ipAllowed ? (
-                connected ? (
-                  mangoAccountLoading ||
-                  (selectedMarket instanceof Serum3Market && spotMax) ||
-                  (selectedMarket instanceof PerpMarket && perpMax) ? (
-                    <Button
-                      className={`flex w-full items-center justify-center ${
-                        tradeForm.side === 'buy'
-                          ? themeData.buttonStyle === 'raised'
-                            ? 'raised-buy-button'
-                            : 'bg-th-up-dark text-white md:hover:bg-th-up-dark md:hover:brightness-90'
-                          : themeData.buttonStyle === 'raised'
-                          ? 'raised-sell-button'
-                          : 'bg-th-down-dark text-white md:hover:bg-th-down-dark md:hover:brightness-90'
-                      }`}
-                      disabled={disabled}
-                      size="large"
-                      type="submit"
-                    >
-                      {!placingOrder ? (
-                        <span>
-                          {t('trade:place-order', {
-                            side:
-                              tradeForm.side === 'buy'
-                                ? sideNames[0]
-                                : sideNames[1],
-                          })}
-                        </span>
-                      ) : (
-                        <div className="flex items-center space-x-2">
-                          <Loading />
-                          <span className="hidden sm:block">
-                            {t('trade:placing-order')}
-                          </span>
-                        </div>
-                      )}
-                    </Button>
-                  ) : mangoAccountAddress ? (
-                    <div className="w-full">
-                      <Button
-                        className="flex w-full items-center justify-center"
-                        onClick={() => setShowDepositModal(true)}
-                        size="large"
-                      >
-                        {t('deposit')}
-                      </Button>
-                      <div className="mt-4">
-                        <InlineNotification
-                          type="info"
-                          desc={t('trade:no-balance-to-trade')}
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="w-full">
-                      <Button
-                        className="flex w-full items-center justify-center"
-                        onClick={() => setShowCreateAccountModal(true)}
-                        size="large"
-                      >
-                        {t('create-account')}
-                      </Button>
-                    </div>
-                  )
-                ) : (
-                  <SecondaryConnectButton
-                    className="flex w-full items-center justify-center"
-                    isLarge
-                  />
-                )
-              ) : (
-                <Button disabled className="w-full leading-tight" size="large">
-                  {t('country-not-allowed', {
-                    country: ipCountry ? `(${ipCountry})` : '',
-                  })}
-                </Button>
-              )}
+              <TradeformSubmitButton
+                disabled={disabled}
+                placingOrder={placingOrder}
+                setShowCreateAccountModal={setShowCreateAccountModal}
+                setShowDepositModal={setShowDepositModal}
+                sideNames={sideNames}
+                useMargin={savedCheckboxSettings.margin}
+              />
             </div>
           </form>
           {tradeForm.tradeType === 'Market' &&
