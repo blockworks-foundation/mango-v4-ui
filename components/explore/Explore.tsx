@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import PerpMarketsTable from './PerpMarketsTable'
 import { useTranslation } from 'react-i18next'
-import dayjs from 'dayjs'
-import relativeTime from 'dayjs/plugin/relativeTime'
 import mangoStore from '@store/mangoStore'
 import RecentGainersLosers from './RecentGainersLosers'
 import Spot from './Spot'
@@ -10,7 +8,6 @@ import useBanks from 'hooks/useBanks'
 import TabsText from '@components/shared/TabsText'
 import useFollowedAccounts from 'hooks/useFollowedAccounts'
 import FollowedAccounts from './FollowedAccounts'
-dayjs.extend(relativeTime)
 
 const Explore = () => {
   const { t } = useTranslation(['common'])

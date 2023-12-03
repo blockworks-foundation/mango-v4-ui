@@ -30,7 +30,11 @@ import { IS_ONBOARDED_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import SettingsModal from './modals/SettingsModal'
 import DepositWithdrawIcon from './icons/DepositWithdrawIcon'
-import { useAccountPointsAndRank, useCurrentSeason } from 'hooks/useRewards'
+import {
+  useAccountPointsAndRank,
+  useCurrentSeason,
+  useIsAllClaimed,
+} from 'hooks/useRewards'
 import SheenLoader from './shared/SheenLoader'
 import Link from 'next/link'
 import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
@@ -47,13 +51,17 @@ const set = mangoStore.getState().set
 const TopBar = () => {
   const { t } = useTranslation('common')
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
-  const { connected, wallet } = useWallet()
+  const { connected, publicKey, wallet } = useWallet()
   const { data: seasonData } = useCurrentSeason()
+  const currentSeasonId = seasonData ? seasonData.season_id : undefined
+  const prevSeasonId = currentSeasonId ? currentSeasonId - 1 : undefined
+  const { showClaim } = useIsAllClaimed(prevSeasonId, publicKey)
+  const seasonPointsToFetchId = showClaim ? prevSeasonId : currentSeasonId
   const {
     data: accountPointsAndRank,
     isInitialLoading: loadingAccountPointsAndRank,
     refetch: refetchPoints,
-  } = useAccountPointsAndRank(mangoAccountAddress, seasonData?.season_id)
+  } = useAccountPointsAndRank(mangoAccountAddress, seasonPointsToFetchId)
   const { data: isWhiteListed } = useIsWhiteListed()
   const router = useRouter()
   const themeData = mangoStore((s) => s.themeData)
@@ -225,6 +233,7 @@ const TopBar = () => {
                         <FormatNumericValue
                           value={accountPointsAndRank.total_points}
                           decimals={0}
+                          roundUp
                         />
                       ) : wallet?.adapter.publicKey ? (
                         0

@@ -165,6 +165,7 @@ const Leaderboards = ({
                 <FormatNumericValue
                   value={accountPointsAndRank.total_points}
                   decimals={0}
+                  roundUp
                 />
               </span>
             </div>

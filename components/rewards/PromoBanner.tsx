@@ -31,10 +31,10 @@ const PromoBanner = () => {
   const { publicKey } = useWallet()
   const { data: isWhiteListed } = useIsWhiteListed()
   const { data: seasonData } = useCurrentSeason()
-  const currentSeason = seasonData ? seasonData.season_id : undefined
-  const prevSeason = currentSeason ? currentSeason - 1 : undefined
-  const { data: distributionDataAndClient } = useDistribution(prevSeason)
-  const { showClaim } = useIsAllClaimed(prevSeason, publicKey)
+  const currentSeasonId = seasonData ? seasonData.season_id : undefined
+  const prevSeasonId = currentSeasonId ? currentSeasonId - 1 : undefined
+  const { data: distributionDataAndClient } = useDistribution(prevSeasonId)
+  const { showClaim } = useIsAllClaimed(prevSeasonId, publicKey)
 
   const hasClosedBanner = useMemo(() => {
     if (!seasonData?.season_id) return false
@@ -54,25 +54,25 @@ const PromoBanner = () => {
     )
   }, [distributionDataAndClient])
 
-  return seasonData?.season_id && isWhiteListed ? (
+  return currentSeasonId && isWhiteListed ? (
     showClaim ? (
       <BannerContent
-        text={`Claiming season ${seasonData.season_id - 1} rewards ends ${
+        text={`Claiming season ${prevSeasonId} rewards ends ${
           claimEndsIn || ''
         }.`}
         linkText="Claim Now"
       />
     ) : !hasClosedBanner ? (
       <BannerContent
-        text={`Season ${seasonData.season_id} of Mango Mints ends ${
+        text={`Season ${currentSeasonId} of Mango Mints ends ${
           seasonEndsIn || ''
         }.`}
         linkText="Let's Go"
         onClickLink={() =>
-          setShowBanner({ ...showBanner, [seasonData.season_id]: true })
+          setShowBanner({ ...showBanner, [currentSeasonId]: true })
         }
         onClose={() =>
-          setShowBanner({ ...showBanner, [seasonData.season_id]: true })
+          setShowBanner({ ...showBanner, [currentSeasonId]: true })
         }
       />
     ) : null
