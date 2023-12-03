@@ -69,29 +69,41 @@ const CreateSwitchboardOracleModal = ({
 
   const tierSettings: {
     [key: string]: {
-      varianceThreshold: number
       fundAmount: number
+      batchSize: number
+      minRequiredOracleResults: number
+      minUpdateDelaySeconds: number
     }
   } = {
     PREMIUM: {
-      varianceThreshold: 0.62,
       fundAmount: 5,
+      minRequiredOracleResults: 3,
+      minUpdateDelaySeconds: 6,
+      batchSize: 5,
     },
     MID: {
-      varianceThreshold: 0.62,
       fundAmount: 5,
+      minRequiredOracleResults: 1,
+      minUpdateDelaySeconds: 6,
+      batchSize: 2,
     },
     MEME: {
-      varianceThreshold: 1,
       fundAmount: 2,
+      minRequiredOracleResults: 1,
+      minUpdateDelaySeconds: 30,
+      batchSize: 2,
     },
     SHIT: {
-      varianceThreshold: 1,
       fundAmount: 2,
+      batchSize: 2,
+      minRequiredOracleResults: 1,
+      minUpdateDelaySeconds: 300,
     },
     UNTRUSTED: {
-      varianceThreshold: 1,
       fundAmount: 2,
+      batchSize: 2,
+      minRequiredOracleResults: 1,
+      minUpdateDelaySeconds: 300,
     },
   }
 
@@ -175,10 +187,10 @@ const CreateSwitchboardOracleModal = ({
       const [aggregatorAccount, txArray1] =
         await queueAccount.createFeedInstructions(payer, {
           name: `${baseTokenName}/${quoteTokenName}`,
-          batchSize: 6,
-          minRequiredOracleResults: 3,
+          batchSize: tierSettings[tier].batchSize,
+          minRequiredOracleResults: tierSettings[tier].minRequiredOracleResults,
           minRequiredJobResults: 2,
-          minUpdateDelaySeconds: 6,
+          minUpdateDelaySeconds: tierSettings[tier].minUpdateDelaySeconds,
           forceReportPeriod: 60 * 60,
           withdrawAuthority: MANGO_DAO_WALLET,
           authority: payer,
@@ -187,7 +199,6 @@ const CreateSwitchboardOracleModal = ({
           fundAmount: tierSettings[tier].fundAmount,
           slidingWindow: true,
           disableCrank: false,
-          varianceThreshold: tierSettings[tier].varianceThreshold,
           maxPriorityFeeMultiplier: 5,
           priorityFeeBumpPeriod: 10,
           priorityFeeBump: 1000,
