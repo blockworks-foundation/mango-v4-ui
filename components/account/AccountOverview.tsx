@@ -19,6 +19,27 @@ import Button from '@components/shared/Button'
 const EMPTY_STATE_WRAPPER_CLASSES =
   'flex h-[180px] flex-col justify-center pb-4 md:h-full'
 
+const DEFAULT_CHART_DATA = [
+  {
+    account_equity: 0,
+    time: dayjs().subtract(1, 'hour').toISOString(),
+    borrow_interest_cumulative_usd: 0,
+    deposit_interest_cumulative_usd: 0,
+    pnl: 0,
+    spot_value: 0,
+    transfer_balance: 0,
+  },
+  {
+    account_equity: 0,
+    time: dayjs().toISOString(),
+    borrow_interest_cumulative_usd: 0,
+    deposit_interest_cumulative_usd: 0,
+    pnl: 0,
+    spot_value: 0,
+    transfer_balance: 0,
+  },
+]
+
 const AccountOverview = () => {
   const { t } = useTranslation(['common', 'governance'])
   const { group } = useMangoGroup()
@@ -35,12 +56,12 @@ const AccountOverview = () => {
   }, [group, mangoAccount])
 
   const latestAccountData = useMemo(() => {
-    if (!accountValue || !performanceData || !performanceData.length) return []
+    if (!performanceData || !performanceData?.length) return []
     const latestDataItem = performanceData[performanceData.length - 1]
     return [
       {
         account_equity: accountValue,
-        time: dayjs(Date.now()).toISOString(),
+        time: dayjs().toISOString(),
         borrow_interest_cumulative_usd:
           latestDataItem.borrow_interest_cumulative_usd,
         deposit_interest_cumulative_usd:
@@ -52,8 +73,13 @@ const AccountOverview = () => {
     ]
   }, [accountValue, performanceData])
 
-  const chartData =
-    performanceData && performanceData?.length ? performanceData : []
+  const chartData = useMemo(() => {
+    if (performanceData && performanceData?.length)
+      return performanceData.concat(latestAccountData)
+    if (!latestAccountData.length) {
+      return DEFAULT_CHART_DATA
+    }
+  }, [latestAccountData, performanceData])
 
   return (
     <>
@@ -64,7 +90,7 @@ const AccountOverview = () => {
               <div className="px-4 pb-4 md:px-6">
                 <DetailedAreaOrBarChart
                   changeAsPercent
-                  data={chartData.concat(latestAccountData)}
+                  data={chartData}
                   daysToShow={daysToShow}
                   setDaysToShow={setDaysToShow}
                   loading={loadingPerformanceData || initialLoad}
