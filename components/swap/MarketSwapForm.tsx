@@ -44,8 +44,6 @@ export const withValueLimit = (values: NumberFormatValues): boolean => {
 export const NUMBER_FORMAT_CLASSNAMES =
   'w-full rounded-r-lg h-[56px] box-border pb-4 border-l border-th-bkg-2 bg-th-input-bkg px-3 text-right font-mono text-xl text-th-fgd-1 focus:outline-none md:hover:bg-th-bkg-1'
 
-const set = mangoStore.getState().set
-
 const MarketSwapForm = ({
   setShowTokenSelect,
   onSuccess,
@@ -65,6 +63,7 @@ const MarketSwapForm = ({
     amountOut: amountOutFormValue,
     swapMode,
   } = mangoStore((s) => s.swap)
+  const set = mangoStore((s) => s.set)
   const [isDraggingSlider, setIsDraggingSlider] = useState(false)
   const { connected, publicKey } = useWallet()
   const { mangoAccount } = useMangoAccount()
@@ -115,7 +114,7 @@ const MarketSwapForm = ({
         }
       })
     },
-    [],
+    [set],
   )
 
   const setAmountOutFormValue = useCallback(
@@ -130,7 +129,7 @@ const MarketSwapForm = ({
         }
       })
     },
-    [],
+    [set],
   )
 
   const handleAmountInChange = useCallback(
@@ -146,7 +145,7 @@ const MarketSwapForm = ({
         })
       }
     },
-    [outputBank, setAmountInFormValue, swapMode],
+    [outputBank, set, setAmountInFormValue, swapMode],
   )
 
   const handleAmountOutChange = useCallback(
@@ -162,7 +161,7 @@ const MarketSwapForm = ({
         })
       }
     },
-    [swapMode, setAmountOutFormValue],
+    [set, setAmountOutFormValue, swapMode],
   )
 
   const handleSliderDrag = useCallback(() => {
@@ -184,7 +183,7 @@ const MarketSwapForm = ({
         s.swap.amountOut = ''
       })
     },
-    [setAmountInFormValue],
+    [Set, setAmountInFormValue],
   )
 
   const handleMax = useCallback(
@@ -194,7 +193,7 @@ const MarketSwapForm = ({
         s.swap.amountOut = ''
       })
     },
-    [setAmountInFormValue],
+    [set, setAmountInFormValue],
   )
 
   const handleRepay = useCallback(
@@ -204,7 +203,7 @@ const MarketSwapForm = ({
         s.swap.amountIn = ''
       })
     },
-    [setAmountInFormValue],
+    [set, setAmountInFormValue],
   )
 
   /* 
@@ -244,7 +243,7 @@ const MarketSwapForm = ({
     setAnimateSwitchArrow(
       (prevanimateSwitchArrow) => prevanimateSwitchArrow + 1,
     )
-  }, [setAmountInFormValue, amountOutAsDecimal, amountInAsDecimal])
+  }, [amountInAsDecimal, amountOutAsDecimal, set, setAmountInFormValue])
 
   const loadingExactIn: boolean = useMemo(() => {
     return (

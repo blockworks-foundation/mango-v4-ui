@@ -63,8 +63,6 @@ import {
   RefetchQueryFilters,
 } from '@tanstack/react-query'
 
-const set = mangoStore.getState().set
-
 type JupiterRouteInfoProps = {
   amountIn: Decimal
   loadingRoute: boolean
@@ -413,6 +411,7 @@ const SwapReviewRouteInfo = ({
   const onWalletSwap = useCallback(async () => {
     if (!selectedRoute || !inputBank || !outputBank || !wallet.publicKey) return
     const actions = mangoStore.getState().actions
+    const set = mangoStore.getState().set
     const connection = mangoStore.getState().connection
     setSubmitting(true)
     try {
@@ -465,6 +464,7 @@ const SwapReviewRouteInfo = ({
       const client = mangoStore.getState().client
       const group = mangoStore.getState().group
       const actions = mangoStore.getState().actions
+      const set = mangoStore.getState().set
       const mangoAccount = mangoStore.getState().mangoAccount.current
       const inputBank = mangoStore.getState().swap.inputBank
       const outputBank = mangoStore.getState().swap.outputBank

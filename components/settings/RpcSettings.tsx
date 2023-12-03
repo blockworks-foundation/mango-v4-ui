@@ -13,6 +13,7 @@ import {
   USE_ORDERBOOK_FEED_KEY,
 } from 'utils/constants'
 import Tooltip from '@components/shared/Tooltip'
+import { SETTINGS_BUTTON_TITLE_CLASSES } from './AccountSettings'
 
 export const TRITON_DEDICATED_URL = process.env.NEXT_PUBLIC_TRITON_TOKEN
   ? `https://mango.rpcpool.com/${process.env.NEXT_PUBLIC_TRITON_TOKEN}`
@@ -115,7 +116,9 @@ const RpcSettings = () => {
   return (
     <div className="border-b border-th-bkg-3">
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
-        <p className="mb-2 md:mb-0">{t('rpc-provider')}</p>
+        <p className={`mb-2 md:mb-0 ${SETTINGS_BUTTON_TITLE_CLASSES}`}>
+          {t('rpc-provider')}
+        </p>
         <div className="w-full min-w-[400px] md:w-auto">
           <ButtonGroup
             activeValue={rpcEndpoint.label}
@@ -148,7 +151,9 @@ const RpcSettings = () => {
         </div>
       </div>
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
-        <p className="mb-2 md:mb-0">Priority Fee</p>
+        <p className={`mb-2 md:mb-0 ${SETTINGS_BUTTON_TITLE_CLASSES}`}>
+          Priority Fee
+        </p>
         <div className="w-full min-w-[220px] md:w-auto md:pl-4">
           <ButtonGroup
             activeValue={priorityFee.label}
@@ -188,7 +193,9 @@ const RpcSettings = () => {
           placement="top-start"
           delay={100}
         >
-          <p className="tooltip-underline">
+          <p
+            className={`tooltip-underline mb-2 md:mb-0 ${SETTINGS_BUTTON_TITLE_CLASSES}`}
+          >
             {t('settings:orderbook-bandwidth-saving')}
           </p>
         </Tooltip>

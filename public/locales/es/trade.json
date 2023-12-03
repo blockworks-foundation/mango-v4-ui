@@ -58,6 +58,7 @@
     "min-order-size": "Min Order Size",
     "min-order-size-error": "Min order size is {{minSize}} {{symbol}}",
     "more-details": "More Details",
+    "no-balance-to-trade": "No balance to trade. Deposit before placing an order.",
     "no-balances": "No balances",
     "no-borrows": "Borrow Disabled",
     "no-markets-found": "No markets found...",

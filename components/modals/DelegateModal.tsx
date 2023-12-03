@@ -12,6 +12,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import { abbreviateAddress } from 'utils/formatting'
 import InlineNotification from '@components/shared/InlineNotification'
 import { isMangoError } from 'types'
+import Tooltip from '@components/shared/Tooltip'
 
 export const DEFAULT_DELEGATE = '11111111111111111111111111111111'
 
@@ -75,7 +76,14 @@ const DelegateModal = ({ isOpen, onClose }: ModalProps) => {
         <div className="flex h-full flex-col justify-between">
           <div className="pb-4">
             <h2 className="mb-1">{t('delegate-account')}</h2>
-            <p className="mb-4">{t('delegate-desc')}</p>
+            <p className="mb-4">
+              {t('delegate-account-desc')}{' '}
+              <div className="inline-block">
+                <Tooltip content={t('delegate-account-tooltip')}>
+                  <span className="tooltip-underline">{t('more-info')}</span>
+                </Tooltip>
+              </div>
+            </p>
             {mangoAccount &&
             mangoAccount.delegate.toString() !== DEFAULT_DELEGATE ? (
               <div className="mb-4">

@@ -58,6 +58,7 @@
     "min-order-size": "最小订单量",
     "min-order-size-error": "订单的最小数量是 {{minSize}} {{symbol}}",
     "more-details": "看细节",
+    "no-balance-to-trade": "No balance to trade. Deposit before placing an order.",
     "no-balances": "无余额",
     "no-borrows": "借贷已停用",
     "no-markets-found": "无市场",
