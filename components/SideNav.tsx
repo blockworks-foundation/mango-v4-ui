@@ -611,9 +611,7 @@ export const ExpandableMenuItem = ({
                 themeData.sideImagePath ? 'z-10 bg-th-bkg-1 py-2' : ''
               }`}
             >
-              <div className={`${!alignBottom ? 'ml-1.5' : ''}`}>
-                {children}
-              </div>
+              <div className={`${!alignBottom ? 'ml-3' : ''}`}>{children}</div>
             </Disclosure.Panel>
           </Transition>
         </>
