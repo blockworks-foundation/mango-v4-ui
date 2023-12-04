@@ -58,7 +58,7 @@ const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
           >
             <div className="mb-4 flex items-center justify-between border-b border-th-bkg-3 pb-4">
               <div className="flex items-center space-x-3">
-                <TokenLogo bank={bank} size={32} />
+                <TokenLogo bank={bank} size={32} showRewardsLogo />
                 <div>
                   <h3 className="mb-1 text-base leading-none">
                     {bank.name}

@@ -9,10 +9,12 @@ import Tooltip from './Tooltip'
 const TokenLogo = ({
   bank,
   logoUrl,
+  showRewardsLogo,
   size,
 }: {
   bank: Bank | undefined
   logoUrl?: string
+  showRewardsLogo?: boolean
   size?: number
 }) => {
   const { mangoTokens } = useJupiterMints()
@@ -37,32 +39,34 @@ const TokenLogo = ({
   return logoUri ? (
     <Tooltip
       content={
-        bank?.name === 'MSOL' ? (
-          <>
-            <p className="mb-2">
-              Earn MNDE tokens for holding your mSOL on Mango
-            </p>
-            <a
-              href="https://marinade.finance/blog/introducing-marinade-earn-season-1/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              View Details
-            </a>
-          </>
-        ) : bank?.name === 'bSOL' ? (
-          <>
-            <p className="mb-2">
-              Earn BLZE tokens for holding your bSOL on Mango
-            </p>
-            <a
-              href="https://rewards.solblaze.org/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              View Details
-            </a>
-          </>
+        showRewardsLogo ? (
+          bank?.name === 'MSOL' ? (
+            <>
+              <p className="mb-2">
+                Earn MNDE tokens for holding your mSOL on Mango
+              </p>
+              <a
+                href="https://marinade.finance/blog/introducing-marinade-earn-season-1/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View Details
+              </a>
+            </>
+          ) : bank?.name === 'bSOL' ? (
+            <>
+              <p className="mb-2">
+                Earn BLZE tokens for holding your bSOL on Mango
+              </p>
+              <a
+                href="https://rewards.solblaze.org/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View Details
+              </a>
+            </>
+          ) : null
         ) : null
       }
     >
@@ -72,15 +76,19 @@ const TokenLogo = ({
         }`}
       >
         <Image alt="" width={logoSize} height={logoSize} src={logoUri} />
-        {bank?.name === 'MSOL' ? (
-          <div className="absolute -right-1.5 -top-1.5 shadow">
-            <Image alt="" width={16} height={16} src={'/icons/mnde.svg'} />
-          </div>
-        ) : null}
-        {bank?.name === 'bSOL' ? (
-          <div className="absolute -right-1.5 -top-1.5 shadow">
-            <Image alt="" width={16} height={16} src={'/icons/blze.svg'} />
-          </div>
+        {showRewardsLogo ? (
+          <>
+            {bank?.name === 'MSOL' ? (
+              <div className="absolute -right-1.5 -top-1.5 shadow">
+                <Image alt="" width={16} height={16} src={'/icons/mnde.svg'} />
+              </div>
+            ) : null}
+            {bank?.name === 'bSOL' ? (
+              <div className="absolute -right-1.5 -top-1.5 shadow">
+                <Image alt="" width={16} height={16} src={'/icons/blze.svg'} />
+              </div>
+            ) : null}
+          </>
         ) : null}
       </div>
     </Tooltip>
