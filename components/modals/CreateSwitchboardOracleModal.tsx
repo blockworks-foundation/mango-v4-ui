@@ -123,7 +123,7 @@ const CreateSwitchboardOracleModal = ({
     if (type === 'raydium') {
       const info = await connection.getAccountInfo(new PublicKey(poolPk))
       const poolState = LIQUIDITY_STATE_LAYOUT_V4.decode(info!.data)
-      return poolState.quoteMint.toBase58() === USDC_MINT || false
+      return poolState.baseMint.toBase58() === USDC_MINT || false
     }
     return false
   }
@@ -153,7 +153,7 @@ const CreateSwitchboardOracleModal = ({
       ])
 
       let onFailureTaskDesc
-      if (isReversePool) {
+      if (!isReversePool) {
         onFailureTaskDesc = [
           {
             lpExchangeRateTask: {
@@ -233,13 +233,7 @@ const CreateSwitchboardOracleModal = ({
                             },
                           },
                         ],
-                        onFailure: [
-                          {
-                            lpExchangeRateTask: {
-                              [poolPropertyName]: poolAddress,
-                            },
-                          },
-                        ],
+                        onFailure: onFailureTaskDesc,
                       },
                     },
                     {
