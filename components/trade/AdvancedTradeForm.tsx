@@ -1,4 +1,5 @@
 import {
+  OracleProvider,
   PerpMarket,
   PerpOrderSide,
   PerpOrderType,
@@ -377,10 +378,11 @@ const AdvancedTradeForm = () => {
       return selectedMarket.oracleLastUpdatedSlot !== 0
     } else if (selectedMarket instanceof Serum3Market) {
       return (
-        baseBank?.oracleLastUpdatedSlot !== 0 &&
-        (quoteBank?.name == 'USDC'
-          ? true
-          : quoteBank?.oracleLastUpdatedSlot !== 0)
+        baseBank?.oracleProvider == OracleProvider.Stub ||
+        (baseBank?.oracleLastUpdatedSlot !== 0 &&
+          (quoteBank?.name == 'USDC'
+            ? true
+            : quoteBank?.oracleLastUpdatedSlot !== 0))
       )
     }
   }, [baseBank, quoteBank, selectedMarket])
