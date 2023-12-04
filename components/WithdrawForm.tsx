@@ -233,7 +233,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
                   thousandSeparator=","
                   allowNegative={false}
                   isNumericString={true}
-                  decimalScale={bank ? bank.mintDecimals + 2 : 6}
+                  decimalScale={decimals}
                   className={ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES}
                   placeholder="0.00"
                   value={inputAmount}
