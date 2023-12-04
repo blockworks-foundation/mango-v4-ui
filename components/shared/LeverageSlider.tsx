@@ -32,7 +32,7 @@ const LeverageSlider = ({
       const max = leverageMax
 
       target.style.backgroundSize =
-        max - min === 0
+        max - min === 0 || !max
           ? '0% 100%'
           : ((value - min) * 100) / (max - min) + '% 100%'
     }

@@ -25,9 +25,11 @@ import NumberFormat, {
   SourceInfo,
 } from 'react-number-format'
 import * as sentry from '@sentry/nextjs'
-
 import { notify } from 'utils/notifications'
-import SpotSlider, { useSpotMarketMax } from './SpotSlider'
+import SpotSlider, {
+  useSpotMarketMax,
+  useSpotMarketWalletMax,
+} from './SpotSlider'
 import {
   OrderTypes,
   TriggerOrderTypes,
@@ -142,6 +144,7 @@ const AdvancedTradeForm = () => {
     savedCheckboxSettings.margin,
   )
   const perpMax = usePerpMarketMax(mangoAccount, selectedMarket, tradeForm.side)
+  const walletOrderMax = useSpotMarketWalletMax(selectedMarket, tradeForm.side)
 
   // check for available serum account slots if serum market
   const serumSlotsFull = useMemo(() => {
@@ -472,6 +475,11 @@ const AdvancedTradeForm = () => {
     }
   }, [isTriggerOrder, tickDecimals, tradeForm.side, tradeForm.tradeType])
 
+  const isWalletOrder = useMemo(() => {
+    if (spotMax || !walletOrderMax) return false
+    return true
+  }, [spotMax, walletOrderMax])
+
   const handleStandardOrder = useCallback(async () => {
     const { client } = mangoStore.getState()
     const { group } = mangoStore.getState()
@@ -500,30 +508,65 @@ const AdvancedTradeForm = () => {
           : tradeForm.postOnly && tradeForm.tradeType !== 'Market'
           ? Serum3OrderType.postOnly
           : Serum3OrderType.limit
-        const { signature: tx } = await client.serum3PlaceOrder(
-          group,
-          mangoAccount,
-          selectedMarket.serumMarketExternal,
-          tradeForm.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
-          price,
-          baseSize,
-          Serum3SelfTradeBehavior.decrementTake,
-          spotOrderType,
-          Date.now(),
-          10,
-        )
-        actions.fetchOpenOrders(true)
-        set((s) => {
-          s.successAnimation.trade = true
-        })
-        if (soundSettings['swap-success']) {
-          successSound.play()
+        if (!isWalletOrder) {
+          const { signature: tx } = await client.serum3PlaceOrder(
+            group,
+            mangoAccount,
+            selectedMarket.serumMarketExternal,
+            tradeForm.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
+            price,
+            baseSize,
+            Serum3SelfTradeBehavior.decrementTake,
+            spotOrderType,
+            Date.now(),
+            10,
+          )
+          actions.fetchOpenOrders(true)
+          set((s) => {
+            s.successAnimation.trade = true
+          })
+          if (soundSettings['swap-success']) {
+            successSound.play()
+          }
+          notify({
+            type: 'success',
+            title: 'Transaction successful',
+            txid: tx,
+          })
+        } else {
+          // const quoteSize = Number(tradeForm.quoteSize)
+          // const depositAmount = tradeForm.side === 'buy' ? quoteSize : baseSize
+          // const depositMint =
+          //   tradeForm.side === 'buy' ? quoteBank?.mint : baseBank?.mint
+          // if (!depositMint) return
+          // const promises = [
+          //   client.tokenDeposit(
+          //     group,
+          //     mangoAccount,
+          //     depositMint,
+          //     depositAmount,
+          //   ),
+          //   client.serum3PlaceOrder(
+          //     group,
+          //     mangoAccount,
+          //     selectedMarket.serumMarketExternal,
+          //     tradeForm.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
+          //     price,
+          //     baseSize,
+          //     Serum3SelfTradeBehavior.decrementTake,
+          //     spotOrderType,
+          //     Date.now(),
+          //     10,
+          //   ),
+          // ]
+          // const ixs = await Promise.all(promises)
+          // const tx = await client.sendAndConfirmTransaction(ixs)
+          // notify({
+          //   title: 'Transaction confirmed',
+          //   type: 'success',
+          //   txid: tx.signature,
+          // })
         }
-        notify({
-          type: 'success',
-          title: 'Transaction successful',
-          txid: tx,
-        })
       } else if (selectedMarket instanceof PerpMarket) {
         const perpOrderType =
           tradeForm.tradeType === 'Market' || tradeForm.ioc
@@ -580,7 +623,7 @@ const AdvancedTradeForm = () => {
     } finally {
       setPlacingOrder(false)
     }
-  }, [])
+  }, [isWalletOrder])
 
   const handleTriggerOrder = useCallback(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
@@ -735,12 +778,18 @@ const AdvancedTradeForm = () => {
     const { baseSize, quoteSize, side } = tradeForm
     if (!baseSize || !quoteSize) return false
     const size = side === 'buy' ? new Decimal(quoteSize) : new Decimal(baseSize)
-    const decimalMax =
-      selectedMarket instanceof Serum3Market
+    let decimalMax: Decimal
+    if (selectedMarket instanceof Serum3Market) {
+      decimalMax = spotMax
         ? new Decimal(spotMax)
-        : new Decimal(perpMax)
+        : walletOrderMax
+        ? new Decimal(walletOrderMax)
+        : new Decimal(0)
+    } else {
+      decimalMax = new Decimal(perpMax)
+    }
     return size.gt(decimalMax)
-  }, [perpMax, selectedMarket, spotMax, tradeForm])
+  }, [perpMax, selectedMarket, spotMax, tradeForm, walletOrderMax])
 
   const disabled =
     !serumOrPerpMarket || !isMarketEnabled || !mangoAccountAddress

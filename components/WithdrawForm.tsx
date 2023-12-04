@@ -57,7 +57,6 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
   const { mangoAccount } = useMangoAccount()
   const { connected } = useWallet()
   const banks = useBanksWithBalances('maxWithdraw')
-
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
     return group?.banksMapByName.get(selectedToken)?.[0]

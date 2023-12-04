@@ -7,7 +7,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import useIpAddress from 'hooks/useIpAddress'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
-import { useSpotMarketMax } from './SpotSlider'
+import { useSpotMarketMax, useSpotMarketWalletMax } from './SpotSlider'
 import { usePerpMarketMax } from './PerpSlider'
 import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'react-i18next'
@@ -47,12 +47,17 @@ const TradeformSubmitButton = ({
     useMargin,
   )
   const perpMax = usePerpMarketMax(mangoAccount, selectedMarket, side)
+  const walletOrderMax = useSpotMarketWalletMax(selectedMarket, side)
+
+  const isWalletOrder =
+    selectedMarket instanceof Serum3Market && !spotMax && walletOrderMax
 
   return ipAllowed ? (
     connected ? (
       mangoAccountLoading ||
       (selectedMarket instanceof Serum3Market && spotMax) ||
-      (selectedMarket instanceof PerpMarket && perpMax) ? (
+      (selectedMarket instanceof PerpMarket && perpMax) ||
+      isWalletOrder ? (
         <Button
           className={`flex w-full items-center justify-center ${
             side === 'buy'
@@ -71,6 +76,8 @@ const TradeformSubmitButton = ({
             <span>
               {tooMuchSize
                 ? t('swap:insufficient-balance', { symbol: '' })
+                : isWalletOrder
+                ? t('trade:deposit-place-order')
                 : t('trade:place-order', {
                     side: side === 'buy' ? sideNames[0] : sideNames[1],
                   })}
