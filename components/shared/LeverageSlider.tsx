@@ -55,7 +55,7 @@ const LeverageSlider = ({
   )
 
   useEffect(() => {
-    if (amount) {
+    if (amount && leverageMax) {
       const percent = ((amount - leverageMax) / leverageMax) * 100 + 100
       setValue(amount)
       setPercent(Math.ceil(percent))
@@ -102,12 +102,13 @@ const LeverageSlider = ({
       <div className="mt-1 flex justify-between">
         {PERCENTAGE_SHORTCUTS.map((p) => (
           <button
-            className={`text-xxs focus:outline-none md:hover:text-th-active ${
+            className={`text-xxs focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 md:hover:text-th-active md:disabled:hover:text-th-fgd-3 ${
               p <= percent ? 'text-th-active' : 'text-th-fgd-3'
             }`}
             key={p}
             onClick={() => handleShortcutButtons(p)}
             type="button"
+            disabled={!leverageMax}
           >
             {p}%
           </button>

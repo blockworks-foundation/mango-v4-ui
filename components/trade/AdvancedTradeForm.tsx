@@ -27,7 +27,7 @@ import NumberFormat, {
 import * as sentry from '@sentry/nextjs'
 
 import { notify } from 'utils/notifications'
-import SpotSlider from './SpotSlider'
+import SpotSlider, { useSpotMarketMax } from './SpotSlider'
 import {
   OrderTypes,
   TriggerOrderTypes,
@@ -37,7 +37,7 @@ import {
 import Image from 'next/legacy/image'
 import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import TabUnderline from '@components/shared/TabUnderline'
-import PerpSlider from './PerpSlider'
+import PerpSlider, { usePerpMarketMax } from './PerpSlider'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import {
   SIZE_INPUT_UI_KEY,
@@ -135,6 +135,13 @@ const AdvancedTradeForm = () => {
   } = useSelectedMarket()
   const { remainingBorrowsInPeriod, timeToNextPeriod } =
     useRemainingBorrowsInPeriod()
+  const spotMax = useSpotMarketMax(
+    mangoAccount,
+    selectedMarket,
+    tradeForm.side,
+    savedCheckboxSettings.margin,
+  )
+  const perpMax = usePerpMarketMax(mangoAccount, selectedMarket, tradeForm.side)
 
   // check for available serum account slots if serum market
   const serumSlotsFull = useMemo(() => {
@@ -652,7 +659,11 @@ const AdvancedTradeForm = () => {
 
   const orderTypes = useMemo(() => {
     const orderTypesArray = Object.values(OrderTypes)
-    if (!selectedMarket || selectedMarket instanceof PerpMarket)
+    if (
+      !selectedMarket ||
+      selectedMarket instanceof PerpMarket ||
+      !mangoAccountAddress
+    )
       return orderTypesArray
     const baseBalance = floorToDecimal(
       getTokenBalance(baseBank),
@@ -662,7 +673,7 @@ const AdvancedTradeForm = () => {
     return Math.abs(baseBalance) > 0
       ? [...orderTypesArray, ...triggerOrderTypesArray]
       : orderTypesArray
-  }, [baseBank, minOrderDecimals, selectedMarket])
+  }, [baseBank, mangoAccountAddress, minOrderDecimals, selectedMarket])
 
   const isFormValid = useCallback(
     (form: TradeForm) => {
@@ -719,6 +730,17 @@ const AdvancedTradeForm = () => {
     },
     [baseBank, isTriggerOrder, minOrderSize, oraclePrice, setFormErrors],
   )
+
+  const tooMuchSize = useMemo(() => {
+    const { baseSize, quoteSize, side } = tradeForm
+    if (!baseSize || !quoteSize) return false
+    const size = side === 'buy' ? new Decimal(quoteSize) : new Decimal(baseSize)
+    const decimalMax =
+      selectedMarket instanceof Serum3Market
+        ? new Decimal(spotMax)
+        : new Decimal(perpMax)
+    return size.gt(decimalMax)
+  }, [perpMax, selectedMarket, spotMax, tradeForm])
 
   const disabled =
     !serumOrPerpMarket || !isMarketEnabled || !mangoAccountAddress
@@ -1030,6 +1052,7 @@ const AdvancedTradeForm = () => {
                 setShowCreateAccountModal={setShowCreateAccountModal}
                 setShowDepositModal={setShowDepositModal}
                 sideNames={sideNames}
+                tooMuchSize={tooMuchSize}
                 useMargin={savedCheckboxSettings.margin}
               />
             </div>
