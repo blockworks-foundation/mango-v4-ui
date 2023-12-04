@@ -4,7 +4,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useCallback, useMemo, useState } from 'react'
 import { floorToDecimal } from 'utils/numbers'
-import { useSpotMarketMax } from './SpotSlider'
+import { useSpotMarketMax, useSpotMarketWalletMax } from './SpotSlider'
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import Decimal from 'decimal.js'
 
@@ -29,9 +29,17 @@ const SpotButtonGroup = ({
     side,
     useMargin,
   )
+  const walletOrderMax = useSpotMarketWalletMax(selectedMarket, side)
 
   const max = useMemo(() => {
-    if (!isTriggerOrder) return standardOrderMax
+    if (!isTriggerOrder) {
+      if (standardOrderMax) {
+        return standardOrderMax
+      } else if (walletOrderMax) {
+        return walletOrderMax
+      }
+      return 0
+    }
     const mangoAccount = mangoStore.getState().mangoAccount.current
     const { group } = mangoStore.getState()
     if (
@@ -53,7 +61,7 @@ const SpotButtonGroup = ({
       max = roundedBalance > 0 ? roundedBalance : 0
     }
     return Math.abs(max)
-  }, [isTriggerOrder, selectedMarket, side, standardOrderMax])
+  }, [isTriggerOrder, selectedMarket, side, standardOrderMax, walletOrderMax])
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {

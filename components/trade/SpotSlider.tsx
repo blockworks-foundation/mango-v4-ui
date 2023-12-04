@@ -3,6 +3,7 @@ import {
   PerpMarket,
   Serum3Market,
 } from '@blockworks-foundation/mango-v4'
+import { walletBalanceForToken } from '@components/DepositForm'
 import LeverageSlider from '@components/shared/LeverageSlider'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
@@ -59,6 +60,28 @@ export const useSpotMarketMax = (
   return max
 }
 
+export const useSpotMarketWalletMax = (
+  selectedMarket: GenericMarket | undefined,
+  side: string,
+) => {
+  const group = mangoStore.getState().group
+  if (!group || !selectedMarket || !(selectedMarket instanceof Serum3Market))
+    return 0
+  const walletTokens = mangoStore.getState().wallet.tokens
+  let maxTokenName
+  if (side === 'buy') {
+    const bank = group.getFirstBankByTokenIndex(selectedMarket.quoteTokenIndex)
+    maxTokenName = bank?.name
+  } else {
+    const bank = group.getFirstBankByTokenIndex(selectedMarket.baseTokenIndex)
+    maxTokenName = bank?.name
+  }
+  if (maxTokenName) {
+    const walletBalance = walletBalanceForToken(walletTokens, maxTokenName)
+    return walletBalance.maxAmount
+  } else return 0
+}
+
 const SpotSlider = ({
   minOrderDecimals,
   tickDecimals,
@@ -81,9 +104,17 @@ const SpotSlider = ({
     side,
     useMargin,
   )
+  const walletOrderMax = useSpotMarketWalletMax(selectedMarket, side)
 
   const max = useMemo(() => {
-    if (!isTriggerOrder) return standardOrderMax
+    if (!isTriggerOrder) {
+      if (standardOrderMax) {
+        return standardOrderMax
+      } else if (walletOrderMax) {
+        return walletOrderMax
+      }
+      return 0
+    }
     const mangoAccount = mangoStore.getState().mangoAccount.current
     const { group } = mangoStore.getState()
     if (
@@ -105,7 +136,7 @@ const SpotSlider = ({
       max = roundedBalance > 0 ? roundedBalance : 0
     }
     return Math.abs(max)
-  }, [isTriggerOrder, selectedMarket, side, standardOrderMax])
+  }, [isTriggerOrder, selectedMarket, side, standardOrderMax, walletOrderMax])
 
   const handleSlide = useCallback(
     (val: string) => {

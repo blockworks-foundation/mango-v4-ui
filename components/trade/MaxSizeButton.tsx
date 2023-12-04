@@ -9,7 +9,7 @@ import useUnownedAccount from 'hooks/useUnownedAccount'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useMemo } from 'react'
 import { floorToDecimal } from 'utils/numbers'
-import { useSpotMarketMax } from './SpotSlider'
+import { useSpotMarketMax, useSpotMarketWalletMax } from './SpotSlider'
 
 const MaxSizeButton = ({
   minOrderDecimals,
@@ -32,6 +32,7 @@ const MaxSizeButton = ({
     side,
     useMargin,
   )
+  const walletOrderMax = useSpotMarketWalletMax(selectedMarket, side)
   const { isUnownedAccount } = useUnownedAccount()
   const { connected } = useWallet()
 
@@ -59,7 +60,11 @@ const MaxSizeButton = ({
   }, [mangoAccount, side, selectedMarket])
 
   const handleMax = useCallback(() => {
-    const max = selectedMarket instanceof Serum3Market ? spotMax : perpMax || 0
+    let max: number
+    if (selectedMarket instanceof Serum3Market) {
+      max = spotMax ? spotMax : walletOrderMax
+    } else max = perpMax ? perpMax : 0
+    // const max = selectedMarket instanceof Serum3Market ? spotMax : perpMax || 0
     const set = mangoStore.getState().set
     set((state) => {
       if (side === 'buy') {
@@ -102,17 +107,21 @@ const MaxSizeButton = ({
     spotMax,
     tickDecimals,
     tradeType,
+    walletOrderMax,
   ])
 
   const maxAmount = useMemo(() => {
-    const max = selectedMarket instanceof Serum3Market ? spotMax : perpMax || 0
+    let max: number
+    if (selectedMarket instanceof Serum3Market) {
+      max = spotMax ? spotMax : walletOrderMax
+    } else max = perpMax ? perpMax : 0
     const tradePrice = tradeType === 'Market' ? oraclePrice : Number(price)
     if (side === 'buy') {
       return max / tradePrice
     } else {
       return max
     }
-  }, [perpMax, spotMax, selectedMarket, price, side, tradeType])
+  }, [perpMax, spotMax, selectedMarket, price, side, tradeType, walletOrderMax])
 
   return (
     <FadeInFadeOut show={!!price && !isUnownedAccount && connected}>
