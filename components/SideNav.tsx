@@ -216,19 +216,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               <MenuItem
                 active={
                   pathname === '/trade' &&
-                  !!query?.name &&
-                  !query.name.includes('PERP')
-                }
-                collapsed={false}
-                icon={<CoinIcon className="h-5 w-5" />}
-                title={t('spot')}
-                pagePath="/trade?name=SOL/USDC"
-                hideIconBg
-                showTooltip={false}
-              />
-              <MenuItem
-                active={
-                  pathname === '/trade' &&
                   ((!!query?.name && query.name.includes('PERP')) ||
                     !query?.name)
                 }
@@ -236,6 +223,19 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 icon={<PerpIcon className="h-5 w-5" />}
                 title={t('perp')}
                 pagePath="/trade?name=SOL-PERP"
+                hideIconBg
+                showTooltip={false}
+              />
+              <MenuItem
+                active={
+                  pathname === '/trade' &&
+                  !!query?.name &&
+                  !query.name.includes('PERP')
+                }
+                collapsed={false}
+                icon={<CoinIcon className="h-5 w-5" />}
+                title={t('spot')}
+                pagePath="/trade?name=SOL/USDC"
                 hideIconBg
                 showTooltip={false}
               />
