@@ -364,6 +364,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               />
             }
             panelTitle={mangoAccount?.name ? mangoAccount.name : t('account')}
+            showTooltip={false}
             title={
               <div className="w-24 text-left">
                 <p className="mb-0.5 whitespace-nowrap text-xs">
@@ -473,6 +474,7 @@ export const ExpandableMenuItem = ({
   hideIconBg,
   icon,
   panelTitle,
+  showTooltip = true,
   title,
 }: {
   active?: boolean
@@ -482,6 +484,7 @@ export const ExpandableMenuItem = ({
   hideIconBg?: boolean
   icon: ReactNode
   panelTitle?: string
+  showTooltip?: boolean
   title: string | ReactNode
 }) => {
   const { theme } = useTheme()
@@ -490,38 +493,44 @@ export const ExpandableMenuItem = ({
 
   return collapsed ? (
     <Popover className={`relative z-30 ${alignBottom ? '' : 'py-2 pl-4'}`}>
-      {({ close }) => (
+      {({ open, close }) => (
         <>
-          <Popover.Button
-            className={`${
-              active
-                ? 'text-th-active'
-                : theme === 'Light'
-                ? 'text-th-fgd-3'
-                : 'text-th-fgd-2'
-            } ${
-              alignBottom
-                ? 'focus-visible:bg-th-bkg-3'
-                : 'focus-visible:text-th-active'
-            } md:hover:text-th-active`}
-            onClick={() => setIsOpen(!isOpen)}
+          <Tooltip
+            content={title}
+            placement="right"
+            show={showTooltip && !open}
           >
-            <div
-              className={` ${
-                hideIconBg
-                  ? ''
-                  : `flex h-8 w-8 items-center justify-center rounded-full ${
-                      theme === 'Light' ? 'bg-th-bkg-2' : 'bg-th-bkg-3'
-                    }`
+            <Popover.Button
+              className={`${
+                active
+                  ? 'text-th-active'
+                  : theme === 'Light'
+                  ? 'text-th-fgd-3'
+                  : 'text-th-fgd-2'
               } ${
                 alignBottom
-                  ? 'flex h-[64px] w-[64px] items-center justify-center hover:bg-th-bkg-2'
-                  : ''
-              }`}
+                  ? 'focus-visible:bg-th-bkg-3'
+                  : 'focus-visible:text-th-active'
+              } md:hover:text-th-active`}
+              onClick={() => setIsOpen(!isOpen)}
             >
-              {icon}
-            </div>
-          </Popover.Button>
+              <div
+                className={` ${
+                  hideIconBg
+                    ? ''
+                    : `flex h-8 w-8 items-center justify-center rounded-full ${
+                        theme === 'Light' ? 'bg-th-bkg-2' : 'bg-th-bkg-3'
+                      }`
+                } ${
+                  alignBottom
+                    ? 'flex h-[64px] w-[64px] items-center justify-center hover:bg-th-bkg-2'
+                    : ''
+                }`}
+              >
+                {icon}
+              </div>
+            </Popover.Button>
+          </Tooltip>
           <Popover.Panel
             className={`absolute left-[64px] z-20 w-56 rounded-md rounded-l-none bg-th-bkg-1 focus:outline-none ${
               alignBottom
