@@ -18,7 +18,7 @@ import {
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
-import { Fragment, ReactNode, useEffect, useMemo } from 'react'
+import React, { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
 import { Disclosure, Popover, Transition } from '@headlessui/react'
 import MangoAccountSummary from './account/MangoAccountSummary'
 import Tooltip from './shared/Tooltip'
@@ -37,6 +37,8 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { SIDEBAR_COLLAPSE_KEY } from 'utils/constants'
 import { createTransferInstruction } from '@solana/spl-token'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
+import CoinIcon from './icons/CoinIcon'
+import PerpIcon from './icons/PerpIcon'
 //import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
 
 const set = mangoStore.getState().set
@@ -55,7 +57,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   )
 
   const router = useRouter()
-  const { pathname } = router
+  const { pathname, query } = router
 
   const { width } = useViewport()
   const [, setIsCollapsed] = useLocalStorageState(SIDEBAR_COLLAPSE_KEY, false)
@@ -205,13 +207,39 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               title={t('swap')}
               pagePath="/swap"
             />
-            <MenuItem
+            <ExpandableMenuItem
               active={pathname === '/trade'}
               collapsed={collapsed}
               icon={<ArrowTrendingUpIcon className="h-5 w-5" />}
               title={t('trade')}
-              pagePath="/trade"
-            />
+            >
+              <MenuItem
+                active={
+                  pathname === '/trade' &&
+                  !!query?.name &&
+                  !query.name.includes('PERP')
+                }
+                collapsed={false}
+                icon={<CoinIcon className="h-5 w-5" />}
+                title={t('spot')}
+                pagePath="/trade?name=SOL/USDC"
+                hideIconBg
+                showTooltip={false}
+              />
+              <MenuItem
+                active={
+                  pathname === '/trade' &&
+                  ((!!query?.name && query.name.includes('PERP')) ||
+                    !query?.name)
+                }
+                collapsed={false}
+                icon={<PerpIcon className="h-5 w-5" />}
+                title={t('perp')}
+                pagePath="/trade?name=SOL-PERP"
+                hideIconBg
+                showTooltip={false}
+              />
+            </ExpandableMenuItem>
             <MenuItem
               active={pathname === '/borrow'}
               collapsed={collapsed}
@@ -438,6 +466,7 @@ const MenuItem = ({
 }
 
 export const ExpandableMenuItem = ({
+  active,
   alignBottom,
   children,
   collapsed,
@@ -446,6 +475,7 @@ export const ExpandableMenuItem = ({
   panelTitle,
   title,
 }: {
+  active?: boolean
   alignBottom?: boolean
   children: ReactNode
   collapsed: boolean
@@ -456,52 +486,64 @@ export const ExpandableMenuItem = ({
 }) => {
   const { theme } = useTheme()
   const themeData = mangoStore((s) => s.themeData)
+  const [isOpen, setIsOpen] = useState(false)
 
   return collapsed ? (
     <Popover className={`relative z-30 ${alignBottom ? '' : 'py-2 pl-4'}`}>
-      <Popover.Button
-        className={`${theme === 'Light' ? 'text-th-fgd-3' : 'text-th-fgd-2'} ${
-          alignBottom
-            ? 'focus-visible:bg-th-bkg-3'
-            : 'focus-visible:text-th-active'
-        } md:hover:text-th-active`}
-      >
-        <div
-          className={` ${
-            hideIconBg
-              ? ''
-              : `flex h-8 w-8 items-center justify-center rounded-full ${
-                  theme === 'Light' ? 'bg-th-bkg-2' : 'bg-th-bkg-3'
-                }`
-          } ${
-            alignBottom
-              ? 'flex h-[64px] w-[64px] items-center justify-center hover:bg-th-bkg-2'
-              : ''
-          }`}
-        >
-          {icon}
-        </div>
-      </Popover.Button>
-      <Popover.Panel
-        className={`absolute left-[64px] z-20 w-56 rounded-md rounded-l-none bg-th-bkg-1 focus:outline-none ${
-          alignBottom
-            ? 'bottom-0 rounded-b-none border-b-0 p-0'
-            : 'top-1/2 -translate-y-1/2'
-        }`}
-      >
-        <div
-          className={`rounded-md rounded-l-none bg-th-bkg-2 ${
-            alignBottom ? 'pb-2 pt-4' : 'py-2'
-          }`}
-        >
-          <div className="flex items-center justify-between pl-4 pr-2">
-            {panelTitle ? (
-              <h3 className="text-sm font-bold">{panelTitle}</h3>
-            ) : null}
-          </div>
-          {children}
-        </div>
-      </Popover.Panel>
+      {({ close }) => (
+        <>
+          <Popover.Button
+            className={`${
+              active
+                ? 'text-th-active'
+                : theme === 'Light'
+                ? 'text-th-fgd-3'
+                : 'text-th-fgd-2'
+            } ${
+              alignBottom
+                ? 'focus-visible:bg-th-bkg-3'
+                : 'focus-visible:text-th-active'
+            } md:hover:text-th-active`}
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            <div
+              className={` ${
+                hideIconBg
+                  ? ''
+                  : `flex h-8 w-8 items-center justify-center rounded-full ${
+                      theme === 'Light' ? 'bg-th-bkg-2' : 'bg-th-bkg-3'
+                    }`
+              } ${
+                alignBottom
+                  ? 'flex h-[64px] w-[64px] items-center justify-center hover:bg-th-bkg-2'
+                  : ''
+              }`}
+            >
+              {icon}
+            </div>
+          </Popover.Button>
+          <Popover.Panel
+            className={`absolute left-[64px] z-20 w-56 rounded-md rounded-l-none bg-th-bkg-1 focus:outline-none ${
+              alignBottom
+                ? 'bottom-0 rounded-b-none border-b-0 p-0'
+                : 'top-1/2 -translate-y-1/2'
+            }`}
+          >
+            <div
+              className={`rounded-md rounded-l-none bg-th-bkg-2 ${
+                alignBottom ? 'pb-2 pt-4' : 'py-2'
+              }`}
+            >
+              <div className="flex items-center justify-between pl-4 pr-2">
+                {panelTitle ? (
+                  <h3 className="text-sm font-bold">{panelTitle}</h3>
+                ) : null}
+              </div>
+              <div onClick={() => close()}>{children}</div>
+            </div>
+          </Popover.Panel>
+        </>
+      )}
     </Popover>
   ) : (
     <Disclosure>
@@ -509,6 +551,8 @@ export const ExpandableMenuItem = ({
         <>
           <Disclosure.Button
             className={`flex w-full items-center justify-between rounded-none px-4 py-2 focus-visible:text-th-active md:hover:text-th-active ${
+              active ? 'text-th-active' : ''
+            } ${
               alignBottom
                 ? 'h-[64px] focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2'
                 : ''
