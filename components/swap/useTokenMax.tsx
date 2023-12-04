@@ -15,9 +15,8 @@ export const getMaxWithdrawForBank = (
 ): Decimal => {
   const accountBalance = new Decimal(mangoAccount.getTokenBalanceUi(bank))
   const vaultBalance = group.getTokenVaultBalanceByMintUi(bank.mint)
-  const maxBorrow = floorToDecimal(
+  const maxBorrow = new Decimal(
     mangoAccount.getMaxWithdrawWithBorrowForTokenUi(group, bank.mint),
-    bank.mintDecimals,
   )
   const maxWithdraw = allowBorrow
     ? Decimal.min(vaultBalance, maxBorrow)
