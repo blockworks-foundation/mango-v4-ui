@@ -18,6 +18,7 @@ const TradeformSubmitButton = ({
   setShowCreateAccountModal,
   setShowDepositModal,
   sideNames,
+  tooMuchSize,
   useMargin,
 }: {
   disabled: boolean
@@ -25,9 +26,10 @@ const TradeformSubmitButton = ({
   setShowCreateAccountModal: (show: boolean) => void
   setShowDepositModal: (show: boolean) => void
   sideNames: string[]
+  tooMuchSize: boolean
   useMargin: boolean
 }) => {
-  const { t } = useTranslation(['common', 'trade'])
+  const { t } = useTranslation(['common', 'swap', 'trade'])
   const side = mangoStore((s) => s.tradeForm.side)
   const themeData = mangoStore((s) => s.themeData)
   const { connected } = useWallet()
@@ -61,15 +63,17 @@ const TradeformSubmitButton = ({
               ? 'raised-sell-button'
               : 'bg-th-down-dark text-white md:hover:bg-th-down-dark md:hover:brightness-90'
           }`}
-          disabled={disabled}
+          disabled={disabled || tooMuchSize}
           size="large"
           type="submit"
         >
           {!placingOrder ? (
             <span>
-              {t('trade:place-order', {
-                side: side === 'buy' ? sideNames[0] : sideNames[1],
-              })}
+              {tooMuchSize
+                ? t('swap:insufficient-balance', { symbol: '' })
+                : t('trade:place-order', {
+                    side: side === 'buy' ? sideNames[0] : sideNames[1],
+                  })}
             </span>
           ) : (
             <div className="flex items-center space-x-2">
