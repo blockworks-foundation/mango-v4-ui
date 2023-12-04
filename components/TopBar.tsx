@@ -193,7 +193,7 @@ const TopBar = () => {
                 <ArrowRightIcon className="sideways-bounce ml-2 h-5 w-5 text-th-fgd-1" />
               </span>
             )
-          ) : isWhiteListed ? (
+          ) : isWhiteListed && mangoAccountAddress ? (
             <Link href="/rewards" shallow={true}>
               <div className="flex h-[63px] items-center justify-between border-x border-th-bkg-3 bg-th-bkg-1 px-4 md:border-l-0">
                 {accountPointsAndRank?.rank ? (

@@ -13,6 +13,7 @@ import { MANGO_MINTS_BANNER_KEY } from 'utils/constants'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { useWallet } from '@solana/wallet-adapter-react'
+import useMangoAccount from 'hooks/useMangoAccount'
 dayjs.extend(relativeTime)
 
 const BANNER_WRAPPER_CLASSES =
@@ -29,12 +30,16 @@ const PromoBanner = () => {
     {},
   )
   const { publicKey } = useWallet()
+  const { mangoAccountAddress } = useMangoAccount()
   const { data: isWhiteListed } = useIsWhiteListed()
   const { data: seasonData } = useCurrentSeason()
   const currentSeasonId = seasonData ? seasonData.season_id : undefined
   const prevSeasonId = currentSeasonId ? currentSeasonId - 1 : undefined
   const { data: distributionDataAndClient } = useDistribution(prevSeasonId)
-  const { showClaim } = useIsAllClaimed(prevSeasonId, publicKey)
+  const { showClaim, loading: loadingClaimed } = useIsAllClaimed(
+    prevSeasonId,
+    publicKey,
+  )
 
   const hasClosedBanner = useMemo(() => {
     if (!seasonData?.season_id) return false
@@ -54,7 +59,10 @@ const PromoBanner = () => {
     )
   }, [distributionDataAndClient])
 
-  return currentSeasonId && isWhiteListed ? (
+  return currentSeasonId &&
+    isWhiteListed &&
+    !loadingClaimed &&
+    mangoAccountAddress ? (
     showClaim ? (
       <BannerContent
         text={`Claiming season ${prevSeasonId} rewards ends ${
