@@ -745,7 +745,10 @@ const AdvancedTradeForm = () => {
   }, [perpMax, selectedMarket, spotMax, tradeForm])
 
   const disabled =
-    !serumOrPerpMarket || !isMarketEnabled || !mangoAccountAddress
+    !serumOrPerpMarket ||
+    !isMarketEnabled ||
+    !mangoAccountAddress ||
+    !parseFloat(tradeForm.baseSize)
 
   return (
     <div>
