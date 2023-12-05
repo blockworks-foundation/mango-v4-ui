@@ -51,7 +51,7 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import PlausibleProvider from 'next-plausible'
 
 // init react-query
-export const queryClient = new QueryClient()
+const queryClient = new QueryClient()
 
 const metaTitle = 'Mango Markets – Safer. Smarter. Faster.'
 const metaDescription =
@@ -155,7 +155,7 @@ function MyApp({ Component, pageProps }: AppProps) {
 
 export default appWithTranslation(MyApp)
 
-export const Telemetry = () => {
+const Telemetry = () => {
   const router = useRouter()
   const { wallet, connected } = useWallet()
   const { theme } = useTheme()
