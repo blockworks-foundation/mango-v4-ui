@@ -2,7 +2,29 @@ import mangoStore from '@store/mangoStore'
 import { OrderbookL2, isMangoError } from 'types'
 import { notify } from './notifications'
 import * as sentry from '@sentry/nextjs'
-import { Bank } from '@blockworks-foundation/mango-v4'
+import {
+  Bank,
+  MangoAccount,
+  Serum3OrderType,
+  Serum3SelfTradeBehavior,
+  Serum3Side,
+  getAssociatedTokenAddress,
+  toNative,
+} from '@blockworks-foundation/mango-v4'
+import {
+  AccountMeta,
+  Keypair,
+  PublicKey,
+  SystemProgram,
+  TransactionInstruction,
+} from '@solana/web3.js'
+import {
+  NATIVE_MINT,
+  TOKEN_PROGRAM_ID,
+  createCloseAccountInstruction,
+  createInitializeAccount3Instruction,
+} from '@solana/spl-token'
+import { BN } from '@project-serum/anchor'
 
 export const calculateLimitPriceForMarketOrder = (
   orderBook: OrderbookL2,
@@ -196,6 +218,167 @@ export const handlePlaceTriggerOrder = async (
     console.error('Swap error:', e)
   } finally {
     setSubmitting(false)
+  }
+}
+
+const createDepositIxs = async (
+  mangoAccount: MangoAccount | undefined,
+  mintPk: PublicKey,
+  amount: number,
+) => {
+  const group = mangoStore.getState().group
+  const client = mangoStore.getState().client
+  if (!group || !mangoAccount) return
+  const bank = group.getFirstBankByMint(mintPk)
+
+  const tokenAccountPk = await getAssociatedTokenAddress(
+    mintPk,
+    mangoAccount.owner,
+  )
+
+  let wrappedSolAccount: PublicKey | undefined
+  let preInstructions: TransactionInstruction[] = []
+  let postInstructions: TransactionInstruction[] = []
+
+  const nativeAmount = toNative(amount, group.getMintDecimals(mintPk))
+
+  if (mintPk.equals(NATIVE_MINT)) {
+    // Generate a random seed for wrappedSolAccount.
+    const seed = Keypair.generate().publicKey.toBase58().slice(0, 32)
+    // Calculate a publicKey that will be controlled by the `mangoAccount.owner`.
+    wrappedSolAccount = await PublicKey.createWithSeed(
+      mangoAccount.owner,
+      seed,
+      TOKEN_PROGRAM_ID,
+    )
+
+    const lamports = nativeAmount.add(new BN(1e7))
+
+    preInstructions = [
+      SystemProgram.createAccountWithSeed({
+        fromPubkey: mangoAccount.owner,
+        basePubkey: mangoAccount.owner,
+        seed,
+        newAccountPubkey: wrappedSolAccount,
+        lamports: lamports.toNumber(),
+        space: 165,
+        programId: TOKEN_PROGRAM_ID,
+      }),
+      createInitializeAccount3Instruction(
+        wrappedSolAccount,
+        NATIVE_MINT,
+        mangoAccount.owner,
+      ),
+    ]
+    postInstructions = [
+      createCloseAccountInstruction(
+        wrappedSolAccount,
+        mangoAccount.owner,
+        mangoAccount.owner,
+      ),
+    ]
+  }
+
+  const healthRemainingAccounts: PublicKey[] =
+    client.buildHealthRemainingAccounts(group, [mangoAccount], [bank], [])
+
+  const depositIx = await client.program.methods
+    .tokenDeposit(new BN(nativeAmount), false)
+    .accounts({
+      group: group.publicKey,
+      account: mangoAccount.publicKey,
+      owner: mangoAccount.owner,
+      bank: bank.publicKey,
+      vault: bank.vault,
+      oracle: bank.oracle,
+      tokenAccount: wrappedSolAccount ?? tokenAccountPk,
+      tokenAuthority: mangoAccount.owner,
+    })
+    .remainingAccounts(
+      healthRemainingAccounts.map(
+        (pk) =>
+          ({ pubkey: pk, isWritable: false, isSigner: false }) as AccountMeta,
+      ),
+    )
+    .instruction()
+
+  return [...preInstructions, depositIx, ...postInstructions]
+}
+
+const createSerum3PlaceOrderIxs = async (
+  mangoAccount: MangoAccount | undefined,
+  externalMarketPk: PublicKey,
+  side: Serum3Side,
+  price: number,
+  size: number,
+  selfTradeBehavior: Serum3SelfTradeBehavior,
+  orderType: Serum3OrderType,
+  clientOrderId: number,
+  limit: number,
+) => {
+  const group = mangoStore.getState().group
+  const client = mangoStore.getState().client
+  if (!group || !mangoAccount) return
+  const placeOrderIxs = await client.serum3PlaceOrderIx(
+    group,
+    mangoAccount,
+    externalMarketPk,
+    side,
+    price,
+    size,
+    selfTradeBehavior,
+    orderType,
+    clientOrderId,
+    limit,
+  )
+
+  const settleIx = await client.serum3SettleFundsIx(
+    group,
+    mangoAccount,
+    externalMarketPk,
+  )
+
+  return [...placeOrderIxs, settleIx]
+}
+
+export const depositAndPlaceSerum3Order = async (
+  mangoAccount: MangoAccount | undefined,
+  depositMintPk: PublicKey,
+  amount: number,
+  externalMarketPk: PublicKey,
+  side: Serum3Side,
+  price: number,
+  selfTradeBehavior: Serum3SelfTradeBehavior,
+  orderType: Serum3OrderType,
+  clientOrderId: number,
+  limit: number,
+) => {
+  const group = mangoStore.getState().group
+  const client = mangoStore.getState().client
+  if (!group) return
+  try {
+    const depositIxs = await createDepositIxs(
+      mangoAccount,
+      depositMintPk,
+      amount,
+    )
+    const placeOrderIxs = await createSerum3PlaceOrderIxs(
+      mangoAccount,
+      externalMarketPk,
+      side,
+      price,
+      amount,
+      selfTradeBehavior,
+      orderType,
+      clientOrderId,
+      limit,
+    )
+    if (depositIxs?.length && placeOrderIxs?.length) {
+      const ixs = [...depositIxs, ...placeOrderIxs]
+      return await client.sendAndConfirmTransactionForGroup(group, ixs)
+    }
+  } catch (e) {
+    console.log('failed to execute deposit and place order transaction', e)
   }
 }
 

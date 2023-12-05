@@ -34,6 +34,7 @@ import {
   OrderTypes,
   TriggerOrderTypes,
   calculateLimitPriceForMarketOrder,
+  depositAndPlaceSerum3Order,
   handlePlaceTriggerOrder,
 } from 'utils/tradeForm'
 import Image from 'next/legacy/image'
@@ -534,38 +535,23 @@ const AdvancedTradeForm = () => {
             txid: tx,
           })
         } else {
-          // const quoteSize = Number(tradeForm.quoteSize)
-          // const depositAmount = tradeForm.side === 'buy' ? quoteSize : baseSize
-          // const depositMint =
-          //   tradeForm.side === 'buy' ? quoteBank?.mint : baseBank?.mint
-          // if (!depositMint) return
-          // const promises = [
-          //   client.tokenDeposit(
-          //     group,
-          //     mangoAccount,
-          //     depositMint,
-          //     depositAmount,
-          //   ),
-          //   client.serum3PlaceOrder(
-          //     group,
-          //     mangoAccount,
-          //     selectedMarket.serumMarketExternal,
-          //     tradeForm.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
-          //     price,
-          //     baseSize,
-          //     Serum3SelfTradeBehavior.decrementTake,
-          //     spotOrderType,
-          //     Date.now(),
-          //     10,
-          //   ),
-          // ]
-          // const ixs = await Promise.all(promises)
-          // const tx = await client.sendAndConfirmTransaction(ixs)
-          // notify({
-          //   title: 'Transaction confirmed',
-          //   type: 'success',
-          //   txid: tx.signature,
-          // })
+          const quoteSize = Number(tradeForm.quoteSize)
+          const depositAmount = tradeForm.side === 'buy' ? quoteSize : baseSize
+          const depositMint =
+            tradeForm.side === 'buy' ? quoteBank?.mint : baseBank?.mint
+          if (!depositMint) return
+          await depositAndPlaceSerum3Order(
+            mangoAccount,
+            depositMint,
+            depositAmount,
+            selectedMarket.serumMarketExternal,
+            tradeForm.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
+            price,
+            Serum3SelfTradeBehavior.decrementTake,
+            spotOrderType,
+            Date.now(),
+            10,
+          )
         }
       } else if (selectedMarket instanceof PerpMarket) {
         const perpOrderType =
