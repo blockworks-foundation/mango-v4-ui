@@ -11,6 +11,7 @@ import { NOTIFICATION_API } from 'utils/constants'
 import NotificationCookieStore from '@store/notificationCookieStore'
 import mangoStore from '@store/mangoStore'
 import { createLedgerMessage, createSolanaMessage } from 'utils/notifications'
+import { SETTINGS_BUTTON_TITLE_CLASSES } from './AccountSettings'
 
 const NotificationSettings = () => {
   const { t } = useTranslation(['common', 'notifications', 'settings'])
@@ -42,7 +43,9 @@ const NotificationSettings = () => {
     <>
       {isAuth ? (
         <div className="flex items-center justify-between border-y border-th-bkg-3 p-4">
-          <p>{t('settings:limit-order-filled')}</p>
+          <p className={SETTINGS_BUTTON_TITLE_CLASSES}>
+            {t('settings:limit-order-filled')}
+          </p>
           <Switch
             checked={!!data?.fillsNotifications}
             onChange={() =>

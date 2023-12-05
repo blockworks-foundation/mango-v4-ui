@@ -321,9 +321,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           (x) => x?.priceImpactPct && x?.priceImpactPct * 100 < 1,
         )
         const tier =
-          indexForTierFromSwaps > -1
-            ? TIERS[indexForTierFromSwaps]
-            : 'UNTRUSTED'
+          indexForTierFromSwaps > -1 ? TIERS[indexForTierFromSwaps] : 'SHIT'
         setLiqudityTier(tier)
         setPriceImpact(midTierCheck ? midTierCheck.priceImpactPct * 100 : 100)
         handleGetPoolParams(tier, tokenMint)
@@ -334,7 +332,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           description: `${e}`,
           type: 'error',
         })
-        return 'UNTRUSTED'
+        return 'SHIT'
       }
     },
     [t, handleGetRoutesWithFixedArgs],
@@ -361,7 +359,9 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
 
     const swapInfos = swaps?.bestRoute?.routePlan?.map((x) => x.swapInfo)
     const orcaPool = swapInfos?.find(
-      (x) => x.label?.toLowerCase().includes('orca'),
+      (x) =>
+        x.label?.toLowerCase().includes('orca') ||
+        x.label?.toLowerCase().includes('whirlpool'),
     )
     const raydiumPool = swapInfos?.find(
       (x) => x.label?.toLowerCase().includes('raydium'),
@@ -583,21 +583,19 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       proposalTx.push(trustlessIx)
     }
 
-    const registerMarketix = await client!.program.methods
-      .serum3RegisterMarket(Number(advForm.marketIndex), advForm.marketName)
-      .accounts({
-        group: group!.publicKey,
-        admin: MANGO_DAO_WALLET,
-        serumProgram: new PublicKey(advForm.openBookProgram),
-        serumMarketExternal: advForm.listForSwapOnly
-          ? undefined
-          : new PublicKey(advForm.openBookMarketExternalPk),
-        baseBank: new PublicKey(advForm.baseBankPk),
-        quoteBank: new PublicKey(advForm.quoteBankPk),
-        payer: MANGO_DAO_WALLET,
-      })
-      .instruction()
-    if (listingTier !== 'UNTRUSTED') {
+    if (listingTier !== 'UNTRUSTED' && !advForm.listForSwapOnly) {
+      const registerMarketix = await client!.program.methods
+        .serum3RegisterMarket(Number(advForm.marketIndex), advForm.marketName)
+        .accounts({
+          group: group!.publicKey,
+          admin: MANGO_DAO_WALLET,
+          serumProgram: new PublicKey(advForm.openBookProgram),
+          serumMarketExternal: new PublicKey(advForm.openBookMarketExternalPk),
+          baseBank: new PublicKey(advForm.baseBankPk),
+          quoteBank: new PublicKey(advForm.quoteBankPk),
+          payer: MANGO_DAO_WALLET,
+        })
+        .instruction()
       proposalTx.push(registerMarketix)
     }
     const rp = new ReferralProvider(connection)
@@ -1055,7 +1053,8 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                 {!advForm.oraclePk && listingTier && !loadingListingParams ? (
                   <li
                     className={`my-4 pl-2 ${
-                      !advForm.openBookMarketExternalPk
+                      !advForm.openBookMarketExternalPk &&
+                      !advForm.listForSwapOnly
                         ? 'disabled pointer-events-none opacity-60'
                         : ''
                     }`}

@@ -24,6 +24,7 @@ import {
 } from 'utils/constants'
 import mangoStore from '@store/mangoStore'
 import { CUSTOM_SKINS } from 'utils/theme'
+import { SETTINGS_BUTTON_TITLE_CLASSES } from './AccountSettings'
 
 const NOTIFICATION_POSITIONS = [
   'bottom-left',
@@ -123,7 +124,9 @@ const DisplaySettings = () => {
   return (
     <div className="border-b border-th-bkg-3">
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
-        <p className="mb-2 md:mb-0">{t('settings:theme')}</p>
+        <p className={`mb-2 md:mb-0 ${SETTINGS_BUTTON_TITLE_CLASSES}`}>
+          {t('settings:theme')}
+        </p>
         <div className="w-full min-w-[140px] md:w-auto">
           <Select
             value={theme || DEFAULT_THEMES[0]}
@@ -141,7 +144,9 @@ const DisplaySettings = () => {
         </div>
       </div>
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
-        <p className="mb-2 md:mb-0">{t('settings:language')}</p>
+        <p className={`mb-2 md:mb-0 ${SETTINGS_BUTTON_TITLE_CLASSES}`}>
+          {t('settings:language')}
+        </p>
         <div className="w-full min-w-[220px] md:w-auto md:pl-4">
           <ButtonGroup
             activeValue={savedLanguage}
@@ -152,7 +157,9 @@ const DisplaySettings = () => {
         </div>
       </div>
       <div className="hidden border-t border-th-bkg-3 py-4 md:flex md:flex-row md:items-center md:justify-between md:px-4">
-        <p className="mb-2 md:mb-0">{t('settings:notification-position')}</p>
+        <p className={`mb-2 md:mb-0 ${SETTINGS_BUTTON_TITLE_CLASSES}`}>
+          {t('settings:notification-position')}
+        </p>
         <div className="w-full min-w-[140px] md:w-auto">
           <Select
             value={t(`settings:${notificationPosition}`)}
@@ -168,7 +175,9 @@ const DisplaySettings = () => {
         </div>
       </div>
       <div className="hidden border-t border-th-bkg-3 py-4 md:px-4 lg:flex lg:items-center lg:justify-between">
-        <p className="mb-2 md:mb-0">{t('settings:trade-layout')}</p>
+        <p className={`mb-2 md:mb-0 ${SETTINGS_BUTTON_TITLE_CLASSES}`}>
+          {t('settings:trade-layout')}
+        </p>
         <div className="flex space-x-3">
           <Tooltip content={t('settings:chart-left')}>
             <ChartLayoutButton
@@ -201,7 +210,9 @@ const DisplaySettings = () => {
         </div>
       </div>
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
-        <p className="mb-2 md:mb-0">{t('settings:swap-trade-size-selector')}</p>
+        <p className={`mb-2 md:mb-0 ${SETTINGS_BUTTON_TITLE_CLASSES}`}>
+          {t('settings:swap-trade-size-selector')}
+        </p>
         <div className="w-full min-w-[160px] md:w-auto">
           <ButtonGroup
             activeValue={tradeFormUi}
@@ -212,7 +223,9 @@ const DisplaySettings = () => {
         </div>
       </div>
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
-        <p className="mb-2 lg:mb-0">{t('settings:trade-chart')}</p>
+        <p className={`mb-2 md:mb-0 ${SETTINGS_BUTTON_TITLE_CLASSES}`}>
+          {t('settings:trade-chart')}
+        </p>
         <div className="w-full min-w-[220px] md:w-auto">
           <ButtonGroup
             activeValue={tradeChartUi}

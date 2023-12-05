@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import PerpMarketsTable from './PerpMarketsTable'
 import { useTranslation } from 'react-i18next'
-import dayjs from 'dayjs'
-import relativeTime from 'dayjs/plugin/relativeTime'
 import mangoStore from '@store/mangoStore'
 import RecentGainersLosers from './RecentGainersLosers'
 import Spot from './Spot'
@@ -10,7 +8,6 @@ import useBanks from 'hooks/useBanks'
 import TabsText from '@components/shared/TabsText'
 import useFollowedAccounts from 'hooks/useFollowedAccounts'
 import FollowedAccounts from './FollowedAccounts'
-dayjs.extend(relativeTime)
 
 const Explore = () => {
   const { t } = useTranslation(['common'])
@@ -28,10 +25,13 @@ const Explore = () => {
 
   const tabsWithCount: [string, number][] = useMemo(() => {
     const perpMarkets = mangoStore.getState().perpMarkets
+    const followedAccountsNumber = followedAccounts
+      ? followedAccounts.length
+      : 0
     const tabs: [string, number][] = [
       ['tokens', banks.length],
       ['perp', perpMarkets.length],
-      ['account:followed-accounts', followedAccounts?.length],
+      ['account:followed-accounts', followedAccountsNumber],
     ]
     return tabs
   }, [banks, followedAccounts])
@@ -69,7 +69,7 @@ const TabContent = ({ activeTab }: { activeTab: string }) => {
   switch (activeTab) {
     case 'tokens':
       return <Spot />
-    case 'perp-markets':
+    case 'perp':
       return (
         <div className="mt-6 border-t border-th-bkg-3">
           <PerpMarketsTable />

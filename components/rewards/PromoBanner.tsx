@@ -13,6 +13,7 @@ import { MANGO_MINTS_BANNER_KEY } from 'utils/constants'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { useWallet } from '@solana/wallet-adapter-react'
+import useMangoAccount from 'hooks/useMangoAccount'
 dayjs.extend(relativeTime)
 
 const BANNER_WRAPPER_CLASSES =
@@ -29,12 +30,16 @@ const PromoBanner = () => {
     {},
   )
   const { publicKey } = useWallet()
+  const { mangoAccountAddress } = useMangoAccount()
   const { data: isWhiteListed } = useIsWhiteListed()
   const { data: seasonData } = useCurrentSeason()
-  const currentSeason = seasonData ? seasonData.season_id : undefined
-  const prevSeason = currentSeason ? currentSeason - 1 : undefined
-  const { data: distributionDataAndClient } = useDistribution(prevSeason)
-  const { showClaim } = useIsAllClaimed(prevSeason, publicKey)
+  const currentSeasonId = seasonData ? seasonData.season_id : undefined
+  const prevSeasonId = currentSeasonId ? currentSeasonId - 1 : undefined
+  const { data: distributionDataAndClient } = useDistribution(prevSeasonId)
+  const { showClaim, loading: loadingClaimed } = useIsAllClaimed(
+    prevSeasonId,
+    publicKey,
+  )
 
   const hasClosedBanner = useMemo(() => {
     if (!seasonData?.season_id) return false
@@ -54,25 +59,28 @@ const PromoBanner = () => {
     )
   }, [distributionDataAndClient])
 
-  return seasonData?.season_id && isWhiteListed ? (
+  return currentSeasonId &&
+    isWhiteListed &&
+    !loadingClaimed &&
+    mangoAccountAddress ? (
     showClaim ? (
       <BannerContent
-        text={`Claiming season ${seasonData.season_id - 1} rewards ends ${
+        text={`Claiming season ${prevSeasonId} rewards ends ${
           claimEndsIn || ''
         }.`}
         linkText="Claim Now"
       />
     ) : !hasClosedBanner ? (
       <BannerContent
-        text={`Season ${seasonData.season_id} of Mango Mints ends ${
+        text={`Season ${currentSeasonId} of Mango Mints ends ${
           seasonEndsIn || ''
         }.`}
         linkText="Let's Go"
         onClickLink={() =>
-          setShowBanner({ ...showBanner, [seasonData.season_id]: true })
+          setShowBanner({ ...showBanner, [currentSeasonId]: true })
         }
         onClose={() =>
-          setShowBanner({ ...showBanner, [seasonData.season_id]: true })
+          setShowBanner({ ...showBanner, [currentSeasonId]: true })
         }
       />
     ) : null

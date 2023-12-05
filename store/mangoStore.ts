@@ -788,12 +788,13 @@ const mangoStore = create<MangoStore>()(
               state.perpStats.data = data
               state.perpStats.loading = false
             })
-          } catch {
+          } catch (error) {
             set((state) => {
               state.perpStats.loading = false
             })
+            console.log('Failed to fetch perp stats data', error)
             notify({
-              title: 'Failed to fetch token stats data',
+              title: 'Failed to fetch perp stats data',
               type: 'error',
             })
           }
@@ -913,8 +914,8 @@ const mangoStore = create<MangoStore>()(
           })
 
           try {
-            const data = await fetchTokenStatsData(group)
-            const mangoStats = processTokenStatsData(data, group)
+            const rawData = await fetchTokenStatsData(group)
+            const [data, mangoStats] = processTokenStatsData(rawData, group)
 
             set((state) => {
               state.tokenStats.data = data
@@ -926,7 +927,7 @@ const mangoStore = create<MangoStore>()(
             set((state) => {
               state.tokenStats.loading = false
             })
-
+            console.log('Failed to fetch token stats data', error)
             notify({
               title: 'Failed to fetch token stats data',
               type: 'error',

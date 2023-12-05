@@ -45,7 +45,7 @@ export const getOracle = async ({
         baseSymbol,
         quoteSymbol,
         connection,
-        noLock: tier === 'UNTRUSTED',
+        noLock: tier === 'SHIT',
       })
       oraclePk = switchBoardOracle
     }

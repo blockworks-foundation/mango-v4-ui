@@ -1,10 +1,10 @@
-import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import ButtonGroup from '@components/forms/ButtonGroup'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { floorToDecimal } from 'utils/numbers'
+import { usePerpMarketMax } from './PerpSlider'
 
 const PerpButtonGroup = ({
   minOrderDecimals,
@@ -17,36 +17,13 @@ const PerpButtonGroup = ({
   const { selectedMarket } = useSelectedMarket()
   const { mangoAccount } = useMangoAccount()
   const [sizePercentage, setSizePercentage] = useState('')
-  const tradeFormPrice = mangoStore((s) => s.tradeForm.price)
-
-  const leverageMax = useMemo(() => {
-    const group = mangoStore.getState().group
-    if (!mangoAccount || !group || !selectedMarket) return 100
-    if (!(selectedMarket instanceof PerpMarket)) return 100
-
-    try {
-      if (side === 'buy') {
-        return mangoAccount.getMaxQuoteForPerpBidUi(
-          group,
-          selectedMarket.perpMarketIndex,
-        )
-      } else {
-        return mangoAccount.getMaxBaseForPerpAskUi(
-          group,
-          selectedMarket.perpMarketIndex,
-        )
-      }
-    } catch (e) {
-      console.error('Error calculating max leverage perp btn grp: ', e)
-      return 0
-    }
-  }, [side, selectedMarket, mangoAccount, tradeFormPrice])
+  const perpMax = usePerpMarketMax(mangoAccount, selectedMarket, side)
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {
       const set = mangoStore.getState().set
       setSizePercentage(percentage)
-      const size = leverageMax * (Number(percentage) / 100)
+      const size = perpMax * (Number(percentage) / 100)
 
       set((s) => {
         if (s.tradeForm.side === 'buy') {
@@ -75,7 +52,7 @@ const PerpButtonGroup = ({
         }
       })
     },
-    [leverageMax, minOrderDecimals, tickDecimals],
+    [perpMax, minOrderDecimals, tickDecimals],
   )
 
   return (

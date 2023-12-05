@@ -6,7 +6,7 @@ const TableTokenName = ({ bank, symbol }: { bank: Bank; symbol: string }) => {
   return (
     <div className="flex items-center">
       <div className="mr-2.5 flex flex-shrink-0 items-center">
-        <TokenLogo bank={bank} />
+        <TokenLogo bank={bank} showRewardsLogo />
       </div>
       <div>
         <p className="font-body leading-none text-th-fgd-2">{symbol}</p>

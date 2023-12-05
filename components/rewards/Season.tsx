@@ -261,6 +261,7 @@ const Season = ({
                     <FormatNumericValue
                       value={accountPointsAndRank.total_points}
                       decimals={0}
+                      roundUp
                     />
                   </span>
                 ) : wallet?.adapter.publicKey ? (
@@ -287,6 +288,7 @@ const Season = ({
                       <FormatNumericValue
                         value={accountPointsAndRank.total_points_pre_multiplier}
                         decimals={0}
+                        roundUp
                       />
                     ) : wallet?.adapter.publicKey ? (
                       0

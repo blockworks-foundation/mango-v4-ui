@@ -167,7 +167,7 @@ const RecentGainersLosers = () => {
                     }
                   >
                     <div className="flex items-center">
-                      <TokenLogo bank={token} />
+                      <TokenLogo bank={token} showRewardsLogo />
                       <p className="ml-3 font-body text-th-fgd-2">
                         {token.name}
                       </p>
@@ -219,7 +219,7 @@ const RecentGainersLosers = () => {
                       <div className="flex items-center">
                         {bank ? (
                           <div className="mr-3">
-                            <TokenLogo bank={bank} />
+                            <TokenLogo bank={bank} showRewardsLogo />
                           </div>
                         ) : (
                           <MarketLogos market={gainer?.market} size="large" />
@@ -281,7 +281,7 @@ const RecentGainersLosers = () => {
                     >
                       <div className="flex items-center">
                         {bank ? (
-                          <TokenLogo bank={bank} />
+                          <TokenLogo bank={bank} showRewardsLogo />
                         ) : (
                           <MarketLogos market={loser?.market} />
                         )}

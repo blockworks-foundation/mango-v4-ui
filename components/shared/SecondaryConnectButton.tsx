@@ -9,8 +9,6 @@ import { LinkIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
 import { useCallback } from 'react'
 
-const set = mangoStore.getState().set
-
 const SecondaryConnectButton = ({
   className,
   isLarge,
@@ -27,6 +25,7 @@ const SecondaryConnectButton = ({
   const [isOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
 
   const handleConnect = useCallback(() => {
+    const set = mangoStore.getState().set
     if (!isOnboarded) {
       set((s) => {
         s.showUserSetup = true

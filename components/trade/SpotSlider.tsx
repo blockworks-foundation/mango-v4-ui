@@ -20,8 +20,8 @@ export const useSpotMarketMax = (
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const max = useMemo(() => {
     const group = mangoStore.getState().group
-    if (!mangoAccount || !group || !selectedMarket) return 100
-    if (!(selectedMarket instanceof Serum3Market)) return 100
+    if (!mangoAccount || !group || !selectedMarket) return 0
+    if (!(selectedMarket instanceof Serum3Market)) return 0
 
     let leverageMax = 0
     let spotMax = 0

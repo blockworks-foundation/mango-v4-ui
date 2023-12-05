@@ -40,6 +40,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
   return {
     props: {
       ...(await serverSideTranslations(locale, [
+        'close-account',
         'common',
         'notifications',
         'onboarding',
@@ -382,11 +383,16 @@ const Dashboard: NextPage = () => {
                                   label="Oracle: Conf Filter"
                                   value={`${
                                     formattedBankValues.oracleConfFilter
-                                  }% (Last known confidence ${bank._oracleLastKnownDeviation
-                                    ?.div(bank.price)
-                                    .mul(I80F48.fromNumber(100))
-                                    .toNumber()
-                                    .toFixed(2)}%)`}
+                                  }% (Last known confidence ${
+                                    bank._oracleLastKnownDeviation instanceof
+                                    I80F48
+                                      ? bank._oracleLastKnownDeviation
+                                          ?.div(bank.price)
+                                          .mul(I80F48.fromNumber(100))
+                                          .toNumber()
+                                          .toFixed(2)
+                                      : 'null'
+                                  }%)`}
                                 />
                                 <KeyValuePair
                                   label="Oracle: Max Staleness"
@@ -913,6 +919,19 @@ export const DashboardNavbar = () => {
             } cursor-pointer border-r border-th-bkg-3 px-6 py-4`}
           >
             Risks
+          </h4>
+        </Link>
+      </div>
+      <div>
+        <Link href={'/dashboard/slippage'} shallow={true}>
+          <h4
+            className={`${
+              asPath.includes('/dashboard/slippage')
+                ? 'bg-th-bkg-2 text-th-active'
+                : ''
+            } cursor-pointer border-r border-th-bkg-3 px-6 py-4`}
+          >
+            Slippage
           </h4>
         </Link>
       </div>
