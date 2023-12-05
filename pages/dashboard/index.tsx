@@ -383,11 +383,16 @@ const Dashboard: NextPage = () => {
                                   label="Oracle: Conf Filter"
                                   value={`${
                                     formattedBankValues.oracleConfFilter
-                                  }% (Last known confidence ${bank._oracleLastKnownDeviation
-                                    ?.div(bank.price)
-                                    .mul(I80F48.fromNumber(100))
-                                    .toNumber()
-                                    .toFixed(2)}%)`}
+                                  }% (Last known confidence ${
+                                    bank._oracleLastKnownDeviation instanceof
+                                    I80F48
+                                      ? bank._oracleLastKnownDeviation
+                                          ?.div(bank.price)
+                                          .mul(I80F48.fromNumber(100))
+                                          .toNumber()
+                                          .toFixed(2)
+                                      : 'null'
+                                  }%)`}
                                 />
                                 <KeyValuePair
                                   label="Oracle: Max Staleness"
