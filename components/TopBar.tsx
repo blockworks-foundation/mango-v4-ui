@@ -266,6 +266,7 @@ const TopBar = () => {
               <button
                 onClick={() => handleDepositWithdrawModal('deposit')}
                 className={TOPBAR_ICON_BUTTON_CLASSES}
+                title="Deposit Withdraw"
               >
                 <DepositWithdrawIcon className="h-6 w-6" />
               </button>
