@@ -583,7 +583,7 @@ const mangoStore = create<MangoStore>()(
             const lastSlot = get().mangoAccount.lastSlot
             if (
               !confirmationSlot ||
-              (confirmationSlot && slot > confirmationSlot)
+              (confirmationSlot && slot >= confirmationSlot)
             ) {
               if (slot > lastSlot) {
                 const ma = get().mangoAccounts.find((ma) =>
