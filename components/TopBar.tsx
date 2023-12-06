@@ -42,7 +42,6 @@ import FormatNumericValue from './shared/FormatNumericValue'
 import { useRouter } from 'next/router'
 import TopBarStore from '@store/topBarStore'
 import MedalIcon from './icons/MedalIcon'
-import BridgeModal from './modals/BridgeModal'
 
 export const TOPBAR_ICON_BUTTON_CLASSES =
   'relative flex h-16 w-10 sm:w-16 items-center justify-center sm:border-l sm:border-th-bkg-3 focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2'
@@ -72,7 +71,6 @@ const TopBar = () => {
   const [showDepositWithdrawModal, setShowDepositWithdrawModal] =
     useState(false)
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
-  const [showBridgeModal, setShowBridgeModal] = useState(false)
   const { showSettingsModal, setShowSettingsModal } = TopBarStore()
   const isOnline = useOnlineStatus()
 
@@ -277,15 +275,6 @@ const TopBar = () => {
           <div className="h-[63px] bg-th-bkg-1">
             <button
               className={TOPBAR_ICON_BUTTON_CLASSES}
-              title="Bridge assets from another chain"
-              onClick={() => setShowBridgeModal(true)}
-            >
-              <span className="px-2">Bridge</span>
-            </button>
-          </div>
-          <div className="h-[63px] bg-th-bkg-1">
-            <button
-              className={TOPBAR_ICON_BUTTON_CLASSES}
               onClick={() => setShowSettingsModal(true)}
             >
               <Cog8ToothIcon className="h-5 w-5" />
@@ -322,9 +311,6 @@ const TopBar = () => {
           isOpen={showCreateAccountModal}
           onClose={() => setShowCreateAccountModal(false)}
         />
-      ) : null}
-      {showBridgeModal ? (
-        <BridgeModal isOpen={true} onClose={() => setShowBridgeModal(false)} />
       ) : null}
       {showSettingsModal ? (
         <SettingsModal

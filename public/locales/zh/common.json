@@ -34,6 +34,7 @@
   "borrow-fee": "借贷费用",
   "borrow-funds": "进行借贷",
   "borrow-rate": "借贷APR",
+  "bridge-wormhole": "Bridge from another chain via Wormhole",
   "buy": "买",
   "cancel": "取消",
   "chart-unavailable": "无法显示图表",
