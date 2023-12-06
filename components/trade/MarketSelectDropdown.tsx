@@ -36,6 +36,7 @@ import Input from '@components/forms/Input'
 import { useSortableData } from 'hooks/useSortableData'
 import { SortableColumnHeader } from '@components/shared/TableElements'
 import { useViewport } from 'hooks/useViewport'
+import { useRouter } from 'next/router'
 
 const MARKET_LINK_CLASSES =
   'grid grid-cols-3 sm:grid-cols-4 flex items-center w-full py-2 px-4 rounded-r-md focus:outline-none focus-visible:text-th-active md:hover:cursor-pointer md:hover:bg-th-bkg-3 md:hover:text-th-fgd-1'
@@ -58,6 +59,16 @@ const MarketSelectDropdown = () => {
     useListedMarketsWithMarketData()
   const { isDesktop } = useViewport()
   const focusRef = useRef<HTMLInputElement>(null)
+  const { query } = useRouter()
+
+  // switch to spot tab on spot markets
+  useEffect(() => {
+    if (query?.name && !query.name.includes('PERP')) {
+      setSpotOrPerp('spot')
+    } else {
+      setSpotOrPerp('perp')
+    }
+  }, [query])
 
   const unsortedPerpMarketsToShow = useMemo(() => {
     if (!perpMarketsWithData.length) return []
