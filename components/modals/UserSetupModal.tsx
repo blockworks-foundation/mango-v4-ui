@@ -61,11 +61,11 @@ const UserSetupModal = ({
 }) => {
   const { t } = useTranslation(['common', 'onboarding', 'swap'])
   const { connected, select, wallet, wallets, publicKey, connect } = useWallet()
-  const { mangoAccount } = useMangoAccount()
-  const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
+  const { mangoAccountAddress, initialLoad: mangoAccountLoading } =
+    useMangoAccount()
   const telemetry = usePlausible<TelemetryEvents>()
   const [accountName, setAccountName] = useState('')
-  const [loadingAccount, setLoadingAccount] = useState(false)
+  const [loadingNewAccount, setLoadingNewAccount] = useState(false)
   const [termsAccepted, setTermsAccepted] = useState(false)
   const [showSetupStep, setShowSetupStep] = useState(0)
   const [depositToken, setDepositToken] = useState('USDC')
@@ -101,11 +101,26 @@ const UserSetupModal = ({
     }
   }, [walletsToDisplay, wallets])
 
+  // close onboarding if an account already exists after connecting
   useEffect(() => {
-    if (connected) {
+    if (connected && mangoAccountAddress && showSetupStep === 1) {
+      onClose()
+    }
+  }, [connected, mangoAccountAddress, showSetupStep])
+
+  // move to create account after connecting wallet
+  useEffect(() => {
+    if (connected && !mangoAccountAddress && !mangoAccountLoading) {
       setShowSetupStep(2)
     }
-  }, [connected])
+  }, [connected, mangoAccountAddress, mangoAccountLoading])
+
+  // move to fund account after creating an account
+  useEffect(() => {
+    if (mangoAccountAddress && showSetupStep === 2) {
+      setShowSetupStep(3)
+    }
+  }, [mangoAccountAddress, showSetupStep])
 
   const handleCreateAccount = useCallback(async () => {
     const client = mangoStore.getState().client
@@ -113,7 +128,7 @@ const UserSetupModal = ({
     const actions = mangoStore.getState().actions
     const connection = mangoStore.getState().connection
     if (!group || !publicKey) return
-    setLoadingAccount(true)
+    setLoadingNewAccount(true)
     try {
       const { signature: tx, slot } = await client.createMangoAccount(
         group,
@@ -153,7 +168,7 @@ const UserSetupModal = ({
       }
       console.error(e)
     } finally {
-      setLoadingAccount(false)
+      setLoadingNewAccount(false)
     }
   }, [accountName, publicKey, signToNotifications, t])
 
@@ -164,7 +179,7 @@ const UserSetupModal = ({
     const mangoAccount = mangoStore.getState().mangoAccount.current
     const bank = group?.banksMapByName.get(depositToken)?.[0]
 
-    if (!mangoAccount || !group || !bank) return
+    if (!mangoAccount || !group || !bank || !publicKey) return
     try {
       setSubmitDeposit(true)
       const { signature: tx, slot } = await client.tokenDeposit(
@@ -180,6 +195,7 @@ const UserSetupModal = ({
       })
 
       await actions.reloadMangoAccount(slot)
+      actions.fetchWalletTokens(publicKey)
       setSubmitDeposit(false)
       onClose()
       // setShowSetupStep(4)
@@ -194,13 +210,7 @@ const UserSetupModal = ({
         type: 'error',
       })
     }
-  }, [depositAmount, depositToken, onClose])
-
-  useEffect(() => {
-    if (mangoAccount && showSetupStep === 2) {
-      setShowSetupStep(3)
-    }
-  }, [mangoAccount, showSetupStep])
+  }, [depositAmount, depositToken, onClose, publicKey])
 
   const depositBank = useMemo(() => {
     return banks.find((b) => b.bank.name === depositToken)?.bank
@@ -396,11 +406,8 @@ const UserSetupModal = ({
               </div>
             ) : null}
           </UserSetupTransition>
-          <UserSetupTransition
-            delay
-            show={showSetupStep === 2 && !mangoAccountLoading}
-          >
-            {showSetupStep === 2 ? (
+          <UserSetupTransition delay show={showSetupStep === 2}>
+            {!mangoAccountLoading ? (
               <div>
                 <div className="pb-6">
                   <h2 className="mb-4 font-display text-3xl tracking-normal md:text-5xl">
@@ -442,7 +449,7 @@ const UserSetupModal = ({
                       onClick={handleCreateAccount}
                       size="large"
                     >
-                      {loadingAccount ? (
+                      {loadingNewAccount ? (
                         <Loading />
                       ) : (
                         <div className="flex items-center justify-center">
@@ -456,7 +463,9 @@ const UserSetupModal = ({
                   </div>
                 </div>
               </div>
-            ) : null}
+            ) : (
+              <Loading />
+            )}
           </UserSetupTransition>
           <UserSetupTransition delay show={showSetupStep === 3}>
             {showSetupStep === 3 ? (

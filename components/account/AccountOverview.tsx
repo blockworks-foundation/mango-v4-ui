@@ -29,15 +29,6 @@ const DEFAULT_CHART_DATA = [
     spot_value: 0,
     transfer_balance: 0,
   },
-  {
-    account_equity: 0,
-    time: dayjs().toISOString(),
-    borrow_interest_cumulative_usd: 0,
-    deposit_interest_cumulative_usd: 0,
-    pnl: 0,
-    spot_value: 0,
-    transfer_balance: 0,
-  },
 ]
 
 const AccountOverview = () => {
@@ -56,29 +47,24 @@ const AccountOverview = () => {
   }, [group, mangoAccount])
 
   const latestAccountData = useMemo(() => {
-    if (!performanceData || !performanceData?.length) return []
-    const latestDataItem = performanceData[performanceData.length - 1]
     return [
       {
         account_equity: accountValue,
         time: dayjs().toISOString(),
-        borrow_interest_cumulative_usd:
-          latestDataItem.borrow_interest_cumulative_usd,
-        deposit_interest_cumulative_usd:
-          latestDataItem.deposit_interest_cumulative_usd,
-        pnl: latestDataItem.pnl,
-        spot_value: latestDataItem.spot_value,
-        transfer_balance: latestDataItem.transfer_balance,
+        borrow_interest_cumulative_usd: 0,
+        deposit_interest_cumulative_usd: 0,
+        pnl: 0,
+        spot_value: 0,
+        transfer_balance: 0,
       },
     ]
-  }, [accountValue, performanceData])
+  }, [accountValue])
 
   const chartData = useMemo(() => {
-    if (performanceData && performanceData?.length)
+    if (performanceData && performanceData?.length) {
       return performanceData.concat(latestAccountData)
-    if (!latestAccountData.length) {
-      return DEFAULT_CHART_DATA
     }
+    return DEFAULT_CHART_DATA.concat(latestAccountData)
   }, [latestAccountData, performanceData])
 
   return (
