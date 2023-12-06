@@ -184,9 +184,9 @@ export const DAILY_MILLISECONDS = 86400000
 export const MAX_ACCOUNTS = {
   tokenAccounts: '8',
   spotOpenOrders: '4',
-  perpAccounts: '4',
-  perpOpenOrders: '64',
-  tcsOrders: '64',
+  perpAccounts: '3',
+  perpOpenOrders: '24',
+  tcsOrders: '24',
 }
 
 export enum TOKEN_REDUCE_ONLY_OPTIONS {
