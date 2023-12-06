@@ -6,7 +6,7 @@ import {
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
 import React, { useCallback, useMemo, useState } from 'react'
-import NumberFormat, { NumberFormatValues } from 'react-number-format'
+import NumberFormat from 'react-number-format'
 import mangoStore from '@store/mangoStore'
 import {
   ACCOUNT_ACTION_MODAL_INNER_HEIGHT,
@@ -38,6 +38,7 @@ import TokenLogo from './shared/TokenLogo'
 import SecondaryConnectButton from './shared/SecondaryConnectButton'
 import useTokenPositionsFull from 'hooks/useTokenPositionsFull'
 import AccountSlotsFullNotification from './shared/AccountSlotsFullNotification'
+import { handleInputChange } from 'utils/account'
 
 interface DepositFormProps {
   onSuccess: () => void
@@ -246,11 +247,14 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
                   className={ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES}
                   placeholder="0.00"
                   value={inputAmount}
-                  onValueChange={(e: NumberFormatValues) => {
-                    setInputAmount(
-                      !Number.isNaN(Number(e.value)) ? e.value : '',
+                  onValueChange={(values, source) =>
+                    handleInputChange(
+                      values,
+                      source,
+                      setInputAmount,
+                      setSizePercentage,
                     )
-                  }}
+                  }
                   isAllowed={withValueLimit}
                 />
               </div>

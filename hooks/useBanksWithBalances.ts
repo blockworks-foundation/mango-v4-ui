@@ -5,7 +5,6 @@ import mangoStore from '@store/mangoStore'
 import { useMemo } from 'react'
 import useMangoAccount from './useMangoAccount'
 import useMangoGroup from './useMangoGroup'
-import { floorToDecimal } from 'utils/numbers'
 import Decimal from 'decimal.js'
 
 export interface BankWithBalance {
@@ -87,7 +86,7 @@ export default function useBanksWithBalances(
       return sortedBanks
     }
     return []
-  }, [group, mangoAccount])
+  }, [group, mangoAccount, walletTokens])
 
   return banks
 }

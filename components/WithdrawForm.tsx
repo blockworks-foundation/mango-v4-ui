@@ -7,7 +7,7 @@ import {
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useMemo, useState } from 'react'
-import NumberFormat, { NumberFormatValues } from 'react-number-format'
+import NumberFormat from 'react-number-format'
 
 import mangoStore from '@store/mangoStore'
 import {
@@ -38,6 +38,7 @@ import TokenListButton from './shared/TokenListButton'
 import { ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES, BackButton } from './BorrowForm'
 import TokenLogo from './shared/TokenLogo'
 import SecondaryConnectButton from './shared/SecondaryConnectButton'
+import { handleInputChange } from 'utils/account'
 
 interface WithdrawFormProps {
   onSuccess: () => void
@@ -237,9 +238,12 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
                   className={ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES}
                   placeholder="0.00"
                   value={inputAmount}
-                  onValueChange={(e: NumberFormatValues) =>
-                    setInputAmount(
-                      !Number.isNaN(Number(e.value)) ? e.value : '',
+                  onValueChange={(values, source) =>
+                    handleInputChange(
+                      values,
+                      source,
+                      setInputAmount,
+                      setSizePercentage,
                     )
                   }
                   isAllowed={withValueLimit}
