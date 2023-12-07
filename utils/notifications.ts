@@ -70,10 +70,17 @@ export function notify(newNotification: {
     ...newNotification,
   }
 
-  setMangoStore((state) => {
-    state.transactionNotificationIdCounter = newId
-    state.transactionNotifications = [...notifications, newNotif]
-  })
+  if (
+    newNotif.txid &&
+    !notifications.find(
+      (n) => n.txid == newNotif.txid && n.type == newNotif.type,
+    )
+  ) {
+    setMangoStore((state) => {
+      state.transactionNotificationIdCounter = newId
+      state.transactionNotifications = [...notifications, newNotif]
+    })
+  }
 }
 
 const MEMO_PROGRAM_ID = new PublicKey(
