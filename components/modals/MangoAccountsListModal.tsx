@@ -103,13 +103,13 @@ const MangoAccountsListModal = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="inline-block w-full transform overflow-x-hidden">
-        <div className="flex min-h-[400px] flex-col justify-between">
+        <div className="flex min-h-[462px] flex-col justify-between">
           <div>
             <h2 className="text-center">{t('accounts')}</h2>
             {loading ? (
               <Loading />
             ) : mangoAccounts.length ? (
-              <div className="thin-scroll mt-4 max-h-[320px] space-y-2 overflow-y-auto">
+              <div className="thin-scroll mt-4 max-h-[374px] space-y-2 overflow-y-auto">
                 {sortedMangoAccounts.map((acc) => {
                   if (
                     mangoAccount &&

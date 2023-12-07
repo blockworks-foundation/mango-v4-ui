@@ -27,7 +27,7 @@ const Slider = ({
           ? '0% 100%'
           : ((value - min) * 100) / (max - min) + '% 100%'
     }
-  }, [value])
+  }, [value, max])
 
   useEffect(() => {
     if (amount) {
