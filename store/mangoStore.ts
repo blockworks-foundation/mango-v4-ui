@@ -149,17 +149,26 @@ const createProviders = (
   wallet: Wallet,
   options: web3.ConfirmOptions,
 ): [AnchorProvider, AnchorProvider[]] => {
-  const backupConnection1 = new Connection(TRITON_DEDICATED_URL)
-  const backupConnection2 = new Connection(LITE_RPC_URL)
+  const backupConnection1 = new Connection(LITE_RPC_URL)
 
   const primaryProvider = new AnchorProvider(primaryConnection, wallet, options)
   const backupProvider1 = new AnchorProvider(backupConnection1, wallet, options)
-  const backupProvider2 = new AnchorProvider(backupConnection2, wallet, options)
 
   primaryProvider.opts.skipPreflight = true
   backupProvider1.opts.skipPreflight = true
-  backupProvider2.opts.skipPreflight = true
-  return [primaryProvider, [backupProvider1, backupProvider2]]
+
+  const backupProviders = [backupProvider1]
+  if (primaryConnection.rpcEndpoint !== TRITON_DEDICATED_URL) {
+    const backupConnection2 = new Connection(TRITON_DEDICATED_URL)
+    const backupProvider2 = new AnchorProvider(
+      backupConnection2,
+      wallet,
+      options,
+    )
+    backupProvider2.opts.skipPreflight = true
+    backupProviders.push(backupProvider2)
+  }
+  return [primaryProvider, backupProviders]
 }
 
 export const DEFAULT_TRADE_FORM: TradeForm = {
