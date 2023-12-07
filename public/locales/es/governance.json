@@ -109,5 +109,6 @@
     "estimated-oracle-cost": "Estimated cost with funding oracle for ~12 months",
     "create-oracle": "Create oracle",
     "tier": "Tier",
-    "on-boarding-description-1": "If you want to use delegated tokens go to vote view and select wallet in top right corner."
+    "on-boarding-description-1": "If you want to use delegated tokens go to vote view and select wallet in top right corner.",
+    "create-bigger-market": "Create market with bigger event que - cost ~7.5 SOL"
 }

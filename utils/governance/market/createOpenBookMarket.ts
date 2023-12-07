@@ -7,6 +7,7 @@ import {
 import {
   Connection,
   Keypair,
+  LAMPORTS_PER_SOL,
   PublicKey,
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
@@ -24,6 +25,7 @@ export const makeCreateOpenBookMarketInstructionSimple = async ({
   lotSize, // 1
   tickSize, // 0.01
   dexProgramId,
+  xlSize,
 }: {
   connection: Connection
   wallet: PublicKey
@@ -38,6 +40,7 @@ export const makeCreateOpenBookMarketInstructionSimple = async ({
   lotSize: number
   tickSize: number
   dexProgramId: PublicKey
+  xlSize?: boolean
 }) => {
   const market = Keypair.generate()
   const requestQueue = Keypair.generate()
@@ -48,7 +51,9 @@ export const makeCreateOpenBookMarketInstructionSimple = async ({
   const quoteVault = Keypair.generate()
   const feeRateBps = 0
   const quoteDustThreshold = new BN(100)
-
+  const eventQueSize = !xlSize ? 45100 : 1048564
+  const elo = await connection.getMinimumBalanceForRentExemption(eventQueSize)
+  console.log(elo / LAMPORTS_PER_SOL)
   function getVaultOwnerAndNonce() {
     const vaultSignerNonce = new BN(0)
     // eslint-disable-next-line no-constant-condition
@@ -100,6 +105,7 @@ export const makeCreateOpenBookMarketInstructionSimple = async ({
       vaultSignerNonce,
       baseLotSize,
       quoteLotSize,
+      eventQueSize,
     },
   })
 }
@@ -131,6 +137,7 @@ const makeCreateMarketInstruction = async ({
 
     baseLotSize: BN
     quoteLotSize: BN
+    eventQueSize: number
   }
 }) => {
   const ins1: TransactionInstruction[] = []
@@ -184,8 +191,10 @@ const makeCreateMarketInstruction = async ({
     SystemProgram.createAccount({
       fromPubkey: wallet,
       newAccountPubkey: marketInfo.eventQueue.publicKey,
-      lamports: await connection.getMinimumBalanceForRentExemption(45100),
-      space: 45100,
+      lamports: await connection.getMinimumBalanceForRentExemption(
+        marketInfo.eventQueSize,
+      ),
+      space: marketInfo.eventQueSize,
       programId: marketInfo.programId,
     }),
     SystemProgram.createAccount({

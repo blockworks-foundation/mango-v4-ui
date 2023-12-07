@@ -109,5 +109,6 @@
     "estimated-oracle-cost": "预言机约12个月的预计成本",
     "create-oracle": "创建预言机",
     "tier": "层级",
-    "on-boarding-description-1": "若你想使用委托币种，请前往投票视图并选择右上角的钱包。"
+    "on-boarding-description-1": "若你想使用委托币种，请前往投票视图并选择右上角的钱包。",
+    "create-bigger-market": "Create market with bigger event que - cost ~7.5 SOL"
 }
