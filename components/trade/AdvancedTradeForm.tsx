@@ -72,7 +72,7 @@ import TriggerOrderMaxButton from './TriggerOrderMaxButton'
 import TradePriceDifference from '@components/shared/TradePriceDifference'
 import { getTokenBalance } from '@components/swap/TriggerSwapForm'
 import useMangoAccountAccounts from 'hooks/useMangoAccountAccounts'
-import useTokenPositionsFull from 'hooks/useTokenPositionsFull'
+import useTokenPositionsFull from 'hooks/useAccountPositionsFull'
 import AccountSlotsFullNotification from '@components/shared/AccountSlotsFullNotification'
 import DepositWithdrawModal from '@components/modals/DepositWithdrawModal'
 import CreateAccountModal from '@components/modals/CreateAccountModal'
@@ -111,7 +111,8 @@ type FormErrors = Partial<Record<keyof TradeForm, string>>
 const AdvancedTradeForm = () => {
   const { t } = useTranslation(['common', 'settings', 'swap', 'trade'])
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
-  const { usedSerum3, totalSerum3 } = useMangoAccountAccounts()
+  const { usedSerum3, totalSerum3, usedPerps, totalPerps } =
+    useMangoAccountAccounts()
   const tradeForm = mangoStore((s) => s.tradeForm)
   const [placingOrder, setPlacingOrder] = useState(false)
   const [formErrors, setFormErrors] = useState<FormErrors>({})
@@ -144,6 +145,17 @@ const AdvancedTradeForm = () => {
   )
   const perpMax = usePerpMarketMax(mangoAccount, selectedMarket, tradeForm.side)
 
+  const baseBank = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!group || !selectedMarket || selectedMarket instanceof PerpMarket)
+      return
+    const bank = group.getFirstBankByTokenIndex(selectedMarket.baseTokenIndex)
+    return bank
+  }, [selectedMarket])
+
+  // check for available account token slots
+  const tokenPositionsFull = useTokenPositionsFull([baseBank, quoteBank])
+
   // check for available serum account slots if serum market
   const serumSlotsFull = useMemo(() => {
     if (!selectedMarket || selectedMarket instanceof PerpMarket) return false
@@ -153,15 +165,14 @@ const AdvancedTradeForm = () => {
     return usedSerum3.length >= totalSerum3.length && !hasSlot
   }, [usedSerum3, totalSerum3, selectedMarket])
 
-  const baseBank = useMemo(() => {
-    const group = mangoStore.getState().group
-    if (!group || !selectedMarket || selectedMarket instanceof PerpMarket)
-      return
-    const bank = group.getFirstBankByTokenIndex(selectedMarket.baseTokenIndex)
-    return bank
-  }, [selectedMarket])
-
-  const tokenPositionsFull = useTokenPositionsFull([baseBank, quoteBank])
+  // check for available perp account slots if perp market
+  const perpSlotsFull = useMemo(() => {
+    if (!selectedMarket || selectedMarket instanceof Serum3Market) return false
+    const hasSlot = usedPerps.find(
+      (market) => market.marketIndex === selectedMarket.perpMarketIndex,
+    )
+    return usedPerps.length >= totalPerps.length && !hasSlot
+  }, [usedPerps, totalPerps, selectedMarket])
 
   const setTradeType = useCallback(
     (tradeType: OrderTypes | TriggerOrderTypes) => {
@@ -1071,9 +1082,14 @@ const AdvancedTradeForm = () => {
               />
             </div>
           ) : null}
-          {serumSlotsFull &&
-          selectedMarket instanceof Serum3Market &&
-          mangoAccountAddress ? (
+          {perpSlotsFull && mangoAccountAddress ? (
+            <div className="mb-4 px-4">
+              <AccountSlotsFullNotification
+                message={t('trade:error-perp-positions-full')}
+              />
+            </div>
+          ) : null}
+          {serumSlotsFull && mangoAccountAddress ? (
             <div className="mb-4 px-4">
               <AccountSlotsFullNotification
                 message={t('trade:error-serum-positions-full')}

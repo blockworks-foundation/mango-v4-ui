@@ -36,7 +36,7 @@ import TokenListButton from './shared/TokenListButton'
 import { ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES, BackButton } from './BorrowForm'
 import TokenLogo from './shared/TokenLogo'
 import SecondaryConnectButton from './shared/SecondaryConnectButton'
-import useTokenPositionsFull from 'hooks/useTokenPositionsFull'
+import useTokenPositionsFull from 'hooks/useAccountPositionsFull'
 import AccountSlotsFullNotification from './shared/AccountSlotsFullNotification'
 import { handleInputChange } from 'utils/account'
 
