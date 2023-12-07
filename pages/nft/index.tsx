@@ -20,6 +20,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
   return {
     props: {
       ...(await serverSideTranslations(locale, [
+        'account',
         'close-account',
         'common',
         'nft-market',

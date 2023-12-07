@@ -1,8 +1,8 @@
-import { ChangeEvent, useState } from 'react'
+import { ChangeEvent, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'next-i18next'
 import mangoStore from '@store/mangoStore'
 import { createSolanaMessage, notify } from '../../utils/notifications'
-import Button, { IconButton } from '../shared/Button'
+import Button, { IconButton, LinkButton } from '../shared/Button'
 import BounceLoader from '../shared/BounceLoader'
 import Input from '../forms/Input'
 import Label from '../forms/Label'
@@ -18,6 +18,11 @@ import NotificationCookieStore from '@store/notificationCookieStore'
 import { usePlausible } from 'next-plausible'
 import { TelemetryEvents } from 'utils/telemetry'
 import { waitForSlot } from 'utils/network'
+import CreateAccountAdvancedOptions, {
+  ACCOUNT_SLOTS,
+  DEFAULT_SLOTS,
+} from './CreateAccountAdvancedOptions'
+import { EnterBottomExitBottom } from '@components/shared/Transitions'
 
 const getNextAccountNumber = (accounts: MangoAccount[]): number => {
   if (accounts.length > 1) {
@@ -43,13 +48,22 @@ const CreateAccountForm = ({
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState('')
   const [signToNotifications, setSignToNotifications] = useState(true)
+  const [showAdvancedOptionsAccountForm, setShowAdvancedOptionsAccountForm] =
+    useState(false)
+  const [slots, setSlots] = useState<ACCOUNT_SLOTS>(DEFAULT_SLOTS)
   //whole context needed to sign msgs
   const walletContext = useWallet()
   const { maxSolDeposit } = useSolBalance()
   const telemetry = usePlausible<TelemetryEvents>()
   const setCookie = NotificationCookieStore((s) => s.setCookie)
 
-  const handleNewAccount = async () => {
+  const hasSetCustomOptions = useMemo(() => {
+    return !!Object.entries(slots).find(
+      (slot) => slot[1] !== DEFAULT_SLOTS[slot[0] as keyof ACCOUNT_SLOTS],
+    )
+  }, [slots])
+
+  const handleNewAccount = useCallback(async () => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
     const existingMangoAccts = mangoStore.getState().mangoAccounts
@@ -58,16 +72,19 @@ const CreateAccountForm = ({
 
     if (!group || !walletContext.wallet) return
     setLoading(true)
+    const perpOpenOrdersSlots = slots.perpSlots
+      ? parseInt(MAX_ACCOUNTS.perpOpenOrders)
+      : 0
     try {
       const newAccountNum = getNextAccountNumber(existingMangoAccts)
       const { signature: tx, slot } = await client.createMangoAccount(
         group,
         newAccountNum,
         name || `Account ${newAccountNum + 1}`,
-        parseInt(MAX_ACCOUNTS.tokenAccounts), // tokens
-        parseInt(MAX_ACCOUNTS.spotOpenOrders), // serum3
-        parseInt(MAX_ACCOUNTS.perpAccounts), // perps
-        parseInt(MAX_ACCOUNTS.perpOpenOrders), // perp Oo
+        slots.tokenSlots, // tokens
+        slots.serumSlots, // serum3
+        slots.perpSlots, // perps
+        perpOpenOrdersSlots, // perp Oo
       )
       if (tx) {
         if (signToNotifications) {
@@ -83,11 +100,16 @@ const CreateAccountForm = ({
         const newAccount = mangoAccounts.find(
           (acc) => acc.accountNum === newAccountNum,
         )
+        const filteredMangoAccounts = reloadedMangoAccounts?.length
+          ? reloadedMangoAccounts.filter(
+              (acc) => !acc.name.includes('Leverage Stake'),
+            )
+          : []
         if (newAccount) {
           set((s) => {
             s.mangoAccount.current = newAccount
             s.mangoAccount.lastSlot = slot
-            s.mangoAccounts = reloadedMangoAccounts
+            s.mangoAccounts = filteredMangoAccounts
           })
         }
         telemetry('accountCreate', {
@@ -116,14 +138,14 @@ const CreateAccountForm = ({
         type: 'error',
       })
     }
-  }
+  }, [signToNotifications, slots])
 
   return loading ? (
     <div className="flex h-full flex-1 flex-col items-center justify-center">
       <BounceLoader loadingMessage={t('creating-account')} />
     </div>
   ) : (
-    <div className="flex h-full flex-col justify-between">
+    <div className="relative flex h-full min-h-[462px] flex-col justify-between overflow-hidden">
       <div className="pb-3">
         <div className="flex items-center">
           {handleBack ? (
@@ -163,6 +185,17 @@ const CreateAccountForm = ({
         {maxSolDeposit <= 0 ? (
           <InlineNotification type="error" desc={t('deposit-more-sol')} />
         ) : null}
+        <LinkButton
+          className="mx-auto mt-4"
+          onClick={() => setShowAdvancedOptionsAccountForm(true)}
+        >
+          {t('account:advanced-options')}
+        </LinkButton>
+        {hasSetCustomOptions ? (
+          <p className="mt-1 text-center text-th-success">
+            {t('account:custom-account-options-saved')}
+          </p>
+        ) : null}
       </div>
       <Button
         className="mt-6 w-full"
@@ -172,6 +205,17 @@ const CreateAccountForm = ({
       >
         {t('create-account')}
       </Button>
+
+      <EnterBottomExitBottom
+        className="absolute bottom-0 left-0 z-20 h-full w-full bg-th-bkg-1"
+        show={showAdvancedOptionsAccountForm}
+      >
+        <CreateAccountAdvancedOptions
+          slots={slots}
+          setSlots={setSlots}
+          onClose={() => setShowAdvancedOptionsAccountForm(false)}
+        />
+      </EnterBottomExitBottom>
     </div>
   )
 }
