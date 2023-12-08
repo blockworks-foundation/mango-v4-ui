@@ -959,7 +959,7 @@ const AdvancedTradeForm = () => {
                   <SpotSlider
                     minOrderDecimals={minOrderDecimals}
                     tickDecimals={tickDecimals}
-                    step={tradeForm.side === 'buy' ? tickSize : minOrderSize}
+                    step={tickSize}
                     useMargin={savedCheckboxSettings.margin}
                     isTriggerOrder={isTriggerOrder}
                   />
