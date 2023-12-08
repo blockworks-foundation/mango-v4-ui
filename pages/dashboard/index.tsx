@@ -236,9 +236,17 @@ const Dashboard: NextPage = () => {
                                         <ArrowTopRightOnSquareIcon className="ml-2 h-5 w-5 whitespace-nowrap" />
                                       </a>
                                     ) : (
-                                      <ExplorerLink
-                                        address={formattedBankValues.oracle}
-                                      />
+                                      <a
+                                        href={`https://pyth.network/price-feeds/crypto-${bankNameToOracleName(
+                                          bank.name,
+                                        ).toLowerCase()}-${'usd'}`}
+                                        className={`flex items-center break-all text-th-fgd-2 hover:text-th-fgd-3`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                      >
+                                        {bank.oracle.toString()}
+                                        <ArrowTopRightOnSquareIcon className="ml-2 h-5 w-5 whitespace-nowrap" />
+                                      </a>
                                     )
                                   }
                                 />
@@ -959,3 +967,13 @@ export const DashboardNavbar = () => {
 }
 
 export default Dashboard
+
+//some assets are listed with different pyth named oracles
+const bankNameToOracleName = (val: string) => {
+  if (val === 'ETH (Portal)') {
+    return 'ETH'
+  }
+  if (val === 'CHAI') return 'DAI'
+  if (val === 'wBTC (Portal)') return 'BTC'
+  return val
+}

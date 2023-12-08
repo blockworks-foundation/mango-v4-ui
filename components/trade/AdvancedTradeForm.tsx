@@ -492,6 +492,72 @@ const AdvancedTradeForm = () => {
     }
   }, [isTriggerOrder, tickDecimals, tradeForm.side, tradeForm.tradeType])
 
+  const isFormValid = useCallback(
+    (form: TradeForm) => {
+      const { baseSize, price, orderType, side } = form
+      const invalidFields: FormErrors = {}
+      setFormErrors({})
+      const requiredFields: (keyof TradeForm)[] = ['baseSize', 'price']
+      const priceNumber = price ? parseFloat(price) : 0
+      const baseTokenBalance = getTokenBalance(baseBank)
+      const isReducingShort = baseTokenBalance < 0
+      for (const key of requiredFields) {
+        const value = form[key] as string
+        if (!value) {
+          invalidFields[key] = t('settings:error-required-field')
+        }
+      }
+      if (orderType === TriggerOrderTypes.STOP_LOSS) {
+        if (isReducingShort && priceNumber <= oraclePrice) {
+          invalidFields.price = t('trade:error-trigger-above')
+        }
+        if (!isReducingShort && priceNumber >= oraclePrice) {
+          invalidFields.price = t('trade:error-trigger-below')
+        }
+      }
+      if (orderType === TriggerOrderTypes.TAKE_PROFIT) {
+        if (isReducingShort && priceNumber >= oraclePrice) {
+          invalidFields.price = t('trade:error-trigger-below')
+        }
+        if (!isReducingShort && priceNumber <= oraclePrice) {
+          invalidFields.price = t('trade:error-trigger-above')
+        }
+      }
+      if (side === 'buy' && !isReducingShort && isTriggerOrder) {
+        invalidFields.baseSize = t('trade:error-no-short')
+      }
+      if (side === 'sell' && isReducingShort && isTriggerOrder) {
+        invalidFields.baseSize = t('trade:error-no-long')
+      }
+      if (baseSize > Math.abs(baseTokenBalance) && isTriggerOrder) {
+        invalidFields.baseSize = t('swap:insufficient-balance', {
+          symbol: baseBank?.name,
+        })
+      }
+
+      if (baseSize < minOrderSize) {
+        invalidFields.baseSize = t('trade:min-order-size-error', {
+          minSize: formatNumericValue(minOrderSize, minOrderDecimals),
+          symbol: baseSymbol,
+        })
+      }
+      if (Object.keys(invalidFields).length) {
+        setFormErrors(invalidFields)
+      }
+      return invalidFields
+    },
+    [
+      baseBank,
+      isTriggerOrder,
+      minOrderDecimals,
+      minOrderSize,
+      oraclePrice,
+      setFormErrors,
+      baseSymbol,
+      t,
+    ],
+  )
+
   const handleStandardOrder = useCallback(async () => {
     const { client } = mangoStore.getState()
     const { group } = mangoStore.getState()
@@ -608,7 +674,7 @@ const AdvancedTradeForm = () => {
     } finally {
       setPlacingOrder(false)
     }
-  }, [])
+  }, [isFormValid, soundSettings])
 
   const handleTriggerOrder = useCallback(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
@@ -635,14 +701,14 @@ const AdvancedTradeForm = () => {
       false,
       setPlacingOrder,
     )
-  }, [baseBank, quoteBank, setPlacingOrder])
+  }, [baseBank, quoteBank, setPlacingOrder, isFormValid])
 
   const handleSubmit = useCallback(
     (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault()
       isTriggerOrder ? handleTriggerOrder() : handleStandardOrder()
     },
-    [isTriggerOrder],
+    [isTriggerOrder, handleTriggerOrder, handleStandardOrder],
   )
 
   const sideNames = useMemo(() => {
@@ -702,69 +768,6 @@ const AdvancedTradeForm = () => {
       ? [...orderTypesArray, ...triggerOrderTypesArray]
       : orderTypesArray
   }, [baseBank, mangoAccountAddress, minOrderDecimals, selectedMarket])
-
-  const isFormValid = useCallback(
-    (form: TradeForm) => {
-      const { baseSize, price, orderType, side } = form
-      const invalidFields: FormErrors = {}
-      setFormErrors({})
-      const requiredFields: (keyof TradeForm)[] = ['baseSize', 'price']
-      const priceNumber = price ? parseFloat(price) : 0
-      const baseTokenBalance = getTokenBalance(baseBank)
-      const isReducingShort = baseTokenBalance < 0
-      for (const key of requiredFields) {
-        const value = form[key] as string
-        if (!value) {
-          invalidFields[key] = t('settings:error-required-field')
-        }
-      }
-      if (orderType === TriggerOrderTypes.STOP_LOSS) {
-        if (isReducingShort && priceNumber <= oraclePrice) {
-          invalidFields.price = t('trade:error-trigger-above')
-        }
-        if (!isReducingShort && priceNumber >= oraclePrice) {
-          invalidFields.price = t('trade:error-trigger-below')
-        }
-      }
-      if (orderType === TriggerOrderTypes.TAKE_PROFIT) {
-        if (isReducingShort && priceNumber >= oraclePrice) {
-          invalidFields.price = t('trade:error-trigger-below')
-        }
-        if (!isReducingShort && priceNumber <= oraclePrice) {
-          invalidFields.price = t('trade:error-trigger-above')
-        }
-      }
-      if (side === 'buy' && !isReducingShort && isTriggerOrder) {
-        invalidFields.baseSize = t('trade:error-no-short')
-      }
-      if (side === 'sell' && isReducingShort && isTriggerOrder) {
-        invalidFields.baseSize = t('trade:error-no-long')
-      }
-      if (baseSize > Math.abs(baseTokenBalance) && isTriggerOrder) {
-        invalidFields.baseSize = t('swap:insufficient-balance', {
-          symbol: baseBank?.name,
-        })
-      }
-      if (baseSize < minOrderSize) {
-        invalidFields.baseSize = t('trade:min-order-size-error', {
-          minSize: formatNumericValue(minOrderSize, minOrderDecimals),
-          symbol: baseSymbol,
-        })
-      }
-      if (Object.keys(invalidFields).length) {
-        setFormErrors(invalidFields)
-      }
-      return invalidFields
-    },
-    [
-      baseBank,
-      isTriggerOrder,
-      minOrderDecimals,
-      minOrderSize,
-      oraclePrice,
-      setFormErrors,
-    ],
-  )
 
   const tooMuchSize = useMemo(() => {
     const { baseSize, quoteSize, side } = tradeForm
@@ -905,6 +908,7 @@ const AdvancedTradeForm = () => {
               </div>
               <div className="flex flex-col">
                 <div className="relative">
+                  {minOrderDecimals}
                   <NumberFormat
                     inputMode="decimal"
                     thousandSeparator=","
