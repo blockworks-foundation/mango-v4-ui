@@ -52,6 +52,7 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 import {
   floorToDecimal,
   formatCurrencyValue,
+  formatNumericValue,
   getDecimalCount,
 } from 'utils/numbers'
 import LogoWithFallback from '@components/shared/LogoWithFallback'
@@ -134,6 +135,7 @@ const AdvancedTradeForm = () => {
     quoteLogoURI,
     quoteSymbol,
     serumOrPerpMarket,
+    marketAddress,
   } = useSelectedMarket()
   const { remainingBorrowsInPeriod, timeToNextPeriod } =
     useRemainingBorrowsInPeriod()
@@ -215,7 +217,6 @@ const AdvancedTradeForm = () => {
           s.tradeForm.quoteSize = ''
         }
       })
-      setFormErrors({})
     },
     [oraclePrice],
   )
@@ -236,7 +237,6 @@ const AdvancedTradeForm = () => {
           s.tradeForm.baseSize = ''
         }
       })
-      setFormErrors({})
     },
     [oraclePrice],
   )
@@ -398,6 +398,13 @@ const AdvancedTradeForm = () => {
     }
   }, [baseBank, quoteBank, selectedMarket])
 
+  // clear form errors on base size change or new market
+  useEffect(() => {
+    if (Object.keys(formErrors).length) {
+      setFormErrors({})
+    }
+  }, [tradeForm.baseSize, marketAddress])
+
   /*
    * Updates the limit price on page load
    */
@@ -506,7 +513,15 @@ const AdvancedTradeForm = () => {
           tradeForm.side,
         )
       }
-
+      const invalidFields = isFormValid({
+        baseSize: baseSize,
+        price: tradeForm.price,
+        orderType: tradeForm.tradeType,
+        side: tradeForm.side,
+      })
+      if (Object.keys(invalidFields).length) {
+        return
+      }
       if (selectedMarket instanceof Serum3Market) {
         const spotOrderType = tradeForm.ioc
           ? Serum3OrderType.immediateOrCancel
@@ -732,7 +747,7 @@ const AdvancedTradeForm = () => {
       }
       if (baseSize < minOrderSize) {
         invalidFields.baseSize = t('trade:min-order-size-error', {
-          minSize: minOrderSize,
+          minSize: formatNumericValue(minOrderSize, minOrderDecimals),
           symbol: baseSymbol,
         })
       }
@@ -741,7 +756,14 @@ const AdvancedTradeForm = () => {
       }
       return invalidFields
     },
-    [baseBank, isTriggerOrder, minOrderSize, oraclePrice, setFormErrors],
+    [
+      baseBank,
+      isTriggerOrder,
+      minOrderDecimals,
+      minOrderSize,
+      oraclePrice,
+      setFormErrors,
+    ],
   )
 
   const tooMuchSize = useMemo(() => {
