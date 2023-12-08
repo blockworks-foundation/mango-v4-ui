@@ -2,6 +2,8 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import LeverageSlider from '../shared/LeverageSlider'
 import { TokenMaxResults } from './useTokenMax'
 import mangoStore from '@store/mangoStore'
+import { useMemo } from 'react'
+import { floorToDecimal } from 'utils/numbers'
 
 const SwapSlider = ({
   amount,
@@ -24,6 +26,13 @@ const SwapSlider = ({
   const { amount: tokenMax, amountWithBorrow } = maxAmount(useMargin)
   const { inputBank } = mangoStore((s) => s.swap)
 
+  const max = useMemo(() => {
+    if (!inputBank) return 0
+    return useMargin
+      ? floorToDecimal(amountWithBorrow, inputBank.mintDecimals).toNumber()
+      : floorToDecimal(tokenMax, inputBank.mintDecimals).toNumber()
+  }, [tokenMax, amountWithBorrow, inputBank, useMargin])
+
   return (
     <>
       {!mangoAccount ? (
@@ -39,9 +48,7 @@ const SwapSlider = ({
         <LeverageSlider
           amount={amount}
           decimals={inputBank?.mintDecimals}
-          leverageMax={
-            useMargin ? amountWithBorrow.toNumber() : tokenMax.toNumber()
-          }
+          leverageMax={max}
           onChange={onChange}
           step={step}
           handleStartDrag={handleStartDrag}

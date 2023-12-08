@@ -1,4 +1,4 @@
-import { Serum3Market } from '@blockworks-foundation/mango-v4'
+import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
 import mangoStore from '@store/mangoStore'
 import { useMemo } from 'react'
 import { floorToDecimal, getDecimalCount } from 'utils/numbers'
@@ -72,6 +72,13 @@ export default function useSelectedMarket() {
     }
   }, [baseSymbol, mangoTokens])
 
+  const baseBank = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!group || !selectedMarket || selectedMarket instanceof PerpMarket)
+      return
+    return group?.getFirstBankByTokenIndex(selectedMarket.baseTokenIndex)
+  }, [selectedMarket])
+
   const quoteBank = useMemo(() => {
     const group = mangoStore.getState().group
     if (!group || !selectedMarket) return
@@ -108,6 +115,7 @@ export default function useSelectedMarket() {
     price,
     serumOrPerpMarket,
     baseSymbol,
+    baseBank,
     quoteBank,
     quoteSymbol,
     baseLogoURI,
