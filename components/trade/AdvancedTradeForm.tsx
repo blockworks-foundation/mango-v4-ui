@@ -579,15 +579,15 @@ const AdvancedTradeForm = () => {
           tradeForm.side,
         )
       }
-      // const invalidFields = isFormValid({
-      //   baseSize: baseSize,
-      //   price: tradeForm.price,
-      //   orderType: tradeForm.tradeType,
-      //   side: tradeForm.side,
-      // })
-      // if (Object.keys(invalidFields).length) {
-      //   return
-      // }
+      const invalidFields = isFormValid({
+        baseSize: baseSize,
+        price: tradeForm.price,
+        orderType: tradeForm.tradeType,
+        side: tradeForm.side,
+      })
+      if (Object.keys(invalidFields).length) {
+        return
+      }
       if (selectedMarket instanceof Serum3Market) {
         const spotOrderType = tradeForm.ioc
           ? Serum3OrderType.immediateOrCancel
