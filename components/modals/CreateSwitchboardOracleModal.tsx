@@ -90,7 +90,7 @@ const CreateSwitchboardOracleModal = ({
     MEME: {
       fundAmount: 2,
       minRequiredOracleResults: 1,
-      minUpdateDelaySeconds: 30,
+      minUpdateDelaySeconds: 20,
       batchSize: 2,
     },
     SHIT: {
