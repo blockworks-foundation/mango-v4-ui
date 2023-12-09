@@ -19,7 +19,11 @@ import Loading from '@components/shared/Loading'
 import Button from '@components/shared/Button'
 import Image from 'next/image'
 import useQuoteRoutes from '@components/swap/useQuoteRoutes'
-import { HealthType, PerpMarket } from '@blockworks-foundation/mango-v4'
+import {
+  HealthType,
+  PerpMarket,
+  Serum3Market,
+} from '@blockworks-foundation/mango-v4'
 import Decimal from 'decimal.js'
 import { notify } from 'utils/notifications'
 import * as sentry from '@sentry/nextjs'
@@ -73,10 +77,9 @@ export default function SpotMarketOrderSwapForm() {
     price: oraclePrice,
     baseLogoURI,
     baseSymbol,
-    baseBank,
-    quoteBank,
     quoteLogoURI,
     quoteSymbol,
+    selectedMarket,
     serumOrPerpMarket,
   } = useSelectedMarket()
   const { amount: tokenMax, amountWithBorrow } = useTokenMax(
@@ -85,7 +88,14 @@ export default function SpotMarketOrderSwapForm() {
 
   const [inputBank, outputBank] = useMemo(() => {
     const group = mangoStore.getState().group
-    if (!group || !baseBank || !quoteBank) return []
+    if (!group || !(selectedMarket instanceof Serum3Market)) return []
+
+    const quoteBank = group?.getFirstBankByTokenIndex(
+      selectedMarket.quoteTokenIndex,
+    )
+    const baseBank = group.getFirstBankByTokenIndex(
+      selectedMarket.baseTokenIndex,
+    )
 
     if (side === 'buy') {
       set((s) => {
@@ -100,29 +110,23 @@ export default function SpotMarketOrderSwapForm() {
       })
       return [baseBank, quoteBank]
     }
-  }, [baseBank, quoteBank, side])
+  }, [selectedMarket, side])
 
   const handleBaseSizeChange = useCallback(
     (e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
       set((s) => {
         s.tradeForm.baseSize = e.value
-        if (
-          oraclePrice &&
-          e.value !== '' &&
-          !Number.isNaN(Number(e.value)) &&
-          quoteBank
-        ) {
-          s.tradeForm.quoteSize = floorToDecimal(
-            new Decimal(oraclePrice).mul(e.value),
-            quoteBank.mintDecimals,
-          ).toFixed()
+        if (oraclePrice && e.value !== '' && !Number.isNaN(Number(e.value))) {
+          s.tradeForm.quoteSize = new Decimal(oraclePrice)
+            .mul(e.value)
+            .toFixed()
         } else {
           s.tradeForm.quoteSize = ''
         }
       })
     },
-    [oraclePrice, quoteBank],
+    [oraclePrice],
   )
 
   const handleQuoteSizeChange = useCallback(
@@ -130,22 +134,14 @@ export default function SpotMarketOrderSwapForm() {
       if (info.source !== 'event') return
       set((s) => {
         s.tradeForm.quoteSize = e.value
-        if (
-          oraclePrice &&
-          e.value !== '' &&
-          !Number.isNaN(Number(e.value)) &&
-          baseBank
-        ) {
-          s.tradeForm.baseSize = floorToDecimal(
-            new Decimal(e.value).div(oraclePrice),
-            baseBank.mintDecimals,
-          ).toFixed()
+        if (oraclePrice && e.value !== '' && !Number.isNaN(Number(e.value))) {
+          s.tradeForm.baseSize = new Decimal(e.value).div(oraclePrice).toFixed()
         } else {
           s.tradeForm.baseSize = ''
         }
       })
     },
-    [oraclePrice, baseBank],
+    [oraclePrice],
   )
 
   const handleMaxAmount = useCallback(
@@ -210,20 +206,19 @@ export default function SpotMarketOrderSwapForm() {
   )
 
   const slippage = mangoStore.getState().swap.slippage
-
-  const jupiterQuoteAmount = useMemo(() => {
-    if (side === 'buy' && inputBank && quoteSize) {
-      return floorToDecimal(quoteSize, inputBank.mintDecimals).toFixed()
-    } else if (outputBank && baseSize) {
-      return floorToDecimal(baseSize, outputBank.mintDecimals).toFixed()
-    } else return ''
-  }, [baseSize, quoteSize, inputBank, outputBank, side])
+  const jupiterQuoteAmount = side === 'buy' ? quoteSize : baseSize
+  const roundedQuoteAmount = useMemo(() => {
+    if (!jupiterQuoteAmount) return ''
+    return new Decimal(jupiterQuoteAmount)
+      .toDecimalPlaces(inputBank?.mintDecimals || 6, Decimal.ROUND_FLOOR)
+      .toFixed()
+  }, [jupiterQuoteAmount, inputBank])
 
   const { bestRoute: selectedRoute, isInitialLoading: loadingRoute } =
     useQuoteRoutes({
       inputMint: inputBank?.mint.toString() || '',
       outputMint: outputBank?.mint.toString() || '',
-      amount: jupiterQuoteAmount,
+      amount: roundedQuoteAmount,
       slippage,
       swapMode: 'ExactIn',
       wallet: publicKey?.toBase58(),
@@ -407,12 +402,21 @@ export default function SpotMarketOrderSwapForm() {
     savedCheckboxSettings.margin,
   ])
 
+  const quoteError =
+    !!selectedRoute?.error ||
+    !!(
+      !selectedRoute &&
+      !loadingRoute &&
+      !isDraggingSlider &&
+      jupiterQuoteAmount
+    )
+
   const disabled =
     (connected && (!baseSize || !oraclePrice)) ||
     !serumOrPerpMarket ||
     loadingRoute ||
     tooMuchSize ||
-    !!selectedRoute?.error
+    quoteError
 
   return (
     <>
@@ -594,7 +598,7 @@ export default function SpotMarketOrderSwapForm() {
               </Button>
             )}
           </div>
-          {selectedRoute?.error ? (
+          {quoteError ? (
             <div className="mb-4">
               <InlineNotification
                 type="error"
@@ -646,7 +650,7 @@ export default function SpotMarketOrderSwapForm() {
                 </p>
               )}
             </div>
-            {borrowAmount && inputBank ? (
+            {borrowAmount && inputBank && savedCheckboxSettings.margin ? (
               <>
                 <div className="flex justify-between text-xs">
                   <Tooltip
