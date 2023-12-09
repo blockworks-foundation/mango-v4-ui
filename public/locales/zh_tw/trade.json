@@ -25,6 +25,7 @@
     "depth": "深度",
     "edit-order": "編輯訂單",
     "error-no-long": "無做多持倉可減少",
+    "error-no-route": "No route found. Try adjusting your size",
     "error-no-short": "無做空持倉可減少",
     "error-trigger-above": "觸發價格必須高於預言機價格",
     "error-trigger-below": "觸發價格必須低於預言機價格",
