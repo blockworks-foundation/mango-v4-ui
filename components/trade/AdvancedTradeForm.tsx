@@ -908,7 +908,6 @@ const AdvancedTradeForm = () => {
               </div>
               <div className="flex flex-col">
                 <div className="relative">
-                  {minOrderDecimals}
                   <NumberFormat
                     inputMode="decimal"
                     thousandSeparator=","
