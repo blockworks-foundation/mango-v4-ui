@@ -7,7 +7,6 @@ import {
 import {
   Connection,
   Keypair,
-  LAMPORTS_PER_SOL,
   PublicKey,
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
@@ -52,8 +51,7 @@ export const makeCreateOpenBookMarketInstructionSimple = async ({
   const feeRateBps = 0
   const quoteDustThreshold = new BN(100)
   const eventQueSize = !xlSize ? 45100 : 1048564
-  const elo = await connection.getMinimumBalanceForRentExemption(eventQueSize)
-  console.log(elo / LAMPORTS_PER_SOL)
+
   function getVaultOwnerAndNonce() {
     const vaultSignerNonce = new BN(0)
     // eslint-disable-next-line no-constant-condition
