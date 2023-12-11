@@ -6,4 +6,5 @@ export type TelemetryEvents = {
   rewardsRenderUnsupported: { message: string }
   rewardsClaim: { rewards: number }
   rewardsClaimError: { message: string }
+  postSendTx: { fee: number }
 }
