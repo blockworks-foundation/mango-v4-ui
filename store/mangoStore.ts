@@ -137,7 +137,7 @@ const initMangoClient = (
     postSendTxCallback: ({ txid }: { txid: string }) => {
       if (telemetry) {
         telemetry('postSendTx', {
-          props: { fee: opts.prioritizationFee, txId: txid },
+          props: { fee: opts.prioritizationFee },
         })
       }
       notify({
