@@ -384,6 +384,8 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     const priceInfo = await (
       await fetch(`${JUPITER_PRICE_API_MAINNET}price?ids=${mint}`)
     ).json()
+    //Note: if listing asset that don't have price on jupiter remember to edit this 0 to real price
+    //in case of using 0 openbook market can be wrongly configured ignore if openbook market is existing
     setBaseTokenPrice(priceInfo.data[mint]?.price || 0)
     setCurrentTokenInfo(tokenInfo)
     if (tokenInfo) {

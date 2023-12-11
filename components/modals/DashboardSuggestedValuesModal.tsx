@@ -35,6 +35,7 @@ import {
   getProposedTier,
   getTierWithAdjustedNetBorrows,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
+import Select from '@components/forms/Select'
 
 const DashboardSuggestedValues = ({
   isOpen,
@@ -59,7 +60,7 @@ const DashboardSuggestedValues = ({
       ? LISTING_PRESETS_PYTH
       : LISTING_PRESETS
 
-  const [suggestedTier, setSuggstedTier] =
+  const [suggestedTier, setSuggestedTier] =
     useState<LISTING_PRESETS_KEYS>('SHIT')
 
   const getApiTokenName = (bankName: string) => {
@@ -97,8 +98,13 @@ const DashboardSuggestedValues = ({
       bank.oracleProvider === OracleProvider.Pyth,
     )
 
-    setSuggstedTier(suggestedTier as LISTING_PRESETS_KEYS)
-  }, [PRESETS, bank.name, bank.oracleProvider, priceImpactsFiltered])
+    setSuggestedTier(suggestedTier as LISTING_PRESETS_KEYS)
+  }, [
+    PRESETS,
+    bank.name,
+    bank.oracleProvider,
+    JSON.stringify(priceImpactsFiltered),
+  ])
 
   const proposeNewSuggestedValues = useCallback(
     async (
@@ -310,7 +316,24 @@ const DashboardSuggestedValues = ({
       onClose={onClose}
     >
       <h3 className="mb-6">
-        {bank.name} - Suggested tier: {suggestedTier}
+        <span>
+          {bank.name} - Suggested tier: {suggestedTier}
+        </span>
+        <Select
+          value={suggestedTier}
+          onChange={(tier) => setSuggestedTier(tier)}
+          className="w-full"
+        >
+          {Object.keys(LISTING_PRESETS)
+            .filter((x) => x !== 'UNTRUSTED')
+            .map((name) => (
+              <Select.Option key={name} value={name}>
+                <div className="flex w-full items-center justify-between">
+                  {name}
+                </div>
+              </Select.Option>
+            ))}
+        </Select>
       </h3>
       <div className="flex max-h-[600px] w-full flex-col overflow-auto">
         <Disclosure.Panel>
