@@ -368,11 +368,11 @@ const AdvancedTradeForm = () => {
     ],
   )
 
-  const [tickDecimals, tickSize] = useMemo(() => {
-    if (!serumOrPerpMarket) return [1, 0.1]
+  const tickDecimals = useMemo(() => {
+    if (!serumOrPerpMarket) return 1
     const tickSize = serumOrPerpMarket.tickSize
     const tickDecimals = getDecimalCount(tickSize)
-    return [tickDecimals, tickSize]
+    return tickDecimals
   }, [serumOrPerpMarket])
 
   const [minOrderDecimals, minOrderSize] = useMemo(() => {
@@ -984,7 +984,7 @@ const AdvancedTradeForm = () => {
                   <SpotSlider
                     minOrderDecimals={minOrderDecimals}
                     tickDecimals={tickDecimals}
-                    step={tickSize}
+                    step={spotMax / 100}
                     useMargin={savedCheckboxSettings.margin}
                     isTriggerOrder={isTriggerOrder}
                   />

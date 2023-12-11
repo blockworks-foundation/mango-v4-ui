@@ -39,11 +39,8 @@ export const useSpotMarketMax = (
         )
         const balance = mangoAccount.getTokenBalanceUi(bank)
         const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
-        const minOrderDecimals = getDecimalCount(market.minOrderSize)
-        spotMax = floorToDecimal(
-          balance + unsettled,
-          minOrderDecimals,
-        ).toNumber()
+        const tickDecimals = getDecimalCount(market.tickSize)
+        spotMax = floorToDecimal(balance + unsettled, tickDecimals).toNumber()
       } else {
         leverageMax = mangoAccount.getMaxBaseForSerum3AskUi(
           group,
@@ -54,8 +51,11 @@ export const useSpotMarketMax = (
         )
         const balance = mangoAccount.getTokenBalanceUi(bank)
         const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
-        const tickDecimals = getDecimalCount(market.tickSize)
-        spotMax = floorToDecimal(balance + unsettled, tickDecimals).toNumber()
+        const minOrderDecimals = getDecimalCount(market.minOrderSize)
+        spotMax = floorToDecimal(
+          balance + unsettled,
+          minOrderDecimals,
+        ).toNumber()
       }
       return useMargin ? leverageMax : Math.max(spotMax, 0)
     } catch (e) {
