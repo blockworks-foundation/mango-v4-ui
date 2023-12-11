@@ -88,6 +88,7 @@ import groupBy from 'lodash/groupBy'
 import sampleSize from 'lodash/sampleSize'
 import { fetchTokenStatsData, processTokenStatsData } from 'apis/mngo'
 import { OrderTypes } from 'utils/tradeForm'
+import { usePlausible } from 'next-plausible'
 
 const GROUP = new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX')
 
@@ -126,6 +127,7 @@ const initMangoClient = (
     prependedGlobalAdditionalInstructions: [],
     multipleProviders: [],
   },
+  telemetry: ReturnType<typeof usePlausible> | null,
 ): MangoClient => {
   return MangoClient.connect(provider, CLUSTER, MANGO_V4_ID[CLUSTER], {
     prioritizationFee: opts.prioritizationFee,
@@ -133,6 +135,12 @@ const initMangoClient = (
       opts.prependedGlobalAdditionalInstructions,
     idsSource: 'api',
     postSendTxCallback: ({ txid }: { txid: string }) => {
+      if (telemetry) {
+        console.log('elo')
+        telemetry('rewardsRenderUnsupported', {
+          props: { fee: opts.prioritizationFee, txId: txid },
+        })
+      }
       notify({
         title: 'Transaction sent',
         description: 'Waiting for confirmation',
@@ -294,6 +302,7 @@ export type MangoStore = {
     width: number
     height: number
   }
+  telemetry: ReturnType<typeof usePlausible> | null
   actions: {
     fetchActivityFeed: (
       mangoAccountPk: string,
@@ -323,7 +332,10 @@ export type MangoStore = {
     setPrependedGlobalAdditionalInstructions: (
       instructions: TransactionInstruction[],
     ) => void
-    estimatePriorityFee: (feeMultiplier: number) => Promise<void>
+    estimatePriorityFee: (
+      feeMultiplier: number,
+      telemetry: ReturnType<typeof usePlausible> | null,
+    ) => Promise<void>
   }
 }
 
@@ -363,11 +375,15 @@ const mangoStore = create<MangoStore>()(
       emptyWallet,
       options,
     )
-    const client = initMangoClient(provider, {
-      prioritizationFee: DEFAULT_PRIORITY_FEE,
-      prependedGlobalAdditionalInstructions: [],
-      multipleProviders: backupProviders,
-    })
+    const client = initMangoClient(
+      provider,
+      {
+        prioritizationFee: DEFAULT_PRIORITY_FEE,
+        prependedGlobalAdditionalInstructions: [],
+        multipleProviders: backupProviders,
+      },
+      null,
+    )
 
     return {
       activityFeed: {
@@ -482,6 +498,7 @@ const mangoStore = create<MangoStore>()(
         width: 0,
         height: 0,
       },
+      telemetry: null,
       actions: {
         fetchActivityFeed: async (
           mangoAccountPk: string,
@@ -1007,12 +1024,16 @@ const mangoStore = create<MangoStore>()(
             )
             const priorityFee = get().priorityFee ?? DEFAULT_PRIORITY_FEE
 
-            const client = initMangoClient(provider, {
-              prioritizationFee: priorityFee,
-              prependedGlobalAdditionalInstructions:
-                get().prependedGlobalAdditionalInstructions,
-              multipleProviders: backupProviders,
-            })
+            const client = initMangoClient(
+              provider,
+              {
+                prioritizationFee: priorityFee,
+                prependedGlobalAdditionalInstructions:
+                  get().prependedGlobalAdditionalInstructions,
+                multipleProviders: backupProviders,
+              },
+              null,
+            )
 
             set((s) => {
               s.client = client
@@ -1036,11 +1057,15 @@ const mangoStore = create<MangoStore>()(
           const provider = client.program.provider as AnchorProvider
           provider.opts.skipPreflight = true
 
-          const newClient = initMangoClient(provider, {
-            prioritizationFee: get().priorityFee,
-            prependedGlobalAdditionalInstructions: instructions,
-            multipleProviders: [],
-          })
+          const newClient = initMangoClient(
+            provider,
+            {
+              prioritizationFee: get().priorityFee,
+              prependedGlobalAdditionalInstructions: instructions,
+              multipleProviders: [],
+            },
+            null,
+          )
 
           set((s) => {
             s.client = newClient
@@ -1121,23 +1146,29 @@ const mangoStore = create<MangoStore>()(
             options,
           )
           newProvider.opts.skipPreflight = true
-          const newClient = initMangoClient(newProvider, {
-            prependedGlobalAdditionalInstructions:
-              get().prependedGlobalAdditionalInstructions,
-            prioritizationFee: DEFAULT_PRIORITY_FEE,
-            multipleProviders: [],
-          })
+          const newClient = initMangoClient(
+            newProvider,
+            {
+              prependedGlobalAdditionalInstructions:
+                get().prependedGlobalAdditionalInstructions,
+              prioritizationFee: DEFAULT_PRIORITY_FEE,
+              multipleProviders: [],
+            },
+            null,
+          )
           set((state) => {
             state.connection = newConnection
             state.client = newClient
           })
         },
-        estimatePriorityFee: async (feeMultiplier) => {
+        estimatePriorityFee: async (feeMultiplier, telemetry) => {
           const set = get().set
           const group = mangoStore.getState().group
           const client = mangoStore.getState().client
 
           const mangoAccount = get().mangoAccount.current
+          const currentFee = get().priorityFee
+          const currentTelemetry = get().telemetry
           if (!mangoAccount || !group || !client) return
 
           const altResponse = await connection.getAddressLookupTable(
@@ -1176,16 +1207,29 @@ const mangoStore = create<MangoStore>()(
 
           const provider = client.program.provider as AnchorProvider
           provider.opts.skipPreflight = true
-          const newClient = initMangoClient(provider, {
-            prioritizationFee: feeEstimate,
-            prependedGlobalAdditionalInstructions:
-              get().prependedGlobalAdditionalInstructions,
-            multipleProviders: [],
-          })
-          set((state) => {
-            state.priorityFee = feeEstimate
-            state.client = newClient
-          })
+          const newClient = initMangoClient(
+            provider,
+            {
+              prioritizationFee: feeEstimate,
+              prependedGlobalAdditionalInstructions:
+                get().prependedGlobalAdditionalInstructions,
+              multipleProviders: [],
+            },
+            null,
+          )
+
+          if (!currentTelemetry) {
+            set((state) => {
+              state.telemetry = telemetry
+            })
+          }
+
+          if (currentFee !== feeEstimate) {
+            set((state) => {
+              state.priorityFee = feeEstimate
+              state.client = newClient
+            })
+          }
         },
       },
     }
