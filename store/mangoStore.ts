@@ -136,7 +136,7 @@ const initMangoClient = (
     idsSource: 'api',
     postSendTxCallback: ({ txid }: { txid: string }) => {
       if (telemetry) {
-        telemetry('rewardsRenderUnsupported', {
+        telemetry('postSendTx', {
           props: { fee: opts.prioritizationFee, txId: txid },
         })
       }
