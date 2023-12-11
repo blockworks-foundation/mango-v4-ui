@@ -120,7 +120,7 @@ const initMangoClient = (
   opts: {
     prioritizationFee: number
     prependedGlobalAdditionalInstructions: TransactionInstruction[]
-    multipleProviders: AnchorProvider[]
+    multipleProviders: AnchorProvider[] | Connection[]
   } = {
     prioritizationFee: DEFAULT_PRIORITY_FEE,
     prependedGlobalAdditionalInstructions: [],
@@ -131,7 +131,6 @@ const initMangoClient = (
     prioritizationFee: opts.prioritizationFee,
     prependedGlobalAdditionalInstructions:
       opts.prependedGlobalAdditionalInstructions,
-    multipleProviders: opts.multipleProviders,
     idsSource: 'api',
     postSendTxCallback: ({ txid }: { txid: string }) => {
       notify({
@@ -1040,7 +1039,7 @@ const mangoStore = create<MangoStore>()(
           const newClient = initMangoClient(provider, {
             prioritizationFee: get().priorityFee,
             prependedGlobalAdditionalInstructions: instructions,
-            multipleProviders: client.opts.multipleProviders ?? [],
+            multipleProviders: [],
           })
 
           set((s) => {
@@ -1126,7 +1125,7 @@ const mangoStore = create<MangoStore>()(
             prependedGlobalAdditionalInstructions:
               get().prependedGlobalAdditionalInstructions,
             prioritizationFee: DEFAULT_PRIORITY_FEE,
-            multipleProviders: client.opts.multipleProviders ?? [],
+            multipleProviders: [],
           })
           set((state) => {
             state.connection = newConnection
@@ -1181,7 +1180,7 @@ const mangoStore = create<MangoStore>()(
             prioritizationFee: feeEstimate,
             prependedGlobalAdditionalInstructions:
               get().prependedGlobalAdditionalInstructions,
-            multipleProviders: client.opts.multipleProviders ?? [],
+            multipleProviders: [],
           })
           set((state) => {
             state.priorityFee = feeEstimate
