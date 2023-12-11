@@ -127,6 +127,7 @@ const initMangoClient = (
     prependedGlobalAdditionalInstructions: [],
     multipleProviders: [],
   },
+  //for analytics use
   telemetry: ReturnType<typeof usePlausible> | null,
 ): MangoClient => {
   return MangoClient.connect(provider, CLUSTER, MANGO_V4_ID[CLUSTER], {
@@ -140,6 +141,7 @@ const initMangoClient = (
           props: { fee: opts.prioritizationFee },
         })
       }
+
       notify({
         title: 'Transaction sent',
         description: 'Waiting for confirmation',
