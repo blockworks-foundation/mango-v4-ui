@@ -136,7 +136,6 @@ const initMangoClient = (
     idsSource: 'api',
     postSendTxCallback: ({ txid }: { txid: string }) => {
       if (telemetry) {
-        console.log('elo')
         telemetry('rewardsRenderUnsupported', {
           props: { fee: opts.prioritizationFee, txId: txid },
         })
@@ -1207,27 +1206,23 @@ const mangoStore = create<MangoStore>()(
 
           const provider = client.program.provider as AnchorProvider
           provider.opts.skipPreflight = true
-          const newClient = initMangoClient(
-            provider,
-            {
-              prioritizationFee: feeEstimate,
-              prependedGlobalAdditionalInstructions:
-                get().prependedGlobalAdditionalInstructions,
-              multipleProviders: [],
-            },
-            null,
-          )
 
-          if (!currentTelemetry) {
-            set((state) => {
-              state.telemetry = telemetry
-            })
-          }
+          if (currentFee !== feeEstimate || !currentTelemetry) {
+            const newClient = initMangoClient(
+              provider,
+              {
+                prioritizationFee: feeEstimate,
+                prependedGlobalAdditionalInstructions:
+                  get().prependedGlobalAdditionalInstructions,
+                multipleProviders: [],
+              },
+              telemetry,
+            )
 
-          if (currentFee !== feeEstimate) {
             set((state) => {
               state.priorityFee = feeEstimate
               state.client = newClient
+              state.telemetry = telemetry
             })
           }
         },
