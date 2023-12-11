@@ -118,6 +118,8 @@ export const useIsAllClaimed = (
         !isAllClaimed
 
       setShowClaim(isClaimActive)
+    } else {
+      setShowClaim(false)
     }
   }, [distributionData, walletPk, isAllClaimed])
   return { isAllClaimed, showClaim, loading }
