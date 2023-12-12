@@ -39,6 +39,8 @@ import { createTransferInstruction } from '@solana/spl-token'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 import CoinIcon from './icons/CoinIcon'
 import PerpIcon from './icons/PerpIcon'
+import BridgeModal from './modals/BridgeModal'
+import WormholeIcon from './icons/WormholeIcon'
 //import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
 
 const set = mangoStore.getState().set
@@ -55,6 +57,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const setPrependedGlobalAdditionalInstructions = mangoStore(
     (s) => s.actions.setPrependedGlobalAdditionalInstructions,
   )
+  const [showBridgeModal, setShowBridgeModal] = useState(false)
 
   const router = useRouter()
   const { pathname, query } = router
@@ -141,127 +144,128 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   }, [mangoNfts, theme, themeData])
 
   return (
-    <div
-      className={`transition-all duration-${sideBarAnimationDuration} ${
-        collapsed ? 'w-[64px]' : 'w-[200px]'
-      } border-r border-th-bkg-3 bg-th-bkg-1 bg-contain`}
-      // style={
-      //   collapsed
-      //     ? { backgroundImage: `url(${themeData.sideTilePath})` }
-      //     : { backgroundImage: `url(${themeData.sideTilePathExpanded})` }
-      // }
-    >
-      {sidebarImageUrl && !collapsed ? (
-        <img
-          className={`absolute bottom-16 h-auto w-full flex-shrink-0`}
-          onClick={() => playAnimation()}
-          src={sidebarImageUrl}
-          alt="next"
-        />
-      ) : null}
-      <div className="flex h-screen flex-col justify-between">
-        <div className="mb-2">
-          <Link href={'/'} shallow={true} passHref legacyBehavior>
-            <div
-              className={`items-center transition-all duration-${sideBarAnimationDuration} ease-in-out ${
-                collapsed ? '' : 'justify-start'
-              } pb-1 pl-3`}
-            >
+    <>
+      <div
+        className={`transition-all duration-${sideBarAnimationDuration} ${
+          collapsed ? 'w-[64px]' : 'w-[200px]'
+        } border-r border-th-bkg-3 bg-th-bkg-1 bg-contain`}
+        // style={
+        //   collapsed
+        //     ? { backgroundImage: `url(${themeData.sideTilePath})` }
+        //     : { backgroundImage: `url(${themeData.sideTilePathExpanded})` }
+        // }
+      >
+        {sidebarImageUrl && !collapsed ? (
+          <img
+            className={`absolute bottom-16 h-auto w-full flex-shrink-0`}
+            onClick={() => playAnimation()}
+            src={sidebarImageUrl}
+            alt="next"
+          />
+        ) : null}
+        <div className="flex h-screen flex-col justify-between">
+          <div className="mb-2">
+            <Link href={'/'} shallow={true} passHref legacyBehavior>
               <div
-                className={`flex h-16 flex-shrink-0 cursor-pointer items-center bg-th-bkg-1`}
+                className={`items-center transition-all duration-${sideBarAnimationDuration} ease-in-out ${
+                  collapsed ? '' : 'justify-start'
+                } pb-1 pl-3`}
               >
-                <img
-                  className={`h-9 w-9 flex-shrink-0`}
-                  src={themeData.logoPath}
-                  alt="logo"
-                />
-                <Transition
-                  show={!collapsed}
-                  as={Fragment}
-                  enter="transition-all ease-in duration-200"
-                  enterFrom="opacity-50"
-                  enterTo="opacity-100"
-                  leave="transition-all ease-out duration-200"
-                  leaveFrom="opacity-100"
-                  leaveTo="opacity-0"
+                <div
+                  className={`flex h-16 flex-shrink-0 cursor-pointer items-center bg-th-bkg-1`}
                 >
-                  <span className={`ml-3 font-display text-lg text-th-fgd-1`}>
-                    {themeData.platformName}
-                  </span>
-                </Transition>
+                  <img
+                    className={`h-9 w-9 flex-shrink-0`}
+                    src={themeData.logoPath}
+                    alt="logo"
+                  />
+                  <Transition
+                    show={!collapsed}
+                    as={Fragment}
+                    enter="transition-all ease-in duration-200"
+                    enterFrom="opacity-50"
+                    enterTo="opacity-100"
+                    leave="transition-all ease-out duration-200"
+                    leaveFrom="opacity-100"
+                    leaveTo="opacity-0"
+                  >
+                    <span className={`ml-3 font-display text-lg text-th-fgd-1`}>
+                      {themeData.platformName}
+                    </span>
+                  </Transition>
+                </div>
               </div>
-            </div>
-          </Link>
-          <div className="flex flex-col items-start">
-            <MenuItem
-              active={pathname === '/'}
-              collapsed={collapsed}
-              icon={<CurrencyDollarIcon className="h-5 w-5" />}
-              title={t('account')}
-              pagePath="/"
-            />
-            <MenuItem
-              active={pathname === '/swap'}
-              collapsed={collapsed}
-              icon={<ArrowsRightLeftIcon className="h-5 w-5" />}
-              title={t('swap')}
-              pagePath="/swap"
-            />
-            <ExpandableMenuItem
-              active={pathname === '/trade'}
-              collapsed={collapsed}
-              icon={<ArrowTrendingUpIcon className="h-5 w-5" />}
-              title={t('trade')}
-            >
+            </Link>
+            <div className="flex flex-col items-start">
               <MenuItem
-                active={
-                  pathname === '/trade' &&
-                  ((!!query?.name && query.name.includes('PERP')) ||
-                    !query?.name)
-                }
-                collapsed={false}
-                icon={<PerpIcon className="h-5 w-5" />}
-                title={t('perp')}
-                pagePath="/trade?name=SOL-PERP"
-                hideIconBg
-                showTooltip={false}
+                active={pathname === '/'}
+                collapsed={collapsed}
+                icon={<CurrencyDollarIcon className="h-5 w-5" />}
+                title={t('account')}
+                pagePath="/"
               />
               <MenuItem
-                active={
-                  pathname === '/trade' &&
-                  !!query?.name &&
-                  !query.name.includes('PERP')
-                }
-                collapsed={false}
-                icon={<CoinIcon className="h-5 w-5" />}
-                title={t('spot')}
-                pagePath="/trade?name=SOL/USDC"
-                hideIconBg
-                showTooltip={false}
+                active={pathname === '/swap'}
+                collapsed={collapsed}
+                icon={<ArrowsRightLeftIcon className="h-5 w-5" />}
+                title={t('swap')}
+                pagePath="/swap"
               />
-            </ExpandableMenuItem>
-            <MenuItem
-              active={pathname === '/borrow'}
-              collapsed={collapsed}
-              icon={<BanknotesIcon className="h-5 w-5" />}
-              title={t('borrow')}
-              pagePath="/borrow"
-            />
-            <MenuItem
-              active={pathname === '/stats'}
-              collapsed={collapsed}
-              icon={<ChartBarIcon className="h-5 w-5" />}
-              title={t('stats')}
-              pagePath="/stats"
-            />
-            <MenuItem
-              active={pathname === '/leaderboard'}
-              collapsed={collapsed}
-              icon={<LeaderboardIcon className="h-5 w-5" />}
-              title={t('leaderboard')}
-              pagePath="/leaderboard"
-            />
-            {/* {isWhiteListed ? (
+              <ExpandableMenuItem
+                active={pathname === '/trade'}
+                collapsed={collapsed}
+                icon={<ArrowTrendingUpIcon className="h-5 w-5" />}
+                title={t('trade')}
+              >
+                <MenuItem
+                  active={
+                    pathname === '/trade' &&
+                    ((!!query?.name && query.name.includes('PERP')) ||
+                      !query?.name)
+                  }
+                  collapsed={false}
+                  icon={<PerpIcon className="h-5 w-5" />}
+                  title={t('perp')}
+                  pagePath="/trade?name=SOL-PERP"
+                  hideIconBg
+                  showTooltip={false}
+                />
+                <MenuItem
+                  active={
+                    pathname === '/trade' &&
+                    !!query?.name &&
+                    !query.name.includes('PERP')
+                  }
+                  collapsed={false}
+                  icon={<CoinIcon className="h-5 w-5" />}
+                  title={t('spot')}
+                  pagePath="/trade?name=SOL/USDC"
+                  hideIconBg
+                  showTooltip={false}
+                />
+              </ExpandableMenuItem>
+              <MenuItem
+                active={pathname === '/borrow'}
+                collapsed={collapsed}
+                icon={<BanknotesIcon className="h-5 w-5" />}
+                title={t('borrow')}
+                pagePath="/borrow"
+              />
+              <MenuItem
+                active={pathname === '/stats'}
+                collapsed={collapsed}
+                icon={<ChartBarIcon className="h-5 w-5" />}
+                title={t('stats')}
+                pagePath="/stats"
+              />
+              <MenuItem
+                active={pathname === '/leaderboard'}
+                collapsed={collapsed}
+                icon={<LeaderboardIcon className="h-5 w-5" />}
+                title={t('leaderboard')}
+                pagePath="/leaderboard"
+              />
+              {/* {isWhiteListed ? (
               <MenuItem
                 active={pathname === '/nft'}
                 collapsed={collapsed}
@@ -270,57 +274,57 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 pagePath="/nft"
               />
             ) : null} */}
-            <ExpandableMenuItem
-              collapsed={collapsed}
-              icon={<EllipsisHorizontalIcon className="h-5 w-5" />}
-              title={t('more')}
-            >
-              <MenuItem
-                active={pathname === '/search'}
-                collapsed={false}
-                icon={<MagnifyingGlassIcon className="h-5 w-5" />}
-                title={t('search:search-accounts')}
-                pagePath="/search"
-                hideIconBg
-                showTooltip={false}
-              />
-              <MenuItem
-                active={pathname === '/governance/list'}
-                collapsed={false}
-                icon={<PlusCircleIcon className="h-5 w-5" />}
-                title={t('common:list-market-token')}
-                pagePath="/governance/list"
-                hideIconBg
-                showTooltip={false}
-              />
-              <MenuItem
-                active={pathname === '/governance/vote'}
-                collapsed={false}
-                icon={<ArchiveBoxArrowDownIcon className="h-5 w-5" />}
-                title={t('common:vote')}
-                pagePath="/governance/vote"
-                hideIconBg
-                showTooltip={false}
-              />
-              <MenuItem
-                collapsed={false}
-                icon={<DocumentTextIcon className="h-5 w-5" />}
-                title={t('documentation')}
-                pagePath="https://docs.mango.markets"
-                hideIconBg
-                isExternal
-                showTooltip={false}
-              />
-              <MenuItem
-                collapsed={false}
-                icon={<BuildingLibraryIcon className="h-5 w-5" />}
-                title={t('governance')}
-                pagePath="https://dao.mango.markets"
-                hideIconBg
-                isExternal
-                showTooltip={false}
-              />
-              {/* <MenuItem
+              <ExpandableMenuItem
+                collapsed={collapsed}
+                icon={<EllipsisHorizontalIcon className="h-5 w-5" />}
+                title={t('more')}
+              >
+                <MenuItem
+                  active={pathname === '/search'}
+                  collapsed={false}
+                  icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+                  title={t('search:search-accounts')}
+                  pagePath="/search"
+                  hideIconBg
+                  showTooltip={false}
+                />
+                <MenuItem
+                  active={pathname === '/governance/list'}
+                  collapsed={false}
+                  icon={<PlusCircleIcon className="h-5 w-5" />}
+                  title={t('common:list-market-token')}
+                  pagePath="/governance/list"
+                  hideIconBg
+                  showTooltip={false}
+                />
+                <MenuItem
+                  active={pathname === '/governance/vote'}
+                  collapsed={false}
+                  icon={<ArchiveBoxArrowDownIcon className="h-5 w-5" />}
+                  title={t('common:vote')}
+                  pagePath="/governance/vote"
+                  hideIconBg
+                  showTooltip={false}
+                />
+                <MenuItem
+                  collapsed={false}
+                  icon={<DocumentTextIcon className="h-5 w-5" />}
+                  title={t('documentation')}
+                  pagePath="https://docs.mango.markets"
+                  hideIconBg
+                  isExternal
+                  showTooltip={false}
+                />
+                <MenuItem
+                  collapsed={false}
+                  icon={<BuildingLibraryIcon className="h-5 w-5" />}
+                  title={t('governance')}
+                  pagePath="https://dao.mango.markets"
+                  hideIconBg
+                  isExternal
+                  showTooltip={false}
+                />
+                {/* <MenuItem
                 collapsed={false}
                 icon={<ClipboardDocumentIcon className="h-5 w-5" />}
                 title={t('feedback-survey')}
@@ -329,66 +333,85 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 isExternal
                 showTooltip={false}
               /> */}
-              <MenuItem
-                collapsed={false}
-                icon={<NewspaperIcon className="h-5 w-5" />}
-                title={t('terms-of-use')}
-                pagePath="https://docs.mango.markets/legal"
-                hideIconBg
-                isExternal
+                <MenuItem
+                  collapsed={false}
+                  icon={<NewspaperIcon className="h-5 w-5" />}
+                  title={t('terms-of-use')}
+                  pagePath="https://docs.mango.markets/legal"
+                  hideIconBg
+                  isExternal
+                  showTooltip={false}
+                />
+                <MenuItem
+                  collapsed={false}
+                  icon={<ExclamationTriangleIcon className="h-5 w-5" />}
+                  title={t('risks')}
+                  pagePath="https://docs.mango.markets/mango-markets/risks"
+                  hideIconBg
+                  isExternal
+                  showTooltip={false}
+                />
+              </ExpandableMenuItem>
+            </div>
+          </div>
+          <div>
+            <MenuItem
+              active={false}
+              collapsed={collapsed}
+              icon={<WormholeIcon className="h-5 w-5" />}
+              title={t('bridge-funds')}
+              onClick={() => setShowBridgeModal(true)}
+              pagePath="#"
+            />
+            <div className="z-10 mt-2 border-t border-th-bkg-3 bg-th-bkg-1">
+              <ExpandableMenuItem
+                collapsed={collapsed}
+                icon={
+                  <HealthHeart
+                    health={
+                      group && mangoAccount
+                        ? mangoAccount.getHealthRatioUi(group, HealthType.maint)
+                        : 0
+                    }
+                    size={32}
+                  />
+                }
+                panelTitle={
+                  mangoAccount?.name ? mangoAccount.name : t('account')
+                }
                 showTooltip={false}
-              />
-              <MenuItem
-                collapsed={false}
-                icon={<ExclamationTriangleIcon className="h-5 w-5" />}
-                title={t('risks')}
-                pagePath="https://docs.mango.markets/mango-markets/risks"
+                title={
+                  <div className="w-24 text-left">
+                    <p className="mb-0.5 whitespace-nowrap text-xs">
+                      {t('account')}
+                    </p>
+                    <p className="truncate whitespace-nowrap text-sm font-bold text-th-fgd-1">
+                      {mangoAccount
+                        ? mangoAccount.name
+                        : connected
+                        ? 'No Account'
+                        : 'Connect'}
+                    </p>
+                  </div>
+                }
+                alignBottom
                 hideIconBg
-                isExternal
-                showTooltip={false}
-              />
-            </ExpandableMenuItem>
+              >
+                <div className="px-4 py-2">
+                  <MangoAccountSummary />
+                </div>
+              </ExpandableMenuItem>
+            </div>
           </div>
         </div>
-        <div className="z-10 border-t border-th-bkg-3 bg-th-bkg-1">
-          <ExpandableMenuItem
-            collapsed={collapsed}
-            icon={
-              <HealthHeart
-                health={
-                  group && mangoAccount
-                    ? mangoAccount.getHealthRatioUi(group, HealthType.maint)
-                    : 0
-                }
-                size={32}
-              />
-            }
-            panelTitle={mangoAccount?.name ? mangoAccount.name : t('account')}
-            showTooltip={false}
-            title={
-              <div className="w-24 text-left">
-                <p className="mb-0.5 whitespace-nowrap text-xs">
-                  {t('account')}
-                </p>
-                <p className="truncate whitespace-nowrap text-sm font-bold text-th-fgd-1">
-                  {mangoAccount
-                    ? mangoAccount.name
-                    : connected
-                    ? 'No Account'
-                    : 'Connect'}
-                </p>
-              </div>
-            }
-            alignBottom
-            hideIconBg
-          >
-            <div className="px-4 py-2">
-              <MangoAccountSummary />
-            </div>
-          </ExpandableMenuItem>
-        </div>
       </div>
-    </div>
+      {showBridgeModal ? (
+        <BridgeModal
+          isOpen={showBridgeModal}
+          onClose={() => setShowBridgeModal(false)}
+        />
+      ) : null}
+    </>
   )
 }
 
@@ -398,6 +421,7 @@ const MenuItem = ({
   active,
   collapsed,
   icon,
+  onClick,
   title,
   pagePath,
   hideIconBg,
@@ -407,6 +431,7 @@ const MenuItem = ({
   active?: boolean
   collapsed: boolean
   icon?: ReactNode
+  onClick?: () => void
   title: string
   pagePath: string
   hideIconBg?: boolean
@@ -418,6 +443,7 @@ const MenuItem = ({
     <Tooltip content={title} placement="right" show={collapsed && showTooltip}>
       <Link
         href={pagePath}
+        onClick={onClick ? onClick : undefined}
         shallow={true}
         className={`flex cursor-pointer pl-4 focus:outline-none focus-visible:text-th-active md:hover:text-th-active ${
           active
@@ -454,7 +480,9 @@ const MenuItem = ({
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
             >
-              <span className="ml-3 2xl:text-base">{title}</span>
+              <span className="ml-3 whitespace-nowrap 2xl:text-base">
+                {title}
+              </span>
             </Transition>
           </div>
           {isExternal ? (

@@ -34,6 +34,7 @@
   "borrow-fee": "Borrow Fee",
   "borrow-funds": "Borrow Funds",
   "borrow-rate": "Borrow APR",
+  "bridge-funds": "Wormhole Bridge",
   "bridge-wormhole": "Bridge from another chain via Wormhole",
   "buy": "Buy",
   "cancel": "Cancel",

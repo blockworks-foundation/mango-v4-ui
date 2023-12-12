@@ -34,6 +34,7 @@
   "borrow-fee": "借貸費用",
   "borrow-funds": "進行借貸",
   "borrow-rate": "借貸APR",
+  "bridge-funds": "Wormhole Bridge",
   "bridge-wormhole": "Bridge from another chain via Wormhole",
   "buy": "買",
   "cancel": "取消",
