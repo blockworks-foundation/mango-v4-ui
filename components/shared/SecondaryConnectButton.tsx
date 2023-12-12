@@ -5,9 +5,9 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { WalletName, WalletReadyState } from '@solana/wallet-adapter-base'
 import { IS_ONBOARDED_KEY, LAST_WALLET_NAME } from 'utils/constants'
 import { notify } from 'utils/notifications'
-import { LinkIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
 import { useCallback } from 'react'
+import WalletIcon from '@components/icons/WalletIcon'
 
 const SecondaryConnectButton = ({
   className,
@@ -56,7 +56,7 @@ const SecondaryConnectButton = ({
       size={isLarge ? 'large' : 'medium'}
     >
       <div className="flex items-center">
-        <LinkIcon className="mr-2 h-5 w-5" />
+        <WalletIcon className="mr-2 h-5 w-5" />
         {t('connect')}
       </div>
     </Button>
