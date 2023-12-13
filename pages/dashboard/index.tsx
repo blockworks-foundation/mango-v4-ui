@@ -394,7 +394,8 @@ const Dashboard: NextPage = () => {
                                     formattedBankValues.oracleConfFilter
                                   }% (Last known confidence ${
                                     bank._oracleLastKnownDeviation instanceof
-                                    I80F48
+                                      I80F48 &&
+                                    !bank._oracleLastKnownDeviation.isZero()
                                       ? bank._oracleLastKnownDeviation
                                           ?.div(bank.price)
                                           .mul(I80F48.fromNumber(100))
