@@ -134,7 +134,7 @@ const initMangoClient = (
     prioritizationFee: opts.prioritizationFee,
     prependedGlobalAdditionalInstructions:
       opts.prependedGlobalAdditionalInstructions,
-    idsSource: 'api',
+    // idsSource: 'api', // disable for now, euroc listing seems to break this
     postSendTxCallback: ({ txid }: { txid: string }) => {
       if (telemetry) {
         telemetry('postSendTx', {
