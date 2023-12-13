@@ -309,7 +309,7 @@ const Season = ({
                 </p>
               </div>
               <div className="flex items-center justify-between border-t border-th-bkg-3 px-3 py-2">
-                <p className="rewards-p">Rewards Tier</p>
+                <p className="rewards-p">Current Season Tier</p>
                 <div className="font-rewards text-lg text-th-active">
                   {!loadingAccountTier ? (
                     accountTier?.tier ? (
@@ -357,7 +357,9 @@ const Season = ({
               </div>
               <div className="flex items-center justify-between border-t border-th-bkg-3 px-3 py-2">
                 <Tooltip content="Your projected tier for next season. This is based on your average trade value">
-                  <p className="rewards-p tooltip-underline">Projected Tier</p>
+                  <p className="rewards-p tooltip-underline">
+                    Next Season Tier
+                  </p>
                 </Tooltip>
                 <span className="font-rewards text-lg text-th-active">
                   {!loadingAccountTier ? (
