@@ -53,9 +53,9 @@ import PlausibleProvider from 'next-plausible'
 // init react-query
 const queryClient = new QueryClient()
 
-const metaTitle = 'Mango Markets – Safer. Smarter. Faster.'
+const metaTitle = 'Mango Markets | High-Performance Crypto Exchange'
 const metaDescription =
-  'A magical new way to interact with DeFi. Groundbreaking safety features designed to keep your funds secure. The easiest way to margin trade any token pair. All powered by flashloans.'
+  'Margin trade your favorite crypto assets on-chain. Groundbreaking risk management to keep your funds safe. A powerful DEX, powered by Solana.'
 
 // Do not add hooks to this component, that will cause unnecessary rerenders
 // Top level state hydrating/updating should go in MangoProvider

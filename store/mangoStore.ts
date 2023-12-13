@@ -602,7 +602,9 @@ const mangoStore = create<MangoStore>()(
             set((state) => {
               state.group = group
               state.groupLoaded = true
-              state.serumMarkets = serumMarkets
+              state.serumMarkets = serumMarkets.filter(
+                (mkt) => mkt.baseTokenIndex !== 777,
+              )
               state.perpMarkets = perpMarkets
               state.selectedMarket.current = selectedMarket
               if (!state.swap.inputBank && !state.swap.outputBank) {
