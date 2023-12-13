@@ -39,8 +39,6 @@ import { createTransferInstruction } from '@solana/spl-token'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 import CoinIcon from './icons/CoinIcon'
 import PerpIcon from './icons/PerpIcon'
-import BridgeModal from './modals/BridgeModal'
-import WormholeIcon from './icons/WormholeIcon'
 //import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
 
 const set = mangoStore.getState().set
@@ -57,7 +55,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const setPrependedGlobalAdditionalInstructions = mangoStore(
     (s) => s.actions.setPrependedGlobalAdditionalInstructions,
   )
-  const [showBridgeModal, setShowBridgeModal] = useState(false)
 
   const router = useRouter()
   const { pathname, query } = router
@@ -354,63 +351,45 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               </ExpandableMenuItem>
             </div>
           </div>
-          <div>
-            <MenuItem
-              active={false}
+          <div className="z-10 mt-2 border-t border-th-bkg-3 bg-th-bkg-1">
+            <ExpandableMenuItem
               collapsed={collapsed}
-              icon={<WormholeIcon className="h-5 w-5" />}
-              title={t('bridge-funds')}
-              onClick={() => setShowBridgeModal(true)}
-              pagePath="#"
-            />
-            <div className="z-10 mt-2 border-t border-th-bkg-3 bg-th-bkg-1">
-              <ExpandableMenuItem
-                collapsed={collapsed}
-                icon={
-                  <HealthHeart
-                    health={
-                      group && mangoAccount
-                        ? mangoAccount.getHealthRatioUi(group, HealthType.maint)
-                        : 0
-                    }
-                    size={32}
-                  />
-                }
-                panelTitle={
-                  mangoAccount?.name ? mangoAccount.name : t('account')
-                }
-                showTooltip={false}
-                title={
-                  <div className="w-24 text-left">
-                    <p className="mb-0.5 whitespace-nowrap text-xs">
-                      {t('account')}
-                    </p>
-                    <p className="truncate whitespace-nowrap text-sm font-bold text-th-fgd-1">
-                      {mangoAccount
-                        ? mangoAccount.name
-                        : connected
-                        ? 'No Account'
-                        : 'Connect'}
-                    </p>
-                  </div>
-                }
-                alignBottom
-                hideIconBg
-              >
-                <div className="px-4 py-2">
-                  <MangoAccountSummary />
+              icon={
+                <HealthHeart
+                  health={
+                    group && mangoAccount
+                      ? mangoAccount.getHealthRatioUi(group, HealthType.maint)
+                      : 0
+                  }
+                  size={32}
+                />
+              }
+              panelTitle={mangoAccount?.name ? mangoAccount.name : t('account')}
+              showTooltip={false}
+              title={
+                <div className="w-24 text-left">
+                  <p className="mb-0.5 whitespace-nowrap text-xs">
+                    {t('account')}
+                  </p>
+                  <p className="truncate whitespace-nowrap text-sm font-bold text-th-fgd-1">
+                    {mangoAccount
+                      ? mangoAccount.name
+                      : connected
+                      ? 'No Account'
+                      : 'Connect'}
+                  </p>
                 </div>
-              </ExpandableMenuItem>
-            </div>
+              }
+              alignBottom
+              hideIconBg
+            >
+              <div className="px-4 py-2">
+                <MangoAccountSummary />
+              </div>
+            </ExpandableMenuItem>
           </div>
         </div>
       </div>
-      {showBridgeModal ? (
-        <BridgeModal
-          isOpen={showBridgeModal}
-          onClose={() => setShowBridgeModal(false)}
-        />
-      ) : null}
     </>
   )
 }

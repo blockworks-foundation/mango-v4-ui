@@ -42,6 +42,8 @@ import FormatNumericValue from './shared/FormatNumericValue'
 import { useRouter } from 'next/router'
 import TopBarStore from '@store/topBarStore'
 import MedalIcon from './icons/MedalIcon'
+import BridgeModal from './modals/BridgeModal'
+import { useViewport } from 'hooks/useViewport'
 
 export const TOPBAR_ICON_BUTTON_CLASSES =
   'relative flex h-16 w-10 sm:w-16 items-center justify-center sm:border-l sm:border-th-bkg-3 focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2'
@@ -52,6 +54,7 @@ const TopBar = () => {
   const { t } = useTranslation('common')
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const { connected, publicKey, wallet } = useWallet()
+  const { isMobile } = useViewport()
   const { data: seasonData } = useCurrentSeason()
   const currentSeasonId = seasonData ? seasonData.season_id : undefined
   const prevSeasonId = currentSeasonId ? currentSeasonId - 1 : undefined
@@ -71,6 +74,7 @@ const TopBar = () => {
   const [showDepositWithdrawModal, setShowDepositWithdrawModal] =
     useState(false)
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
+  const [showBridgeModal, setShowBridgeModal] = useState(false)
   const { showSettingsModal, setShowSettingsModal } = TopBarStore()
   const isOnline = useOnlineStatus()
 
@@ -272,6 +276,19 @@ const TopBar = () => {
               </button>
             </div>
           )}
+          {!isMobile ? (
+            <div className="h-[63px] bg-th-bkg-1">
+              <button
+                onClick={() => setShowBridgeModal(true)}
+                className={TOPBAR_ICON_BUTTON_CLASSES}
+                title={t('bridge-funds')}
+              >
+                <span className="font-mono text-xxs font-bold">
+                  {t('bridge')}
+                </span>
+              </button>
+            </div>
+          ) : null}
           <div className="h-[63px] bg-th-bkg-1">
             <button
               className={TOPBAR_ICON_BUTTON_CLASSES}
@@ -316,6 +333,12 @@ const TopBar = () => {
         <SettingsModal
           isOpen={showSettingsModal}
           onClose={() => setShowSettingsModal(false)}
+        />
+      ) : null}
+      {showBridgeModal ? (
+        <BridgeModal
+          isOpen={showBridgeModal}
+          onClose={() => setShowBridgeModal(false)}
         />
       ) : null}
     </div>
