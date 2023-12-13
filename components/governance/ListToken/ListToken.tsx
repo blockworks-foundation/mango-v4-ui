@@ -10,7 +10,7 @@ import {
   JUPITER_REFERRAL_PK,
   USDC_MINT,
 } from 'utils/constants'
-import { AccountMeta, PublicKey, SYSVAR_RENT_PUBKEY } from '@solana/web3.js'
+import { PublicKey, SYSVAR_RENT_PUBKEY } from '@solana/web3.js'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { OPENBOOK_PROGRAM_ID, toNative } from '@blockworks-foundation/mango-v4'
 import {
@@ -466,12 +466,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       return
     }
     const mint = new PublicKey(advForm.mintPk)
-
-    const [mintInfoPk] = PublicKey.findProgramAddressSync(
-      [Buffer.from('MintInfo'), group!.publicKey.toBuffer(), mint.toBuffer()],
-      client.programId,
-    )
-
     const proposalTx = []
 
     if (Object.keys(tierPreset).length) {
@@ -510,6 +504,10 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           Number(tierPreset.tokenConditionalSwapTakerFeeRate),
           Number(tierPreset.tokenConditionalSwapMakerFeeRate),
           Number(tierPreset.flashLoanSwapFeeRate),
+          Number(tierPreset.interestCurveScaling),
+          Number(tierPreset.interestTargetUtilization),
+          tierPreset.insuranceFound,
+          new BN(tierPreset.depositLimit),
         )
         .accounts({
           admin: MANGO_DAO_WALLET,
@@ -521,54 +519,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         })
         .instruction()
       proposalTx.push(registerTokenIx)
-
-      const editIx = await client!.program.methods
-        .tokenEdit(
-          null,
-          null,
-          tierPreset.insuranceFound ? null : false,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          false,
-          false,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-        )
-        .accounts({
-          oracle: new PublicKey(advForm.oraclePk),
-          admin: MANGO_DAO_WALLET,
-          group: group!.publicKey,
-          mintInfo: mintInfoPk,
-        })
-        .remainingAccounts([
-          {
-            pubkey: new PublicKey(advForm.baseBankPk),
-            isWritable: true,
-            isSigner: false,
-          } as AccountMeta,
-        ])
-        .instruction()
-      if (!tierPreset.insuranceFound) {
-        proposalTx.push(editIx)
-      }
     } else {
       const trustlessIx = await client!.program.methods
         .tokenRegisterTrustless(Number(advForm.tokenIndex), advForm.name)
@@ -587,7 +537,11 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
 
     if (listingTier !== 'UNTRUSTED' && !advForm.listForSwapOnly) {
       const registerMarketix = await client!.program.methods
-        .serum3RegisterMarket(Number(advForm.marketIndex), advForm.marketName)
+        .serum3RegisterMarket(
+          Number(advForm.marketIndex),
+          advForm.marketName,
+          tierPreset.oraclePriceBand,
+        )
         .accounts({
           group: group!.publicKey,
           admin: MANGO_DAO_WALLET,

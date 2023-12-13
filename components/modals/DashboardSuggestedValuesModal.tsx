@@ -216,6 +216,17 @@ const DashboardSuggestedValues = ({
           getNullOrVal(fieldsToChange.tokenConditionalSwapTakerFeeRate),
           getNullOrVal(fieldsToChange.tokenConditionalSwapMakerFeeRate),
           getNullOrVal(fieldsToChange.loanFeeRate),
+          getNullOrVal(fieldsToChange.interestCurveScaling),
+          getNullOrVal(fieldsToChange.interestTargetUtilization),
+          null,
+          null,
+          null,
+          null,
+          false,
+          false,
+          getNullOrVal(fieldsToChange.depositLimit)
+            ? new BN(fieldsToChange.depositLimit!)
+            : null,
         )
         .accounts({
           group: group!.publicKey,

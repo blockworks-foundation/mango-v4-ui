@@ -164,7 +164,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
     const proposalTx = []
 
     const registerMarketix = await client!.program.methods
-      .serum3RegisterMarket(advForm.marketIndex, advForm.marketName)
+      .serum3RegisterMarket(advForm.marketIndex, advForm.marketName, 0.5)
       .accounts({
         group: group!.publicKey,
         admin: MANGO_DAO_WALLET,
