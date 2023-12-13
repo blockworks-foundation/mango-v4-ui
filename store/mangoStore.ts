@@ -134,7 +134,6 @@ const initMangoClient = (
     prioritizationFee: opts.prioritizationFee,
     prependedGlobalAdditionalInstructions:
       opts.prependedGlobalAdditionalInstructions,
-    idsSource: 'api',
     postSendTxCallback: ({ txid }: { txid: string }) => {
       if (telemetry) {
         telemetry('postSendTx', {
@@ -602,9 +601,7 @@ const mangoStore = create<MangoStore>()(
             set((state) => {
               state.group = group
               state.groupLoaded = true
-              state.serumMarkets = serumMarkets.filter(
-                (mkt) => mkt.baseTokenIndex !== 777,
-              )
+              state.serumMarkets = serumMarkets
               state.perpMarkets = perpMarkets
               state.selectedMarket.current = selectedMarket
               if (!state.swap.inputBank && !state.swap.outputBank) {
