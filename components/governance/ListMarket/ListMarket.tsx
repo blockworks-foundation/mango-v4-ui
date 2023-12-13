@@ -162,9 +162,13 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
     setProposing(true)
     const index = proposals ? Object.values(proposals).length : 0
     const proposalTx = []
-
+    const oraclePriceBand = 0.5
     const registerMarketix = await client!.program.methods
-      .serum3RegisterMarket(advForm.marketIndex, advForm.marketName, 0.5)
+      .serum3RegisterMarket(
+        advForm.marketIndex,
+        advForm.marketName,
+        oraclePriceBand,
+      )
       .accounts({
         group: group!.publicKey,
         admin: MANGO_DAO_WALLET,
