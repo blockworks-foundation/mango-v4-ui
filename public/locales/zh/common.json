@@ -127,6 +127,7 @@
   "new-account": "开户",
   "new-account-failed": "开户出错",
   "new-account-success": "您的新帐户准备好了😎",
+  "new-token-live": "{{tokenName}} trading is live.",
   "new-version": "新版本出来了",
   "nft-market": "NFT Market",
   "no": "不",

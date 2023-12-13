@@ -7,11 +7,7 @@ import {
   useMemo,
   useState,
 } from 'react'
-import {
-  ArrowPathIcon,
-  ChevronRightIcon,
-  XMarkIcon,
-} from '@heroicons/react/20/solid'
+import { ArrowPathIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import { nftThemeMeta } from '../utils/theme'
 import mangoStore from '@store/mangoStore'
 import BottomBar from './mobile/BottomBar'
@@ -41,7 +37,7 @@ import TokenSlotsWarningModal, {
 } from './modals/TokenSlotsWarningModal'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useUnownedAccount from 'hooks/useUnownedAccount'
-import Link from 'next/link'
+import NewListingBanner from './NewListingBanner'
 
 export const sideBarAnimationDuration = 300
 const termsLastUpdated = 1679441610978
@@ -57,8 +53,6 @@ const Layout = ({ children }: { children: ReactNode }) => {
     SLOTS_WARNING_KEY,
     undefined,
   )
-  const [hasSeenNewListingBanner, setHasSeenNewListingBanner] =
-    useLocalStorageState('new-listing-banner-0.1', false)
   const { asPath } = useRouter()
   const { usedTokens, totalTokens } = useMangoAccountAccounts()
   const { mangoAccountAddress } = useMangoAccount()
@@ -171,35 +165,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
           }`}
         >
           <TopBar />
-          {!hasSeenNewListingBanner ? (
-            <div className="flex items-center justify-between bg-gradient-to-r from-yellow-400 via-orange-400 to-red-500 px-4 py-1">
-              <div className="h-5 w-5" />
-              <span className="font-bold text-black">
-                JTO trading is live.{' '}
-                <Link
-                  className="text-black underline md:hover:text-black md:hover:no-underline"
-                  href="/trade?name=JTO/USDC"
-                  shallow
-                >
-                  Trade JTO
-                </Link>{' '}
-                <span className="text-[rgba(0,0,0,0.4)]">|</span>{' '}
-                <Link
-                  className="text-black underline md:hover:text-black md:hover:no-underline"
-                  href="/swap?in=JTO&out=USDC"
-                  shallow
-                >
-                  Swap JTO
-                </Link>
-              </span>
-              <button
-                className="text-black focus:outline-none"
-                onClick={() => setHasSeenNewListingBanner(true)}
-              >
-                <XMarkIcon className="h-5 w-5" />
-              </button>
-            </div>
-          ) : null}
+          <NewListingBanner />
           {asPath !== '/rewards' ? <PromoBanner /> : null}
           {children}
           <StatusBar collapsed={isCollapsed} />

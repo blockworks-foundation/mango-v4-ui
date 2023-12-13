@@ -128,6 +128,7 @@
   "new-account": "New Account",
   "new-account-failed": "Failed to create account",
   "new-account-success": "Your new account is ready 😎",
+  "new-token-live": "{{tokenName}} trading is live.",
   "new-version": "New version available",
   "nft-market": "NFT Market",
   "no": "No",
