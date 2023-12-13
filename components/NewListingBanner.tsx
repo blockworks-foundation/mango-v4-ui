@@ -37,8 +37,10 @@ const NewListingBanner = () => {
     return market?.name
   }, [group, latestListing, serumMarkets])
 
-  return (!hasSeenNewListingBanner && latestListing) ||
-    (latestListing && hasSeenNewListingBanner !== latestListing?.name) ? (
+  const showForNewListing = latestListing && latestListing.uiPrice
+
+  return (!hasSeenNewListingBanner && showForNewListing) ||
+    (showForNewListing && hasSeenNewListingBanner !== latestListing?.name) ? (
     <div className="flex items-center justify-between bg-gradient-to-r from-yellow-400 via-orange-400 to-red-500 px-4 py-1">
       <div className="h-5 w-5" />
       <div className="mx-4 flex flex-wrap items-center justify-center font-bold text-black">

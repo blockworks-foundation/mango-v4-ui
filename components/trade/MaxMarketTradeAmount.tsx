@@ -29,7 +29,7 @@ const MaxMarketTradeAmount = ({
       decimals={decimals}
       label={t('max')}
       onClick={() => setMax(max)}
-      value={max}
+      value={isNaN(max.toNumber()) ? 0 : max}
     />
   )
 }
