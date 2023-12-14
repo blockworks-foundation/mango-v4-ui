@@ -160,7 +160,9 @@ const DashboardSuggestedValues = ({
                     : fieldsToChange.maxStalenessSlots,
               }
             : null,
-          null,
+          fieldsToChange.groupInsuranceFund === undefined
+            ? null
+            : fieldsToChange.groupInsuranceFund,
           isThereNeedOfSendingRateConfigs
             ? {
                 adjustmentFactor:
