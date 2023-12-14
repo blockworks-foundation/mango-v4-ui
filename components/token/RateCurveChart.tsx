@@ -61,15 +61,24 @@ const RateCurveChart = ({ bank }: { bank: Bank | undefined }) => {
       { util: 0, rate: 0 },
       {
         util: bank.util0.toNumber() * 100,
-        rate: (bank.rate0.toNumber() + bank.loanFeeRate.toNumber()) * 100,
+        rate:
+          (bank.rate0.toNumber() * bank.interestCurveScaling +
+            bank.loanFeeRate.toNumber()) *
+          100,
       },
       {
         util: bank.util1.toNumber() * 100,
-        rate: (bank.rate1.toNumber() + bank.loanFeeRate.toNumber()) * 100,
+        rate:
+          (bank.rate1.toNumber() * bank.interestCurveScaling +
+            bank.loanFeeRate.toNumber()) *
+          100,
       },
       {
         util: 100,
-        rate: (bank.maxRate.toNumber() + bank.loanFeeRate.toNumber()) * 100,
+        rate:
+          (bank.maxRate.toNumber() * bank.interestCurveScaling +
+            bank.loanFeeRate.toNumber()) *
+          100,
       },
     ]
     if (currentRate && currentUtil) {
