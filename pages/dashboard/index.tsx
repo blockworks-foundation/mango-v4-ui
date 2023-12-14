@@ -408,7 +408,61 @@ const Dashboard: NextPage = () => {
                                   label="Oracle: Max Staleness"
                                   value={`${bank.oracleConfig.maxStalenessSlots} slots (Last updated slot ${bank._oracleLastUpdatedSlot})`}
                                 />
-
+                                <KeyValuePair
+                                  label="Deposit limit"
+                                  value={
+                                    formattedBankValues.depositLimit
+                                      ? `${formattedBankValues.depositLimit} ${
+                                          bank.name
+                                        } ($${(
+                                          formattedBankValues.depositLimit *
+                                          bank.uiPrice
+                                        ).toFixed(2)})`
+                                      : 'None'
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="Interest Curve Scaling"
+                                  value={
+                                    formattedBankValues.interestCurveScaling
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="Interest Targe tUtilization"
+                                  value={
+                                    formattedBankValues.interestTargetUtilization
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="Maint Weight Shift Start"
+                                  value={
+                                    formattedBankValues.maintWeightShiftStart
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="Maint Weight Shift End"
+                                  value={
+                                    formattedBankValues.maintWeightShiftEnd
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="Maint Weight Shift Asset Target"
+                                  value={
+                                    formattedBankValues.maintWeightShiftAssetTarget
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="Maint Weight Shift Liab Target"
+                                  value={
+                                    formattedBankValues.maintWeightShiftLiabTarget
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="Maint Weight Shift Duration Inv"
+                                  value={
+                                    formattedBankValues.maintWeightShiftDurationInv
+                                  }
+                                />
                                 {bank.mint.toBase58() !== USDC_MINT && (
                                   <div className="mb-4 mt-2 flex">
                                     <Button
