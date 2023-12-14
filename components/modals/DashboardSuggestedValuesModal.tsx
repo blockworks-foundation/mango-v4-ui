@@ -504,6 +504,102 @@ const DashboardSuggestedValues = ({
               `${suggestedFields.liquidationFee}%`
             }
           />
+          <KeyValuePair
+            label="Group Insurance Fund"
+            value={`${formattedBankValues.groupInsuranceFund}`}
+            proposedValue={
+              suggestedFields.groupInsuranceFund !== undefined &&
+              `${suggestedFields.groupInsuranceFund}`
+            }
+          />
+          <KeyValuePair
+            label="Net Borrow Limit Window Size Ts"
+            value={`${formattedBankValues.netBorrowLimitWindowSizeTs}`}
+            proposedValue={
+              suggestedFields.netBorrowLimitWindowSizeTs !== undefined &&
+              `${suggestedFields.netBorrowLimitWindowSizeTs}`
+            }
+          />
+          <KeyValuePair
+            label="Stable Price Delay Interval Seconds"
+            value={`${formattedBankValues.stablePriceDelayIntervalSeconds}`}
+            proposedValue={
+              suggestedFields.stablePriceDelayIntervalSeconds !== undefined &&
+              `${suggestedFields.stablePriceDelayIntervalSeconds}`
+            }
+          />
+          <KeyValuePair
+            label="Stable Price Growth Limit"
+            value={`${formattedBankValues.stablePriceGrowthLimit}`}
+            proposedValue={
+              suggestedFields.stablePriceGrowthLimit !== undefined &&
+              `${suggestedFields.stablePriceGrowthLimit}`
+            }
+          />
+          <KeyValuePair
+            label="Stable Price Delay Growth Limit"
+            value={`${formattedBankValues.stablePriceDelayGrowthLimit}`}
+            proposedValue={
+              suggestedFields.stablePriceDelayGrowthLimit !== undefined &&
+              `${suggestedFields.stablePriceDelayGrowthLimit}`
+            }
+          />
+          <KeyValuePair
+            label="Token Conditional Swap Taker Fee Rate"
+            value={`${formattedBankValues.tokenConditionalSwapTakerFeeRate}`}
+            proposedValue={
+              suggestedFields.tokenConditionalSwapTakerFeeRate !== undefined &&
+              `${suggestedFields.tokenConditionalSwapTakerFeeRate}`
+            }
+          />
+          <KeyValuePair
+            label="Token Conditional Swap Maker Fee Rate"
+            value={`${formattedBankValues.tokenConditionalSwapMakerFeeRate}`}
+            proposedValue={
+              suggestedFields.tokenConditionalSwapMakerFeeRate !== undefined &&
+              `${suggestedFields.tokenConditionalSwapMakerFeeRate}`
+            }
+          />
+          <KeyValuePair
+            label="Interest Target Utilization"
+            value={`${formattedBankValues.interestTargetUtilization}`}
+            proposedValue={
+              suggestedFields.interestTargetUtilization !== undefined &&
+              `${suggestedFields.interestTargetUtilization}`
+            }
+          />
+          <KeyValuePair
+            label="Interest Curve Scaling"
+            value={`${formattedBankValues.interestCurveScaling}`}
+            proposedValue={
+              suggestedFields.interestCurveScaling !== undefined &&
+              `${suggestedFields.interestCurveScaling}`
+            }
+          />
+          <KeyValuePair
+            label="Deposit Limit"
+            value={`${formattedBankValues.depositLimit}`}
+            proposedValue={
+              suggestedFields.depositLimit !== undefined &&
+              `${suggestedFields.depositLimit}`
+            }
+          />
+          <KeyValuePair
+            label="Flash Loan Swap Fee Rate"
+            value={`${formattedBankValues.flashLoanSwapFeeRate}`}
+            proposedValue={
+              suggestedFields.flashLoanSwapFeeRate !== undefined &&
+              `${suggestedFields.flashLoanSwapFeeRate}`
+            }
+          />
+          <KeyValuePair
+            label="Reduce Only"
+            value={`${formattedBankValues.reduceOnly}`}
+            proposedValue={
+              suggestedFields.reduceOnly !== undefined &&
+              `${suggestedFields.reduceOnly}`
+            }
+          />
           <div>
             <h3 className="mb-4 pl-6">Price impacts</h3>
             {priceImpactsFiltered.map((x) => (
