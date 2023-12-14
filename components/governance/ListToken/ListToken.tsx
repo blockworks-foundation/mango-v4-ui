@@ -506,7 +506,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           Number(tierPreset.flashLoanSwapFeeRate),
           Number(tierPreset.interestCurveScaling),
           Number(tierPreset.interestTargetUtilization),
-          tierPreset.insuranceFound,
+          tierPreset.groupInsuranceFund,
           new BN(tierPreset.depositLimit),
         )
         .accounts({

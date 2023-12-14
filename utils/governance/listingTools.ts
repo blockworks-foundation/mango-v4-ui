@@ -272,7 +272,7 @@ export const formatSuggestedValues = (
     | Record<string, never>
     | Omit<
         ListingPreset,
-        'name' | 'netBorrowLimitWindowSizeTs' | 'insuranceFound'
+        'name' | 'netBorrowLimitWindowSizeTs' | 'groupInsuranceFund'
       >,
 ) => {
   return {
