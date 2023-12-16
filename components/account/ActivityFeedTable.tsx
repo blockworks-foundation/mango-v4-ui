@@ -69,6 +69,10 @@ export const getFee = (activity: any, mangoAccountAddress: string) => {
     const { fee_cost, quote_symbol } = activity.activity_details
     fee = { value: fee_cost, symbol: quote_symbol }
   }
+  if (activity_type === 'withdraw') {
+    const { borrow_fee, symbol } = activity.activity_details
+    fee = { value: formatFee(borrow_fee), symbol }
+  }
   if (activity_type === 'liquidate_token_with_token') {
     const { side, liab_amount, liab_price, asset_amount, asset_price } =
       activity.activity_details
