@@ -832,7 +832,7 @@ const AdvancedTradeForm = () => {
         <SpotMarketOrderSwapForm />
       ) : (
         <>
-          <form onSubmit={(e) => handleSubmit(e)}>
+          <form onSubmit={(e) => handleSubmit(e)} noValidate>
             <div className="mt-3 px-3 md:px-4">
               {tradeForm.tradeType === 'Limit' || isTriggerOrder ? (
                 <>
