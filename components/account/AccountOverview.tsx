@@ -70,10 +70,10 @@ const AccountOverview = () => {
   return (
     <>
       <div className="grid grid-cols-12 border-b border-th-bkg-3">
-        <div className="col-span-12 border-b border-th-bkg-3 pt-4 md:col-span-8 md:border-b-0 md:border-r">
+        <div className="col-span-12 border-b border-th-bkg-3 md:col-span-8 md:border-b-0 md:border-r">
           <div className="flex h-full w-full flex-col justify-between">
             {mangoAccount || (connected && initialLoad) ? (
-              <div className="overflow-x-hidden px-4 pb-4 md:px-6">
+              <div className="overflow-x-hidden px-4 py-4 md:px-6">
                 <DetailedAreaOrBarChart
                   changeAsPercent
                   data={chartData}
