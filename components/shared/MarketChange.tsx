@@ -13,7 +13,7 @@ const MarketChange = ({
   market: PerpMarket | Serum3Market | undefined
   size?: 'small'
 }) => {
-  const { perpMarketsWithData, serumMarketsWithData, isLoading, isFetching } =
+  const { perpMarketsWithData, serumMarketsWithData, isLoading } =
     useListedMarketsWithMarketData()
 
   const change = useMemo(() => {
@@ -23,18 +23,16 @@ const MarketChange = ({
       const perpMarket = perpMarketsWithData.find(
         (m) => m.name.toLowerCase() === market.name.toLowerCase(),
       )
-      return perpMarket ? perpMarket.rollingChange : 0
+      return perpMarket?.rollingChange ? perpMarket.rollingChange : 0
     } else {
       const spotMarket = serumMarketsWithData.find(
         (m) => m.name.toLowerCase() === market.name.toLowerCase(),
       )
-      return spotMarket ? spotMarket.rollingChange : 0
+      return spotMarket?.rollingChange ? spotMarket.rollingChange : 0
     }
   }, [perpMarketsWithData, serumMarketsWithData])
 
-  const loading = isLoading || isFetching
-
-  return loading ? (
+  return isLoading ? (
     <SheenLoader className="mt-0.5">
       <div className="h-3.5 w-12 bg-th-bkg-2" />
     </SheenLoader>

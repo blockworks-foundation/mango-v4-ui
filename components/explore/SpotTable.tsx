@@ -30,7 +30,6 @@ import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 import { BankWithMarketData } from './Spot'
 import { SerumMarketWithMarketData } from 'hooks/useListedMarketsWithMarketData'
 import Tooltip from '@components/shared/Tooltip'
-import dayjs from 'dayjs'
 import TableTokenName from '@components/shared/TableTokenName'
 import { LinkButton } from '@components/shared/Button'
 import { formatTokenSymbol } from 'utils/tokens'
@@ -48,7 +47,7 @@ type TableData = {
   price: number
   priceHistory: {
     price: number
-    time: string
+    time: number
   }[]
   volume: number
   isUp: boolean
@@ -69,17 +68,14 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
         const baseBank = token.bank
         const price = baseBank.uiPrice
 
-        const pastPrice = token.market?.marketData?.price_24h
-
         const priceHistory =
-          token.market?.marketData?.price_history
-            ?.sort((a, b) => a.time.localeCompare(b.time))
-            .concat([{ price: price, time: dayjs().toISOString() }]) || []
+          token.market?.priceHistory
+            ?.sort((a, b) => a.time - b.time)
+            .concat([{ price: price, time: Date.now() }]) || []
 
         const volume = token.market?.marketData?.quote_volume_24h || 0
 
-        const change =
-          volume > 0 && pastPrice ? ((price - pastPrice) / pastPrice) * 100 : 0
+        const change = token.market?.rollingChange || 0
 
         const tokenName = baseBank.name
 

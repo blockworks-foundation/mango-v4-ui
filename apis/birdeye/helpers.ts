@@ -1,5 +1,5 @@
 import Decimal from 'decimal.js'
-import { BirdeyePriceResponse } from 'hooks/useBirdeyeMarketPrices'
+import { BirdeyePriceResponse } from 'types'
 import { DAILY_SECONDS } from 'utils/constants'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */

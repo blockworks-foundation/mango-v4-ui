@@ -98,10 +98,7 @@ const RecentGainersLosers = () => {
     for (const token of banksWithMarketData) {
       const volume = token.market?.marketData?.quote_volume_24h || 0
       if (token.market?.quoteTokenIndex === 0 && volume > 0) {
-        const pastPrice = token.market?.marketData?.price_24h
-        const change = pastPrice
-          ? ((token.bank.uiPrice - pastPrice) / pastPrice) * 100
-          : 0
+        const change = token.market?.rollingChange || 0
         tradeableAssets.push({ bank: token.bank, change, type: 'spot' })
       }
     }
