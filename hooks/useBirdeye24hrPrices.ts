@@ -5,18 +5,6 @@ import { makeApiRequest } from 'apis/birdeye/helpers'
 import useMangoGroup from './useMangoGroup'
 import { DAILY_SECONDS } from 'utils/constants'
 
-export interface BirdeyeChangeResponse {
-  data: {
-    [key: string]: {
-      priceChange24h: number
-      updateHumanTime: string
-      updateUnixTime: number
-      value: number
-    }
-  }
-  success: boolean
-}
-
 const fetchBirdeye24hrPrices = async (
   group: Group | undefined,
   spotMarkets: Serum3Market[],
