@@ -17,6 +17,7 @@ import Input from '@components/forms/Input'
 import EmptyState from '@components/nftMarket/EmptyState'
 import { Bank } from '@blockworks-foundation/mango-v4'
 import useBanks from 'hooks/useBanks'
+import SheenLoader from '@components/shared/SheenLoader'
 
 export type BankWithMarketData = {
   bank: Bank
@@ -91,7 +92,8 @@ const Spot = () => {
   const { t } = useTranslation(['common', 'explore', 'trade'])
   const { group } = useMangoGroup()
   const { banks } = useBanks()
-  const { serumMarketsWithData } = useListedMarketsWithMarketData()
+  const { serumMarketsWithData, isLoading: loadingMarketsData } =
+    useListedMarketsWithMarketData()
   const [sortByKey, setSortByKey] = useState<AllowedKeys>('quote_volume_24h')
   const [search, setSearch] = useState('')
   const [showTableView, setShowTableView] = useState(true)
@@ -169,7 +171,15 @@ const Spot = () => {
           </div>
         </div>
       </div>
-      {sortedTokensToShow.length ? (
+      {loadingMarketsData ? (
+        <div className="mx-4 my-6 space-y-1 md:mx-6">
+          {[...Array(4)].map((x, i) => (
+            <SheenLoader className="flex flex-1" key={i}>
+              <div className="h-16 w-full bg-th-bkg-2" />
+            </SheenLoader>
+          ))}
+        </div>
+      ) : sortedTokensToShow.length ? (
         showTableView ? (
           <div className="mt-6 border-t border-th-bkg-3">
             <SpotTable tokens={sortedTokensToShow} />

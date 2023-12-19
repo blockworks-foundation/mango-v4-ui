@@ -498,6 +498,12 @@ export function isMangoError(error: unknown): error is MangoError {
   )
 }
 
+export interface BirdeyePriceResponse {
+  address: string
+  unixTime: number
+  value: number
+}
+
 export type MarketData = { [key: string]: MarketsDataItem[] }
 
 export type MarketsDataItem = {
