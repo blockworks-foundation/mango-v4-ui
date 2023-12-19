@@ -1,7 +1,4 @@
-import {
-  HealthType,
-  toUiDecimalsForQuote,
-} from '@blockworks-foundation/mango-v4'
+import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'next-i18next'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
@@ -33,22 +30,8 @@ const SummaryItem = ({
 const MangoAccountSummary = () => {
   const { t } = useTranslation('common')
   const { group } = useMangoGroup()
-  const { mangoAccount } = useMangoAccount()
-
-  const [accountPnl, accountValue, freeCollateral, health] = useMemo(() => {
-    if (!group || !mangoAccount) return [0, 0, 0, 0]
-    const accountPnl = toUiDecimalsForQuote(
-      mangoAccount.getPnl(group).toNumber(),
-    )
-    const accountValue = toUiDecimalsForQuote(
-      mangoAccount.getEquity(group).toNumber(),
-    )
-    const freeCollateral = toUiDecimalsForQuote(
-      mangoAccount.getCollateralValue(group).toNumber(),
-    )
-    const health = mangoAccount.getHealthRatioUi(group, HealthType.maint)
-    return [accountPnl, accountValue, freeCollateral, health]
-  }, [group, mangoAccount])
+  const { mangoAccount, accountPnl, freeCollateral, health, accountValue } =
+    useMangoAccount()
 
   const leverage = useMemo(() => {
     if (!group || !mangoAccount) return 0

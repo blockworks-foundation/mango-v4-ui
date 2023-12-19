@@ -8,6 +8,7 @@ import { useTranslation } from 'next-i18next'
 import React, { useCallback, useMemo, useState } from 'react'
 import NumberFormat from 'react-number-format'
 import mangoStore from '@store/mangoStore'
+import transactionStore from '@store/transactionStore'
 import {
   ACCOUNT_ACTION_MODAL_INNER_HEIGHT,
   INPUT_TOKEN_DEFAULT,
@@ -69,7 +70,7 @@ export const walletBalanceForToken = (
 function DepositForm({ onSuccess, token }: DepositFormProps) {
   const { t } = useTranslation(['common', 'account'])
   const [inputAmount, setInputAmount] = useState('')
-  const [submitting, setSubmitting] = useState(false)
+  const [submitting] = useState(false)
   const [selectedToken, setSelectedToken] = useState(
     token || INPUT_TOKEN_DEFAULT,
   )
@@ -129,10 +130,10 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
     const group = mangoStore.getState().group
     const actions = mangoStore.getState().actions
     const mangoAccount = mangoStore.getState().mangoAccount.current
+    const addTransaction = transactionStore.getState().addTransaction
 
     if (!mangoAccount || !group || !bank || !publicKey) return
 
-    setSubmitting(true)
     try {
       const { signature: tx, slot } = await client.tokenDeposit(
         group,
@@ -140,19 +141,25 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
         bank.mint,
         parseFloat(inputAmount),
       )
-      notify({
-        title: 'Transaction confirmed',
-        type: 'success',
-        txid: tx,
-      })
 
-      await actions.reloadMangoAccount(slot)
-      actions.fetchWalletTokens(publicKey)
-      setSubmitting(false)
-      onSuccess()
+      addTransaction(
+        tx,
+        { bank: bank, amount: parseFloat(inputAmount) },
+        async () => {
+          notify({
+            title: 'Transaction confirmed',
+            type: 'success',
+            txid: tx,
+          })
+
+          await actions.reloadMangoAccount(slot)
+          actions.fetchWalletTokens(publicKey)
+          onSuccess()
+        },
+        'deposit',
+      )
     } catch (e) {
       console.error('Error depositing:', e)
-      setSubmitting(false)
       if (!isMangoError(e)) return
       notify({
         title: 'Transaction failed',

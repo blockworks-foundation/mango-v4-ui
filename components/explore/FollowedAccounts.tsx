@@ -1,7 +1,4 @@
-import {
-  MangoAccount,
-  toUiDecimalsForQuote,
-} from '@blockworks-foundation/mango-v4'
+import { MangoAccount } from '@blockworks-foundation/mango-v4'
 import WalletIcon from '@components/icons/WalletIcon'
 import EmptyState from '@components/nftMarket/EmptyState'
 import ProfileImage from '@components/profile/ProfileImage'
@@ -24,7 +21,6 @@ import useAccountPerformanceData from 'hooks/useAccountPerformanceData'
 import useFollowedAccounts from 'hooks/useFollowedAccounts'
 import { useHiddenMangoAccounts } from 'hooks/useHiddenMangoAccounts'
 import useMangoAccount from 'hooks/useMangoAccount'
-import useMangoGroup from 'hooks/useMangoGroup'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -160,8 +156,7 @@ const fetchActivityData = async (publicKey: PublicKey) => {
 const AccountDisplay = ({ account }: { account: FollowedAccount }) => {
   const { mangoAccount, profile_image_url, profile_name } = account
   const { name, owner, publicKey } = mangoAccount
-  const { group } = useMangoGroup()
-
+  const { accountValue, accountPnl } = useMangoAccount()
   const { t } = useTranslation(['common', 'account', 'activity'])
   const { hiddenAccounts, loadingHiddenAccounts } = useHiddenMangoAccounts()
   const { rollingDailyData } = useAccountPerformanceData(publicKey.toString())
@@ -187,16 +182,6 @@ const AccountDisplay = ({ account }: { account: FollowedAccount }) => {
       enabled: publicKey && !isPrivateAccount && !loadingHiddenAccounts,
     },
   )
-
-  const accountValue = useMemo(() => {
-    if (!group) return 0
-    return toUiDecimalsForQuote(mangoAccount.getEquity(group).toNumber())
-  }, [mangoAccount, group])
-
-  const accountPnl = useMemo(() => {
-    if (!group) return 0
-    return toUiDecimalsForQuote(mangoAccount.getPnl(group).toNumber())
-  }, [mangoAccount, group])
 
   const [rollingDailyValueChange, rollingDailyPnlChange] = useMemo(() => {
     if (!accountPnl || !rollingDailyData.length) return [0, 0]

@@ -1,8 +1,6 @@
 import { useMemo, useState } from 'react'
 import AccountActions from './AccountActions'
-import useMangoGroup from 'hooks/useMangoGroup'
 import useMangoAccount from 'hooks/useMangoAccount'
-import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import useAccountPerformanceData from 'hooks/useAccountPerformanceData'
 import dayjs from 'dayjs'
 import AccountHeroStats from './AccountHeroStats'
@@ -33,18 +31,12 @@ const DEFAULT_CHART_DATA = [
 
 const AccountOverview = () => {
   const { t } = useTranslation(['common', 'governance'])
-  const { group } = useMangoGroup()
-  const { mangoAccount, initialLoad } = useMangoAccount()
+  const { mangoAccount, initialLoad, accountValue } = useMangoAccount()
   const { connected } = useWallet()
   const { performanceData, loadingPerformanceData } =
     useAccountPerformanceData()
   const [daysToShow, setDaysToShow] = useState('1')
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
-
-  const accountValue = useMemo(() => {
-    if (!group || !mangoAccount) return 0
-    return toUiDecimalsForQuote(mangoAccount.getEquity(group).toNumber())
-  }, [group, mangoAccount])
 
   const latestAccountData = useMemo(() => {
     return [
