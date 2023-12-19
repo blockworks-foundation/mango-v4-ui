@@ -68,10 +68,11 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
         const baseBank = token.bank
         const price = baseBank.uiPrice
 
-        const priceHistory =
-          token.market?.priceHistory
-            ?.sort((a, b) => a.time - b.time)
-            .concat([{ price: price, time: Date.now() }]) || []
+        const priceHistory = token?.market?.priceHistory?.length
+          ? token.market.priceHistory
+              ?.sort((a, b) => a.time - b.time)
+              .concat([{ price: price, time: Date.now() }])
+          : []
 
         const volume = token.market?.marketData?.quote_volume_24h || 0
 
@@ -268,7 +269,7 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
                     </Td>
                     <Td>
                       <div className="flex flex-col items-end">
-                        {market ? (
+                        {market && price ? (
                           <Change change={change} suffix="%" />
                         ) : (
                           <span>–</span>

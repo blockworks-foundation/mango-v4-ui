@@ -95,7 +95,9 @@ export default function useListedMarketsWithMarketData() {
 
         // calculate price change
         const currentPrice = currentPrices[market.name]
-        const change = ((currentPrice - pastPrice) / pastPrice) * 100
+        const change = currentPrice
+          ? ((currentPrice - pastPrice) / pastPrice) * 100
+          : 0
 
         market.rollingChange = change
         market.priceHistory = priceHistory
