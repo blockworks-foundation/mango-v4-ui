@@ -43,7 +43,6 @@ import OnBoarding from '../OnBoarding'
 import CreateOpenbookMarketModal from '@components/modals/CreateOpenbookMarketModal'
 import useJupiterMints from 'hooks/useJupiterMints'
 import CreateSwitchboardOracleModal from '@components/modals/CreateSwitchboardOracleModal'
-import { BN } from '@coral-xyz/anchor'
 import {
   LISTING_PRESETS_KEYS,
   LISTING_PRESETS,
@@ -53,6 +52,7 @@ import {
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 import Checkbox from '@components/forms/Checkbox'
 import { ReferralProvider } from '@jup-ag/referral-sdk'
+import { BN } from '@coral-xyz/anchor'
 
 type FormErrors = Partial<Record<keyof TokenListForm, string>>
 
@@ -234,6 +234,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         marketIndex: index,
         openBookMarketExternalPk: marketPk?.toBase58() || '',
         proposalTitle: `List ${tokenInfo.symbol} on Mango-v4`,
+        listForSwapOnly: tier === 'UNTRUSTED',
       })
       setLoadingListingParams(false)
       setIsPyth(isPyth)
@@ -321,7 +322,9 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           (x) => x?.priceImpactPct && x?.priceImpactPct * 100 < 1,
         )
         const tier =
-          indexForTierFromSwaps > -1 ? TIERS[indexForTierFromSwaps] : 'SHIT'
+          indexForTierFromSwaps > -1
+            ? TIERS[indexForTierFromSwaps]
+            : 'UNTRUSTED'
         setLiqudityTier(tier)
         setPriceImpact(midTierCheck ? midTierCheck.priceImpactPct * 100 : 100)
         handleGetPoolParams(tier, tokenMint)
@@ -332,7 +335,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           description: `${e}`,
           type: 'error',
         })
-        return 'SHIT'
+        return 'UNTRUSTED'
       }
     },
     [t, handleGetRoutesWithFixedArgs],
@@ -817,28 +820,30 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                               )}
                             </div>
                           )}
-                          <div>
-                            <Label text={t('list-for-swap-only')} />
-                            <Checkbox
-                              checked={advForm.listForSwapOnly}
-                              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                                handleSetAdvForm(
-                                  'listForSwapOnly',
-                                  e.target.checked,
-                                )
-                              }
-                            >
-                              <></>
-                            </Checkbox>
-                            {formErrors.openBookMarketExternalPk && (
-                              <div className="mt-1.5 flex items-center space-x-1">
-                                <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
-                                <p className="mb-0 text-xs text-th-down">
-                                  {formErrors.openBookMarketExternalPk}
-                                </p>
-                              </div>
-                            )}
-                          </div>
+                          {listingTier !== 'UNTRUSTED' && (
+                            <div>
+                              <Label text={t('list-for-swap-only')} />
+                              <Checkbox
+                                checked={advForm.listForSwapOnly}
+                                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                  handleSetAdvForm(
+                                    'listForSwapOnly',
+                                    e.target.checked,
+                                  )
+                                }
+                              >
+                                <></>
+                              </Checkbox>
+                              {formErrors.openBookMarketExternalPk && (
+                                <div className="mt-1.5 flex items-center space-x-1">
+                                  <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
+                                  <p className="mb-0 text-xs text-th-down">
+                                    {formErrors.openBookMarketExternalPk}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          )}
                           <div>
                             <Label text={t('base-bank')} />
                             <Input
