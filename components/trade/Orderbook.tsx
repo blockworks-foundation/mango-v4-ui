@@ -138,33 +138,6 @@ const Orderbook = () => {
     return asksPk.toString()
   }, [market])
 
-  const usersOpenOrderPrices = useMemo(() => {
-    if (!market) return []
-    const openOrders = mangoStore.getState().mangoAccount.openOrders
-    const marketPk = market.publicKey.toString()
-    const bids2 = mangoStore.getState().selectedMarket.bidsAccount
-    const asks2 = mangoStore.getState().selectedMarket.asksAccount
-    const mangoAccount = mangoStore.getState().mangoAccount.current
-    let usersOpenOrderPrices: number[] = []
-    if (
-      mangoAccount &&
-      bids2 &&
-      asks2 &&
-      bids2 instanceof BookSide &&
-      asks2 instanceof BookSide
-    ) {
-      usersOpenOrderPrices = [...bids2.items(), ...asks2.items()]
-        .filter((order) => order.owner.equals(mangoAccount.publicKey))
-        .map((order) => order.price)
-    } else {
-      usersOpenOrderPrices =
-        marketPk && openOrders[marketPk]?.length
-          ? openOrders[marketPk]?.map((order) => order.price)
-          : []
-    }
-    return usersOpenOrderPrices
-  }, [market])
-
   useEffect(
     () =>
       mangoStore.subscribe(
@@ -182,14 +155,14 @@ const Orderbook = () => {
               depth,
               market,
               grouping,
-              usersOpenOrderPrices,
+              usersOpenOrderPrices(market),
             )
             currentOrderbookData.current = newOrderbook
             setOrderbookData(updatedOrderbook)
           }
         },
       ),
-    [depth, grouping, market, usersOpenOrderPrices],
+    [depth, grouping, market],
   )
 
   // subscribe to the bids and asks orderbook accounts
@@ -428,13 +401,13 @@ const Orderbook = () => {
           depth,
           market,
           groupSize,
-          usersOpenOrderPrices,
+          usersOpenOrderPrices(market),
         )
         setOrderbookData(updatedOrderbook)
         verticallyCenterOrderbook()
       }
     },
-    [currentOrderbookData, depth, market, usersOpenOrderPrices],
+    [currentOrderbookData, depth, market],
   )
 
   return (
@@ -812,3 +785,30 @@ const Line = (props: {
 }
 
 export default Orderbook
+
+function usersOpenOrderPrices(market: Market | PerpMarket | null) {
+  if (!market) return []
+  const openOrders = mangoStore.getState().mangoAccount.openOrders
+  const marketPk = market.publicKey.toString()
+  const bids2 = mangoStore.getState().selectedMarket.bidsAccount
+  const asks2 = mangoStore.getState().selectedMarket.asksAccount
+  const mangoAccount = mangoStore.getState().mangoAccount.current
+  let usersOpenOrderPrices: number[] = []
+  if (
+    mangoAccount &&
+    bids2 &&
+    asks2 &&
+    bids2 instanceof BookSide &&
+    asks2 instanceof BookSide
+  ) {
+    usersOpenOrderPrices = [...bids2.items(), ...asks2.items()]
+      .filter((order) => order.owner.equals(mangoAccount.publicKey))
+      .map((order) => order.price)
+  } else {
+    usersOpenOrderPrices =
+      marketPk && openOrders[marketPk]?.length
+        ? openOrders[marketPk]?.map((order) => order.price)
+        : []
+  }
+  return usersOpenOrderPrices
+}
