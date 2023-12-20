@@ -9,7 +9,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useCallback, useMemo } from 'react'
 import { GenericMarket } from 'types'
-import { floorToDecimal } from 'utils/numbers'
+import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 
 export const useSpotMarketMax = (
   mangoAccount: MangoAccount | undefined,
@@ -26,6 +26,9 @@ export const useSpotMarketMax = (
     let leverageMax = 0
     let spotMax = 0
     try {
+      const market = group.getSerum3ExternalMarket(
+        selectedMarket.serumMarketExternal,
+      )
       if (side === 'buy') {
         leverageMax = mangoAccount.getMaxQuoteForSerum3BidUi(
           group,
@@ -36,7 +39,8 @@ export const useSpotMarketMax = (
         )
         const balance = mangoAccount.getTokenBalanceUi(bank)
         const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
-        spotMax = balance + unsettled
+        const tickDecimals = getDecimalCount(market.tickSize)
+        spotMax = floorToDecimal(balance + unsettled, tickDecimals).toNumber()
       } else {
         leverageMax = mangoAccount.getMaxBaseForSerum3AskUi(
           group,
@@ -47,7 +51,11 @@ export const useSpotMarketMax = (
         )
         const balance = mangoAccount.getTokenBalanceUi(bank)
         const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
-        spotMax = balance + unsettled
+        const minOrderDecimals = getDecimalCount(market.minOrderSize)
+        spotMax = floorToDecimal(
+          balance + unsettled,
+          minOrderDecimals,
+        ).toNumber()
       }
       return useMargin ? leverageMax : Math.max(spotMax, 0)
     } catch (e) {

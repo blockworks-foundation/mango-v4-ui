@@ -229,7 +229,7 @@ export default function RewardsComponent({
   }, [collectedPrizes, prizes, setShowRender, start, telemetry])
 
   useEffect(() => {
-    if (tokensInfo.length) {
+    if (tokensInfo.length || nftsRewardsInfo.length) {
       const claimsAsPrizes = getClaimsAsPrizes(
         claims,
         tokensInfo,

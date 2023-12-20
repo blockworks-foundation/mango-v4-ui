@@ -13,6 +13,7 @@ import { LAMPORTS_PER_SOL, PublicKey, Transaction } from '@solana/web3.js'
 import { MARKET_STATE_LAYOUT_V2 } from '@project-serum/serum'
 import { notify } from 'utils/notifications'
 import InlineNotification from '@components/shared/InlineNotification'
+import Switch from '@components/forms/Switch'
 
 type CreateObMarketForm = {
   programId: string
@@ -20,6 +21,7 @@ type CreateObMarketForm = {
   quoteMint: string
   minimumOrderSize: string
   minimumPriceTickSize: string
+  xlMarket: boolean
 }
 
 type TradingParams = {
@@ -41,6 +43,7 @@ const defaultFormValues: CreateObMarketForm = {
   quoteMint: '',
   minimumOrderSize: '',
   minimumPriceTickSize: '',
+  xlMarket: false,
 }
 
 type CreateOpenbookMarketModalProps = {
@@ -95,6 +98,7 @@ const CreateOpenbookMarketModal = ({
         lotSize: Number(form.minimumOrderSize),
         tickSize: Number(form.minimumPriceTickSize),
         dexProgramId: new PublicKey(form.programId),
+        xlSize: form.xlMarket,
       })
 
       const txChunks = ixObj.innerTransactions
@@ -145,6 +149,7 @@ const CreateOpenbookMarketModal = ({
       quoteMint: quoteMint || '',
       minimumOrderSize: tradingParams.minOrderSize.toString(),
       minimumPriceTickSize: tradingParams.priceIncrement.toString(),
+      xlMarket: false,
     })
   }, [
     baseMint,
@@ -252,6 +257,21 @@ const CreateOpenbookMarketModal = ({
               />
             </div>
           )}
+        </div>
+        <div className="flex items-center justify-between rounded-md border border-th-bkg-3 px-3 py-2">
+          <div>
+            <p className="text-th-fgd-2">{t('create-bigger-market')}</p>
+          </div>
+          <Switch
+            className="text-th-fgd-3"
+            checked={form.xlMarket}
+            onChange={(checked: boolean) =>
+              setForm({
+                ...form,
+                xlMarket: checked,
+              })
+            }
+          />
         </div>
       </div>
       {connected ? (

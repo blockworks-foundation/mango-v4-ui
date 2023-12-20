@@ -40,6 +40,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
   return {
     props: {
       ...(await serverSideTranslations(locale, [
+        'account',
         'close-account',
         'common',
         'notifications',
@@ -235,9 +236,17 @@ const Dashboard: NextPage = () => {
                                         <ArrowTopRightOnSquareIcon className="ml-2 h-5 w-5 whitespace-nowrap" />
                                       </a>
                                     ) : (
-                                      <ExplorerLink
-                                        address={formattedBankValues.oracle}
-                                      />
+                                      <a
+                                        href={`https://pyth.network/price-feeds/crypto-${bankNameToOracleName(
+                                          bank.name,
+                                        ).toLowerCase()}-${'usd'}`}
+                                        className={`flex items-center break-all text-th-fgd-2 hover:text-th-fgd-3`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                      >
+                                        {bank.oracle.toString()}
+                                        <ArrowTopRightOnSquareIcon className="ml-2 h-5 w-5 whitespace-nowrap" />
+                                      </a>
                                     )
                                   }
                                 />
@@ -383,17 +392,77 @@ const Dashboard: NextPage = () => {
                                   label="Oracle: Conf Filter"
                                   value={`${
                                     formattedBankValues.oracleConfFilter
-                                  }% (Last known confidence ${bank._oracleLastKnownDeviation
-                                    ?.div(bank.price)
-                                    .mul(I80F48.fromNumber(100))
-                                    .toNumber()
-                                    .toFixed(2)}%)`}
+                                  }% (Last known confidence ${
+                                    bank._oracleLastKnownDeviation instanceof
+                                      I80F48 &&
+                                    !bank._oracleLastKnownDeviation.isZero()
+                                      ? bank._oracleLastKnownDeviation
+                                          ?.div(bank.price)
+                                          .mul(I80F48.fromNumber(100))
+                                          .toNumber()
+                                          .toFixed(2)
+                                      : 'null'
+                                  }%)`}
                                 />
                                 <KeyValuePair
                                   label="Oracle: Max Staleness"
                                   value={`${bank.oracleConfig.maxStalenessSlots} slots (Last updated slot ${bank._oracleLastUpdatedSlot})`}
                                 />
-
+                                <KeyValuePair
+                                  label="Deposit limit"
+                                  value={
+                                    formattedBankValues.depositLimit
+                                      ? `${formattedBankValues.depositLimit} ${
+                                          bank.name
+                                        } ($${(
+                                          formattedBankValues.depositLimit *
+                                          bank.uiPrice
+                                        ).toFixed(2)})`
+                                      : 'None'
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="Interest Curve Scaling"
+                                  value={
+                                    formattedBankValues.interestCurveScaling
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="Interest Targe tUtilization"
+                                  value={
+                                    formattedBankValues.interestTargetUtilization
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="Maint Weight Shift Start"
+                                  value={
+                                    formattedBankValues.maintWeightShiftStart
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="Maint Weight Shift End"
+                                  value={
+                                    formattedBankValues.maintWeightShiftEnd
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="Maint Weight Shift Asset Target"
+                                  value={
+                                    formattedBankValues.maintWeightShiftAssetTarget
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="Maint Weight Shift Liab Target"
+                                  value={
+                                    formattedBankValues.maintWeightShiftLiabTarget
+                                  }
+                                />
+                                <KeyValuePair
+                                  label="Maint Weight Shift Duration Inv"
+                                  value={
+                                    formattedBankValues.maintWeightShiftDurationInv
+                                  }
+                                />
                                 {bank.mint.toBase58() !== USDC_MINT && (
                                   <div className="mb-4 mt-2 flex">
                                     <Button
@@ -953,3 +1022,13 @@ export const DashboardNavbar = () => {
 }
 
 export default Dashboard
+
+//some assets are listed with different pyth named oracles
+const bankNameToOracleName = (val: string) => {
+  if (val === 'ETH (Portal)') {
+    return 'ETH'
+  }
+  if (val === 'CHAI') return 'DAI'
+  if (val === 'wBTC (Portal)') return 'BTC'
+  return val
+}

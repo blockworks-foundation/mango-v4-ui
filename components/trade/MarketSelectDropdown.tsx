@@ -36,6 +36,7 @@ import Input from '@components/forms/Input'
 import { useSortableData } from 'hooks/useSortableData'
 import { SortableColumnHeader } from '@components/shared/TableElements'
 import { useViewport } from 'hooks/useViewport'
+import { useRouter } from 'next/router'
 
 const MARKET_LINK_CLASSES =
   'grid grid-cols-3 sm:grid-cols-4 flex items-center w-full py-2 px-4 rounded-r-md focus:outline-none focus-visible:text-th-active md:hover:cursor-pointer md:hover:bg-th-bkg-3 md:hover:text-th-fgd-1'
@@ -54,10 +55,20 @@ const MarketSelectDropdown = () => {
   const [isOpen, setIsOpen] = useState(false)
   const { group } = useMangoGroup()
   const [spotBaseFilter, setSpotBaseFilter] = useState('All')
-  const { perpMarketsWithData, serumMarketsWithData, isLoading, isFetching } =
+  const { perpMarketsWithData, serumMarketsWithData, isLoading } =
     useListedMarketsWithMarketData()
   const { isDesktop } = useViewport()
   const focusRef = useRef<HTMLInputElement>(null)
+  const { query } = useRouter()
+
+  // switch to spot tab on spot markets
+  useEffect(() => {
+    if (query?.name && !query.name.includes('PERP')) {
+      setSpotOrPerp('spot')
+    } else {
+      setSpotOrPerp('perp')
+    }
+  }, [query])
 
   const unsortedPerpMarketsToShow = useMemo(() => {
     if (!perpMarketsWithData.length) return []
@@ -118,8 +129,6 @@ const MarketSelectDropdown = () => {
       focusRef.current.focus()
     }
   }, [focusRef, isDesktop, isOpen, spotOrPerp])
-
-  const loadingMarketData = isLoading || isFetching
 
   return (
     <Popover>
@@ -258,7 +267,7 @@ const MarketSelectDropdown = () => {
                                 <MarketChange market={m} size="small" />
                               </div>
                               <div className="col-span-1 hidden sm:flex sm:justify-end">
-                                {loadingMarketData ? (
+                                {isLoading ? (
                                   <SheenLoader className="mt-0.5">
                                     <div className="h-3.5 w-12 bg-th-bkg-2" />
                                   </SheenLoader>
@@ -435,7 +444,7 @@ const MarketSelectDropdown = () => {
                               <MarketChange market={m} size="small" />
                             </div>
                             <div className="col-span-1 hidden sm:flex sm:justify-end">
-                              {loadingMarketData ? (
+                              {isLoading ? (
                                 <SheenLoader className="mt-0.5">
                                   <div className="h-3.5 w-12 bg-th-bkg-2" />
                                 </SheenLoader>

@@ -49,6 +49,7 @@ import SheenLoader from '@components/shared/SheenLoader'
 import { fetchJupiterTransaction } from '@components/swap/SwapReviewRouteInfo'
 import MaxMarketTradeAmount from './MaxMarketTradeAmount'
 import useMangoAccount from 'hooks/useMangoAccount'
+import InlineNotification from '@components/shared/InlineNotification'
 
 const set = mangoStore.getState().set
 
@@ -73,31 +74,53 @@ export default function SpotMarketOrderSwapForm() {
   const [savedCheckboxSettings, setSavedCheckboxSettings] =
     useLocalStorageState(TRADE_CHECKBOXES_KEY, DEFAULT_CHECKBOX_SETTINGS)
   const {
-    selectedMarket,
     price: oraclePrice,
     baseLogoURI,
     baseSymbol,
     quoteLogoURI,
     quoteSymbol,
+    selectedMarket,
     serumOrPerpMarket,
   } = useSelectedMarket()
   const { amount: tokenMax, amountWithBorrow } = useTokenMax(
     savedCheckboxSettings.margin,
   )
 
+  const [inputBank, outputBank] = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!group || !(selectedMarket instanceof Serum3Market)) return []
+
+    const quoteBank = group?.getFirstBankByTokenIndex(
+      selectedMarket.quoteTokenIndex,
+    )
+    const baseBank = group.getFirstBankByTokenIndex(
+      selectedMarket.baseTokenIndex,
+    )
+
+    if (side === 'buy') {
+      set((s) => {
+        s.swap.inputBank = quoteBank
+        s.swap.outputBank = baseBank
+      })
+      return [quoteBank, baseBank]
+    } else {
+      set((s) => {
+        s.swap.inputBank = baseBank
+        s.swap.outputBank = quoteBank
+      })
+      return [baseBank, quoteBank]
+    }
+  }, [selectedMarket, side])
+
   const handleBaseSizeChange = useCallback(
     (e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
-      console.log(e.value)
       set((s) => {
-        const price =
-          s.tradeForm.tradeType === 'Market'
-            ? oraclePrice
-            : Number(s.tradeForm.price)
-
         s.tradeForm.baseSize = e.value
-        if (price && e.value !== '' && !Number.isNaN(Number(e.value))) {
-          s.tradeForm.quoteSize = new Decimal(price).mul(e.value).toFixed()
+        if (oraclePrice && e.value !== '' && !Number.isNaN(Number(e.value))) {
+          s.tradeForm.quoteSize = new Decimal(oraclePrice)
+            .mul(e.value)
+            .toFixed()
         } else {
           s.tradeForm.quoteSize = ''
         }
@@ -110,14 +133,9 @@ export default function SpotMarketOrderSwapForm() {
     (e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
       set((s) => {
-        const price =
-          s.tradeForm.tradeType === 'Market'
-            ? oraclePrice
-            : Number(s.tradeForm.price)
-
         s.tradeForm.quoteSize = e.value
-        if (price && e.value !== '' && !Number.isNaN(Number(e.value))) {
-          s.tradeForm.baseSize = new Decimal(e.value).div(price).toFixed()
+        if (oraclePrice && e.value !== '' && !Number.isNaN(Number(e.value))) {
+          s.tradeForm.baseSize = new Decimal(e.value).div(oraclePrice).toFixed()
         } else {
           s.tradeForm.baseSize = ''
         }
@@ -187,39 +205,20 @@ export default function SpotMarketOrderSwapForm() {
     [side, handleBaseSizeChange, handleQuoteSizeChange],
   )
 
-  const [inputBank, outputBank] = useMemo(() => {
-    const group = mangoStore.getState().group
-    if (!group || !(selectedMarket instanceof Serum3Market)) return []
-
-    const quoteBank = group?.getFirstBankByTokenIndex(
-      selectedMarket.quoteTokenIndex,
-    )
-    const baseBank = group.getFirstBankByTokenIndex(
-      selectedMarket.baseTokenIndex,
-    )
-
-    if (side === 'buy') {
-      set((s) => {
-        s.swap.inputBank = quoteBank
-        s.swap.outputBank = baseBank
-      })
-      return [quoteBank, baseBank]
-    } else {
-      set((s) => {
-        s.swap.inputBank = baseBank
-        s.swap.outputBank = quoteBank
-      })
-      return [baseBank, quoteBank]
-    }
-  }, [selectedMarket, side])
-
   const slippage = mangoStore.getState().swap.slippage
   const jupiterQuoteAmount = side === 'buy' ? quoteSize : baseSize
+  const roundedQuoteAmount = useMemo(() => {
+    if (!jupiterQuoteAmount) return ''
+    return new Decimal(jupiterQuoteAmount)
+      .toDecimalPlaces(inputBank?.mintDecimals || 6, Decimal.ROUND_FLOOR)
+      .toFixed()
+  }, [jupiterQuoteAmount, inputBank])
+
   const { bestRoute: selectedRoute, isInitialLoading: loadingRoute } =
     useQuoteRoutes({
       inputMint: inputBank?.mint.toString() || '',
       outputMint: outputBank?.mint.toString() || '',
-      amount: jupiterQuoteAmount,
+      amount: roundedQuoteAmount,
       slippage,
       swapMode: 'ExactIn',
       wallet: publicKey?.toBase58(),
@@ -403,11 +402,21 @@ export default function SpotMarketOrderSwapForm() {
     savedCheckboxSettings.margin,
   ])
 
+  const quoteError =
+    !!selectedRoute?.error ||
+    !!(
+      !selectedRoute &&
+      !loadingRoute &&
+      !isDraggingSlider &&
+      jupiterQuoteAmount
+    )
+
   const disabled =
     (connected && (!baseSize || !oraclePrice)) ||
     !serumOrPerpMarket ||
     loadingRoute ||
-    tooMuchSize
+    tooMuchSize ||
+    quoteError
 
   return (
     <>
@@ -589,6 +598,14 @@ export default function SpotMarketOrderSwapForm() {
               </Button>
             )}
           </div>
+          {quoteError ? (
+            <div className="mb-4">
+              <InlineNotification
+                type="error"
+                desc={t('trade:error-no-route')}
+              />
+            </div>
+          ) : null}
           <div className="space-y-2">
             <div className="flex justify-between text-xs">
               <p>{t('trade:order-value')}</p>
@@ -625,15 +642,15 @@ export default function SpotMarketOrderSwapForm() {
                 </SheenLoader>
               ) : (
                 <p className="text-right font-mono text-th-fgd-2">
-                  {selectedRoute
-                    ? selectedRoute?.priceImpactPct * 100 < 0.1
+                  {selectedRoute?.priceImpactPct
+                    ? selectedRoute.priceImpactPct * 100 < 0.1
                       ? '<0.1%'
                       : `${(selectedRoute?.priceImpactPct * 100).toFixed(2)}%`
-                    : '-'}
+                    : '–'}
                 </p>
               )}
             </div>
-            {borrowAmount && inputBank ? (
+            {borrowAmount && inputBank && savedCheckboxSettings.margin ? (
               <>
                 <div className="flex justify-between text-xs">
                   <Tooltip
@@ -705,6 +722,8 @@ export default function SpotMarketOrderSwapForm() {
                 <SheenLoader>
                   <div className="h-3.5 w-20 bg-th-bkg-2" />
                 </SheenLoader>
+              ) : !selectedRoute || selectedRoute?.error ? (
+                <span className="text-th-fgd-2">–</span>
               ) : (
                 <div className="flex items-center overflow-hidden text-th-fgd-2">
                   <Tooltip

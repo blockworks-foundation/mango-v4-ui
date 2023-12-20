@@ -81,6 +81,8 @@ export const SEND_TELEMETRY_KEY = 'sendTelemetry-0.1'
 
 export const SLOTS_WARNING_KEY = 'tokenSlotsWarning-0.1'
 
+export const NEW_LISTING_BANNER_KEY = 'new-listing-banner-0.2'
+
 // Unused
 export const PROFILE_CATEGORIES = [
   'borrower',
@@ -106,9 +108,9 @@ export const MIN_SOL_BALANCE = 0.001
 
 export const MAX_PRIORITY_FEE_KEYS = 128
 
-export const ACCOUNT_ACTION_MODAL_HEIGHT = '488px'
+export const ACCOUNT_ACTION_MODAL_HEIGHT = '498px'
 
-export const ACCOUNT_ACTION_MODAL_INNER_HEIGHT = '426px'
+export const ACCOUNT_ACTION_MODAL_INNER_HEIGHT = '436px'
 
 export const TRADE_VOLUME_ALERT_KEY = 'tradeVolumeAlert-0.1'
 
@@ -144,6 +146,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   eth: true,
   ethpo: true,
   'eth (portal)': true,
+  eurc: true,
   guac: true,
   hnt: true,
   jitosol: true,
@@ -159,6 +162,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   ray: true,
   render: true,
   rlb: true,
+  samo: true,
   slcl: true,
   sol: true,
   stsol: true,
@@ -184,9 +188,9 @@ export const DAILY_MILLISECONDS = 86400000
 export const MAX_ACCOUNTS = {
   tokenAccounts: '8',
   spotOpenOrders: '4',
-  perpAccounts: '4',
-  perpOpenOrders: '64',
-  tcsOrders: '64',
+  perpAccounts: '3',
+  perpOpenOrders: '24',
+  tcsOrders: '24',
 }
 
 export enum TOKEN_REDUCE_ONLY_OPTIONS {

@@ -33,10 +33,7 @@ const PerpMarketsTable = () => {
   const showTableView = width ? width > breakpoints.md : false
   const rate = usePerpFundingRate()
   const router = useRouter()
-  const { perpMarketsWithData, isLoading, isFetching } =
-    useListedMarketsWithMarketData()
-
-  const loadingMarketData = isLoading || isFetching
+  const { perpMarketsWithData, isLoading } = useListedMarketsWithMarketData()
 
   return (
     <ContentBox hideBorder hidePadding>
@@ -126,8 +123,8 @@ const PerpMarketsTable = () => {
                       </div>
                     </Td>
                     <Td>
-                      {!loadingMarketData ? (
-                        priceHistory && priceHistory.length ? (
+                      {!isLoading ? (
+                        priceHistory && priceHistory?.length ? (
                           <div className="h-10 w-24">
                             <SimpleAreaChart
                               color={
@@ -236,7 +233,7 @@ const PerpMarketsTable = () => {
               return (
                 <MobilePerpMarketItem
                   key={market.publicKey.toString()}
-                  loadingMarketData={loadingMarketData}
+                  loadingMarketData={isLoading}
                   market={market}
                 />
               )

@@ -19,6 +19,18 @@ import Button from '@components/shared/Button'
 const EMPTY_STATE_WRAPPER_CLASSES =
   'flex h-[180px] flex-col justify-center pb-4 md:h-full'
 
+const DEFAULT_CHART_DATA = [
+  {
+    account_equity: 0,
+    time: dayjs().subtract(1, 'hour').toISOString(),
+    borrow_interest_cumulative_usd: 0,
+    deposit_interest_cumulative_usd: 0,
+    pnl: 0,
+    spot_value: 0,
+    transfer_balance: 0,
+  },
+]
+
 const AccountOverview = () => {
   const { t } = useTranslation(['common', 'governance'])
   const { group } = useMangoGroup()
@@ -35,36 +47,36 @@ const AccountOverview = () => {
   }, [group, mangoAccount])
 
   const latestAccountData = useMemo(() => {
-    if (!accountValue || !performanceData || !performanceData.length) return []
-    const latestDataItem = performanceData[performanceData.length - 1]
     return [
       {
         account_equity: accountValue,
-        time: dayjs(Date.now()).toISOString(),
-        borrow_interest_cumulative_usd:
-          latestDataItem.borrow_interest_cumulative_usd,
-        deposit_interest_cumulative_usd:
-          latestDataItem.deposit_interest_cumulative_usd,
-        pnl: latestDataItem.pnl,
-        spot_value: latestDataItem.spot_value,
-        transfer_balance: latestDataItem.transfer_balance,
+        time: dayjs().toISOString(),
+        borrow_interest_cumulative_usd: 0,
+        deposit_interest_cumulative_usd: 0,
+        pnl: 0,
+        spot_value: 0,
+        transfer_balance: 0,
       },
     ]
-  }, [accountValue, performanceData])
+  }, [accountValue])
 
-  const chartData =
-    performanceData && performanceData?.length ? performanceData : []
+  const chartData = useMemo(() => {
+    if (performanceData && performanceData?.length) {
+      return performanceData.concat(latestAccountData)
+    }
+    return DEFAULT_CHART_DATA.concat(latestAccountData)
+  }, [latestAccountData, performanceData])
 
   return (
     <>
       <div className="grid grid-cols-12 border-b border-th-bkg-3">
-        <div className="col-span-12 border-b border-th-bkg-3 pt-4 md:col-span-8 md:border-b-0 md:border-r">
+        <div className="col-span-12 border-b border-th-bkg-3 md:col-span-8 md:border-b-0 md:border-r">
           <div className="flex h-full w-full flex-col justify-between">
             {mangoAccount || (connected && initialLoad) ? (
-              <div className="px-4 pb-4 md:px-6">
+              <div className="overflow-x-hidden px-4 py-4 md:px-6">
                 <DetailedAreaOrBarChart
                   changeAsPercent
-                  data={chartData.concat(latestAccountData)}
+                  data={chartData}
                   daysToShow={daysToShow}
                   setDaysToShow={setDaysToShow}
                   loading={loadingPerformanceData || initialLoad}

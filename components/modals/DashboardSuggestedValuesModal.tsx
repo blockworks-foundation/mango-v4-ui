@@ -35,6 +35,7 @@ import {
   getProposedTier,
   getTierWithAdjustedNetBorrows,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
+import Select from '@components/forms/Select'
 
 const DashboardSuggestedValues = ({
   isOpen,
@@ -59,7 +60,7 @@ const DashboardSuggestedValues = ({
       ? LISTING_PRESETS_PYTH
       : LISTING_PRESETS
 
-  const [suggestedTier, setSuggstedTier] =
+  const [suggestedTier, setSuggestedTier] =
     useState<LISTING_PRESETS_KEYS>('SHIT')
 
   const getApiTokenName = (bankName: string) => {
@@ -97,8 +98,13 @@ const DashboardSuggestedValues = ({
       bank.oracleProvider === OracleProvider.Pyth,
     )
 
-    setSuggstedTier(suggestedTier as LISTING_PRESETS_KEYS)
-  }, [PRESETS, bank.name, bank.oracleProvider, priceImpactsFiltered])
+    setSuggestedTier(suggestedTier as LISTING_PRESETS_KEYS)
+  }, [
+    PRESETS,
+    bank.name,
+    bank.oracleProvider,
+    JSON.stringify(priceImpactsFiltered),
+  ])
 
   const proposeNewSuggestedValues = useCallback(
     async (
@@ -154,7 +160,9 @@ const DashboardSuggestedValues = ({
                     : fieldsToChange.maxStalenessSlots,
               }
             : null,
-          null,
+          fieldsToChange.groupInsuranceFund === undefined
+            ? null
+            : fieldsToChange.groupInsuranceFund,
           isThereNeedOfSendingRateConfigs
             ? {
                 adjustmentFactor:
@@ -210,6 +218,17 @@ const DashboardSuggestedValues = ({
           getNullOrVal(fieldsToChange.tokenConditionalSwapTakerFeeRate),
           getNullOrVal(fieldsToChange.tokenConditionalSwapMakerFeeRate),
           getNullOrVal(fieldsToChange.loanFeeRate),
+          getNullOrVal(fieldsToChange.interestCurveScaling),
+          getNullOrVal(fieldsToChange.interestTargetUtilization),
+          null,
+          null,
+          null,
+          null,
+          false,
+          false,
+          getNullOrVal(fieldsToChange.depositLimit)
+            ? new BN(fieldsToChange.depositLimit!)
+            : null,
         )
         .accounts({
           group: group!.publicKey,
@@ -310,7 +329,24 @@ const DashboardSuggestedValues = ({
       onClose={onClose}
     >
       <h3 className="mb-6">
-        {bank.name} - Suggested tier: {suggestedTier}
+        <span>
+          {bank.name} - Suggested tier: {suggestedTier}
+        </span>
+        <Select
+          value={suggestedTier}
+          onChange={(tier) => setSuggestedTier(tier)}
+          className="w-full"
+        >
+          {Object.keys(LISTING_PRESETS)
+            .filter((x) => x !== 'UNTRUSTED')
+            .map((name) => (
+              <Select.Option key={name} value={name}>
+                <div className="flex w-full items-center justify-between">
+                  {name}
+                </div>
+              </Select.Option>
+            ))}
+        </Select>
       </h3>
       <div className="flex max-h-[600px] w-full flex-col overflow-auto">
         <Disclosure.Panel>
@@ -466,6 +502,102 @@ const DashboardSuggestedValues = ({
             proposedValue={
               suggestedFields.liquidationFee &&
               `${suggestedFields.liquidationFee}%`
+            }
+          />
+          <KeyValuePair
+            label="Group Insurance Fund"
+            value={`${formattedBankValues.groupInsuranceFund}`}
+            proposedValue={
+              suggestedFields.groupInsuranceFund !== undefined &&
+              `${suggestedFields.groupInsuranceFund}`
+            }
+          />
+          <KeyValuePair
+            label="Net Borrow Limit Window Size Ts"
+            value={`${formattedBankValues.netBorrowLimitWindowSizeTs}`}
+            proposedValue={
+              suggestedFields.netBorrowLimitWindowSizeTs !== undefined &&
+              `${suggestedFields.netBorrowLimitWindowSizeTs}`
+            }
+          />
+          <KeyValuePair
+            label="Stable Price Delay Interval Seconds"
+            value={`${formattedBankValues.stablePriceDelayIntervalSeconds}`}
+            proposedValue={
+              suggestedFields.stablePriceDelayIntervalSeconds !== undefined &&
+              `${suggestedFields.stablePriceDelayIntervalSeconds}`
+            }
+          />
+          <KeyValuePair
+            label="Stable Price Growth Limit"
+            value={`${formattedBankValues.stablePriceGrowthLimit}`}
+            proposedValue={
+              suggestedFields.stablePriceGrowthLimit !== undefined &&
+              `${suggestedFields.stablePriceGrowthLimit}`
+            }
+          />
+          <KeyValuePair
+            label="Stable Price Delay Growth Limit"
+            value={`${formattedBankValues.stablePriceDelayGrowthLimit}`}
+            proposedValue={
+              suggestedFields.stablePriceDelayGrowthLimit !== undefined &&
+              `${suggestedFields.stablePriceDelayGrowthLimit}`
+            }
+          />
+          <KeyValuePair
+            label="Token Conditional Swap Taker Fee Rate"
+            value={`${formattedBankValues.tokenConditionalSwapTakerFeeRate}`}
+            proposedValue={
+              suggestedFields.tokenConditionalSwapTakerFeeRate !== undefined &&
+              `${suggestedFields.tokenConditionalSwapTakerFeeRate}`
+            }
+          />
+          <KeyValuePair
+            label="Token Conditional Swap Maker Fee Rate"
+            value={`${formattedBankValues.tokenConditionalSwapMakerFeeRate}`}
+            proposedValue={
+              suggestedFields.tokenConditionalSwapMakerFeeRate !== undefined &&
+              `${suggestedFields.tokenConditionalSwapMakerFeeRate}`
+            }
+          />
+          <KeyValuePair
+            label="Interest Target Utilization"
+            value={`${formattedBankValues.interestTargetUtilization}`}
+            proposedValue={
+              suggestedFields.interestTargetUtilization !== undefined &&
+              `${suggestedFields.interestTargetUtilization}`
+            }
+          />
+          <KeyValuePair
+            label="Interest Curve Scaling"
+            value={`${formattedBankValues.interestCurveScaling}`}
+            proposedValue={
+              suggestedFields.interestCurveScaling !== undefined &&
+              `${suggestedFields.interestCurveScaling}`
+            }
+          />
+          <KeyValuePair
+            label="Deposit Limit"
+            value={`${formattedBankValues.depositLimit}`}
+            proposedValue={
+              suggestedFields.depositLimit !== undefined &&
+              `${suggestedFields.depositLimit}`
+            }
+          />
+          <KeyValuePair
+            label="Flash Loan Swap Fee Rate"
+            value={`${formattedBankValues.flashLoanSwapFeeRate}`}
+            proposedValue={
+              suggestedFields.flashLoanSwapFeeRate !== undefined &&
+              `${suggestedFields.flashLoanSwapFeeRate}`
+            }
+          />
+          <KeyValuePair
+            label="Reduce Only"
+            value={`${formattedBankValues.reduceOnly}`}
+            proposedValue={
+              suggestedFields.reduceOnly !== undefined &&
+              `${suggestedFields.reduceOnly}`
             }
           />
           <div>

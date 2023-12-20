@@ -129,7 +129,7 @@ const AccountStats = ({ hideView }: { hideView: () => void }) => {
             </Tooltip>
             {loadingFunding && mangoAccountAddress ? (
               <SheenLoader className="mt-2">
-                <div className="h-7 w-16 bg-th-bkg-2" />
+                <div className="h-[26px] w-16 bg-th-bkg-2" />
               </SheenLoader>
             ) : (
               <p className="mt-0.5 text-2xl font-bold text-th-fgd-1">
@@ -142,7 +142,7 @@ const AccountStats = ({ hideView }: { hideView: () => void }) => {
               </p>
             )}
           </div>
-          <div className="px-6 py-4">
+          <div className="px-6 py-4 lg:py-6">
             <FundingChart />
           </div>
         </div>
@@ -153,7 +153,7 @@ const AccountStats = ({ hideView }: { hideView: () => void }) => {
             </p>
             {loadingVolumeTotalData && mangoAccountAddress ? (
               <SheenLoader className="mt-2">
-                <div className="h-7 w-16 bg-th-bkg-2" />
+                <div className="h-[26px] w-16 bg-th-bkg-2" />
               </SheenLoader>
             ) : (
               <p className="mt-0.5 text-2xl font-bold text-th-fgd-1">

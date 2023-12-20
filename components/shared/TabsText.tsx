@@ -13,10 +13,10 @@ const TabsText = ({
 }) => {
   const { t } = useTranslation(['common', 'account', 'trade'])
   return (
-    <div className="flex space-x-6 text-base">
+    <div className="flex space-x-4 text-base sm:space-x-6">
       {tabs.map((tab) => (
         <button
-          className={`flex items-center space-x-2 font-bold focus:outline-none ${
+          className={`flex items-center space-x-2 font-bold leading-tight focus:outline-none ${
             activeTab === tab[0]
               ? 'text-th-active md:hover:text-th-active'
               : 'text-th-fgd-2 md:hover:text-th-fgd-3'

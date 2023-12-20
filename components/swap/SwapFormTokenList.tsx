@@ -366,7 +366,7 @@ const SwapFormTokenList = ({
       </div>
       {!type?.includes('reduce') ? (
         <div className="pt-2">
-          <PopularSwapTokens setSwapToken={handleTokenSelect} />
+          <PopularSwapTokens setSwapToken={handleTokenSelect} type={type} />
         </div>
       ) : null}
       <div className="mt-4 flex justify-between rounded bg-th-bkg-2 p-2">

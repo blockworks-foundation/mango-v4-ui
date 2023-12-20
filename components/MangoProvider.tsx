@@ -11,6 +11,8 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { DEFAULT_PRIORITY_FEE_LEVEL } from './settings/RpcSettings'
 import { useHiddenMangoAccounts } from 'hooks/useHiddenMangoAccounts'
 import { notify } from 'utils/notifications'
+import { usePlausible } from 'next-plausible'
+import { TelemetryEvents } from 'utils/telemetry'
 
 const set = mangoStore.getState().set
 const actions = mangoStore.getState().actions
@@ -22,6 +24,7 @@ const HydrateStore = () => {
   const connection = mangoStore((s) => s.connection)
   const slowNetwork = useNetworkSpeed()
   const { wallet } = useWallet()
+  const telemetry = usePlausible<TelemetryEvents>()
 
   const [, setLastWalletName] = useLocalStorageState(LAST_WALLET_NAME, '')
 
@@ -113,7 +116,7 @@ const HydrateStore = () => {
           localStorage.getItem(PRIORITY_FEE_KEY) ??
             DEFAULT_PRIORITY_FEE_LEVEL.value,
         )
-        actions.estimatePriorityFee(priorityFeeMultiplier)
+        actions.estimatePriorityFee(priorityFeeMultiplier, telemetry)
       }
     },
     (slowNetwork ? 60 : 10) * SECONDS,

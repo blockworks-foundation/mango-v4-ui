@@ -37,6 +37,7 @@ import TokenSlotsWarningModal, {
 } from './modals/TokenSlotsWarningModal'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useUnownedAccount from 'hooks/useUnownedAccount'
+import NewListingBanner from './NewListingBanner'
 
 export const sideBarAnimationDuration = 300
 const termsLastUpdated = 1679441610978
@@ -164,6 +165,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
           }`}
         >
           <TopBar />
+          <NewListingBanner />
           {asPath !== '/rewards' ? <PromoBanner /> : null}
           {children}
           <StatusBar collapsed={isCollapsed} />

@@ -51,11 +51,7 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import PlausibleProvider from 'next-plausible'
 
 // init react-query
-export const queryClient = new QueryClient()
-
-const metaTitle = 'Mango Markets – Safer. Smarter. Faster.'
-const metaDescription =
-  'A magical new way to interact with DeFi. Groundbreaking safety features designed to keep your funds secure. The easiest way to margin trade any token pair. All powered by flashloans.'
+const queryClient = new QueryClient()
 
 // Do not add hooks to this component, that will cause unnecessary rerenders
 // Top level state hydrating/updating should go in MangoProvider
@@ -108,10 +104,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
       <Head>
-        <title>Mango Markets</title>
         <link rel="icon" href="/favicon.ico" />
-        <meta property="og:title" content={metaTitle} />
-        <meta name="description" content={metaDescription} />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link
           rel="apple-touch-icon"
@@ -121,8 +114,6 @@ function MyApp({ Component, pageProps }: AppProps) {
         <meta name="msapplication-TileColor" content="#da532c" />
         <meta name="theme-color" content="#ffffff" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={metaTitle} />
-        <meta name="twitter:description" content={metaDescription} />
         <meta
           name="twitter:image"
           content="https://app.mango.markets/images/1200x600-share.png?34567879"
@@ -155,7 +146,7 @@ function MyApp({ Component, pageProps }: AppProps) {
 
 export default appWithTranslation(MyApp)
 
-export const Telemetry = () => {
+const Telemetry = () => {
   const router = useRouter()
   const { wallet, connected } = useWallet()
   const { theme } = useTheme()

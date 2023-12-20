@@ -4,17 +4,20 @@ on:
   pull_request:
     branches: ['main']
   push:
+    branches-ignore:
+      - 'dependabot/*'
 
 jobs:
   lint:
+    if: ${{ github.actor != 'dependabot[bot]' }}
     name: Lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'yarn'
@@ -29,6 +32,7 @@ jobs:
         run: yarn lint-all
 
   sast:
+    if: ${{ github.actor != 'dependabot[bot]' }}
     name: Security Scan
     runs-on: ubuntu-latest
     permissions:
@@ -36,29 +40,25 @@ jobs:
       contents: read
       security-events: write
 
-    strategy:
-      fail-fast: false
-      matrix:
-        language: ['javascript']
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Initialise CodeQL
         uses: github/codeql-action/init@v2
         with:
-          languages: ${{ matrix.language }}
+          languages: 'javascript'
 
       - name: Run CodeQL
         uses: github/codeql-action/analyze@v2
 
   sca:
+    if: ${{ github.actor != 'dependabot[bot]' }}
     name: Dependency Scan
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Fail the job on critical vulnerabiliies with fix available
       - name: Fail on critical vulnerabilities
@@ -72,6 +72,7 @@ jobs:
           exit-code: '1'
 
   all-pass:
+    if: ${{ github.actor != 'dependabot[bot]' }}
     name: All tests pass 🚀
     needs: ['lint', 'sast', 'sca']
     runs-on: ubuntu-latest

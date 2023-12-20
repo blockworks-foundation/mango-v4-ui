@@ -17,6 +17,7 @@ const ActionPanel = ({ bank }: { bank: Bank }) => {
   const router = useRouter()
   const [showDepositModal, setShowDepositModal] = useState(false)
   const [showBorrowModal, setShowBorrowModal] = useState(false)
+  const spotMarkets = mangoStore((s) => s.serumMarkets)
 
   const serumMarkets = useMemo(() => {
     if (group) {
@@ -26,15 +27,19 @@ const ActionPanel = ({ bank }: { bank: Bank }) => {
   }, [group])
 
   const handleTrade = () => {
-    const set = mangoStore.getState().set
-    const market = serumMarkets.find(
+    const markets = spotMarkets.filter(
       (m) => m.baseTokenIndex === bank?.tokenIndex,
     )
-    if (market) {
-      set((state) => {
-        state.selectedMarket.current = market
-      })
-      router.push('/trade')
+    if (markets) {
+      if (markets.length === 1) {
+        router.push(`/trade?name=${markets[0].name}`)
+      }
+      if (markets.length > 1) {
+        const market = markets.find((mkt) => !mkt.reduceOnly)
+        if (market) {
+          router.push(`/trade?name=${market.name}`)
+        }
+      }
     }
   }
 

@@ -115,6 +115,7 @@ const OraclePrice = () => {
   }, [connection, selectedMarket, serumOrPerpMarket, quoteBank, stalePrice])
 
   const oracleDecimals = getDecimalCount(serumOrPerpMarket?.tickSize || 0.01)
+  const isStub = oracleProvider === 'Stub'
 
   return (
     <>
@@ -122,47 +123,53 @@ const OraclePrice = () => {
         <Tooltip
           placement="bottom"
           content={
-            <>
-              <div className="flex">
-                <span className="mr-1">{t('trade:price-provided-by')}</span>
-                {oracleLinkPath ? (
-                  <a
-                    href={oracleLinkPath}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center"
-                  >
-                    <span className="mr-1">{oracleProvider}</span>
-                    <ArrowTopRightOnSquareIcon className="h-4 w-4" />
-                  </a>
-                ) : (
-                  <span className="text-th-fgd-2">{oracleProvider}</span>
-                )}
-              </div>
-              <div className="mt-2">
-                {t('trade:last-updated')}{' '}
-                {dayjs
-                  .duration({
-                    seconds: -((highestSlot - oracleLastUpdatedSlot) * 0.5),
-                  })
-                  .humanize(true)}
-                .
-              </div>
-              {isStale ? (
-                <div className="mt-2 font-black">
-                  {t('trade:oracle-not-updated')}
-                  <br />
-                  {t('trade:oracle-not-updated-warning')}
+            !isStub ? (
+              <>
+                <div className="flex">
+                  <span className="mr-1">{t('trade:price-provided-by')}</span>
+                  {oracleLinkPath ? (
+                    <a
+                      href={oracleLinkPath}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center"
+                    >
+                      <span className="mr-1">{oracleProvider}</span>
+                      <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+                    </a>
+                  ) : (
+                    <span className="text-th-fgd-2">{oracleProvider}</span>
+                  )}
                 </div>
-              ) : undefined}
-            </>
+                <div className="mt-2">
+                  {t('trade:last-updated')}{' '}
+                  {dayjs
+                    .duration({
+                      seconds: -((highestSlot - oracleLastUpdatedSlot) * 0.5),
+                    })
+                    .humanize(true)}
+                  .
+                </div>
+                {isStale ? (
+                  <div className="mt-2 font-black">
+                    {t('trade:oracle-not-updated')}
+                    <br />
+                    {t('trade:oracle-not-updated-warning')}
+                  </div>
+                ) : undefined}
+              </>
+            ) : (
+              t('trade:stub-oracle-description', {
+                market: selectedMarket?.name || t('trade:this-market'),
+              })
+            )
           }
         >
           <div className="flex items-center">
             <div className="tooltip-underline mb-0.5 text-xs text-th-fgd-4">
               {t('trade:oracle-price')}
             </div>
-            {isStale ? (
+            {isStale || isStub ? (
               <ExclamationTriangleIcon className="ml-1 h-4 w-4 text-th-warning" />
             ) : null}
           </div>

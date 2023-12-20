@@ -11,6 +11,7 @@ import {
 import { MANGO_DATA_API_URL } from './constants'
 import dayjs from 'dayjs'
 import Decimal from 'decimal.js'
+import { NumberFormatValues, SourceInfo } from 'react-number-format'
 
 export const fetchAccountPerformance = async (
   mangoAccountPk: string,
@@ -184,4 +185,16 @@ export const fetchFilledOrders = async (
   } catch (e) {
     console.log('Failed to fetch filled orders', e)
   }
+}
+
+export const handleInputChange = (
+  e: NumberFormatValues,
+  info: SourceInfo,
+  setInputAmount: (amt: string) => void,
+  setSizePercentage: (pct: string) => void,
+) => {
+  if (info.source === 'event') {
+    setSizePercentage('')
+  }
+  setInputAmount(!Number.isNaN(Number(e.value)) ? e.value : '')
 }

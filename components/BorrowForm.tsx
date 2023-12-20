@@ -8,10 +8,7 @@ import {
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
 import React, { useCallback, useMemo, useState } from 'react'
-import NumberFormat, {
-  NumberFormatValues,
-  SourceInfo,
-} from 'react-number-format'
+import NumberFormat from 'react-number-format'
 import mangoStore from '@store/mangoStore'
 import {
   ACCOUNT_ACTION_MODAL_INNER_HEIGHT,
@@ -43,6 +40,7 @@ import { isMangoError } from 'types'
 import TokenListButton from './shared/TokenListButton'
 import TokenLogo from './shared/TokenLogo'
 import SecondaryConnectButton from './shared/SecondaryConnectButton'
+import { handleInputChange } from 'utils/account'
 
 interface BorrowFormProps {
   onSuccess: () => void
@@ -155,13 +153,6 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
     }
   }, [bank, inputAmount, onSuccess, publicKey])
 
-  const handleInputChange = (e: NumberFormatValues, info: SourceInfo) => {
-    if (info.source === 'event') {
-      setSizePercentage('')
-    }
-    setInputAmount(!Number.isNaN(Number(e.value)) ? e.value : '')
-  }
-
   const initHealth = useMemo(() => {
     return group && mangoAccount
       ? mangoAccount.getHealthRatioUi(group, HealthType.init)
@@ -245,7 +236,14 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                   className={ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES}
                   placeholder="0.00"
                   value={inputAmount}
-                  onValueChange={handleInputChange}
+                  onValueChange={(values, source) =>
+                    handleInputChange(
+                      values,
+                      source,
+                      setInputAmount,
+                      setSizePercentage,
+                    )
+                  }
                   isAllowed={withValueLimit}
                 />
               </div>

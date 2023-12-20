@@ -6,13 +6,13 @@ import { useQuery } from '@tanstack/react-query'
 import { makeApiRequest } from 'apis/birdeye/helpers'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { BirdeyePriceResponse } from 'hooks/useBirdeyeMarketPrices'
 import parse from 'html-react-parser'
 import { useTranslation } from 'next-i18next'
 import { useMemo, useState } from 'react'
 import { DAILY_SECONDS } from 'utils/constants'
 import DetailedAreaOrBarChart from '@components/shared/DetailedAreaOrBarChart'
 import { countLeadingZeros, formatCurrencyValue } from 'utils/numbers'
+import { BirdeyePriceResponse } from 'types'
 dayjs.extend(relativeTime)
 
 const DEFAULT_COINGECKO_VALUES = {

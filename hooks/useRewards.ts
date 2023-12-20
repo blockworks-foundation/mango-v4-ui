@@ -38,7 +38,7 @@ export const useAccountPointsAndRank = (
   seasonId: number | undefined,
 ) => {
   return useQuery(
-    ['account-rank', mangoAccount],
+    ['account-rank', mangoAccount, seasonId],
     () => fetchAccountPointsAndRank(mangoAccount, seasonId!),
     {
       cacheTime: 1000 * 60 * 10,
@@ -82,19 +82,25 @@ export const useIsAllClaimed = (
   walletPk: PublicKey | null,
 ) => {
   const [isAllClaimed, setIsAllCliamed] = useState(true)
-  const [showClaim, setShowClaim] = useState(false)
+  const [showClaim, setShowClaim] = useState(true)
+  const [loading, setLoading] = useState(true)
   const { data: distributionDataAndClient } = useDistribution(prevSeason)
   const distributionData = distributionDataAndClient?.distribution
 
   useEffect(() => {
     const handleGetIsAllClaimed = async () => {
       if (walletPk) {
-        const toClaim = distributionData?.getClaims(walletPk).length
-        const claimed = (await distributionData?.getClaimed(walletPk))?.filter(
-          (x) => !x.equals(PublicKey.default),
-        )?.length
-
-        setIsAllCliamed(!toClaim || toClaim === claimed)
+        try {
+          const toClaim = distributionData?.getClaims(walletPk).length
+          const claimed = (
+            await distributionData?.getClaimed(walletPk)
+          )?.filter((x) => !x.equals(PublicKey.default))?.length
+          setLoading(false)
+          setIsAllCliamed(!toClaim || toClaim === claimed)
+        } catch (e) {
+          console.log('failed to check claimed rewards', e)
+          setLoading(false)
+        }
       } else {
         setIsAllCliamed(false)
       }
@@ -116,5 +122,5 @@ export const useIsAllClaimed = (
       setShowClaim(false)
     }
   }, [distributionData, walletPk, isAllClaimed])
-  return { isAllClaimed, showClaim }
+  return { isAllClaimed, showClaim, loading }
 }

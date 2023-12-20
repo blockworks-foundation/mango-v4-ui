@@ -3,6 +3,7 @@ import useMarketsData from './useMarketsData'
 import { useMemo } from 'react'
 import mangoStore from '@store/mangoStore'
 import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
+import { useBirdeye24hrPrices } from './useBirdeye24hrPrices'
 
 type ApiData = {
   marketData: MarketsDataItem | undefined
@@ -10,6 +11,7 @@ type ApiData = {
 
 type MarketRollingChange = {
   rollingChange: number | undefined
+  priceHistory: Array<{ price: number; time: number }>
 }
 
 export type SerumMarketWithMarketData = Serum3Market &
@@ -21,7 +23,12 @@ export type PerpMarketWithMarketData = PerpMarket &
   MarketRollingChange
 
 export default function useListedMarketsWithMarketData() {
-  const { data: marketsData, isLoading, isFetching } = useMarketsData()
+  const { data: marketsData, isInitialLoading: loadingMarketsData } =
+    useMarketsData()
+  const {
+    data: birdeyeSpotDailyPrices,
+    isInitialLoading: loadingBirdeyeSpotDailyPrices,
+  } = useBirdeye24hrPrices()
   const serumMarkets = mangoStore((s) => s.serumMarkets)
   const perpMarkets = mangoStore((s) => s.perpMarkets)
 
@@ -62,27 +69,43 @@ export default function useListedMarketsWithMarketData() {
     if (!serumMarkets || !serumMarkets.length) return []
     const allSpotMarkets: SerumMarketWithMarketData[] =
       serumMarkets as SerumMarketWithMarketData[]
-    if (spotData) {
+    if (spotData && birdeyeSpotDailyPrices?.length) {
       for (const market of allSpotMarkets) {
         const spotEntries = Object.entries(spotData).find(
           (e) => e[0].toLowerCase() === market.name.toLowerCase(),
         )
+        const birdeyePrices = birdeyeSpotDailyPrices.find(
+          (prices) => prices.marketIndex === market.marketIndex,
+        )
+        const priceHistory = []
+        let pastPrice = 0
+        if (birdeyePrices?.base?.length && birdeyePrices?.quote?.length) {
+          pastPrice =
+            birdeyePrices.base[0]?.value / birdeyePrices.quote[0]?.value
+          for (let i = 0; i < birdeyePrices.base.length; i++) {
+            const base = birdeyePrices.base[i]
+            const quote = birdeyePrices.quote[i]
+            if (base.unixTime === quote?.unixTime && quote?.value) {
+              const price = base.value / quote.value
+              const time = base.unixTime
+              priceHistory.push({ price, time })
+            }
+          }
+        }
 
         // calculate price change
-        const pastPrice = spotEntries ? spotEntries[1][0]?.price_24h : 0
-        const dailyVolume = spotEntries
-          ? spotEntries[1][0]?.quote_volume_24h
-          : 0
         const currentPrice = currentPrices[market.name]
-        const change =
-          dailyVolume > 0 ? ((currentPrice - pastPrice) / pastPrice) * 100 : 0
+        const change = currentPrice
+          ? ((currentPrice - pastPrice) / pastPrice) * 100
+          : 0
 
         market.rollingChange = change
+        market.priceHistory = priceHistory
         market.marketData = spotEntries ? spotEntries[1][0] : undefined
       }
     }
     return [...allSpotMarkets].sort((a, b) => a.name.localeCompare(b.name))
-  }, [spotData, serumMarkets])
+  }, [currentPrices, birdeyeSpotDailyPrices, spotData, serumMarkets])
 
   const perpMarketsWithData = useMemo(() => {
     if (!perpMarkets || !perpMarkets.length) return []
@@ -111,5 +134,7 @@ export default function useListedMarketsWithMarketData() {
       )
   }, [perpData, perpMarkets])
 
-  return { perpMarketsWithData, serumMarketsWithData, isLoading, isFetching }
+  const isLoading = loadingMarketsData || loadingBirdeyeSpotDailyPrices
+
+  return { perpMarketsWithData, serumMarketsWithData, isLoading }
 }
