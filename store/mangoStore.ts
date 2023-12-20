@@ -89,6 +89,7 @@ import sampleSize from 'lodash/sampleSize'
 import { fetchTokenStatsData, processTokenStatsData } from 'apis/mngo'
 import { OrderTypes } from 'utils/tradeForm'
 import { usePlausible } from 'next-plausible'
+import transactionStore from './transactionStore'
 
 const GROUP = new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX')
 
@@ -147,6 +148,12 @@ const initMangoClient = (
         type: 'confirm',
         txid: txid,
       })
+    },
+    postTxConfirmationCallback: ({ txid }: { txid: string }) => {
+      const txStore = transactionStore.getState()
+      const txObject = txStore.transactions.get(txid)
+      txObject?.confirmationCallback()
+      txStore.removeTransaction(txid)
     },
   })
 }
