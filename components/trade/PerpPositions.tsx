@@ -149,9 +149,9 @@ const PerpPositions = () => {
                       </Tooltip>
                     </div>
                   </Th>
+                  <Th className="text-right">{t('funding')}</Th>
                   <Th className="text-right">{t('trade:unrealized-pnl')}</Th>
                   <Th className="text-right">ROE</Th>
-                  <Th className="text-right">{t('funding')}</Th>
                   {!isUnownedAccount ? (
                     <Th>
                       {openPerpPositions?.length > 1 ? (
@@ -251,7 +251,7 @@ const PerpPositions = () => {
                             <FormatNumericValue
                               classNames="text-xs text-th-fgd-3"
                               value={
-                                Math.abs(floorBasePosition) * market._uiPrice
+                                Math.abs(floorBasePosition) * market.uiPrice
                               }
                               isUsd
                               isPrivate
@@ -259,20 +259,12 @@ const PerpPositions = () => {
                           </div>
                         )}
                       </Td>
-                      <Td className="font-mono">
-                        <div className="flex flex-col items-end space-y-0.5">
-                          <FormatNumericValue
-                            value={avgEntryPrice}
-                            decimals={getDecimalCount(market.tickSize)}
-                            isUsd
-                          />
-                          <FormatNumericValue
-                            classNames="text-xs text-th-fgd-3"
-                            value={market.uiPrice}
-                            decimals={getDecimalCount(market.tickSize)}
-                            isUsd
-                          />
-                        </div>
+                      <Td className="text-right font-mono">
+                        <FormatNumericValue
+                          value={avgEntryPrice}
+                          decimals={getDecimalCount(market.tickSize)}
+                          isUsd
+                        />
                       </Td>
                       <Td className="text-right font-mono">
                         {estLiqPrice ? (
@@ -285,6 +277,19 @@ const PerpPositions = () => {
                         ) : (
                           '–'
                         )}
+                      </Td>
+                      <Td className="text-right font-mono">
+                        <span
+                          className={
+                            positionFunding >= 0 ? 'text-th-up' : 'text-th-down'
+                          }
+                        >
+                          <FormatNumericValue
+                            value={positionFunding}
+                            decimals={2}
+                            isUsd
+                          />
+                        </span>
                       </Td>
                       <Td className="text-right font-mono">
                         <div className="flex flex-col items-end">
@@ -323,19 +328,6 @@ const PerpPositions = () => {
                           <FormatNumericValue value={roe} decimals={2} />%
                         </span>
                       </Td>
-                      <Td className="text-right font-mono">
-                        <span
-                          className={
-                            positionFunding >= 0 ? 'text-th-up' : 'text-th-down'
-                          }
-                        >
-                          <FormatNumericValue
-                            value={positionFunding}
-                            decimals={2}
-                            isUsd
-                          />
-                        </span>
-                      </Td>
                       {!isUnownedAccount ? (
                         <Td>
                           <div className="flex items-center justify-end space-x-4">
@@ -367,6 +359,9 @@ const PerpPositions = () => {
                     key={`total-unrealized-pnl`}
                     className="my-1 border-y border-th-bkg-3 p-2"
                   >
+                    <Td className="text-right font-mono">
+                      <></>
+                    </Td>
                     <Td className="text-right font-mono">
                       <></>
                     </Td>
@@ -589,20 +584,13 @@ const PerpPositions = () => {
                               <p className="text-xs text-th-fgd-3">
                                 {t('trade:avg-entry-price')}
                               </p>
-                              <div className="flex flex-col font-mono">
+                              <p className="font-mono text-th-fgd-2">
                                 <FormatNumericValue
-                                  classNames="text-th-fgd-2"
                                   value={avgEntryPrice}
                                   decimals={getDecimalCount(market.tickSize)}
                                   isUsd
                                 />
-                                <FormatNumericValue
-                                  classNames="text-xs text-th-fgd-3"
-                                  value={market.uiPrice}
-                                  decimals={getDecimalCount(market.tickSize)}
-                                  isUsd
-                                />
-                              </div>
+                              </p>
                             </div>
                             <div className="col-span-1">
                               <Tooltip
@@ -635,6 +623,24 @@ const PerpPositions = () => {
                                   isUsd
                                   decimals={2}
                                   isPrivate
+                                />
+                              </p>
+                            </div>
+                            <div className="col-span-1">
+                              <p className="text-xs text-th-fgd-3">
+                                {t('funding')}
+                              </p>
+                              <p
+                                className={`font-mono ${
+                                  positionFunding >= 0
+                                    ? 'text-th-up'
+                                    : 'text-th-down'
+                                }`}
+                              >
+                                <FormatNumericValue
+                                  value={positionFunding}
+                                  decimals={2}
+                                  isUsd
                                 />
                               </p>
                             </div>
@@ -676,24 +682,6 @@ const PerpPositions = () => {
                                 }`}
                               >
                                 <FormatNumericValue value={roe} decimals={2} />%
-                              </p>
-                            </div>
-                            <div className="col-span-1">
-                              <p className="text-xs text-th-fgd-3">
-                                {t('funding')}
-                              </p>
-                              <p
-                                className={`font-mono ${
-                                  positionFunding >= 0
-                                    ? 'text-th-up'
-                                    : 'text-th-down'
-                                }`}
-                              >
-                                <FormatNumericValue
-                                  value={positionFunding}
-                                  decimals={2}
-                                  isUsd
-                                />
                               </p>
                             </div>
                             <div className="col-span-2 mt-3 flex space-x-3">
