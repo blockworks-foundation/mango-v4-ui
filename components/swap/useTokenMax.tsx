@@ -23,6 +23,25 @@ export const getMaxBorrowForBank = (
   }
 }
 
+const getMaxSourceForSwap = (
+  group: Group,
+  mangoAccount: MangoAccount,
+  inputMint: PublicKey,
+  outputMint: PublicKey,
+) => {
+  try {
+    const rawMaxUiAmountWithBorrow = mangoAccount.getMaxSourceUiForTokenSwap(
+      group,
+      inputMint,
+      outputMint,
+    )
+    return rawMaxUiAmountWithBorrow
+  } catch (e) {
+    console.log(`failed to get max source`, e)
+    return 0
+  }
+}
+
 export const getMaxWithdrawForBank = (
   group: Group,
   bank: Bank,
@@ -75,8 +94,9 @@ export const getTokenInMax = (
       ? inputTokenBalance
       : new Decimal(0)
 
-  const rawMaxUiAmountWithBorrow = mangoAccount.getMaxSourceUiForTokenSwap(
+  const rawMaxUiAmountWithBorrow = getMaxSourceForSwap(
     group,
+    mangoAccount,
     inputBank.mint,
     outputBank.mint,
   )
