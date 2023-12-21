@@ -76,7 +76,6 @@ const CreateOpenbookMarketModal = ({
     setFormErrors({})
     setForm({ ...form, [propertyName]: value })
   }
-
   const handleCreate = async () => {
     if (!publicKey || !signAllTransactions) {
       return
@@ -132,6 +131,7 @@ const CreateOpenbookMarketModal = ({
         type: 'success',
       })
     } catch (e) {
+      console.log(e)
       notify({
         title: t('error-creating-market'),
         description: `${e}`,
@@ -148,7 +148,10 @@ const CreateOpenbookMarketModal = ({
       baseMint: baseMint || '',
       quoteMint: quoteMint || '',
       minimumOrderSize: tradingParams.minOrderSize.toString(),
-      minimumPriceTickSize: tradingParams.priceIncrement.toString(),
+      minimumPriceTickSize:
+        tradingParams.priceIncrement <= 1e-9
+          ? '1e-8'
+          : tradingParams.priceIncrement.toString(),
       xlMarket: false,
     })
   }, [
