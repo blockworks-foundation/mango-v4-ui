@@ -368,7 +368,7 @@ const mangoStore = create<MangoStore>()(
       // https://docs.triton.one/project-yellowstone/whirligig-websockets
       if (rpcUrl.includes('rpcpool')) {
         connection = new web3.Connection(rpcUrl, {
-          wsEndpoint: `${rpcUrl.replace('http', 'ws')}whirligig/`,
+          wsEndpoint: `${rpcUrl.replace('http', 'ws')}/whirligig/`,
           commitment: CONNECTION_COMMITMENT,
         })
       } else {
