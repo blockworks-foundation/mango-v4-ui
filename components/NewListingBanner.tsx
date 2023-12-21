@@ -48,17 +48,21 @@ const NewListingBanner = () => {
           {t('new-token-live', { tokenName: latestListing.name })}
         </span>
         <div>
+          {newMarketName ? (
+            <>
+              <Link
+                className="text-black underline md:hover:text-black md:hover:no-underline"
+                href={`/trade?name=${newMarketName}`}
+                shallow
+              >
+                {`${t('trade')} ${latestListing.name}`}
+              </Link>{' '}
+              <span className="text-[rgba(0,0,0,0.4)]">|</span>{' '}
+            </>
+          ) : null}
           <Link
             className="text-black underline md:hover:text-black md:hover:no-underline"
-            href={`/trade?name=${newMarketName}`}
-            shallow
-          >
-            {`${t('trade')} ${latestListing.name}`}
-          </Link>{' '}
-          <span className="text-[rgba(0,0,0,0.4)]">|</span>{' '}
-          <Link
-            className="text-black underline md:hover:text-black md:hover:no-underline"
-            href={`/swap?in=${latestListing.name}&out=USDC`}
+            href={`/swap?in=USDC&out=${latestListing.name}`}
             shallow
           >
             {`${t('swap')} ${latestListing.name}`}
