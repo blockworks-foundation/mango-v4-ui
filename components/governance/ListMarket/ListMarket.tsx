@@ -154,6 +154,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
     },
     [t],
   )
+
   const handlePropose = useCallback(async () => {
     const invalidFields = isFormValid(advForm)
     if (Object.keys(invalidFields).length) {
@@ -162,7 +163,11 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
     setProposing(true)
     const index = proposals ? Object.values(proposals).length : 0
     const proposalTx = []
-    const oraclePriceBand = 0.5
+
+    const oraclePriceBand = baseBank?.oracleConfig.maxStalenessSlots.isNeg()
+      ? 19
+      : 0.5
+
     const registerMarketix = await client!.program.methods
       .serum3RegisterMarket(
         advForm.marketIndex,
