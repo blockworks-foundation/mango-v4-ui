@@ -24,11 +24,15 @@ const PerpStats = () => {
     <div className="pt-10">
       <div className="pb-10">
         <h2 className="mx-4 mb-4 md:mx-6">{t('markets')}</h2>
-        <PerpMarketsTable />
+        <div className="border-t border-th-bkg-3 md:border-t-0">
+          <PerpMarketsTable />
+        </div>
       </div>
       <div className="pb-10">
         <h2 className="mx-4 mb-4 md:mx-6">{t('stats:market-parameters')}</h2>
-        <PerpMarketsDetailsTable />
+        <div className="border-t border-th-bkg-3 md:border-t-0">
+          <PerpMarketsDetailsTable />
+        </div>
       </div>
       <h2 className="mx-4 md:mx-6">{t('stats:positions')}</h2>
       <PerpMarketsPositions />
