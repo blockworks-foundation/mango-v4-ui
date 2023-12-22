@@ -18,7 +18,11 @@ export const LITE_RPC_URL = 'https://api.mngo.cloud/lite-rpc/v1/'
 const RPC_URLS = [
   {
     label: 'Triton Shared',
-    value: process.env.NEXT_PUBLIC_ENDPOINT || TRITON_DEDICATED_URL,
+    value: process.env.NEXT_PUBLIC_ENDPOINT,
+  },
+  {
+    label: 'Triton Dedicated',
+    value: process.env.TRITON_DEDICATED_URL,
   },
   // {
   //   label: 'Genesys Go',
