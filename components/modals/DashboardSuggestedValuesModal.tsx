@@ -52,6 +52,7 @@ const DashboardSuggestedValues = ({
   //do not deconstruct wallet is used for anchor to sign
   const wallet = useWallet()
   const connection = mangoStore((s) => s.connection)
+  const fee = mangoStore((s) => s.priorityFee)
   const voter = GovernanceStore((s) => s.voter)
   const vsrClient = GovernanceStore((s) => s.vsrClient)
   const proposals = GovernanceStore((s) => s.proposals)
@@ -259,6 +260,7 @@ const DashboardSuggestedValues = ({
           index,
           proposalTx,
           vsrClient!,
+          fee,
         )
         window.open(
           `https://dao.mango.markets/dao/MNGO/proposal/${proposalAddress.toBase58()}`,

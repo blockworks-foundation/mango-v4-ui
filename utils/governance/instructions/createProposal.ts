@@ -23,6 +23,7 @@ import { MANGO_MINT } from 'utils/constants'
 import { MANGO_GOVERNANCE_PROGRAM, MANGO_REALM_PK } from '../constants'
 import { VsrClient } from '../voteStakeRegistryClient'
 import { updateVoterWeightRecord } from './updateVoteWeightRecord'
+import { createComputeBudgetIx } from '@blockworks-foundation/mango-v4'
 
 export const createProposal = async (
   connection: Connection,
@@ -34,6 +35,7 @@ export const createProposal = async (
   proposalIndex: number,
   proposalInstructions: TransactionInstruction[],
   client: VsrClient,
+  fee: number,
 ) => {
   const instructions: TransactionInstruction[] = []
   const walletPk = wallet.publicKey!
@@ -132,6 +134,7 @@ export const createProposal = async (
   const latestBlockhash = await connection.getLatestBlockhash('confirmed')
   for (const chunk of txChunks) {
     const tx = new Transaction()
+    tx.add(createComputeBudgetIx(fee))
     tx.add(...chunk)
     tx.lastValidBlockHeight = latestBlockhash.lastValidBlockHeight
     tx.recentBlockhash = latestBlockhash.blockhash

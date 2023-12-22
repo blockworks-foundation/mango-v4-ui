@@ -78,6 +78,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
   const [quoteToken, setQuoteToken] = useState<null | string>(null)
   const [loadingMarketProps, setLoadingMarketProps] = useState(false)
   const [proposing, setProposing] = useState(false)
+  const fee = mangoStore((s) => s.priorityFee)
   const [marketPk, setMarketPk] = useState('')
   const [currentView, setCurrentView] = useState(VIEWS.BASE_TOKEN)
   const [createOpenbookMarketModal, setCreateOpenbookMarket] = useState(false)
@@ -199,6 +200,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
         index,
         proposalTx,
         vsrClient!,
+        fee,
       )
       setProposalPk(proposalAddress.toBase58())
       setCurrentView(VIEWS.SUCCESS)
@@ -442,7 +444,9 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
                   <div className="mt-2 flex items-center justify-between">
                     <p>{t('price-tick')}</p>
                     <p className="text-th-fgd-2">
-                      {tradingParams.priceIncrement}
+                      {tradingParams.priceIncrement <= 1e-9
+                        ? '1e-8'
+                        : tradingParams.priceIncrement.toString()}
                     </p>
                   </div>
                 ) : null}
