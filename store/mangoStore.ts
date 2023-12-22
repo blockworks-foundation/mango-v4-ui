@@ -1178,11 +1178,11 @@ const mangoStore = create<MangoStore>()(
           if (!altKeys) return
 
           const addresses = sampleSize(altKeys, MAX_PRIORITY_FEE_KEYS)
-          console.log(addresses)
+
           const fees = await connection.getRecentPrioritizationFees({
             lockedWritableAccounts: addresses,
           })
-          console.log(fees)
+
           if (fees.length < 1) return
 
           // get max priority fee per slot (and sort by slot from old to new)
