@@ -308,6 +308,21 @@ export interface SwapActivity {
   activity_type: string
 }
 
+export interface SettleFundsActivity {
+  activity_details: SettleFundsItem
+  block_datetime: string
+  activity_type: string
+}
+
+export interface SettleFundsItem {
+  block_datetime: string
+  mango_account: string
+  signature: string
+  symbol: string
+  price: number
+  fee: number
+}
+
 interface DepositWithdrawActivity {
   activity_details: DepositWithdrawFeedItem
   block_datetime: string
@@ -412,6 +427,7 @@ export type ActivityFeed = {
     | SpotLiquidationFeedItem
     | PerpLiquidationFeedItem
     | SwapHistoryItem
+    | SettleFundsItem
     | PerpTradeActivityFeedItem
     | SpotTradeHistory
 }
