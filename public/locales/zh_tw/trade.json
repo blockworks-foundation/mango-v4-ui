@@ -24,6 +24,7 @@
     "current-price": "目前價格",
     "depth": "深度",
     "edit-order": "編輯訂單",
+    "error-limit-price-outside-band": "Limit price must be within {{band}}% of oracle price",
     "error-no-long": "無做多持倉可減少",
     "error-no-route": "No route found. Try adjusting your size",
     "error-no-short": "無做空持倉可減少",

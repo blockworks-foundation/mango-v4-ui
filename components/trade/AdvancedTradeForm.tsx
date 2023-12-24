@@ -155,6 +155,8 @@ const AdvancedTradeForm = () => {
     return bank
   }, [selectedMarket])
 
+  console.log(selectedMarket)
+
   // check for available account token slots
   const tokenPositionsFull = useTokenPositionsFull([baseBank, quoteBank])
 
@@ -541,6 +543,15 @@ const AdvancedTradeForm = () => {
           symbol: baseSymbol,
         })
       }
+      if (selectedMarket instanceof Serum3Market && price) {
+        const numberPrice = parseFloat(price)
+        const priceDiff = (numberPrice - oraclePrice) / oraclePrice
+        if (Math.abs(priceDiff) > selectedMarket.oraclePriceBand) {
+          invalidFields.price = t('trade:error-limit-price-outside-band', {
+            band: (selectedMarket.oraclePriceBand * 100).toFixed(2),
+          })
+        }
+      }
       if (Object.keys(invalidFields).length) {
         setFormErrors(invalidFields)
       }
@@ -552,6 +563,7 @@ const AdvancedTradeForm = () => {
       minOrderDecimals,
       minOrderSize,
       oraclePrice,
+      selectedMarket,
       setFormErrors,
       baseSymbol,
       t,
