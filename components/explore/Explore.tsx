@@ -44,7 +44,7 @@ const Explore = () => {
         </h2>
       </div>
       <RecentGainersLosers />
-      <div className="z-10 px-4 pt-8 md:px-6">
+      <div className="z-10 w-max px-4 pt-8 md:px-6">
         <div
           className={`flex h-10 flex-col items-center justify-end md:items-start ${
             activeTab === 'tokens' ? 'mb-4 lg:mb-0' : ''
