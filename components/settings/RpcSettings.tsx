@@ -18,11 +18,11 @@ export const LITE_RPC_URL = 'https://api.mngo.cloud/lite-rpc/v1/'
 const RPC_URLS = [
   {
     label: 'Triton Shared',
-    value: process.env.NEXT_PUBLIC_ENDPOINT,
+    value: process.env.NEXT_PUBLIC_ENDPOINT || TRITON_DEDICATED_URL,
   },
   {
     label: 'Triton Dedicated',
-    value: process.env.TRITON_DEDICATED_URL,
+    value: TRITON_DEDICATED_URL,
   },
   // {
   //   label: 'Genesys Go',
@@ -73,6 +73,7 @@ const RpcSettings = () => {
   }, [storedPriorityFeeLevel])
 
   const handleSetEndpointProvider = (provider: string) => {
+    console.log(provider)
     const endpointProvider = RPC_URLS.find(
       (node) => node.label === provider,
     ) || { label: 'Custom', value: rpcEndpointProvider }
