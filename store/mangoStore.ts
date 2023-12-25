@@ -1185,6 +1185,7 @@ const mangoStore = create<MangoStore>()(
           if (!altKeys) return
 
           const addresses = sampleSize(altKeys, MAX_PRIORITY_FEE_KEYS)
+
           const fees = await connection.getRecentPrioritizationFees({
             lockedWritableAccounts: addresses,
           })

@@ -1,7 +1,10 @@
 import mangoStore, { CLUSTER } from '@store/mangoStore'
 import { ModalProps } from '../../types/modal'
 import Modal from '../shared/Modal'
-import { OPENBOOK_PROGRAM_ID } from '@blockworks-foundation/mango-v4'
+import {
+  OPENBOOK_PROGRAM_ID,
+  createComputeBudgetIx,
+} from '@blockworks-foundation/mango-v4'
 import { ChangeEvent, useEffect, useState } from 'react'
 import Label from '@components/forms/Label'
 import Input from '@components/forms/Input'
@@ -65,6 +68,7 @@ const CreateOpenbookMarketModal = ({
 }: ModalProps & CreateOpenbookMarketModalProps) => {
   const { t } = useTranslation(['governance'])
   const connection = mangoStore((s) => s.connection)
+  const fee = mangoStore((s) => s.priorityFee)
   const { connect, signAllTransactions, connected, publicKey } = useWallet()
 
   const [form, setForm] = useState({ ...defaultFormValues })
@@ -76,7 +80,6 @@ const CreateOpenbookMarketModal = ({
     setFormErrors({})
     setForm({ ...form, [propertyName]: value })
   }
-
   const handleCreate = async () => {
     if (!publicKey || !signAllTransactions) {
       return
@@ -106,6 +109,7 @@ const CreateOpenbookMarketModal = ({
       const latestBlockhash = await connection.getLatestBlockhash('confirmed')
       for (const chunk of txChunks) {
         const tx = new Transaction()
+        tx.add(createComputeBudgetIx(fee))
         tx.add(...chunk.instructions)
         tx.lastValidBlockHeight = latestBlockhash.lastValidBlockHeight
         tx.recentBlockhash = latestBlockhash.blockhash
@@ -132,6 +136,7 @@ const CreateOpenbookMarketModal = ({
         type: 'success',
       })
     } catch (e) {
+      console.log(e)
       notify({
         title: t('error-creating-market'),
         description: `${e}`,
@@ -148,7 +153,10 @@ const CreateOpenbookMarketModal = ({
       baseMint: baseMint || '',
       quoteMint: quoteMint || '',
       minimumOrderSize: tradingParams.minOrderSize.toString(),
-      minimumPriceTickSize: tradingParams.priceIncrement.toString(),
+      minimumPriceTickSize:
+        tradingParams.priceIncrement <= 1e-9
+          ? '1e-8'
+          : tradingParams.priceIncrement.toString(),
       xlMarket: false,
     })
   }, [

@@ -101,6 +101,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const vsrClient = GovernanceStore((s) => s.vsrClient)
   const governances = GovernanceStore((s) => s.governances)
   const loadingRealm = GovernanceStore((s) => s.loadingRealm)
+  const fee = mangoStore((s) => s.priorityFee)
   const loadingVoter = GovernanceStore((s) => s.loadingVoter)
   const proposals = GovernanceStore((s) => s.proposals)
   const getCurrentVotingPower = GovernanceStore((s) => s.getCurrentVotingPower)
@@ -590,6 +591,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         advForm.tokenIndex,
         proposalTx,
         vsrClient,
+        fee,
       )
       setProposalPk(proposalAddress.toBase58())
     } catch (e) {
