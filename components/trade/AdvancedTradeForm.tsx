@@ -541,6 +541,31 @@ const AdvancedTradeForm = () => {
           symbol: baseSymbol,
         })
       }
+      if (selectedMarket instanceof Serum3Market && price) {
+        const numberPrice = parseFloat(price)
+        const priceBand = selectedMarket.oraclePriceBand
+        if (side === 'buy') {
+          const priceLimit = (oraclePrice / (100 * (0.98 + priceBand))) * 100
+          if (numberPrice < priceLimit) {
+            invalidFields.price = t(
+              'trade:error-limit-price-buy-outside-band',
+              {
+                limit: priceLimit.toFixed(tickDecimals),
+              },
+            )
+          }
+        } else {
+          const priceLimit = (oraclePrice / (100 / (0.98 + priceBand))) * 100
+          if (numberPrice > priceLimit) {
+            invalidFields.price = t(
+              'trade:error-limit-price-sell-outside-band',
+              {
+                limit: priceLimit.toFixed(tickDecimals),
+              },
+            )
+          }
+        }
+      }
       if (Object.keys(invalidFields).length) {
         setFormErrors(invalidFields)
       }
@@ -552,9 +577,11 @@ const AdvancedTradeForm = () => {
       minOrderDecimals,
       minOrderSize,
       oraclePrice,
+      selectedMarket,
       setFormErrors,
       baseSymbol,
       t,
+      tickDecimals,
     ],
   )
 
