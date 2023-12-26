@@ -26,14 +26,15 @@ import Button from '@components/shared/Button'
 import { compareObjectsAndGetDifferentKeys } from 'utils/governance/tools'
 import { Disclosure } from '@headlessui/react'
 import {
+  LISTING_PRESET,
   LISTING_PRESETS,
-  LISTING_PRESETS_KEYS,
-  LISTING_PRESETS_PYTH,
-  ListingPreset,
+  LISTING_PRESETS_KEY,
   MidPriceImpact,
   getMidPriceImpacts,
-  getProposedTier,
-  getTierWithAdjustedNetBorrows,
+  getPresetWithAdjustedNetBorrows,
+  getProposedKey,
+  getPythPresets,
+  getSwitchBoardPresets,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 import Select from '@components/forms/Select'
 
@@ -58,11 +59,11 @@ const DashboardSuggestedValues = ({
   const proposals = GovernanceStore((s) => s.proposals)
   const PRESETS =
     bank?.oracleProvider === OracleProvider.Pyth
-      ? LISTING_PRESETS_PYTH
-      : LISTING_PRESETS
+      ? getPythPresets(LISTING_PRESETS)
+      : getSwitchBoardPresets(LISTING_PRESETS)
 
   const [suggestedTier, setSuggestedTier] =
-    useState<LISTING_PRESETS_KEYS>('SHIT')
+    useState<LISTING_PRESETS_KEY>('liab_1')
 
   const getApiTokenName = (bankName: string) => {
     if (bankName === 'ETH (Portal)') {
@@ -93,25 +94,19 @@ const DashboardSuggestedValues = ({
       }, {})
     const priceImpact = filteredResp[getApiTokenName(bank.name)]
 
-    const suggestedTier = getProposedTier(
-      PRESETS,
+    const suggestedTier = getProposedKey(
       priceImpact?.target_amount,
       bank.oracleProvider === OracleProvider.Pyth,
     )
 
-    setSuggestedTier(suggestedTier as LISTING_PRESETS_KEYS)
-  }, [
-    PRESETS,
-    bank.name,
-    bank.oracleProvider,
-    JSON.stringify(priceImpactsFiltered),
-  ])
+    setSuggestedTier(suggestedTier)
+  }, [bank.name, bank.oracleProvider, priceImpactsFiltered])
 
   const proposeNewSuggestedValues = useCallback(
     async (
       bank: Bank,
       invalidFieldsKeys: string[],
-      tokenTier: LISTING_PRESETS_KEYS,
+      tokenTier: LISTING_PRESETS_KEY,
     ) => {
       const proposalTx = []
       const mintInfo = group!.mintInfosMapByTokenIndex.get(bank.tokenIndex)!
@@ -278,6 +273,7 @@ const DashboardSuggestedValues = ({
       PRESETS,
       client,
       connection,
+      fee,
       group,
       proposals,
       voter.tokenOwnerRecord,
@@ -294,8 +290,8 @@ const DashboardSuggestedValues = ({
 
   const formattedBankValues = getFormattedBankValues(group, bank)
 
-  const suggestedVaules = getTierWithAdjustedNetBorrows(
-    PRESETS[suggestedTier as LISTING_PRESETS_KEYS] as ListingPreset,
+  const suggestedVaules = getPresetWithAdjustedNetBorrows(
+    PRESETS[suggestedTier as LISTING_PRESETS_KEY] as LISTING_PRESET,
     bank.nativeDeposits().mul(bank.price).toNumber(),
   )
   const suggestedFormattedPreset = formatSuggestedValues(suggestedVaules)
@@ -630,7 +626,7 @@ const DashboardSuggestedValues = ({
                 proposeNewSuggestedValues(
                   bank,
                   invalidKeys,
-                  suggestedTier as LISTING_PRESETS_KEYS,
+                  suggestedTier as LISTING_PRESETS_KEY,
                 )
               }
               disabled={!wallet.connected}
