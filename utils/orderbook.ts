@@ -59,9 +59,7 @@ export const isMarketReadyForDecode = (
 ) => {
   if (
     !market ||
-    (market instanceof Market &&
-      (!market.decoded.accountFlags.initialized ||
-        !(market.decoded.accountFlags.bids ^ market.decoded.accountFlags.asks)))
+    (market instanceof Market && !market.decoded.accountFlags.initialized)
   ) {
     return false
   } else {

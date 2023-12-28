@@ -66,7 +66,7 @@ const Orderbook = () => {
   const { isDesktop } = useViewport()
   const [orderbookData, setOrderbookData] = useState<OrderbookData | null>(null)
   const currentOrderbookData = useRef<OrderbookL2>()
-
+  console.log(isMarketReadyForDecode(market), '@@@@@')
   const [baseBank, quoteBank] = useMemo(() => {
     const { group } = mangoStore.getState()
     if (!market || !group) return [undefined, undefined]
@@ -305,6 +305,7 @@ const Orderbook = () => {
         connection
           .getAccountInfoAndContext(bidsPk)
           .then(({ context, value: info }) => {
+            console.log(isMarketReadyForDecode(market), '@@@@@')
             if (!info || !isMarketReadyForDecode(market)) return
             const decodedBook = decodeBook(client, market, info, 'bids')
             set((state) => {
@@ -319,7 +320,6 @@ const Orderbook = () => {
             const lastSeenSlot =
               mangoStore.getState().selectedMarket.lastSeenSlot.bids
             if (context.slot > lastSeenSlot) {
-              const market = getMarket()
               if (!isMarketReadyForDecode(market)) return
               const decodedBook = decodeBook(client, market!, info, 'bids')
               if (decodedBook instanceof BookSide) {
@@ -355,7 +355,6 @@ const Orderbook = () => {
             const lastSeenSlot =
               mangoStore.getState().selectedMarket.lastSeenSlot.asks
             if (context.slot > lastSeenSlot) {
-              const market = getMarket()
               if (!isMarketReadyForDecode(market)) return
               const decodedBook = decodeBook(client, market!, info, 'asks')
               if (decodedBook instanceof BookSide) {
@@ -381,7 +380,13 @@ const Orderbook = () => {
         }
       }
     }
-  }, [bidAccountAddress, askAccountAddress, connection, useOrderbookFeed])
+  }, [
+    bidAccountAddress,
+    askAccountAddress,
+    connection,
+    useOrderbookFeed,
+    market,
+  ])
 
   useEffect(() => {
     const market = getMarket()
