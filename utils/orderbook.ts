@@ -54,6 +54,21 @@ export function decodeBook(
   }
 }
 
+export const isMarketReadyForDecode = (
+  market: PerpMarket | Market | undefined,
+) => {
+  if (
+    !market ||
+    (market instanceof Market &&
+      (!market.decoded.accountFlags.initialized ||
+        !(market.decoded.accountFlags.bids ^ market.decoded.accountFlags.asks)))
+  ) {
+    return false
+  } else {
+    return true
+  }
+}
+
 export const updatePerpMarketOnGroup = (
   book: BookSide,
   side: 'bids' | 'asks',

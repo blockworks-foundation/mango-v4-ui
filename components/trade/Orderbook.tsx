@@ -31,6 +31,7 @@ import {
   decodeBookL2,
   formatOrderbookData,
   getMarket,
+  isMarketReadyForDecode,
   updatePerpMarketOnGroup,
 } from 'utils/orderbook'
 import { OrderbookData, OrderbookL2 } from 'types'
@@ -811,15 +812,4 @@ function usersOpenOrderPrices(market: Market | PerpMarket | null) {
         : []
   }
   return usersOpenOrderPrices
-}
-
-const isMarketReadyForDecode = (market: PerpMarket | Market | undefined) => {
-  if (
-    !market ||
-    (market instanceof Market &&
-      (!market.decoded.accountFlags.initialized ||
-        !(market.decoded.accountFlags.bids ^ market.decoded.accountFlags.asks)))
-  )
-    return false
-  else return true
 }
