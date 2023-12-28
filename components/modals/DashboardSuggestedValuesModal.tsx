@@ -31,6 +31,7 @@ import {
   LISTING_PRESETS_KEY,
   MidPriceImpact,
   getMidPriceImpacts,
+  getPresetWithAdjustedDepositLimit,
   getPresetWithAdjustedNetBorrows,
   getProposedKey,
   getPythPresets,
@@ -223,7 +224,7 @@ const DashboardSuggestedValues = ({
           false,
           false,
           getNullOrVal(fieldsToChange.depositLimit)
-            ? new BN(fieldsToChange.depositLimit!)
+            ? new BN(fieldsToChange.depositLimit!.toString())
             : null,
         )
         .accounts({
@@ -243,6 +244,7 @@ const DashboardSuggestedValues = ({
       proposalTx.push(ix)
 
       const walletSigner = wallet as never
+
       try {
         const index = proposals ? Object.values(proposals).length : 0
         const proposalAddress = await createProposal(
@@ -290,16 +292,21 @@ const DashboardSuggestedValues = ({
 
   const formattedBankValues = getFormattedBankValues(group, bank)
 
-  const suggestedVaules = getPresetWithAdjustedNetBorrows(
-    PRESETS[suggestedTier as LISTING_PRESETS_KEY] as LISTING_PRESET,
-    bank.nativeDeposits().mul(bank.price).toNumber(),
+  const suggestedValues = getPresetWithAdjustedDepositLimit(
+    getPresetWithAdjustedNetBorrows(
+      PRESETS[suggestedTier as LISTING_PRESETS_KEY] as LISTING_PRESET,
+      bank.nativeDeposits().mul(bank.price).toNumber(),
+    ),
+    bank.uiPrice,
+    bank.mintDecimals,
   )
-  const suggestedFormattedPreset = formatSuggestedValues(suggestedVaules)
+
+  const suggestedFormattedPreset = formatSuggestedValues(suggestedValues)
 
   type SuggestedFormattedPreset = typeof suggestedFormattedPreset
 
   const invalidKeys: (keyof SuggestedFormattedPreset)[] = Object.keys(
-    suggestedVaules,
+    suggestedValues,
   ).length
     ? compareObjectsAndGetDifferentKeys<SuggestedFormattedPreset>(
         formattedBankValues,
@@ -335,7 +342,7 @@ const DashboardSuggestedValues = ({
           onChange={(tier) => setSuggestedTier(tier)}
           className="w-full"
         >
-          {Object.keys(LISTING_PRESETS)
+          {Object.keys(PRESETS)
             .filter((x) => x !== 'UNTRUSTED')
             .map((name) => (
               <Select.Option key={name} value={name}>

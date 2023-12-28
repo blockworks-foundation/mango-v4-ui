@@ -10,7 +10,7 @@ import {
   JUPITER_REFERRAL_PK,
   USDC_MINT,
 } from 'utils/constants'
-import { PublicKey, SYSVAR_RENT_PUBKEY } from '@solana/web3.js'
+import { PublicKey, SYSVAR_RENT_PUBKEY, Transaction } from '@solana/web3.js'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { OPENBOOK_PROGRAM_ID, toNative } from '@blockworks-foundation/mango-v4'
 import {
@@ -48,6 +48,7 @@ import {
   getSwitchBoardPresets,
   getPythPresets,
   LISTING_PRESET,
+  getPresetWithAdjustedDepositLimit,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 import Checkbox from '@components/forms/Checkbox'
 import { ReferralProvider } from '@jup-ag/referral-sdk'
@@ -133,10 +134,15 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const [proposedPresetTargetAmount, setProposedProposedTargetAmount] =
     useState(0)
 
-  const proposedPreset: LISTING_PRESET =
+  const preset: LISTING_PRESET =
     Object.values(presets).find(
       (x) => x.preset_target_amount === proposedPresetTargetAmount,
     ) || presets.UNTRUSTED
+  const proposedPreset = getPresetWithAdjustedDepositLimit(
+    preset,
+    baseTokenPrice,
+    currentTokenInfo?.decimals || 0,
+  )
 
   const quoteBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
   const minVoterWeight = useMemo(
@@ -491,7 +497,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           Number(proposedPreset.interestCurveScaling),
           Number(proposedPreset.interestTargetUtilization),
           proposedPreset.groupInsuranceFund,
-          new BN(proposedPreset.depositLimit),
+          new BN(proposedPreset.depositLimit.toString()),
         )
         .accounts({
           admin: MANGO_DAO_WALLET,
@@ -556,20 +562,29 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     setCreatingProposal(true)
 
     try {
-      const proposalAddress = await createProposal(
-        connection,
-        walletSigner,
-        MANGO_DAO_WALLET,
-        voter.tokenOwnerRecord!,
-        advForm.proposalTitle,
-        advForm.proposalDescription,
-        advForm.tokenIndex,
-        proposalTx,
-        vsrClient,
-        fee,
-      )
-      setProposalPk(proposalAddress.toBase58())
+      const simTransaction = new Transaction({ feePayer: wallet.publicKey })
+      simTransaction.add(...proposalTx)
+      const simulation = await connection.simulateTransaction(simTransaction)
+
+      if (!simulation.value.err) {
+        const proposalAddress = await createProposal(
+          connection,
+          walletSigner,
+          MANGO_DAO_WALLET_GOVERNANCE,
+          voter.tokenOwnerRecord!,
+          advForm.proposalTitle,
+          advForm.proposalDescription,
+          advForm.tokenIndex,
+          proposalTx,
+          vsrClient,
+          fee,
+        )
+        setProposalPk(proposalAddress.toBase58())
+      } else {
+        throw simulation.value.logs
+      }
     } catch (e) {
+      console.log(e)
       notify({
         title: t('error-proposal-creation'),
         description: `${e}`,

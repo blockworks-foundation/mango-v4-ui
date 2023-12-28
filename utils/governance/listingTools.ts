@@ -35,6 +35,7 @@ export const getOracle = async ({
       quoteSymbol,
       connection,
     })
+
     if (pythOracle) {
       oraclePk = pythOracle
     } else {
@@ -49,6 +50,7 @@ export const getOracle = async ({
 
     return { oraclePk, isPyth: !!pythOracle }
   } catch (e) {
+    console.log(e)
     notify({
       title: 'Oracle not found',
       description: `${e}`,
