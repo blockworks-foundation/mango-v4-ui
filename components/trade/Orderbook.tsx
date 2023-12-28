@@ -66,7 +66,7 @@ const Orderbook = () => {
   const { isDesktop } = useViewport()
   const [orderbookData, setOrderbookData] = useState<OrderbookData | null>(null)
   const currentOrderbookData = useRef<OrderbookL2>()
-  console.log(isMarketReadyForDecode(market), '@@@@@')
+
   const [baseBank, quoteBank] = useMemo(() => {
     const { group } = mangoStore.getState()
     if (!market || !group) return [undefined, undefined]
@@ -305,7 +305,6 @@ const Orderbook = () => {
         connection
           .getAccountInfoAndContext(bidsPk)
           .then(({ context, value: info }) => {
-            console.log(isMarketReadyForDecode(market), '@@@@@')
             if (!info || !isMarketReadyForDecode(market)) return
             const decodedBook = decodeBook(client, market, info, 'bids')
             set((state) => {
