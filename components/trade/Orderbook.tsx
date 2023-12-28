@@ -304,7 +304,7 @@ const Orderbook = () => {
         connection
           .getAccountInfoAndContext(bidsPk)
           .then(({ context, value: info }) => {
-            if (!info) return
+            if (!info || !isMarketReadyForDecode(market)) return
             const decodedBook = decodeBook(client, market, info, 'bids')
             set((state) => {
               state.selectedMarket.lastSeenSlot.bids = context.slot
@@ -319,8 +319,8 @@ const Orderbook = () => {
               mangoStore.getState().selectedMarket.lastSeenSlot.bids
             if (context.slot > lastSeenSlot) {
               const market = getMarket()
-              if (!market) return
-              const decodedBook = decodeBook(client, market, info, 'bids')
+              if (!isMarketReadyForDecode(market)) return
+              const decodedBook = decodeBook(client, market!, info, 'bids')
               if (decodedBook instanceof BookSide) {
                 updatePerpMarketOnGroup(decodedBook, 'bids')
               }
@@ -340,7 +340,7 @@ const Orderbook = () => {
         connection
           .getAccountInfoAndContext(asksPk)
           .then(({ context, value: info }) => {
-            if (!info) return
+            if (!info || !isMarketReadyForDecode(market)) return
             const decodedBook = decodeBook(client, market, info, 'asks')
             set((state) => {
               state.selectedMarket.asksAccount = decodedBook
@@ -355,8 +355,8 @@ const Orderbook = () => {
               mangoStore.getState().selectedMarket.lastSeenSlot.asks
             if (context.slot > lastSeenSlot) {
               const market = getMarket()
-              if (!market) return
-              const decodedBook = decodeBook(client, market, info, 'asks')
+              if (!isMarketReadyForDecode(market)) return
+              const decodedBook = decodeBook(client, market!, info, 'asks')
               if (decodedBook instanceof BookSide) {
                 updatePerpMarketOnGroup(decodedBook, 'asks')
               }
@@ -811,4 +811,15 @@ function usersOpenOrderPrices(market: Market | PerpMarket | null) {
         : []
   }
   return usersOpenOrderPrices
+}
+
+const isMarketReadyForDecode = (market: PerpMarket | Market | undefined) => {
+  if (
+    !market ||
+    (market instanceof Market &&
+      (!market.decoded.accountFlags.initialized ||
+        !(market.decoded.accountFlags.bids ^ market.decoded.accountFlags.asks)))
+  )
+    return false
+  else return true
 }
