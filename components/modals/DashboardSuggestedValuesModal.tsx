@@ -38,6 +38,7 @@ import {
   getSwitchBoardPresets,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 import Select from '@components/forms/Select'
+import Loading from '@components/shared/Loading'
 
 const DashboardSuggestedValues = ({
   isOpen,
@@ -65,6 +66,7 @@ const DashboardSuggestedValues = ({
 
   const [suggestedTier, setSuggestedTier] =
     useState<LISTING_PRESETS_KEY>('liab_1')
+  const [proposing, setProposing] = useState(false)
 
   const getApiTokenName = (bankName: string) => {
     if (bankName === 'ETH (Portal)') {
@@ -246,6 +248,7 @@ const DashboardSuggestedValues = ({
       const walletSigner = wallet as never
 
       try {
+        setProposing(true)
         const simTransaction = new Transaction({ feePayer: wallet.publicKey })
         simTransaction.add(...proposalTx)
         const simulation = await connection.simulateTransaction(simTransaction)
@@ -278,6 +281,7 @@ const DashboardSuggestedValues = ({
           type: 'error',
         })
       }
+      setProposing(false)
     },
     [
       PRESETS,
@@ -644,9 +648,9 @@ const DashboardSuggestedValues = ({
                   suggestedTier as LISTING_PRESETS_KEY,
                 )
               }
-              disabled={!wallet.connected}
+              disabled={!wallet.connected || proposing}
             >
-              Propose new suggested values
+              {proposing ? <Loading></Loading> : 'Propose new suggested values'}
             </Button>
           </div>
         )}
