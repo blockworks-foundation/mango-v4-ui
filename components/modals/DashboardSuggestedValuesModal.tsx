@@ -14,7 +14,7 @@ import {
   OracleProvider,
   PriceImpact,
 } from '@blockworks-foundation/mango-v4'
-import { AccountMeta } from '@solana/web3.js'
+import { AccountMeta, Transaction } from '@solana/web3.js'
 import { BN } from '@project-serum/anchor'
 import {
   MANGO_DAO_WALLET,
@@ -246,23 +246,31 @@ const DashboardSuggestedValues = ({
       const walletSigner = wallet as never
 
       try {
-        const index = proposals ? Object.values(proposals).length : 0
-        const proposalAddress = await createProposal(
-          connection,
-          walletSigner,
-          MANGO_DAO_WALLET_GOVERNANCE,
-          voter.tokenOwnerRecord!,
-          `Edit token ${bank.name}`,
-          'Adjust settings to current liquidity',
-          index,
-          proposalTx,
-          vsrClient!,
-          fee,
-        )
-        window.open(
-          `https://dao.mango.markets/dao/MNGO/proposal/${proposalAddress.toBase58()}`,
-          '_blank',
-        )
+        const simTransaction = new Transaction({ feePayer: wallet.publicKey })
+        simTransaction.add(...proposalTx)
+        const simulation = await connection.simulateTransaction(simTransaction)
+
+        if (!simulation.value.err) {
+          const index = proposals ? Object.values(proposals).length : 0
+          const proposalAddress = await createProposal(
+            connection,
+            walletSigner,
+            MANGO_DAO_WALLET_GOVERNANCE,
+            voter.tokenOwnerRecord!,
+            `Edit token ${bank.name}`,
+            'Adjust settings to current liquidity',
+            index,
+            proposalTx,
+            vsrClient!,
+            fee,
+          )
+          window.open(
+            `https://dao.mango.markets/dao/MNGO/proposal/${proposalAddress.toBase58()}`,
+            '_blank',
+          )
+        } else {
+          throw simulation.value.logs
+        }
       } catch (e) {
         notify({
           title: 'Error during proposal creation',

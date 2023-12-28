@@ -149,14 +149,11 @@ export const createProposal = async (
       skipPreflight: true,
     })
 
-    await connection.confirmTransaction(
-      {
-        blockhash: latestBlockhash.blockhash,
-        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
-        signature: address,
-      },
-      'confirmed',
-    )
+    await connection.confirmTransaction({
+      blockhash: latestBlockhash.blockhash,
+      lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+      signature: address,
+    })
   }
   return proposalAddress
 }
