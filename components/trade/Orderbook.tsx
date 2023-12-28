@@ -31,7 +31,6 @@ import {
   decodeBookL2,
   formatOrderbookData,
   getMarket,
-  isMarketReadyForDecode,
   updatePerpMarketOnGroup,
 } from 'utils/orderbook'
 import { OrderbookData, OrderbookL2 } from 'types'
@@ -305,13 +304,18 @@ const Orderbook = () => {
         connection
           .getAccountInfoAndContext(bidsPk)
           .then(({ context, value: info }) => {
-            if (!info || !isMarketReadyForDecode(market)) return
-            const decodedBook = decodeBook(client, market, info, 'bids')
-            set((state) => {
-              state.selectedMarket.lastSeenSlot.bids = context.slot
-              state.selectedMarket.bidsAccount = decodedBook
-              state.selectedMarket.orderbook.bids = decodeBookL2(decodedBook)
-            })
+            try {
+              if (!info || !market) return
+              const decodedBook = decodeBook(client, market, info, 'bids')
+              set((state) => {
+                state.selectedMarket.lastSeenSlot.bids = context.slot
+                state.selectedMarket.bidsAccount = decodedBook
+                state.selectedMarket.orderbook.bids = decodeBookL2(decodedBook)
+              })
+            } catch (e) {
+              console.log(e)
+              return
+            }
           })
         bidSubscriptionId = connection.onAccountChange(
           bidsPk,
@@ -319,16 +323,22 @@ const Orderbook = () => {
             const lastSeenSlot =
               mangoStore.getState().selectedMarket.lastSeenSlot.bids
             if (context.slot > lastSeenSlot) {
-              if (!isMarketReadyForDecode(market)) return
-              const decodedBook = decodeBook(client, market!, info, 'bids')
-              if (decodedBook instanceof BookSide) {
-                updatePerpMarketOnGroup(decodedBook, 'bids')
+              try {
+                if (!market) return
+                const decodedBook = decodeBook(client, market!, info, 'bids')
+                if (decodedBook instanceof BookSide) {
+                  updatePerpMarketOnGroup(decodedBook, 'bids')
+                }
+                set((state) => {
+                  state.selectedMarket.bidsAccount = decodedBook
+                  state.selectedMarket.orderbook.bids =
+                    decodeBookL2(decodedBook)
+                  state.selectedMarket.lastSeenSlot.bids = context.slot
+                })
+              } catch (e) {
+                console.log(e)
+                return
               }
-              set((state) => {
-                state.selectedMarket.bidsAccount = decodedBook
-                state.selectedMarket.orderbook.bids = decodeBookL2(decodedBook)
-                state.selectedMarket.lastSeenSlot.bids = context.slot
-              })
             }
           },
           'processed',
@@ -340,13 +350,18 @@ const Orderbook = () => {
         connection
           .getAccountInfoAndContext(asksPk)
           .then(({ context, value: info }) => {
-            if (!info || !isMarketReadyForDecode(market)) return
-            const decodedBook = decodeBook(client, market, info, 'asks')
-            set((state) => {
-              state.selectedMarket.asksAccount = decodedBook
-              state.selectedMarket.orderbook.asks = decodeBookL2(decodedBook)
-              state.selectedMarket.lastSeenSlot.asks = context.slot
-            })
+            try {
+              if (!info || !market) return
+              const decodedBook = decodeBook(client, market, info, 'asks')
+              set((state) => {
+                state.selectedMarket.asksAccount = decodedBook
+                state.selectedMarket.orderbook.asks = decodeBookL2(decodedBook)
+                state.selectedMarket.lastSeenSlot.asks = context.slot
+              })
+            } catch (e) {
+              console.log(e)
+              return
+            }
           })
         askSubscriptionId = connection.onAccountChange(
           asksPk,
@@ -354,16 +369,22 @@ const Orderbook = () => {
             const lastSeenSlot =
               mangoStore.getState().selectedMarket.lastSeenSlot.asks
             if (context.slot > lastSeenSlot) {
-              if (!isMarketReadyForDecode(market)) return
-              const decodedBook = decodeBook(client, market!, info, 'asks')
-              if (decodedBook instanceof BookSide) {
-                updatePerpMarketOnGroup(decodedBook, 'asks')
+              try {
+                if (!market) return
+                const decodedBook = decodeBook(client, market!, info, 'asks')
+                if (decodedBook instanceof BookSide) {
+                  updatePerpMarketOnGroup(decodedBook, 'asks')
+                }
+                set((state) => {
+                  state.selectedMarket.asksAccount = decodedBook
+                  state.selectedMarket.orderbook.asks =
+                    decodeBookL2(decodedBook)
+                  state.selectedMarket.lastSeenSlot.asks = context.slot
+                })
+              } catch (e) {
+                console.log(e)
+                return
               }
-              set((state) => {
-                state.selectedMarket.asksAccount = decodedBook
-                state.selectedMarket.orderbook.asks = decodeBookL2(decodedBook)
-                state.selectedMarket.lastSeenSlot.asks = context.slot
-              })
             }
           },
           'processed',
@@ -379,13 +400,7 @@ const Orderbook = () => {
         }
       }
     }
-  }, [
-    bidAccountAddress,
-    askAccountAddress,
-    connection,
-    useOrderbookFeed,
-    market,
-  ])
+  }, [bidAccountAddress, askAccountAddress, connection, useOrderbookFeed])
 
   useEffect(() => {
     const market = getMarket()
