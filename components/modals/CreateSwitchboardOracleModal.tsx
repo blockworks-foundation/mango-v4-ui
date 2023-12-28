@@ -21,8 +21,10 @@ import Loading from '@components/shared/Loading'
 import { WhirlpoolContext, buildWhirlpoolClient } from '@orca-so/whirlpools-sdk'
 import { LIQUIDITY_STATE_LAYOUT_V4 } from '@raydium-io/raydium-sdk'
 import { createComputeBudgetIx } from '@blockworks-foundation/mango-v4'
+import { LISTING_PRESETS_KEY } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 
 const poolAddressError = 'no-pool-address-found'
+const wrongTierPassedForCreation = 'Wrong tier passed for creation of oracle'
 
 const SWITCHBOARD_PERMISSIONLESS_QUE =
   '5JYwqvKkqp35w8Nq3ba4z1WYUeJQ1rB36V8XvaGp6zn1'
@@ -33,7 +35,7 @@ type BaseProps = ModalProps & {
   openbookMarketPk: string
   baseTokenPk: string
   baseTokenName: string
-  tier: string
+  tierKey: LISTING_PRESETS_KEY
 }
 
 type RaydiumProps = BaseProps & {
@@ -53,7 +55,7 @@ const CreateSwitchboardOracleModal = ({
   baseTokenName,
   raydiumPoolAddress,
   orcaPoolAddress,
-  tier,
+  tierKey,
 }: RaydiumProps | OrcaProps) => {
   const { t } = useTranslation(['governance'])
   const connection = mangoStore((s) => s.connection)
@@ -61,41 +63,41 @@ const CreateSwitchboardOracleModal = ({
   const wallet = useWallet()
   const quoteTokenName = 'USD'
   const pythUsdOracle = 'Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD'
-  const tierToSwapValue: { [key: string]: string } = {
-    PREMIUM: '10000',
-    MID: '2000',
-    MEME: '500',
-    SHIT: '100',
+  const tierToSwapValue: { [key in LISTING_PRESETS_KEY]?: string } = {
+    asset_100: '10000',
+    asset_20: '2000',
+    liab_5: '500',
+    liab_1: '100',
     UNTRUSTED: '100',
   }
 
   const tierSettings: {
-    [key: string]: {
+    [key in LISTING_PRESETS_KEY]?: {
       fundAmount: number
       batchSize: number
       minRequiredOracleResults: number
       minUpdateDelaySeconds: number
     }
   } = {
-    PREMIUM: {
+    asset_100: {
       fundAmount: 5,
       minRequiredOracleResults: 3,
       minUpdateDelaySeconds: 6,
       batchSize: 5,
     },
-    MID: {
+    asset_20: {
       fundAmount: 5,
       minRequiredOracleResults: 1,
       minUpdateDelaySeconds: 6,
       batchSize: 2,
     },
-    MEME: {
+    liab_5: {
       fundAmount: 2,
       minRequiredOracleResults: 1,
       minUpdateDelaySeconds: 20,
       batchSize: 2,
     },
-    SHIT: {
+    liab_1: {
       fundAmount: 2,
       batchSize: 2,
       minRequiredOracleResults: 1,
@@ -132,7 +134,7 @@ const CreateSwitchboardOracleModal = ({
 
   const create = useCallback(async () => {
     try {
-      const swapValue = tierToSwapValue[tier]
+      const swapValue = tierToSwapValue[tierKey]
       setCreatingOracle(true)
       const payer = wallet!.publicKey!
       if (!orcaPoolAddress && !raydiumPoolAddress) {
@@ -185,20 +187,23 @@ const CreateSwitchboardOracleModal = ({
           },
         ]
       }
-
+      const settingFromLib = tierSettings[tierKey]
+      if (!settingFromLib) {
+        throw wrongTierPassedForCreation
+      }
       const [aggregatorAccount, txArray1] =
         await queueAccount.createFeedInstructions(payer, {
           name: `${baseTokenName}/${quoteTokenName}`,
-          batchSize: tierSettings[tier].batchSize,
-          minRequiredOracleResults: tierSettings[tier].minRequiredOracleResults,
+          batchSize: settingFromLib.batchSize,
+          minRequiredOracleResults: settingFromLib.minRequiredOracleResults,
           minRequiredJobResults: 2,
-          minUpdateDelaySeconds: tierSettings[tier].minUpdateDelaySeconds,
+          minUpdateDelaySeconds: settingFromLib.minUpdateDelaySeconds,
           forceReportPeriod: 60 * 60,
           withdrawAuthority: MANGO_DAO_WALLET,
           authority: payer,
           crankDataBuffer: crankAccount.dataBuffer?.publicKey,
           crankPubkey: crankAccount.publicKey,
-          fundAmount: tierSettings[tier].fundAmount,
+          fundAmount: settingFromLib.fundAmount,
           slidingWindow: true,
           disableCrank: false,
           maxPriorityFeeMultiplier: 5,
@@ -364,6 +369,12 @@ const CreateSwitchboardOracleModal = ({
           description: 'No orca or raydium pool found for oracle',
           type: 'error',
         })
+      } else if (e === wrongTierPassedForCreation) {
+        notify({
+          title: 'Transaction failed',
+          description: 'Wrong tier passed for oracle creation',
+          type: 'error',
+        })
       } else {
         if (!isMangoError(e)) return
         notify({
@@ -381,7 +392,7 @@ const CreateSwitchboardOracleModal = ({
     onClose,
     orcaPoolAddress,
     raydiumPoolAddress,
-    tier,
+    tierKey,
     tierToSwapValue,
     wallet,
   ])
@@ -393,7 +404,7 @@ const CreateSwitchboardOracleModal = ({
           {t('create-switch-oracle')} {baseTokenName}/USD
         </p>
         <p>
-          {t('estimated-oracle-cost')} {tierSettings[tier].fundAmount} SOL
+          {t('estimated-oracle-cost')} {tierSettings[tierKey]?.fundAmount} SOL
         </p>
       </div>
 
