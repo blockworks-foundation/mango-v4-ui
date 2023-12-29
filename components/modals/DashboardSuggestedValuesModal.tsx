@@ -13,6 +13,7 @@ import {
   Group,
   OracleProvider,
   PriceImpact,
+  toUiDecimals,
 } from '@blockworks-foundation/mango-v4'
 import { AccountMeta, Transaction } from '@solana/web3.js'
 import { BN } from '@project-serum/anchor'
@@ -347,22 +348,20 @@ const DashboardSuggestedValues = ({
     >
       <h3 className="mb-6">
         <span>
-          {bank.name} - Suggested tier: {suggestedTier}
+          {bank.name} - Suggested tier: {PRESETS[suggestedTier].preset_name}
         </span>
         <Select
-          value={suggestedTier}
-          onChange={(tier) => setSuggestedTier(tier)}
+          value={PRESETS[suggestedTier].preset_name}
+          onChange={(tier: LISTING_PRESETS_KEY) => setSuggestedTier(tier)}
           className="w-full"
         >
-          {Object.keys(PRESETS)
-            .filter((x) => x !== 'UNTRUSTED')
-            .map((name) => (
-              <Select.Option key={name} value={name}>
-                <div className="flex w-full items-center justify-between">
-                  {name}
-                </div>
-              </Select.Option>
-            ))}
+          {Object.keys(PRESETS).map((name) => (
+            <Select.Option key={name} value={name}>
+              <div className="flex w-full items-center justify-between">
+                {PRESETS[name as LISTING_PRESETS_KEY].preset_name}
+              </div>
+            </Select.Option>
+          ))}
         </Select>
       </h3>
       <div className="flex max-h-[600px] w-full flex-col overflow-auto">
@@ -595,10 +594,16 @@ const DashboardSuggestedValues = ({
           />
           <KeyValuePair
             label="Deposit Limit"
-            value={`${formattedBankValues.depositLimit}`}
+            value={`${toUiDecimals(
+              new BN(formattedBankValues.depositLimit.toString()),
+              bank.mintDecimals,
+            )}`}
             proposedValue={
               suggestedFields.depositLimit !== undefined &&
-              `${suggestedFields.depositLimit}`
+              `${toUiDecimals(
+                new BN(suggestedFields.depositLimit.toString()),
+                bank.mintDecimals,
+              )}`
             }
           />
           <KeyValuePair
