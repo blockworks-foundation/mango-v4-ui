@@ -65,6 +65,8 @@ const DashboardSuggestedValues = ({
       ? getPythPresets(LISTING_PRESETS)
       : getSwitchBoardPresets(LISTING_PRESETS)
 
+  const [proposedTier, setProposedTier] =
+    useState<LISTING_PRESETS_KEY>('liab_1')
   const [suggestedTier, setSuggestedTier] =
     useState<LISTING_PRESETS_KEY>('liab_1')
   const [proposing, setProposing] = useState(false)
@@ -103,6 +105,7 @@ const DashboardSuggestedValues = ({
       bank.oracleProvider === OracleProvider.Pyth,
     )
 
+    setProposedTier(suggestedTier)
     setSuggestedTier(suggestedTier)
   }, [bank.name, bank.oracleProvider, priceImpactsFiltered])
 
@@ -314,7 +317,7 @@ const DashboardSuggestedValues = ({
 
   const suggestedValues = getPresetWithAdjustedDepositLimit(
     getPresetWithAdjustedNetBorrows(
-      PRESETS[suggestedTier as LISTING_PRESETS_KEY] as LISTING_PRESET,
+      PRESETS[proposedTier as LISTING_PRESETS_KEY] as LISTING_PRESET,
       bank.nativeDeposits().mul(bank.price).toNumber(),
     ),
     bank.uiPrice,
@@ -358,14 +361,15 @@ const DashboardSuggestedValues = ({
           {bank.name} - Suggested tier: {PRESETS[suggestedTier].preset_name}
         </span>
         <Select
-          value={PRESETS[suggestedTier].preset_name}
-          onChange={(tier: LISTING_PRESETS_KEY) => setSuggestedTier(tier)}
+          value={PRESETS[proposedTier].preset_name}
+          onChange={(tier: LISTING_PRESETS_KEY) => setProposedTier(tier)}
           className="w-full"
         >
           {Object.keys(PRESETS).map((name) => (
             <Select.Option key={name} value={name}>
               <div className="flex w-full items-center justify-between">
-                {PRESETS[name as LISTING_PRESETS_KEY].preset_name}
+                {PRESETS[name as LISTING_PRESETS_KEY].preset_name}{' '}
+                {name === suggestedTier ? '- suggested' : ''}
               </div>
             </Select.Option>
           ))}
@@ -657,7 +661,7 @@ const DashboardSuggestedValues = ({
                 proposeNewSuggestedValues(
                   bank,
                   invalidKeys,
-                  suggestedTier as LISTING_PRESETS_KEY,
+                  proposedTier as LISTING_PRESETS_KEY,
                 )
               }
               disabled={!wallet.connected || proposing}
