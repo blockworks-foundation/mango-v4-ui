@@ -114,7 +114,14 @@ const DashboardSuggestedValues = ({
     ) => {
       const proposalTx = []
       const mintInfo = group!.mintInfosMapByTokenIndex.get(bank.tokenIndex)!
-      const preset = PRESETS[tokenTier]
+      const preset = getPresetWithAdjustedDepositLimit(
+        getPresetWithAdjustedNetBorrows(
+          PRESETS[tokenTier],
+          bank.nativeDeposits().mul(bank.price).toNumber(),
+        ),
+        bank.uiPrice,
+        bank.mintDecimals,
+      )
 
       const fieldsToChange = invalidFieldsKeys.reduce(
         (obj, key) => ({ ...obj, [key]: preset[key as keyof typeof preset] }),
@@ -144,7 +151,7 @@ const DashboardSuggestedValues = ({
       const isThereNeedOfSendingRateConfigs = Object.values(rateConfigs).filter(
         (x) => x !== null,
       ).length
-
+      console.log(fieldsToChange)
       const ix = await client!.program.methods
         .tokenEdit(
           null,
