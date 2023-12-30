@@ -294,7 +294,7 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
                     <Td>
                       <div className="flex flex-col text-right">
                         <p>
-                          {!market ? (
+                          {!market || !market?.marketData ? (
                             '–'
                           ) : volume ? (
                             <span>

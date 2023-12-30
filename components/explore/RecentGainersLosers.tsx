@@ -96,8 +96,7 @@ const RecentGainersLosers = () => {
       return [[], []]
     const tradeableAssets = []
     for (const token of banksWithMarketData) {
-      const volume = token.market?.marketData?.quote_volume_24h || 0
-      if (token.market?.quoteTokenIndex === 0 && volume > 0) {
+      if (token.market?.quoteTokenIndex === 0) {
         const change = token.market?.rollingChange || 0
         tradeableAssets.push({ bank: token.bank, change, type: 'spot' })
       }
