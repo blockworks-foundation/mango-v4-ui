@@ -2,7 +2,7 @@ import nextJest from 'next/jest'
 
 const customConfig = {
   moduleDirectories: ['node_modules', '<rootDir>/'],
-  setupFilesAfterEnv: ['<rootDir>/test/setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
   transform: {
     '^.+\\.(t|j)sx?$': 'ts-jest',
   },
