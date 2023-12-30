@@ -10,6 +10,8 @@ const customConfig = {
   moduleNameMapper: {
     // Force module uuid to resolve with the CJS entry point, because Jest does not support package.json.exports. See https://github.com/uuidjs/uuid/issues/451
     uuid: require.resolve('uuid'),
+    three: require.resolve('three'),
+    'd3-interpolate': require.resolve('d3-interpolate'),
   },
 }
 
