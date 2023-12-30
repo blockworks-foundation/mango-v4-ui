@@ -13,6 +13,7 @@ import {
   Group,
   OracleProvider,
   PriceImpact,
+  toUiDecimals,
 } from '@blockworks-foundation/mango-v4'
 import { AccountMeta, Transaction } from '@solana/web3.js'
 import { BN } from '@project-serum/anchor'
@@ -64,6 +65,8 @@ const DashboardSuggestedValues = ({
       ? getPythPresets(LISTING_PRESETS)
       : getSwitchBoardPresets(LISTING_PRESETS)
 
+  const [proposedTier, setProposedTier] =
+    useState<LISTING_PRESETS_KEY>('liab_1')
   const [suggestedTier, setSuggestedTier] =
     useState<LISTING_PRESETS_KEY>('liab_1')
   const [proposing, setProposing] = useState(false)
@@ -102,6 +105,7 @@ const DashboardSuggestedValues = ({
       bank.oracleProvider === OracleProvider.Pyth,
     )
 
+    setProposedTier(suggestedTier)
     setSuggestedTier(suggestedTier)
   }, [bank.name, bank.oracleProvider, priceImpactsFiltered])
 
@@ -113,7 +117,14 @@ const DashboardSuggestedValues = ({
     ) => {
       const proposalTx = []
       const mintInfo = group!.mintInfosMapByTokenIndex.get(bank.tokenIndex)!
-      const preset = PRESETS[tokenTier]
+      const preset = getPresetWithAdjustedDepositLimit(
+        getPresetWithAdjustedNetBorrows(
+          PRESETS[tokenTier],
+          bank.nativeDeposits().mul(bank.price).toNumber(),
+        ),
+        bank.uiPrice,
+        bank.mintDecimals,
+      )
 
       const fieldsToChange = invalidFieldsKeys.reduce(
         (obj, key) => ({ ...obj, [key]: preset[key as keyof typeof preset] }),
@@ -143,7 +154,7 @@ const DashboardSuggestedValues = ({
       const isThereNeedOfSendingRateConfigs = Object.values(rateConfigs).filter(
         (x) => x !== null,
       ).length
-
+      console.log(fieldsToChange)
       const ix = await client!.program.methods
         .tokenEdit(
           null,
@@ -306,7 +317,7 @@ const DashboardSuggestedValues = ({
 
   const suggestedValues = getPresetWithAdjustedDepositLimit(
     getPresetWithAdjustedNetBorrows(
-      PRESETS[suggestedTier as LISTING_PRESETS_KEY] as LISTING_PRESET,
+      PRESETS[proposedTier as LISTING_PRESETS_KEY] as LISTING_PRESET,
       bank.nativeDeposits().mul(bank.price).toNumber(),
     ),
     bank.uiPrice,
@@ -347,22 +358,21 @@ const DashboardSuggestedValues = ({
     >
       <h3 className="mb-6">
         <span>
-          {bank.name} - Suggested tier: {suggestedTier}
+          {bank.name} - Suggested tier: {PRESETS[suggestedTier].preset_name}
         </span>
         <Select
-          value={suggestedTier}
-          onChange={(tier) => setSuggestedTier(tier)}
+          value={PRESETS[proposedTier].preset_name}
+          onChange={(tier: LISTING_PRESETS_KEY) => setProposedTier(tier)}
           className="w-full"
         >
-          {Object.keys(PRESETS)
-            .filter((x) => x !== 'UNTRUSTED')
-            .map((name) => (
-              <Select.Option key={name} value={name}>
-                <div className="flex w-full items-center justify-between">
-                  {name}
-                </div>
-              </Select.Option>
-            ))}
+          {Object.keys(PRESETS).map((name) => (
+            <Select.Option key={name} value={name}>
+              <div className="flex w-full items-center justify-between">
+                {PRESETS[name as LISTING_PRESETS_KEY].preset_name}{' '}
+                {name === suggestedTier ? '- suggested' : ''}
+              </div>
+            </Select.Option>
+          ))}
         </Select>
       </h3>
       <div className="flex max-h-[600px] w-full flex-col overflow-auto">
@@ -595,10 +605,16 @@ const DashboardSuggestedValues = ({
           />
           <KeyValuePair
             label="Deposit Limit"
-            value={`${formattedBankValues.depositLimit}`}
+            value={`${toUiDecimals(
+              new BN(formattedBankValues.depositLimit.toString()),
+              bank.mintDecimals,
+            )}`}
             proposedValue={
               suggestedFields.depositLimit !== undefined &&
-              `${suggestedFields.depositLimit}`
+              `${toUiDecimals(
+                new BN(suggestedFields.depositLimit.toString()),
+                bank.mintDecimals,
+              )}`
             }
           />
           <KeyValuePair
@@ -645,7 +661,7 @@ const DashboardSuggestedValues = ({
                 proposeNewSuggestedValues(
                   bank,
                   invalidKeys,
-                  suggestedTier as LISTING_PRESETS_KEY,
+                  proposedTier as LISTING_PRESETS_KEY,
                 )
               }
               disabled={!wallet.connected || proposing}
