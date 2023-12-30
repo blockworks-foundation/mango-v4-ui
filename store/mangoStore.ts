@@ -121,17 +121,18 @@ const initMangoClient = (
   opts: {
     prioritizationFee: number
     prependedGlobalAdditionalInstructions: TransactionInstruction[]
-    multipleProviders: AnchorProvider[] | Connection[]
+    multipleConnections: Connection[]
   } = {
     prioritizationFee: DEFAULT_PRIORITY_FEE,
     prependedGlobalAdditionalInstructions: [],
-    multipleProviders: [],
+    multipleConnections: [],
   },
   //for analytics use
   telemetry: ReturnType<typeof usePlausible> | null,
 ): MangoClient => {
   return MangoClient.connect(provider, CLUSTER, MANGO_V4_ID[CLUSTER], {
     prioritizationFee: opts.prioritizationFee,
+    multipleConnections: opts.multipleConnections,
     prependedGlobalAdditionalInstructions:
       opts.prependedGlobalAdditionalInstructions,
     postSendTxCallback: ({ txid }: { txid: string }) => {
@@ -151,31 +152,16 @@ const initMangoClient = (
   })
 }
 
-const createProviders = (
+const createBackupConnections = (
   primaryConnection: Connection,
-  wallet: Wallet,
-  options: web3.ConfirmOptions,
-): [AnchorProvider, AnchorProvider[]] => {
-  const backupConnection1 = new Connection(LITE_RPC_URL)
-
-  const primaryProvider = new AnchorProvider(primaryConnection, wallet, options)
-  const backupProvider1 = new AnchorProvider(backupConnection1, wallet, options)
-
-  primaryProvider.opts.skipPreflight = true
-  backupProvider1.opts.skipPreflight = true
-
-  const backupProviders = [backupProvider1]
+): Connection[] => {
+  const liteRpcConnection = new Connection(LITE_RPC_URL)
+  const backupConnections = [liteRpcConnection]
   if (primaryConnection.rpcEndpoint !== TRITON_DEDICATED_URL) {
-    const backupConnection2 = new Connection(TRITON_DEDICATED_URL)
-    const backupProvider2 = new AnchorProvider(
-      backupConnection2,
-      wallet,
-      options,
-    )
-    backupProvider2.opts.skipPreflight = true
-    backupProviders.push(backupProvider2)
+    const conn = new Connection(TRITON_DEDICATED_URL)
+    backupConnections.push(conn)
   }
-  return [primaryProvider, backupProviders]
+  return backupConnections
 }
 
 export const DEFAULT_TRADE_FORM: TradeForm = {
@@ -370,17 +356,15 @@ const mangoStore = create<MangoStore>()(
     } catch {
       connection = new web3.Connection(ENDPOINT.url, CONNECTION_COMMITMENT)
     }
-    const [provider, backupProviders] = createProviders(
-      connection,
-      emptyWallet,
-      options,
-    )
+    const provider = new AnchorProvider(connection, emptyWallet, options)
+    provider.opts.skipPreflight = true
+    const backupConnections = createBackupConnections(connection)
     const client = initMangoClient(
       provider,
       {
         prioritizationFee: DEFAULT_PRIORITY_FEE,
         prependedGlobalAdditionalInstructions: [],
-        multipleProviders: backupProviders,
+        multipleConnections: backupConnections,
       },
       null,
     )
@@ -1017,11 +1001,12 @@ const mangoStore = create<MangoStore>()(
         connectMangoClientWithWallet: async (wallet: WalletAdapter) => {
           const set = get().set
           try {
-            const [provider, backupProviders] = createProviders(
+            const provider = new AnchorProvider(
               connection,
               wallet.adapter as unknown as Wallet,
               options,
             )
+            const backupConnections = createBackupConnections(connection)
             const priorityFee = get().priorityFee ?? DEFAULT_PRIORITY_FEE
 
             const client = initMangoClient(
@@ -1030,7 +1015,7 @@ const mangoStore = create<MangoStore>()(
                 prioritizationFee: priorityFee,
                 prependedGlobalAdditionalInstructions:
                   get().prependedGlobalAdditionalInstructions,
-                multipleProviders: backupProviders,
+                multipleConnections: backupConnections,
               },
               null,
             )
@@ -1062,7 +1047,7 @@ const mangoStore = create<MangoStore>()(
             {
               prioritizationFee: get().priorityFee,
               prependedGlobalAdditionalInstructions: instructions,
-              multipleProviders: [],
+              multipleConnections: client.multipleConnections,
             },
             null,
           )
@@ -1152,7 +1137,7 @@ const mangoStore = create<MangoStore>()(
               prependedGlobalAdditionalInstructions:
                 get().prependedGlobalAdditionalInstructions,
               prioritizationFee: DEFAULT_PRIORITY_FEE,
-              multipleProviders: [],
+              multipleConnections: client.multipleConnections,
             },
             null,
           )
@@ -1216,7 +1201,7 @@ const mangoStore = create<MangoStore>()(
                 prioritizationFee: feeEstimate,
                 prependedGlobalAdditionalInstructions:
                   get().prependedGlobalAdditionalInstructions,
-                multipleProviders: [],
+                multipleConnections: client.multipleConnections,
               },
               telemetry,
             )
