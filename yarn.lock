@@ -1593,19 +1593,7 @@
     "@sentry/types" "7.91.0"
     "@sentry/utils" "7.91.0"
 
-"@sentry/cli@^1.74.6":
-  version "1.75.2"
-  resolved "https://registry.yarnpkg.com/@sentry/cli/-/cli-1.75.2.tgz#2c38647b38300e52c9839612d42b7c23f8d6455b"
-  integrity sha512-CG0CKH4VCKWzEaegouWfCLQt9SFN+AieFESCatJ7zSuJmzF05ywpMusjxqRul6lMwfUhRKjGKOzcRJ1jLsfTBw==
-  dependencies:
-    https-proxy-agent "^5.0.0"
-    mkdirp "^0.5.5"
-    node-fetch "^2.6.7"
-    progress "^2.0.3"
-    proxy-from-env "^1.1.0"
-    which "^2.0.2"
-
-"@sentry/cli@^1.77.1":
+"@sentry/cli@^1.74.6", "@sentry/cli@^1.77.1":
   version "1.77.1"
   resolved "https://registry.yarnpkg.com/@sentry/cli/-/cli-1.77.1.tgz#ebcf884712ef6c3c75443f491ec16f6a22148aec"
   integrity sha512-OtJ7U9LeuPUAY/xow9wwcjM9w42IJIpDtClTKI/RliE685vd/OJUIpiAvebHNthDYpQynvwb/0iuF4fonh+CKw==
@@ -1653,7 +1641,7 @@
     "@sentry/utils" "7.91.0"
     localforage "^1.8.1"
 
-"@sentry/nextjs@7.91.0":
+"@sentry/nextjs@7.91.0", "@sentry/nextjs@>=7.77.0":
   version "7.91.0"
   resolved "https://registry.yarnpkg.com/@sentry/nextjs/-/nextjs-7.91.0.tgz#42eb3af10ff230e8a3fe9f0e50cdbac94b7d290e"
   integrity sha512-wE83+OTEH4yYnDrhMw9eVEARSfZc6xY5qJb9xyYm5rW3+gVjNQZQaUY+wkM61Xdo0T35BN+7U4T88HbwzGeMqA==
@@ -1667,25 +1655,6 @@
     "@sentry/utils" "7.91.0"
     "@sentry/vercel-edge" "7.91.0"
     "@sentry/webpack-plugin" "1.21.0"
-    chalk "3.0.0"
-    resolve "1.22.8"
-    rollup "2.78.0"
-    stacktrace-parser "^0.1.10"
-
-"@sentry/nextjs@>=7.77.0":
-  version "7.80.0"
-  resolved "https://registry.yarnpkg.com/@sentry/nextjs/-/nextjs-7.80.0.tgz#65a9d41994becb1baa397d0be7da5649a9a54fb4"
-  integrity sha512-4KZVZV1U/1ldmVKS85n31MSKIWJElcy9gZW+PTyQnrlCxbQnnhXBde95+TXmvO1DKTNhVphv/2DXq7bmxBW9bA==
-  dependencies:
-    "@rollup/plugin-commonjs" "24.0.0"
-    "@sentry/core" "7.80.0"
-    "@sentry/integrations" "7.80.0"
-    "@sentry/node" "7.80.0"
-    "@sentry/react" "7.80.0"
-    "@sentry/types" "7.80.0"
-    "@sentry/utils" "7.80.0"
-    "@sentry/vercel-edge" "7.80.0"
-    "@sentry/webpack-plugin" "1.20.0"
     chalk "3.0.0"
     resolve "1.22.8"
     rollup "2.78.0"
