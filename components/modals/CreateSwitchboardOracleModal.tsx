@@ -80,31 +80,31 @@ const CreateSwitchboardOracleModal = ({
     }
   } = {
     asset_100: {
-      fundAmount: 5,
+      fundAmount: 64,
       minRequiredOracleResults: 3,
       minUpdateDelaySeconds: 6,
       batchSize: 5,
     },
     asset_20: {
-      fundAmount: 5,
+      fundAmount: 32,
       minRequiredOracleResults: 1,
       minUpdateDelaySeconds: 6,
       batchSize: 2,
     },
     liab_5: {
-      fundAmount: 2,
+      fundAmount: 10,
       minRequiredOracleResults: 1,
       minUpdateDelaySeconds: 20,
       batchSize: 2,
     },
     liab_1: {
-      fundAmount: 2,
+      fundAmount: 10,
       batchSize: 2,
       minRequiredOracleResults: 1,
-      minUpdateDelaySeconds: 300,
+      minUpdateDelaySeconds: 20,
     },
     UNTRUSTED: {
-      fundAmount: 2,
+      fundAmount: 0.64,
       batchSize: 2,
       minRequiredOracleResults: 1,
       minUpdateDelaySeconds: 300,
