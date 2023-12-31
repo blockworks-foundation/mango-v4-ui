@@ -140,7 +140,7 @@ const RiskDashboard: NextPage = () => {
       },
       {} as { [symbol: string]: string },
     )
-  console.log(symbolToPresetName)
+
   return (
     <div className="grid grid-cols-12">
       <div className="col-span-12 lg:col-span-8 lg:col-start-3">
