@@ -20,7 +20,6 @@ import { useCallback, useState } from 'react'
 import Loading from '@components/shared/Loading'
 import { WhirlpoolContext, buildWhirlpoolClient } from '@orca-so/whirlpools-sdk'
 import { LIQUIDITY_STATE_LAYOUT_V4 } from '@raydium-io/raydium-sdk'
-import { createComputeBudgetIx } from '@blockworks-foundation/mango-v4'
 import { LISTING_PRESETS_KEY } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 
 const poolAddressError = 'no-pool-address-found'
@@ -59,7 +58,6 @@ const CreateSwitchboardOracleModal = ({
 }: RaydiumProps | OrcaProps) => {
   const { t } = useTranslation(['governance'])
   const connection = mangoStore((s) => s.connection)
-  const fee = mangoStore((s) => s.priorityFee)
   const wallet = useWallet()
   const quoteTokenName = 'USD'
   const pythUsdOracle = 'Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD'
@@ -188,6 +186,7 @@ const CreateSwitchboardOracleModal = ({
         ]
       }
       const settingFromLib = tierSettings[tierKey]
+
       if (!settingFromLib) {
         throw wrongTierPassedForCreation
       }
@@ -330,14 +329,14 @@ const CreateSwitchboardOracleModal = ({
       const transferAuthIx = aggregatorAccount.setAuthorityInstruction(payer, {
         newAuthority: MANGO_DAO_WALLET,
       })
-
+      const latestBlockhash = await connection.getLatestBlockhash('confirmed')
       const txChunks = chunk([...txArray1, lockTx, transferAuthIx], 1)
       const transactions: Transaction[] = []
-      const latestBlockhash = await connection.getLatestBlockhash('confirmed')
-      for (const chunk of txChunks) {
+
+      for (const chunkIndex in txChunks) {
+        const chunk = txChunks[chunkIndex]
         const tx = new Transaction()
         const singers = [...chunk.flatMap((x) => x.signers)]
-        tx.add(createComputeBudgetIx(fee))
         tx.add(...chunk.flatMap((x) => x.ixns))
         tx.lastValidBlockHeight = latestBlockhash.lastValidBlockHeight
         tx.recentBlockhash = latestBlockhash.blockhash
@@ -375,12 +374,17 @@ const CreateSwitchboardOracleModal = ({
           description: 'Wrong tier passed for oracle creation',
           type: 'error',
         })
-      } else {
-        if (!isMangoError(e)) return
+      } else if (isMangoError(e)) {
         notify({
           title: 'Transaction failed',
           description: e.message,
           txid: e?.txid,
+          type: 'error',
+        })
+      } else {
+        notify({
+          title: 'Transaction failed',
+          description: `${e}`,
           type: 'error',
         })
       }
