@@ -12,7 +12,11 @@ import {
 } from 'utils/constants'
 import { PublicKey, SYSVAR_RENT_PUBKEY, Transaction } from '@solana/web3.js'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { OPENBOOK_PROGRAM_ID, toNative } from '@blockworks-foundation/mango-v4'
+import {
+  OPENBOOK_PROGRAM_ID,
+  toNative,
+  toUiDecimals,
+} from '@blockworks-foundation/mango-v4'
 import {
   MANGO_DAO_FAST_LISTING_WALLET,
   MANGO_DAO_WALLET,
@@ -270,11 +274,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const handleLiquidityCheck = useCallback(
     async (tokenMint: PublicKey) => {
       try {
-        const targetAmounts = [
-          ...new Set([
-            ...Object.values(presets).map((x) => x.preset_target_amount),
-          ]),
-        ]
         const swaps = await Promise.all([
           handleGetRoutesWithFixedArgs(250000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(100000, tokenMint, 'ExactIn'),
@@ -298,13 +297,16 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
             if (val.swapMode === 'ExactIn') {
               const exactOutRoute = bestRoutesSwaps.find(
                 (x) =>
-                  x.outAmount === val.outAmount && x.swapMode === 'ExactOut',
+                  x.outAmount === val.inAmount && x.swapMode === 'ExactOut',
               )
+
               acc.push({
-                amount: val.outAmount.toString(),
+                amount: val.inAmount.toString(),
                 priceImpactPct: exactOutRoute?.priceImpactPct
-                  ? (val.priceImpactPct + exactOutRoute.priceImpactPct) / 2
-                  : val.priceImpactPct,
+                  ? (Number(val.priceImpactPct) +
+                      Number(exactOutRoute.priceImpactPct)) /
+                    2
+                  : Number(val.priceImpactPct),
               })
             }
             return acc
@@ -319,7 +321,10 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           (x) => x?.priceImpactPct && x?.priceImpactPct * 100 < 1,
         )
         const targetAmount =
-          indexForTargetAmount > -1 ? targetAmounts[indexForTargetAmount] : 0
+          indexForTargetAmount > -1
+            ? toUiDecimals(new BN(averageSwaps[indexForTargetAmount].amount), 6)
+            : 0
+
         setProposedProposedTargetAmount(targetAmount)
         setPriceImpact(midTierCheck ? midTierCheck.priceImpactPct * 100 : 100)
         handleGetPoolParams(targetAmount, tokenMint)
