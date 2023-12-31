@@ -1,31 +1,59 @@
-/**
- * @jest-environment jsdom
- */
 import { render } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 // test-utils.ts
 import fs from 'fs'
 import path from 'path'
+import { WalletProvider } from '@solana/wallet-adapter-react'
+import fetchMock from 'jest-fetch-mock'
 
-export const getAllPagePaths = () => {
-  const pagesDir = path.join(process.cwd(), 'pages')
-  let fileNames = fs.readdirSync(pagesDir)
+const getAllPagePaths = (dir = 'pages', basePath = '') => {
+  const pagesDir = basePath
+    ? path.join(process.cwd(), dir, basePath)
+    : path.join(process.cwd(), dir)
 
-  // Exclude _app.tsx, _document.tsx, and API routes
-  fileNames = fileNames.filter(
-    (file) =>
-      file.endsWith('.tsx') && !file.startsWith('_') && !file.includes('api'),
-  )
+  if (!fs.existsSync(pagesDir)) {
+    console.error(`Directory not found: ${pagesDir}`)
+    return []
+  }
 
-  return fileNames.map((fileName) => ({
-    params: {
-      page: fileName.replace(/\.tsx$/, ''),
-    },
-  }))
+  let paths: { params: { page: string } }[] = []
+
+  fs.readdirSync(pagesDir).forEach((file) => {
+    if (file === 'api' || file.startsWith('_')) {
+      // Skip API routes and files starting with '_'
+      return
+    }
+
+    const filePath = path.join(basePath, file)
+    const fullFilePath = path.join(pagesDir, file)
+    const stat = fs.statSync(fullFilePath)
+
+    if (stat.isDirectory()) {
+      // Recurse into subdirectories
+      paths = paths.concat(getAllPagePaths(dir, filePath))
+    } else if (file.endsWith('.tsx')) {
+      // Add file to paths, replacing windows-style backslashes with forward slashes if necessary
+      const relativePath = filePath.replace(/\.tsx$/, '').replace(/\\/g, '/')
+      paths.push({ params: { page: relativePath } })
+    }
+  })
+
+  return paths
 }
 
-describe('Page render tests', () => {
+describe('Renders are pages from pages folder', () => {
   const pages = getAllPagePaths()
+  beforeAll(() => {
+    fetchMock.enableMocks()
+    jest.mock('@solana/web3.js', () => ({
+      ...jest.requireActual('@solana/web3.js'),
+      Connection: jest.fn(),
+    }))
+    jest.mock('@metaplex-foundation/js', () => ({
+      ...jest.requireActual('@metaplex-foundation/js'),
+      Metaplex: jest.fn(),
+    }))
+  })
 
   pages.forEach(({ params: { page } }) => {
     it(`renders ${page} page without crashing`, async () => {
@@ -35,10 +63,11 @@ describe('Page render tests', () => {
 
       render(
         <QueryClientProvider client={queryClient}>
-          <Page />
+          <WalletProvider wallets={[]}>
+            <Page />
+          </WalletProvider>
         </QueryClientProvider>,
       )
-      // You can add more assertions here if needed
     })
   })
 })
