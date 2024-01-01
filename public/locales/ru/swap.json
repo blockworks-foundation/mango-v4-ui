@@ -13,7 +13,7 @@
     "hide-fees": "Hide Fees",
     "hide-swap-history": "Hide Swap History",
     "important-info": "Important Info",
-    "input-reduce-only-warning": "{{symbol}} is in reduce only mode. You can swap your balance to another token",
+    "input-reduce-only-warning": "{{symbol}} borrows are disabled",
     "insufficient-balance": "Insufficient {{symbol}} Balance",
     "insufficient-collateral": "Insufficient Collateral",
     "margin": "Margin",

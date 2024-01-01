@@ -13,7 +13,7 @@
     "hide-fees": "隐藏费用",
     "hide-swap-history": "隐藏换币纪录",
     "important-info": "重要资料",
-    "input-reduce-only-warning": "{{symbol}}处于仅减少模式。您可以将余额换成另一个币种",
+    "input-reduce-only-warning": "{{symbol}} borrows are disabled",
     "insufficient-balance": "{{symbol}}余额不够",
     "insufficient-collateral": "质押品不够",
     "margin": "保证金",
