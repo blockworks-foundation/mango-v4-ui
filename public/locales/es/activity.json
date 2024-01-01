@@ -32,7 +32,7 @@
     "perps": "Perps",
     "perp_trade": "Perp Trade",
     "reset-filters": "Reset Filters",
-    "settle-funds": "Settle Funds",
+    "settle_funds": "Settle Funds",
     "select-tokens": "Select Tokens",
     "spot-trade": "Spot Trade",
     "swap": "Swap",
