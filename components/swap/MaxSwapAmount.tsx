@@ -16,7 +16,11 @@ const MaxSwapAmount = ({
 }) => {
   const { t } = useTranslation('common')
   const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
-  const { amount: tokenMax, amountWithBorrow, decimals } = maxAmount(useMargin)
+  const {
+    amount: spotMax,
+    amountWithBorrow: leverageMax,
+    decimals,
+  } = maxAmount(useMargin)
 
   if (mangoAccountLoading) return null
 
@@ -26,14 +30,13 @@ const MaxSwapAmount = ({
 
   return (
     <div className="flex flex-wrap justify-end pl-6 text-xs">
-      {tokenMax.lt(amountWithBorrow) ||
-      (tokenMax.eq(amountWithBorrow) && !useMargin) ? (
+      {spotMax.lt(leverageMax) || (spotMax.eq(leverageMax) && !useMargin) ? (
         <MaxAmountButton
           className="mb-0.5"
           decimals={decimals}
           label={useMargin ? t('bal') : t('max')}
-          onClick={() => setMax(tokenMax)}
-          value={tokenMax}
+          onClick={() => setMax(spotMax)}
+          value={spotMax}
         />
       ) : null}
       {useMargin ? (
@@ -41,8 +44,8 @@ const MaxSwapAmount = ({
           className="mb-0.5 ml-2"
           decimals={decimals}
           label={t('max')}
-          onClick={() => setMax(amountWithBorrow)}
-          value={amountWithBorrow}
+          onClick={() => setMax(leverageMax)}
+          value={leverageMax}
         />
       ) : null}
     </div>

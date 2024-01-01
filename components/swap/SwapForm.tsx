@@ -201,7 +201,7 @@ const SwapForm = () => {
             {inputBank &&
             !walletSwap &&
             inputBank.areBorrowsReduceOnly() &&
-            inputBank.areDepositsReduceOnly() ? (
+            useMargin ? (
               <div className="pb-4">
                 <InlineNotification
                   type="warning"
@@ -211,10 +211,7 @@ const SwapForm = () => {
                 />
               </div>
             ) : null}
-            {outputBank &&
-            !walletSwap &&
-            outputBank.areBorrowsReduceOnly() &&
-            outputBank.areDepositsReduceOnly() ? (
+            {outputBank && !walletSwap && outputBank.areDepositsReduceOnly() ? (
               <div className="pb-4">
                 <InlineNotification
                   type="warning"

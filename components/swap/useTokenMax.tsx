@@ -64,7 +64,6 @@ export const getTokenInMax = (
   inputMint: PublicKey,
   outputMint: PublicKey,
   group: Group,
-  useMargin: boolean,
 ) => {
   const inputBank = group.getFirstBankByMint(inputMint)
   const outputBank = group.getFirstBankByMint(outputMint)
@@ -87,13 +86,6 @@ export const getTokenInMax = (
   const outputTokenBalance = new Decimal(
     mangoAccount.getTokenBalanceUi(outputBank),
   )
-
-  const maxAmountWithoutMargin =
-    (inputTokenBalance.gt(0) && !outputReduceOnly) ||
-    (outputReduceOnly && outputTokenBalance.lt(0))
-      ? inputTokenBalance
-      : new Decimal(0)
-
   const rawMaxUiAmountWithBorrow = getMaxSourceForSwap(
     group,
     mangoAccount,
@@ -101,12 +93,16 @@ export const getTokenInMax = (
     outputBank.mint,
   )
 
-  const maxUiAmountWithBorrow =
-    outputReduceOnly && (outputTokenBalance.gt(0) || outputTokenBalance.eq(0))
-      ? new Decimal(0)
-      : rawMaxUiAmountWithBorrow > 0
-      ? floorToDecimal(rawMaxUiAmountWithBorrow, inputBank.mintDecimals)
-      : new Decimal(0)
+  let spotMax = new Decimal(0)
+  let leverageMax = new Decimal(0)
+
+  if (!outputReduceOnly || (outputReduceOnly && outputTokenBalance.lt(0))) {
+    spotMax = inputTokenBalance
+    leverageMax = floorToDecimal(
+      rawMaxUiAmountWithBorrow,
+      inputBank.mintDecimals,
+    )
+  }
 
   const inputBankVaultBalance = floorToDecimal(
     group
@@ -115,21 +111,11 @@ export const getTokenInMax = (
     inputBank.mintDecimals,
   )
 
-  const maxAmount = useMargin
-    ? Decimal.min(
-        maxAmountWithoutMargin,
-        inputBankVaultBalance,
-        maxUiAmountWithBorrow,
-      )
-    : Decimal.min(
-        maxAmountWithoutMargin,
-        inputBankVaultBalance,
-        maxUiAmountWithBorrow,
-      )
+  const maxAmount = Decimal.min(spotMax, leverageMax, inputBankVaultBalance)
 
   const maxAmountWithBorrow = inputReduceOnly
-    ? Decimal.min(maxAmountWithoutMargin, inputBankVaultBalance)
-    : Decimal.min(maxUiAmountWithBorrow, inputBankVaultBalance)
+    ? Decimal.min(spotMax, leverageMax, inputBankVaultBalance)
+    : Decimal.min(leverageMax, inputBankVaultBalance)
 
   return {
     amount: maxAmount,
@@ -158,7 +144,6 @@ export const useTokenMax = (useMargin = true): TokenMaxResults => {
           inputBank.mint,
           outputBank.mint,
           group,
-          useMargin,
         )
       }
     } catch (e) {
