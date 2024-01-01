@@ -43,6 +43,7 @@ import {
   INPUT_TOKEN_DEFAULT,
   LAST_ACCOUNT_KEY,
   MANGO_DATA_API_URL,
+  MANGO_MAINNET_GROUP,
   MAX_PRIORITY_FEE_KEYS,
   OUTPUT_TOKEN_DEFAULT,
   PAGINATION_PAGE_LENGTH,
@@ -89,8 +90,6 @@ import sampleSize from 'lodash/sampleSize'
 import { fetchTokenStatsData, processTokenStatsData } from 'apis/mngo'
 import { OrderTypes } from 'utils/tradeForm'
 import { usePlausible } from 'next-plausible'
-
-const GROUP = new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX')
 
 const ENDPOINTS = [
   {
@@ -545,7 +544,7 @@ const mangoStore = create<MangoStore>()(
           try {
             const set = get().set
             const client = get().client
-            const group = await client.getGroup(GROUP)
+            const group = await client.getGroup(MANGO_MAINNET_GROUP)
             let selectedMarketName = get().selectedMarket.name
 
             if (!selectedMarketName) {

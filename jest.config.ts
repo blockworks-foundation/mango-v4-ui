@@ -12,7 +12,6 @@ const customConfig = {
     uuid: require.resolve('uuid'),
     three: require.resolve('three'),
   },
-  testEnvironment: 'jest-environment-jsdom',
 }
 
 export default nextJest({ dir: './' })(customConfig)
