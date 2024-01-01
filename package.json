@@ -8,6 +8,7 @@
     "ci-dupe-check": "npx yarn-deduplicate --list --fail",
     "bigint-fix": "cd node_modules/bigint-buffer && yarn rebuild && cd ../../",
     "dev": "rm -rf .next && next dev",
+    "test": "yarn jest",
     "build": "next build",
     "start": "next start",
     "format": "prettier --check .",
