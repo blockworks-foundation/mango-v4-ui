@@ -54,7 +54,9 @@ const Vote = () => {
   useEffect(() => {
     const handleGetMangoMint = async () => {
       const mangoMint = await tryGetMint(connection, new PublicKey(MANGO_MINT))
-      setMangoMint(mangoMint!.account)
+      if (mangoMint) {
+        setMangoMint(mangoMint.account)
+      }
     }
     handleGetMangoMint()
   }, [])
