@@ -81,10 +81,13 @@ export const useIsAllClaimed = (
   prevSeason: number | undefined,
   walletPk: PublicKey | null,
 ) => {
-  const [isAllClaimed, setIsAllCliamed] = useState(true)
+  const [isAllClaimed, setIsAllCliamed] = useState(false)
   const [showClaim, setShowClaim] = useState(true)
-  const [loading, setLoading] = useState(true)
-  const { data: distributionDataAndClient } = useDistribution(prevSeason)
+  const [loadingClaimed, setLoadingClaimed] = useState(true)
+  const {
+    data: distributionDataAndClient,
+    isInitialLoading: loadingDistribution,
+  } = useDistribution(prevSeason)
   const distributionData = distributionDataAndClient?.distribution
 
   useEffect(() => {
@@ -95,21 +98,18 @@ export const useIsAllClaimed = (
           const claimed = (
             await distributionData?.getClaimed(walletPk)
           )?.filter((x) => !x.equals(PublicKey.default))?.length
-          setLoading(false)
-          setIsAllCliamed(!toClaim || toClaim === claimed)
+          setLoadingClaimed(false)
+          setIsAllCliamed(!!toClaim && toClaim === claimed)
         } catch (e) {
           console.log('failed to check claimed rewards', e)
-          setLoading(false)
         }
-      } else {
-        setIsAllCliamed(false)
       }
     }
     handleGetIsAllClaimed()
   }, [distributionData, walletPk])
 
   useEffect(() => {
-    if (distributionData && walletPk) {
+    if (distributionData && walletPk && !loadingClaimed) {
       const start = distributionData.start.getTime()
       const currentTimestamp = new Date().getTime()
       const isClaimActive =
@@ -121,6 +121,9 @@ export const useIsAllClaimed = (
     } else {
       setShowClaim(false)
     }
-  }, [distributionData, walletPk, isAllClaimed])
+  }, [distributionData, walletPk, isAllClaimed, loadingClaimed])
+
+  const loading = loadingClaimed || loadingDistribution
+
   return { isAllClaimed, showClaim, loading }
 }
