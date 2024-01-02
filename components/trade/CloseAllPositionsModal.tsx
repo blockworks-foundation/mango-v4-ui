@@ -13,6 +13,7 @@ import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import MarketLogos from './MarketLogos'
 import PerpSideBadge from './PerpSideBadge'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
+import { MAX_PERP_SLIPPAGE } from 'utils/constants'
 
 export const handleCloseAll = async (
   setSubmitting?: (s: boolean) => void,
@@ -34,11 +35,10 @@ export const handleCloseAll = async (
     setSubmitting(true)
   }
   try {
-    const maxSlippage = 0.025
     const { signature: tx } = await client.perpCloseAll(
       group,
       mangoAccount,
-      maxSlippage,
+      MAX_PERP_SLIPPAGE,
     )
     actions.fetchOpenOrders()
     notify({
