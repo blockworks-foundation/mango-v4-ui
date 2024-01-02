@@ -138,7 +138,16 @@ const CreateAccountForm = ({
         type: 'error',
       })
     }
-  }, [signToNotifications, slots])
+  }, [
+    customClose,
+    name,
+    setCookie,
+    signToNotifications,
+    slots,
+    t,
+    telemetry,
+    walletContext,
+  ])
 
   return loading ? (
     <div className="flex h-full flex-1 flex-col items-center justify-center">
