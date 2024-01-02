@@ -183,7 +183,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
         undefined,
         undefined,
       )
-      actions.fetchOpenOrders()
+      actions.fetchOpenOrders(true)
       set((s) => {
         s.successAnimation.trade = true
       })
