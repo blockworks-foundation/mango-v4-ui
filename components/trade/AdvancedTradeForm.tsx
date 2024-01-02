@@ -711,7 +711,7 @@ const AdvancedTradeForm = () => {
     } finally {
       setPlacingOrder(false)
     }
-  }, [isFormValid, oraclePrice, selectedMarket, soundSettings])
+  }, [isFormValid, oraclePrice, soundSettings])
 
   const handleTriggerOrder = useCallback(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
