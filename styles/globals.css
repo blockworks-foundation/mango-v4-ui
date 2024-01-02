@@ -424,10 +424,6 @@ th {
 
 /* Base */
 
-html {
-  @apply overflow-auto;
-}
-
 body {
   @apply font-body text-sm font-medium tracking-wider;
   -webkit-font-smoothing: antialiased;
