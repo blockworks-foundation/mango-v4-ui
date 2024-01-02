@@ -14,11 +14,10 @@ import {
 } from '@blockworks-foundation/mango-v4'
 import Modal from '@components/shared/Modal'
 import Button, { LinkButton } from '@components/shared/Button'
-import { calculateEstPriceForBaseSize } from 'utils/tradeForm'
 import { notify } from 'utils/notifications'
 import Loading from '@components/shared/Loading'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { SOUND_SETTINGS_KEY } from 'utils/constants'
+import { MAX_PERP_SLIPPAGE, SOUND_SETTINGS_KEY } from 'utils/constants'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 import { Howl } from 'howler'
 import { isMangoError } from 'types'
@@ -128,84 +127,89 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
     const baseSize = position.getBasePositionUi(perpMarket)
     const isBids = baseSize < 0
     if (isBids) {
-      if (!bids || !bids.length) return false
-      const liquidityMax = bids.reduce((a, c) => a + c[1], 0)
+      if (!bids) return false
+      const marketPrice = Math.max(perpMarket.uiPrice, bids[0][0])
+      const limitPrice = marketPrice * (1 + MAX_PERP_SLIPPAGE)
+      const filteredBidsForPrice = bids.filter((bid) => bid[0] <= limitPrice)
+      const liquidityMax = filteredBidsForPrice.reduce((a, c) => a + c[1], 0)
       return liquidityMax < baseSize
     } else {
-      if (!asks || !asks.length) return false
-      const liquidityMax = asks.reduce((a, c) => a + c[1], 0)
+      if (!asks) return false
+      const marketPrice = Math.min(perpMarket.uiPrice, asks[0][0])
+      const limitPrice = marketPrice * (1 - MAX_PERP_SLIPPAGE)
+      const filteredAsksForPrice = asks.filter((ask) => ask[0] >= limitPrice)
+      const liquidityMax = filteredAsksForPrice.reduce((a, c) => a + c[1], 0)
       return liquidityMax < baseSize
     }
   }, [perpMarket, position, bids, asks])
 
-  const handleMarketClose = useCallback(
-    async (bids: BidsAndAsks, asks: BidsAndAsks) => {
-      const client = mangoStore.getState().client
-      const mangoAccount = mangoStore.getState().mangoAccount.current
-      const actions = mangoStore.getState().actions
+  const handleMarketClose = useCallback(async () => {
+    const client = mangoStore.getState().client
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+    const actions = mangoStore.getState().actions
 
-      if (!group || !mangoAccount || !perpMarket || !bids || !asks) {
+    if (!group || !mangoAccount || !perpMarket || !bids || !asks) {
+      notify({
+        title: 'Something went wrong. Try again later',
+        type: 'error',
+      })
+      return
+    }
+    setSubmitting(true)
+    try {
+      const baseSize = position.getBasePositionUi(perpMarket)
+      const side = baseSize > 0 ? 'sell' : 'buy'
+
+      let price = perpMarket.uiPrice
+      if (side === 'sell') {
+        const marketPrice = Math.max(price, bids[0][0])
+        price = marketPrice * (1 - MAX_PERP_SLIPPAGE)
+      } else {
+        const marketPrice = Math.min(price, asks[0][0])
+        price = marketPrice * (1 + MAX_PERP_SLIPPAGE)
+      }
+
+      const { signature: tx } = await client.perpPlaceOrder(
+        group,
+        mangoAccount,
+        perpMarket.perpMarketIndex,
+        side === 'buy' ? PerpOrderSide.bid : PerpOrderSide.ask,
+        price,
+        Math.abs(baseSize) * 2, // send a larger size to ensure full order is closed
+        undefined, // maxQuoteQuantity
+        Date.now(),
+        PerpOrderType.immediateOrCancel,
+        true, // reduce only
+        undefined,
+        undefined,
+      )
+      actions.fetchOpenOrders()
+      set((s) => {
+        s.successAnimation.trade = true
+      })
+      if (soundSettings['swap-success']) {
+        successSound.play()
+      }
+      notify({
+        type: 'success',
+        title: 'Transaction successful',
+        txid: tx,
+      })
+    } catch (e) {
+      if (isMangoError(e)) {
         notify({
-          title: 'Something went wrong. Try again later',
+          title: 'There was an issue.',
+          description: e.message,
+          txid: e?.txid,
           type: 'error',
         })
-        return
       }
-      setSubmitting(true)
-      try {
-        const baseSize = position.getBasePositionUi(perpMarket)
-        const sideToClose = baseSize > 0 ? 'sell' : 'buy'
-        const orderbook = { bids, asks }
-        const price = calculateEstPriceForBaseSize(
-          orderbook,
-          baseSize,
-          sideToClose,
-        )
-
-        const maxSlippage = 0.025
-        const { signature: tx } = await client.perpPlaceOrder(
-          group,
-          mangoAccount,
-          perpMarket.perpMarketIndex,
-          sideToClose === 'buy' ? PerpOrderSide.bid : PerpOrderSide.ask,
-          price * (sideToClose === 'buy' ? 1 + maxSlippage : 1 - maxSlippage),
-          Math.abs(baseSize) * 2, // send a larger size to ensure full order is closed
-          undefined, // maxQuoteQuantity
-          Date.now(),
-          PerpOrderType.immediateOrCancel,
-          true, // reduce only
-          undefined,
-          undefined,
-        )
-        actions.fetchOpenOrders()
-        set((s) => {
-          s.successAnimation.trade = true
-        })
-        if (soundSettings['swap-success']) {
-          successSound.play()
-        }
-        notify({
-          type: 'success',
-          title: 'Transaction successful',
-          txid: tx,
-        })
-      } catch (e) {
-        if (isMangoError(e)) {
-          notify({
-            title: 'There was an issue.',
-            description: e.message,
-            txid: e?.txid,
-            type: 'error',
-          })
-        }
-        console.error('Place trade error:', e)
-      } finally {
-        setSubmitting(false)
-        onClose()
-      }
-    },
-    [perpMarket, position, group, onClose, soundSettings],
-  )
+      console.error('Place trade error:', e)
+    } finally {
+      setSubmitting(false)
+      onClose()
+    }
+  }, [perpMarket, position, group, onClose, soundSettings, bids, asks])
 
   return (
     <Modal onClose={onClose} isOpen={isOpen}>
@@ -224,7 +228,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
       <Button
         className="mb-4 flex w-full items-center justify-center"
         disabled={insufficientLiquidity}
-        onClick={() => handleMarketClose(bids, asks)}
+        onClick={handleMarketClose}
         size="large"
       >
         {submitting ? <Loading /> : <span>{t('trade:close-position')}</span>}

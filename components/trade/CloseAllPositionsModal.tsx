@@ -75,48 +75,6 @@ const CloseAllPositionsModal: FunctionComponent<ModalProps> = ({
   const openPerpPositions = useOpenPerpPositions()
   const { group } = useMangoGroup()
 
-  // const handleCloseAll = useCallback(async () => {
-  //   const client = mangoStore.getState().client
-  //   const mangoAccount = mangoStore.getState().mangoAccount.current
-  //   const actions = mangoStore.getState().actions
-
-  //   if (!group || !mangoAccount) {
-  //     notify({
-  //       title: 'Something went wrong. Try again later',
-  //       type: 'error',
-  //     })
-  //     return
-  //   }
-  //   setSubmitting(true)
-  //   try {
-  //     const maxSlippage = 0.025
-  //     const { signature: tx } = await client.perpCloseAll(
-  //       group,
-  //       mangoAccount,
-  //       maxSlippage,
-  //     )
-  //     actions.fetchOpenOrders()
-  //     notify({
-  //       type: 'success',
-  //       title: 'Transaction successful',
-  //       txid: tx,
-  //     })
-  //   } catch (e) {
-  //     if (isMangoError(e)) {
-  //       notify({
-  //         title: 'There was an issue.',
-  //         description: e.message,
-  //         txid: e?.txid,
-  //         type: 'error',
-  //       })
-  //     }
-  //     console.error('Place trade error:', e)
-  //   } finally {
-  //     setSubmitting(false)
-  //     onClose()
-  //   }
-  // }, [group, onClose])
-
   if (!group) return null
 
   return (

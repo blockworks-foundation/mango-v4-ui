@@ -41,6 +41,7 @@ import TabUnderline from '@components/shared/TabUnderline'
 import PerpSlider, { usePerpMarketMax } from './PerpSlider'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import {
+  MAX_PERP_SLIPPAGE,
   SIZE_INPUT_UI_KEY,
   SOUND_SETTINGS_KEY,
   TRADE_CHECKBOXES_KEY,
@@ -592,6 +593,7 @@ const AdvancedTradeForm = () => {
     const { tradeForm } = mangoStore.getState()
     const { actions } = mangoStore.getState()
     const selectedMarket = mangoStore.getState().selectedMarket.current
+    const orderbook = mangoStore.getState().selectedMarket.orderbook
 
     if (!group || !mangoAccount) return
     setPlacingOrder(true)
@@ -599,7 +601,6 @@ const AdvancedTradeForm = () => {
       const baseSize = Number(tradeForm.baseSize)
       let price = Number(tradeForm.price)
       if (tradeForm.tradeType === 'Market') {
-        const orderbook = mangoStore.getState().selectedMarket.orderbook
         price = calculateLimitPriceForMarketOrder(
           orderbook,
           baseSize,
@@ -655,10 +656,19 @@ const AdvancedTradeForm = () => {
 
         let orderPrice = price
         if (tradeForm.tradeType === 'Market') {
-          const maxSlippage = 0.025
-          orderPrice =
-            price *
-            (tradeForm.side === 'buy' ? 1 + maxSlippage : 1 - maxSlippage)
+          if (tradeForm.side === 'sell') {
+            const marketPrice = Math.max(
+              oraclePrice,
+              orderbook?.bids?.[0]?.[0] || 0,
+            )
+            orderPrice = marketPrice * (1 - MAX_PERP_SLIPPAGE)
+          } else {
+            const marketPrice = Math.min(
+              oraclePrice,
+              orderbook?.asks?.[0]?.[0] || Infinity,
+            )
+            orderPrice = marketPrice * (1 + MAX_PERP_SLIPPAGE)
+          }
         }
 
         const { signature: tx } = await client.perpPlaceOrder(
@@ -701,7 +711,7 @@ const AdvancedTradeForm = () => {
     } finally {
       setPlacingOrder(false)
     }
-  }, [isFormValid, soundSettings])
+  }, [isFormValid, oraclePrice, selectedMarket, soundSettings])
 
   const handleTriggerOrder = useCallback(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current

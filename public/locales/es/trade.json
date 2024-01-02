@@ -88,7 +88,7 @@
     "positions": "Positions",
     "post": "Post",
     "preview-sound": "Preview Sound",
-    "price-expect": "The execution price may be worse than you expect and full execution is not guaranteed. Your order will be filled up to a max slippage of 2.5%",
+    "price-expect": "The execution price may be worse than you expect and full execution is not guaranteed. Your order will be filled up to a max slippage of 2.5%. Slippage is calculated from the orderbook bids and asks which can change from the time of order placement. Using limit orders is recommended.",
     "price-provided-by": "Oracle by",
     "quote": "Quote",
     "realized-pnl": "Realized PnL",

@@ -88,7 +88,7 @@
     "positions": "持倉",
     "post": "Post",
     "preview-sound": "聲音預覽",
-    "price-expect": "執行價格可能比您預期的更差，並且不能保證完全執行。 您的訂單將被執行，最大滑點為 2.5%",
+    "price-expect": "The execution price may be worse than you expect and full execution is not guaranteed. Your order will be filled up to a max slippage of 2.5%. Slippage is calculated from the orderbook bids and asks which can change from the time of order placement. Using limit orders is recommended.",
     "price-provided-by": "預言機來自",
     "quote": "計價",
     "realized-pnl": "已實現的盈虧",
