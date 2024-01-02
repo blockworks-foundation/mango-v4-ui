@@ -73,6 +73,7 @@ export const hasOpenOrderForPriceGroup = (
   price: number,
   grouping: number,
   isGrouped: boolean,
+  side: 'bids' | 'asks',
 ) => {
   if (!isGrouped) {
     return !!openOrderPrices.find((ooPrice) => {
@@ -80,7 +81,11 @@ export const hasOpenOrderForPriceGroup = (
     })
   }
   return !!openOrderPrices.find((ooPrice) => {
-    return ooPrice >= price - grouping && ooPrice <= price + grouping
+    if (side === 'bids') {
+      return ooPrice >= price - grouping && ooPrice < price
+    } else {
+      return ooPrice <= price + grouping && ooPrice > price
+    }
   })
 }
 
@@ -92,6 +97,7 @@ export const getCumulativeOrderbookSide = (
   usersOpenOrderPrices: number[],
   grouping: number,
   isGrouped: boolean,
+  side: 'bids' | 'asks',
 ): cumOrderbookSide[] => {
   let cumulativeSize = 0
   let cumulativeValue = 0
@@ -112,6 +118,7 @@ export const getCumulativeOrderbookSide = (
         price,
         grouping,
         isGrouped,
+        side,
       ),
     }
   })
@@ -202,6 +209,7 @@ export const formatOrderbookData = (
     usersOpenOrderPrices,
     grouping,
     isGrouped,
+    'bids',
   )
   const asksToDisplay = getCumulativeOrderbookSide(
     asks,
@@ -211,6 +219,7 @@ export const formatOrderbookData = (
     usersOpenOrderPrices,
     grouping,
     isGrouped,
+    'asks',
   )
 
   if (bidsToDisplay[0] || asksToDisplay[0]) {

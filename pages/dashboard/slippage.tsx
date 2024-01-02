@@ -6,9 +6,13 @@ import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { PublicKey } from '@solana/web3.js'
 import { formatNumericValue } from 'utils/numbers'
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import Select from '@components/forms/Select'
 import Input from '@components/forms/Input'
+import {
+  LISTING_PRESETS,
+  getMidPriceImpacts,
+} from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -61,6 +65,7 @@ const RiskDashboard: NextPage = () => {
           'Side',
           ...group.pis.map((x) => formatValue(x.target_amount)),
           'Init/Main Weight',
+          'Suggested tier',
         ]),
       ]
     : []
@@ -75,6 +80,7 @@ const RiskDashboard: NextPage = () => {
           avg_price_impact: number
           p90: number
           p95: number
+          target_amount: number
         }
       | string
   }
@@ -92,6 +98,7 @@ const RiskDashboard: NextPage = () => {
           avg_price_impact: val.avg_price_impact_percent,
           p90: val.p90,
           p95: val.p95,
+          target_amount: val.target_amount,
         }
       } else {
         const newItem = {
@@ -101,6 +108,7 @@ const RiskDashboard: NextPage = () => {
             avg_price_impact: val.avg_price_impact_percent,
             p90: val.p90,
             p95: val.p95,
+            target_amount: val.target_amount,
           },
         }
         acc.push(newItem)
@@ -108,6 +116,30 @@ const RiskDashboard: NextPage = () => {
 
       return acc
     }, [] as TransformedPis[])
+  const symbolToPresetName = useMemo(
+    () => (group ? getMidPriceImpacts(group.pis) : []),
+    [group],
+  )
+    .filter((x) => x.avg_price_impact_percent < 1)
+    .reduce(
+      (acc, val, index, pisFiltred) => {
+        if (!acc[val.symbol]) {
+          acc[val.symbol] =
+            Object.values(LISTING_PRESETS).find(
+              (x) =>
+                x.preset_target_amount <=
+                pisFiltred
+                  .filter((pis) => pis.symbol === val.symbol)
+                  .sort(
+                    (a, b) =>
+                      b.avg_price_impact_percent - a.avg_price_impact_percent,
+                  )[0].target_amount,
+            )?.preset_name || 'C'
+        }
+        return acc
+      },
+      {} as { [symbol: string]: string },
+    )
 
   return (
     <div className="grid grid-cols-12">
@@ -267,6 +299,13 @@ const RiskDashboard: NextPage = () => {
                                 bank &&
                                 formatValue(bank.maintLiabWeight.toNumber())
                               }`}
+                          </Td>
+                          <Td xBorder>
+                            {idx % 2 === 0
+                              ? symbolToPresetName[row.symbol]
+                                ? symbolToPresetName[row.symbol]
+                                : 'C'
+                              : ''}
                           </Td>
                         </TrBody>
                       )

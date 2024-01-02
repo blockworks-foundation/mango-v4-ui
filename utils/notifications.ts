@@ -71,7 +71,7 @@ export function notify(newNotification: {
   }
 
   if (
-    newNotif.txid &&
+    !newNotif.txid ||
     !notifications.find(
       (n) => n.txid == newNotif.txid && n.type == newNotif.type,
     )

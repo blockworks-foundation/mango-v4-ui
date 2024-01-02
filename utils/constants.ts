@@ -49,7 +49,7 @@ export const FAVORITE_SWAPS_KEY = 'favoriteSwaps-0.2'
 
 export const THEME_KEY = 'theme-0.1'
 
-export const RPC_PROVIDER_KEY = 'rpcProviderKey-0.9'
+export const RPC_PROVIDER_KEY = 'rpcProviderKey-0.11'
 
 export const PRIORITY_FEE_KEY = 'priorityFeeKey-0.2'
 
@@ -65,7 +65,7 @@ export const TRADE_LAYOUT_KEY = 'tradeLayoutKey-0.1'
 
 export const STATS_TAB_KEY = 'activeStatsTab-0.1'
 
-export const USE_ORDERBOOK_FEED_KEY = 'useOrderbookFeed-0.1'
+export const USE_ORDERBOOK_FEED_KEY = 'useOrderbookFeed-0.2'
 
 export const HOT_KEYS_KEY = 'hotKeys-0.2'
 
@@ -140,6 +140,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   bonk: true,
   btc: true,
   chai: true,
+  corn: true,
   crown: true,
   dai: true,
   dual: true,
@@ -157,6 +158,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   mngo: true,
   msol: true,
   neon: true,
+  nos: true,
   orca: true,
   pyth: true,
   ray: true,
@@ -200,3 +202,7 @@ export enum TOKEN_REDUCE_ONLY_OPTIONS {
 }
 
 export const PRIVATE_MODE_STRING = '****'
+
+export const MANGO_MAINNET_GROUP = new PublicKey(
+  '78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX',
+)

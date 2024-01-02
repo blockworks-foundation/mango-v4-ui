@@ -1,18 +1,12 @@
 import ButtonGroup from '@components/forms/ButtonGroup'
 import Input from '@components/forms/Input'
 import Button from '@components/shared/Button'
-import Switch from '@components/forms/Switch'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { useTranslation } from 'next-i18next'
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
-import {
-  PRIORITY_FEE_KEY,
-  RPC_PROVIDER_KEY,
-  USE_ORDERBOOK_FEED_KEY,
-} from 'utils/constants'
-import Tooltip from '@components/shared/Tooltip'
+import { PRIORITY_FEE_KEY, RPC_PROVIDER_KEY } from 'utils/constants'
 import { SETTINGS_BUTTON_TITLE_CLASSES } from './AccountSettings'
 
 export const TRITON_DEDICATED_URL = process.env.NEXT_PUBLIC_TRITON_TOKEN
@@ -39,8 +33,8 @@ const RPC_URLS = [
 
 export const PRIORITY_FEE_LEVELS = [
   { label: 'None', value: 0 },
-  { label: 'Low', value: 1.2 }, //  +20%
-  { label: 'High', value: 2 }, // +100%
+  { label: 'Low', value: 2 }, //  +100%
+  { label: 'High', value: 4 },
 ]
 
 export const DEFAULT_PRIORITY_FEE = 1
@@ -58,8 +52,8 @@ const RpcSettings = () => {
   )
   const [storedPriorityFeeLevel, setStoredPriorityFeeLevel] =
     useLocalStorageState(PRIORITY_FEE_KEY, DEFAULT_PRIORITY_FEE_LEVEL)
-  const [storedUseOrderbookFeed, setStoredUseOrderbookFeed] =
-    useLocalStorageState(USE_ORDERBOOK_FEED_KEY, true)
+  // const [storedUseOrderbookFeed, setStoredUseOrderbookFeed] =
+  //   useLocalStorageState(USE_ORDERBOOK_FEED_KEY, true)
 
   const rpcEndpoint = useMemo(() => {
     return (
@@ -79,6 +73,7 @@ const RpcSettings = () => {
   }, [storedPriorityFeeLevel])
 
   const handleSetEndpointProvider = (provider: string) => {
+    console.log(provider)
     const endpointProvider = RPC_URLS.find(
       (node) => node.label === provider,
     ) || { label: 'Custom', value: rpcEndpointProvider }
@@ -188,7 +183,7 @@ const RpcSettings = () => {
           ) : null} */}
         </div>
       </div>
-      <div className="flex items-center justify-between border-t border-th-bkg-3 p-4">
+      {/* <div className="flex items-center justify-between border-t border-th-bkg-3 p-4">
         <Tooltip
           content={t('settings:tooltip-orderbook-bandwidth-saving')}
           maxWidth="25rem"
@@ -205,7 +200,7 @@ const RpcSettings = () => {
           checked={storedUseOrderbookFeed}
           onChange={() => setStoredUseOrderbookFeed(!storedUseOrderbookFeed)}
         />
-      </div>
+      </div> */}
     </div>
   )
 }

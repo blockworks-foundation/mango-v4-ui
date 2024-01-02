@@ -15,21 +15,18 @@ import { Market } from '@project-serum/serum'
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import EmptyWallet from 'utils/wallet'
 import dayjs from 'dayjs'
-import {
-  LISTING_PRESETS_KEYS,
-  ListingPreset,
-} from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
+import { LISTING_PRESET } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 
 export const getOracle = async ({
   baseSymbol,
   quoteSymbol,
   connection,
-  tier,
+  targetAmount,
 }: {
   baseSymbol: string
   quoteSymbol: string
   connection: Connection
-  tier: LISTING_PRESETS_KEYS
+  targetAmount: number
 }) => {
   try {
     let oraclePk = ''
@@ -38,6 +35,7 @@ export const getOracle = async ({
       quoteSymbol,
       connection,
     })
+
     if (pythOracle) {
       oraclePk = pythOracle
     } else {
@@ -45,13 +43,14 @@ export const getOracle = async ({
         baseSymbol,
         quoteSymbol,
         connection,
-        noLock: tier === 'SHIT',
+        noLock: targetAmount === 0 || targetAmount === 1000,
       })
       oraclePk = switchBoardOracle
     }
 
     return { oraclePk, isPyth: !!pythOracle }
   } catch (e) {
+    console.log(e)
     notify({
       title: 'Oracle not found',
       description: `${e}`,
@@ -268,7 +267,7 @@ export const getQuoteSymbol = (quoteTokenSymbol: string) => {
 }
 
 export const formatSuggestedValues = (
-  suggestedParams: Record<string, never> | Omit<ListingPreset, 'name'>,
+  suggestedParams: Record<string, never> | Omit<LISTING_PRESET, 'name'>,
 ) => {
   return {
     maxStalenessSlots: suggestedParams.maxStalenessSlots,

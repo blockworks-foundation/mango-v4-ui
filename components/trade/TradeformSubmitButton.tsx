@@ -61,7 +61,7 @@ const TradeformSubmitButton = ({
           </div>
         )}
       </Button>
-    ) : !mangoAccountAddress ? (
+    ) : connected && !mangoAccountAddress ? (
       <div className="w-full">
         <Button
           className="flex w-full items-center justify-center"

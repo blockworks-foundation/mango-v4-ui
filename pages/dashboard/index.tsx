@@ -953,7 +953,9 @@ const VaultData = ({ bank }: { bank: Bank }) => {
     <KeyValuePair
       label="Vault balance"
       value={
-        vault ? toUiDecimals(vault.amount.toNumber(), bank.mintDecimals) : '...'
+        vault
+          ? toUiDecimals(new BN(vault.amount.toString()), bank.mintDecimals)
+          : '...'
       }
     />
   )

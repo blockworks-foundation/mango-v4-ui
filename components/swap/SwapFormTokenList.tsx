@@ -199,13 +199,7 @@ const SwapFormTokenList = ({
           const tokenPk = new PublicKey(token.address)
           const tokenBank = group.getFirstBankByMint(tokenPk)
           const max = mangoAccount
-            ? getTokenInMax(
-                mangoAccount,
-                tokenPk,
-                outputBank.mint,
-                group,
-                useMargin,
-              )
+            ? getTokenInMax(mangoAccount, tokenPk, outputBank.mint, group)
             : {
                 amount: new Decimal(0),
                 amountWithBorrow: new Decimal(0),

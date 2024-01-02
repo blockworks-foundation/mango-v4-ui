@@ -138,33 +138,6 @@ const Orderbook = () => {
     return asksPk.toString()
   }, [market])
 
-  const usersOpenOrderPrices = useMemo(() => {
-    if (!market) return []
-    const openOrders = mangoStore.getState().mangoAccount.openOrders
-    const marketPk = market.publicKey.toString()
-    const bids2 = mangoStore.getState().selectedMarket.bidsAccount
-    const asks2 = mangoStore.getState().selectedMarket.asksAccount
-    const mangoAccount = mangoStore.getState().mangoAccount.current
-    let usersOpenOrderPrices: number[] = []
-    if (
-      mangoAccount &&
-      bids2 &&
-      asks2 &&
-      bids2 instanceof BookSide &&
-      asks2 instanceof BookSide
-    ) {
-      usersOpenOrderPrices = [...bids2.items(), ...asks2.items()]
-        .filter((order) => order.owner.equals(mangoAccount.publicKey))
-        .map((order) => order.price)
-    } else {
-      usersOpenOrderPrices =
-        marketPk && openOrders[marketPk]?.length
-          ? openOrders[marketPk]?.map((order) => order.price)
-          : []
-    }
-    return usersOpenOrderPrices
-  }, [market])
-
   useEffect(
     () =>
       mangoStore.subscribe(
@@ -182,14 +155,14 @@ const Orderbook = () => {
               depth,
               market,
               grouping,
-              usersOpenOrderPrices,
+              usersOpenOrderPrices(market),
             )
             currentOrderbookData.current = newOrderbook
             setOrderbookData(updatedOrderbook)
           }
         },
       ),
-    [depth, grouping, market, usersOpenOrderPrices],
+    [depth, grouping, market],
   )
 
   // subscribe to the bids and asks orderbook accounts
@@ -331,13 +304,18 @@ const Orderbook = () => {
         connection
           .getAccountInfoAndContext(bidsPk)
           .then(({ context, value: info }) => {
-            if (!info) return
-            const decodedBook = decodeBook(client, market, info, 'bids')
-            set((state) => {
-              state.selectedMarket.lastSeenSlot.bids = context.slot
-              state.selectedMarket.bidsAccount = decodedBook
-              state.selectedMarket.orderbook.bids = decodeBookL2(decodedBook)
-            })
+            try {
+              if (!info || !market) return
+              const decodedBook = decodeBook(client, market, info, 'bids')
+              set((state) => {
+                state.selectedMarket.lastSeenSlot.bids = context.slot
+                state.selectedMarket.bidsAccount = decodedBook
+                state.selectedMarket.orderbook.bids = decodeBookL2(decodedBook)
+              })
+            } catch (e) {
+              console.log(e)
+              return
+            }
           })
         bidSubscriptionId = connection.onAccountChange(
           bidsPk,
@@ -345,17 +323,22 @@ const Orderbook = () => {
             const lastSeenSlot =
               mangoStore.getState().selectedMarket.lastSeenSlot.bids
             if (context.slot > lastSeenSlot) {
-              const market = getMarket()
-              if (!market) return
-              const decodedBook = decodeBook(client, market, info, 'bids')
-              if (decodedBook instanceof BookSide) {
-                updatePerpMarketOnGroup(decodedBook, 'bids')
+              try {
+                if (!market) return
+                const decodedBook = decodeBook(client, market!, info, 'bids')
+                if (decodedBook instanceof BookSide) {
+                  updatePerpMarketOnGroup(decodedBook, 'bids')
+                }
+                set((state) => {
+                  state.selectedMarket.bidsAccount = decodedBook
+                  state.selectedMarket.orderbook.bids =
+                    decodeBookL2(decodedBook)
+                  state.selectedMarket.lastSeenSlot.bids = context.slot
+                })
+              } catch (e) {
+                console.log(e)
+                return
               }
-              set((state) => {
-                state.selectedMarket.bidsAccount = decodedBook
-                state.selectedMarket.orderbook.bids = decodeBookL2(decodedBook)
-                state.selectedMarket.lastSeenSlot.bids = context.slot
-              })
             }
           },
           'processed',
@@ -367,13 +350,18 @@ const Orderbook = () => {
         connection
           .getAccountInfoAndContext(asksPk)
           .then(({ context, value: info }) => {
-            if (!info) return
-            const decodedBook = decodeBook(client, market, info, 'asks')
-            set((state) => {
-              state.selectedMarket.asksAccount = decodedBook
-              state.selectedMarket.orderbook.asks = decodeBookL2(decodedBook)
-              state.selectedMarket.lastSeenSlot.asks = context.slot
-            })
+            try {
+              if (!info || !market) return
+              const decodedBook = decodeBook(client, market, info, 'asks')
+              set((state) => {
+                state.selectedMarket.asksAccount = decodedBook
+                state.selectedMarket.orderbook.asks = decodeBookL2(decodedBook)
+                state.selectedMarket.lastSeenSlot.asks = context.slot
+              })
+            } catch (e) {
+              console.log(e)
+              return
+            }
           })
         askSubscriptionId = connection.onAccountChange(
           asksPk,
@@ -381,17 +369,22 @@ const Orderbook = () => {
             const lastSeenSlot =
               mangoStore.getState().selectedMarket.lastSeenSlot.asks
             if (context.slot > lastSeenSlot) {
-              const market = getMarket()
-              if (!market) return
-              const decodedBook = decodeBook(client, market, info, 'asks')
-              if (decodedBook instanceof BookSide) {
-                updatePerpMarketOnGroup(decodedBook, 'asks')
+              try {
+                if (!market) return
+                const decodedBook = decodeBook(client, market!, info, 'asks')
+                if (decodedBook instanceof BookSide) {
+                  updatePerpMarketOnGroup(decodedBook, 'asks')
+                }
+                set((state) => {
+                  state.selectedMarket.asksAccount = decodedBook
+                  state.selectedMarket.orderbook.asks =
+                    decodeBookL2(decodedBook)
+                  state.selectedMarket.lastSeenSlot.asks = context.slot
+                })
+              } catch (e) {
+                console.log(e)
+                return
               }
-              set((state) => {
-                state.selectedMarket.asksAccount = decodedBook
-                state.selectedMarket.orderbook.asks = decodeBookL2(decodedBook)
-                state.selectedMarket.lastSeenSlot.asks = context.slot
-              })
             }
           },
           'processed',
@@ -428,13 +421,13 @@ const Orderbook = () => {
           depth,
           market,
           groupSize,
-          usersOpenOrderPrices,
+          usersOpenOrderPrices(market),
         )
         setOrderbookData(updatedOrderbook)
         verticallyCenterOrderbook()
       }
     },
-    [currentOrderbookData, depth, market, usersOpenOrderPrices],
+    [currentOrderbookData, depth, market],
   )
 
   return (
@@ -812,3 +805,30 @@ const Line = (props: {
 }
 
 export default Orderbook
+
+function usersOpenOrderPrices(market: Market | PerpMarket | null) {
+  if (!market) return []
+  const openOrders = mangoStore.getState().mangoAccount.openOrders
+  const marketPk = market.publicKey.toString()
+  const bids2 = mangoStore.getState().selectedMarket.bidsAccount
+  const asks2 = mangoStore.getState().selectedMarket.asksAccount
+  const mangoAccount = mangoStore.getState().mangoAccount.current
+  let usersOpenOrderPrices: number[] = []
+  if (
+    mangoAccount &&
+    bids2 &&
+    asks2 &&
+    bids2 instanceof BookSide &&
+    asks2 instanceof BookSide
+  ) {
+    usersOpenOrderPrices = [...bids2.items(), ...asks2.items()]
+      .filter((order) => order.owner.equals(mangoAccount.publicKey))
+      .map((order) => order.price)
+  } else {
+    usersOpenOrderPrices =
+      marketPk && openOrders[marketPk]?.length
+        ? openOrders[marketPk]?.map((order) => order.price)
+        : []
+  }
+  return usersOpenOrderPrices
+}
