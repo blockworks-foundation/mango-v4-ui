@@ -89,8 +89,9 @@ import sampleSize from 'lodash/sampleSize'
 import { fetchTokenStatsData, processTokenStatsData } from 'apis/mngo'
 import { OrderTypes } from 'utils/tradeForm'
 import { usePlausible } from 'next-plausible'
+import { OpenbookV2Market } from '@blockworks-foundation/mango-v4/dist/types/src/accounts/openbookV2'
 
-const GROUP = new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX')
+const GROUP = new PublicKey('2xDjFmWRyvoP6LWoRaDBmVL5EeeKzFfvP81Wa9HH9J6V')
 
 const ENDPOINTS = [
   {
@@ -100,10 +101,16 @@ const ENDPOINTS = [
     custom: false,
   },
   {
+    name: 'testnet',
+    url: 'https://api.testnet.solana.com',
+    websocket: 'https://api.testnet.solana.com',
+    custom: false,
+  },
+  {
     name: 'devnet',
-    url: 'https://realms-develope-935c.devnet.rpcpool.com/67f608dc-a353-4191-9c34-293a5061b536',
+    url: 'https://mango.devnet.rpcpool.com',
     websocket:
-      'https://realms-develope-935c.devnet.rpcpool.com/67f608dc-a353-4191-9c34-293a5061b536',
+      'https://mango.devnet.rpcpool.com',
     custom: false,
   },
 ]
@@ -112,7 +119,7 @@ const options = {
   ...AnchorProvider.defaultOptions(),
   preflightCommitment: 'confirmed',
 } as ConfirmOptions
-export const CLUSTER: 'mainnet-beta' | 'devnet' = 'mainnet-beta'
+export const CLUSTER: 'mainnet-beta' | 'testnet' | 'devnet' = 'devnet'
 const ENDPOINT = ENDPOINTS.find((e) => e.name === CLUSTER) || ENDPOINTS[0]
 export const emptyWallet = new EmptyWallet(Keypair.generate())
 
@@ -130,6 +137,8 @@ const initMangoClient = (
   //for analytics use
   telemetry: ReturnType<typeof usePlausible> | null,
 ): MangoClient => {
+  console.log('cluster', CLUSTER)
+  console.log('programId', MANGO_V4_ID[CLUSTER].toString())
   return MangoClient.connect(provider, CLUSTER, MANGO_V4_ID[CLUSTER], {
     prioritizationFee: opts.prioritizationFee,
     multipleConnections: opts.multipleConnections,
@@ -238,6 +247,7 @@ export type MangoStore = {
     }
   }
   serumMarkets: Serum3Market[]
+  openbookMarkets: OpenbookV2Market[]
   serumOrders: Order[] | undefined
   settings: {
     loading: boolean
@@ -411,7 +421,7 @@ const mangoStore = create<MangoStore>()(
       priorityFee: DEFAULT_PRIORITY_FEE,
       prependedGlobalAdditionalInstructions: [],
       selectedMarket: {
-        name: 'SOL-PERP',
+        name: 'BTC-PERP',
         current: undefined,
         fills: [],
         bidsAccount: undefined,
@@ -427,6 +437,7 @@ const mangoStore = create<MangoStore>()(
         markPrice: 0,
       },
       serumMarkets: [],
+      openbookMarkets: [],
       serumOrders: undefined,
       set: (fn) => _set(produce(fn)),
       settings: {
@@ -569,6 +580,8 @@ const mangoStore = create<MangoStore>()(
               return m
             })
 
+            const openbookMarkets = Array.from(group.openbookV2MarketsMapByExternal.values())
+
             const perpMarkets = Array.from(group.perpMarketsMapByName.values())
               .filter(
                 (p) =>
@@ -586,6 +599,7 @@ const mangoStore = create<MangoStore>()(
               state.group = group
               state.groupLoaded = true
               state.serumMarkets = serumMarkets
+              state.openbookMarkets = openbookMarkets
               state.perpMarkets = perpMarkets
               state.selectedMarket.current = selectedMarket
               if (!state.swap.inputBank && !state.swap.outputBank) {

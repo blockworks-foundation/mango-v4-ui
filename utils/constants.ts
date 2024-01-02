@@ -176,7 +176,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   'wbtc (portal)': true,
 }
 
-export const DEFAULT_FAVORITE_MKTS = ['SOL-PERP', 'ETH-PERP', 'BTC-PERP']
+export const DEFAULT_FAVORITE_MKTS = ['BTC-PERP']
 
 export const JUPITER_REFERRAL_PK = new PublicKey(
   'EV4qhLE2yPKdUPdQ74EWJUn21xT3eGQxG3DRR1g9NNFc',

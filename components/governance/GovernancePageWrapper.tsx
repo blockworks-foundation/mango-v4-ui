@@ -20,20 +20,24 @@ const GovernancePageWrapper = ({
   const resetVoter = GovernanceStore((s) => s.resetVoter)
   const realm = GovernanceStore((s) => s.realm)
   const connection = mangoStore((s) => s.connection)
+  const isMainnet = !connection.rpcEndpoint.includes('devnet') && !connection.rpcEndpoint.includes('testnet')
 
   useEffect(() => {
+    if (!isMainnet) return
     if (connection.rpcEndpoint) {
       initConnection(connection)
     }
   }, [connection.rpcEndpoint])
 
   useEffect(() => {
+    if (!isMainnet) return
     if (connectionContext?.endpoint && realm === null) {
       initRealm(connectionContext)
     }
   }, [connectionContext?.endpoint, realm === null])
 
   useEffect(() => {
+    if (!isMainnet) return
     if (
       publicKey?.toBase58() &&
       connectionContext?.endpoint &&
