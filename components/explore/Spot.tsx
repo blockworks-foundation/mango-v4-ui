@@ -17,6 +17,7 @@ import Input from '@components/forms/Input'
 import EmptyState from '@components/nftMarket/EmptyState'
 import { Bank } from '@blockworks-foundation/mango-v4'
 import useBanks from 'hooks/useBanks'
+import SheenLoader from '@components/shared/SheenLoader'
 
 export type BankWithMarketData = {
   bank: Bank
@@ -91,7 +92,8 @@ const Spot = () => {
   const { t } = useTranslation(['common', 'explore', 'trade'])
   const { group } = useMangoGroup()
   const { banks } = useBanks()
-  const { serumMarketsWithData } = useListedMarketsWithMarketData()
+  const { serumMarketsWithData, isLoading: loadingMarketsData } =
+    useListedMarketsWithMarketData()
   const [sortByKey, setSortByKey] = useState<AllowedKeys>('quote_volume_24h')
   const [search, setSearch] = useState('')
   const [showTableView, setShowTableView] = useState(true)
@@ -127,10 +129,10 @@ const Spot = () => {
   }
 
   return (
-    <div className="md:-mt-10">
-      <div className="flex flex-col px-4 sm:flex-row sm:items-center sm:justify-end md:px-6 2xl:px-12">
-        <div className="flex w-full flex-col sm:flex-row sm:space-x-3 md:w-auto">
-          <div className="relative mb-3 w-full sm:mb-0 md:w-40">
+    <div className="lg:-mt-10">
+      <div className="flex flex-col px-4 md:px-6 lg:flex-row lg:items-center lg:justify-end 2xl:px-12">
+        <div className="flex w-full flex-col lg:w-auto lg:flex-row lg:space-x-3">
+          <div className="relative mb-3 w-full lg:mb-0 lg:w-40">
             <Input
               heightClass="h-10 pl-8"
               type="text"
@@ -140,7 +142,7 @@ const Spot = () => {
             <MagnifyingGlassIcon className="absolute left-2 top-3 h-4 w-4" />
           </div>
           <div className="flex space-x-3">
-            <div className="w-full sm:w-48">
+            <div className="w-full lg:w-48">
               <ButtonGroup
                 activeValue={sortByKey}
                 onChange={(v) => setSortByKey(v)}
@@ -169,7 +171,15 @@ const Spot = () => {
           </div>
         </div>
       </div>
-      {sortedTokensToShow.length ? (
+      {loadingMarketsData ? (
+        <div className="mx-4 my-6 space-y-1 md:mx-6">
+          {[...Array(4)].map((x, i) => (
+            <SheenLoader className="flex flex-1" key={i}>
+              <div className="h-16 w-full bg-th-bkg-2" />
+            </SheenLoader>
+          ))}
+        </div>
+      ) : sortedTokensToShow.length ? (
         showTableView ? (
           <div className="mt-6 border-t border-th-bkg-3">
             <SpotTable tokens={sortedTokensToShow} />

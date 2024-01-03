@@ -1,5 +1,6 @@
 import { Bank } from '@blockworks-foundation/mango-v4'
 import {
+  getMaxBorrowForBank,
   getMaxWithdrawForBank,
   useTokenMax,
 } from '@components/swap/useTokenMax'
@@ -28,10 +29,7 @@ const TokenVaultWarnings = ({
       bank,
       mangoAccount,
     ).toNumber()
-    const maxBorrow = mangoAccount.getMaxWithdrawWithBorrowForTokenUi(
-      group,
-      bank.mint,
-    )
+    const maxBorrow = getMaxBorrowForBank(group, bank, mangoAccount).toNumber()
 
     return [maxWithdraw, maxBorrow]
   }, [bank, mangoAccount, group])

@@ -30,7 +30,11 @@ import { IS_ONBOARDED_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import SettingsModal from './modals/SettingsModal'
 import DepositWithdrawIcon from './icons/DepositWithdrawIcon'
-import { useAccountPointsAndRank, useCurrentSeason } from 'hooks/useRewards'
+import {
+  useAccountPointsAndRank,
+  useCurrentSeason,
+  useIsAllClaimed,
+} from 'hooks/useRewards'
 import SheenLoader from './shared/SheenLoader'
 import Link from 'next/link'
 import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
@@ -38,6 +42,8 @@ import FormatNumericValue from './shared/FormatNumericValue'
 import { useRouter } from 'next/router'
 import TopBarStore from '@store/topBarStore'
 import MedalIcon from './icons/MedalIcon'
+import BridgeModal from './modals/BridgeModal'
+import { useViewport } from 'hooks/useViewport'
 
 export const TOPBAR_ICON_BUTTON_CLASSES =
   'relative flex h-16 w-10 sm:w-16 items-center justify-center sm:border-l sm:border-th-bkg-3 focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2'
@@ -47,13 +53,18 @@ const set = mangoStore.getState().set
 const TopBar = () => {
   const { t } = useTranslation('common')
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
-  const { connected, wallet } = useWallet()
+  const { connected, publicKey, wallet } = useWallet()
+  const { isMobile } = useViewport()
   const { data: seasonData } = useCurrentSeason()
+  const currentSeasonId = seasonData ? seasonData.season_id : undefined
+  const prevSeasonId = currentSeasonId ? currentSeasonId - 1 : undefined
+  const { showClaim } = useIsAllClaimed(prevSeasonId, publicKey)
+  const seasonPointsToFetchId = showClaim ? prevSeasonId : currentSeasonId
   const {
     data: accountPointsAndRank,
     isInitialLoading: loadingAccountPointsAndRank,
     refetch: refetchPoints,
-  } = useAccountPointsAndRank(mangoAccountAddress, seasonData?.season_id)
+  } = useAccountPointsAndRank(mangoAccountAddress, seasonPointsToFetchId)
   const { data: isWhiteListed } = useIsWhiteListed()
   const router = useRouter()
   const themeData = mangoStore((s) => s.themeData)
@@ -63,6 +74,7 @@ const TopBar = () => {
   const [showDepositWithdrawModal, setShowDepositWithdrawModal] =
     useState(false)
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
+  const [showBridgeModal, setShowBridgeModal] = useState(false)
   const { showSettingsModal, setShowSettingsModal } = TopBarStore()
   const isOnline = useOnlineStatus()
 
@@ -115,11 +127,13 @@ const TopBar = () => {
       <div className="flex w-full items-center justify-between md:space-x-4">
         <span className="mb-0 flex items-center">
           <div className="flex h-[63px] w-16 items-center justify-center bg-th-bkg-1 md:hidden">
-            <img
-              className="h-8 w-8 flex-shrink-0"
-              src={themeData.logoPath}
-              alt="logo"
-            />
+            <Link href="/" shallow={true}>
+              <img
+                className="h-8 w-8 flex-shrink-0"
+                src={themeData.logoPath}
+                alt="logo"
+              />
+            </Link>
           </div>
           {!connected ? (
             mangoAccount ? (
@@ -183,9 +197,9 @@ const TopBar = () => {
                 <ArrowRightIcon className="sideways-bounce ml-2 h-5 w-5 text-th-fgd-1" />
               </span>
             )
-          ) : isWhiteListed ? (
+          ) : isWhiteListed && mangoAccountAddress ? (
             <Link href="/rewards" shallow={true}>
-              <div className="flex h-16 items-center justify-between border-x border-th-bkg-3 px-4 md:border-l-0">
+              <div className="flex h-[63px] items-center justify-between border-x border-th-bkg-3 bg-th-bkg-1 px-4 md:border-l-0">
                 {accountPointsAndRank?.rank ? (
                   <div
                     className={`relative hidden h-6 w-6 flex-shrink-0 items-center justify-center rounded-full sm:flex ${
@@ -215,7 +229,7 @@ const TopBar = () => {
                 ) : null}
                 <div>
                   <span className="whitespace-nowrap font-bold text-th-fgd-2">
-                    Points
+                    <span className="hidden sm:inline">Rewards</span> Points
                   </span>
                   {!loadingAccountPointsAndRank ? (
                     <p className="bg-gradient-to-br from-yellow-400 to-red-400 bg-clip-text font-display text-base text-transparent">
@@ -223,6 +237,7 @@ const TopBar = () => {
                         <FormatNumericValue
                           value={accountPointsAndRank.total_points}
                           decimals={0}
+                          roundUp
                         />
                       ) : wallet?.adapter.publicKey ? (
                         0
@@ -236,7 +251,7 @@ const TopBar = () => {
                     </SheenLoader>
                   )}
                 </div>
-                <ChevronRightIcon className="ml-2 hidden h-6 w-6 text-th-fgd-4 lg:block" />
+                <ChevronRightIcon className="ml-2 h-6 w-6 text-th-fgd-4" />
               </div>
             </Link>
           ) : null}
@@ -255,11 +270,25 @@ const TopBar = () => {
               <button
                 onClick={() => handleDepositWithdrawModal('deposit')}
                 className={TOPBAR_ICON_BUTTON_CLASSES}
+                title="Deposit Withdraw"
               >
                 <DepositWithdrawIcon className="h-6 w-6" />
               </button>
             </div>
           )}
+          {!isMobile ? (
+            <div className="h-[63px] bg-th-bkg-1">
+              <button
+                onClick={() => setShowBridgeModal(true)}
+                className={TOPBAR_ICON_BUTTON_CLASSES}
+                title={t('bridge-funds')}
+              >
+                <span className="font-mono text-xxs font-bold">
+                  {t('bridge')}
+                </span>
+              </button>
+            </div>
+          ) : null}
           <div className="h-[63px] bg-th-bkg-1">
             <button
               className={TOPBAR_ICON_BUTTON_CLASSES}
@@ -304,6 +333,12 @@ const TopBar = () => {
         <SettingsModal
           isOpen={showSettingsModal}
           onClose={() => setShowSettingsModal(false)}
+        />
+      ) : null}
+      {showBridgeModal ? (
+        <BridgeModal
+          isOpen={showBridgeModal}
+          onClose={() => setShowBridgeModal(false)}
         />
       ) : null}
     </div>

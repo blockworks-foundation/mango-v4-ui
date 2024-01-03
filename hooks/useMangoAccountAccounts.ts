@@ -73,7 +73,7 @@ export default function useMangoAccountAccounts() {
     const usedPerpOo: PerpOo[] = perpOpenOrders.filter(
       (p) => p.orderMarket !== 65535,
     )
-    const usedTcs = tokenConditionalSwaps.filter((tcs) => tcs.hasData)
+    const usedTcs = tokenConditionalSwaps.filter((tcs) => tcs.isConfigured)
 
     const emptyPerps = usedPerps.filter(
       (p) =>

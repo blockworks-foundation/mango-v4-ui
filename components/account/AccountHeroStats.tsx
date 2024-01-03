@@ -186,6 +186,7 @@ const AccountHeroStats = ({ accountValue }: { accountValue: number }) => {
               }
               decimals={2}
               isUsd={true}
+              isPrivate
             />
           </p>
           <span className="font-normal text-th-fgd-4">
@@ -207,6 +208,7 @@ const AccountHeroStats = ({ accountValue }: { accountValue: number }) => {
                   }
                   decimals={2}
                   isUsd={true}
+                  isPrivate
                 />
               </span>
             </Tooltip>
@@ -242,10 +244,15 @@ const AccountHeroStats = ({ accountValue }: { accountValue: number }) => {
           ) : null}
         </div>
         <p className="mb-0.5 mt-2 text-2xl font-bold text-th-fgd-1 lg:text-3xl">
-          <FormatNumericValue value={accountPnl} decimals={2} isUsd={true} />
+          <FormatNumericValue
+            value={accountPnl}
+            decimals={2}
+            isUsd={true}
+            isPrivate
+          />
         </p>
         <div className="flex items-center space-x-1.5">
-          <Change change={rollingDailyPnlChange} prefix="$" />
+          <Change change={rollingDailyPnlChange} prefix="$" isPrivate />
           <p className="text-th-fgd-4">{t('rolling-change')}</p>
         </div>
       </div>

@@ -24,17 +24,21 @@ export type Prize = {
   item: string
   //amount
   info: string
-  rarity: 'Rare' | 'Legendary' | 'Common'
+  rarity: 'rare' | 'legendary' | 'common'
   //eg [32, 32] token, nft [400,400]
   itemResolution: number[]
   itemUrl: string
   particleId: 'particles-coins' | 'particles-fireworks'
   stencilUrl:
+    | '/models/tex_procedural/tex_card_front_gold_albedo.png'
     | '/models/tex_procedural/tex_card_front_gold_circle_albedo.png'
     | '/models/tex_procedural/tex_card_front_silver_square_albedo.png'
+    | '/models/tex_procedural/tex_card_front_slver_albedo.png'
   frontMaterialId:
+    | 'loader_mat_card_gold_front'
     | 'loader_mat_card_gold_front_circle'
     | 'loader_mat_card_silver_front_square'
+    | 'loader_mat_card_silver_front'
   backMaterialId: 'loader_mat_card_gold_back' | 'loader_mat_card_silver_back'
 }
 
@@ -49,7 +53,7 @@ export const getFallbackImg = (
   if (hasCustomIcon) {
     return `/icons/${tokenSymbol}.svg`
   } else {
-    return jupiterLogoUrl || '/icons/mngo.svg'
+    return jupiterLogoUrl || `/icons/mngo.svg`
   }
 }
 
@@ -59,63 +63,90 @@ export const getClaimsAsPrizes = (
   nftsRewardsInfo: (Sft | SftWithToken | Nft | NftWithToken)[],
 ) =>
   claims.map((x) => {
+    const rarity = x.mintProperties.rarity.toLowerCase()
+    const type = x.mintProperties.type.toLowerCase()
     const tokenInfo =
-      x.mintProperties.type === 'token'
+      type === 'token'
         ? tokensInfo.find((t) => t.address === x.mint.toBase58())
         : null
+
     const nftInfo =
-      x.mintProperties.type === 'nft'
+      type === 'nft'
         ? nftsRewardsInfo.find(
             (ni) => ni.address.toBase58() === x.mint.toBase58(),
           )
         : null
-    const resultion = x.mintProperties.type === 'token' ? [32, 32] : [400, 400]
+    const resultion = type === 'token' ? [32, 32] : [400, 400]
 
-    const materials: {
-      [key: string]: Omit<
-        Prize,
-        'item' | 'info' | 'rarity' | 'itemResolution' | 'itemUrl'
-      >
-    } = {
-      Common: {
+    const Materials: Record<
+      string,
+      Omit<Prize, 'item' | 'info' | 'rarity' | 'itemResolution' | 'itemUrl'>
+    > = {
+      goldCircle: {
+        stencilUrl:
+          '/models/tex_procedural/tex_card_front_gold_circle_albedo.png',
+        frontMaterialId: 'loader_mat_card_gold_front_circle',
+        backMaterialId: 'loader_mat_card_gold_back',
         particleId: 'particles-coins',
-        frontMaterialId: 'loader_mat_card_silver_front_square',
+      },
+      goldSquare: {
+        stencilUrl: '/models/tex_procedural/tex_card_front_gold_albedo.png',
+        frontMaterialId: 'loader_mat_card_gold_front',
+        backMaterialId: 'loader_mat_card_gold_back',
+        particleId: 'particles-fireworks',
+      },
+      silverCircle: {
+        stencilUrl: '/models/tex_procedural/tex_card_front_slver_albedo.png',
+        frontMaterialId: 'loader_mat_card_silver_front',
         backMaterialId: 'loader_mat_card_silver_back',
+        particleId: 'particles-coins',
+      },
+      silverSquare: {
         stencilUrl:
           '/models/tex_procedural/tex_card_front_silver_square_albedo.png',
-      },
-      Legendary: {
+        frontMaterialId: 'loader_mat_card_silver_front_square',
+        backMaterialId: 'loader_mat_card_silver_back',
         particleId: 'particles-fireworks',
-        frontMaterialId: 'loader_mat_card_gold_front_circle',
-        backMaterialId: 'loader_mat_card_gold_back',
-        stencilUrl:
-          '/models/tex_procedural/tex_card_front_gold_circle_albedo.png',
-      },
-      Rare: {
-        particleId: 'particles-fireworks',
-        frontMaterialId: 'loader_mat_card_gold_front_circle',
-        backMaterialId: 'loader_mat_card_gold_back',
-        stencilUrl:
-          '/models/tex_procedural/tex_card_front_gold_circle_albedo.png',
       },
     }
 
+    const MaterialMapping: Record<string, keyof typeof Materials> = {
+      'token-common': 'silverCircle',
+      'token-rare': 'goldCircle',
+      'token-legendary': 'goldCircle',
+      'nft-common': 'silverSquare',
+      'nft-rare': 'goldSquare',
+      'nft-legendary': 'goldSquare',
+    }
+
+    const getMaterials = (
+      type: 'token' | 'nft',
+      rarity: 'common' | 'rare' | 'legendary',
+    ) => {
+      const materialKey = `${type}-${rarity}`
+
+      return {
+        material: Materials[MaterialMapping[materialKey]],
+      }
+    }
+
+    const material = getMaterials(type, rarity)
     return {
       item: x.mintProperties.name,
       info:
-        x.mintProperties.type === 'token' && tokenInfo
+        type === 'token' && tokenInfo
           ? new BigNumber(x.quantity.toString())
               .shiftedBy(-tokenInfo.decimals)
               .toString()
           : x.quantity.toString(),
-      rarity: x.mintProperties.rarity,
+      rarity: rarity.charAt(0).toUpperCase() + rarity.slice(1),
       itemResolution: resultion,
       //fallback of img from files if mint matches mango bank
       itemUrl:
-        x.mintProperties.type === 'token'
+        type === 'token'
           ? getFallbackImg(x.mint, tokenInfo?.logoURI)
-          : nftInfo?.json?.image || '/icons/mngo.svg',
-      ...materials[x.mintProperties.rarity as 'Rare' | 'Legendary' | 'Common'],
+          : nftInfo?.json?.image || `/icons/mngo.svg`,
+      ...material.material,
     }
   })
 
@@ -168,6 +199,8 @@ export default function RewardsComponent({
         const v2 = document.getElementById('particles-coins') as any
         v2.onloadedmetadata = () => (v2.currentTime = v2.duration)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         init(document, window, prizes, (prize: any, isLast: boolean) => {
           console.log('callback:showPrize', prize)
           setCurrentPrize(prize)
@@ -193,10 +226,10 @@ export default function RewardsComponent({
         setShowRender(false)
       }
     }
-  }, [prizes, start])
+  }, [collectedPrizes, prizes, setShowRender, start, telemetry])
 
   useEffect(() => {
-    if (tokensInfo.length) {
+    if (tokensInfo.length || nftsRewardsInfo.length) {
       const claimsAsPrizes = getClaimsAsPrizes(
         claims,
         tokensInfo,
@@ -204,7 +237,16 @@ export default function RewardsComponent({
       )
       setPrizes(claimsAsPrizes)
     }
-  }, [claims, getFallbackImg, tokensInfo])
+  }, [claims, nftsRewardsInfo, tokensInfo])
+
+  // close after animation finishes
+  useEffect(() => {
+    if (isAnimationFinished) {
+      setTimeout(() => {
+        setShowRender(false)
+      }, 10000)
+    }
+  }, [isAnimationFinished])
 
   return (
     <main className="from-midnight-sky to-midnight-horizon static h-screen w-screen bg-black bg-gradient-to-b">
@@ -262,10 +304,12 @@ export default function RewardsComponent({
         </div>
         {!!currentPrize && (
           <>
-            <p className={`text-4xl text-white	${lalezar.className}`}>
+            <p className={`-mb-2 text-4xl text-white	${lalezar.className}`}>
               {currentPrize['item']}
             </p>
-            <p className={`text-3xl text-yellow-300 ${lalezar.className}`}>
+            <p
+              className={`-mb-2 text-3xl text-yellow-300 ${lalezar.className}`}
+            >
               {currentPrize['rarity']}
             </p>
             <p

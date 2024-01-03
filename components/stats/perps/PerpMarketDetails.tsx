@@ -9,7 +9,7 @@ import DetailedAreaOrBarChart from '@components/shared/DetailedAreaOrBarChart'
 import AverageFundingChart from './AverageFundingChart'
 
 const CHART_WRAPPER_CLASSES =
-  'col-span-2 lg:col-span-1 border-b border-th-bkg-3 py-4 px-6'
+  'col-span-2 lg:col-span-1 border-b border-th-bkg-3 py-4 px-4 md:px-6'
 import PerpMarketParams from './PerpMarketParams'
 import PerpVolumeChart from './PerpVolumeChart'
 
@@ -52,6 +52,7 @@ const PerpMarketDetails = ({
           </div>
           <div className={CHART_WRAPPER_CLASSES}>
             <DetailedAreaOrBarChart
+              changeAsPercent
               data={openInterestChartData.concat([
                 {
                   date_hour: dayjs().toISOString(),
@@ -73,7 +74,9 @@ const PerpMarketDetails = ({
               yKey={'open_interest'}
             />
           </div>
-          <div className={`${CHART_WRAPPER_CLASSES} lg:border-r`}>
+          <div
+            className={`col-span-2 border-b border-th-bkg-3 pt-4 lg:col-span-1 lg:border-r`}
+          >
             <AverageFundingChart
               loading={loadingPerpStats}
               marketStats={marketStats}
@@ -81,6 +84,7 @@ const PerpMarketDetails = ({
           </div>
           <div className={CHART_WRAPPER_CLASSES}>
             <DetailedAreaOrBarChart
+              changeAsPercent
               data={marketStats.concat([
                 {
                   ...lastStat,
@@ -90,9 +94,9 @@ const PerpMarketDetails = ({
               ])}
               daysToShow={priceDaysToShow}
               setDaysToShow={setPriceDaysToShow}
-              heightClass="h-64"
+              heightClass="h-72"
               loading={loadingPerpStats}
-              loaderHeightClass="h-[350px]"
+              loaderHeightClass="h-[400px]"
               prefix="$"
               tickFormat={(x) => formatYAxis(x)}
               title={t('price')}

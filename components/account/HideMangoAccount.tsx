@@ -9,6 +9,7 @@ import { useState } from 'react'
 import Loading from '@components/shared/Loading'
 import Tooltip from '@components/shared/Tooltip'
 import { useTranslation } from 'react-i18next'
+import { SETTINGS_BUTTON_TITLE_CLASSES } from '@components/settings/AccountSettings'
 
 const HideMangoAccount = () => {
   const { t } = useTranslation('settings')
@@ -37,9 +38,11 @@ const HideMangoAccount = () => {
 
   return (
     <>
-      <div className="flex items-center justify-between border-y border-th-bkg-3 py-4 md:px-4">
+      <div className="flex items-center justify-between border-t border-th-bkg-3 py-4 md:px-4">
         <Tooltip content={t('settings:tooltip-private-account')}>
-          <p className="tooltip-underline">{t('settings:private-account')}</p>
+          <p className={`tooltip-underline ${SETTINGS_BUTTON_TITLE_CLASSES}`}>
+            {t('settings:private-account')}
+          </p>
         </Tooltip>
         {signingForHide ? (
           <Loading />

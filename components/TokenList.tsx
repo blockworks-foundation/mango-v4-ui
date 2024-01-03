@@ -52,6 +52,54 @@ import { useQuery } from '@tanstack/react-query'
 import { TotalInterestDataItem } from 'types'
 import SheenLoader from './shared/SheenLoader'
 
+export const handleOpenCloseBorrowModal = (borrowBank: Bank) => {
+  const group = mangoStore.getState().group
+  const mangoAccount = mangoStore.getState().mangoAccount.current
+  let repayBank: Bank | undefined
+  if (borrowBank.name === 'USDC') {
+    const solBank = group?.getFirstBankByMint(WRAPPED_SOL_MINT)
+    repayBank = solBank
+  } else {
+    const usdcBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
+    repayBank = usdcBank
+  }
+  if (mangoAccount && repayBank) {
+    const borrowBalance = mangoAccount.getTokenBalanceUi(borrowBank)
+    const roundedBorrowBalance = floorToDecimal(
+      borrowBalance,
+      borrowBank.mintDecimals,
+    ).toNumber()
+    const repayBalance = mangoAccount.getTokenBalanceUi(repayBank)
+    const roundedRepayBalance = floorToDecimal(
+      repayBalance,
+      repayBank.mintDecimals,
+    ).toNumber()
+    const hasSufficientRepayBalance =
+      Math.abs(roundedRepayBalance) * repayBank.uiPrice >
+      Math.abs(roundedBorrowBalance) * borrowBank.uiPrice
+    set((state) => {
+      state.swap.swapMode = hasSufficientRepayBalance ? 'ExactOut' : 'ExactIn'
+      state.swap.inputBank = repayBank
+      state.swap.outputBank = borrowBank
+      if (hasSufficientRepayBalance) {
+        state.swap.amountOut = Math.abs(roundedBorrowBalance).toString()
+      } else {
+        state.swap.amountIn = Math.abs(roundedRepayBalance).toString()
+      }
+    })
+  }
+}
+
+export const handleCloseBorrowModal = () => {
+  set((state) => {
+    state.swap.inputBank = undefined
+    state.swap.outputBank = undefined
+    state.swap.amountIn = ''
+    state.swap.amountOut = ''
+    state.swap.swapMode = 'ExactIn'
+  })
+}
+
 export const fetchInterestData = async (mangoAccountPk: string) => {
   try {
     const response = await fetch(
@@ -128,7 +176,14 @@ const TokenList = () => {
       const formatted = []
       for (const b of banks) {
         const bank = b.bank
-        const balance = floorToDecimal(b.balance, bank.mintDecimals).toNumber()
+        const roundedBalance = floorToDecimal(
+          b.balance,
+          bank.mintDecimals,
+        ).toNumber()
+        let balance = roundedBalance
+        if (b.balance && !roundedBalance) {
+          balance = b.balance
+        }
         const balanceValue = balance * bank.uiPrice
         const symbol = bank.name === 'MSOL' ? 'mSOL' : bank.name
 
@@ -200,45 +255,15 @@ const TokenList = () => {
     sortConfig,
   } = useSortableData(unsortedTableData)
 
-  const handleOpenCloseBorrowModal = (borrowBank: Bank) => {
-    const group = mangoStore.getState().group
-    const mangoAccount = mangoStore.getState().mangoAccount.current
+  const openCloseBorrowModal = (borrowBank: Bank) => {
     setCloseBorrowModal(true)
     setCloseBorrowBank(borrowBank)
-    if (borrowBank.name === 'USDC') {
-      const solBank = group?.getFirstBankByMint(WRAPPED_SOL_MINT)
-      set((state) => {
-        state.swap.inputBank = solBank
-      })
-    } else {
-      const usdcBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
-      set((state) => {
-        state.swap.inputBank = usdcBank
-      })
-    }
-    if (mangoAccount) {
-      const balance = mangoAccount.getTokenBalanceUi(borrowBank)
-      const roundedBalance = floorToDecimal(
-        balance,
-        borrowBank.mintDecimals,
-      ).toNumber()
-      set((state) => {
-        state.swap.swapMode = 'ExactOut'
-        state.swap.outputBank = borrowBank
-        state.swap.amountOut = Math.abs(roundedBalance).toString()
-      })
-    }
+    handleOpenCloseBorrowModal(borrowBank)
   }
 
-  const handleCloseBorrowModal = () => {
+  const closeBorrowModal = () => {
     setCloseBorrowModal(false)
-    set((state) => {
-      state.swap.inputBank = undefined
-      state.swap.outputBank = undefined
-      state.swap.amountIn = ''
-      state.swap.amountOut = ''
-      state.swap.swapMode = 'ExactIn'
-    })
+    handleCloseBorrowModal()
   }
 
   const balancesNumber = useMemo(() => {
@@ -360,6 +385,13 @@ const TokenList = () => {
                   borrowRate,
                 } = data
 
+                const decimals = floorToDecimal(
+                  balance,
+                  bank.mintDecimals,
+                ).toNumber()
+                  ? bank.mintDecimals
+                  : undefined
+
                 return (
                   <TrBody key={symbol}>
                     <Td>
@@ -368,8 +400,11 @@ const TokenList = () => {
                     <Td className="text-right">
                       <BankAmountWithValue
                         amount={balance}
+                        decimals={decimals}
                         bank={bank}
                         stacked
+                        isPrivate
+                        fixDecimals={false}
                       />
                     </Td>
                     <Td className="text-right">
@@ -378,6 +413,7 @@ const TokenList = () => {
                           value={collateralValue}
                           decimals={2}
                           isUsd
+                          isPrivate
                         />
                       </p>
                       <p className="text-sm text-th-fgd-4">
@@ -395,6 +431,7 @@ const TokenList = () => {
                           amount={inOrders}
                           bank={bank}
                           stacked
+                          isPrivate
                         />
                       ) : (
                         <p className="text-th-fgd-4">–</p>
@@ -412,6 +449,7 @@ const TokenList = () => {
                               value={interestValue}
                               isUsd
                               decimals={2}
+                              isPrivate
                             />
                           </p>
                         ) : (
@@ -447,7 +485,7 @@ const TokenList = () => {
                         {balance < 0 ? (
                           <button
                             className="rounded-md border border-th-fgd-4 px-2 py-1.5 text-xs font-bold text-th-fgd-2 focus:outline-none md:hover:border-th-fgd-3"
-                            onClick={() => handleOpenCloseBorrowModal(bank)}
+                            onClick={() => openCloseBorrowModal(bank)}
                           >
                             {t('close-borrow', { token: '' })}
                           </button>
@@ -472,7 +510,7 @@ const TokenList = () => {
         <CloseBorrowModal
           borrowBank={closeBorrowBank}
           isOpen={showCloseBorrowModal}
-          onClose={handleCloseBorrowModal}
+          onClose={closeBorrowModal}
         />
       ) : null}
     </ContentBox>
@@ -499,6 +537,10 @@ const MobileTokenListItem = ({ data }: { data: TableData }) => {
     borrowRate,
   } = data
 
+  const decimals = floorToDecimal(balance, bank.mintDecimals).toNumber()
+    ? bank.mintDecimals
+    : undefined
+
   return (
     <Disclosure>
       {({ open }) => (
@@ -511,16 +553,14 @@ const MobileTokenListItem = ({ data }: { data: TableData }) => {
               <div className="flex items-center space-x-2">
                 <div className="text-right">
                   <p className="font-mono text-sm text-th-fgd-2">
-                    <FormatNumericValue
-                      value={balance}
-                      decimals={bank.mintDecimals}
-                    />
+                    <FormatNumericValue value={balance} decimals={decimals} />
                   </p>
                   <span className="font-mono text-xs text-th-fgd-3">
                     <FormatNumericValue
                       value={mangoAccount ? balance * bank.uiPrice : 0}
-                      decimals={2}
+                      decimals={decimals ? 2 : undefined}
                       isUsd
+                      isPrivate
                     />
                   </span>
                 </div>
@@ -538,7 +578,7 @@ const MobileTokenListItem = ({ data }: { data: TableData }) => {
             enterTo="opacity-100"
           >
             <Disclosure.Panel>
-              <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pb-4 pt-4">
+              <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 py-4">
                 <div className="col-span-1">
                   <Tooltip content={t('tooltip-collateral-value')}>
                     <p className="tooltip-underline text-xs text-th-fgd-3">
@@ -550,6 +590,7 @@ const MobileTokenListItem = ({ data }: { data: TableData }) => {
                       value={collateralValue}
                       decimals={2}
                       isUsd
+                      isPrivate
                     />
                     <span className="text-th-fgd-3">
                       {' '}
@@ -566,13 +607,21 @@ const MobileTokenListItem = ({ data }: { data: TableData }) => {
                   <p className="text-xs text-th-fgd-3">
                     {t('trade:in-orders')}
                   </p>
-                  <BankAmountWithValue amount={inOrders} bank={bank} />
+                  <BankAmountWithValue
+                    amount={inOrders}
+                    bank={bank}
+                    isPrivate
+                  />
                 </div>
                 <div className="col-span-1">
                   <p className="text-xs text-th-fgd-3">
                     {t('trade:unsettled')}
                   </p>
-                  <BankAmountWithValue amount={unsettled} bank={bank} />
+                  <BankAmountWithValue
+                    amount={unsettled}
+                    bank={bank}
+                    isPrivate
+                  />
                 </div>
                 <div className="col-span-1">
                   <p className="text-xs text-th-fgd-3">
@@ -582,6 +631,7 @@ const MobileTokenListItem = ({ data }: { data: TableData }) => {
                     amount={interestAmount}
                     bank={bank}
                     value={interestValue}
+                    isPrivate
                   />
                 </div>
                 <div className="col-span-1">

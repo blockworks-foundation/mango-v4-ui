@@ -112,5 +112,6 @@ export default function useSelectedMarket() {
     quoteSymbol,
     baseLogoURI,
     quoteLogoURI,
+    marketAddress,
   }
 }

@@ -43,15 +43,13 @@ export const NOTIFICATION_POSITION_KEY = 'notificationPosition-0.2'
 
 export const TRADE_CHART_UI_KEY = 'tradeChart-0.3'
 
-export const FAVORITE_MARKETS_KEY = 'favoriteMarkets-0.2'
+export const FAVORITE_MARKETS_KEY = 'favoriteMarkets-0.3'
 
-export const FAVORITE_SWAPS_KEY = 'favoriteSwaps-0.1'
+export const FAVORITE_SWAPS_KEY = 'favoriteSwaps-0.2'
 
 export const THEME_KEY = 'theme-0.1'
 
-export const CUSTOM_THEME_SUFFIX = 'CUSTOM_NFT_THEME'
-
-export const RPC_PROVIDER_KEY = 'rpcProviderKey-0.9'
+export const RPC_PROVIDER_KEY = 'rpcProviderKey-0.11'
 
 export const PRIORITY_FEE_KEY = 'priorityFeeKey-0.2'
 
@@ -67,9 +65,9 @@ export const TRADE_LAYOUT_KEY = 'tradeLayoutKey-0.1'
 
 export const STATS_TAB_KEY = 'activeStatsTab-0.1'
 
-export const USE_ORDERBOOK_FEED_KEY = 'useOrderbookFeed-0.1'
+export const USE_ORDERBOOK_FEED_KEY = 'useOrderbookFeed-0.2'
 
-export const HOT_KEYS_KEY = 'hotKeys-0.1'
+export const HOT_KEYS_KEY = 'hotKeys-0.2'
 
 export const AUTO_CONNECT_WALLET = 'auto-connect-0.1'
 
@@ -80,6 +78,10 @@ export const PRIVACY_MODE = 'privacy-mode-0.1'
 export const MANGO_MINTS_BANNER_KEY = 'mangoMintsBanner-0.1'
 
 export const SEND_TELEMETRY_KEY = 'sendTelemetry-0.1'
+
+export const SLOTS_WARNING_KEY = 'tokenSlotsWarning-0.1'
+
+export const NEW_LISTING_BANNER_KEY = 'new-listing-banner-0.2'
 
 // Unused
 export const PROFILE_CATEGORIES = [
@@ -106,15 +108,15 @@ export const MIN_SOL_BALANCE = 0.001
 
 export const MAX_PRIORITY_FEE_KEYS = 128
 
-export const ACCOUNT_ACTION_MODAL_HEIGHT = '488px'
+export const ACCOUNT_ACTION_MODAL_HEIGHT = '498px'
 
-export const ACCOUNT_ACTION_MODAL_INNER_HEIGHT = '426px'
+export const ACCOUNT_ACTION_MODAL_INNER_HEIGHT = '436px'
 
 export const TRADE_VOLUME_ALERT_KEY = 'tradeVolumeAlert-0.1'
 
 export const PAGINATION_PAGE_LENGTH = 250
 
-export const JUPITER_API_MAINNET = 'https://token.jup.ag/strict'
+export const JUPITER_API_MAINNET = 'https://token.jup.ag/all'
 
 export const JUPITER_API_DEVNET = 'https://api.jup.ag/api/tokens/devnet'
 
@@ -138,22 +140,32 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   bonk: true,
   btc: true,
   chai: true,
+  corn: true,
   crown: true,
   dai: true,
   dual: true,
   eth: true,
   ethpo: true,
   'eth (portal)': true,
+  eurc: true,
+  guac: true,
   hnt: true,
   jitosol: true,
+  jlp: true,
+  jto: true,
   kin: true,
   ldo: true,
   mngo: true,
   msol: true,
+  neon: true,
+  nos: true,
   orca: true,
+  pyth: true,
   ray: true,
+  render: true,
   rlb: true,
-  rndr: true,
+  samo: true,
+  slcl: true,
   sol: true,
   stsol: true,
   tbtc: true,
@@ -164,12 +176,11 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   'wbtc (portal)': true,
 }
 
-export const DEFAULT_FAVORITE_MKTS = [
-  'SOL-PERP',
-  'ETH-PERP',
-  'BTC-PERP',
-  'RNDR-PERP',
-]
+export const DEFAULT_FAVORITE_MKTS = ['SOL-PERP', 'ETH-PERP', 'BTC-PERP']
+
+export const JUPITER_REFERRAL_PK = new PublicKey(
+  'EV4qhLE2yPKdUPdQ74EWJUn21xT3eGQxG3DRR1g9NNFc',
+)
 
 export const WHITE_LIST_API = 'https://api.mngo.cloud/whitelist/v1/'
 export const DAILY_SECONDS = 86400
@@ -179,9 +190,9 @@ export const DAILY_MILLISECONDS = 86400000
 export const MAX_ACCOUNTS = {
   tokenAccounts: '8',
   spotOpenOrders: '4',
-  perpAccounts: '4',
-  perpOpenOrders: '64',
-  tcsOrders: '64',
+  perpAccounts: '3',
+  perpOpenOrders: '24',
+  tcsOrders: '24',
 }
 
 export enum TOKEN_REDUCE_ONLY_OPTIONS {
@@ -189,3 +200,9 @@ export enum TOKEN_REDUCE_ONLY_OPTIONS {
   ENABLED,
   NO_BORROWS,
 }
+
+export const PRIVATE_MODE_STRING = '****'
+
+export const MANGO_MAINNET_GROUP = new PublicKey(
+  '78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX',
+)

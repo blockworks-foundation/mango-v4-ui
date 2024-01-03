@@ -7,7 +7,7 @@ import {
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useMemo, useState } from 'react'
-import NumberFormat, { NumberFormatValues } from 'react-number-format'
+import NumberFormat from 'react-number-format'
 
 import mangoStore from '@store/mangoStore'
 import {
@@ -38,6 +38,7 @@ import TokenListButton from './shared/TokenListButton'
 import { ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES, BackButton } from './BorrowForm'
 import TokenLogo from './shared/TokenLogo'
 import SecondaryConnectButton from './shared/SecondaryConnectButton'
+import { handleInputChange } from 'utils/account'
 
 interface WithdrawFormProps {
   onSuccess: () => void
@@ -63,12 +64,13 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
     return group?.banksMapByName.get(selectedToken)?.[0]
   }, [selectedToken])
 
-  const [adjustedTokenMax, tokenMax] = useMemo(() => {
-    if (!bank || !mangoAccount || !group)
-      return [new Decimal(0), new Decimal(0)]
+  const [tokenMax, decimals] = useMemo(() => {
+    if (!bank || !mangoAccount || !group) return [new Decimal(0), undefined]
     const tokenMax = getMaxWithdrawForBank(group, bank, mangoAccount).toNumber()
-    const adjustedTokenMax = tokenMax
-
+    const decimals = floorToDecimal(tokenMax, bank.mintDecimals).toNumber()
+      ? bank.mintDecimals
+      : undefined
+    const roundedMax = decimals ? floorToDecimal(tokenMax, decimals) : tokenMax
     // Note: Disable for now, not sure why this was added, we can re-renable with specific conditions when
     // need is realized
     // const balance = mangoAccount.getTokenBalanceUi(bank)
@@ -76,7 +78,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
     //   adjustedTokenMax = tokenMax * 0.998
     // }
 
-    return [new Decimal(adjustedTokenMax), new Decimal(tokenMax)]
+    return [new Decimal(roundedMax), decimals]
   }, [mangoAccount, bank, group])
 
   const handleSizePercentage = useCallback(
@@ -85,27 +87,20 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
       setSizePercentage(percentage)
       let amount: Decimal
       if (percentage !== '100') {
-        amount = floorToDecimal(
-          new Decimal(adjustedTokenMax).mul(percentage).div(100),
-          bank.mintDecimals,
-        )
+        amount = new Decimal(tokenMax).mul(percentage).div(100)
       } else {
-        amount = floorToDecimal(
-          new Decimal(adjustedTokenMax),
-          bank.mintDecimals,
-        )
+        amount = new Decimal(tokenMax)
       }
       setInputAmount(amount.toFixed())
     },
-    [bank, adjustedTokenMax],
+    [bank, decimals, tokenMax],
   )
 
   const setMax = useCallback(() => {
     if (!bank) return
-    const max = floorToDecimal(adjustedTokenMax, bank.mintDecimals)
-    setInputAmount(max.toFixed())
+    setInputAmount(tokenMax.toFixed())
     setSizePercentage('100')
-  }, [bank, adjustedTokenMax])
+  }, [bank, tokenMax])
 
   const handleWithdraw = useCallback(async () => {
     const client = mangoStore.getState().client
@@ -118,7 +113,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
     setSubmitting(true)
 
     const withdrawAll =
-      floorToDecimal(adjustedTokenMax, bank.mintDecimals).eq(
+      floorToDecimal(tokenMax, bank.mintDecimals).eq(
         new Decimal(inputAmount),
       ) || sizePercentage === '100'
 
@@ -155,7 +150,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
         type: 'error',
       })
     }
-  }, [adjustedTokenMax, bank, inputAmount, sizePercentage])
+  }, [tokenMax, bank, inputAmount, sizePercentage])
 
   const handleSelectToken = useCallback((token: string) => {
     setSelectedToken(token)
@@ -217,10 +212,10 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
                 {bank ? (
                   <MaxAmountButton
                     className="mb-2"
-                    decimals={bank.mintDecimals}
+                    decimals={decimals}
                     label={t('max')}
                     onClick={setMax}
-                    value={adjustedTokenMax}
+                    value={tokenMax}
                   />
                 ) : null}
               </div>
@@ -239,13 +234,16 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
                   thousandSeparator=","
                   allowNegative={false}
                   isNumericString={true}
-                  decimalScale={bank?.mintDecimals || 6}
+                  decimalScale={decimals}
                   className={ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES}
                   placeholder="0.00"
                   value={inputAmount}
-                  onValueChange={(e: NumberFormatValues) =>
-                    setInputAmount(
-                      !Number.isNaN(Number(e.value)) ? e.value : '',
+                  onValueChange={(values, source) =>
+                    handleInputChange(
+                      values,
+                      source,
+                      setInputAmount,
+                      setSizePercentage,
                     )
                   }
                   isAllowed={withValueLimit}
@@ -269,7 +267,12 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
                 />
                 <div className="flex justify-between">
                   <p>{t('withdraw-amount')}</p>
-                  <BankAmountWithValue amount={inputAmount} bank={bank} />
+                  <BankAmountWithValue
+                    amount={inputAmount}
+                    bank={bank}
+                    decimals={decimals}
+                    fixDecimals={false}
+                  />
                 </div>
               </div>
             ) : null}

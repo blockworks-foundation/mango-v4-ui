@@ -7,21 +7,50 @@ import useMangoAccount from '../../hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { PublicKey } from '@solana/web3.js'
 
+export const getMaxBorrowForBank = (
+  group: Group,
+  bank: Bank,
+  mangoAccount: MangoAccount,
+) => {
+  try {
+    const maxBorrow = new Decimal(
+      mangoAccount.getMaxWithdrawWithBorrowForTokenUi(group, bank.mint),
+    )
+    return maxBorrow
+  } catch (e) {
+    console.log(`failed to get max borrow for ${bank.name}`, e)
+    return new Decimal(0)
+  }
+}
+
+const getMaxSourceForSwap = (
+  group: Group,
+  mangoAccount: MangoAccount,
+  inputMint: PublicKey,
+  outputMint: PublicKey,
+) => {
+  try {
+    const rawMaxUiAmountWithBorrow = mangoAccount.getMaxSourceUiForTokenSwap(
+      group,
+      inputMint,
+      outputMint,
+    )
+    return rawMaxUiAmountWithBorrow
+  } catch (e) {
+    console.log(`failed to get max source`, e)
+    return 0
+  }
+}
+
 export const getMaxWithdrawForBank = (
   group: Group,
   bank: Bank,
   mangoAccount: MangoAccount,
   allowBorrow = false,
 ): Decimal => {
-  const accountBalance = floorToDecimal(
-    mangoAccount.getTokenBalanceUi(bank),
-    bank.mintDecimals,
-  )
+  const accountBalance = new Decimal(mangoAccount.getTokenBalanceUi(bank))
   const vaultBalance = group.getTokenVaultBalanceByMintUi(bank.mint)
-  const maxBorrow = floorToDecimal(
-    mangoAccount.getMaxWithdrawWithBorrowForTokenUi(group, bank.mint),
-    bank.mintDecimals,
-  )
+  const maxBorrow = getMaxBorrowForBank(group, bank, mangoAccount)
   const maxWithdraw = allowBorrow
     ? Decimal.min(vaultBalance, maxBorrow)
     : bank.initAssetWeight.toNumber() === 0
@@ -35,7 +64,6 @@ export const getTokenInMax = (
   inputMint: PublicKey,
   outputMint: PublicKey,
   group: Group,
-  useMargin: boolean,
 ) => {
   const inputBank = group.getFirstBankByMint(inputMint)
   const outputBank = group.getFirstBankByMint(outputMint)
@@ -58,25 +86,23 @@ export const getTokenInMax = (
   const outputTokenBalance = new Decimal(
     mangoAccount.getTokenBalanceUi(outputBank),
   )
-
-  const maxAmountWithoutMargin =
-    (inputTokenBalance.gt(0) && !outputReduceOnly) ||
-    (outputReduceOnly && outputTokenBalance.lt(0))
-      ? inputTokenBalance
-      : new Decimal(0)
-
-  const rawMaxUiAmountWithBorrow = mangoAccount.getMaxSourceUiForTokenSwap(
+  const rawMaxUiAmountWithBorrow = getMaxSourceForSwap(
     group,
+    mangoAccount,
     inputBank.mint,
     outputBank.mint,
   )
 
-  const maxUiAmountWithBorrow =
-    outputReduceOnly && (outputTokenBalance.gt(0) || outputTokenBalance.eq(0))
-      ? new Decimal(0)
-      : rawMaxUiAmountWithBorrow > 0
-      ? floorToDecimal(rawMaxUiAmountWithBorrow, inputBank.mintDecimals)
-      : new Decimal(0)
+  let spotMax = new Decimal(0)
+  let leverageMax = new Decimal(0)
+
+  if (!outputReduceOnly || (outputReduceOnly && outputTokenBalance.lt(0))) {
+    spotMax = inputTokenBalance
+    leverageMax = floorToDecimal(
+      rawMaxUiAmountWithBorrow,
+      inputBank.mintDecimals,
+    )
+  }
 
   const inputBankVaultBalance = floorToDecimal(
     group
@@ -85,21 +111,11 @@ export const getTokenInMax = (
     inputBank.mintDecimals,
   )
 
-  const maxAmount = useMargin
-    ? Decimal.min(
-        maxAmountWithoutMargin,
-        inputBankVaultBalance,
-        maxUiAmountWithBorrow,
-      )
-    : Decimal.min(
-        maxAmountWithoutMargin,
-        inputBankVaultBalance,
-        maxUiAmountWithBorrow,
-      )
+  const maxAmount = Decimal.min(spotMax, leverageMax, inputBankVaultBalance)
 
   const maxAmountWithBorrow = inputReduceOnly
-    ? Decimal.min(maxAmountWithoutMargin, inputBankVaultBalance)
-    : Decimal.min(maxUiAmountWithBorrow, inputBankVaultBalance)
+    ? Decimal.min(spotMax, leverageMax, inputBankVaultBalance)
+    : Decimal.min(leverageMax, inputBankVaultBalance)
 
   return {
     amount: maxAmount,
@@ -128,7 +144,6 @@ export const useTokenMax = (useMargin = true): TokenMaxResults => {
           inputBank.mint,
           outputBank.mint,
           group,
-          useMargin,
         )
       }
     } catch (e) {

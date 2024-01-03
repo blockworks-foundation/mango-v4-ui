@@ -15,11 +15,13 @@ import { ExclamationCircleIcon, TrashIcon } from '@heroicons/react/20/solid'
 import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
 import { getMultipleAccounts } from '@project-serum/anchor/dist/cjs/utils/rpc'
 import { formatCurrencyValue } from 'utils/numbers'
+import TopBarStore from '@store/topBarStore'
 
 const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation(['close-account'])
   const [loading, setLoading] = useState(false)
   const set = mangoStore((s) => s.set)
+  const { setShowSettingsModal } = TopBarStore()
   const openOrders = Object.values(mangoStore((s) => s.mangoAccount.openOrders))
   const connection = mangoStore.getState().connection
   const hasOpenOrders =
@@ -61,6 +63,7 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
 
         setLoading(false)
         onClose()
+        setShowSettingsModal(false)
         notify({
           title: t('account-closed'),
           type: 'success',

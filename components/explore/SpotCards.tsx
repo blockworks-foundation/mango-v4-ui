@@ -14,8 +14,8 @@ import Tooltip from '@components/shared/Tooltip'
 import SimpleAreaChart from '@components/shared/SimpleAreaChart'
 import { COLORS } from 'styles/colors'
 import useThemeWrapper from 'hooks/useThemeWrapper'
-import dayjs from 'dayjs'
 import TokenReduceOnlyDesc from '@components/shared/TokenReduceOnlyDesc'
+import CollateralWeightDisplay from '@components/shared/CollateralWeightDisplay'
 
 const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
   const { t } = useTranslation(['common', 'explore', 'trade'])
@@ -34,22 +34,18 @@ const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
         const available = Decimal.max(
           0,
           availableVaultBalance.toFixed(bank.mintDecimals),
-        )
+        ).mul(bank.uiPrice)
         const depositRate = bank.getDepositRateUi()
         const borrowRate = bank.getBorrowRateUi()
-        const assetWeight = bank.scaledInitAssetWeight(bank.price).toFixed(2)
-        const pastPrice = token.market?.marketData?.price_24h
-        const volume = token.market?.marketData?.quote_volume_24h || 0
-        const change =
-          volume > 0 && pastPrice
-            ? ((bank.uiPrice - pastPrice) / pastPrice) * 100
-            : 0
+        const chartData = token?.market?.priceHistory?.length
+          ? token.market.priceHistory
+              ?.sort((a, b) => a.time - b.time)
+              .concat([{ price: bank.uiPrice, time: Date.now() }])
+          : []
 
-        const chartData =
-          token.market?.marketData?.price_history
-            .sort((a, b) => a.time.localeCompare(b.time))
-            .concat([{ price: bank.uiPrice, time: dayjs().toISOString() }]) ||
-          []
+        const volume = token.market?.marketData?.quote_volume_24h || 0
+
+        const change = token.market?.rollingChange || 0
 
         return (
           <div
@@ -58,7 +54,7 @@ const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
           >
             <div className="mb-4 flex items-center justify-between border-b border-th-bkg-3 pb-4">
               <div className="flex items-center space-x-3">
-                <TokenLogo bank={bank} size={32} />
+                <TokenLogo bank={bank} size={32} showRewardsLogo />
                 <div>
                   <h3 className="mb-1 text-base leading-none">
                     {bank.name}
@@ -66,14 +62,16 @@ const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
                       <TokenReduceOnlyDesc bank={bank} />
                     </span>
                   </h3>
-                  <div className="flex items-center space-x-3">
-                    <span className="font-mono">
-                      <FormatNumericValue value={bank.uiPrice} isUsd />
-                    </span>
-                    {token.market ? (
-                      <Change change={change} suffix="%" />
-                    ) : null}
-                  </div>
+                  {bank.uiPrice ? (
+                    <div className="flex items-center space-x-3">
+                      <span className="font-mono">
+                        <FormatNumericValue value={bank.uiPrice} isUsd />
+                      </span>
+                      {token.market ? (
+                        <Change change={change} suffix="%" />
+                      ) : null}
+                    </div>
+                  ) : null}
                 </div>
               </div>
               {chartData.length ? (
@@ -98,11 +96,9 @@ const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
                 <p className="font-mono text-th-fgd-2">
                   {!token.market ? (
                     '–'
-                  ) : token.market?.marketData?.quote_volume_24h ? (
+                  ) : volume ? (
                     <span>
-                      {numberCompacter.format(
-                        token.market.marketData.quote_volume_24h,
-                      )}{' '}
+                      {numberCompacter.format(volume)}{' '}
                       <span className="font-body text-th-fgd-4">USDC</span>
                     </span>
                   ) : (
@@ -120,7 +116,7 @@ const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
                   <p className="tooltip-underline mb-1">{t('available')}</p>
                 </Tooltip>
                 <span className="font-mono text-th-fgd-2">
-                  <FormatNumericValue value={available} />
+                  <FormatNumericValue value={available} isUsd />
                 </span>
               </div>
               <div>
@@ -132,7 +128,9 @@ const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
                     {t('explore:collateral-weight')}
                   </p>
                 </Tooltip>
-                <span className="font-mono text-th-fgd-2">{assetWeight}x</span>
+                <span className="font-mono text-th-fgd-2">
+                  <CollateralWeightDisplay bank={bank} />
+                </span>
               </div>
               <div>
                 <Tooltip

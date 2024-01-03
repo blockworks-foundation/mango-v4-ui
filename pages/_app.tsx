@@ -12,6 +12,7 @@ import {
 import {
   ConnectionProvider,
   WalletProvider,
+  useWallet,
 } from '@solana/wallet-adapter-react'
 import {
   PhantomWalletAdapter,
@@ -29,7 +30,7 @@ import {
 import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare'
 import { clusterApiUrl } from '@solana/web3.js'
 import TransactionNotification from '@components/notifications/TransactionNotification'
-import { ThemeProvider } from 'next-themes'
+import { ThemeProvider, useTheme } from 'next-themes'
 import { appWithTranslation } from 'next-i18next'
 import Layout from '../components/Layout'
 import MangoProvider from '@components/MangoProvider'
@@ -50,11 +51,7 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import PlausibleProvider from 'next-plausible'
 
 // init react-query
-export const queryClient = new QueryClient()
-
-const metaTitle = 'Mango Markets – Safer. Smarter. Faster.'
-const metaDescription =
-  'A magical new way to interact with DeFi. Groundbreaking safety features designed to keep your funds secure. The easiest way to margin trade any token pair. All powered by flashloans.'
+const queryClient = new QueryClient()
 
 // Do not add hooks to this component, that will cause unnecessary rerenders
 // Top level state hydrating/updating should go in MangoProvider
@@ -104,21 +101,10 @@ function MyApp({ Component, pageProps }: AppProps) {
       ? false
       : true
 
-  const [sendTelemetry] = useLocalStorageState(SEND_TELEMETRY_KEY, true)
-
   return (
-    <PlausibleProvider
-      domain="app.mango.markets"
-      customDomain="https://pl.mngo.cloud"
-      trackLocalhost={true}
-      selfHosted={true}
-      enabled={sendTelemetry}
-    >
+    <>
       <Head>
-        <title>Mango Markets</title>
         <link rel="icon" href="/favicon.ico" />
-        <meta property="og:title" content={metaTitle} />
-        <meta name="description" content={metaDescription} />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link
           rel="apple-touch-icon"
@@ -128,8 +114,6 @@ function MyApp({ Component, pageProps }: AppProps) {
         <meta name="msapplication-TileColor" content="#da532c" />
         <meta name="theme-color" content="#ffffff" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={metaTitle} />
-        <meta name="twitter:description" content={metaDescription} />
         <meta
           name="twitter:image"
           content="https://app.mango.markets/images/1200x600-share.png?34567879"
@@ -148,6 +132,7 @@ function MyApp({ Component, pageProps }: AppProps) {
             <ThemeProvider defaultTheme="Mango Classic" storageKey={THEME_KEY}>
               <PageTitle />
               <Layout>
+                <Telemetry />
                 <Component {...pageProps} />
               </Layout>
               <TransactionNotification />
@@ -155,11 +140,50 @@ function MyApp({ Component, pageProps }: AppProps) {
           </WalletProvider>
         </ConnectionProvider>
       </QueryClientProvider>
-    </PlausibleProvider>
+    </>
   )
 }
 
 export default appWithTranslation(MyApp)
+
+const Telemetry = () => {
+  const router = useRouter()
+  const { wallet, connected } = useWallet()
+  const { theme } = useTheme()
+
+  const [sendTelemetry] = useLocalStorageState(SEND_TELEMETRY_KEY, true)
+
+  const telemetryProps = useMemo(() => {
+    const props = {
+      walletProvider: wallet?.adapter.name ?? 'unknown',
+      walletConnected: (wallet?.adapter.connected ?? 'false').toString(),
+      viewingAccount: router.asPath.includes('?address').toString(),
+      currentTheme: theme ?? 'unknown',
+    }
+
+    // Hack to update script tag
+    const el = document.getElementById('plausible')
+    if (el) {
+      Object.entries(props).forEach(([key, value]) => {
+        el.setAttribute(`event-${key}`, value)
+      })
+    }
+
+    return props
+  }, [wallet, connected, theme])
+
+  return (
+    <PlausibleProvider
+      domain="app.mango.markets"
+      customDomain="https://pl.mngo.cloud"
+      trackLocalhost={true}
+      selfHosted={true}
+      enabled={sendTelemetry}
+      scriptProps={{ id: 'plausible' }}
+      pageviewProps={telemetryProps}
+    />
+  )
+}
 
 const PageTitle = () => {
   const router = useRouter()

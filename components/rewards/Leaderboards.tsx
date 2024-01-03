@@ -24,6 +24,7 @@ import Badge from './Badge'
 import { tiers } from './RewardsPage'
 import useMangoAccount from 'hooks/useMangoAccount'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
+import { useHiddenMangoAccounts } from 'hooks/useHiddenMangoAccounts'
 
 const Leaderboards = ({
   goBack,
@@ -35,6 +36,7 @@ const Leaderboards = ({
   const { t } = useTranslation('rewards')
   const { isDesktop } = useViewport()
   const { mangoAccountAddress } = useMangoAccount()
+  const { hiddenAccounts } = useHiddenMangoAccounts()
   const [leaderboardToShow, setLeaderboardToShow] =
     useState<string>(leaderboard)
   const renderTierIcon = (tier: string) => {
@@ -68,11 +70,17 @@ const Leaderboards = ({
     },
   )
 
-  const leadersForTier =
-    leaderboardData && leaderboardData.length
-      ? leaderboardData.find((x) => x.tier === leaderboardToShow)
-          ?.leaderboard || []
-      : []
+  const leadersForTier = useMemo(() => {
+    if (!leaderboardData || !leaderboardData.length) return []
+    const data =
+      leaderboardData.find((x) => x.tier === leaderboardToShow)?.leaderboard ||
+      []
+    if (hiddenAccounts) {
+      return data.filter((d) => !hiddenAccounts.includes(d.mango_account))
+    } else {
+      return data
+    }
+  }, [leaderboardData, leaderboardToShow, hiddenAccounts])
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -157,6 +165,7 @@ const Leaderboards = ({
                 <FormatNumericValue
                   value={accountPointsAndRank.total_points}
                   decimals={0}
+                  roundUp
                 />
               </span>
             </div>

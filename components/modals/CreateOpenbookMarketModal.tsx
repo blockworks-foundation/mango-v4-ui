@@ -1,7 +1,10 @@
 import mangoStore, { CLUSTER } from '@store/mangoStore'
 import { ModalProps } from '../../types/modal'
 import Modal from '../shared/Modal'
-import { OPENBOOK_PROGRAM_ID } from '@blockworks-foundation/mango-v4'
+import {
+  OPENBOOK_PROGRAM_ID,
+  createComputeBudgetIx,
+} from '@blockworks-foundation/mango-v4'
 import { ChangeEvent, useEffect, useState } from 'react'
 import Label from '@components/forms/Label'
 import Input from '@components/forms/Input'
@@ -13,6 +16,7 @@ import { LAMPORTS_PER_SOL, PublicKey, Transaction } from '@solana/web3.js'
 import { MARKET_STATE_LAYOUT_V2 } from '@project-serum/serum'
 import { notify } from 'utils/notifications'
 import InlineNotification from '@components/shared/InlineNotification'
+import Switch from '@components/forms/Switch'
 
 type CreateObMarketForm = {
   programId: string
@@ -20,6 +24,7 @@ type CreateObMarketForm = {
   quoteMint: string
   minimumOrderSize: string
   minimumPriceTickSize: string
+  xlMarket: boolean
 }
 
 type TradingParams = {
@@ -41,6 +46,7 @@ const defaultFormValues: CreateObMarketForm = {
   quoteMint: '',
   minimumOrderSize: '',
   minimumPriceTickSize: '',
+  xlMarket: false,
 }
 
 type CreateOpenbookMarketModalProps = {
@@ -62,6 +68,7 @@ const CreateOpenbookMarketModal = ({
 }: ModalProps & CreateOpenbookMarketModalProps) => {
   const { t } = useTranslation(['governance'])
   const connection = mangoStore((s) => s.connection)
+  const fee = mangoStore((s) => s.priorityFee)
   const { connect, signAllTransactions, connected, publicKey } = useWallet()
 
   const [form, setForm] = useState({ ...defaultFormValues })
@@ -73,7 +80,6 @@ const CreateOpenbookMarketModal = ({
     setFormErrors({})
     setForm({ ...form, [propertyName]: value })
   }
-
   const handleCreate = async () => {
     if (!publicKey || !signAllTransactions) {
       return
@@ -95,6 +101,7 @@ const CreateOpenbookMarketModal = ({
         lotSize: Number(form.minimumOrderSize),
         tickSize: Number(form.minimumPriceTickSize),
         dexProgramId: new PublicKey(form.programId),
+        xlSize: form.xlMarket,
       })
 
       const txChunks = ixObj.innerTransactions
@@ -102,6 +109,7 @@ const CreateOpenbookMarketModal = ({
       const latestBlockhash = await connection.getLatestBlockhash('confirmed')
       for (const chunk of txChunks) {
         const tx = new Transaction()
+        tx.add(createComputeBudgetIx(fee))
         tx.add(...chunk.instructions)
         tx.lastValidBlockHeight = latestBlockhash.lastValidBlockHeight
         tx.recentBlockhash = latestBlockhash.blockhash
@@ -128,6 +136,7 @@ const CreateOpenbookMarketModal = ({
         type: 'success',
       })
     } catch (e) {
+      console.log(e)
       notify({
         title: t('error-creating-market'),
         description: `${e}`,
@@ -144,7 +153,11 @@ const CreateOpenbookMarketModal = ({
       baseMint: baseMint || '',
       quoteMint: quoteMint || '',
       minimumOrderSize: tradingParams.minOrderSize.toString(),
-      minimumPriceTickSize: tradingParams.priceIncrement.toString(),
+      minimumPriceTickSize:
+        tradingParams.priceIncrement <= 1e-9
+          ? '1e-8'
+          : tradingParams.priceIncrement.toString(),
+      xlMarket: false,
     })
   }, [
     baseMint,
@@ -252,6 +265,21 @@ const CreateOpenbookMarketModal = ({
               />
             </div>
           )}
+        </div>
+        <div className="flex items-center justify-between rounded-md border border-th-bkg-3 px-3 py-2">
+          <div>
+            <p className="text-th-fgd-2">{t('create-bigger-market')}</p>
+          </div>
+          <Switch
+            className="text-th-fgd-3"
+            checked={form.xlMarket}
+            onChange={(checked: boolean) =>
+              setForm({
+                ...form,
+                xlMarket: checked,
+              })
+            }
+          />
         </div>
       </div>
       {connected ? (

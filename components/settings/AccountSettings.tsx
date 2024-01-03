@@ -18,7 +18,7 @@ import useMangoAccountAccounts from 'hooks/useMangoAccountAccounts'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
 import { useCallback, useMemo, useState } from 'react'
-import { MAX_ACCOUNTS, PRIVACY_MODE } from 'utils/constants'
+import { PRIVACY_MODE } from 'utils/constants'
 import mangoStore from '@store/mangoStore'
 import { PublicKey } from '@solana/web3.js'
 import { notify } from 'utils/notifications'
@@ -41,6 +41,8 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import CreateAccountForm from '@components/account/CreateAccountForm'
 import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import { Serum3Market } from '@blockworks-foundation/mango-v4'
+
+export const SETTINGS_BUTTON_TITLE_CLASSES = 'text-th-fgd-1'
 
 const CLOSE_WRAPPER_CLASSNAMES =
   'mb-4 flex flex-col md:flex-row md:items-center md:justify-between rounded-md bg-th-bkg-2 px-4 py-3'
@@ -204,14 +206,22 @@ const AccountSettings = () => {
     [mangoAccount],
   )
 
+  const getSlotsUsedColor = (used: number, total: number) => {
+    if (used === total) {
+      return 'text-th-error'
+    } else if (used / total >= 0.75) {
+      return 'text-th-warning'
+    } else return 'text-th-success'
+  }
+
   return mangoAccount && group && !isDelegatedAccount && !isUnownedAccount ? (
     <div className="border-b border-th-bkg-3">
       <div className="pb-6">
-        <h3 className="mb-1 text-sm text-th-fgd-1">
+        <h3 className="mb-1 text-base text-th-fgd-1">
           {t('settings:account-address')}
         </h3>
         <div className="flex items-center space-x-2">
-          <p>{mangoAccount.publicKey.toString()}</p>
+          <p className="truncate">{mangoAccount.publicKey.toString()}</p>
           <IconButton
             hideBg
             onClick={() =>
@@ -232,7 +242,7 @@ const AccountSettings = () => {
           className={ROW_BUTTON_CLASSNAMES}
           onClick={() => setShowEditAccountModal(true)}
         >
-          <p>{t('edit-account')}</p>
+          <p className={SETTINGS_BUTTON_TITLE_CLASSES}>{t('edit-account')}</p>
           <div className="flex items-center space-x-2">
             <p className="text-th-fgd-2">{mangoAccount.name}</p>
             <PencilIcon className="h-5 w-5 text-th-fgd-2" />
@@ -242,9 +252,20 @@ const AccountSettings = () => {
           className={ROW_BUTTON_CLASSNAMES}
           onClick={() => setShowDelegateModal(true)}
         >
-          <p>{t('delegate-account')}</p>
-          <div className="flex items-center space-x-2">
-            <p className="text-th-fgd-2">
+          <div>
+            <div className="w-max">
+              <Tooltip content={t('delegate-account-tooltip')}>
+                <p
+                  className={`tooltip-underline mb-1 text-left ${SETTINGS_BUTTON_TITLE_CLASSES}`}
+                >
+                  {t('delegate-account')}
+                </p>
+              </Tooltip>
+            </div>
+            <p className="text-left">{t('delegate-account-desc')}</p>
+          </div>
+          <div className="flex items-center space-x-2 pl-4">
+            <p className="whitespace-nowrap text-th-fgd-2">
               {mangoAccount.delegate.toString() !== DEFAULT_DELEGATE
                 ? abbreviateAddress(mangoAccount.delegate)
                 : ''}
@@ -256,15 +277,429 @@ const AccountSettings = () => {
           className={ROW_BUTTON_CLASSNAMES}
           onClick={() => setShowCloseAccountModal(true)}
         >
-          <p>{t('close-account')}</p>
+          <p className={SETTINGS_BUTTON_TITLE_CLASSES}>{t('close-account')}</p>
           <TrashIcon className="h-5 w-5 text-th-fgd-2" />
         </button>
       </div>
-      <div className="pb-6">
-        <h3 className="mb-4 text-sm text-th-fgd-2">{t('settings:privacy')}</h3>
+      <div className="mb-4">
+        <div>
+          <h3 className="mb-1 text-base text-th-fgd-1">
+            {t('settings:account-slots')}
+          </h3>
+          <p>{t('settings:account-slots-desc')}</p>
+        </div>
+        {!isAccountFull ? (
+          <LinkButton
+            className="mt-3 flex items-center"
+            onClick={() => setShowAccountSizeModal(true)}
+          >
+            <SquaresPlusIcon className="mr-1.5 h-4 w-4 flex-shrink-0" />
+            <span className="whitespace-nowrap">
+              {t('settings:increase-account-slots')}
+            </span>
+          </LinkButton>
+        ) : null}
+      </div>
+      <div className="border-b border-th-bkg-3">
+        <Disclosure>
+          {({ open }) => (
+            <>
+              <Disclosure.Button className="w-full border-t border-th-bkg-3 py-4 md:px-4 md:hover:bg-th-bkg-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-left text-th-fgd-1">{t('tokens')}</p>
+                    <p
+                      className={`mt-1 ${getSlotsUsedColor(
+                        usedTokens.length,
+                        totalTokens.length,
+                      )}`}
+                    >
+                      {t('settings:slots-used', {
+                        used: usedTokens.length,
+                        total: totalTokens.length,
+                        type: t('tokens').toLowerCase(),
+                      })}
+                    </p>
+                  </div>
+                  <ChevronDownIcon
+                    className={`${
+                      open ? 'rotate-180' : 'rotate-360'
+                    } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                  />
+                </div>
+              </Disclosure.Button>
+              <Disclosure.Panel className="py-2 md:px-4">
+                <div className={CLOSE_WRAPPER_CLASSNAMES}>
+                  <p className="mt-1">
+                    {t('settings:close-token-positions-desc')}
+                  </p>
+                </div>
+                {usedTokens.length ? (
+                  usedTokens.map((token, i) => {
+                    const tokenBank = group.getFirstBankByTokenIndex(
+                      token.tokenIndex,
+                    )
+                    const status = tokenStatus.find(
+                      (t) => t.tokenIndex === token.tokenIndex,
+                    )
+
+                    const isCollateral =
+                      tokenBank
+                        .scaledInitAssetWeight(tokenBank.price)
+                        .toNumber() > 0
+                    return (
+                      <div
+                        className={SLOT_ROW_CLASSNAMES}
+                        key={token.tokenIndex}
+                      >
+                        <div className="flex items-center">
+                          <p className="mr-3 text-th-fgd-4">{i + 1}.</p>
+                          <TokenLogo bank={tokenBank} size={20} />
+                          <div className="ml-2">
+                            <p className="text-th-fgd-2">{tokenBank.name}</p>
+                            <p className="font-mono text-xs text-th-fgd-4">
+                              {status?.balance}
+                            </p>
+                          </div>
+                        </div>
+                        {status?.isClosable ? (
+                          <Button
+                            disabled={submitting}
+                            onClick={() => handleCloseToken(tokenBank.mint)}
+                            secondary
+                            size="small"
+                          >
+                            {t('close')}
+                          </Button>
+                        ) : (
+                          <Tooltip
+                            content={
+                              tokenBank.name === 'USDC'
+                                ? t('settings:tooltip-close-usdc-instructions')
+                                : isCollateral
+                                ? t(
+                                    'settings:tooltip-close-collateral-token-instructions',
+                                    {
+                                      token: tokenBank.name,
+                                    },
+                                  )
+                                : t(
+                                    'settings:tooltip-close-token-instructions',
+                                    {
+                                      token: tokenBank.name,
+                                    },
+                                  )
+                            }
+                          >
+                            <p className="tooltip-underline">
+                              {t('settings:close-instructions')}
+                            </p>
+                          </Tooltip>
+                        )}
+                      </div>
+                    )
+                  })
+                ) : (
+                  <p className="mb-2 text-center">
+                    {t('notifications:empty-state-title')}...
+                  </p>
+                )}
+              </Disclosure.Panel>
+            </>
+          )}
+        </Disclosure>
+        <Disclosure>
+          {({ open }) => (
+            <>
+              <Disclosure.Button className="w-full border-t border-th-bkg-3 py-4 md:px-4 md:hover:bg-th-bkg-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-left text-th-fgd-1">
+                      {t('settings:spot-markets')}
+                    </p>
+                    <p
+                      className={`mt-1 ${getSlotsUsedColor(
+                        usedSerum3.length,
+                        totalSerum3.length,
+                      )}`}
+                    >
+                      {t('settings:slots-used', {
+                        used: usedSerum3.length,
+                        total: totalSerum3.length,
+                        type: t('settings:spot-markets').toLowerCase(),
+                      })}
+                    </p>
+                  </div>
+                  <ChevronDownIcon
+                    className={`${
+                      open ? 'rotate-180' : 'rotate-360'
+                    } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                  />
+                </div>
+              </Disclosure.Button>
+              <Disclosure.Panel className="py-2 md:px-4">
+                <div className={CLOSE_WRAPPER_CLASSNAMES}>
+                  <p className="mt-1">{t('settings:close-spot-oo-desc')}</p>
+                </div>
+                {usedSerum3.length ? (
+                  usedSerum3.map((mkt, i) => {
+                    const market = group.getSerum3MarketByMarketIndex(
+                      mkt.marketIndex,
+                    )
+                    const isUnused = !!emptySerum3.find(
+                      (m) => m.marketIndex === mkt.marketIndex,
+                    )
+                    return (
+                      <div
+                        className={SLOT_ROW_CLASSNAMES}
+                        key={mkt.marketIndex}
+                      >
+                        <div className="flex items-center">
+                          <p className="mr-3 text-th-fgd-4">{i + 1}.</p>
+                          <MarketLogos market={market} />
+                          <p className="text-th-fgd-2">{market.name}</p>
+                        </div>
+                        {isUnused ? (
+                          <Button
+                            disabled={submitting}
+                            onClick={() => handleCloseSerumOos(market)}
+                            size="small"
+                          >
+                            {t('close')}
+                          </Button>
+                        ) : (
+                          <IsUnusedBadge isUnused={isUnused} />
+                        )}
+                      </div>
+                    )
+                  })
+                ) : (
+                  <p className="mb-2 text-center">
+                    {t('notifications:empty-state-title')}...
+                  </p>
+                )}
+              </Disclosure.Panel>
+            </>
+          )}
+        </Disclosure>
+        <Disclosure>
+          {({ open }) => (
+            <>
+              <Disclosure.Button className="w-full border-t border-th-bkg-3 py-4 md:px-4 md:hover:bg-th-bkg-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-left text-th-fgd-1">
+                      {t('settings:perp-markets')}
+                    </p>
+                    <p
+                      className={`mt-1 ${getSlotsUsedColor(
+                        usedPerps.length,
+                        totalPerps.length,
+                      )}`}
+                    >
+                      {t('settings:slots-used', {
+                        used: usedPerps.length,
+                        total: totalPerps.length,
+                        type: t('settings:perp-positions').toLowerCase(),
+                      })}
+                    </p>
+                  </div>
+                  <ChevronDownIcon
+                    className={`${
+                      open ? 'rotate-180' : 'rotate-360'
+                    } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                  />
+                </div>
+              </Disclosure.Button>
+              <Disclosure.Panel className="py-2 md:px-4">
+                <div className={CLOSE_WRAPPER_CLASSNAMES}>
+                  <p className="mt-1">{t('settings:close-perp-desc')}</p>
+                </div>
+                {usedPerps.length ? (
+                  usedPerps.map((perp, i) => {
+                    const market = group.getPerpMarketByMarketIndex(
+                      perp.marketIndex,
+                    )
+                    const isUnused = !!emptyPerps.find(
+                      (mkt) => mkt.marketIndex === perp.marketIndex,
+                    )
+                    return (
+                      <div
+                        className={SLOT_ROW_CLASSNAMES}
+                        key={perp.marketIndex}
+                      >
+                        <div className="flex items-center">
+                          <p className="mr-3 text-th-fgd-4">{i + 1}.</p>
+                          <MarketLogos market={market} />
+                          <p className="text-th-fgd-2">{market.name}</p>
+                        </div>
+                        {isUnused ? (
+                          <Button
+                            disabled={submitting}
+                            onClick={() =>
+                              handleClosePerpAccounts(perp.marketIndex)
+                            }
+                            size="small"
+                          >
+                            {t('close')}
+                          </Button>
+                        ) : (
+                          <IsUnusedBadge isUnused={isUnused} />
+                        )}
+                      </div>
+                    )
+                  })
+                ) : (
+                  <p className="mb-2 text-center">
+                    {t('notifications:empty-state-title')}...
+                  </p>
+                )}
+              </Disclosure.Panel>
+            </>
+          )}
+        </Disclosure>
+        <Disclosure>
+          {({ open }) => (
+            <>
+              <Disclosure.Button className="w-full border-t border-th-bkg-3 py-4 md:px-4 md:hover:bg-th-bkg-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-left text-th-fgd-1">
+                      {t('settings:perp-open-orders')}
+                    </p>
+                    <p
+                      className={`mt-1 ${getSlotsUsedColor(
+                        usedPerpOo.length,
+                        totalPerpOpenOrders.length,
+                      )}`}
+                    >
+                      {t('settings:slots-used', {
+                        used: usedPerpOo.length,
+                        total: totalPerpOpenOrders.length,
+                        type: t('settings:perp-open-orders').toLowerCase(),
+                      })}
+                    </p>
+                  </div>
+                  <ChevronDownIcon
+                    className={`${
+                      open ? 'rotate-180' : 'rotate-360'
+                    } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                  />
+                </div>
+              </Disclosure.Button>
+              <Disclosure.Panel className="py-2 md:px-4">
+                {usedPerpOo.length ? (
+                  usedPerpOo.map((perp, i) => {
+                    const market = group.getPerpMarketByMarketIndex(
+                      perp.orderMarket,
+                    )
+                    return (
+                      <div
+                        className="mb-2 flex items-center"
+                        key={perp.orderMarket}
+                      >
+                        <p className="mr-3 text-th-fgd-4">{i + 1}.</p>
+                        <MarketLogos market={market} />
+                        <p className="text-th-fgd-2">{market.name}</p>
+                      </div>
+                    )
+                  })
+                ) : (
+                  <p className="mb-2 text-center">
+                    {t('notifications:empty-state-title')}...
+                  </p>
+                )}
+              </Disclosure.Panel>
+            </>
+          )}
+        </Disclosure>
+        <Disclosure>
+          {({ open }) => (
+            <>
+              <Disclosure.Button className="w-full border-t border-th-bkg-3 py-4 md:px-4 md:hover:bg-th-bkg-2">
+                <div className="flex items-center justify-between">
+                  <p className={SETTINGS_BUTTON_TITLE_CLASSES}>
+                    {t('trade:trigger-orders')}
+                  </p>
+                  <ChevronDownIcon
+                    className={`${
+                      open ? 'rotate-180' : 'rotate-360'
+                    } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                  />
+                </div>
+              </Disclosure.Button>
+              <Disclosure.Panel className="py-2 md:px-4">
+                <div className={CLOSE_WRAPPER_CLASSNAMES}>
+                  <p className="font-bold text-th-fgd-2">
+                    {t('settings:trigger-orders-used', {
+                      orders: usedTcs.length,
+                    })}
+                  </p>
+                  <Button
+                    className="mt-4 whitespace-nowrap md:ml-4 md:mt-0"
+                    disabled={!usedTcs.length || !!cancelTcs}
+                    onClick={() => handleCancelAll(setCancelTcs)}
+                    secondary
+                    size="small"
+                  >
+                    {t('trade:cancel-all')}
+                  </Button>
+                </div>
+                {usedTcs.length ? (
+                  usedTcs.map((tcs, i) => {
+                    const buyBank = group.getFirstBankByTokenIndex(
+                      tcs.buyTokenIndex,
+                    )
+                    const sellBank = group.getFirstBankByTokenIndex(
+                      tcs.sellTokenIndex,
+                    )
+                    const maxBuy = tcs.getMaxBuyUi(group)
+                    const maxSell = tcs.getMaxSellUi(group)
+                    let side
+                    if (maxBuy === 0 || maxBuy > maxSell) {
+                      side = 'sell'
+                    } else {
+                      side = 'buy'
+                    }
+                    const formattedBuyTokenName = formatTokenSymbol(
+                      buyBank.name,
+                    )
+                    const formattedSellTokenName = formatTokenSymbol(
+                      sellBank.name,
+                    )
+                    const pair =
+                      side === 'sell'
+                        ? `${formattedSellTokenName}/${formattedBuyTokenName}`
+                        : `${formattedBuyTokenName}/${formattedSellTokenName}`
+                    return (
+                      <div
+                        className="mb-2 flex items-center"
+                        key={tcs.id.toString()}
+                      >
+                        <p className="mr-3 text-th-fgd-4">{i + 1}.</p>
+                        <p className="text-th-fgd-2">{pair}</p>
+                      </div>
+                    )
+                  })
+                ) : (
+                  <p className="mb-2 text-center">
+                    {t('notifications:empty-state-title')}...
+                  </p>
+                )}
+              </Disclosure.Panel>
+            </>
+          )}
+        </Disclosure>
+      </div>
+      <div className="pt-6">
+        <h3 className="mb-4 text-base text-th-fgd-1">
+          {t('settings:privacy')}
+        </h3>
         <div className="flex items-center justify-between border-t border-th-bkg-3 py-4 md:px-4">
           <Tooltip content={t('settings:tooltip-privacy-mode')}>
-            <p className="tooltip-underline">{t('settings:privacy-mode')}</p>
+            <p className={`tooltip-underline ${SETTINGS_BUTTON_TITLE_CLASSES}`}>
+              {t('settings:privacy-mode')}
+            </p>
           </Tooltip>
           <Switch
             checked={privacyMode}
@@ -273,395 +708,6 @@ const AccountSettings = () => {
         </div>
         <HideMangoAccount />
       </div>
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-sm text-th-fgd-2">{t('settings:account-slots')}</h3>
-        {!isAccountFull ? (
-          <LinkButton
-            className="flex items-center"
-            onClick={() => setShowAccountSizeModal(true)}
-          >
-            <SquaresPlusIcon className="mr-1.5 h-4 w-4" />
-            {t('settings:increase-account-slots')}
-          </LinkButton>
-        ) : null}
-      </div>
-      <Disclosure>
-        {({ open }) => (
-          <>
-            <Disclosure.Button className="w-full border-t border-th-bkg-3 py-4 md:px-4">
-              <div className="flex items-center justify-between">
-                <Tooltip
-                  content={t('settings:tooltip-token-accounts', {
-                    max: MAX_ACCOUNTS.tokenAccounts,
-                  })}
-                >
-                  <p className="tooltip-underline">{t('tokens')}</p>
-                </Tooltip>
-                <ChevronDownIcon
-                  className={`${
-                    open ? 'rotate-180' : 'rotate-360'
-                  } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
-                />
-              </div>
-            </Disclosure.Button>
-            <Disclosure.Panel className="pb-2 md:px-4">
-              <div className={CLOSE_WRAPPER_CLASSNAMES}>
-                <div>
-                  <p className="font-bold text-th-fgd-2">
-                    {t('settings:slots-used', {
-                      used: usedTokens.length,
-                      total: totalTokens.length,
-                      type: t('tokens').toLowerCase(),
-                    })}
-                  </p>
-                  <p className="mt-1">
-                    {t('settings:close-token-positions-desc')}
-                  </p>
-                </div>
-              </div>
-              {usedTokens.length ? (
-                usedTokens.map((token, i) => {
-                  const tokenBank = group.getFirstBankByTokenIndex(
-                    token.tokenIndex,
-                  )
-                  const status = tokenStatus.find(
-                    (t) => t.tokenIndex === token.tokenIndex,
-                  )
-
-                  const isCollateral =
-                    tokenBank
-                      .scaledInitAssetWeight(tokenBank.price)
-                      .toNumber() > 0
-                  return (
-                    <div className={SLOT_ROW_CLASSNAMES} key={token.tokenIndex}>
-                      <div className="flex items-center">
-                        <p className="mr-3 text-th-fgd-4">{i + 1}.</p>
-                        <TokenLogo bank={tokenBank} size={20} />
-                        <div className="ml-2">
-                          <p className="text-th-fgd-2">{tokenBank.name}</p>
-                          <p className="font-mono text-xs text-th-fgd-4">
-                            {status?.balance}
-                          </p>
-                        </div>
-                      </div>
-                      {status?.isClosable ? (
-                        <Button
-                          disabled={submitting}
-                          onClick={() => handleCloseToken(tokenBank.mint)}
-                          secondary
-                          size="small"
-                        >
-                          {t('close')}
-                        </Button>
-                      ) : (
-                        <Tooltip
-                          content={
-                            tokenBank.name === 'USDC'
-                              ? t('settings:tooltip-close-usdc-instructions')
-                              : isCollateral
-                              ? t(
-                                  'settings:tooltip-close-collateral-token-instructions',
-                                  {
-                                    token: tokenBank.name,
-                                  },
-                                )
-                              : t('settings:tooltip-close-token-instructions', {
-                                  token: tokenBank.name,
-                                })
-                          }
-                        >
-                          <p className="tooltip-underline">
-                            {t('settings:close-instructions')}
-                          </p>
-                        </Tooltip>
-                      )}
-                    </div>
-                  )
-                })
-              ) : (
-                <p className="mb-2 text-center">
-                  {t('notifications:empty-state-title')}...
-                </p>
-              )}
-            </Disclosure.Panel>
-          </>
-        )}
-      </Disclosure>
-      <Disclosure>
-        {({ open }) => (
-          <>
-            <Disclosure.Button className="w-full border-t border-th-bkg-3 py-4 md:px-4">
-              <div className="flex items-center justify-between">
-                <Tooltip
-                  content={t('settings:tooltip-spot-markets', {
-                    max: MAX_ACCOUNTS.spotOpenOrders,
-                  })}
-                >
-                  <p className="tooltip-underline">
-                    {t('settings:spot-markets')}
-                  </p>
-                </Tooltip>
-                <ChevronDownIcon
-                  className={`${
-                    open ? 'rotate-180' : 'rotate-360'
-                  } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
-                />
-              </div>
-            </Disclosure.Button>
-            <Disclosure.Panel className="pb-2 md:px-4">
-              <div className={CLOSE_WRAPPER_CLASSNAMES}>
-                <div>
-                  <p className="font-bold text-th-fgd-2">
-                    {t('settings:slots-used', {
-                      used: usedSerum3.length,
-                      total: totalSerum3.length,
-                      type: t('settings:spot-markets').toLowerCase(),
-                    })}
-                  </p>
-                  <p className="mt-1">{t('settings:close-spot-oo-desc')}</p>
-                </div>
-              </div>
-              {usedSerum3.length ? (
-                usedSerum3.map((mkt, i) => {
-                  const market = group.getSerum3MarketByMarketIndex(
-                    mkt.marketIndex,
-                  )
-                  const isUnused = !!emptySerum3.find(
-                    (m) => m.marketIndex === mkt.marketIndex,
-                  )
-                  return (
-                    <div className={SLOT_ROW_CLASSNAMES} key={mkt.marketIndex}>
-                      <div className="flex items-center">
-                        <p className="mr-3 text-th-fgd-4">{i + 1}.</p>
-                        <MarketLogos market={market} />
-                        <p className="text-th-fgd-2">{market.name}</p>
-                      </div>
-                      {isUnused ? (
-                        <Button
-                          disabled={submitting}
-                          onClick={() => handleCloseSerumOos(market)}
-                          size="small"
-                        >
-                          {t('close')}
-                        </Button>
-                      ) : (
-                        <IsUnusedBadge isUnused={isUnused} />
-                      )}
-                    </div>
-                  )
-                })
-              ) : (
-                <p className="mb-2 text-center">
-                  {t('notifications:empty-state-title')}...
-                </p>
-              )}
-            </Disclosure.Panel>
-          </>
-        )}
-      </Disclosure>
-      <Disclosure>
-        {({ open }) => (
-          <>
-            <Disclosure.Button className="w-full border-t border-th-bkg-3 py-4 md:px-4">
-              <div className="flex items-center justify-between">
-                <Tooltip
-                  content={t('settings:tooltip-perp-markets', {
-                    max: MAX_ACCOUNTS.perpAccounts,
-                  })}
-                >
-                  <p className="tooltip-underline">
-                    {t('settings:perp-markets')}
-                  </p>
-                </Tooltip>
-                <ChevronDownIcon
-                  className={`${
-                    open ? 'rotate-180' : 'rotate-360'
-                  } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
-                />
-              </div>
-            </Disclosure.Button>
-            <Disclosure.Panel className="pb-2 md:px-4">
-              <div className={CLOSE_WRAPPER_CLASSNAMES}>
-                <div>
-                  <p className="font-bold text-th-fgd-2">
-                    {t('settings:slots-used', {
-                      used: usedPerps.length,
-                      total: totalPerps.length,
-                      type: t('settings:perp-positions').toLowerCase(),
-                    })}
-                  </p>
-                  <p className="mt-1">{t('settings:close-perp-desc')}</p>
-                </div>
-              </div>
-              {usedPerps.length ? (
-                usedPerps.map((perp, i) => {
-                  const market = group.getPerpMarketByMarketIndex(
-                    perp.marketIndex,
-                  )
-                  const isUnused = !!emptyPerps.find(
-                    (mkt) => mkt.marketIndex === perp.marketIndex,
-                  )
-                  return (
-                    <div className={SLOT_ROW_CLASSNAMES} key={perp.marketIndex}>
-                      <div className="flex items-center">
-                        <p className="mr-3 text-th-fgd-4">{i + 1}.</p>
-                        <MarketLogos market={market} />
-                        <p className="text-th-fgd-2">{market.name}</p>
-                      </div>
-                      {isUnused ? (
-                        <Button
-                          disabled={submitting}
-                          onClick={() =>
-                            handleClosePerpAccounts(perp.marketIndex)
-                          }
-                          size="small"
-                        >
-                          {t('close')}
-                        </Button>
-                      ) : (
-                        <IsUnusedBadge isUnused={isUnused} />
-                      )}
-                    </div>
-                  )
-                })
-              ) : (
-                <p className="mb-2 text-center">
-                  {t('notifications:empty-state-title')}...
-                </p>
-              )}
-            </Disclosure.Panel>
-          </>
-        )}
-      </Disclosure>
-      <Disclosure>
-        {({ open }) => (
-          <>
-            <Disclosure.Button className="w-full border-t border-th-bkg-3 py-4 md:px-4">
-              <div className="flex items-center justify-between">
-                <Tooltip
-                  content={t('settings:tooltip-perp-open-orders', {
-                    max: MAX_ACCOUNTS.perpOpenOrders,
-                  })}
-                >
-                  <p className="tooltip-underline">
-                    {t('settings:perp-open-orders')}
-                  </p>
-                </Tooltip>
-                <ChevronDownIcon
-                  className={`${
-                    open ? 'rotate-180' : 'rotate-360'
-                  } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
-                />
-              </div>
-            </Disclosure.Button>
-            <Disclosure.Panel className="pb-2 md:px-4">
-              <div className={CLOSE_WRAPPER_CLASSNAMES}>
-                <p className="font-bold text-th-fgd-2">
-                  {t('settings:slots-used', {
-                    used: usedPerpOo.length,
-                    total: totalPerpOpenOrders.length,
-                    type: t('settings:perp-open-orders').toLowerCase(),
-                  })}
-                </p>
-              </div>
-              {usedPerpOo.length ? (
-                usedPerpOo.map((perp, i) => {
-                  const market = group.getPerpMarketByMarketIndex(
-                    perp.orderMarket,
-                  )
-                  return (
-                    <div
-                      className="mb-2 flex items-center"
-                      key={perp.orderMarket}
-                    >
-                      <p className="mr-3 text-th-fgd-4">{i + 1}.</p>
-                      <MarketLogos market={market} />
-                      <p className="text-th-fgd-2">{market.name}</p>
-                    </div>
-                  )
-                })
-              ) : (
-                <p className="mb-2 text-center">
-                  {t('notifications:empty-state-title')}...
-                </p>
-              )}
-            </Disclosure.Panel>
-          </>
-        )}
-      </Disclosure>
-      <Disclosure>
-        {({ open }) => (
-          <>
-            <Disclosure.Button className="w-full border-t border-th-bkg-3 py-4 md:px-4">
-              <div className="flex items-center justify-between">
-                <p>{t('trade:trigger-orders')}</p>
-                <ChevronDownIcon
-                  className={`${
-                    open ? 'rotate-180' : 'rotate-360'
-                  } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
-                />
-              </div>
-            </Disclosure.Button>
-            <Disclosure.Panel className="pb-2 md:px-4">
-              <div className={CLOSE_WRAPPER_CLASSNAMES}>
-                <p className="font-bold text-th-fgd-2">
-                  {t('settings:trigger-orders-used', {
-                    orders: usedTcs.length,
-                  })}
-                </p>
-                <Button
-                  className="mt-4 whitespace-nowrap md:ml-4 md:mt-0"
-                  disabled={!usedTcs.length || !!cancelTcs}
-                  onClick={() => handleCancelAll(setCancelTcs)}
-                  secondary
-                  size="small"
-                >
-                  {t('trade:cancel-all')}
-                </Button>
-              </div>
-              {usedTcs.length ? (
-                usedTcs.map((tcs, i) => {
-                  const buyBank = group.getFirstBankByTokenIndex(
-                    tcs.buyTokenIndex,
-                  )
-                  const sellBank = group.getFirstBankByTokenIndex(
-                    tcs.sellTokenIndex,
-                  )
-                  const maxBuy = tcs.getMaxBuyUi(group)
-                  const maxSell = tcs.getMaxSellUi(group)
-                  let side
-                  if (maxBuy === 0 || maxBuy > maxSell) {
-                    side = 'sell'
-                  } else {
-                    side = 'buy'
-                  }
-                  const formattedBuyTokenName = formatTokenSymbol(buyBank.name)
-                  const formattedSellTokenName = formatTokenSymbol(
-                    sellBank.name,
-                  )
-                  const pair =
-                    side === 'sell'
-                      ? `${formattedSellTokenName}/${formattedBuyTokenName}`
-                      : `${formattedBuyTokenName}/${formattedSellTokenName}`
-                  return (
-                    <div
-                      className="mb-2 flex items-center"
-                      key={tcs.id.toString()}
-                    >
-                      <p className="mr-3 text-th-fgd-4">{i + 1}.</p>
-                      <p className="text-th-fgd-2">{pair}</p>
-                    </div>
-                  )
-                })
-              ) : (
-                <p className="mb-2 text-center">
-                  {t('notifications:empty-state-title')}...
-                </p>
-              )}
-            </Disclosure.Panel>
-          </>
-        )}
-      </Disclosure>
       {showAccountSizeModal ? (
         <MangoAccountSizeModal
           isOpen={showAccountSizeModal}

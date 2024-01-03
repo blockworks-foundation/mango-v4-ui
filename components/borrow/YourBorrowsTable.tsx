@@ -16,13 +16,18 @@ import ConnectEmptyState from '../shared/ConnectEmptyState'
 import { useWallet } from '@solana/wallet-adapter-react'
 import Decimal from 'decimal.js'
 import Button, { IconButton } from '@components/shared/Button'
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import BorrowRepayModal from '@components/modals/BorrowRepayModal'
 import Tooltip from '@components/shared/Tooltip'
 import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 import { BankWithBalance } from 'hooks/useBanksWithBalances'
 import { Disclosure, Transition } from '@headlessui/react'
 import TableTokenName from '@components/shared/TableTokenName'
+import CloseBorrowModal from '@components/modals/CloseBorrowModal'
+import {
+  handleCloseBorrowModal,
+  handleOpenCloseBorrowModal,
+} from '@components/TokenList'
 
 export const getAvailableToBorrow = (
   bankWithBal: BankWithBalance,
@@ -48,7 +53,8 @@ export const getAvailableToBorrow = (
 const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
   const { t } = useTranslation(['common', 'trade'])
   const [showBorrowModal, setShowBorrowModal] = useState(false)
-  const [showRepayModal, setShowRepayModal] = useState(false)
+  const [showCloseBorrowModal, setCloseBorrowModal] = useState(false)
+  const [closeBorrowBank, setCloseBorrowBank] = useState<Bank | undefined>()
   const [selectedToken, setSelectedToken] = useState('')
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const { group } = useMangoGroup()
@@ -56,13 +62,21 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
   const { connected } = useWallet()
   const showTableView = width ? width > breakpoints.md : false
 
-  const handleShowActionModals = useCallback(
-    (token: string, action: 'borrow' | 'repay') => {
-      setSelectedToken(token)
-      action === 'borrow' ? setShowBorrowModal(true) : setShowRepayModal(true)
-    },
-    [],
-  )
+  const handleShowActionModals = (token: string) => {
+    setSelectedToken(token)
+    setShowBorrowModal(true)
+  }
+
+  const openCloseBorrowModal = (borrowBank: Bank) => {
+    setCloseBorrowModal(true)
+    setCloseBorrowBank(borrowBank)
+    handleOpenCloseBorrowModal(borrowBank)
+  }
+
+  const closeBorrowModal = () => {
+    setCloseBorrowModal(false)
+    handleCloseBorrowModal()
+  }
 
   return (
     <>
@@ -122,9 +136,7 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
                       <div className="flex items-center justify-end space-x-2">
                         <Tooltip content={`${t('repay')} ${bank.name}`}>
                           <IconButton
-                            onClick={() =>
-                              handleShowActionModals(bank.name, 'repay')
-                            }
+                            onClick={() => openCloseBorrowModal(bank)}
                             size="small"
                           >
                             <ArrowDownRightIcon className="h-5 w-5" />
@@ -133,9 +145,7 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
                         <Tooltip content={`${t('borrow')} ${bank.name}`}>
                           <IconButton
                             disabled={available.eq(0)}
-                            onClick={() =>
-                              handleShowActionModals(bank.name, 'borrow')
-                            }
+                            onClick={() => handleShowActionModals(bank.name)}
                             size="small"
                           >
                             <ArrowUpLeftIcon className="h-5 w-5" />
@@ -215,9 +225,7 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
                             <Button
                               className="col-span-1 flex items-center justify-center"
                               disabled={!mangoAccount}
-                              onClick={() =>
-                                handleShowActionModals(bank.name, 'repay')
-                              }
+                              onClick={() => openCloseBorrowModal(bank)}
                               secondary
                             >
                               <ArrowDownRightIcon className="mr-2 h-5 w-5" />
@@ -225,9 +233,7 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
                             </Button>
                             <Button
                               className="col-span-1 flex items-center justify-center"
-                              onClick={() =>
-                                handleShowActionModals(bank.name, 'borrow')
-                              }
+                              onClick={() => handleShowActionModals(bank.name)}
                               secondary
                             >
                               <ArrowUpLeftIcon className="mr-2 h-5 w-5" />
@@ -265,12 +271,11 @@ const YourBorrowsTable = ({ banks }: { banks: BankWithBalance[] }) => {
           token={selectedToken}
         />
       ) : null}
-      {showRepayModal ? (
-        <BorrowRepayModal
-          action="repay"
-          isOpen={showRepayModal}
-          onClose={() => setShowRepayModal(false)}
-          token={selectedToken}
+      {showCloseBorrowModal ? (
+        <CloseBorrowModal
+          borrowBank={closeBorrowBank}
+          isOpen={showCloseBorrowModal}
+          onClose={closeBorrowModal}
         />
       ) : null}
     </>

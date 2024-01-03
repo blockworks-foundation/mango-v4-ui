@@ -162,49 +162,54 @@ export const queryBirdeyeBars = async (
   quote_token: string,
   market: string,
 ): Promise<Bar[]> => {
-  const { from, to } = periodParams
+  try {
+    const { from, to } = periodParams
 
-  const urlParameters = {
-    base_address: tokenAddress,
-    quote_address: quote_token,
-    type: parseResolution(resolution),
-    time_from: from,
-    time_to: to,
-    merge_market_id: market,
-  }
+    const urlParameters = {
+      base_address: tokenAddress,
+      quote_address: quote_token,
+      type: parseResolution(resolution),
+      time_from: from,
+      time_to: to,
+      merge_market_id: market,
+    }
 
-  const query = Object.keys(urlParameters)
-    .map(
-      (name: string) =>
-        `${name}=${encodeURIComponent((urlParameters as any)[name])}`,
-    )
-    .join('&')
+    const query = Object.keys(urlParameters)
+      .map(
+        (name: string) =>
+          `${name}=${encodeURIComponent((urlParameters as any)[name])}`,
+      )
+      .join('&')
 
-  const data = await makeApiRequest(`defi/ohlcv/base_quote_merge?${query}`)
-  if (!data.success || data.data.items.length === 0) {
+    const data = await makeApiRequest(`defi/ohlcv/base_quote_merge?${query}`)
+    if (!data.success || data.data.items.length === 0) {
+      return []
+    }
+
+    let bars: Bar[] = []
+    for (const bar of data.data.items) {
+      if (bar.unixTime >= from && bar.unixTime < to) {
+        const timestamp = bar.unixTime * 1000
+        if (bar.h >= 223111) continue
+        bars = [
+          ...bars,
+          {
+            time: timestamp,
+            low: bar.l,
+            high: bar.h,
+            open: bar.o,
+            close: bar.c,
+            volume: bar.vQuote,
+            timestamp,
+          },
+        ]
+      }
+    }
+    return bars
+  } catch (e) {
+    console.log('failed to query birdeye bars', e)
     return []
   }
-
-  let bars: Bar[] = []
-  for (const bar of data.data.items) {
-    if (bar.unixTime >= from && bar.unixTime < to) {
-      const timestamp = bar.unixTime * 1000
-      if (bar.h >= 223111) continue
-      bars = [
-        ...bars,
-        {
-          time: timestamp,
-          low: bar.l,
-          high: bar.h,
-          open: bar.o,
-          close: bar.c,
-          volume: bar.v,
-          timestamp,
-        },
-      ]
-    }
-  }
-  return bars
 }
 
 const datafeed = {

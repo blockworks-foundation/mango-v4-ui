@@ -5,12 +5,19 @@ import { ChangeEvent, useCallback, useMemo, useState } from 'react'
 import mangoStore, { CLUSTER } from '@store/mangoStore'
 import { Token } from 'types/jupiter'
 import { handleGetRoutes } from '@components/swap/useQuoteRoutes'
-import { JUPITER_PRICE_API_MAINNET, USDC_MINT } from 'utils/constants'
-import { AccountMeta, PublicKey, SYSVAR_RENT_PUBKEY } from '@solana/web3.js'
-import { useWallet } from '@solana/wallet-adapter-react'
-import { OPENBOOK_PROGRAM_ID, toNative } from '@blockworks-foundation/mango-v4'
 import {
-  MANGO_DAO_FAST_LISTING_GOVERNANCE,
+  JUPITER_PRICE_API_MAINNET,
+  JUPITER_REFERRAL_PK,
+  USDC_MINT,
+} from 'utils/constants'
+import { PublicKey, SYSVAR_RENT_PUBKEY, Transaction } from '@solana/web3.js'
+import { useWallet } from '@solana/wallet-adapter-react'
+import {
+  OPENBOOK_PROGRAM_ID,
+  toNative,
+  toUiDecimals,
+} from '@blockworks-foundation/mango-v4'
+import {
   MANGO_DAO_FAST_LISTING_WALLET,
   MANGO_DAO_WALLET,
   MANGO_DAO_WALLET_GOVERNANCE,
@@ -39,14 +46,17 @@ import OnBoarding from '../OnBoarding'
 import CreateOpenbookMarketModal from '@components/modals/CreateOpenbookMarketModal'
 import useJupiterMints from 'hooks/useJupiterMints'
 import CreateSwitchboardOracleModal from '@components/modals/CreateSwitchboardOracleModal'
-import { BN } from '@coral-xyz/anchor'
 import {
-  LISTING_PRESETS_KEYS,
   LISTING_PRESETS,
-  coinTiersToNames,
   calculateMarketTradingParams,
-  LISTING_PRESETS_PYTH,
+  getSwitchBoardPresets,
+  getPythPresets,
+  LISTING_PRESET,
+  getPresetWithAdjustedDepositLimit,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
+import Checkbox from '@components/forms/Checkbox'
+import { ReferralProvider } from '@jup-ag/referral-sdk'
+import { BN } from '@coral-xyz/anchor'
 
 type FormErrors = Partial<Record<keyof TokenListForm, string>>
 
@@ -63,6 +73,7 @@ type TokenListForm = {
   marketName: string
   proposalTitle: string
   proposalDescription: string
+  listForSwapOnly: boolean
 }
 
 const defaultTokenListFormValues: TokenListForm = {
@@ -78,6 +89,7 @@ const defaultTokenListFormValues: TokenListForm = {
   marketName: '',
   proposalTitle: '',
   proposalDescription: '',
+  listForSwapOnly: false,
 }
 
 const TWENTY_K_USDC_BASE = '20000000000'
@@ -93,6 +105,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const vsrClient = GovernanceStore((s) => s.vsrClient)
   const governances = GovernanceStore((s) => s.governances)
   const loadingRealm = GovernanceStore((s) => s.loadingRealm)
+  const fee = mangoStore((s) => s.priorityFee)
   const loadingVoter = GovernanceStore((s) => s.loadingVoter)
   const proposals = GovernanceStore((s) => s.proposals)
   const getCurrentVotingPower = GovernanceStore((s) => s.getCurrentVotingPower)
@@ -116,22 +129,24 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const [orcaPoolAddress, setOrcaPoolAddress] = useState('')
   const [raydiumPoolAddress, setRaydiumPoolAddress] = useState('')
   const [oracleModalOpen, setOracleModalOpen] = useState(false)
-  const [liqudityTier, setLiqudityTier] = useState<LISTING_PRESETS_KEYS | ''>(
-    '',
-  )
   const [isPyth, setIsPyth] = useState(false)
-  const tierLowerThenCurrent =
-    liqudityTier === 'ULTRA_PREMIUM' || liqudityTier === 'PREMIUM'
-      ? 'MID'
-      : liqudityTier === 'MID'
-      ? 'MEME'
-      : liqudityTier
-  const isPythRecommended =
-    liqudityTier === 'MID' ||
-    liqudityTier === 'PREMIUM' ||
-    liqudityTier === 'ULTRA_PREMIUM'
-  const listingTier =
-    isPythRecommended && !isPyth ? tierLowerThenCurrent : liqudityTier
+  const presets = useMemo(() => {
+    return !isPyth
+      ? getSwitchBoardPresets(LISTING_PRESETS)
+      : getPythPresets(LISTING_PRESETS)
+  }, [isPyth])
+  const [proposedPresetTargetAmount, setProposedProposedTargetAmount] =
+    useState(0)
+
+  const preset: LISTING_PRESET =
+    Object.values(presets).find(
+      (x) => x.preset_target_amount === proposedPresetTargetAmount,
+    ) || presets.UNTRUSTED
+  const proposedPreset = getPresetWithAdjustedDepositLimit(
+    preset,
+    baseTokenPrice,
+    currentTokenInfo?.decimals || 0,
+  )
 
   const quoteBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
   const minVoterWeight = useMemo(
@@ -165,28 +180,24 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       priceIncrementRelative: 0,
     }
   }, [quoteBank, currentTokenInfo, baseTokenPrice])
-  const tierPreset = useMemo(() => {
-    return listingTier
-      ? isPyth
-        ? LISTING_PRESETS_PYTH[listingTier]
-        : LISTING_PRESETS[listingTier]
-      : {}
-  }, [listingTier])
 
-  const handleSetAdvForm = (propertyName: string, value: string | number) => {
+  const handleSetAdvForm = (
+    propertyName: string,
+    value: string | number | boolean,
+  ) => {
     setFormErrors({})
     setAdvForm({ ...advForm, [propertyName]: value })
   }
 
   const getListingParams = useCallback(
-    async (tokenInfo: Token, tier: LISTING_PRESETS_KEYS) => {
+    async (tokenInfo: Token, targetAmount: number) => {
       setLoadingListingParams(true)
       const [{ oraclePk, isPyth }, marketPk] = await Promise.all([
         getOracle({
           baseSymbol: tokenInfo.symbol,
           quoteSymbol: 'usd',
           connection,
-          tier: tier,
+          targetAmount: targetAmount,
         }),
         getBestMarket({
           baseMint: mint,
@@ -223,6 +234,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         marketIndex: index,
         openBookMarketExternalPk: marketPk?.toBase58() || '',
         proposalTitle: `List ${tokenInfo.symbol} on Mango-v4`,
+        listForSwapOnly: false,
       })
       setLoadingListingParams(false)
       setIsPyth(isPyth)
@@ -251,6 +263,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         mode,
         FEE,
         walletForCheck,
+        undefined, // mangoAccount
         'JUPITER',
         onlyDirect,
       )
@@ -258,43 +271,42 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     [wallet.publicKey],
   )
 
-  const handleLiqudityCheck = useCallback(
+  const handleLiquidityCheck = useCallback(
     async (tokenMint: PublicKey) => {
       try {
-        const TIERS: LISTING_PRESETS_KEYS[] = [
-          'ULTRA_PREMIUM',
-          'PREMIUM',
-          'MID',
-          'MEME',
-          'SHIT',
-        ]
         const swaps = await Promise.all([
           handleGetRoutesWithFixedArgs(250000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(100000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(20000, tokenMint, 'ExactIn'),
+          handleGetRoutesWithFixedArgs(10000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(5000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(1000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(250000, tokenMint, 'ExactOut'),
           handleGetRoutesWithFixedArgs(100000, tokenMint, 'ExactOut'),
           handleGetRoutesWithFixedArgs(20000, tokenMint, 'ExactOut'),
+          handleGetRoutesWithFixedArgs(10000, tokenMint, 'ExactOut'),
           handleGetRoutesWithFixedArgs(5000, tokenMint, 'ExactOut'),
           handleGetRoutesWithFixedArgs(1000, tokenMint, 'ExactOut'),
         ])
         const bestRoutesSwaps = swaps
           .filter((x) => x.bestRoute)
           .map((x) => x.bestRoute!)
+
         const averageSwaps = bestRoutesSwaps.reduce(
           (acc: { amount: string; priceImpactPct: number }[], val) => {
             if (val.swapMode === 'ExactIn') {
               const exactOutRoute = bestRoutesSwaps.find(
                 (x) =>
-                  x.outAmount === val.outAmount && x.swapMode === 'ExactOut',
+                  x.outAmount === val.inAmount && x.swapMode === 'ExactOut',
               )
+
               acc.push({
-                amount: val.outAmount.toString(),
+                amount: val.inAmount.toString(),
                 priceImpactPct: exactOutRoute?.priceImpactPct
-                  ? (val.priceImpactPct + exactOutRoute.priceImpactPct) / 2
-                  : val.priceImpactPct,
+                  ? (Number(val.priceImpactPct) +
+                      Number(exactOutRoute.priceImpactPct)) /
+                    2
+                  : Number(val.priceImpactPct),
               })
             }
             return acc
@@ -305,55 +317,51 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         const midTierCheck = averageSwaps.find(
           (x) => x.amount === TWENTY_K_USDC_BASE,
         )
-        const indexForTierFromSwaps = averageSwaps.findIndex(
+        const indexForTargetAmount = averageSwaps.findIndex(
           (x) => x?.priceImpactPct && x?.priceImpactPct * 100 < 1,
         )
-        const tier =
-          indexForTierFromSwaps > -1
-            ? TIERS[indexForTierFromSwaps]
-            : 'UNTRUSTED'
-        setLiqudityTier(tier)
+        const targetAmount =
+          indexForTargetAmount > -1
+            ? toUiDecimals(new BN(averageSwaps[indexForTargetAmount].amount), 6)
+            : 0
+
+        setProposedProposedTargetAmount(targetAmount)
         setPriceImpact(midTierCheck ? midTierCheck.priceImpactPct * 100 : 100)
-        handleGetPoolParams(tier, tokenMint)
-        return tier
+        handleGetPoolParams(targetAmount, tokenMint)
+        return targetAmount
       } catch (e) {
         notify({
           title: t('liquidity-check-error'),
           description: `${e}`,
           type: 'error',
         })
-        return 'UNTRUSTED'
+        return 0
       }
     },
     [t, handleGetRoutesWithFixedArgs],
   )
 
   const handleGetPoolParams = async (
-    tier: LISTING_PRESETS_KEYS,
+    targetAmount: number,
     tokenMint: PublicKey,
   ) => {
-    const tierToSwapValue: { [key: string]: number } = {
-      ULTRA_PREMIUM: 250000,
-      PREMIUM: 100000,
-      MID: 20000,
-      MEME: 5000,
-      SHIT: 1000,
-      UNTRUSTED: 100,
-    }
     const swaps = await handleGetRoutesWithFixedArgs(
-      tierToSwapValue[tier],
+      targetAmount ? targetAmount : 100,
       tokenMint,
       'ExactIn',
       true,
     )
 
-    const swapInfos = swaps?.bestRoute?.routePlan.map((x) => x.swapInfo)
+    const swapInfos = swaps?.bestRoute?.routePlan?.map((x) => x.swapInfo)
     const orcaPool = swapInfos?.find(
-      (x) => x.label?.toLowerCase().includes('orca'),
+      (x) =>
+        x.label?.toLowerCase().includes('orca') ||
+        x.label?.toLowerCase().includes('whirlpool'),
     )
     const raydiumPool = swapInfos?.find(
       (x) => x.label?.toLowerCase().includes('raydium'),
     )
+
     setOrcaPoolAddress(orcaPool?.ammKey || '')
     setRaydiumPoolAddress(raydiumPool?.ammKey || '')
   }
@@ -369,15 +377,17 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     }
     const tokenInfo = jupiterTokens.find((x) => x.address === mint)
     const priceInfo = await (
-      await fetch(`${JUPITER_PRICE_API_MAINNET}/price?ids=${mint}`)
+      await fetch(`${JUPITER_PRICE_API_MAINNET}price?ids=${mint}`)
     ).json()
+    //Note: if listing asset that don't have price on jupiter remember to edit this 0 to real price
+    //in case of using 0 openbook market can be wrongly configured ignore if openbook market is existing
     setBaseTokenPrice(priceInfo.data[mint]?.price || 0)
     setCurrentTokenInfo(tokenInfo)
     if (tokenInfo) {
-      const tier = await handleLiqudityCheck(new PublicKey(mint))
-      getListingParams(tokenInfo, tier)
+      const targetAmount = await handleLiquidityCheck(new PublicKey(mint))
+      getListingParams(tokenInfo, targetAmount)
     }
-  }, [getListingParams, handleLiqudityCheck, jupiterTokens, mint, t])
+  }, [getListingParams, handleLiquidityCheck, jupiterTokens, mint, t])
 
   const cancel = () => {
     setCurrentTokenInfo(null)
@@ -386,7 +396,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     setProposalPk(null)
     setOrcaPoolAddress('')
     setRaydiumPoolAddress('')
-    setLiqudityTier('')
+    setProposedProposedTargetAmount(0)
     setBaseTokenPrice(0)
   }
 
@@ -409,6 +419,9 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
 
       for (const key of pubkeyFields) {
         if (!tryGetPubKey(advForm[key] as string)) {
+          if (advForm.listForSwapOnly && key === 'openBookMarketExternalPk') {
+            continue
+          }
           invalidFields[key] = t('invalid-pk')
         }
       }
@@ -447,118 +460,65 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       })
       return
     }
-
-    const [mintInfoPk] = PublicKey.findProgramAddressSync(
-      [
-        Buffer.from('MintInfo'),
-        group!.publicKey.toBuffer(),
-        new PublicKey(advForm.mintPk).toBuffer(),
-      ],
-      client.programId,
-    )
-
+    const mint = new PublicKey(advForm.mintPk)
     const proposalTx = []
 
-    if (Object.keys(tierPreset).length) {
+    if (Object.keys(proposedPreset).length) {
       const registerTokenIx = await client!.program.methods
         .tokenRegister(
           Number(advForm.tokenIndex),
           advForm.name,
           {
-            confFilter: Number(tierPreset.oracleConfFilter),
-            maxStalenessSlots: tierPreset.maxStalenessSlots,
+            confFilter: Number(proposedPreset.oracleConfFilter),
+            maxStalenessSlots: proposedPreset.maxStalenessSlots,
           },
           {
-            adjustmentFactor: Number(tierPreset.adjustmentFactor),
-            util0: Number(tierPreset.util0),
-            rate0: Number(tierPreset.rate0),
-            util1: Number(tierPreset.util1),
-            rate1: Number(tierPreset.rate1),
-            maxRate: Number(tierPreset.maxRate),
+            adjustmentFactor: Number(proposedPreset.adjustmentFactor),
+            util0: Number(proposedPreset.util0),
+            rate0: Number(proposedPreset.rate0),
+            util1: Number(proposedPreset.util1),
+            rate1: Number(proposedPreset.rate1),
+            maxRate: Number(proposedPreset.maxRate),
           },
-          Number(tierPreset.loanFeeRate),
-          Number(tierPreset.loanOriginationFeeRate),
-          Number(tierPreset.maintAssetWeight),
-          Number(tierPreset.initAssetWeight),
-          Number(tierPreset.maintLiabWeight),
-          Number(tierPreset.initLiabWeight),
-          Number(tierPreset.liquidationFee),
-          Number(tierPreset.stablePriceDelayIntervalSeconds),
-          Number(tierPreset.stablePriceDelayGrowthLimit),
-          Number(tierPreset.stablePriceGrowthLimit),
-          Number(tierPreset.minVaultToDepositsRatio),
-          new BN(tierPreset.netBorrowLimitWindowSizeTs),
-          new BN(tierPreset.netBorrowLimitPerWindowQuote),
-          Number(tierPreset.borrowWeightScaleStartQuote),
-          Number(tierPreset.depositWeightScaleStartQuote),
-          Number(tierPreset.reduceOnly),
-          Number(tierPreset.tokenConditionalSwapTakerFeeRate),
-          Number(tierPreset.tokenConditionalSwapMakerFeeRate),
-          Number(tierPreset.flashLoanDepositFeeRate),
+          Number(proposedPreset.loanFeeRate),
+          Number(proposedPreset.loanOriginationFeeRate),
+          Number(proposedPreset.maintAssetWeight),
+          Number(proposedPreset.initAssetWeight),
+          Number(proposedPreset.maintLiabWeight),
+          Number(proposedPreset.initLiabWeight),
+          Number(proposedPreset.liquidationFee),
+          Number(proposedPreset.stablePriceDelayIntervalSeconds),
+          Number(proposedPreset.stablePriceDelayGrowthLimit),
+          Number(proposedPreset.stablePriceGrowthLimit),
+          Number(proposedPreset.minVaultToDepositsRatio),
+          new BN(proposedPreset.netBorrowLimitWindowSizeTs),
+          new BN(proposedPreset.netBorrowLimitPerWindowQuote),
+          Number(proposedPreset.borrowWeightScaleStartQuote),
+          Number(proposedPreset.depositWeightScaleStartQuote),
+          Number(proposedPreset.reduceOnly),
+          Number(proposedPreset.tokenConditionalSwapTakerFeeRate),
+          Number(proposedPreset.tokenConditionalSwapMakerFeeRate),
+          Number(proposedPreset.flashLoanSwapFeeRate),
+          Number(proposedPreset.interestCurveScaling),
+          Number(proposedPreset.interestTargetUtilization),
+          proposedPreset.groupInsuranceFund,
+          new BN(proposedPreset.depositLimit.toString()),
         )
         .accounts({
           admin: MANGO_DAO_WALLET,
           group: group!.publicKey,
-          mint: new PublicKey(advForm.mintPk),
+          mint: mint,
           oracle: new PublicKey(advForm.oraclePk),
           payer: MANGO_DAO_WALLET,
           rent: SYSVAR_RENT_PUBKEY,
         })
         .instruction()
       proposalTx.push(registerTokenIx)
-
-      const editIx = await client!.program.methods
-        .tokenEdit(
-          null,
-          null,
-          tierPreset.insuranceFound ? null : false,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          false,
-          false,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-        )
-        .accounts({
-          oracle: new PublicKey(advForm.oraclePk),
-          admin: MANGO_DAO_WALLET,
-          group: group!.publicKey,
-          mintInfo: mintInfoPk,
-        })
-        .remainingAccounts([
-          {
-            pubkey: new PublicKey(advForm.baseBankPk),
-            isWritable: true,
-            isSigner: false,
-          } as AccountMeta,
-        ])
-        .instruction()
-      if (!tierPreset.insuranceFound) {
-        proposalTx.push(editIx)
-      }
     } else {
       const trustlessIx = await client!.program.methods
         .tokenRegisterTrustless(Number(advForm.tokenIndex), advForm.name)
         .accounts({
-          mint: new PublicKey(advForm.mintPk),
+          mint: mint,
           payer: MANGO_DAO_FAST_LISTING_WALLET,
           rent: SYSVAR_RENT_PUBKEY,
           oracle: new PublicKey(advForm.oraclePk),
@@ -570,41 +530,66 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       proposalTx.push(trustlessIx)
     }
 
-    const registerMarketix = await client!.program.methods
-      .serum3RegisterMarket(Number(advForm.marketIndex), advForm.marketName)
-      .accounts({
-        group: group!.publicKey,
-        admin: MANGO_DAO_WALLET,
-        serumProgram: new PublicKey(advForm.openBookProgram),
-        serumMarketExternal: new PublicKey(advForm.openBookMarketExternalPk),
-        baseBank: new PublicKey(advForm.baseBankPk),
-        quoteBank: new PublicKey(advForm.quoteBankPk),
-        payer: MANGO_DAO_WALLET,
-      })
-      .instruction()
-    if (listingTier !== 'UNTRUSTED') {
+    if (!advForm.listForSwapOnly) {
+      const registerMarketix = await client!.program.methods
+        .serum3RegisterMarket(
+          Number(advForm.marketIndex),
+          advForm.marketName,
+          proposedPreset.oraclePriceBand,
+        )
+        .accounts({
+          group: group!.publicKey,
+          admin: MANGO_DAO_WALLET,
+          serumProgram: new PublicKey(advForm.openBookProgram),
+          serumMarketExternal: new PublicKey(advForm.openBookMarketExternalPk),
+          baseBank: new PublicKey(advForm.baseBankPk),
+          quoteBank: new PublicKey(advForm.quoteBankPk),
+          payer: MANGO_DAO_WALLET,
+        })
+        .instruction()
       proposalTx.push(registerMarketix)
+    }
+    const rp = new ReferralProvider(connection)
+
+    const tx = await rp.initializeReferralTokenAccount({
+      payerPubKey: MANGO_DAO_WALLET,
+      referralAccountPubKey: JUPITER_REFERRAL_PK,
+      mint: mint,
+    })
+    const isExistingAccount =
+      (await connection.getBalance(tx.referralTokenAccountPubKey)) > 1
+
+    if (!isExistingAccount) {
+      proposalTx.push(...tx.tx.instructions)
     }
 
     const walletSigner = wallet as never
     setCreatingProposal(true)
 
     try {
-      const proposalAddress = await createProposal(
-        connection,
-        walletSigner,
-        listingTier === 'UNTRUSTED'
-          ? MANGO_DAO_FAST_LISTING_GOVERNANCE
-          : MANGO_DAO_WALLET_GOVERNANCE,
-        voter.tokenOwnerRecord!,
-        advForm.proposalTitle,
-        advForm.proposalDescription,
-        advForm.tokenIndex,
-        proposalTx,
-        vsrClient,
-      )
-      setProposalPk(proposalAddress.toBase58())
+      const simTransaction = new Transaction({ feePayer: wallet.publicKey })
+      simTransaction.add(...proposalTx)
+      const simulation = await connection.simulateTransaction(simTransaction)
+
+      if (!simulation.value.err) {
+        const proposalAddress = await createProposal(
+          connection,
+          walletSigner,
+          MANGO_DAO_WALLET_GOVERNANCE,
+          voter.tokenOwnerRecord!,
+          advForm.proposalTitle,
+          advForm.proposalDescription,
+          advForm.tokenIndex,
+          proposalTx,
+          vsrClient,
+          fee,
+        )
+        setProposalPk(proposalAddress.toBase58())
+      } else {
+        throw simulation.value.logs
+      }
     } catch (e) {
+      console.log(e)
       notify({
         title: t('error-proposal-creation'),
         description: `${e}`,
@@ -614,34 +599,34 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
 
     setCreatingProposal(false)
   }, [
-    listingTier,
+    isFormValid,
     advForm,
-    client,
-    connection,
+    wallet,
+    vsrClient,
     connectionContext,
     getCurrentVotingPower,
-    group,
-    isFormValid,
-    minVoterWeight,
-    mintVoterWeightNumber,
-    t,
-    tierPreset,
-    voter.tokenOwnerRecord,
     voter.voteWeight,
-    vsrClient,
-    wallet,
+    voter.tokenOwnerRecord,
+    minVoterWeight,
+    proposedPreset,
+    connection,
+    t,
+    mintVoterWeightNumber,
+    client,
+    group,
+    fee,
   ])
 
   const closeCreateOpenBookMarketModal = () => {
     setCreateOpenbookMarket(false)
-    if (currentTokenInfo && liqudityTier) {
-      getListingParams(currentTokenInfo, liqudityTier)
+    if (currentTokenInfo && proposedPresetTargetAmount) {
+      getListingParams(currentTokenInfo, proposedPresetTargetAmount)
     }
   }
   const closeCreateOracleModal = () => {
     setOracleModalOpen(false)
-    if (currentTokenInfo && liqudityTier) {
-      getListingParams(currentTokenInfo, liqudityTier)
+    if (currentTokenInfo && proposedPresetTargetAmount) {
+      getListingParams(currentTokenInfo, proposedPresetTargetAmount)
     }
   }
 
@@ -711,17 +696,8 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                 </div>
                 <div className="mb-2 flex items-center justify-between">
                   <p>{t('tier')}</p>
-                  <p className="text-th-fgd-2">
-                    {listingTier && coinTiersToNames[listingTier]}
-                  </p>
+                  <p className="text-th-fgd-2">{proposedPreset.preset_name}</p>
                 </div>
-                {isPythRecommended && !isPyth && (
-                  <div className="mb-2 flex items-center justify-end">
-                    <p className="text-th-warning">
-                      Pyth oracle needed for higher tier
-                    </p>
-                  </div>
-                )}
                 <div className="flex items-center justify-between">
                   <p>{t('mint')}</p>
                   <p className="flex items-center">
@@ -805,22 +781,46 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                               </div>
                             )}
                           </div>
+                          {!advForm.listForSwapOnly && (
+                            <div>
+                              <Label text={t('openbook-market-external')} />
+                              <Input
+                                hasError={
+                                  formErrors.openBookMarketExternalPk !==
+                                  undefined
+                                }
+                                type="text"
+                                value={advForm.openBookMarketExternalPk.toString()}
+                                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                  handleSetAdvForm(
+                                    'openBookMarketExternalPk',
+                                    e.target.value,
+                                  )
+                                }
+                              />
+                              {formErrors.openBookMarketExternalPk && (
+                                <div className="mt-1.5 flex items-center space-x-1">
+                                  <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
+                                  <p className="mb-0 text-xs text-th-down">
+                                    {formErrors.openBookMarketExternalPk}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          )}
                           <div>
-                            <Label text={t('openbook-market-external')} />
-                            <Input
-                              hasError={
-                                formErrors.openBookMarketExternalPk !==
-                                undefined
-                              }
-                              type="text"
-                              value={advForm.openBookMarketExternalPk.toString()}
+                            <Label text={t('list-for-swap-only')} />
+                            <Checkbox
+                              checked={advForm.listForSwapOnly}
                               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                                 handleSetAdvForm(
-                                  'openBookMarketExternalPk',
-                                  e.target.value,
+                                  'listForSwapOnly',
+                                  e.target.checked,
                                 )
                               }
-                            />
+                            >
+                              <></>
+                            </Checkbox>
                             {formErrors.openBookMarketExternalPk && (
                               <div className="mt-1.5 flex items-center space-x-1">
                                 <ExclamationCircleIcon className="h-4 w-4 text-th-down" />
@@ -965,7 +965,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
               </div>
               <ol className="list-decimal pl-4">
                 {!advForm.openBookMarketExternalPk &&
-                listingTier &&
+                !advForm.listForSwapOnly &&
                 !loadingListingParams ? (
                   <li className="pl-2">
                     <div className="mb-4">
@@ -996,10 +996,11 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                     ) : null}
                   </li>
                 ) : null}
-                {!advForm.oraclePk && listingTier && !loadingListingParams ? (
+                {!advForm.oraclePk && !loadingListingParams ? (
                   <li
                     className={`my-4 pl-2 ${
-                      !advForm.openBookMarketExternalPk
+                      !advForm.openBookMarketExternalPk &&
+                      !advForm.listForSwapOnly
                         ? 'disabled pointer-events-none opacity-60'
                         : ''
                     }`}
@@ -1018,7 +1019,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                       type="error"
                     />
                     <CreateSwitchboardOracleModal
-                      tier={listingTier}
+                      tierKey={proposedPreset.preset_key}
                       orcaPoolAddress={orcaPoolAddress}
                       raydiumPoolAddress={raydiumPoolAddress}
                       baseTokenName={currentTokenInfo.symbol}
@@ -1042,7 +1043,8 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                       loadingRealm ||
                       loadingVoter ||
                       (!advForm.openBookMarketExternalPk &&
-                        !loadingListingParams)
+                        !loadingListingParams &&
+                        !advForm.listForSwapOnly)
                     }
                     size="large"
                   >

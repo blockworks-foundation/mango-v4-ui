@@ -79,8 +79,9 @@ const AccountStats = ({ hideView }: { hideView: () => void }) => {
         <h2 className="text-lg">{t('account:account-stats')}</h2>
       </div>
       <div className="grid grid-cols-2">
-        <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 md:border-r">
+        <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 lg:py-6">
           <DetailedAreaOrBarChart
+            changeAsPercent
             data={chartData}
             daysToShow={pnlDaysToShow}
             setDaysToShow={setPnlDaysToShow}
@@ -93,10 +94,12 @@ const AccountStats = ({ hideView }: { hideView: () => void }) => {
             xKey="time"
             yKey="pnl"
             small
+            isPrivate
           />
         </div>
-        <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 md:pl-6">
+        <div className="col-span-2 border-b border-th-bkg-3 px-6 py-4 md:col-span-1 md:pl-6 lg:py-6">
           <DetailedAreaOrBarChart
+            changeAsPercent
             data={chartData}
             daysToShow={interestDaysToShow}
             setDaysToShow={setInterestDaysToShow}
@@ -109,10 +112,11 @@ const AccountStats = ({ hideView }: { hideView: () => void }) => {
             xKey="time"
             yKey="interest_value"
             small
+            isPrivate
           />
         </div>
-        <div className="col-span-2 border-b border-th-bkg-3 md:col-span-1 md:border-r">
-          <div className="border-b border-th-bkg-3 px-4 pb-4 pt-3 md:px-6">
+        <div className="col-span-2 border-b border-th-bkg-3 md:col-span-1">
+          <div className="border-b border-th-bkg-3 px-4 py-4 md:px-6 lg:py-6">
             <Tooltip
               content={t('account:tooltip-total-funding')}
               maxWidth="20rem"
@@ -125,7 +129,7 @@ const AccountStats = ({ hideView }: { hideView: () => void }) => {
             </Tooltip>
             {loadingFunding && mangoAccountAddress ? (
               <SheenLoader className="mt-2">
-                <div className="h-7 w-16 bg-th-bkg-2" />
+                <div className="h-[26px] w-16 bg-th-bkg-2" />
               </SheenLoader>
             ) : (
               <p className="mt-0.5 text-2xl font-bold text-th-fgd-1">
@@ -133,30 +137,35 @@ const AccountStats = ({ hideView }: { hideView: () => void }) => {
                   value={fundingTotalValue}
                   decimals={2}
                   isUsd={true}
+                  isPrivate
                 />
               </p>
             )}
           </div>
-          <div className="px-6 py-4">
+          <div className="px-6 py-4 lg:py-6">
             <FundingChart />
           </div>
         </div>
         <div className="col-span-2 border-b border-th-bkg-3 md:col-span-1">
-          <div className="border-b border-th-bkg-3 px-4 pb-4 pt-3 md:px-6">
+          <div className="border-b border-th-bkg-3 px-4 py-4 md:px-6 lg:py-6">
             <p className="tooltip-underline text-base leading-tight">
               {t('account:lifetime-volume')}
             </p>
             {loadingVolumeTotalData && mangoAccountAddress ? (
               <SheenLoader className="mt-2">
-                <div className="h-7 w-16 bg-th-bkg-2" />
+                <div className="h-[26px] w-16 bg-th-bkg-2" />
               </SheenLoader>
             ) : (
               <p className="mt-0.5 text-2xl font-bold text-th-fgd-1">
-                <FormatNumericValue value={volumeTotalData || 0} isUsd />
+                <FormatNumericValue
+                  value={volumeTotalData || 0}
+                  isUsd
+                  isPrivate
+                />
               </p>
             )}
           </div>
-          <div className="px-6 py-4">
+          <div className="px-6 py-4 lg:py-6">
             <VolumeChart />
           </div>
         </div>

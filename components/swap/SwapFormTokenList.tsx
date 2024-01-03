@@ -14,9 +14,11 @@ import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { formatTokenSymbol } from 'utils/tokens'
 import TokenLogo from '@components/shared/TokenLogo'
 import Input from '@components/forms/Input'
-import { getInputTokenBalance } from './TriggerSwapForm'
+import { getTokenBalance } from './TriggerSwapForm'
 import { walletBalanceForToken } from '@components/DepositForm'
 import TokenReduceOnlyDesc from '@components/shared/TokenReduceOnlyDesc'
+import PopularSwapTokens from './PopularSwapTokens'
+import { useViewport } from 'hooks/useViewport'
 
 export type SwapFormTokenListType =
   | 'input'
@@ -173,6 +175,7 @@ const SwapFormTokenList = ({
   const { group } = useMangoGroup()
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const focusRef = useRef<HTMLInputElement>(null)
+  const { isDesktop } = useViewport()
 
   const handleTokenSelect = (mintAddress: string) => {
     onTokenSelect(mintAddress, onClose)
@@ -189,26 +192,19 @@ const SwapFormTokenList = ({
   }, [onClose])
 
   const tokenInfos: TokenInfoWithAmounts[] = useMemo(() => {
-    if (
-      !mangoTokens.length ||
-      !group ||
-      !mangoAccount ||
-      !outputBank ||
-      !inputBank
-    )
-      return []
+    if (!mangoTokens.length || !group || !outputBank || !inputBank) return []
     if (type === 'input') {
       const filteredSortedTokens = mangoTokens
         .map((token) => {
           const tokenPk = new PublicKey(token.address)
           const tokenBank = group.getFirstBankByMint(tokenPk)
-          const max = getTokenInMax(
-            mangoAccount,
-            tokenPk,
-            outputBank.mint,
-            group,
-            useMargin,
-          )
+          const max = mangoAccount
+            ? getTokenInMax(mangoAccount, tokenPk, outputBank.mint, group)
+            : {
+                amount: new Decimal(0),
+                amountWithBorrow: new Decimal(0),
+                decimals: 0,
+              }
           const price = tokenBank.uiPrice
           return { ...token, ...max, price }
         })
@@ -227,7 +223,9 @@ const SwapFormTokenList = ({
           const tokenBank = group.getFirstBankByMint(
             new PublicKey(token.address),
           )
-          const uiAmount = mangoAccount.getTokenBalanceUi(tokenBank)
+          const uiAmount = mangoAccount
+            ? mangoAccount.getTokenBalanceUi(tokenBank)
+            : 0
           const uiDollarValue = uiAmount * tokenBank.uiPrice
           return {
             ...token,
@@ -315,10 +313,10 @@ const SwapFormTokenList = ({
   const sortedTokens = search ? startSearch(tokenInfos, search) : tokenInfos
 
   useEffect(() => {
-    if (focusRef?.current) {
+    if (focusRef?.current && isDesktop) {
       focusRef.current.focus()
     }
-  }, [focusRef])
+  }, [focusRef, isDesktop])
 
   const listTitle = useMemo(() => {
     if (!type) return ''
@@ -330,7 +328,7 @@ const SwapFormTokenList = ({
       return t('swap:reduce-position')
     } else {
       if (!mangoAccountAddress || !inputBank) return ''
-      const uiPos = getInputTokenBalance(inputBank)
+      const uiPos = getTokenBalance(inputBank)
       if (uiPos > 0) {
         return t('swap:reduce-position-buy')
       } else if (uiPos < 0) {
@@ -349,25 +347,35 @@ const SwapFormTokenList = ({
       >
         <XMarkIcon className="h-6 w-6" />
       </IconButton>
-      <div className="relative mb-4">
+      <div className="relative">
         <Input
           className="pl-10"
           type="text"
           placeholder="Search by token or paste address"
-          autoFocus
           value={search}
           onChange={handleUpdateSearch}
           ref={focusRef}
         />
         <MagnifyingGlassIcon className="absolute left-3 top-3.5 h-5 w-5 text-th-fgd-3" />
       </div>
-      <div className="flex justify-between rounded bg-th-bkg-2 p-2">
+      {!type?.includes('reduce') ? (
+        <div className="pt-2">
+          <PopularSwapTokens setSwapToken={handleTokenSelect} type={type} />
+        </div>
+      ) : null}
+      <div className="mt-4 flex justify-between rounded bg-th-bkg-2 p-2">
         <p className="text-xs text-th-fgd-4">{t('token')}</p>
         {!type?.includes('output') ? (
           <p className="text-xs text-th-fgd-4">{t('max')}</p>
         ) : null}
       </div>
-      <div className="thin-scroll h-[calc(100%-128px)] overflow-auto py-2">
+      <div
+        className={`thin-scroll ${
+          !type?.includes('reduce')
+            ? 'h-[calc(100%-170px)]'
+            : 'h-[calc(100%-128px)]'
+        } overflow-auto py-2`}
+      >
         {sortedTokens?.length ? (
           sortedTokens.map((token) => (
             <TokenItem

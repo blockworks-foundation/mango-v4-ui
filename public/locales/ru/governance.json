@@ -65,6 +65,7 @@
     "open-book-market-id": "Openbook Market ID",
     "openbook-market": "Openbook Market",
     "openbook-market-external": "Openbook Market External",
+    "list-for-swap-only": "List for swap only",
     "openbook-market-not-found": "Openbook market not found",
     "openbook-program": "Openbook Program",
     "oracle": "Oracle",
@@ -105,8 +106,9 @@
     "yes-votes": "Yes Votes",
     "your-votes": "Your Votes:",
     "create-switch-oracle": "Create switchboard oracle for",
-    "estimated-oracle-cost": "Estimated cost with funding oracle for ~12 months",
+    "estimated-oracle-cost": "Estimated cost with funding oracle for ~3 months",
     "create-oracle": "Create oracle",
     "tier": "Tier",
-    "on-boarding-description-1": "If you want to use delegated tokens go to vote view and select wallet in top right corner."
+    "on-boarding-description-1": "If you want to use delegated tokens go to vote view and select wallet in top right corner.",
+    "create-bigger-market": "Create market with bigger event que - cost ~7.5 SOL"
 }

@@ -15,21 +15,18 @@ import { Market } from '@project-serum/serum'
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import EmptyWallet from 'utils/wallet'
 import dayjs from 'dayjs'
-import {
-  LISTING_PRESETS_KEYS,
-  ListingPreset,
-} from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
+import { LISTING_PRESET } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 
 export const getOracle = async ({
   baseSymbol,
   quoteSymbol,
   connection,
-  tier,
+  targetAmount,
 }: {
   baseSymbol: string
   quoteSymbol: string
   connection: Connection
-  tier: LISTING_PRESETS_KEYS
+  targetAmount: number
 }) => {
   try {
     let oraclePk = ''
@@ -38,6 +35,7 @@ export const getOracle = async ({
       quoteSymbol,
       connection,
     })
+
     if (pythOracle) {
       oraclePk = pythOracle
     } else {
@@ -45,13 +43,14 @@ export const getOracle = async ({
         baseSymbol,
         quoteSymbol,
         connection,
-        noLock: tier === 'UNTRUSTED',
+        noLock: targetAmount === 0 || targetAmount === 1000,
       })
       oraclePk = switchBoardOracle
     }
 
     return { oraclePk, isPyth: !!pythOracle }
   } catch (e) {
+    console.log(e)
     notify({
       title: 'Oracle not found',
       description: `${e}`,
@@ -268,12 +267,7 @@ export const getQuoteSymbol = (quoteTokenSymbol: string) => {
 }
 
 export const formatSuggestedValues = (
-  suggestedParams:
-    | Record<string, never>
-    | Omit<
-        ListingPreset,
-        'name' | 'netBorrowLimitWindowSizeTs' | 'insuranceFound'
-      >,
+  suggestedParams: Record<string, never> | Omit<LISTING_PRESET, 'name'>,
 ) => {
   return {
     maxStalenessSlots: suggestedParams.maxStalenessSlots,
@@ -306,6 +300,22 @@ export const formatSuggestedValues = (
       suggestedParams.depositWeightScaleStartQuote,
       6,
     ),
+    groupInsuranceFund: suggestedParams.groupInsuranceFund,
+    netBorrowLimitWindowSizeTs: suggestedParams.netBorrowLimitWindowSizeTs,
+    stablePriceDelayIntervalSeconds:
+      suggestedParams.stablePriceDelayIntervalSeconds,
+    stablePriceGrowthLimit: suggestedParams.stablePriceGrowthLimit,
+    stablePriceDelayGrowthLimit: suggestedParams.stablePriceDelayGrowthLimit,
+    tokenConditionalSwapTakerFeeRate:
+      suggestedParams.tokenConditionalSwapTakerFeeRate,
+    tokenConditionalSwapMakerFeeRate:
+      suggestedParams.tokenConditionalSwapMakerFeeRate,
+    interestTargetUtilization:
+      suggestedParams.interestTargetUtilization.toString(),
+    interestCurveScaling: suggestedParams.interestCurveScaling.toString(),
+    depositLimit: suggestedParams.depositLimit,
+    flashLoanSwapFeeRate: suggestedParams.flashLoanSwapFeeRate,
+    reduceOnly: suggestedParams.reduceOnly,
   }
 }
 
@@ -401,6 +411,21 @@ export const getFormattedBankValues = (group: Group, bank: Bank) => {
       6,
     ),
     liquidationFee: (bank.liquidationFee.toNumber() * 100).toFixed(2),
+    interestCurveScaling: bank.interestCurveScaling.toString(),
+    interestTargetUtilization: bank.interestTargetUtilization.toString(),
+    maintWeightShiftStart: bank.maintWeightShiftStart.toNumber(),
+    maintWeightShiftEnd: bank.maintWeightShiftEnd.toNumber(),
+    maintWeightShiftAssetTarget: bank.maintWeightShiftAssetTarget.toNumber(),
+    maintWeightShiftLiabTarget: bank.maintWeightShiftLiabTarget.toNumber(),
+    maintWeightShiftDurationInv: bank.maintWeightShiftDurationInv.toNumber(),
+    depositLimit: toUiDecimals(bank.depositLimit, bank.mintDecimals),
+    stablePriceDelayIntervalSeconds: bank.stablePriceModel.delayIntervalSeconds,
+    stablePriceGrowthLimit: bank.stablePriceModel.stableGrowthLimit,
+    stablePriceDelayGrowthLimit: bank.stablePriceModel.delayGrowthLimit,
+    netBorrowLimitWindowSizeTs: bank.netBorrowLimitWindowSizeTs.toNumber(),
+    reduceOnly: bank.reduceOnly,
+    groupInsuranceFund: !!group?.mintInfosMapByMint.get(bank.mint.toString())
+      ?.groupInsuranceFund,
   }
 }
 

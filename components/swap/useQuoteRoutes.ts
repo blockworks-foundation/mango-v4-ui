@@ -5,52 +5,57 @@ import Decimal from 'decimal.js'
 import { JupiterV6RouteInfo } from 'types/jupiter'
 // import { MANGO_ROUTER_API_URL } from 'utils/constants'
 import useJupiterSwapData from './useJupiterSwapData'
-import useDebounce from '@components/shared/useDebounce'
 import { useMemo } from 'react'
 import { JUPITER_V6_QUOTE_API_MAINNET } from 'utils/constants'
+import { MangoAccount } from '@blockworks-foundation/mango-v4'
 
 type SwapModes = 'ALL' | 'JUPITER' | 'MANGO'
 
 type useQuoteRoutesPropTypes = {
-  inputMint: string
-  outputMint: string
+  inputMint: string | undefined
+  outputMint: string | undefined
   amount: string
   slippage: number
   swapMode: string
   wallet: string | undefined
+  mangoAccount: MangoAccount | undefined
   mode?: SwapModes
   enabled?: () => boolean
 }
 
 const fetchJupiterRoute = async (
-  inputMint = 'So11111111111111111111111111111111111111112',
-  outputMint = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+  inputMint: string | undefined,
+  outputMint: string | undefined,
   amount = 0,
   slippage = 50,
   swapMode = 'ExactIn',
-  feeBps = 0,
+  feeBps = 1,
   onlyDirectRoutes = true,
-  maxAccounts = 50,
+  maxAccounts = 64,
 ) => {
-  {
-    const paramsString = new URLSearchParams({
-      inputMint: inputMint.toString(),
-      outputMint: outputMint.toString(),
-      amount: amount.toString(),
-      slippageBps: Math.ceil(slippage * 100).toString(),
-      pfeeBps: feeBps.toString(),
-      maxAccounts: maxAccounts.toString(),
-      swapMode,
-      onlyDirectRoutes: `${onlyDirectRoutes}`,
-    }).toString()
-
-    const response = await fetch(
-      `${JUPITER_V6_QUOTE_API_MAINNET}/quote?${paramsString}`,
-    )
-    const res: JupiterV6RouteInfo = await response.json()
-    return {
-      bestRoute: res,
+  if (!inputMint || !outputMint) return
+  try {
+    {
+      const paramsString = new URLSearchParams({
+        inputMint: inputMint.toString(),
+        outputMint: outputMint.toString(),
+        amount: amount.toString(),
+        slippageBps: Math.ceil(slippage * 100).toString(),
+        platformFeeBps: feeBps.toString(),
+        maxAccounts: maxAccounts.toString(),
+        swapMode,
+        onlyDirectRoutes: `${onlyDirectRoutes}`,
+      }).toString()
+      const response = await fetch(
+        `${JUPITER_V6_QUOTE_API_MAINNET}/quote?${paramsString}`,
+      )
+      const res: JupiterV6RouteInfo = await response.json()
+      return {
+        bestRoute: res,
+      }
     }
+  } catch (e) {
+    console.log('error fetching jupiter route', e)
   }
 }
 
@@ -112,18 +117,33 @@ const fetchJupiterRoute = async (
 // }
 
 export const handleGetRoutes = async (
-  inputMint = 'So11111111111111111111111111111111111111112',
-  outputMint = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+  inputMint: string | undefined,
+  outputMint: string | undefined,
   amount = 0,
   slippage = 50,
   swapMode = 'ExactIn',
-  feeBps = 0,
+  feeBps = 1,
   wallet: string | undefined,
+  mangoAccount: MangoAccount | undefined,
   mode: SwapModes = 'ALL',
   jupiterOnlyDirectRoutes = false,
 ) => {
   try {
     wallet ||= PublicKey.default.toBase58()
+
+    let maxAccounts: number
+    if (!mangoAccount) {
+      maxAccounts = 64
+    } else {
+      // TODO: replace with client method
+      const totalSlots =
+        mangoAccount.tokensActive().length +
+        mangoAccount.serum3Active().length +
+        mangoAccount.tokenConditionalSwapsActive().length +
+        mangoAccount.perpActive().length +
+        mangoAccount.perpOrdersActive().length
+      maxAccounts = 56 - 2 * totalSlots
+    }
 
     const routes = []
 
@@ -150,13 +170,14 @@ export const handleGetRoutes = async (
         swapMode,
         feeBps,
         jupiterOnlyDirectRoutes,
+        maxAccounts,
       )
       routes.push(jupiterRoute)
     }
 
     const results = await Promise.allSettled(routes)
     const responses = results
-      .filter((x) => x.status === 'fulfilled' && x.value.bestRoute !== null)
+      .filter((x) => x.status === 'fulfilled' && x.value?.bestRoute !== null)
       .map((x) => (x as any).value)
 
     const sortedByBiggestOutAmount = (
@@ -185,12 +206,11 @@ const useQuoteRoutes = ({
   slippage,
   swapMode,
   wallet,
+  mangoAccount,
   mode = 'ALL',
   enabled,
 }: useQuoteRoutesPropTypes) => {
-  const [debouncedAmount] = useDebounce(amount, 250)
   const { inputTokenInfo, outputTokenInfo } = useJupiterSwapData()
-
   const decimals = useMemo(() => {
     return swapMode === 'ExactIn'
       ? inputTokenInfo?.decimals || 6
@@ -198,21 +218,13 @@ const useQuoteRoutes = ({
   }, [swapMode, inputTokenInfo?.decimals, outputTokenInfo?.decimals])
 
   const nativeAmount = useMemo(() => {
-    return debouncedAmount && !Number.isNaN(+debouncedAmount)
-      ? new Decimal(debouncedAmount).mul(10 ** decimals)
+    return amount && !Number.isNaN(+amount)
+      ? new Decimal(amount).mul(10 ** decimals)
       : new Decimal(0)
-  }, [debouncedAmount, decimals])
+  }, [amount, decimals])
 
   const res = useQuery<{ bestRoute: JupiterV6RouteInfo | null }, Error>(
-    [
-      'swap-routes',
-      inputMint,
-      outputMint,
-      debouncedAmount,
-      slippage,
-      swapMode,
-      wallet,
-    ],
+    ['swap-routes', inputMint, outputMint, amount, slippage, swapMode, wallet],
     async () =>
       handleGetRoutes(
         inputMint,
@@ -220,14 +232,19 @@ const useQuoteRoutes = ({
         nativeAmount.toNumber(),
         slippage,
         swapMode,
-        0,
+        1,
         wallet,
+        mangoAccount,
         mode,
       ),
     {
       cacheTime: 1000 * 60,
       staleTime: 1000 * 3,
-      enabled: enabled ? enabled() : nativeAmount.toNumber() ? true : false,
+      enabled: enabled
+        ? enabled()
+        : nativeAmount.toNumber() && inputMint && outputMint
+        ? true
+        : false,
       refetchInterval: 20000,
       retry: 3,
     },
@@ -239,12 +256,18 @@ const useQuoteRoutes = ({
           routes: [],
           bestRoute: undefined,
         }),
+        isFetching: res.isFetching,
         isLoading: res.isLoading,
+        isInitialLoading: res.isInitialLoading,
+        refetch: res.refetch,
       }
     : {
         routes: [],
         bestRoute: undefined,
+        isFetching: false,
         isLoading: false,
+        isInitialLoading: false,
+        refetch: undefined,
       }
 }
 

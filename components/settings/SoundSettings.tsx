@@ -2,6 +2,7 @@ import Switch from '@components/forms/Switch'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { useTranslation } from 'next-i18next'
 import { SOUND_SETTINGS_KEY } from 'utils/constants'
+import { SETTINGS_BUTTON_TITLE_CLASSES } from './AccountSettings'
 
 export const INITIAL_SOUND_SETTINGS = {
   'recent-trades': false,
@@ -35,7 +36,7 @@ const SoundSettings = () => {
   return (
     <div className="border-b border-th-bkg-3 pt-6">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-sm text-th-fgd-1">{t('settings:sounds')}</h3>
+        <h3 className="text-base text-th-fgd-1">{t('settings:sounds')}</h3>
         <Switch
           checked={!Object.values(soundSettings).includes(false)}
           onChange={() => handleToggleSoundSetting('all')}
@@ -49,21 +50,27 @@ const SoundSettings = () => {
         />
       </div> */}
       <div className="flex items-center justify-between border-t border-th-bkg-3 p-4">
-        <p>{t('settings:swap-success')}</p>
+        <p className={SETTINGS_BUTTON_TITLE_CLASSES}>
+          {t('settings:swap-success')}
+        </p>
         <Switch
           checked={soundSettings['swap-success']}
           onChange={() => handleToggleSoundSetting('swap-success')}
         />
       </div>
       <div className="flex items-center justify-between border-t border-th-bkg-3 p-4">
-        <p>{t('settings:transaction-success')}</p>
+        <p className={SETTINGS_BUTTON_TITLE_CLASSES}>
+          {t('settings:transaction-success')}
+        </p>
         <Switch
           checked={soundSettings['transaction-success']}
           onChange={() => handleToggleSoundSetting('transaction-success')}
         />
       </div>
       <div className="flex items-center justify-between border-t border-th-bkg-3 p-4">
-        <p>{t('settings:transaction-fail')}</p>
+        <p className={SETTINGS_BUTTON_TITLE_CLASSES}>
+          {t('settings:transaction-fail')}
+        </p>
         <Switch
           checked={soundSettings['transaction-fail']}
           onChange={() => handleToggleSoundSetting('transaction-fail')}

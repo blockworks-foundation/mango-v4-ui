@@ -1,7 +1,7 @@
 import HealthContributionsChart from './HealthContributionsChart'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useMangoAccount from 'hooks/useMangoAccount'
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import {
   ArrowLeftIcon,
   NoSymbolIcon,
@@ -152,25 +152,6 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
     return [markets, tokens]
   }, [maintHealthContributions])
 
-  const handleLegendClick = (item: HealthContribution) => {
-    const maintIndex = maintChartData.findIndex((d) => d.asset === item.asset)
-    const initIndex = initChartData.findIndex((d) => d.asset === item.asset)
-    setMaintActiveIndex(maintIndex)
-    setInitActiveIndex(initIndex)
-  }
-
-  const handleLegendMouseEnter = (item: HealthContribution) => {
-    const maintIndex = maintChartData.findIndex((d) => d.asset === item.asset)
-    const initIndex = initChartData.findIndex((d) => d.asset === item.asset)
-    setMaintActiveIndex(maintIndex)
-    setInitActiveIndex(initIndex)
-  }
-
-  const handleLegendMouseLeave = () => {
-    setInitActiveIndex(undefined)
-    setMaintActiveIndex(undefined)
-  }
-
   const renderLegendLogo = (asset: string) => {
     const group = mangoStore.getState().group
     if (!group)
@@ -236,6 +217,25 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
       })
   }, [maintHealthContributions])
 
+  const handleLegendEnter = useCallback(
+    (item: HealthContribution) => {
+      const maintIndex = maintChartData.findIndex((d) => d.asset === item.asset)
+      const initIndex = initChartData.findIndex((d) => d.asset === item.asset)
+      if (maintIndex !== -1) {
+        setMaintActiveIndex(maintIndex)
+      }
+      if (initIndex !== -1) {
+        setInitActiveIndex(initIndex)
+      }
+    },
+    [initChartData, maintChartData],
+  )
+
+  const handleLegendMouseLeave = () => {
+    setInitActiveIndex(undefined)
+    setMaintActiveIndex(undefined)
+  }
+
   return group ? (
     <>
       <div className="hide-scroll flex h-14 items-center space-x-4 overflow-x-auto border-b border-th-bkg-3">
@@ -282,8 +282,8 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
                     <div
                       key={d.asset + i}
                       className={`default-transition flex h-7 cursor-pointer items-center md:hover:text-th-active`}
-                      onClick={() => handleLegendClick(d)}
-                      onMouseEnter={() => handleLegendMouseEnter(d)}
+                      onClick={() => handleLegendEnter(d)}
+                      onMouseEnter={() => handleLegendEnter(d)}
                       onMouseLeave={handleLegendMouseLeave}
                     >
                       {renderLegendLogo(d.asset)}
@@ -299,8 +299,8 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
               <TokensHealthTable
                 initTokens={initHealthTokens}
                 maintTokens={maintHealthTokens}
-                handleLegendClick={handleLegendClick}
-                handleLegendMouseEnter={handleLegendMouseEnter}
+                handleLegendClick={handleLegendEnter}
+                handleLegendMouseEnter={handleLegendEnter}
                 handleLegendMouseLeave={handleLegendMouseLeave}
               />
             </div>
@@ -311,8 +311,8 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
               <MarketsHealthTable
                 initMarkets={initHealthMarkets}
                 maintMarkets={maintHealthMarkets}
-                handleLegendClick={handleLegendClick}
-                handleLegendMouseEnter={handleLegendMouseEnter}
+                handleLegendClick={handleLegendEnter}
+                handleLegendMouseEnter={handleLegendEnter}
                 handleLegendMouseLeave={handleLegendMouseLeave}
               />
             </div>

@@ -1,4 +1,5 @@
 {
-    "leaderboard-desc": "按总盈亏（现货和永续合约）计算的前100名Mango交易商",
+    "leaderboard-desc-equity": "按帐户净值的前100名Mango交易商",
+    "leaderboard-desc-pnl": "按总盈亏（现货和永续合约）计算的前100名Mango交易商",
     "leaderboard-unavailable": "无法显示排行榜"
 }

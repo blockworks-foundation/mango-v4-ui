@@ -4,12 +4,12 @@ import Link from 'next/link'
 import useIpAddress from 'hooks/useIpAddress'
 
 const BANNER_WRAPPER_CLASSES =
-  'flex flex-wrap items-center justify-center border-b border-th-bkg-3 bg-th-bkg-2 px-10 py-3'
+  'flex flex-wrap items-center justify-center bg-th-bkg-1 px-10 py-3 text-xs'
 
 const LINK_TEXT_CLASSES =
-  'bg-gradient-to-b from-mango-classic-theme-active to-mango-classic-theme-down bg-clip-text font-bold text-transparent lg:text-base'
+  'bg-gradient-to-b from-mango-classic-theme-active to-mango-classic-theme-down bg-clip-text font-bold text-transparent'
 
-const TEXT_CLASSES = 'mr-2 text-center text-th-fgd-1 lg:text-base'
+const TEXT_CLASSES = 'mx-1 text-center text-th-fgd-1 text-xs'
 
 const WarningBanner = () => {
   const { showWarning } = useIpAddress()

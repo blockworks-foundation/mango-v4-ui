@@ -56,7 +56,7 @@ const InlineNotification: FunctionComponent<InlineNotificationProps> = ({
         <ExclamationTriangleIcon className={`${iconClasses} text-th-warning`} />
       ) : null}
       {type === 'info' ? (
-        <InformationCircleIcon className={`${iconClasses} text-th-fgd-4`} />
+        <InformationCircleIcon className={`${iconClasses} text-th-fgd-1`} />
       ) : null}
       <div>
         <div className="text-th-fgd-2">{title}</div>

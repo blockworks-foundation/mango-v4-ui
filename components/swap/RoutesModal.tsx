@@ -57,9 +57,10 @@ const RoutesModal = ({
                 <div className="flex items-center justify-between">
                   <div className="flex flex-col text-left">
                     <div className="overflow-ellipsis font-bold">
-                      {route.routePlan.map((info, index) => {
+                      {route.routePlan?.map((info, index) => {
                         let includeSeparator = false
                         if (
+                          route.routePlan &&
                           route.routePlan.length > 1 &&
                           index !== route.routePlan.length - 1
                         ) {
@@ -74,9 +75,12 @@ const RoutesModal = ({
                     </div>
                     <div className="text-xs text-th-fgd-4">
                       {inputTokenSymbol} →{' '}
-                      {route.routePlan.map((r, index) => {
+                      {route.routePlan?.map((r, index) => {
                         const showArrow =
-                          index !== route.routePlan.length - 1 ? true : false
+                          route.routePlan &&
+                          index !== route.routePlan.length - 1
+                            ? true
+                            : false
                         return (
                           <span key={index}>
                             <span>

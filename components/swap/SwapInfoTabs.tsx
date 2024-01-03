@@ -20,7 +20,7 @@ const SwapInfoTabs = () => {
       ['swap:swap-history', 0],
     ]
     const stopOrdersCount =
-      mangoAccount?.tokenConditionalSwaps.filter((tcs) => tcs.hasData)
+      mangoAccount?.tokenConditionalSwaps.filter((tcs) => tcs.isConfigured)
         ?.length || 0
     tabs.splice(1, 0, ['trade:trigger-orders', stopOrdersCount])
     return tabs

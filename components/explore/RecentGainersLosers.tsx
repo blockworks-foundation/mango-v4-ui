@@ -96,12 +96,8 @@ const RecentGainersLosers = () => {
       return [[], []]
     const tradeableAssets = []
     for (const token of banksWithMarketData) {
-      const volume = token.market?.marketData?.quote_volume_24h || 0
-      if (token.market?.quoteTokenIndex === 0 && volume > 0) {
-        const pastPrice = token.market?.marketData?.price_24h
-        const change = pastPrice
-          ? ((token.bank.uiPrice - pastPrice) / pastPrice) * 100
-          : 0
+      if (token.market?.quoteTokenIndex === 0) {
+        const change = token.market?.rollingChange || 0
         tradeableAssets.push({ bank: token.bank, change, type: 'spot' })
       }
     }
@@ -167,7 +163,7 @@ const RecentGainersLosers = () => {
                     }
                   >
                     <div className="flex items-center">
-                      <TokenLogo bank={token} />
+                      <TokenLogo bank={token} showRewardsLogo />
                       <p className="ml-3 font-body text-th-fgd-2">
                         {token.name}
                       </p>
@@ -219,7 +215,7 @@ const RecentGainersLosers = () => {
                       <div className="flex items-center">
                         {bank ? (
                           <div className="mr-3">
-                            <TokenLogo bank={bank} />
+                            <TokenLogo bank={bank} showRewardsLogo />
                           </div>
                         ) : (
                           <MarketLogos market={gainer?.market} size="large" />
@@ -281,7 +277,7 @@ const RecentGainersLosers = () => {
                     >
                       <div className="flex items-center">
                         {bank ? (
-                          <TokenLogo bank={bank} />
+                          <TokenLogo bank={bank} showRewardsLogo />
                         ) : (
                           <MarketLogos market={loser?.market} />
                         )}

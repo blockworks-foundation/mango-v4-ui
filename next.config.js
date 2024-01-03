@@ -5,11 +5,13 @@ const { withSentryConfig } = require('@sentry/nextjs')
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   i18n,
-  experimental: {
-    appDir: false,
-  },
   images: {
-    domains: ['raw.githubusercontent.com', 'arweave.net', 'www.dual.finance'],
+    domains: [
+      'raw.githubusercontent.com',
+      'arweave.net',
+      'www.dual.finance',
+      'shdw-drive.genesysgo.net',
+    ],
   },
   reactStrictMode: true,
   //proxy for openserum api cors

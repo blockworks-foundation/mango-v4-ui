@@ -5,7 +5,6 @@ import mangoStore from '@store/mangoStore'
 import { useMemo } from 'react'
 import useMangoAccount from './useMangoAccount'
 import useMangoGroup from './useMangoGroup'
-import { floorToDecimal } from 'utils/numbers'
 import Decimal from 'decimal.js'
 
 export interface BankWithBalance {
@@ -39,14 +38,7 @@ export default function useBanksWithBalances(
         }),
       ).map((b) => {
         const bank = b.value[0]
-        const rawBalance = mangoAccount
-          ? mangoAccount.getTokenBalanceUi(bank)
-          : 0
-        // For some reason if you don't use an abs value in floorToDecimal it returns incorrectly
-        const isBorrowMultiplier = rawBalance < 0 ? -1 : 1
-        const balance =
-          floorToDecimal(Math.abs(rawBalance), bank.mintDecimals).toNumber() *
-          isBorrowMultiplier
+        const balance = mangoAccount ? mangoAccount.getTokenBalanceUi(bank) : 0
 
         const maxBorrow = mangoAccount
           ? getMaxWithdrawForBank(group, bank, mangoAccount, true).toNumber()
@@ -94,7 +86,7 @@ export default function useBanksWithBalances(
       return sortedBanks
     }
     return []
-  }, [group, mangoAccount])
+  }, [group, mangoAccount, walletTokens])
 
   return banks
 }

@@ -11,7 +11,6 @@ import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
 import HistoryTabs from './HistoryTabs'
 import ManualRefresh from '@components/shared/ManualRefresh'
 import useMangoAccount from 'hooks/useMangoAccount'
-import SwapTriggerOrders from '@components/swap/SwapTriggerOrders'
 import AccountOverview from './AccountOverview'
 import AccountOrders from './AccountOrders'
 
@@ -30,7 +29,7 @@ const AccountTabs = () => {
       unsettledPerpPositions?.length
 
     const stopOrdersCount =
-      mangoAccount?.tokenConditionalSwaps.filter((tcs) => tcs.hasData)
+      mangoAccount?.tokenConditionalSwaps.filter((tcs) => tcs.isConfigured)
         ?.length || 0
 
     const tabs: [string, number][] = [
@@ -88,8 +87,6 @@ const TabContent = ({ activeTab }: { activeTab: string }) => {
       return <PerpPositions />
     case 'trade:orders':
       return <AccountOrders />
-    case 'trade:trigger-orders':
-      return <SwapTriggerOrders />
     case 'trade:unsettled':
       return (
         <UnsettledTrades

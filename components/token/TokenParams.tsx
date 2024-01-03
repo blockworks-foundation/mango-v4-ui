@@ -12,6 +12,7 @@ import { getOracleProvider } from 'hooks/useOracleProvider'
 import { useTranslation } from 'next-i18next'
 import { useMemo } from 'react'
 import { formatCurrencyValue } from 'utils/numbers'
+import CollateralWeightDisplay from '@components/shared/CollateralWeightDisplay'
 
 const TokenParams = ({ bank }: { bank: Bank }) => {
   const { t } = useTranslation(['common', 'activity', 'token'])
@@ -40,12 +41,12 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
             </p>
           </Tooltip>
           <div className="flex space-x-2">
-            <p className="font-mono text-th-fgd-2">
-              {bank.scaledInitAssetWeight(bank.price).toFixed(2)}
-            </p>
+            <div className="font-mono text-th-fgd-2">
+              <CollateralWeightDisplay bank={bank} />
+            </div>
             <span className="text-th-fgd-4">|</span>
             <p className="font-mono text-th-fgd-2">
-              {bank.scaledInitLiabWeight(bank.price).toFixed(2)}
+              {bank.scaledInitLiabWeight(bank.price).toFixed(2)}x
             </p>
           </div>
         </div>
@@ -57,11 +58,11 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
           </Tooltip>
           <div className="flex space-x-2">
             <p className="font-mono text-th-fgd-2">
-              {bank.maintAssetWeight.toFixed(2)}
+              {bank.maintAssetWeight.toFixed(2)}x
             </p>
             <span className="text-th-fgd-4">|</span>
             <p className="font-mono text-th-fgd-2">
-              {bank.maintLiabWeight.toFixed(2)}
+              {bank.maintLiabWeight.toFixed(2)}x
             </p>
           </div>
         </div>

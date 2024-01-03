@@ -7,6 +7,7 @@ import TradeAdvancedPage from '@components/trade/TradeAdvancedPage'
 import mangoStore, { DEFAULT_TRADE_FORM } from '@store/mangoStore'
 import type { NextPage } from 'next'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
+import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 import { floorToDecimal, getDecimalCount } from 'utils/numbers'
@@ -22,6 +23,7 @@ export async function getStaticProps({ locale }: { locale: string }) {
         'onboarding',
         'onboarding-tours',
         'profile',
+        'search',
         'settings',
         'swap',
         'trade',
@@ -89,10 +91,22 @@ const Trade: NextPage = () => {
     }
   }, [marketName])
 
+  const metaTitle = 'Trade | Spot x Perps x Lightning Execution'
+  const metaDescription =
+    'Trade your favorite tokens and perpetuals with up to 10x leverage on the fasted DEX in crypto. '
+
   return (
-    <div className="pb-32 md:pb-0">
+    <>
+      <Head>
+        <title>Trade | Mango Markets</title>
+        <meta name="description" content={metaDescription} />
+        <meta property="og:title" content={metaTitle} />
+        <meta name="og:description" content={metaDescription} />
+        <meta name="twitter:title" content={metaTitle} />
+        <meta name="twitter:description" content={metaDescription} />
+      </Head>
       <TradeAdvancedPage />
-    </div>
+    </>
   )
 }
 

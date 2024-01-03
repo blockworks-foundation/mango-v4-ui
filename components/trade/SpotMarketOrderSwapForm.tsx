@@ -48,6 +48,8 @@ import { useTokenMax } from '@components/swap/useTokenMax'
 import SheenLoader from '@components/shared/SheenLoader'
 import { fetchJupiterTransaction } from '@components/swap/SwapReviewRouteInfo'
 import MaxMarketTradeAmount from './MaxMarketTradeAmount'
+import useMangoAccount from 'hooks/useMangoAccount'
+import InlineNotification from '@components/shared/InlineNotification'
 
 const set = mangoStore.getState().set
 
@@ -64,37 +66,61 @@ export default function SpotMarketOrderSwapForm() {
   const { baseSize, quoteSize, side } = mangoStore((s) => s.tradeForm)
   const { isUnownedAccount } = useUnownedAccount()
   const [placingOrder, setPlacingOrder] = useState(false)
+  const [isDraggingSlider, setIsDraggingSlider] = useState(false)
   const { ipAllowed, ipCountry } = useIpAddress()
   const { connected, publicKey, connect } = useWallet()
+  const { mangoAccount } = useMangoAccount()
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const [savedCheckboxSettings, setSavedCheckboxSettings] =
     useLocalStorageState(TRADE_CHECKBOXES_KEY, DEFAULT_CHECKBOX_SETTINGS)
   const {
-    selectedMarket,
     price: oraclePrice,
     baseLogoURI,
     baseSymbol,
     quoteLogoURI,
     quoteSymbol,
+    selectedMarket,
     serumOrPerpMarket,
   } = useSelectedMarket()
   const { amount: tokenMax, amountWithBorrow } = useTokenMax(
     savedCheckboxSettings.margin,
   )
 
+  const [inputBank, outputBank] = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!group || !(selectedMarket instanceof Serum3Market)) return []
+
+    const quoteBank = group?.getFirstBankByTokenIndex(
+      selectedMarket.quoteTokenIndex,
+    )
+    const baseBank = group.getFirstBankByTokenIndex(
+      selectedMarket.baseTokenIndex,
+    )
+
+    if (side === 'buy') {
+      set((s) => {
+        s.swap.inputBank = quoteBank
+        s.swap.outputBank = baseBank
+      })
+      return [quoteBank, baseBank]
+    } else {
+      set((s) => {
+        s.swap.inputBank = baseBank
+        s.swap.outputBank = quoteBank
+      })
+      return [baseBank, quoteBank]
+    }
+  }, [selectedMarket, side])
+
   const handleBaseSizeChange = useCallback(
     (e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
-      console.log(e.value)
       set((s) => {
-        const price =
-          s.tradeForm.tradeType === 'Market'
-            ? oraclePrice
-            : Number(s.tradeForm.price)
-
         s.tradeForm.baseSize = e.value
-        if (price && e.value !== '' && !Number.isNaN(Number(e.value))) {
-          s.tradeForm.quoteSize = new Decimal(price).mul(e.value).toFixed()
+        if (oraclePrice && e.value !== '' && !Number.isNaN(Number(e.value))) {
+          s.tradeForm.quoteSize = new Decimal(oraclePrice)
+            .mul(e.value)
+            .toFixed()
         } else {
           s.tradeForm.quoteSize = ''
         }
@@ -107,14 +133,9 @@ export default function SpotMarketOrderSwapForm() {
     (e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
       set((s) => {
-        const price =
-          s.tradeForm.tradeType === 'Market'
-            ? oraclePrice
-            : Number(s.tradeForm.price)
-
         s.tradeForm.quoteSize = e.value
-        if (price && e.value !== '' && !Number.isNaN(Number(e.value))) {
-          s.tradeForm.baseSize = new Decimal(e.value).div(price).toFixed()
+        if (oraclePrice && e.value !== '' && !Number.isNaN(Number(e.value))) {
+          s.tradeForm.baseSize = new Decimal(e.value).div(oraclePrice).toFixed()
         } else {
           s.tradeForm.baseSize = ''
         }
@@ -155,6 +176,18 @@ export default function SpotMarketOrderSwapForm() {
     [handleBaseSizeChange],
   )
 
+  const handleSliderDrag = useCallback(() => {
+    if (!isDraggingSlider) {
+      setIsDraggingSlider(true)
+    }
+  }, [isDraggingSlider])
+
+  const handleSliderDragEnd = useCallback(() => {
+    if (isDraggingSlider) {
+      setIsDraggingSlider(false)
+    }
+  }, [isDraggingSlider])
+
   const setAmountFromSlider = useCallback(
     (amount: string) => {
       if (side === 'buy') {
@@ -172,43 +205,33 @@ export default function SpotMarketOrderSwapForm() {
     [side, handleBaseSizeChange, handleQuoteSizeChange],
   )
 
-  const [inputBank, outputBank] = useMemo(() => {
-    const group = mangoStore.getState().group
-    if (!group || !(selectedMarket instanceof Serum3Market)) return []
-
-    const quoteBank = group?.getFirstBankByTokenIndex(
-      selectedMarket.quoteTokenIndex,
-    )
-    const baseBank = group.getFirstBankByTokenIndex(
-      selectedMarket.baseTokenIndex,
-    )
-
-    if (side === 'buy') {
-      set((s) => {
-        s.swap.inputBank = quoteBank
-        s.swap.outputBank = baseBank
-      })
-      return [quoteBank, baseBank]
-    } else {
-      set((s) => {
-        s.swap.inputBank = baseBank
-        s.swap.outputBank = quoteBank
-      })
-      return [baseBank, quoteBank]
-    }
-  }, [selectedMarket, side])
-
   const slippage = mangoStore.getState().swap.slippage
+  const jupiterQuoteAmount = side === 'buy' ? quoteSize : baseSize
+  const roundedQuoteAmount = useMemo(() => {
+    if (!jupiterQuoteAmount) return ''
+    return new Decimal(jupiterQuoteAmount)
+      .toDecimalPlaces(inputBank?.mintDecimals || 6, Decimal.ROUND_FLOOR)
+      .toFixed()
+  }, [jupiterQuoteAmount, inputBank])
 
-  const { bestRoute: selectedRoute, isLoading: loadingRoute } = useQuoteRoutes({
-    inputMint: inputBank?.mint.toString() || '',
-    outputMint: outputBank?.mint.toString() || '',
-    amount: side === 'buy' ? quoteSize : baseSize,
-    slippage,
-    swapMode: 'ExactIn',
-    wallet: publicKey?.toBase58(),
-    mode: 'JUPITER',
-  })
+  const { bestRoute: selectedRoute, isInitialLoading: loadingRoute } =
+    useQuoteRoutes({
+      inputMint: inputBank?.mint.toString() || '',
+      outputMint: outputBank?.mint.toString() || '',
+      amount: roundedQuoteAmount,
+      slippage,
+      swapMode: 'ExactIn',
+      wallet: publicKey?.toBase58(),
+      mangoAccount,
+      mode: 'JUPITER',
+      enabled: () =>
+        !!(
+          inputBank?.mint &&
+          outputBank?.mint &&
+          jupiterQuoteAmount &&
+          !isDraggingSlider
+        ),
+    })
 
   const handlePlaceOrder = useCallback(async () => {
     const client = mangoStore.getState().client
@@ -379,11 +402,21 @@ export default function SpotMarketOrderSwapForm() {
     savedCheckboxSettings.margin,
   ])
 
+  const quoteError =
+    !!selectedRoute?.error ||
+    !!(
+      !selectedRoute &&
+      !loadingRoute &&
+      !isDraggingSlider &&
+      jupiterQuoteAmount
+    )
+
   const disabled =
     (connected && (!baseSize || !oraclePrice)) ||
     !serumOrPerpMarket ||
     loadingRoute ||
-    tooMuchSize
+    tooMuchSize ||
+    quoteError
 
   return (
     <>
@@ -478,6 +511,8 @@ export default function SpotMarketOrderSwapForm() {
                 onChange={setAmountFromSlider}
                 step={1 / 10 ** (inputBank?.mintDecimals || 6)}
                 maxAmount={useTokenMax}
+                handleStartDrag={handleSliderDrag}
+                handleEndDrag={handleSliderDragEnd}
               />
             </div>
           ) : (
@@ -563,6 +598,14 @@ export default function SpotMarketOrderSwapForm() {
               </Button>
             )}
           </div>
+          {quoteError ? (
+            <div className="mb-4">
+              <InlineNotification
+                type="error"
+                desc={t('trade:error-no-route')}
+              />
+            </div>
+          ) : null}
           <div className="space-y-2">
             <div className="flex justify-between text-xs">
               <p>{t('trade:order-value')}</p>
@@ -599,15 +642,15 @@ export default function SpotMarketOrderSwapForm() {
                 </SheenLoader>
               ) : (
                 <p className="text-right font-mono text-th-fgd-2">
-                  {selectedRoute
-                    ? selectedRoute?.priceImpactPct * 100 < 0.1
+                  {selectedRoute?.priceImpactPct
+                    ? selectedRoute.priceImpactPct * 100 < 0.1
                       ? '<0.1%'
                       : `${(selectedRoute?.priceImpactPct * 100).toFixed(2)}%`
-                    : '-'}
+                    : '–'}
                 </p>
               )}
             </div>
-            {borrowAmount && inputBank ? (
+            {borrowAmount && inputBank && savedCheckboxSettings.margin ? (
               <>
                 <div className="flex justify-between text-xs">
                   <Tooltip
@@ -679,14 +722,17 @@ export default function SpotMarketOrderSwapForm() {
                 <SheenLoader>
                   <div className="h-3.5 w-20 bg-th-bkg-2" />
                 </SheenLoader>
+              ) : !selectedRoute || selectedRoute?.error ? (
+                <span className="text-th-fgd-2">–</span>
               ) : (
                 <div className="flex items-center overflow-hidden text-th-fgd-2">
                   <Tooltip
-                    content={selectedRoute?.routePlan.map((info, index) => {
+                    content={selectedRoute?.routePlan?.map((info, index) => {
                       let includeSeparator = false
                       if (
-                        selectedRoute?.routePlan.length > 1 &&
-                        index !== selectedRoute?.routePlan.length - 1
+                        selectedRoute?.routePlan &&
+                        selectedRoute?.routePlan?.length > 1 &&
+                        index !== selectedRoute?.routePlan?.length - 1
                       ) {
                         includeSeparator = true
                       }
@@ -698,11 +744,12 @@ export default function SpotMarketOrderSwapForm() {
                     })}
                   >
                     <div className="tooltip-underline max-w-[140px] truncate whitespace-nowrap">
-                      {selectedRoute?.routePlan.map((info, index) => {
+                      {selectedRoute?.routePlan?.map((info, index) => {
                         let includeSeparator = false
                         if (
-                          selectedRoute?.routePlan.length > 1 &&
-                          index !== selectedRoute?.routePlan.length - 1
+                          selectedRoute?.routePlan &&
+                          selectedRoute?.routePlan?.length > 1 &&
+                          index !== selectedRoute?.routePlan?.length - 1
                         ) {
                           includeSeparator = true
                         }

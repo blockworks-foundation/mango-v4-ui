@@ -17,6 +17,7 @@ import {
   ACCEPT_TERMS_KEY,
   SECONDS,
   SIDEBAR_COLLAPSE_KEY,
+  SLOTS_WARNING_KEY,
 } from '../utils/constants'
 import { useWallet } from '@solana/wallet-adapter-react'
 import SuccessParticles from './shared/SuccessParticles'
@@ -31,6 +32,13 @@ import PromoBanner from './rewards/PromoBanner'
 import { useRouter } from 'next/router'
 import StatusBar from './StatusBar'
 import WarningBanner from './shared/WarningBanner'
+import useMangoAccountAccounts from 'hooks/useMangoAccountAccounts'
+import TokenSlotsWarningModal, {
+  WARNING_LEVEL,
+} from './modals/TokenSlotsWarningModal'
+import useMangoAccount from 'hooks/useMangoAccount'
+import useUnownedAccount from 'hooks/useUnownedAccount'
+import NewListingBanner from './NewListingBanner'
 
 export const sideBarAnimationDuration = 300
 const termsLastUpdated = 1679441610978
@@ -42,7 +50,38 @@ const Layout = ({ children }: { children: ReactNode }) => {
     SIDEBAR_COLLAPSE_KEY,
     false,
   )
+  const [hasSeenSlotsWarning, setHasSeenSlotsWarning] = useLocalStorageState(
+    SLOTS_WARNING_KEY,
+    undefined,
+  )
   const { asPath } = useRouter()
+  const { usedTokens, totalTokens } = useMangoAccountAccounts()
+  const { mangoAccountAddress } = useMangoAccount()
+  const { isUnownedAccount } = useUnownedAccount()
+
+  const showSlotsNearlyFullWarning = useMemo(() => {
+    const slotsAvailable = totalTokens.length - usedTokens.length
+    if (
+      hasSeenSlotsWarning === 0 ||
+      !slotsAvailable ||
+      slotsAvailable > 1 ||
+      isUnownedAccount
+    )
+      return false
+    return true
+  }, [hasSeenSlotsWarning, usedTokens, totalTokens])
+
+  const showSlotsFullWarning = useMemo(() => {
+    const slotsAvailable = totalTokens.length - usedTokens.length
+    if (
+      hasSeenSlotsWarning === 1 ||
+      slotsAvailable ||
+      !mangoAccountAddress ||
+      isUnownedAccount
+    )
+      return false
+    return true
+  }, [hasSeenSlotsWarning, usedTokens, totalTokens, mangoAccountAddress])
 
   useEffect(() => {
     const animationFrames = 15
@@ -106,7 +145,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
         <div className="fixed z-20 hidden h-screen md:block">
           <button
-            className="absolute right-0 top-1/2 z-20 hidden h-8 w-3 -translate-y-1/2 rounded-none rounded-l bg-th-bkg-3 hover:bg-th-bkg-4 focus:outline-none focus-visible:bg-th-bkg-4 2xl:flex 2xl:items-center 2xl:justify-center"
+            className="absolute right-0 top-1/2 z-20 hidden h-8 w-3 -translate-y-1/2 rounded-none rounded-l bg-th-bkg-3 hover:bg-th-bkg-4 focus:outline-none focus-visible:bg-th-bkg-4 lg:flex lg:items-center lg:justify-center"
             onClick={handleToggleSidebar}
           >
             <ChevronRightIcon
@@ -121,20 +160,36 @@ const Layout = ({ children }: { children: ReactNode }) => {
             <SideNav collapsed={isCollapsed} />
           </div>
         </div>
-        {/* note: overflow-x-hidden below prevents position sticky from working in activity feed  */}
         <div
-          className={`w-full overflow-x-hidden transition-all duration-${sideBarAnimationDuration} ease-in-out ${
+          className={`w-full transition-all duration-${sideBarAnimationDuration} ease-in-out ${
             isCollapsed ? 'md:pl-[64px]' : 'pl-[200px]'
           }`}
         >
           <TopBar />
-          <WarningBanner />
+          <NewListingBanner />
           {asPath !== '/rewards' ? <PromoBanner /> : null}
-          {children}
+          <div className="pb-12 md:pb-[27px]">
+            {children}
+            <WarningBanner />
+          </div>
           <StatusBar collapsed={isCollapsed} />
         </div>
         <DeployRefreshManager />
         <TermsOfUse />
+        {showSlotsNearlyFullWarning ? (
+          <TokenSlotsWarningModal
+            isOpen={showSlotsNearlyFullWarning}
+            onClose={() => setHasSeenSlotsWarning(WARNING_LEVEL.NEARLY_FULL)}
+            warningLevel={WARNING_LEVEL.NEARLY_FULL}
+          />
+        ) : null}
+        {showSlotsFullWarning ? (
+          <TokenSlotsWarningModal
+            isOpen={showSlotsFullWarning}
+            onClose={() => setHasSeenSlotsWarning(WARNING_LEVEL.FULL)}
+            warningLevel={WARNING_LEVEL.FULL}
+          />
+        ) : null}
       </div>
     </main>
   )

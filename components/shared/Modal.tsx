@@ -1,6 +1,7 @@
 import { Dialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
+import { useEffect } from 'react'
 
 type ModalProps = {
   children: React.ReactNode
@@ -22,6 +23,14 @@ function Modal({
   hideClose,
 }: ModalProps) {
   const themeData = mangoStore((s) => s.themeData)
+
+  useEffect(() => {
+    document.documentElement.style.overflow = isOpen ? 'hidden' : 'auto'
+
+    return () => {
+      document.documentElement.style.overflow = 'auto'
+    }
+  }, [isOpen])
 
   const handleClose = () => {
     if (disableOutsideClose) return
@@ -59,7 +68,7 @@ function Modal({
           <div>{children}</div>
           {!hideClose ? (
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className={`absolute right-4 top-4 text-th-fgd-4 focus:outline-none focus-visible:text-th-active sm:right-2 sm:top-2 md:hover:text-th-active`}
             >
               <XMarkIcon className={`h-6 w-6`} />

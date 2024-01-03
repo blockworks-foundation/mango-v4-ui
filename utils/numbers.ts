@@ -11,8 +11,10 @@ export const formatNumericValue = (
     formattedValue = roundUp
       ? roundValue(numberValue, decimals, true)
       : roundValue(numberValue, decimals)
+  } else if (numberValue === 0) {
+    formattedValue = numberValue.toFixed(decimals || 0)
   } else if (numberValue > -0.0000000001 && numberValue < 0.000000001) {
-    formattedValue = '0'
+    formattedValue = numberValue.toExponential(3)
   } else if (Math.abs(numberValue) >= 1000) {
     formattedValue = roundUp
       ? roundValue(numberValue, 0, true)
@@ -23,8 +25,8 @@ export const formatNumericValue = (
       : roundValue(numberValue, 3)
   } else {
     formattedValue = roundUp
-      ? roundValue(numberValue, 9, true)
-      : roundValue(numberValue, 9)
+      ? roundValue(numberValue, countLeadingZeros(numberValue) + 3, true)
+      : roundValue(numberValue, countLeadingZeros(numberValue) + 3)
   }
   return formattedValue
 }
@@ -79,7 +81,10 @@ const roundValue = (
   })
 }
 
-const digits2 = new Intl.NumberFormat('en', { maximumFractionDigits: 2 })
+const digits2 = new Intl.NumberFormat('en', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+})
 const digits3 = new Intl.NumberFormat('en', { maximumFractionDigits: 3 })
 const digits4 = new Intl.NumberFormat('en', { maximumFractionDigits: 4 })
 const digits5 = new Intl.NumberFormat('en', { maximumFractionDigits: 5 })
@@ -142,10 +147,11 @@ const usdFormatter3Sig = Intl.NumberFormat('en', {
 })
 
 export const countLeadingZeros = (x: number) => {
-  if (x % 1 == 0) {
+  const absoluteX = Math.abs(x)
+  if (absoluteX % 1 == 0) {
     return 0
   } else {
-    return -1 - Math.floor(Math.log10(x % 1))
+    return -1 - Math.floor(Math.log10(absoluteX % 1))
   }
 }
 

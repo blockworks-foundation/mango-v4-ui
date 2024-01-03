@@ -149,6 +149,7 @@ const PerpPositions = () => {
                       </Tooltip>
                     </div>
                   </Th>
+                  <Th className="text-right">{t('funding')}</Th>
                   <Th className="text-right">{t('trade:unrealized-pnl')}</Th>
                   <Th className="text-right">ROE</Th>
                   {!isUnownedAccount ? (
@@ -192,6 +193,8 @@ const PerpPositions = () => {
                     position.cumulativePnlOverPositionLifetimeUi(market)
                   const unrealizedPnl = position.getUnRealizedPnlUi(market)
                   const realizedPnl = position.getRealizedPnlUi()
+                  const positionFunding =
+                    position.getCumulativeFundingUi(market)
                   const roe =
                     (unrealizedPnl / (Math.abs(basePosition) * avgEntryPrice)) *
                     100
@@ -236,6 +239,7 @@ const PerpPositions = () => {
                                 Math.abs(floorBasePosition) * market._uiPrice
                               }
                               isUsd
+                              isPrivate
                             />
                           </div>
                         ) : (
@@ -247,27 +251,20 @@ const PerpPositions = () => {
                             <FormatNumericValue
                               classNames="text-xs text-th-fgd-3"
                               value={
-                                Math.abs(floorBasePosition) * market._uiPrice
+                                Math.abs(floorBasePosition) * market.uiPrice
                               }
                               isUsd
+                              isPrivate
                             />
                           </div>
                         )}
                       </Td>
-                      <Td className="font-mono">
-                        <div className="flex flex-col items-end space-y-0.5">
-                          <FormatNumericValue
-                            value={avgEntryPrice}
-                            decimals={getDecimalCount(market.tickSize)}
-                            isUsd
-                          />
-                          <FormatNumericValue
-                            classNames="text-xs text-th-fgd-3"
-                            value={market.uiPrice}
-                            decimals={getDecimalCount(market.tickSize)}
-                            isUsd
-                          />
-                        </div>
+                      <Td className="text-right font-mono">
+                        <FormatNumericValue
+                          value={avgEntryPrice}
+                          decimals={getDecimalCount(market.tickSize)}
+                          isUsd
+                        />
                       </Td>
                       <Td className="text-right font-mono">
                         {estLiqPrice ? (
@@ -275,10 +272,24 @@ const PerpPositions = () => {
                             value={estLiqPrice}
                             decimals={getDecimalCount(market.tickSize)}
                             isUsd
+                            isPrivate
                           />
                         ) : (
                           '–'
                         )}
+                      </Td>
+                      <Td className="text-right font-mono">
+                        <span
+                          className={
+                            positionFunding >= 0 ? 'text-th-up' : 'text-th-down'
+                          }
+                        >
+                          <FormatNumericValue
+                            value={positionFunding}
+                            decimals={2}
+                            isUsd
+                          />
+                        </span>
                       </Td>
                       <Td className="text-right font-mono">
                         <div className="flex flex-col items-end">
@@ -304,6 +315,7 @@ const PerpPositions = () => {
                                 value={unrealizedPnl}
                                 isUsd
                                 decimals={2}
+                                isPrivate
                               />
                             </span>
                           </Tooltip>
@@ -360,6 +372,9 @@ const PerpPositions = () => {
                       <></>
                     </Td>
                     <Td className="text-right font-mono">
+                      <></>
+                    </Td>
+                    <Td className="text-right font-mono">
                       <div className="flex items-center justify-end">
                         <span className="mr-2 font-body text-xs text-th-fgd-3">
                           Total:
@@ -386,6 +401,7 @@ const PerpPositions = () => {
                                 value={totalPnlStats.unrealized}
                                 isUsd
                                 decimals={2}
+                                isPrivate
                               />
                             </span>
                           </div>
@@ -445,6 +461,7 @@ const PerpPositions = () => {
                 group,
                 mangoAccount,
               )
+              const positionFunding = position.getCumulativeFundingUi(market)
               const unsettledPnl = position.getUnsettledPnlUi(market)
               const notional = Math.abs(floorBasePosition) * market._uiPrice
               return (
@@ -478,7 +495,11 @@ const PerpPositions = () => {
                               </span>
                               <span className="text-th-fgd-4">|</span>
                               <span className="font-mono">
-                                <FormatNumericValue value={notional} isUsd />
+                                <FormatNumericValue
+                                  value={notional}
+                                  isUsd
+                                  isPrivate
+                                />
                               </span>
                             </div>
                           </div>
@@ -493,6 +514,7 @@ const PerpPositions = () => {
                               value={unrealizedPnl}
                               isUsd
                               decimals={2}
+                              isPrivate
                             />
                           </span>
                           <ChevronDownIcon
@@ -535,6 +557,7 @@ const PerpPositions = () => {
                                     classNames="text-xs text-th-fgd-3"
                                     value={notional}
                                     isUsd
+                                    isPrivate
                                   />
                                 </div>
                               ) : (
@@ -552,6 +575,7 @@ const PerpPositions = () => {
                                       market._uiPrice
                                     }
                                     isUsd
+                                    isPrivate
                                   />
                                 </div>
                               )}
@@ -560,20 +584,13 @@ const PerpPositions = () => {
                               <p className="text-xs text-th-fgd-3">
                                 {t('trade:avg-entry-price')}
                               </p>
-                              <div className="flex flex-col font-mono">
+                              <p className="font-mono text-th-fgd-2">
                                 <FormatNumericValue
-                                  classNames="text-th-fgd-2"
                                   value={avgEntryPrice}
                                   decimals={getDecimalCount(market.tickSize)}
                                   isUsd
                                 />
-                                <FormatNumericValue
-                                  classNames="text-xs text-th-fgd-3"
-                                  value={market.uiPrice}
-                                  decimals={getDecimalCount(market.tickSize)}
-                                  isUsd
-                                />
-                              </div>
+                              </p>
                             </div>
                             <div className="col-span-1">
                               <Tooltip
@@ -589,6 +606,7 @@ const PerpPositions = () => {
                                     value={estLiqPrice}
                                     decimals={getDecimalCount(market.tickSize)}
                                     isUsd
+                                    isPrivate
                                   />
                                 ) : (
                                   '–'
@@ -604,6 +622,25 @@ const PerpPositions = () => {
                                   value={unsettledPnl}
                                   isUsd
                                   decimals={2}
+                                  isPrivate
+                                />
+                              </p>
+                            </div>
+                            <div className="col-span-1">
+                              <p className="text-xs text-th-fgd-3">
+                                {t('funding')}
+                              </p>
+                              <p
+                                className={`font-mono ${
+                                  positionFunding >= 0
+                                    ? 'text-th-up'
+                                    : 'text-th-down'
+                                }`}
+                              >
+                                <FormatNumericValue
+                                  value={positionFunding}
+                                  decimals={2}
+                                  isUsd
                                 />
                               </p>
                             </div>
@@ -706,6 +743,7 @@ const PerpPositions = () => {
                       value={totalPnlStats.unrealized}
                       isUsd
                       decimals={2}
+                      isPrivate
                     />
                   </span>
                 </span>

@@ -4,7 +4,7 @@
     "empty-state-title": "這裡沒什麼",
     "notifications": "通知",
     "sign-message": "簽署訊息",
-    "sign-using-ledger": "Sign with Ledger",
+    "sign-using-ledger": "以Ledger登入",
     "unauth-desc": "連接錢包而受到通知",
     "unauth-title": "通知收件匣"
 }

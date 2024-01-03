@@ -1,6 +1,7 @@
 import { Bank } from '@blockworks-foundation/mango-v4'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import TokenLogo from '@components/shared/TokenLogo'
+import { floorToDecimal } from 'utils/numbers'
 
 const ActionTokenItem = ({
   bank,
@@ -18,6 +19,9 @@ const ActionTokenItem = ({
   showDepositRates?: boolean
 }) => {
   const { name } = bank
+  const decimals = floorToDecimal(customValue, bank.mintDecimals).toNumber()
+    ? bank.mintDecimals
+    : undefined
 
   return (
     <button
@@ -53,7 +57,7 @@ const ActionTokenItem = ({
         <p className="truncate font-mono text-th-fgd-1">
           <FormatNumericValue
             value={customValue}
-            decimals={bank.mintDecimals}
+            decimals={decimals}
             roundUp={roundUp}
           />
         </p>

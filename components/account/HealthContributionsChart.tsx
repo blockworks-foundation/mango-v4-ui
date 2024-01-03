@@ -27,10 +27,6 @@ const HealthContributionsChart = ({
   const { theme } = useThemeWrapper()
   const { isMobile } = useViewport()
 
-  // const handleClick = (index: any) => {
-  //   setActiveIndex(index.name)
-  // }
-
   const handleMouseEnter = (data: HealthContribution, index: number) => {
     setActiveIndex(index)
   }

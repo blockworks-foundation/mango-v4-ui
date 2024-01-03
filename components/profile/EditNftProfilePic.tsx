@@ -8,6 +8,7 @@ import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes'
 import { notify } from 'utils/notifications'
 import { MANGO_DATA_API_URL } from 'utils/constants'
 import { ImgWithLoader } from '@components/ImgWithLoader'
+import useProfileDetails from 'hooks/useProfileDetails'
 
 const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
   const { t } = useTranslation(['common', 'profile'])
@@ -15,8 +16,8 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
   const nfts = mangoStore((s) => s.wallet.nfts.data)
   const nftsLoading = mangoStore((s) => s.wallet.nfts.loading)
   const [selectedProfile, setSelectedProfile] = useState<string>('')
-  const actions = mangoStore.getState().actions
-  const profile = mangoStore((s) => s.profile.details)
+  const { refetch: refetchProfileDetails } = useProfileDetails()
+  const { data: profile } = useProfileDetails()
 
   useEffect(() => {
     if (profile?.profile_image_url) {
@@ -54,7 +55,7 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
         requestOptions,
       )
       if (response.status === 200) {
-        await actions.fetchProfileDetails(publicKey.toString())
+        await refetchProfileDetails()
         notify({
           type: 'success',
           title: t('profile:profile-pic-success'),
@@ -100,7 +101,7 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
         requestOptions,
       )
       if (response.status === 200) {
-        await actions.fetchProfileDetails(publicKey.toString())
+        await refetchProfileDetails()
         notify({
           type: 'success',
           title: t('profile:profile-pic-remove-success'),

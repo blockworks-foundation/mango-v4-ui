@@ -5,7 +5,7 @@
     "base-bank": "基准Bank",
     "base-mint": "基准铸币",
     "base-token": "基准币种",
-    "before-listing-1": "你必须存入10,0000 MNGO以上",
+    "before-listing-1": "你必须存入100000 MNGO以上",
     "before-listing-2": "新币种需要有",
     "before-listing-3": "是否有足够相对USDC与SOL的流动性？",
     "before-listing-4": "新币种由DAO确认。过程需要3天的时间。",
@@ -65,6 +65,7 @@
     "open-book-market-id": "Openbook市场ID",
     "openbook-market": "Openbook市场",
     "openbook-market-external": "外在Openbook市场",
+    "list-for-swap-only": "List for swap only",
     "openbook-market-not-found": "找不到Openbook市场",
     "openbook-program": "Openbook程序",
     "oracle": "预言机",
@@ -108,5 +109,6 @@
     "estimated-oracle-cost": "预言机约12个月的预计成本",
     "create-oracle": "创建预言机",
     "tier": "层级",
-    "on-boarding-description-1": "若你想使用委托币种，请前往投票视图并选择右上角的钱包。"
+    "on-boarding-description-1": "若你想使用委托币种，请前往投票视图并选择右上角的钱包。",
+    "create-bigger-market": "Create market with bigger event que - cost ~7.5 SOL"
 }

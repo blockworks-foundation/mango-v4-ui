@@ -5,7 +5,7 @@ export class NotificationsWebSocket {
   token: string
   mangoAccount: string
   publicKey: string
-  pingInterval: NodeJS.Timer | null
+  pingInterval: number | null
   retryCount = 0
   maxRetries = 2
 
@@ -26,7 +26,7 @@ export class NotificationsWebSocket {
     this.ws.addEventListener('open', () => {
       console.log('Notifications WebSocket opened')
       // Send a ping message to the server every 10 seconds
-      const interval = setInterval(() => {
+      const interval = window.setInterval(() => {
         if (this.ws?.readyState === this.ws?.OPEN) {
           this.ws?.send('ping')
         }

@@ -3,7 +3,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import Decimal from 'decimal.js'
 import { useTranslation } from 'next-i18next'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import NumberFormat, { NumberFormatValues } from 'react-number-format'
+import NumberFormat from 'react-number-format'
 import mangoStore from '@store/mangoStore'
 import { notify } from './../utils/notifications'
 import { formatNumericValue } from './../utils/numbers'
@@ -30,6 +30,7 @@ import TokenListButton from './shared/TokenListButton'
 import { ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES, BackButton } from './BorrowForm'
 import TokenLogo from './shared/TokenLogo'
 import InlineNotification from './shared/InlineNotification'
+import { handleInputChange } from 'utils/account'
 
 interface RepayFormProps {
   onSuccess: () => void
@@ -113,9 +114,6 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
 
   const handleDeposit = useCallback(
     async (amount: string) => {
-      //to not leave some dust on account we round amount by this number
-      //with reduce only set to true we take only what is needed to be
-      //deposited in need to repay borrow
       const mangoAccount = mangoStore.getState().mangoAccount.current
       const client = mangoStore.getState().client
       const group = mangoStore.getState().group
@@ -126,9 +124,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
       // we don't want to leave negative dust in the account if someone wants to repay the full amount
       const actualAmount =
         sizePercentage === '100'
-          ? borrowAmount.toNumber() > parseFloat(amount)
-            ? borrowAmount.toNumber()
-            : parseFloat(amount)
+          ? borrowAmount.toNumber() * 1.01
           : parseFloat(amount)
 
       setSubmitting(true)
@@ -240,11 +236,14 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
                   className={ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES}
                   placeholder="0.00"
                   value={inputAmount}
-                  onValueChange={(e: NumberFormatValues) => {
-                    setInputAmount(
-                      !Number.isNaN(Number(e.value)) ? e.value : '',
+                  onValueChange={(values, source) =>
+                    handleInputChange(
+                      values,
+                      source,
+                      setInputAmount,
+                      setSizePercentage,
                     )
-                  }}
+                  }
                   isAllowed={withValueLimit}
                 />
               </div>

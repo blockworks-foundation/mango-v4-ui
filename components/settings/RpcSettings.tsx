@@ -1,22 +1,19 @@
 import ButtonGroup from '@components/forms/ButtonGroup'
 import Input from '@components/forms/Input'
 import Button from '@components/shared/Button'
-import Switch from '@components/forms/Switch'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { useTranslation } from 'next-i18next'
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
-import {
-  PRIORITY_FEE_KEY,
-  RPC_PROVIDER_KEY,
-  USE_ORDERBOOK_FEED_KEY,
-} from 'utils/constants'
-import Tooltip from '@components/shared/Tooltip'
+import { PRIORITY_FEE_KEY, RPC_PROVIDER_KEY } from 'utils/constants'
+import { SETTINGS_BUTTON_TITLE_CLASSES } from './AccountSettings'
 
 export const TRITON_DEDICATED_URL = process.env.NEXT_PUBLIC_TRITON_TOKEN
   ? `https://mango.rpcpool.com/${process.env.NEXT_PUBLIC_TRITON_TOKEN}`
   : 'https://mango.rpcpool.com/946ef7337da3f5b8d3e4a34e7f88'
+
+export const LITE_RPC_URL = 'https://api.mngo.cloud/lite-rpc/v1/'
 
 const RPC_URLS = [
   {
@@ -36,8 +33,8 @@ const RPC_URLS = [
 
 export const PRIORITY_FEE_LEVELS = [
   { label: 'None', value: 0 },
-  { label: 'Low', value: 1.2 }, //  +20%
-  { label: 'High', value: 2 }, // +100%
+  { label: 'Low', value: 2 }, //  +100%
+  { label: 'High', value: 4 },
 ]
 
 export const DEFAULT_PRIORITY_FEE = 1
@@ -55,8 +52,8 @@ const RpcSettings = () => {
   )
   const [storedPriorityFeeLevel, setStoredPriorityFeeLevel] =
     useLocalStorageState(PRIORITY_FEE_KEY, DEFAULT_PRIORITY_FEE_LEVEL)
-  const [storedUseOrderbookFeed, setStoredUseOrderbookFeed] =
-    useLocalStorageState(USE_ORDERBOOK_FEED_KEY, true)
+  // const [storedUseOrderbookFeed, setStoredUseOrderbookFeed] =
+  //   useLocalStorageState(USE_ORDERBOOK_FEED_KEY, true)
 
   const rpcEndpoint = useMemo(() => {
     return (
@@ -76,6 +73,7 @@ const RpcSettings = () => {
   }, [storedPriorityFeeLevel])
 
   const handleSetEndpointProvider = (provider: string) => {
+    console.log(provider)
     const endpointProvider = RPC_URLS.find(
       (node) => node.label === provider,
     ) || { label: 'Custom', value: rpcEndpointProvider }
@@ -115,7 +113,9 @@ const RpcSettings = () => {
   return (
     <div className="border-b border-th-bkg-3">
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
-        <p className="mb-2 md:mb-0">{t('rpc-provider')}</p>
+        <p className={`mb-2 md:mb-0 ${SETTINGS_BUTTON_TITLE_CLASSES}`}>
+          {t('rpc-provider')}
+        </p>
         <div className="w-full min-w-[400px] md:w-auto">
           <ButtonGroup
             activeValue={rpcEndpoint.label}
@@ -148,7 +148,9 @@ const RpcSettings = () => {
         </div>
       </div>
       <div className="flex flex-col border-t border-th-bkg-3 py-4 md:flex-row md:items-center md:justify-between md:px-4">
-        <p className="mb-2 md:mb-0">Priority Fee</p>
+        <p className={`mb-2 md:mb-0 ${SETTINGS_BUTTON_TITLE_CLASSES}`}>
+          Priority Fee
+        </p>
         <div className="w-full min-w-[220px] md:w-auto md:pl-4">
           <ButtonGroup
             activeValue={priorityFee.label}
@@ -181,14 +183,16 @@ const RpcSettings = () => {
           ) : null} */}
         </div>
       </div>
-      <div className="flex items-center justify-between border-t border-th-bkg-3 p-4">
+      {/* <div className="flex items-center justify-between border-t border-th-bkg-3 p-4">
         <Tooltip
           content={t('settings:tooltip-orderbook-bandwidth-saving')}
           maxWidth="25rem"
           placement="top-start"
           delay={100}
         >
-          <p className="tooltip-underline">
+          <p
+            className={`tooltip-underline mb-2 md:mb-0 ${SETTINGS_BUTTON_TITLE_CLASSES}`}
+          >
             {t('settings:orderbook-bandwidth-saving')}
           </p>
         </Tooltip>
@@ -196,7 +200,7 @@ const RpcSettings = () => {
           checked={storedUseOrderbookFeed}
           onChange={() => setStoredUseOrderbookFeed(!storedUseOrderbookFeed)}
         />
-      </div>
+      </div> */}
     </div>
   )
 }

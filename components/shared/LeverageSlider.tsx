@@ -7,12 +7,16 @@ const PERCENTAGE_SHORTCUTS = [10, 25, 50, 75, 100]
 const LeverageSlider = ({
   amount,
   decimals,
+  handleStartDrag,
+  handleEndDrag,
   leverageMax,
   onChange,
   step,
 }: {
   amount: number
   decimals?: number
+  handleStartDrag?: () => void
+  handleEndDrag?: () => void
   leverageMax: number
   onChange: (x: string) => void
   step: number
@@ -47,43 +51,35 @@ const LeverageSlider = ({
       onChange(amount)
       setValue(parseFloat(amount))
     },
-    [decimals, leverageMax],
+    [decimals, leverageMax, onChange],
   )
 
-  // set percent when max changes (toggling margin)
   useEffect(() => {
-    const percent = ((value - leverageMax) / leverageMax) * 100 + 100
-    setPercent(Math.round(percent))
-  }, [leverageMax])
-
-  // set percent to 100 on max button click
-  useEffect(() => {
-    if (amount === leverageMax) {
-      setPercent(100)
-    }
-  }, [amount, leverageMax])
-
-  useEffect(() => {
-    if (amount) {
+    if (amount && leverageMax) {
+      const percent = ((amount - leverageMax) / leverageMax) * 100 + 100
       setValue(amount)
+      setPercent(Math.ceil(percent))
     } else {
       setValue(0)
       setPercent(0)
     }
-  }, [amount])
+  }, [amount, leverageMax])
 
-  const handleSliderChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const target = e.target
-    const min = parseFloat(target.min)
-    const max = parseFloat(target.max)
-    const val = parseFloat(target.value)
-    const percent = ((val - min) * 100) / (max - min)
-    target.style.backgroundSize = percent + '% 100%'
+  const handleSliderChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const target = e.target
+      const min = parseFloat(target.min)
+      const max = parseFloat(target.max)
+      const val = parseFloat(target.value)
+      const percent = ((val - min) * 100) / (max - min)
+      target.style.backgroundSize = percent + '% 100%'
 
-    onChange(e.target.value)
-    setValue(parseFloat(e.target.value))
-    setPercent(Math.round(percent))
-  }
+      onChange(e.target.value)
+      setValue(parseFloat(e.target.value))
+      setPercent(Math.round(percent))
+    },
+    [onChange],
+  )
 
   return (
     <>
@@ -98,16 +94,21 @@ const LeverageSlider = ({
         className="w-full focus:outline-none"
         onChange={handleSliderChange}
         value={value}
+        onMouseDown={handleStartDrag}
+        onMouseUp={handleEndDrag}
+        onKeyDown={handleStartDrag}
+        onKeyUp={handleEndDrag}
       ></input>
       <div className="mt-1 flex justify-between">
         {PERCENTAGE_SHORTCUTS.map((p) => (
           <button
-            className={`text-xxs focus:outline-none md:hover:text-th-active ${
+            className={`text-xxs focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 md:hover:text-th-active md:disabled:hover:text-th-fgd-3 ${
               p <= percent ? 'text-th-active' : 'text-th-fgd-3'
             }`}
             key={p}
             onClick={() => handleShortcutButtons(p)}
             type="button"
+            disabled={!leverageMax}
           >
             {p}%
           </button>

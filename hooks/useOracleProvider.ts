@@ -29,6 +29,9 @@ export const getOracleProvider = (
   }
 
   if (name === 'USDC') return ['N/A', '']
+  if (name === 'RENDER') {
+    name = 'RNDR'
+  }
 
   switch (marketOrBase.oracleProvider) {
     case OracleProvider.Pyth:

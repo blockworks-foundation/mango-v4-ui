@@ -11,6 +11,8 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { DEFAULT_PRIORITY_FEE_LEVEL } from './settings/RpcSettings'
 import { useHiddenMangoAccounts } from 'hooks/useHiddenMangoAccounts'
 import { notify } from 'utils/notifications'
+import { usePlausible } from 'next-plausible'
+import { TelemetryEvents } from 'utils/telemetry'
 
 const set = mangoStore.getState().set
 const actions = mangoStore.getState().actions
@@ -22,8 +24,24 @@ const HydrateStore = () => {
   const connection = mangoStore((s) => s.connection)
   const slowNetwork = useNetworkSpeed()
   const { wallet } = useWallet()
+  const telemetry = usePlausible<TelemetryEvents>()
 
   const [, setLastWalletName] = useLocalStorageState(LAST_WALLET_NAME, '')
+
+  // Handle scroll restoration when the route changes
+  useEffect(() => {
+    const handleRouteChange = () => {
+      if (typeof window !== 'undefined') {
+        window.scrollTo(0, 0)
+      }
+    }
+
+    router.events.on('routeChangeComplete', handleRouteChange)
+
+    return () => {
+      router.events.off('routeChangeComplete', handleRouteChange)
+    }
+  }, [])
 
   const handleWindowResize = useCallback(() => {
     if (typeof window !== 'undefined') {
@@ -98,7 +116,7 @@ const HydrateStore = () => {
           localStorage.getItem(PRIORITY_FEE_KEY) ??
             DEFAULT_PRIORITY_FEE_LEVEL.value,
         )
-        actions.estimatePriorityFee(priorityFeeMultiplier)
+        actions.estimatePriorityFee(priorityFeeMultiplier, telemetry)
       }
     },
     (slowNetwork ? 60 : 10) * SECONDS,
@@ -131,6 +149,7 @@ const HydrateStore = () => {
           mangoAccount.publicKey,
           info,
         )
+
         // don't fetch serum3OpenOrders if the slot is old
         if (context.slot > mangoStore.getState().mangoAccount.lastSlot) {
           if (newMangoAccount.serum3Active().length > 0) {
@@ -142,6 +161,20 @@ const HydrateStore = () => {
                 s.mangoAccount.lastSlot = context.slot
               })
             }
+          }
+
+          if (
+            newMangoAccount.perps
+              .map((x) => x.basePositionLots.toNumber())
+              .toString() !==
+            mangoAccount.perps
+              .map((x) => x.basePositionLots.toNumber())
+              .toString()
+          ) {
+            set((s) => {
+              s.mangoAccount.current = newMangoAccount
+              s.mangoAccount.lastSlot = context.slot
+            })
           }
           actions.fetchOpenOrders()
         }

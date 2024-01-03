@@ -17,6 +17,8 @@ import MangoAccountsListModal from '@components/modals/MangoAccountsListModal'
 import { TV_USER_ID_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import Loading from '@components/shared/Loading'
+import SheenLoader from '@components/shared/SheenLoader'
+import useProfileDetails from 'hooks/useProfileDetails'
 
 const set = mangoStore.getState().set
 const actions = mangoStore.getState().actions
@@ -28,9 +30,11 @@ const ConnectedMenu = () => {
   const [tvUserId, setTvUserId] = useLocalStorageState(TV_USER_ID_KEY, '')
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)
   const [showMangoAccountsModal, setShowMangoAccountsModal] = useState(false)
-
-  // const profileDetails = mangoStore((s) => s.profile.details)
-  const loadProfileDetails = mangoStore((s) => s.profile.loadDetails)
+  const {
+    data: profileDetails,
+    isInitialLoading: loadProfileDetails,
+    refetch: refetchProfileDetails,
+  } = useProfileDetails()
   const groupLoaded = mangoStore((s) => s.groupLoaded)
   const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
 
@@ -53,8 +57,7 @@ const ConnectedMenu = () => {
     if (publicKey && wallet && groupLoaded) {
       actions.connectMangoClientWithWallet(wallet)
       actions.fetchMangoAccounts(publicKey)
-      // actions.fetchTourSettings(publicKey?.toString() as string)
-      actions.fetchProfileDetails(publicKey.toString())
+      refetchProfileDetails()
       actions.fetchWalletTokens(publicKey)
       if (!tvUserId) {
         setTvUserId(publicKey.toString())
@@ -84,20 +87,34 @@ const ConnectedMenu = () => {
               ) : (
                 <Loading className="h-6 w-6" />
               )}
-              {!loadProfileDetails && isDesktop ? (
-                <div className="ml-2.5 overflow-hidden text-left">
-                  <p className="text-xs text-th-fgd-3">
-                    {wallet?.adapter.name}
-                  </p>
-                  <p className="truncate pr-2 text-sm font-bold text-th-fgd-1">
-                    {publicKey ? abbreviateAddress(publicKey) : ''}
-                  </p>
-                  {/* <p className="truncate pr-2 text-sm font-bold capitalize text-th-fgd-1">
+              {publicKey && isDesktop ? (
+                loadProfileDetails || mangoAccountLoading ? (
+                  <div className="ml-2.5">
+                    <SheenLoader>
+                      <div className="h-3 w-24 bg-th-bkg-2" />
+                    </SheenLoader>
+                    <SheenLoader className="mt-1.5">
+                      <div className="h-4 w-16 bg-th-bkg-2" />
+                    </SheenLoader>
+                  </div>
+                ) : (
+                  <div className="ml-2.5 overflow-hidden text-left">
+                    <p className="text-xs text-th-fgd-3">
                       {profileDetails?.profile_name
-                        ? profileDetails.profile_name
-                        : 'Profile Unavailabe'}
-                    </p> */}
-                </div>
+                        ? abbreviateAddress(publicKey)
+                        : wallet?.adapter.name}
+                    </p>
+                    <p className="truncate pr-2 text-sm font-bold text-th-fgd-1">
+                      {profileDetails?.profile_name ? (
+                        <span className="capitalize">
+                          {profileDetails?.profile_name}
+                        </span>
+                      ) : (
+                        abbreviateAddress(publicKey)
+                      )}
+                    </p>
+                  </div>
+                )
               ) : null}
             </div>
           </Popover.Button>
@@ -126,7 +143,7 @@ const ConnectedMenu = () => {
               >
                 <UserCircleIcon className="h-4 w-4" />
                 <div className="pl-2 text-left">
-                  {t('profile:edit-profile-pic')}
+                  {t('profile:edit-profile')}
                 </div>
               </button>
               <button

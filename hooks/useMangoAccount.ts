@@ -8,9 +8,10 @@ export default function useMangoAccount(): {
   initialLoad: boolean
   mangoAccountPk: PublicKey | undefined
   mangoAccountAddress: string
+  lastSlot: number
 } {
   const mangoAccount = mangoStore((s) => s.mangoAccount.current)
-
+  const lastSlot = mangoStore((s) => s.mangoAccount.lastSlot)
   const initialLoad = mangoStore((s) => s.mangoAccount.initialLoad)
 
   const mangoAccountPk = useMemo(() => {
@@ -23,6 +24,7 @@ export default function useMangoAccount(): {
 
   return {
     mangoAccount,
+    lastSlot,
     initialLoad,
     mangoAccountAddress,
     mangoAccountPk,
