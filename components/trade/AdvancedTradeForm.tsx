@@ -413,7 +413,7 @@ const AdvancedTradeForm = () => {
       (selectedMarket instanceof PerpMarket && perpAllowed) ||
       (selectedMarket instanceof Serum3Market && spotAllowed)
     )
-  }, [selectedMarket, ipCountry])
+  }, [selectedMarket, ipAllowed, perpAllowed, spotAllowed])
 
   const hasPosition = useMemo(() => {
     const group = mangoStore.getState().group
@@ -428,14 +428,14 @@ const AdvancedTradeForm = () => {
         selectedMarket.baseTokenIndex,
       )
       const tokenPosition = mangoAccount.getTokenBalanceUi(baseBank)
-      return tokenPosition != 0
+      return tokenPosition !== 0
     }
   }, [selectedMarket, ipCountry, mangoAccount])
 
   const isForceReduceOnly = useMemo(() => {
     if (!selectedMarket) return false
     return selectedMarket.reduceOnly || !!(isSanctioned && hasPosition)
-  }, [selectedMarket])
+  }, [selectedMarket, isSanctioned, hasPosition])
 
   /*
    * Updates the limit price on page load
