@@ -174,6 +174,8 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   usdt: true,
   wbtcpo: true,
   'wbtc (portal)': true,
+  $wif: true,
+  wif: true,
 }
 
 export const DEFAULT_FAVORITE_MKTS = ['SOL-PERP', 'ETH-PERP', 'BTC-PERP']
