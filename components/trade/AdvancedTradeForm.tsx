@@ -408,10 +408,10 @@ const AdvancedTradeForm = () => {
   }, [tradeForm.baseSize, marketAddress])
 
   const isSanctioned = useMemo(() => {
-    return !(
-      ipAllowed ||
-      (selectedMarket instanceof PerpMarket && perpAllowed) ||
-      (selectedMarket instanceof Serum3Market && spotAllowed)
+    return (
+      !ipAllowed ||
+      (selectedMarket instanceof PerpMarket && !perpAllowed) ||
+      (selectedMarket instanceof Serum3Market && !spotAllowed)
     )
   }, [selectedMarket, ipAllowed, perpAllowed, spotAllowed])
 
@@ -422,20 +422,32 @@ const AdvancedTradeForm = () => {
       const basePosition = mangoAccount
         .getPerpPosition(selectedMarket.perpMarketIndex)
         ?.getBasePositionUi(selectedMarket)
-      return basePosition !== undefined && basePosition != 0
+      return basePosition !== undefined && basePosition !== 0
     } else if (selectedMarket instanceof Serum3Market) {
       const baseBank = group.getFirstBankByTokenIndex(
         selectedMarket.baseTokenIndex,
       )
       const tokenPosition = mangoAccount.getTokenBalanceUi(baseBank)
-      return tokenPosition !== 0
+      return tradeForm.side === 'sell' && tokenPosition !== 0
     }
-  }, [selectedMarket, ipCountry, mangoAccount])
+  }, [selectedMarket, ipCountry, mangoAccount, tradeForm])
 
   const isForceReduceOnly = useMemo(() => {
     if (!selectedMarket) return false
     return selectedMarket.reduceOnly || !!(isSanctioned && hasPosition)
   }, [selectedMarket, isSanctioned, hasPosition])
+
+  useEffect(() => {
+    if (isSanctioned) {
+      set((state) => {
+        state.tradeForm.reduceOnly = true
+      })
+      setSavedCheckboxSettings({
+        ...savedCheckboxSettings,
+        margin: false,
+      })
+    }
+  }, [isSanctioned])
 
   /*
    * Updates the limit price on page load
@@ -1115,6 +1127,7 @@ const AdvancedTradeForm = () => {
                   >
                     <Checkbox
                       checked={savedCheckboxSettings.margin}
+                      disabled={isSanctioned}
                       onChange={handleSetMargin}
                     >
                       {t('trade:margin')}
@@ -1206,6 +1219,14 @@ const AdvancedTradeForm = () => {
                     dayjs().add(timeToNextPeriod, 'second'),
                   ),
                 })}
+              />
+            </div>
+          ) : null}
+          {isSanctioned && hasPosition ? (
+            <div className="mb-4 px-4">
+              <InlineNotification
+                type="error"
+                desc={t('trade:error-sanctioned-reduce-only')}
               />
             </div>
           ) : null}

@@ -15,6 +15,7 @@ import TopBar from './TopBar'
 import useLocalStorageState from '../hooks/useLocalStorageState'
 import {
   ACCEPT_TERMS_KEY,
+  NON_RESTRICTED_JURISDICTION_KEY,
   SECONDS,
   SIDEBAR_COLLAPSE_KEY,
   SLOTS_WARNING_KEY,
@@ -39,6 +40,8 @@ import TokenSlotsWarningModal, {
 import useMangoAccount from 'hooks/useMangoAccount'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import NewListingBanner from './NewListingBanner'
+import useIpAddress from 'hooks/useIpAddress'
+import RestrictedCountryModal from './modals/RestrictedCountryModal'
 
 export const sideBarAnimationDuration = 300
 const termsLastUpdated = 1679441610978
@@ -176,6 +179,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
         </div>
         <DeployRefreshManager />
         <TermsOfUse />
+        <RestrictedCountryCheck />
         {showSlotsNearlyFullWarning ? (
           <TokenSlotsWarningModal
             isOpen={showSlotsNearlyFullWarning}
@@ -218,6 +222,25 @@ const TermsOfUse = () => {
       ) : null}
     </>
   )
+}
+
+const RestrictedCountryCheck = () => {
+  const { ipCountry, loadingIpCountry } = useIpAddress()
+  const [confirmedCountry, setConfirmedCountry] = useLocalStorageState(
+    NON_RESTRICTED_JURISDICTION_KEY,
+    false,
+  )
+
+  const showModal = useMemo(() => {
+    return !confirmedCountry && !ipCountry && !loadingIpCountry
+  }, [confirmedCountry, ipCountry, loadingIpCountry])
+
+  return showModal ? (
+    <RestrictedCountryModal
+      isOpen={showModal}
+      onClose={() => setConfirmedCountry(true)}
+    />
+  ) : null
 }
 
 function DeployRefreshManager(): JSX.Element | null {
