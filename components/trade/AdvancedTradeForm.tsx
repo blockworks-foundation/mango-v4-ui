@@ -408,10 +408,10 @@ const AdvancedTradeForm = () => {
   }, [tradeForm.baseSize, marketAddress])
 
   const isSanctioned = useMemo(() => {
-    return (
-      !ipAllowed ||
-      (selectedMarket instanceof PerpMarket && !perpAllowed) ||
-      (selectedMarket instanceof Serum3Market && !spotAllowed)
+    return !(
+      ipAllowed ||
+      (selectedMarket instanceof PerpMarket && perpAllowed) ||
+      (selectedMarket instanceof Serum3Market && spotAllowed)
     )
   }, [selectedMarket, ipAllowed, perpAllowed, spotAllowed])
 
