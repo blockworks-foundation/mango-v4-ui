@@ -34,7 +34,7 @@ const StatsPage = () => {
     return TABS.map((t) => [t, 0])
   }, [])
   return (
-    <div className="pb-16 md:pb-[27px]">
+    <>
       {market ? (
         <PerpStatsPage />
       ) : token ? (
@@ -53,7 +53,7 @@ const StatsPage = () => {
           <TabContent activeTab={activeTab} />
         </>
       )}
-    </div>
+    </>
   )
 }
 
