@@ -32,9 +32,11 @@ const TradeformSubmitButton = ({
   const { connected } = useWallet()
   const { initialLoad: mangoAccountLoading, mangoAccountAddress } =
     useMangoAccount()
-  const { ipCountry } = useIpAddress()
+  const { ipAllowed, ipCountry } = useIpAddress()
 
-  return !isSanctioned || isForceReduceOnly ? (
+  console.log(isSanctioned, isForceReduceOnly)
+
+  return ipAllowed ? (
     (connected && mangoAccountLoading) || mangoAccountAddress ? (
       <Button
         className={`flex w-full items-center justify-center ${
