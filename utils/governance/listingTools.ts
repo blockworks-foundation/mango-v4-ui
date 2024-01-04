@@ -232,9 +232,6 @@ export const getBestMarket = async ({
     if (!markets.length) {
       return undefined
     }
-    if (markets.length === 1) {
-      return markets[0].publicKey
-    }
     const marketsDataJsons = await Promise.all([
       ...markets.map((x) =>
         fetch(`/openSerumApi/market/${x.publicKey.toBase58()}`),
