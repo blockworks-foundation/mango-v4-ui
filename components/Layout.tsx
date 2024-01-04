@@ -15,6 +15,7 @@ import TopBar from './TopBar'
 import useLocalStorageState from '../hooks/useLocalStorageState'
 import {
   ACCEPT_TERMS_KEY,
+  NON_RESTRICTED_JURISDICTION_KEY,
   SECONDS,
   SIDEBAR_COLLAPSE_KEY,
   SLOTS_WARNING_KEY,
@@ -31,6 +32,7 @@ import { useTheme } from 'next-themes'
 import PromoBanner from './rewards/PromoBanner'
 import { useRouter } from 'next/router'
 import StatusBar from './StatusBar'
+import WarningBanner from './shared/WarningBanner'
 import useMangoAccountAccounts from 'hooks/useMangoAccountAccounts'
 import TokenSlotsWarningModal, {
   WARNING_LEVEL,
@@ -38,6 +40,8 @@ import TokenSlotsWarningModal, {
 import useMangoAccount from 'hooks/useMangoAccount'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import NewListingBanner from './NewListingBanner'
+import useIpAddress from 'hooks/useIpAddress'
+import RestrictedCountryModal from './modals/RestrictedCountryModal'
 
 export const sideBarAnimationDuration = 300
 const termsLastUpdated = 1679441610978
@@ -167,11 +171,15 @@ const Layout = ({ children }: { children: ReactNode }) => {
           <TopBar />
           <NewListingBanner />
           {asPath !== '/rewards' ? <PromoBanner /> : null}
-          {children}
+          <div className="pb-12 md:pb-[27px]">
+            {children}
+            <WarningBanner />
+          </div>
           <StatusBar collapsed={isCollapsed} />
         </div>
         <DeployRefreshManager />
         <TermsOfUse />
+        <RestrictedCountryCheck />
         {showSlotsNearlyFullWarning ? (
           <TokenSlotsWarningModal
             isOpen={showSlotsNearlyFullWarning}
@@ -214,6 +222,26 @@ const TermsOfUse = () => {
       ) : null}
     </>
   )
+}
+
+// this will only show if the ip api doesn't return the country
+const RestrictedCountryCheck = () => {
+  const { ipCountry, loadingIpCountry } = useIpAddress()
+  const [confirmedCountry, setConfirmedCountry] = useLocalStorageState(
+    NON_RESTRICTED_JURISDICTION_KEY,
+    false,
+  )
+
+  const showModal = useMemo(() => {
+    return !confirmedCountry && !ipCountry && !loadingIpCountry
+  }, [confirmedCountry, ipCountry, loadingIpCountry])
+
+  return showModal ? (
+    <RestrictedCountryModal
+      isOpen={showModal}
+      onClose={() => setConfirmedCountry(true)}
+    />
+  ) : null
 }
 
 function DeployRefreshManager(): JSX.Element | null {

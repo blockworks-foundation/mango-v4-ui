@@ -43,7 +43,7 @@ const Index: NextPage = () => {
         <meta name="twitter:title" content={metaTitle} />
         <meta name="twitter:description" content={metaDescription} />
       </Head>
-      <div className="min-h-[calc(100vh-64px)] pb-32 md:pb-20 lg:pb-[27px]">
+      <div className="min-h-[calc(100vh-64px)]">
         <AccountPage />
       </div>
     </>

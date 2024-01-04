@@ -85,6 +85,13 @@ const DashboardSuggestedValues = ({
       ),
     [priceImpacts, bank.name],
   )
+  const currentTier = useMemo(() => {
+    return Object.values(PRESETS).find(
+      (x) =>
+        x.initLiabWeight.toFixed(1) ===
+        bank.initLiabWeight.toNumber().toFixed(1),
+    )
+  }, [PRESETS, bank.initLiabWeight])
 
   const getSuggestedTierForListedTokens = useCallback(async () => {
     const filteredResp = priceImpactsFiltered
@@ -358,7 +365,8 @@ const DashboardSuggestedValues = ({
     >
       <h3 className="mb-6">
         <span>
-          {bank.name} - Suggested tier: {PRESETS[suggestedTier].preset_name}
+          {bank.name} - Suggested tier: {PRESETS[suggestedTier].preset_name}{' '}
+          Current tier: ~{currentTier?.preset_name}
         </span>
         <Select
           value={PRESETS[proposedTier].preset_name}
@@ -369,6 +377,7 @@ const DashboardSuggestedValues = ({
             <Select.Option key={name} value={name}>
               <div className="flex w-full items-center justify-between">
                 {PRESETS[name as LISTING_PRESETS_KEY].preset_name}{' '}
+                {`{${PRESETS[name as LISTING_PRESETS_KEY].preset_key}}`}
                 {name === suggestedTier ? '- suggested' : ''}
               </div>
             </Select.Option>

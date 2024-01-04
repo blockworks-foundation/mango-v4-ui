@@ -5,13 +5,15 @@ import { DashboardNavbar } from '.'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { PublicKey } from '@solana/web3.js'
 import { formatNumericValue } from 'utils/numbers'
-import { toUiDecimals } from '@blockworks-foundation/mango-v4'
+import { OracleProvider, toUiDecimals } from '@blockworks-foundation/mango-v4'
 import { useMemo, useState } from 'react'
 import Select from '@components/forms/Select'
 import Input from '@components/forms/Input'
 import {
   LISTING_PRESETS,
   getMidPriceImpacts,
+  getPythPresets,
+  getSwitchBoardPresets,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 
 export async function getStaticProps({ locale }: { locale: string }) {
@@ -65,6 +67,7 @@ const RiskDashboard: NextPage = () => {
           'Side',
           ...group.pis.map((x) => formatValue(x.target_amount)),
           'Init/Main Weight',
+          '~Current tier',
           'Suggested tier',
         ]),
       ]
@@ -116,16 +119,22 @@ const RiskDashboard: NextPage = () => {
 
       return acc
     }, [] as TransformedPis[])
-  const symbolToPresetName = useMemo(
+  const symbolToSuggestedPresetName = useMemo(
     () => (group ? getMidPriceImpacts(group.pis) : []),
     [group],
   )
     .filter((x) => x.avg_price_impact_percent < 1)
     .reduce(
       (acc, val, index, pisFiltred) => {
+        const bank = group?.banksMapByName.get(apiNameToBankName(val.symbol))
+        const firstBank = bank ? bank[0] : undefined
+        const avaPreests =
+          firstBank?.oracleProvider === OracleProvider.Pyth
+            ? getPythPresets(LISTING_PRESETS)
+            : getSwitchBoardPresets(LISTING_PRESETS)
         if (!acc[val.symbol]) {
           acc[val.symbol] =
-            Object.values(LISTING_PRESETS).find(
+            Object.values(avaPreests).find(
               (x) =>
                 x.preset_target_amount <=
                 pisFiltred
@@ -198,6 +207,10 @@ const RiskDashboard: NextPage = () => {
                       const isBid = row.side === 'bid'
                       const isAsk = row.side === 'ask'
                       const collateralEnabled = bank?.maintAssetWeight.isPos()
+                      const PRESETS =
+                        bank?.oracleProvider === OracleProvider.Pyth
+                          ? getPythPresets(LISTING_PRESETS)
+                          : getSwitchBoardPresets(LISTING_PRESETS)
                       return (
                         <TrBody key={idx}>
                           {Object.entries(row).map(([key, val], valIdx) => {
@@ -300,10 +313,19 @@ const RiskDashboard: NextPage = () => {
                                 formatValue(bank.maintLiabWeight.toNumber())
                               }`}
                           </Td>
+                          <Td>
+                            {idx % 2 === 0 && bank
+                              ? Object.values(PRESETS).find(
+                                  (x) =>
+                                    x.initLiabWeight.toFixed(1) ===
+                                    bank?.initLiabWeight.toNumber().toFixed(1),
+                                )?.preset_name || ''
+                              : ''}
+                          </Td>
                           <Td xBorder>
                             {idx % 2 === 0
-                              ? symbolToPresetName[row.symbol]
-                                ? symbolToPresetName[row.symbol]
+                              ? symbolToSuggestedPresetName[row.symbol]
+                                ? symbolToSuggestedPresetName[row.symbol]
                                 : 'C'
                               : ''}
                           </Td>

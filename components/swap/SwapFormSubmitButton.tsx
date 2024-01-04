@@ -36,7 +36,7 @@ const SwapFormSubmitButton = ({
   const { t } = useTranslation('common')
   const { mangoAccountAddress } = useMangoAccount()
   const { connected } = useWallet()
-  const { ipAllowed, ipCountry } = useIpAddress()
+  const { ipAllowed, ipCountry, swapAllowed } = useIpAddress()
   const { inputBank, outputBank } = mangoStore((s) => s.swap)
   const { remainingBorrowsInPeriod, timeToNextPeriod } =
     useRemainingBorrowsInPeriod(true)
@@ -61,7 +61,7 @@ const SwapFormSubmitButton = ({
     !selectedRoute ||
     !!selectedRoute.error
 
-  return ipAllowed ? (
+  return ipAllowed || swapAllowed ? (
     <>
       {connected ? (
         <Button

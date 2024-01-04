@@ -7,7 +7,7 @@ import { COLORS } from 'styles/colors'
 const BridgeModal = ({ isOpen, onClose }: ModalProps) => {
   const { theme } = useThemeWrapper()
   return (
-    <Modal isOpen={isOpen} onClose={onClose} disableOutsideClose fullScreen>
+    <Modal isOpen={isOpen} onClose={onClose} fullScreen>
       <div className="thin-scroll max-h-screen overflow-y-auto">
         <div className="mx-auto max-w-xl">
           <div className="mx-auto mt-8 text-center">

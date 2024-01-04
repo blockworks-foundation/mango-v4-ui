@@ -38,9 +38,7 @@ const Swap: NextPage = () => {
         <meta name="twitter:title" content={metaTitle} />
         <meta name="twitter:description" content={metaDescription} />
       </Head>
-      <div className="pb-32 md:pb-20 lg:pb-[27px]">
-        <SwapPage />
-      </div>
+      <SwapPage />
     </>
   )
 }

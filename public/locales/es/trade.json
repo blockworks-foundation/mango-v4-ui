@@ -30,6 +30,7 @@
     "error-no-route": "No route found. Try adjusting your size",
     "error-no-short": "No borrow position to reduce",
     "error-perp-positions-full": "You've used all of your available perp market account slots. Close unused slots to trade this market or open a new account.",
+    "error-sanctioned-reduce-only": "Country not allowed. You can reduce your position only.",
     "error-serum-positions-full": "You've used all of your available spot market account slots. Close unused slots to trade this market or open a new account.",
     "error-trigger-above": "Trigger price must be above oracle price",
     "error-trigger-below": "Trigger price must be below oracle price",

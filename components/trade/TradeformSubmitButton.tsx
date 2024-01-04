@@ -13,6 +13,8 @@ const TradeformSubmitButton = ({
   setShowCreateAccountModal,
   sideNames,
   tooMuchSize,
+  isForceReduceOnly,
+  isSanctioned,
 }: {
   disabled: boolean
   placingOrder: boolean
@@ -21,6 +23,8 @@ const TradeformSubmitButton = ({
   sideNames: string[]
   tooMuchSize: boolean
   useMargin: boolean
+  isForceReduceOnly: boolean
+  isSanctioned: boolean
 }) => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
   const side = mangoStore((s) => s.tradeForm.side)
@@ -28,9 +32,9 @@ const TradeformSubmitButton = ({
   const { connected } = useWallet()
   const { initialLoad: mangoAccountLoading, mangoAccountAddress } =
     useMangoAccount()
-  const { ipAllowed, ipCountry } = useIpAddress()
+  const { ipCountry } = useIpAddress()
 
-  return ipAllowed ? (
+  return !isSanctioned || isForceReduceOnly ? (
     (connected && mangoAccountLoading) || mangoAccountAddress ? (
       <Button
         className={`flex w-full items-center justify-center ${

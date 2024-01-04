@@ -36,9 +36,7 @@ const Leaderboard: NextPage = () => {
         <meta name="twitter:title" content={metaTitle} />
         <meta name="twitter:description" content={metaDescription} />
       </Head>
-      <div className="pb-16 md:pb-[27px]">
-        <LeaderboardPage />
-      </div>
+      <LeaderboardPage />
     </>
   )
 }

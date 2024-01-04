@@ -79,6 +79,7 @@ import AccountSlotsFullNotification from '@components/shared/AccountSlotsFullNot
 import DepositWithdrawModal from '@components/modals/DepositWithdrawModal'
 import CreateAccountModal from '@components/modals/CreateAccountModal'
 import TradeformSubmitButton from './TradeformSubmitButton'
+import useIpAddress from 'hooks/useIpAddress'
 
 dayjs.extend(relativeTime)
 
@@ -123,6 +124,7 @@ const AdvancedTradeForm = () => {
   const [tradeFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const [savedCheckboxSettings, setSavedCheckboxSettings] =
     useLocalStorageState(TRADE_CHECKBOXES_KEY, DEFAULT_CHECKBOX_SETTINGS)
+  const { ipAllowed, perpAllowed, spotAllowed, ipCountry } = useIpAddress()
   const [soundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,
     INITIAL_SOUND_SETTINGS,
@@ -405,6 +407,48 @@ const AdvancedTradeForm = () => {
       setFormErrors({})
     }
   }, [tradeForm.baseSize, marketAddress])
+
+  const isSanctioned = useMemo(() => {
+    return (
+      !ipAllowed ||
+      (selectedMarket instanceof PerpMarket && !perpAllowed) ||
+      (selectedMarket instanceof Serum3Market && !spotAllowed)
+    )
+  }, [selectedMarket, ipAllowed, perpAllowed, spotAllowed])
+
+  const hasPosition = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!mangoAccount || !selectedMarket || !group) return false
+    if (selectedMarket instanceof PerpMarket) {
+      const basePosition = mangoAccount
+        .getPerpPosition(selectedMarket.perpMarketIndex)
+        ?.getBasePositionUi(selectedMarket)
+      return basePosition !== undefined && basePosition !== 0
+    } else if (selectedMarket instanceof Serum3Market) {
+      const baseBank = group.getFirstBankByTokenIndex(
+        selectedMarket.baseTokenIndex,
+      )
+      const tokenPosition = mangoAccount.getTokenBalanceUi(baseBank)
+      return tradeForm.side === 'sell' && tokenPosition !== 0
+    }
+  }, [selectedMarket, ipCountry, mangoAccount, tradeForm])
+
+  const isForceReduceOnly = useMemo(() => {
+    if (!selectedMarket) return false
+    return selectedMarket.reduceOnly || !!(isSanctioned && hasPosition)
+  }, [selectedMarket, isSanctioned, hasPosition])
+
+  useEffect(() => {
+    if (isSanctioned) {
+      set((state) => {
+        state.tradeForm.reduceOnly = true
+      })
+      setSavedCheckboxSettings({
+        ...savedCheckboxSettings,
+        margin: false,
+      })
+    }
+  }, [isSanctioned])
 
   /*
    * Updates the limit price on page load
@@ -1093,6 +1137,7 @@ const AdvancedTradeForm = () => {
                   >
                     <Checkbox
                       checked={savedCheckboxSettings.margin}
+                      disabled={isSanctioned}
                       onChange={handleSetMargin}
                     >
                       {t('trade:margin')}
@@ -1111,10 +1156,13 @@ const AdvancedTradeForm = () => {
                   >
                     <div className="flex items-center text-xs text-th-fgd-3">
                       <Checkbox
-                        checked={tradeForm.reduceOnly}
+                        checked={
+                          tradeForm.reduceOnly || isForceReduceOnly === true
+                        }
                         onChange={(e) =>
                           handleReduceOnlyChange(e.target.checked)
                         }
+                        disabled={isForceReduceOnly}
                       >
                         {t('trade:reduce-only')}
                       </Checkbox>
@@ -1126,6 +1174,8 @@ const AdvancedTradeForm = () => {
             <div className="mb-4 mt-6 flex px-3 md:px-4">
               <TradeformSubmitButton
                 disabled={disabled}
+                isForceReduceOnly={isForceReduceOnly}
+                isSanctioned={isSanctioned}
                 placingOrder={placingOrder}
                 setShowCreateAccountModal={setShowCreateAccountModal}
                 setShowDepositModal={setShowDepositModal}
@@ -1179,6 +1229,14 @@ const AdvancedTradeForm = () => {
                     dayjs().add(timeToNextPeriod, 'second'),
                   ),
                 })}
+              />
+            </div>
+          ) : null}
+          {isSanctioned && hasPosition ? (
+            <div className="mb-4 px-4">
+              <InlineNotification
+                type="error"
+                desc={t('trade:error-sanctioned-reduce-only')}
               />
             </div>
           ) : null}
