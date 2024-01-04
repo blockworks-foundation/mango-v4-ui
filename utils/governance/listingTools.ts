@@ -243,10 +243,22 @@ export const getBestMarket = async ({
     const marketsData = await Promise.all([
       ...marketsDataJsons.map((x) => x.json()),
     ])
-    const bestMarket = marketsData.sort((a, b) => b.volume24h - a.volume24h)
-    return bestMarket.length
-      ? new PublicKey(bestMarket[0].id)
-      : markets[0].publicKey
+    let sortedMarkets = marketsData.sort((a, b) => b.volume24h - a.volume24h)
+    let firstBestMarket = sortedMarkets[0]
+
+    if (firstBestMarket.volume24h === 0) {
+      notify({
+        title: 'Openbook market had 0 volume in last 24h check it carefully',
+        description: ``,
+        type: 'error',
+      })
+    }
+    sortedMarkets = sortedMarkets.sort(
+      (a, b) => b.quoteDepositsTotal - a.quoteDepositsTotal,
+    )
+    firstBestMarket = sortedMarkets[0]
+
+    return sortedMarkets.length ? new PublicKey(firstBestMarket.id) : undefined
   } catch (e) {
     notify({
       title: 'Openbook market not found',
