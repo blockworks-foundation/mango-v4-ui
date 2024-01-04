@@ -224,6 +224,7 @@ const TermsOfUse = () => {
   )
 }
 
+// this will only show if the ip api doesn't return the country
 const RestrictedCountryCheck = () => {
   const { ipCountry, loadingIpCountry } = useIpAddress()
   const [confirmedCountry, setConfirmedCountry] = useLocalStorageState(

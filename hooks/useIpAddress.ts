@@ -53,7 +53,7 @@ const fetchIpGeolocation = async () => {
     return ipCountryCode
   } catch (e) {
     console.log('failed to fetch ip country', e)
-    return null
+    return ''
   }
 }
 
