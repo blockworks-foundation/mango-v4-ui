@@ -409,10 +409,10 @@ const AdvancedTradeForm = () => {
   }, [tradeForm.baseSize, marketAddress])
 
   const isSanctioned = useMemo(() => {
-    return (
-      !ipAllowed ||
-      (selectedMarket instanceof PerpMarket && !perpAllowed) ||
-      (selectedMarket instanceof Serum3Market && !spotAllowed)
+    return !(
+      ipAllowed ||
+      (selectedMarket instanceof PerpMarket && perpAllowed) ||
+      (selectedMarket instanceof Serum3Market && spotAllowed)
     )
   }, [selectedMarket, ipAllowed, perpAllowed, spotAllowed])
 
@@ -713,6 +713,12 @@ const AdvancedTradeForm = () => {
             )
             orderPrice = marketPrice * (1 + MAX_PERP_SLIPPAGE)
           }
+          notify({
+            type: 'info',
+            title: t('trade:max-slippage-price-notification', {
+              price: orderPrice.toFixed(tickDecimals),
+            }),
+          })
         }
 
         const { signature: tx } = await client.perpPlaceOrder(
@@ -755,7 +761,7 @@ const AdvancedTradeForm = () => {
     } finally {
       setPlacingOrder(false)
     }
-  }, [isFormValid, oraclePrice, soundSettings])
+  }, [isFormValid, oraclePrice, soundSettings, tickDecimals])
 
   const handleTriggerOrder = useCallback(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current

@@ -23,6 +23,7 @@ import { Howl } from 'howler'
 import { isMangoError } from 'types'
 import { decodeBook, decodeBookL2 } from 'utils/orderbook'
 import InlineNotification from '@components/shared/InlineNotification'
+import { getDecimalCount } from 'utils/numbers'
 
 interface MarketCloseModalProps {
   onClose: () => void
@@ -162,12 +163,18 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
 
       let price = perpMarket.uiPrice
       if (side === 'sell') {
-        const marketPrice = Math.max(price, bids[0][0])
+        const marketPrice = Math.max(price, bids?.[0]?.[0] || 0)
         price = marketPrice * (1 - MAX_PERP_SLIPPAGE)
       } else {
-        const marketPrice = Math.min(price, asks[0][0])
+        const marketPrice = Math.min(price, asks?.[0]?.[0] || Infinity)
         price = marketPrice * (1 + MAX_PERP_SLIPPAGE)
       }
+      notify({
+        type: 'info',
+        title: t('trade:max-slippage-price-notification', {
+          price: price.toFixed(getDecimalCount(perpMarket.tickSize)),
+        }),
+      })
 
       const { signature: tx } = await client.perpPlaceOrder(
         group,
