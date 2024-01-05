@@ -172,7 +172,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
       notify({
         type: 'info',
         title: t('trade:max-slippage-price-notification', {
-          price: price.toFixed(getDecimalCount(perpMarket.tickSize)),
+          price: `$${price.toFixed(getDecimalCount(perpMarket.tickSize))}`,
         }),
       })
 

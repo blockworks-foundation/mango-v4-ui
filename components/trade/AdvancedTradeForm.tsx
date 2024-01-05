@@ -716,7 +716,7 @@ const AdvancedTradeForm = () => {
           notify({
             type: 'info',
             title: t('trade:max-slippage-price-notification', {
-              price: orderPrice.toFixed(tickDecimals),
+              price: `$${orderPrice.toFixed(tickDecimals)}`,
             }),
           })
         }
