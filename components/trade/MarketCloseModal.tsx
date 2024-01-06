@@ -128,14 +128,14 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
     const baseSize = position.getBasePositionUi(perpMarket)
     const side = baseSize < 0 ? 'buy' : 'sell'
     if (side === 'sell') {
-      if (!bids) return false
+      if (!bids || !bids.length) return false
       const marketPrice = Math.max(perpMarket.uiPrice, bids[0][0])
       const limitPrice = marketPrice * (1 - MAX_PERP_SLIPPAGE)
       const filteredBidsForPrice = bids.filter((bid) => bid[0] >= limitPrice)
       const liquidityMax = filteredBidsForPrice.reduce((a, c) => a + c[1], 0)
       return liquidityMax < baseSize
     } else {
-      if (!asks) return false
+      if (!asks || !asks.length) return false
       const marketPrice = Math.min(perpMarket.uiPrice, asks[0][0])
       const limitPrice = marketPrice * (1 + MAX_PERP_SLIPPAGE)
       const filteredAsksForPrice = asks.filter((ask) => ask[0] <= limitPrice)

@@ -63,7 +63,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import MaxSizeButton from './MaxSizeButton'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 import { Howl } from 'howler'
-import { isMangoError } from 'types'
+import { OrderbookL2, isMangoError } from 'types'
 import InlineNotification from '@components/shared/InlineNotification'
 import SpotMarketOrderSwapForm from './SpotMarketOrderSwapForm'
 import useRemainingBorrowsInPeriod from 'hooks/useRemainingBorrowsInPeriod'
@@ -629,6 +629,42 @@ const AdvancedTradeForm = () => {
       tickDecimals,
     ],
   )
+  const calcOrderPrice = useCallback(
+    (price: number, orderbook: OrderbookL2) => {
+      let orderPrice = price
+      if (tradeForm.tradeType === 'Market') {
+        try {
+          if (tradeForm.side === 'sell') {
+            const marketPrice = Math.max(
+              oraclePrice,
+              orderbook?.bids?.[0]?.[0] || 0,
+            )
+            orderPrice = marketPrice * (1 - MAX_PERP_SLIPPAGE)
+          } else {
+            const marketPrice = Math.min(
+              oraclePrice,
+              orderbook?.asks?.[0]?.[0] || Infinity,
+            )
+            orderPrice = marketPrice * (1 + MAX_PERP_SLIPPAGE)
+          }
+        } catch (e) {
+          //simple fallback if something go wrong
+          const maxSlippage = 0.025
+          orderPrice =
+            price *
+            (tradeForm.side === 'buy' ? 1 + maxSlippage : 1 - maxSlippage)
+        }
+        notify({
+          type: 'info',
+          title: t('trade:max-slippage-price-notification', {
+            price: `$${orderPrice.toFixed(tickDecimals)}`,
+          }),
+        })
+      }
+      return orderPrice
+    },
+    [oraclePrice, t, tickDecimals, tradeForm.side, tradeForm.tradeType],
+  )
 
   const handleStandardOrder = useCallback(async () => {
     const { client } = mangoStore.getState()
@@ -698,28 +734,7 @@ const AdvancedTradeForm = () => {
             ? PerpOrderType.postOnly
             : PerpOrderType.limit
 
-        let orderPrice = price
-        if (tradeForm.tradeType === 'Market') {
-          if (tradeForm.side === 'sell') {
-            const marketPrice = Math.max(
-              oraclePrice,
-              orderbook?.bids?.[0]?.[0] || 0,
-            )
-            orderPrice = marketPrice * (1 - MAX_PERP_SLIPPAGE)
-          } else {
-            const marketPrice = Math.min(
-              oraclePrice,
-              orderbook?.asks?.[0]?.[0] || Infinity,
-            )
-            orderPrice = marketPrice * (1 + MAX_PERP_SLIPPAGE)
-          }
-          notify({
-            type: 'info',
-            title: t('trade:max-slippage-price-notification', {
-              price: `$${orderPrice.toFixed(tickDecimals)}`,
-            }),
-          })
-        }
+        const orderPrice = calcOrderPrice(price, orderbook)
 
         const { signature: tx } = await client.perpPlaceOrder(
           group,
