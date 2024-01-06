@@ -66,17 +66,16 @@ export default function useIpAddress() {
   const [showWarning, setShowWarning] = useState(false)
   const [ipCountry, setIpCountry] = useState('')
 
-  const {
-    data: ipCountryCode,
-    isInitialLoading,
-    isFetching,
-    isLoading,
-  } = useQuery<string, Error>(['ip-address'], () => fetchIpGeolocation(), {
-    cacheTime: 1000 * 60 * 2,
-    staleTime: 1000 * 60 * 2,
-    retry: 3,
-    refetchOnWindowFocus: true,
-  })
+  const { data: ipCountryCode, isInitialLoading } = useQuery<string, Error>(
+    ['ip-address'],
+    () => fetchIpGeolocation(),
+    {
+      cacheTime: 1000 * 60 * 2,
+      staleTime: 1000 * 60 * 2,
+      retry: 3,
+      refetchOnWindowFocus: true,
+    },
+  )
 
   useEffect(() => {
     if (ipCountryCode) {
@@ -90,8 +89,6 @@ export default function useIpAddress() {
     }
   }, [ipCountryCode])
 
-  const loadingIpCountry = isInitialLoading || isFetching || isLoading
-
   if (CLUSTER === 'mainnet-beta' && !process.env.NEXT_PUBLIC_DISABLE_GEOBLOCK) {
     return {
       ipAllowed,
@@ -101,7 +98,7 @@ export default function useIpAddress() {
       borrowLendAllowed,
       showWarning,
       ipCountry,
-      loadingIpCountry,
+      loadingIpCountry: isInitialLoading,
     }
   } else {
     return {
@@ -112,7 +109,7 @@ export default function useIpAddress() {
       borrowLendAllowed: true,
       showWarning: true,
       ipCountry,
-      loadingIpCountry,
+      loadingIpCountry: isInitialLoading,
     }
   }
 }
