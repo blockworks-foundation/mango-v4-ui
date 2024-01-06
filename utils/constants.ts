@@ -210,3 +210,5 @@ export const PRIVATE_MODE_STRING = '****'
 export const MANGO_MAINNET_GROUP = new PublicKey(
   '78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX',
 )
+
+export const MAX_PERP_SLIPPAGE = 0.025

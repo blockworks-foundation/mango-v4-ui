@@ -176,7 +176,7 @@ const TransactionNotification = ({
         : type === 'error'
         ? 30000
         : type === 'info'
-        ? 4000
+        ? 8000
         : 10000
 
     const id = setTimeout(() => {
