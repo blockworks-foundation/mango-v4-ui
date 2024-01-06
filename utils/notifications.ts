@@ -167,7 +167,9 @@ export const createLedgerMessage = async (
     }),
   )
   tx.feePayer = wallet.publicKey!
-  tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash
+  tx.recentBlockhash = (
+    await connection.getLatestBlockhash('processed')
+  ).blockhash
 
   const signedTx = await wallet.signTransaction!(tx)
   const serializedTx = signedTx.serialize()

@@ -106,7 +106,7 @@ const CreateOpenbookMarketModal = ({
 
       const txChunks = ixObj.innerTransactions
       const transactions: Transaction[] = []
-      const latestBlockhash = await connection.getLatestBlockhash('confirmed')
+      const latestBlockhash = await connection.getLatestBlockhash('processed')
       for (const chunk of txChunks) {
         const tx = new Transaction()
         tx.add(createComputeBudgetIx(fee))
