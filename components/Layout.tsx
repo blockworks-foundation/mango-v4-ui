@@ -244,7 +244,6 @@ const RestrictedCountryCheck = () => {
       isOpen={showModal}
       onClose={() => {
         setConfirmedCountry(true)
-        setShowModal(false)
       }}
     />
   ) : null
