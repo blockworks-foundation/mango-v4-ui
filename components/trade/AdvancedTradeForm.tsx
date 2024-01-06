@@ -738,7 +738,7 @@ const AdvancedTradeForm = () => {
 
         const orderPrice = calcOrderPrice(price, orderbook)
 
-        const { signature: tx, slot } = await client.perpPlaceOrder(
+        const { signature: tx } = await client.perpPlaceOrder(
           group,
           mangoAccount,
           selectedMarket.perpMarketIndex,
@@ -754,7 +754,7 @@ const AdvancedTradeForm = () => {
         )
         await poolIsPerpReadyForRefresh(
           () => {
-            actions.reloadMangoAccount(slot)
+            actions.fetchOpenOrders(true)
           },
           () => {
             notify({
@@ -764,7 +764,6 @@ const AdvancedTradeForm = () => {
             })
           },
         )
-        actions.reloadMangoAccount(slot)
         set((s) => {
           s.successAnimation.trade = true
         })

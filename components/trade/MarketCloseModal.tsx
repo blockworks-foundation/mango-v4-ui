@@ -178,7 +178,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
         }),
       })
 
-      const { signature: tx, slot } = await client.perpPlaceOrder(
+      const { signature: tx } = await client.perpPlaceOrder(
         group,
         mangoAccount,
         perpMarket.perpMarketIndex,
@@ -194,7 +194,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
       )
       await poolIsPerpReadyForRefresh(
         () => {
-          actions.reloadMangoAccount(slot)
+          actions.fetchOpenOrders(true)
         },
         () => {
           notify({
