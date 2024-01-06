@@ -231,12 +231,17 @@ const RestrictedCountryCheck = () => {
     NON_RESTRICTED_JURISDICTION_KEY,
     false,
   )
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const showModal = useMemo(() => {
     return !confirmedCountry && !ipCountry && !loadingIpCountry
   }, [confirmedCountry, ipCountry, loadingIpCountry])
 
-  return showModal ? (
+  return showModal && mounted ? (
     <RestrictedCountryModal
       isOpen={showModal}
       onClose={() => setConfirmedCountry(true)}
