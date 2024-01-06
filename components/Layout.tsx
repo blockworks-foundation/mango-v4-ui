@@ -232,8 +232,6 @@ const RestrictedCountryCheck = () => {
     false,
   )
 
-  console.log(loadingIpCountry)
-
   const showModal = useMemo(() => {
     return !confirmedCountry && !ipCountry && !loadingIpCountry
   }, [confirmedCountry, ipCountry, loadingIpCountry])
