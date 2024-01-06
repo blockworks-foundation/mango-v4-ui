@@ -24,6 +24,7 @@ import { isMangoError } from 'types'
 import { decodeBook, decodeBookL2 } from 'utils/orderbook'
 import InlineNotification from '@components/shared/InlineNotification'
 import { getDecimalCount } from 'utils/numbers'
+import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
 
 interface MarketCloseModalProps {
   onClose: () => void
@@ -47,6 +48,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
 }) => {
   const { t } = useTranslation(['common', 'trade'])
   const [submitting, setSubmitting] = useState(false)
+  const { poolIsPerpReadyForRefresh } = useOpenPerpPositions()
   const connection = mangoStore((s) => s.connection)
   const group = mangoStore((s) => s.group)
   const [soundSettings] = useLocalStorageState(
@@ -176,7 +178,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
         }),
       })
 
-      const { signature: tx } = await client.perpPlaceOrder(
+      const { signature: tx, slot } = await client.perpPlaceOrder(
         group,
         mangoAccount,
         perpMarket.perpMarketIndex,
@@ -190,10 +192,17 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
         undefined,
         undefined,
       )
-      actions.fetchOpenOrders(true)
-      set((s) => {
-        s.successAnimation.trade = true
-      })
+      await poolIsPerpReadyForRefresh(
+        () => {
+          actions.reloadMangoAccount(slot)
+        },
+        () => {
+          notify({
+            type: 'error',
+            title: 'Timeout during perp refresh, please refresh data manually',
+          })
+        },
+      )
       if (soundSettings['swap-success']) {
         successSound.play()
       }
@@ -201,6 +210,9 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
         type: 'success',
         title: 'Transaction successful',
         txid: tx,
+      })
+      set((s) => {
+        s.successAnimation.trade = true
       })
     } catch (e) {
       if (isMangoError(e)) {

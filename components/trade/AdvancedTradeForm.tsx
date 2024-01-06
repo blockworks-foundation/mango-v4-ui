@@ -80,6 +80,7 @@ import DepositWithdrawModal from '@components/modals/DepositWithdrawModal'
 import CreateAccountModal from '@components/modals/CreateAccountModal'
 import TradeformSubmitButton from './TradeformSubmitButton'
 import useIpAddress from 'hooks/useIpAddress'
+import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
 
 dayjs.extend(relativeTime)
 
@@ -113,6 +114,7 @@ type FormErrors = Partial<Record<keyof TradeForm, string>>
 
 const AdvancedTradeForm = () => {
   const { t } = useTranslation(['common', 'settings', 'swap', 'trade'])
+  const { poolIsPerpReadyForRefresh } = useOpenPerpPositions()
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const { usedSerum3, totalSerum3, usedPerps, totalPerps } =
     useMangoAccountAccounts()
@@ -736,7 +738,7 @@ const AdvancedTradeForm = () => {
 
         const orderPrice = calcOrderPrice(price, orderbook)
 
-        const { signature: tx } = await client.perpPlaceOrder(
+        const { signature: tx, slot } = await client.perpPlaceOrder(
           group,
           mangoAccount,
           selectedMarket.perpMarketIndex,
@@ -750,7 +752,19 @@ const AdvancedTradeForm = () => {
           undefined,
           undefined,
         )
-        actions.fetchOpenOrders(true)
+        await poolIsPerpReadyForRefresh(
+          () => {
+            actions.reloadMangoAccount(slot)
+          },
+          () => {
+            notify({
+              type: 'error',
+              title:
+                'Timeout during perp refresh, please refresh data manually',
+            })
+          },
+        )
+        actions.reloadMangoAccount(slot)
         set((s) => {
           s.successAnimation.trade = true
         })

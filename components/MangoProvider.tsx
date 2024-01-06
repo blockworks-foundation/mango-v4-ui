@@ -162,20 +162,6 @@ const HydrateStore = () => {
               })
             }
           }
-
-          if (
-            newMangoAccount.perps
-              .map((x) => x.basePositionLots.toNumber())
-              .toString() !==
-            mangoAccount.perps
-              .map((x) => x.basePositionLots.toNumber())
-              .toString()
-          ) {
-            set((s) => {
-              s.mangoAccount.current = newMangoAccount
-              s.mangoAccount.lastSlot = context.slot
-            })
-          }
           actions.fetchOpenOrders()
         }
       },

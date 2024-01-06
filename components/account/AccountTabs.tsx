@@ -20,7 +20,7 @@ const AccountTabs = () => {
   const { isMobile, isTablet } = useViewport()
   const unsettledSpotBalances = useUnsettledSpotBalances()
   const unsettledPerpPositions = useUnsettledPerpPositions()
-  const openPerpPositions = useOpenPerpPositions()
+  const { openPerpPositions } = useOpenPerpPositions()
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
 
   const tabsWithCount: [string, number][] = useMemo(() => {

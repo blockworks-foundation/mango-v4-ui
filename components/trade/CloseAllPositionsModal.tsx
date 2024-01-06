@@ -72,7 +72,7 @@ const CloseAllPositionsModal: FunctionComponent<ModalProps> = ({
 }) => {
   const { t } = useTranslation(['common', 'trade'])
   const [submitting, setSubmitting] = useState(false)
-  const openPerpPositions = useOpenPerpPositions()
+  const { openPerpPositions } = useOpenPerpPositions()
   const { group } = useMangoGroup()
 
   if (!group) return null

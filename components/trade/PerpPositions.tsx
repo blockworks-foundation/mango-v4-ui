@@ -41,7 +41,7 @@ const PerpPositions = () => {
   const [positionToShare, setPositionToShare] = useState<PerpPosition | null>(
     null,
   )
-  const openPerpPositions = useOpenPerpPositions()
+  const { openPerpPositions } = useOpenPerpPositions()
   const { selectedMarket } = useSelectedMarket()
   const { connected } = useWallet()
   const { mangoAccount } = useMangoAccount()

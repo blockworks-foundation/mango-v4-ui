@@ -19,7 +19,7 @@ const TradeInfoTabs = () => {
   const selectedMarketName = mangoStore((s) => s.selectedMarket.current?.name)
   const unsettledSpotBalances = useUnsettledSpotBalances()
   const unsettledPerpPositions = useUnsettledPerpPositions()
-  const openPerpPositions = useOpenPerpPositions()
+  const { openPerpPositions } = useOpenPerpPositions()
   const { isMobile, isTablet, width } = useViewport()
   const fillTabWidth = width ? width < breakpoints['2xl'] : false
 

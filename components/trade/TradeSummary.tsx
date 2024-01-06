@@ -39,7 +39,7 @@ const TradeSummary = ({
   const tradeForm = mangoStore((s) => s.tradeForm)
   const orderbook = mangoStore((s) => s.selectedMarket.orderbook)
   const { selectedMarket, quoteBank } = useSelectedMarket()
-  const openPerpPositions = useOpenPerpPositions()
+  const { openPerpPositions } = useOpenPerpPositions()
 
   // calc new avg price if an open position exists
   const avgEntryPrice = useMemo(() => {
