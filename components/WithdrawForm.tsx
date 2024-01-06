@@ -282,10 +282,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
               onClick={handleWithdraw}
               className="flex w-full items-center justify-center"
               size="large"
-              disabled={
-                connected &&
-                (!inputAmount || showInsufficientBalance || initHealth <= 0)
-              }
+              disabled={connected && (!inputAmount || showInsufficientBalance)}
             >
               {submitting ? (
                 <Loading className="mr-2 h-5 w-5" />
