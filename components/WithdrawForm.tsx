@@ -1,4 +1,3 @@
-import { HealthType } from '@blockworks-foundation/mango-v4'
 import {
   ArrowUpTrayIcon,
   ExclamationCircleIcon,
@@ -19,7 +18,6 @@ import ActionTokenList from './account/ActionTokenList'
 import ButtonGroup from './forms/ButtonGroup'
 import Label from './forms/Label'
 import Button from './shared/Button'
-import InlineNotification from './shared/InlineNotification'
 import Loading from './shared/Loading'
 import { EnterBottomExitBottom, FadeInFadeOut } from './shared/Transitions'
 import { withValueLimit } from './swap/MarketSwapForm'
@@ -157,12 +155,6 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
     setShowTokenList(false)
   }, [])
 
-  const initHealth = useMemo(() => {
-    return group && mangoAccount
-      ? mangoAccount.getHealthRatioUi(group, HealthType.init)
-      : 100
-  }, [mangoAccount])
-
   const showInsufficientBalance = inputAmount
     ? tokenMax.lt(new Decimal(inputAmount))
     : false
@@ -197,14 +189,6 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
           style={{ height: ACCOUNT_ACTION_MODAL_INNER_HEIGHT }}
         >
           <div>
-            {initHealth <= 0 ? (
-              <div className="mb-4">
-                <InlineNotification
-                  type="error"
-                  desc="You have no available collateral to withdraw."
-                />
-              </div>
-            ) : null}
             {bank ? <TokenVaultWarnings bank={bank} type="withdraw" /> : null}
             <div className="grid grid-cols-2">
               <div className="col-span-2 flex justify-between">
