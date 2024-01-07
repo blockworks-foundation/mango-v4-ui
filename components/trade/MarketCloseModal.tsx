@@ -199,7 +199,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
         () => {
           notify({
             type: 'error',
-            title: 'Please retry to close position',
+            title: 'Please try again to close position',
           })
         },
       )
