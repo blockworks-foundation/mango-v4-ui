@@ -199,7 +199,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
         () => {
           notify({
             type: 'error',
-            title: 'Timeout during perp refresh, please refresh data manually',
+            title: 'Please retry to close position',
           })
         },
       )
