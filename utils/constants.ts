@@ -85,6 +85,8 @@ export const NEW_LISTING_BANNER_KEY = 'new-listing-banner-0.2'
 
 export const NON_RESTRICTED_JURISDICTION_KEY = 'non-restricted-jurisdiction-0.1'
 
+export const FILTER_ORDERS_FOR_MARKET_KEY = 'filterOrdersForMarket-0.1'
+
 // Unused
 export const PROFILE_CATEGORIES = [
   'borrower',

@@ -369,7 +369,7 @@ const OpenOrders = ({
       })
 
     return formatted
-  }, [filterForCurrentMarket, openOrders])
+  }, [filledOrders, filterForCurrentMarket, openOrders, selectedMarket])
 
   const {
     items: tableData,
