@@ -77,7 +77,6 @@ const DashboardSuggestedValues = ({
     }
     return bankName
   }
-
   const priceImpactsFiltered = useMemo(
     () =>
       getMidPriceImpacts(priceImpacts).filter(
@@ -114,7 +113,7 @@ const DashboardSuggestedValues = ({
 
     setProposedTier(suggestedTier)
     setSuggestedTier(suggestedTier)
-  }, [bank.name, bank.oracleProvider, priceImpactsFiltered])
+  }, [bank.name, bank.oracleProvider, priceImpactsFiltered.toString()])
 
   const proposeNewSuggestedValues = useCallback(
     async (
@@ -161,7 +160,6 @@ const DashboardSuggestedValues = ({
       const isThereNeedOfSendingRateConfigs = Object.values(rateConfigs).filter(
         (x) => x !== null,
       ).length
-      console.log(fieldsToChange)
       const ix = await client!.program.methods
         .tokenEdit(
           null,
