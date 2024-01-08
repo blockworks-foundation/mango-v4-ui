@@ -232,7 +232,7 @@ const DashboardSuggestedValues = ({
           null,
           getNullOrVal(fieldsToChange.tokenConditionalSwapTakerFeeRate),
           getNullOrVal(fieldsToChange.tokenConditionalSwapMakerFeeRate),
-          getNullOrVal(fieldsToChange.loanFeeRate),
+          getNullOrVal(fieldsToChange.flashLoanSwapFeeRate),
           getNullOrVal(fieldsToChange.interestCurveScaling),
           getNullOrVal(fieldsToChange.interestTargetUtilization),
           null,
