@@ -199,6 +199,7 @@ const RiskDashboard: NextPage = () => {
                         apiNameToBankName(row.symbol),
                       )
                       const bank = banks && banks[0]
+
                       const borrowsEnabled = bank?.reduceOnly === 0
                       const hasAssetWeight =
                         bank &&
@@ -229,9 +230,9 @@ const RiskDashboard: NextPage = () => {
                               bank &&
                               toUiDecimals(bank.depositWeightScaleStartQuote, 6)
                             const notionalDeposits =
-                              bank!.uiDeposits() * bank!.uiPrice
+                              (bank && bank!.uiDeposits() * bank!.uiPrice) || 0
                             const notionalBorrows =
-                              bank!.uiBorrows() * bank!.uiPrice
+                              (bank && bank!.uiBorrows() * bank!.uiPrice) || 0
 
                             const isAboveLiqFee =
                               (hasAssetWeight || borrowsEnabled) &&
@@ -366,6 +367,9 @@ export default RiskDashboard
 const apiNameToBankName = (val: string) => {
   if (val === 'ETH') {
     return 'ETH (Portal)'
+  }
+  if (val === '$WIF') {
+    return 'WIF'
   }
   return val
 }
