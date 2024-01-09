@@ -227,7 +227,7 @@ const DashboardSuggestedValues = ({
           getNullOrVal(fieldsToChange.depositWeightScaleStartQuote),
           false,
           false,
-          bank.reduceOnly ? 0 : null,
+          getNullOrVal(fieldsToChange.reduceOnly),
           null,
           null,
           getNullOrVal(fieldsToChange.tokenConditionalSwapTakerFeeRate),
