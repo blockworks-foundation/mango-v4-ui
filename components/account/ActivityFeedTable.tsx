@@ -73,7 +73,7 @@ export const getFee = (activity: any, mangoAccountAddress: string) => {
     const { borrow_fee, symbol } = activity.activity_details
     fee = { value: formatFee(borrow_fee), symbol }
   }
-  if (activity_type == 'settle_funds') {
+  if (activity_type == 'loan_origination_fee') {
     const { fee: settleFee, symbol } = activity.activity_details
     fee = { value: formatFee(settleFee), symbol }
   }
@@ -278,7 +278,7 @@ export const getValue = (activity: any, mangoAccountAddress: string) => {
     const { price, size } = activity.activity_details
     value = price * size
   }
-  if (activity_type === 'settle_funds') {
+  if (activity_type === 'loan_origination_fee') {
     const { price, fee } = activity.activity_details
     value = price * fee
   }

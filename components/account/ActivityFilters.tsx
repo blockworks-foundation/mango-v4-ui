@@ -46,7 +46,7 @@ const DEFAULT_PARAMS = [
   'openbook_trade',
   'swap',
   'withdraw',
-  'settle_funds',
+  'loan_origination_fee',
 ]
 
 const ActivityFilters = () => {
