@@ -50,6 +50,7 @@ import { fetchJupiterTransaction } from '@components/swap/SwapReviewRouteInfo'
 import MaxMarketTradeAmount from './MaxMarketTradeAmount'
 import useMangoAccount from 'hooks/useMangoAccount'
 import InlineNotification from '@components/shared/InlineNotification'
+import { debounce } from 'lodash'
 
 const set = mangoStore.getState().set
 
@@ -113,7 +114,7 @@ export default function SpotMarketOrderSwapForm() {
   }, [selectedMarket, side])
 
   const handleBaseSizeChange = useCallback(
-    (e: NumberFormatValues, info: SourceInfo) => {
+    debounce((e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
       set((s) => {
         s.tradeForm.baseSize = e.value
@@ -125,12 +126,12 @@ export default function SpotMarketOrderSwapForm() {
           s.tradeForm.quoteSize = ''
         }
       })
-    },
+    }, 500),
     [oraclePrice],
   )
 
   const handleQuoteSizeChange = useCallback(
-    (e: NumberFormatValues, info: SourceInfo) => {
+    debounce((e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
       set((s) => {
         s.tradeForm.quoteSize = e.value
@@ -140,7 +141,7 @@ export default function SpotMarketOrderSwapForm() {
           s.tradeForm.baseSize = ''
         }
       })
-    },
+    }, 500),
     [oraclePrice],
   )
 
