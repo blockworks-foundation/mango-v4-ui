@@ -26,6 +26,7 @@ import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { SwapFormTokenListType } from './SwapFormTokenList'
 import SwapFormSubmitButton from './SwapFormSubmitButton'
+import { debounce } from 'lodash'
 
 dayjs.extend(relativeTime)
 
@@ -69,6 +70,7 @@ const MarketSwapForm = ({
   const { mangoAccount } = useMangoAccount()
   const quoteAmount =
     swapMode === 'ExactIn' ? amountInFormValue : amountOutFormValue
+
   const {
     bestRoute,
     isFetching: fetchingRoute,
@@ -133,7 +135,7 @@ const MarketSwapForm = ({
   )
 
   const handleAmountInChange = useCallback(
-    (e: NumberFormatValues, info: SourceInfo) => {
+    debounce((e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
       setAmountInFormValue(e.value)
       set((s) => {
@@ -144,12 +146,12 @@ const MarketSwapForm = ({
           s.swap.swapMode = 'ExactIn'
         })
       }
-    },
+    }, 500),
     [outputBank, set, setAmountInFormValue, swapMode],
   )
 
   const handleAmountOutChange = useCallback(
-    (e: NumberFormatValues, info: SourceInfo) => {
+    debounce((e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
       setAmountOutFormValue(e.value)
       set((s) => {
@@ -160,7 +162,7 @@ const MarketSwapForm = ({
           s.swap.swapMode = 'ExactOut'
         })
       }
-    },
+    }, 500),
     [set, setAmountOutFormValue, swapMode],
   )
 

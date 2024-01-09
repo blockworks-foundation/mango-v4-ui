@@ -27,6 +27,7 @@ import { walletBalanceForToken } from '@components/DepositForm'
 import WalletSwapSlider from './WalletSwapSlider'
 import ButtonGroup from '@components/forms/ButtonGroup'
 import SwapFormSubmitButton from './SwapFormSubmitButton'
+import { debounce } from 'lodash'
 
 dayjs.extend(relativeTime)
 
@@ -133,7 +134,7 @@ const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
   )
 
   const handleAmountInChange = useCallback(
-    (e: NumberFormatValues, info: SourceInfo) => {
+    debounce((e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
       setAmountInFormValue(e.value)
       set((s) => {
@@ -144,12 +145,12 @@ const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
           s.swap.swapMode = 'ExactIn'
         })
       }
-    },
+    }, 500),
     [outputBank, setAmountInFormValue, swapMode],
   )
 
   const handleAmountOutChange = useCallback(
-    (e: NumberFormatValues, info: SourceInfo) => {
+    debounce((e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
       setAmountOutFormValue(e.value)
       set((s) => {
@@ -160,7 +161,7 @@ const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
           s.swap.swapMode = 'ExactOut'
         })
       }
-    },
+    }, 500),
     [swapMode, setAmountOutFormValue],
   )
 
