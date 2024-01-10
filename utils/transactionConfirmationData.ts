@@ -1,36 +1,26 @@
-import { IDL } from '@blockworks-foundation/mango-v4'
+import { IDL, LatestBlockhash } from '@blockworks-foundation/mango-v4'
 import { BorshInstructionCoder } from '@project-serum/anchor'
-import {
-  Connection,
-  RpcResponseAndContext,
-  SignatureResult,
-  TransactionInstruction,
-} from '@solana/web3.js'
+import { Connection } from '@solana/web3.js'
 import { MANGO_DATA_API_URL } from './constants'
+import { TxCallbackOptions } from '@blockworks-foundation/mango-v4/dist/types/src/client'
 
 const coder = new BorshInstructionCoder(IDL)
 
 export function collectTxConfirmationData(
   rpcEndpoint: string,
-  signature: string,
-  txSignatureBlockHash: LatestBlockhash,
   prioritizationFee: number,
+  txCallbackOptions: TxCallbackOptions,
 ) {
-  txConfirmationInner(
-    rpcEndpoint,
-    signature,
-    txSignatureBlockHash,
-    prioritizationFee,
-  )
+  txConfirmationInner(rpcEndpoint, prioritizationFee, txCallbackOptions)
 }
 
 async function txConfirmationInner(
   rpcEndpoint: string,
-  signature: string,
-  txSignatureBlockHash: LatestBlockhash,
   prioritization_fee: number,
+  txCallbackOptions: TxCallbackOptions,
 ) {
   const connection = new Connection(rpcEndpoint, 'processed')
+  const { txid: signature, txSignatureBlockHash } = txCallbackOptions
   await connection.confirmTransaction(
     {
       signature,

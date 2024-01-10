@@ -91,6 +91,7 @@ import { fetchTokenStatsData, processTokenStatsData } from 'apis/mngo'
 import { OrderTypes } from 'utils/tradeForm'
 import { usePlausible } from 'next-plausible'
 import { collectTxConfirmationData } from 'utils/transactionConfirmationData'
+import { TxCallbackOptions } from '@blockworks-foundation/mango-v4/dist/types/src/client'
 
 const ENDPOINTS = [
   {
@@ -135,13 +136,7 @@ const initMangoClient = (
     multipleConnections: opts.multipleConnections,
     prependedGlobalAdditionalInstructions:
       opts.prependedGlobalAdditionalInstructions,
-    postSendTxCallback: ({
-      txid,
-      txSignatureBlockHash,
-    }: {
-      txid: string
-      txSignatureBlockHash: LatestBlockhash
-    }) => {
+    postSendTxCallback: (txCallbackOptions: TxCallbackOptions) => {
       if (telemetry) {
         telemetry('postSendTx', {
           props: { fee: opts.prioritizationFee },
@@ -152,14 +147,13 @@ const initMangoClient = (
         title: 'Transaction sent',
         description: 'Waiting for confirmation',
         type: 'confirm',
-        txid: txid,
+        txid: txCallbackOptions.txid,
       })
 
       collectTxConfirmationData(
         provider.connection.rpcEndpoint,
-        txid,
-        txSignatureBlockHash,
         opts.prioritizationFee,
+        txCallbackOptions,
       )
     },
   })
