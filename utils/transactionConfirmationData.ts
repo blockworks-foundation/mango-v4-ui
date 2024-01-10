@@ -1,4 +1,4 @@
-import { IDL, LatestBlockhash } from '@blockworks-foundation/mango-v4'
+import { IDL } from '@blockworks-foundation/mango-v4'
 import { BorshInstructionCoder } from '@project-serum/anchor'
 import { Connection } from '@solana/web3.js'
 import { MANGO_DATA_API_URL } from './constants'
@@ -11,16 +11,40 @@ export function collectTxConfirmationData(
   prioritizationFee: number,
   txCallbackOptions: TxCallbackOptions,
 ) {
-  txConfirmationInner(rpcEndpoint, prioritizationFee, txCallbackOptions)
+  const start = new Date().getTime()
+  txConfirmationInner(
+    start,
+    rpcEndpoint,
+    prioritizationFee,
+    txCallbackOptions,
+  ).catch((e) =>
+    txConfirmationInner(
+      start,
+      rpcEndpoint,
+      prioritizationFee,
+      txCallbackOptions,
+    ),
+  )
 }
 
 async function txConfirmationInner(
+  startTime: number,
   rpcEndpoint: string,
   prioritization_fee: number,
   txCallbackOptions: TxCallbackOptions,
 ) {
   const connection = new Connection(rpcEndpoint, 'processed')
   const { txid: signature, txSignatureBlockHash } = txCallbackOptions
+  await connection.confirmTransaction(
+    {
+      signature,
+      blockhash: txSignatureBlockHash.blockhash,
+      lastValidBlockHeight: txSignatureBlockHash.lastValidBlockHeight,
+    },
+    'processed',
+  )
+  const elapsed = new Date().getTime() - startTime
+
   await connection.confirmTransaction(
     {
       signature,
@@ -49,7 +73,9 @@ async function txConfirmationInner(
     }
   }
 
-  const confirmed = confirmedTxn !== null && !confirmedTxn.meta?.err
+  const confirmed = confirmedTxn !== null
+  const error =
+    confirmedTxn?.meta?.err !== null && confirmedTxn?.meta?.err !== undefined
   const block_datetime = confirmedTxn?.blockTime
     ? new Date(confirmedTxn.blockTime * 1000).toISOString()
     : null
@@ -62,6 +88,8 @@ async function txConfirmationInner(
     signature,
     block_datetime,
     confirmed,
+    error,
+    ui_confirmation_time_ms: elapsed,
     fetch_blockhash_slot: txSignatureBlockHash.slot,
     processed_slot: confirmedTxn?.slot,
     instruction_names: instructionNames.join(','),
