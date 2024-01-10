@@ -90,6 +90,7 @@ import sampleSize from 'lodash/sampleSize'
 import { fetchTokenStatsData, processTokenStatsData } from 'apis/mngo'
 import { OrderTypes } from 'utils/tradeForm'
 import { usePlausible } from 'next-plausible'
+import { collectTxConfirmationData } from 'utils/transactionConfirmationData'
 
 const ENDPOINTS = [
   {
@@ -134,7 +135,13 @@ const initMangoClient = (
     multipleConnections: opts.multipleConnections,
     prependedGlobalAdditionalInstructions:
       opts.prependedGlobalAdditionalInstructions,
-    postSendTxCallback: ({ txid }: { txid: string }) => {
+    postSendTxCallback: ({
+      txid,
+      txSignatureBlockHash,
+    }: {
+      txid: string
+      txSignatureBlockHash: LatestBlockhash
+    }) => {
       if (telemetry) {
         telemetry('postSendTx', {
           props: { fee: opts.prioritizationFee },
@@ -147,6 +154,13 @@ const initMangoClient = (
         type: 'confirm',
         txid: txid,
       })
+
+      collectTxConfirmationData(
+        provider.connection.rpcEndpoint,
+        txid,
+        txSignatureBlockHash,
+        opts.prioritizationFee,
+      )
     },
   })
 }
