@@ -90,6 +90,8 @@ import sampleSize from 'lodash/sampleSize'
 import { fetchTokenStatsData, processTokenStatsData } from 'apis/mngo'
 import { OrderTypes } from 'utils/tradeForm'
 import { usePlausible } from 'next-plausible'
+import { collectTxConfirmationData } from 'utils/transactionConfirmationData'
+import { TxCallbackOptions } from '@blockworks-foundation/mango-v4/dist/types/src/client'
 
 const ENDPOINTS = [
   {
@@ -134,7 +136,7 @@ const initMangoClient = (
     multipleConnections: opts.multipleConnections,
     prependedGlobalAdditionalInstructions:
       opts.prependedGlobalAdditionalInstructions,
-    postSendTxCallback: ({ txid }: { txid: string }) => {
+    postSendTxCallback: (txCallbackOptions: TxCallbackOptions) => {
       if (telemetry) {
         telemetry('postSendTx', {
           props: { fee: opts.prioritizationFee },
@@ -145,8 +147,14 @@ const initMangoClient = (
         title: 'Transaction sent',
         description: 'Waiting for confirmation',
         type: 'confirm',
-        txid: txid,
+        txid: txCallbackOptions.txid,
       })
+
+      collectTxConfirmationData(
+        provider.connection.rpcEndpoint,
+        opts.prioritizationFee,
+        txCallbackOptions,
+      )
     },
   })
 }

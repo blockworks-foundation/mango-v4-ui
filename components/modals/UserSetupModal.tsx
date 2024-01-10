@@ -145,7 +145,7 @@ const UserSetupModal = ({
         if (signToNotifications) {
           createSolanaMessage(walletContext, setCookie)
         }
-        await waitForSlot(connection, slot)
+        await waitForSlot(connection, slot!)
         await actions.fetchMangoAccounts(publicKey)
         await actions.fetchWalletTokens(publicKey) // need to update sol balance after account rent
         telemetry('accountCreate', {

@@ -92,7 +92,7 @@ const CreateAccountForm = ({
         }
         const pk = walletContext.wallet.adapter.publicKey
 
-        await waitForSlot(connection, slot)
+        await waitForSlot(connection, slot!)
         const mangoAccounts = await client.getMangoAccountsForOwner(group, pk!)
         const reloadedMangoAccounts = await Promise.all(
           mangoAccounts.map((ma) => ma.reloadSerum3OpenOrders(client)),
@@ -108,7 +108,7 @@ const CreateAccountForm = ({
         if (newAccount) {
           set((s) => {
             s.mangoAccount.current = newAccount
-            s.mangoAccount.lastSlot = slot
+            s.mangoAccount.lastSlot = slot!
             s.mangoAccounts = filteredMangoAccounts
           })
         }
