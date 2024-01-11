@@ -33,6 +33,9 @@ import { USDC_MINT } from 'utils/constants'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import useBanks from 'hooks/useBanks'
+import { PythHttpClient } from '@pythnetwork/client'
+import { MAINNET_PYTH_PROGRAM } from 'utils/governance/constants'
+import { PublicKey } from '@solana/web3.js'
 
 dayjs.extend(relativeTime)
 
@@ -62,6 +65,20 @@ const Dashboard: NextPage = () => {
   const [isOpenSuggestionModal, setIsOpenSuggestionModal] = useState(false)
   const [priceImpacts, setPriceImapcts] = useState<PriceImpact[]>([])
   const [stickyIndex, setStickyIndex] = useState(-1)
+
+  const getPythLink = async (pythOraclePk: PublicKey) => {
+    const pythClient = new PythHttpClient(connection, MAINNET_PYTH_PROGRAM)
+    const pythAccounts = await pythClient.getData()
+    const feed = pythAccounts.products.find(
+      (x) => x.price_account === pythOraclePk.toBase58(),
+    )
+    window.open(
+      feed
+        ? `https://pyth.network/price-feeds/${feed.asset_type.toLowerCase()}-${feed.base.toLowerCase()}-${feed.quote_currency.toLowerCase()}?cluster=solana-mainnet-beta`
+        : `https://explorer.solana.com/address/${pythOraclePk.toBase58()}`,
+      '_blank',
+    )
+  }
 
   const handleScroll = useCallback(() => {
     for (let i = 0; i < banks.length; i++) {
@@ -237,10 +254,8 @@ const Dashboard: NextPage = () => {
                                       </a>
                                     ) : (
                                       <a
-                                        href={`https://pyth.network/price-feeds/crypto-${bankNameToOracleName(
-                                          bank.name,
-                                        ).toLowerCase()}-${'usd'}`}
-                                        className={`flex items-center break-all text-th-fgd-2 hover:text-th-fgd-3`}
+                                        onClick={() => getPythLink(bank.oracle)}
+                                        className={`flex cursor-pointer items-center break-all text-th-fgd-2 hover:text-th-fgd-3`}
                                         target="_blank"
                                         rel="noreferrer"
                                       >
@@ -1024,13 +1039,3 @@ export const DashboardNavbar = () => {
 }
 
 export default Dashboard
-
-//some assets are listed with different pyth named oracles
-const bankNameToOracleName = (val: string) => {
-  if (val === 'ETH (Portal)') {
-    return 'ETH'
-  }
-  if (val === 'CHAI') return 'DAI'
-  if (val === 'wBTC (Portal)') return 'BTC'
-  return val
-}
