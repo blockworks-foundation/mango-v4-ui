@@ -154,7 +154,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
       >
         {sidebarImageUrl && !collapsed ? (
           <img
-            className={`absolute bottom-16 h-auto w-full flex-shrink-0`}
+            className={`absolute bottom-16 h-auto w-full shrink-0`}
             onClick={() => playAnimation()}
             src={sidebarImageUrl}
             alt="next"
@@ -169,10 +169,10 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 } pb-1 pl-3`}
               >
                 <div
-                  className={`flex h-16 flex-shrink-0 cursor-pointer items-center bg-th-bkg-1`}
+                  className={`flex h-16 shrink-0 cursor-pointer items-center bg-th-bkg-1`}
                 >
                   <img
-                    className={`h-9 w-9 flex-shrink-0`}
+                    className={`h-9 w-9 shrink-0`}
                     src={themeData.logoPath}
                     alt="logo"
                   />
@@ -599,9 +599,7 @@ export const ExpandableMenuItem = ({
               </Transition>
             </div>
             <ChevronDownIcon
-              className={`${
-                open ? 'rotate-180' : 'rotate-360'
-              } h-5 w-5 flex-shrink-0`}
+              className={`${open ? 'rotate-180' : 'rotate-0'} h-5 w-5 shrink-0`}
             />
           </Disclosure.Button>
           <Transition

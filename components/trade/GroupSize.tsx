@@ -49,7 +49,7 @@ const GroupSize = ({
 
                 <ChevronDownIcon
                   className={`ml-0.5 h-5 w-5 text-th-fgd-3 ${
-                    open ? 'rotate-180 transform' : 'rotate-360 transform'
+                    open ? 'rotate-180 transform' : 'rotate-0 transform'
                   }`}
                 />
               </div>

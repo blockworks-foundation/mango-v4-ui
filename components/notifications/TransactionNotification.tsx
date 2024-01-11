@@ -247,7 +247,7 @@ const TransactionNotification = ({
         }`}
       >
         <div className={`relative flex w-full items-center p-3.5 sm:w-96`}>
-          <div className={`mr-1 flex-shrink-0`}>
+          <div className={`mr-1 shrink-0`}>
             {type === 'success' ? (
               <CheckCircleIcon className={`h-6 w-6 text-th-success`} />
             ) : null}
@@ -282,11 +282,11 @@ const TransactionNotification = ({
                     ? txid
                     : `${txid.slice(0, 14)}...${txid.slice(txid.length - 14)}`}
                 </div>
-                <ArrowTopRightOnSquareIcon className="mb-0.5 ml-1 h-5 w-5 flex-shrink-0" />
+                <ArrowTopRightOnSquareIcon className="mb-0.5 ml-1 h-5 w-5 shrink-0" />
               </a>
             ) : null}
           </div>
-          <div className={`absolute right-2 top-2 flex-shrink-0`}>
+          <div className={`absolute right-2 top-2 shrink-0`}>
             <button
               onClick={hideNotification}
               className={`text-th-fgd-4 focus:outline-none md:hover:text-th-fgd-3`}

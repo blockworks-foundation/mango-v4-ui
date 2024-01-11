@@ -134,7 +134,7 @@ const CoingeckoStats = ({
                 {showFullDesc ? 'Less' : 'More'}
                 <ArrowSmallUpIcon
                   className={`h-5 w-5 ${
-                    showFullDesc ? 'rotate-360' : 'rotate-180'
+                    showFullDesc ? 'rotate-0' : 'rotate-180'
                   } default-transition`}
                 />
               </span>

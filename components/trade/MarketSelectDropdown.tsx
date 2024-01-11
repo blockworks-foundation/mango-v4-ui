@@ -146,7 +146,7 @@ const MarketSelectDropdown = () => {
               {selectedMarket ? (
                 <MarketLogos market={selectedMarket} />
               ) : (
-                <Loading className="mr-2 h-5 w-5 flex-shrink-0" />
+                <Loading className="mr-2 h-5 w-5 shrink-0" />
               )}
               <div className="whitespace-nowrap text-left text-xl font-bold text-th-fgd-1 md:text-base">
                 {selectedMarket?.name || (
@@ -164,8 +164,8 @@ const MarketSelectDropdown = () => {
             </div>
             <ChevronDownIcon
               className={`${
-                open ? 'rotate-180' : 'rotate-360'
-              } ml-2 mt-0.5 h-6 w-6 flex-shrink-0 text-th-fgd-2`}
+                open ? 'rotate-180' : 'rotate-0'
+              } ml-2 mt-0.5 h-6 w-6 shrink-0 text-th-fgd-2`}
             />
           </Popover.Button>
           <Popover.Panel className="absolute -left-4 top-12 z-40 w-screen border-y border-th-bkg-3 bg-th-bkg-2 md:w-[580px] md:border-r">

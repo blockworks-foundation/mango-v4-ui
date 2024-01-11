@@ -153,7 +153,7 @@ const EditNftProfilePic = ({ onClose }: { onClose: () => void }) => {
               >
                 <ImgWithLoader
                   alt={n.name}
-                  className="h-16 w-16 flex-shrink-0 rounded-full sm:h-20 sm:w-20"
+                  className="h-16 w-16 shrink-0 rounded-full sm:h-20 sm:w-20"
                   src={n.image}
                 />
               </button>

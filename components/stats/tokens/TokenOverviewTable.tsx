@@ -311,8 +311,8 @@ const TokenOverviewTable = () => {
                         <TableTokenName bank={bank} symbol={symbol} />
                         <ChevronDownIcon
                           className={`${
-                            open ? 'rotate-180' : 'rotate-360'
-                          } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                            open ? 'rotate-180' : 'rotate-0'
+                          } h-6 w-6 shrink-0 text-th-fgd-3`}
                         />
                       </div>
                     </Disclosure.Button>

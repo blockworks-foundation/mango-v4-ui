@@ -32,7 +32,7 @@ export default SwapIntroModal
 const ListItem = ({ desc }: { desc: string }) => {
   return (
     <li className="mt-3 flex items-start">
-      <CheckCircleIcon className="mr-1.5 mt-[1px] h-5 w-5 flex-shrink-0 text-th-up " />
+      <CheckCircleIcon className="mr-1.5 mt-[1px] h-5 w-5 shrink-0 text-th-up " />
       <span className="text-th-fgd-2 md:text-base md:leading-snug">{desc}</span>
     </li>
   )

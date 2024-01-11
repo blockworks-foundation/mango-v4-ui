@@ -29,7 +29,7 @@ const FavoriteMarketsBar = () => {
     >
       <Tooltip content="Remove all favorites">
         <div onClick={() => setFavorites([])} className="cursor-pointer">
-          <StarIcon className="h-4 w-4 flex-shrink-0 text-th-fgd-4" />
+          <StarIcon className="h-4 w-4 shrink-0 text-th-fgd-4" />
         </div>
       </Tooltip>
       {favoriteMarkets.map((mkt: string) => {

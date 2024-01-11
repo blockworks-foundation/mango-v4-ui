@@ -472,7 +472,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
                       {t('adv-fields')}
                       <ChevronDownIcon
                         className={`h-5 w-5 text-th-fgd-3 ${
-                          open ? 'rotate-180' : 'rotate-360'
+                          open ? 'rotate-180' : 'rotate-0'
                         }`}
                       />
                     </div>

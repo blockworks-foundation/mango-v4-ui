@@ -129,7 +129,7 @@ const TopBar = () => {
           <div className="flex h-[63px] w-16 items-center justify-center bg-th-bkg-1 md:hidden">
             <Link href="/" shallow={true}>
               <img
-                className="h-8 w-8 flex-shrink-0"
+                className="h-8 w-8 shrink-0"
                 src={themeData.logoPath}
                 alt="logo"
               />
@@ -159,9 +159,9 @@ const TopBar = () => {
                           {abbreviateAddress(mangoAccount.publicKey)}
                         </p>
                         {copied === mangoAccount.publicKey.toString() ? (
-                          <CheckCircleIcon className="h-4 w-4 flex-shrink-0 text-th-success" />
+                          <CheckCircleIcon className="h-4 w-4 shrink-0 text-th-success" />
                         ) : (
-                          <DocumentDuplicateIcon className="h-4 w-4 flex-shrink-0" />
+                          <DocumentDuplicateIcon className="h-4 w-4 shrink-0" />
                         )}
                       </button>
                       <p>{t('wallet')}</p>
@@ -175,9 +175,9 @@ const TopBar = () => {
                           {abbreviateAddress(mangoAccount.owner)}
                         </p>
                         {copied === mangoAccount.owner.toString() ? (
-                          <CheckCircleIcon className="h-4 w-4 flex-shrink-0 text-th-success" />
+                          <CheckCircleIcon className="h-4 w-4 shrink-0 text-th-success" />
                         ) : (
-                          <DocumentDuplicateIcon className="h-4 w-4 flex-shrink-0" />
+                          <DocumentDuplicateIcon className="h-4 w-4 shrink-0" />
                         )}
                       </button>
                     </>
@@ -202,7 +202,7 @@ const TopBar = () => {
               <div className="flex h-[63px] items-center justify-between border-x border-th-bkg-3 bg-th-bkg-1 px-4 md:border-l-0">
                 {accountPointsAndRank?.rank ? (
                   <div
-                    className={`relative hidden h-6 w-6 flex-shrink-0 items-center justify-center rounded-full sm:flex ${
+                    className={`relative hidden h-6 w-6 shrink-0 items-center justify-center rounded-full sm:flex ${
                       accountPointsAndRank.rank < 4 ? '' : 'bg-th-bkg-3'
                     } mr-2`}
                   >
@@ -258,7 +258,7 @@ const TopBar = () => {
         </span>
         {!isOnline ? (
           <div className="absolute left-1/2 top-3 z-10 flex h-10 w-max -translate-x-1/2 items-center rounded-full bg-th-down px-4 py-2 md:top-8">
-            <ExclamationTriangleIcon className="h-5 w-5 flex-shrink-0 text-th-fgd-1" />
+            <ExclamationTriangleIcon className="h-5 w-5 shrink-0 text-th-fgd-1" />
             <p className="ml-2 text-th-fgd-1">
               Your connection appears to be offline
             </p>

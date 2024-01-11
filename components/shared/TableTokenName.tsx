@@ -5,7 +5,7 @@ import TokenReduceOnlyDesc from './TokenReduceOnlyDesc'
 const TableTokenName = ({ bank, symbol }: { bank: Bank; symbol: string }) => {
   return (
     <div className="flex items-center">
-      <div className="mr-2.5 flex flex-shrink-0 items-center">
+      <div className="mr-2.5 flex shrink-0 items-center">
         <TokenLogo bank={bank} showRewardsLogo />
       </div>
       <div>

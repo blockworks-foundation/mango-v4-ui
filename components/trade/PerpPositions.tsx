@@ -519,8 +519,8 @@ const PerpPositions = () => {
                           </span>
                           <ChevronDownIcon
                             className={`${
-                              open ? 'rotate-180' : 'rotate-360'
-                            } ml-3 h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                              open ? 'rotate-180' : 'rotate-0'
+                            } ml-3 h-6 w-6 shrink-0 text-th-fgd-3`}
                           />
                         </div>
                       </Disclosure.Button>
@@ -699,7 +699,7 @@ const PerpPositions = () => {
                                   onClick={() => setShowCloseAllModal(true)}
                                 >
                                   <div className="flex items-center justify-center">
-                                    <NukeIcon className="mr-2 h-4 w-4 flex-shrink-0 text-th-active" />
+                                    <NukeIcon className="mr-2 h-4 w-4 shrink-0 text-th-active" />
                                     {t('trade:close-all')}
                                   </div>
                                 </Button>
@@ -713,7 +713,7 @@ const PerpPositions = () => {
                                 disabled={!group || !basePosition}
                               >
                                 <div className="flex items-center justify-center">
-                                  <TwitterIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+                                  <TwitterIcon className="mr-2 h-4 w-4 shrink-0" />
                                   {t('trade:tweet-position')}
                                 </div>
                               </Button>

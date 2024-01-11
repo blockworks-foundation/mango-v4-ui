@@ -566,8 +566,8 @@ const MobileTokenListItem = ({ data }: { data: TableData }) => {
                 </div>
                 <ChevronDownIcon
                   className={`${
-                    open ? 'rotate-180' : 'rotate-360'
-                  } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                    open ? 'rotate-180' : 'rotate-0'
+                  } h-6 w-6 shrink-0 text-th-fgd-3`}
                 />
               </div>
             </div>
@@ -787,7 +787,7 @@ export const ActionsMenu = ({
                 >
                   {!showText && isDesktop ? (
                     <div className="flex items-center justify-center border-b border-th-bkg-3 pb-2">
-                      <div className="mr-2 flex flex-shrink-0 items-center">
+                      <div className="mr-2 flex shrink-0 items-center">
                         <TokenLogo bank={bank} size={20} />
                       </div>
                       <p className="font-body">

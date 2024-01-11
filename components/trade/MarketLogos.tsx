@@ -96,12 +96,12 @@ const MarketLogos = ({
           : size === 'large'
           ? 'w-[24px]'
           : 'w-[20px]'
-      } flex-shrink-0`}
+      } shrink-0`}
     >
       <div className="absolute left-0 top-0 z-10 rounded-full bg-th-bkg-2">
         <LogoWithFallback
           alt=""
-          className="flex-shrink-0"
+          className="shrink-0"
           width={pxSize}
           height={pxSize}
           src={logos.baseLogoURI || `/icons/${logos?.name?.toLowerCase()}.svg`}
@@ -112,7 +112,7 @@ const MarketLogos = ({
         {logos.quoteLogoURI && market instanceof Serum3Market ? (
           <Image
             alt=""
-            className="flex-shrink-0 opacity-60"
+            className="shrink-0 opacity-60"
             width={pxSize}
             height={pxSize}
             src={logos.quoteLogoURI}
@@ -136,7 +136,7 @@ const FallbackIcon = ({
     <QuestionMarkCircleIcon
       className={`${
         size === 'small' ? 'h-4 w-4' : size === 'large' ? 'h-6 w-6' : 'h-5 w-5'
-      } flex-shrink-0 text-th-fgd-3`}
+      } shrink-0 text-th-fgd-3`}
     />
   )
 }

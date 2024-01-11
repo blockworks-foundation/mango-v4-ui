@@ -259,7 +259,7 @@ export const getValue = (activity: any, mangoAccountAddress: string) => {
   }
   if (activity_type === 'deposit' || activity_type === 'withdraw') {
     const { usd_equivalent } = activity.activity_details
-    value = activity_type === 'withdraw' ? usd_equivalent * -1 : usd_equivalent
+    value = activity_type === 'withdraw' ? usd_equivalent : usd_equivalent * -1
   }
   if (activity_type === 'swap') {
     const { swap_out_amount, swap_out_price_usd } = activity.activity_details
@@ -369,7 +369,7 @@ const ActivityFeedTable = () => {
                           <div className="flex items-center justify-end">
                             <ChevronDownIcon
                               className={`h-6 w-6 text-th-fgd-3 ${
-                                open ? 'rotate-180' : 'rotate-360'
+                                open ? 'rotate-180' : 'rotate-0'
                               }`}
                             />
                           </div>
@@ -624,8 +624,8 @@ const MobileActivityFeedItem = ({
                     </div>
                     <ChevronDownIcon
                       className={`${
-                        open ? 'rotate-180' : 'rotate-360'
-                      } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                        open ? 'rotate-180' : 'rotate-0'
+                      } h-6 w-6 shrink-0 text-th-fgd-3`}
                     />
                   </div>
                 </div>
@@ -636,7 +636,7 @@ const MobileActivityFeedItem = ({
                 enterTo="opacity-100"
               >
                 <Disclosure.Panel>
-                  <div className="border-t border-th-bkg-3 px-4 py-4">
+                  <div className="border-t border-th-bkg-3 p-4">
                     {isLiquidationActivityFeedItem(activity) ? (
                       <LiquidationActivityDetails activity={activity} />
                     ) : isPerpTradeActivityFeedItem(activity) ? (

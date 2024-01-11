@@ -165,8 +165,8 @@ const ActivityFilters = () => {
             </div>
             <ChevronDownIcon
               className={`${
-                showFilters ? 'rotate-180' : 'rotate-360'
-              } ml-1.5 h-5 w-5 flex-shrink-0`}
+                showFilters ? 'rotate-180' : 'rotate-0'
+              } ml-1.5 h-5 w-5 shrink-0`}
             />
           </Disclosure.Button>
         </button>
@@ -307,7 +307,7 @@ const FiltersForm = ({
         <div className="col-span-2 lg:col-span-1">
           <Label text={t('tokens')} />
           <MultiSelectDropdown
-            options={symbols}
+            options={symbols.sort((a, b) => a.localeCompare(b))}
             selected={advancedFilters.symbol || []}
             toggleOption={toggleSymbolOption}
           />
@@ -334,7 +334,7 @@ const FiltersForm = ({
           />
         </div>
         <div className="flex h-12 items-center justify-center">
-          <ChevronRightIcon className="mx-1 h-5 w-5 flex-shrink-0 text-th-fgd-3" />
+          <ChevronRightIcon className="mx-1 h-5 w-5 shrink-0 text-th-fgd-3" />
         </div>
         <div className="w-full">
           <Label text={t('activity:value-to')} />

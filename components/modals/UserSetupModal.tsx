@@ -272,7 +272,7 @@ const UserSetupModal = ({
           className="-bottom-20 -right-20 bg-th-bkg-1 opacity-30 mix-blend-multiply"
         />
         <img
-          className={`absolute left-6 top-6 h-10 w-10 flex-shrink-0`}
+          className={`absolute left-6 top-6 h-10 w-10 shrink-0`}
           src="/logos/logo-mark.svg"
           alt="next"
         />
@@ -335,7 +335,7 @@ const UserSetupModal = ({
                           target="_blank"
                         >
                           {t('terms-of-use')}
-                          <ArrowTopRightOnSquareIcon className="ml-1 h-4 w-4 flex-shrink-0" />
+                          <ArrowTopRightOnSquareIcon className="ml-1 h-4 w-4 shrink-0" />
                         </a>
                         <span className="mx-1">and</span>
                         <a
@@ -345,7 +345,7 @@ const UserSetupModal = ({
                           target="_blank"
                         >
                           {t('risks')}
-                          <ArrowTopRightOnSquareIcon className="ml-1 h-4 w-4 flex-shrink-0" />
+                          <ArrowTopRightOnSquareIcon className="ml-1 h-4 w-4 shrink-0" />
                         </a>
                       </p>
                     </Checkbox>
@@ -409,9 +409,7 @@ const UserSetupModal = ({
                       >
                         <div>More</div>
                         <div>
-                          <ChevronDownIcon
-                            className={`h-5 w-5 flex-shrink-0`}
-                          />
+                          <ChevronDownIcon className={`h-5 w-5 shrink-0`} />
                         </div>
                       </button>
                     ) : null}
@@ -608,7 +606,7 @@ const UserSetupModal = ({
                             <Loading />
                           ) : showInsufficientBalance ? (
                             <div className="flex items-center">
-                              <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+                              <ExclamationCircleIcon className="mr-2 h-5 w-5 shrink-0" />
                               {t('swap:insufficient-balance', {
                                 symbol: depositToken,
                               })}

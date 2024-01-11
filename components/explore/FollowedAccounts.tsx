@@ -253,8 +253,8 @@ const AccountDisplay = ({ account }: { account: FollowedAccount }) => {
             </div>
             <ChevronDownIcon
               className={`${
-                open ? 'rotate-180' : 'rotate-360'
-              } ml-4 h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                open ? 'rotate-180' : 'rotate-0'
+              } ml-4 h-6 w-6 shrink-0 text-th-fgd-3`}
             />
           </Disclosure.Button>
           <Disclosure.Panel>

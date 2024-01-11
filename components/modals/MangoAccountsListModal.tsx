@@ -190,7 +190,7 @@ const MangoAccountsListModal = ({
                                   : 'text-th-fgd-4'
                               }`}
                             >
-                              <HeartIcon className="mr-1 h-4 w-4 flex-shrink-0" />
+                              <HeartIcon className="mr-1 h-4 w-4 shrink-0" />
                               <span>{maintHealth}%</span>
                             </div>
                           </div>

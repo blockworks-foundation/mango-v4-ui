@@ -145,7 +145,7 @@ const AdvancedMarketHeader = ({
               className="ml-4 flex items-center whitespace-nowrap text-th-fgd-3"
               onClick={() => setShowMarketDetails(true)}
             >
-              <InformationCircleIcon className="h-5 w-5 flex-shrink-0 md:mr-1.5 md:h-4 md:w-4" />
+              <InformationCircleIcon className="h-5 w-5 shrink-0 md:mr-1.5 md:h-4 md:w-4" />
               <span className="hidden text-xs md:inline">
                 {t('trade:market-details', { market: '' })}
               </span>

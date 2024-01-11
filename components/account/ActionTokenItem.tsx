@@ -34,7 +34,7 @@ const ActionTokenItem = ({
           !showBorrowRates && !showDepositRates ? 'w-1/2' : 'w-1/4'
         } items-center`}
       >
-        <div className="mr-2.5 flex flex-shrink-0 items-center">
+        <div className="mr-2.5 flex shrink-0 items-center">
           <TokenLogo bank={bank} />
         </div>
         <p className="text-left text-th-fgd-1">{name}</p>

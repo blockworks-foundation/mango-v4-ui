@@ -40,7 +40,7 @@ const MultiSelectDropdown = ({
               )}
               <ChevronDownIcon
                 className={`ml-0.5 h-6 w-6 ${
-                  open ? 'rotate-180 transform' : 'rotate-360 transform'
+                  open ? 'rotate-180 transform' : 'rotate-0 transform'
                 }`}
                 aria-hidden="true"
               />

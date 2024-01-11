@@ -182,7 +182,7 @@ const ListingsView = () => {
                   <div className="flex h-60 w-full items-center overflow-hidden rounded-t-lg">
                     <ImgWithLoader
                       alt="nft"
-                      className="h-auto w-full flex-shrink-0"
+                      className="h-auto w-full shrink-0"
                       src={imgSource}
                     />
                   </div>

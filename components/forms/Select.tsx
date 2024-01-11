@@ -49,8 +49,8 @@ const Select = <T extends Values>({
                   )}
                 </div>
                 <ChevronDownIcon
-                  className={`ml-1 h-5 w-5 flex-shrink-0 text-th-fgd-3 ${
-                    open ? 'rotate-180' : 'rotate-360'
+                  className={`ml-1 h-5 w-5 shrink-0 text-th-fgd-3 ${
+                    open ? 'rotate-180' : 'rotate-0'
                   }`}
                 />
               </div>

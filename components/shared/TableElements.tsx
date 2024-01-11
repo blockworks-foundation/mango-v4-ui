@@ -125,11 +125,11 @@ export const SortableColumnHeader = ({
     >
       <span className={`text-th-fgd-3 ${titleClass}`}>{title}</span>
       <ArrowSmallDownIcon
-        className={`default-transition ml-1 h-4 w-4 flex-shrink-0 ${
+        className={`default-transition ml-1 h-4 w-4 shrink-0 ${
           sortConfig?.key === sortKey
             ? sortConfig?.direction === 'ascending'
               ? 'rotate-180'
-              : 'rotate-360'
+              : 'rotate-0'
             : null
         }`}
       />

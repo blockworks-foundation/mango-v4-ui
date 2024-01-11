@@ -303,7 +303,7 @@ const MobilePerpMarketItem = ({
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <div className="flex flex-shrink-0 items-center">
+                <div className="flex shrink-0 items-center">
                   <MarketLogos market={market} />
                 </div>
                 <p className="mr-2 leading-none text-th-fgd-1">{market.name}</p>
@@ -335,8 +335,8 @@ const MobilePerpMarketItem = ({
                 <MarketChange market={market} />
                 <ChevronDownIcon
                   className={`${
-                    open ? 'rotate-180' : 'rotate-360'
-                  } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                    open ? 'rotate-180' : 'rotate-0'
+                  } h-6 w-6 shrink-0 text-th-fgd-3`}
                 />
               </div>
             </div>

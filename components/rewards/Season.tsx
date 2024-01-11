@@ -405,7 +405,7 @@ const Season = ({
                       >
                         <div className="flex items-center space-x-2 font-mono">
                           <div
-                            className={`relative flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full ${
+                            className={`relative flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
                               rank < 4 ? '' : 'bg-th-bkg-3'
                             }`}
                           >

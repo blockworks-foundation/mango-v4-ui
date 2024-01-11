@@ -95,7 +95,7 @@ export const INPUT_SUFFIX_CLASSNAMES =
   'absolute right-[1px] top-1/2 flex h-[calc(100%-2px)] -translate-y-1/2 items-center rounded-r-md bg-th-input-bkg px-2 text-xs font-normal text-th-fgd-4'
 
 export const INPUT_PREFIX_CLASSNAMES =
-  'absolute left-2 top-1/2 h-5 w-5 flex-shrink-0 -translate-y-1/2'
+  'absolute left-2 top-1/2 h-5 w-5 shrink-0 -translate-y-1/2'
 
 export const DEFAULT_CHECKBOX_SETTINGS = {
   ioc: false,

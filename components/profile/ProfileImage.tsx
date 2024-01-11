@@ -23,7 +23,7 @@ const ProfileImage = ({
     />
   ) : (
     <div
-      className={`flex flex-shrink-0 items-center justify-center rounded-full bg-th-bkg-3`}
+      className={`flex shrink-0 items-center justify-center rounded-full bg-th-bkg-3`}
       style={{ width: `${imageSize}px`, height: `${imageSize}px` }}
     >
       <div

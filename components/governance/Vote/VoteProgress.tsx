@@ -69,7 +69,7 @@ const QuorumProgress = ({ governance, proposal, communityMint }: Props) => {
             } required`}</p>
           ) : (
             <div className="flex items-center">
-              <CheckCircleIcon className="mr-1.5 h-4 w-4 flex-shrink-0 text-th-success" />
+              <CheckCircleIcon className="mr-1.5 h-4 w-4 shrink-0 text-th-success" />
               <p className="text-fgd-1 mb-0 font-bold">
                 {t('required-approval-achieved')}
               </p>

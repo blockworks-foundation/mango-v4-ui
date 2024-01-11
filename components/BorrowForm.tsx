@@ -343,7 +343,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                 <Loading className="mr-2 h-5 w-5" />
               ) : showInsufficientBalance ? (
                 <div className="flex items-center">
-                  <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+                  <ExclamationCircleIcon className="mr-2 h-5 w-5 shrink-0" />
                   {t('swap:insufficient-collateral')}
                 </div>
               ) : isBorrow || !inputAmount ? (

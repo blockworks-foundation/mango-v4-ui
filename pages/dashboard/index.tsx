@@ -180,7 +180,7 @@ const Dashboard: NextPage = () => {
                                   </div>
                                   <ChevronDownIcon
                                     className={`${
-                                      open ? 'rotate-180' : 'rotate-360'
+                                      open ? 'rotate-180' : 'rotate-0'
                                     } h-5 w-5 text-th-fgd-3`}
                                   />
                                 </Disclosure.Button>
@@ -521,7 +521,7 @@ const Dashboard: NextPage = () => {
                                 </div>
                                 <ChevronDownIcon
                                   className={`${
-                                    open ? 'rotate-180' : 'rotate-360'
+                                    open ? 'rotate-180' : 'rotate-0'
                                   } h-5 w-5 text-th-fgd-3`}
                                 />
                               </Disclosure.Button>
@@ -808,7 +808,7 @@ const Dashboard: NextPage = () => {
                                 </div>
                                 <ChevronDownIcon
                                   className={`${
-                                    open ? 'rotate-180' : 'rotate-360'
+                                    open ? 'rotate-180' : 'rotate-0'
                                   } h-5 w-5 text-th-fgd-3`}
                                 />
                               </Disclosure.Button>
