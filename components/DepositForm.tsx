@@ -39,6 +39,7 @@ import SecondaryConnectButton from './shared/SecondaryConnectButton'
 import useTokenPositionsFull from 'hooks/useAccountPositionsFull'
 import AccountSlotsFullNotification from './shared/AccountSlotsFullNotification'
 import { handleInputChange } from 'utils/account'
+import InlineNotification from './shared/InlineNotification'
 
 interface DepositFormProps {
   onSuccess: () => void
@@ -67,7 +68,7 @@ export const walletBalanceForToken = (
 }
 
 function DepositForm({ onSuccess, token }: DepositFormProps) {
-  const { t } = useTranslation(['common', 'account'])
+  const { t } = useTranslation(['common', 'account', 'swap'])
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [selectedToken, setSelectedToken] = useState(
@@ -83,6 +84,14 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
     const group = mangoStore.getState().group
     return group?.banksMapByName.get(selectedToken)?.[0]
   }, [selectedToken])
+
+  const isInsured = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!bank || !group) return true
+    const mintInfo = group.mintInfosMapByMint.get(bank.mint.toString())
+    const isInsured = mintInfo?.groupInsuranceFund
+    return isInsured
+  }, [bank])
 
   const tokenPositionsFull = useTokenPositionsFull([bank])
 
@@ -161,7 +170,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
         type: 'error',
       })
     }
-  }, [bank, publicKey, inputAmount])
+  }, [bank, publicKey, inputAmount, onSuccess])
 
   const showInsufficientBalance =
     tokenMax.maxAmount < Number(inputAmount) ||
@@ -296,6 +305,12 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
                 </div>
               </div>
             ) : null}
+            {!isInsured ? (
+              <InlineNotification
+                type="warning"
+                desc={t('account:warning-uninsured', { token: bank?.name })}
+              />
+            ) : null}
           </div>
           {connected ? (
             <Button
@@ -308,7 +323,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
                 <Loading className="mr-2 h-5 w-5" />
               ) : showInsufficientBalance ? (
                 <div className="flex items-center">
-                  <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+                  <ExclamationCircleIcon className="mr-2 h-5 w-5 shrink-0" />
                   {t('swap:insufficient-balance', {
                     symbol: selectedToken,
                   })}
