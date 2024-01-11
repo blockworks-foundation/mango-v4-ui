@@ -54,7 +54,7 @@
     "total-funding-earned": "总资金费",
     "unfollow": "取消关注",
     "volume-chart": "交易量图表",
-    "warning-uninsured": "{{token}} has no insurance. In the event of a {{token}} socialized loss you could lose funds.",
+    "warning-uninsured": "{{token}} is not insured. In the event of a socialized loss involving {{token}} you could lose funds.",
     "week-starting": "从{{week}}来算的一周",
     "zero-balances": "显示等于零的余额",
     "zero-collateral": "无质押品"

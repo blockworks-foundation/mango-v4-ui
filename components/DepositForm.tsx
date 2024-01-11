@@ -308,7 +308,18 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
             {!isInsured ? (
               <InlineNotification
                 type="warning"
-                desc={t('account:warning-uninsured', { token: bank?.name })}
+                desc={
+                  <>
+                    {t('account:warning-uninsured', { token: bank?.name })}{' '}
+                    <a
+                      href="https://docs.mango.markets/mango-markets/socialized-losses"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {t('learn-more')}
+                    </a>
+                  </>
+                }
               />
             ) : null}
           </div>

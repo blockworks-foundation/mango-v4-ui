@@ -54,7 +54,7 @@
     "total-funding-earned": "Total Funding Earned",
     "unfollow": "Unfollow",
     "volume-chart": "Volume Chart",
-    "warning-uninsured": "{{token}} has no insurance. In the event of a {{token}} socialized loss you could lose funds.",
+    "warning-uninsured": "{{token}} is not insured. In the event of a socialized loss involving {{token}} you could lose funds.",
     "week-starting": "Week starting {{week}}",
     "zero-collateral": "Zero Collateral",
     "zero-balances": "Show Zero Balances"
