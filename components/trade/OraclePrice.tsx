@@ -16,6 +16,7 @@ import duration from 'dayjs/plugin/duration'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import useOracleProvider from 'hooks/useOracleProvider'
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid'
+import { CURRENCY_SYMBOLS } from './MarketSelectDropdown'
 
 const OraclePrice = () => {
   const {
@@ -178,10 +179,11 @@ const OraclePrice = () => {
           {price ? (
             <>
               {quoteBank?.name === 'USDC' ? '$' : ''}
-              {formatNumericValue(price, oracleDecimals)}{' '}
-              {quoteBank?.name !== 'USDC' ? (
+              {formatNumericValue(price, oracleDecimals)}
+              {quoteBank?.name && quoteBank.name !== 'USDC' ? (
                 <span className="font-body text-th-fgd-3">
-                  {quoteBank?.name}
+                  {' '}
+                  {CURRENCY_SYMBOLS[quoteBank.name] || quoteBank.name}
                 </span>
               ) : null}
             </>

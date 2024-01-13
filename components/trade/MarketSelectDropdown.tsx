@@ -38,6 +38,15 @@ import { SortableColumnHeader } from '@components/shared/TableElements'
 import { useViewport } from 'hooks/useViewport'
 import { useRouter } from 'next/router'
 
+type Currencies = {
+  [key: string]: string
+}
+
+export const CURRENCY_SYMBOLS: Currencies = {
+  'wBTC (Portal)': '₿',
+  SOL: '◎',
+}
+
 const MARKET_LINK_CLASSES =
   'grid grid-cols-3 sm:grid-cols-4 flex items-center w-full py-2 px-4 rounded-r-md focus:outline-none focus-visible:text-th-active md:hover:cursor-pointer md:hover:bg-th-bkg-3 md:hover:text-th-fgd-1'
 
@@ -431,10 +440,12 @@ const MarketSelectDropdown = () => {
                                         getDecimalCount(market.tickSize),
                                       )
                                     : price.toExponential(3)}
-                                  {quoteBank?.name !== 'USDC' ? (
+                                  {quoteBank?.name &&
+                                  quoteBank.name !== 'USDC' ? (
                                     <span className="font-body text-th-fgd-3">
                                       {' '}
-                                      {quoteBank?.name}
+                                      {CURRENCY_SYMBOLS[quoteBank.name] ||
+                                        quoteBank.name}
                                     </span>
                                   ) : null}
                                 </span>
@@ -452,10 +463,12 @@ const MarketSelectDropdown = () => {
                                 <span className="font-mono text-xs text-th-fgd-2">
                                   {quoteBank?.name === 'USDC' ? '$' : ''}
                                   {volume ? numberCompacter.format(volume) : 0}
-                                  {quoteBank?.name !== 'USDC' ? (
+                                  {quoteBank?.name &&
+                                  quoteBank.name !== 'USDC' ? (
                                     <span className="font-body text-th-fgd-3">
                                       {' '}
-                                      {quoteBank?.name}
+                                      {CURRENCY_SYMBOLS[quoteBank.name] ||
+                                        quoteBank.name}
                                     </span>
                                   ) : null}
                                 </span>
