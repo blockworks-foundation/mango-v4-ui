@@ -1,7 +1,7 @@
 import Input from '@components/forms/Input'
 import Label from '@components/forms/Label'
 import Button, { IconButton } from '@components/shared/Button'
-import { ChangeEvent, useCallback, useMemo, useState } from 'react'
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import mangoStore, { CLUSTER } from '@store/mangoStore'
 import { Token } from 'types/jupiter'
 import { handleGetRoutes } from '@components/swap/useQuoteRoutes'
@@ -53,10 +53,12 @@ import {
   getPythPresets,
   LISTING_PRESET,
   getPresetWithAdjustedDepositLimit,
+  LISTING_PRESETS_KEY,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 import Checkbox from '@components/forms/Checkbox'
 import { ReferralProvider } from '@jup-ag/referral-sdk'
 import { BN } from '@coral-xyz/anchor'
+import Select from '@components/forms/Select'
 
 type FormErrors = Partial<Record<keyof TokenListForm, string>>
 
@@ -137,16 +139,20 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   }, [isPyth])
   const [proposedPresetTargetAmount, setProposedProposedTargetAmount] =
     useState(0)
+  const [preset, setPreset] = useState<LISTING_PRESET>(presets.UNTRUSTED)
 
-  const preset: LISTING_PRESET =
-    Object.values(presets).find(
-      (x) => x.preset_target_amount === proposedPresetTargetAmount,
-    ) || presets.UNTRUSTED
   const proposedPreset = getPresetWithAdjustedDepositLimit(
     preset,
     baseTokenPrice,
     currentTokenInfo?.decimals || 0,
   )
+  useEffect(() => {
+    setPreset(
+      Object.values(presets).find(
+        (x) => x.preset_target_amount === proposedPresetTargetAmount,
+      ) || presets.UNTRUSTED,
+    )
+  }, [presets, proposedPresetTargetAmount])
 
   const quoteBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
   const minVoterWeight = useMemo(
@@ -462,7 +468,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     }
     const mint = new PublicKey(advForm.mintPk)
     const proposalTx = []
-
+    console.log(proposedPreset)
     if (Object.keys(proposedPreset).length) {
       const registerTokenIx = await client!.program.methods
         .tokenRegister(
@@ -696,7 +702,32 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                 </div>
                 <div className="mb-2 flex items-center justify-between">
                   <p>{t('tier')}</p>
-                  <p className="text-th-fgd-2">{proposedPreset.preset_name}</p>
+                  <Select
+                    value={proposedPreset.preset_name}
+                    onChange={(val) => {
+                      setPreset(LISTING_PRESETS[val as LISTING_PRESETS_KEY]!)
+                    }}
+                    className="w-[200px]"
+                  >
+                    {Object.keys(LISTING_PRESETS).map((name) => (
+                      <Select.Option key={name} value={name}>
+                        <div className="flex w-full items-center justify-between">
+                          {
+                            LISTING_PRESETS[name as LISTING_PRESETS_KEY]
+                              .preset_name
+                          }{' '}
+                          {`{${
+                            LISTING_PRESETS[name as LISTING_PRESETS_KEY]
+                              .preset_key
+                          }}`}
+                          {LISTING_PRESETS[name as LISTING_PRESETS_KEY]
+                            .preset_target_amount === proposedPresetTargetAmount
+                            ? '- suggested'
+                            : ''}
+                        </div>
+                      </Select.Option>
+                    ))}
+                  </Select>
                 </div>
                 <div className="flex items-center justify-between">
                   <p>{t('mint')}</p>
