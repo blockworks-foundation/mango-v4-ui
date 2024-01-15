@@ -37,6 +37,8 @@ import { ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES, BackButton } from './BorrowForm'
 import TokenLogo from './shared/TokenLogo'
 import SecondaryConnectButton from './shared/SecondaryConnectButton'
 import { handleInputChange } from 'utils/account'
+import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
+import { HealthType } from '@blockworks-foundation/mango-v4'
 
 interface WithdrawFormProps {
   onSuccess: () => void
@@ -56,6 +58,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
   const { mangoAccount } = useMangoAccount()
   const { connected } = useWallet()
   const banks = useBanksWithBalances('maxWithdraw')
+  const unsettledPerpPositions = useUnsettledPerpPositions()
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
@@ -158,6 +161,33 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
   const showInsufficientBalance = inputAmount
     ? tokenMax.lt(new Decimal(inputAmount))
     : false
+
+  const maintProjectedHealth = useMemo(() => {
+    const uiAmount = Number(inputAmount)
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+    const group = mangoStore.getState().group
+    if (!group || !mangoAccount || !bank) return 0
+
+    const mintPk = bank.mint
+    const uiTokenAmount = uiAmount * -1
+    const projectedHealth =
+      mangoAccount.simHealthRatioWithTokenPositionUiChanges(
+        group,
+        [{ mintPk, uiTokenAmount }],
+        HealthType.maint,
+      )
+
+    return projectedHealth! > 100
+      ? 100
+      : projectedHealth! < 0
+      ? 0
+      : Math.trunc(projectedHealth!)
+  }, [tokenMax, bank, inputAmount, sizePercentage])
+
+  const showMaxWithdrawUnSettledPerpsExist =
+    unsettledPerpPositions &&
+    unsettledPerpPositions.length > 0 &&
+    maintProjectedHealth == 0
 
   return (
     <>
@@ -266,7 +296,12 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
               onClick={handleWithdraw}
               className="flex w-full items-center justify-center"
               size="large"
-              disabled={connected && (!inputAmount || showInsufficientBalance)}
+              disabled={
+                connected &&
+                (!inputAmount ||
+                  showInsufficientBalance ||
+                  showMaxWithdrawUnSettledPerpsExist)
+              }
             >
               {submitting ? (
                 <Loading className="mr-2 h-5 w-5" />
@@ -276,6 +311,11 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
                   {t('swap:insufficient-balance', {
                     symbol: selectedToken,
                   })}
+                </div>
+              ) : showMaxWithdrawUnSettledPerpsExist ? (
+                <div className="flex items-center">
+                  <ExclamationCircleIcon className="mr-2 h-5 w-5 shrink-0" />
+                  {t('trade:unsettled-perps')}
                 </div>
               ) : (
                 <div className="flex items-center">
