@@ -287,8 +287,10 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
                             yKey="price"
                           />
                         </div>
-                      ) : !market ? null : (
-                        <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
+                      ) : (
+                        <p className="mb-0 font-body text-th-fgd-4">
+                          {t('unavailable')}
+                        </p>
                       )}
                     </Td>
                     <Td>
@@ -396,37 +398,49 @@ const MobileSpotItem = ({ data }: { data: TableData }) => {
             className={`w-full border-t border-th-bkg-3 p-4 text-left first:border-t-0 focus:outline-none`}
           >
             <div className="flex items-center justify-between">
-              <div className="flex items-center">
+              <div className="flex flex-1 items-center">
                 <div className="flex shrink-0 items-center">
                   <TokenLogo bank={baseBank} />
                 </div>
-                <p className="ml-3 leading-none text-th-fgd-1">{tokenName}</p>
+                <p className="ml-3 leading-tight text-th-fgd-1">{tokenName}</p>
               </div>
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3 sm:grid sm:grid-cols-2 sm:gap-3 sm:space-x-0">
                 {priceHistory.length ? (
-                  <div className="h-10 w-20">
-                    <SimpleAreaChart
-                      color={isUp ? COLORS.UP[theme] : COLORS.DOWN[theme]}
-                      data={priceHistory}
-                      name={tokenName}
-                      xKey="time"
-                      yKey="price"
+                  <div className="flex justify-end sm:min-w-[80px] sm:grid-cols-1">
+                    <div className="h-10 w-20">
+                      <SimpleAreaChart
+                        color={isUp ? COLORS.UP[theme] : COLORS.DOWN[theme]}
+                        data={priceHistory}
+                        name={tokenName}
+                        xKey="time"
+                        yKey="price"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <p className="mb-0 flex justify-end text-th-fgd-4">
+                    {t('unavailable')}
+                  </p>
+                )}
+                <div className="flex min-w-[140px] justify-end sm:grid-cols-1">
+                  <div className="flex items-center space-x-3">
+                    <div className="flex flex-col items-end">
+                      <p className="font-mono text-th-fgd-2">
+                        {price ? (
+                          <FormatNumericValue value={price} isUsd />
+                        ) : (
+                          '-'
+                        )}
+                      </p>
+                      {market ? <Change change={change} suffix="%" /> : null}
+                    </div>
+                    <ChevronDownIcon
+                      className={`${
+                        open ? 'rotate-180' : 'rotate-0'
+                      } h-6 w-6 shrink-0 text-th-fgd-3`}
                     />
                   </div>
-                ) : !market ? null : (
-                  <p className="mb-0 text-th-fgd-4">{t('unavailable')}</p>
-                )}
-                <div className="flex flex-col items-end">
-                  <p className="font-mono text-th-fgd-2">
-                    {price ? <FormatNumericValue value={price} isUsd /> : '-'}
-                  </p>
-                  {market ? <Change change={change} suffix="%" /> : null}
                 </div>
-                <ChevronDownIcon
-                  className={`${
-                    open ? 'rotate-180' : 'rotate-0'
-                  } h-6 w-6 shrink-0 text-th-fgd-3`}
-                />
               </div>
             </div>
           </Disclosure.Button>
@@ -436,7 +450,7 @@ const MobileSpotItem = ({ data }: { data: TableData }) => {
             enterTo="opacity-100"
           >
             <Disclosure.Panel>
-              <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pb-4 pt-4">
+              <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 py-4">
                 <div className="col-span-1">
                   <p className="text-xs text-th-fgd-3">
                     {t('trade:24h-volume')}
