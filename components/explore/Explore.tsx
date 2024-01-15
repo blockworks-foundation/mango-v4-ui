@@ -58,7 +58,9 @@ const Explore = () => {
           />
         </div>
       </div>
-      <TabContent activeTab={activeTab} />
+      <div className="pb-20 md:pb-0">
+        <TabContent activeTab={activeTab} />
+      </div>
     </>
   )
 }
