@@ -1,0 +1,10 @@
+{
+    "clear-all": "Limpar Tudo",
+    "empty-state-desc": "Você está totalmente atualizado",
+    "empty-state-title": "Nada para ver aqui",
+    "notifications": "Notificações",
+    "sign-message": "Assinar Mensagem",
+    "sign-using-ledger": "Assinar com Ledger",
+    "unauth-desc": "Assine com sua carteira para começar a receber notificações",
+    "unauth-title": "Caixa de Entrada de Notificações"
+}

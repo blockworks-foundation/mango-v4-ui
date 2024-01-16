@@ -38,6 +38,7 @@ const TRADE_FORM_UI = ['slider', 'buttons']
 
 const LANGS = [
   { locale: 'en', name: 'english', description: 'english' },
+  { locale: 'pt', name: 'Português', description: 'portuguese' },
   // { locale: 'ru', name: 'russian', description: 'russian' },
   // { locale: 'es', name: 'spanish', description: 'spanish' },
   {

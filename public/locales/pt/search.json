@@ -1,0 +1,15 @@
+{
+    "mango-account": "Endereço da Conta",
+    "mango-account-name": "Nome da Conta",
+    "no-results": "Sem Resultados",
+    "no-results-desc": "Tente outra pesquisa. As pesquisas são sensíveis a maiúsculas e minúsculas",
+    "profile-name": "Nome do Perfil",
+    "results": "Resultados",
+    "search": "Pesquisar",
+    "search-accounts": "Pesquisar Contas",
+    "search-by": "Pesquisar Por",
+    "search-for": "Pesquisar Por",
+    "search-failed": "Algo deu errado. Tente novamente mais tarde",
+    "wallet-pk": "Endereço da Carteira",
+    "open-orders-pk": "Endereço de Ordens Abertas"
+}

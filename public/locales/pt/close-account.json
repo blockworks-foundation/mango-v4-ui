@@ -1,0 +1,19 @@
+{
+    "are-you-sure": "Tem certeza? Fechar sua conta irá",
+    "before-you-continue": "Antes de continuar",
+    "close-account": "Fechar Conta",
+    "closing-account": "Fechando sua conta...",
+    "close-all-borrows": "Pagar todos os empréstimos",
+    "close-open-orders": "Fechar todas as ordens abertas",
+    "close-perp-positions": "Fechar e liquidar todas as posições perp",
+    "closing-account-will": "Fechar sua Conta Mango irá:",
+    "delete-your-account": "Excluir sua Conta Mango",
+    "error-deleting-account": "Erro ao excluir sua Conta Mango",
+    "goodbye": "Até a próxima vez 👋",
+    "recover-x-sol": "Recuperar {{amount}} SOL (aluguel pela sua conta)",
+    "settle-balances": "Liquidar todos os saldos",
+    "transaction-confirmed": "Transação Confirmada",
+    "withdraw-assets-worth": "Retirar ativos no valor de {{value}}",
+    "you-must": "Antes de poder fechar sua conta",
+    "account-closed": "Conta Fechada 👋"
+}
