@@ -1,0 +1,11 @@
+{
+    "assets-to-borrow": "Ativos para Emprestar",
+    "available-to-borrow": "Disponível para Empréstimo",
+    "borrowed-amount": "Quantia Emprestada",
+    "connect-borrows": "Conecte-se para ver seus empréstimos",
+    "current-borrow-value": "Valor Atual do Empréstimo",
+    "liability-weight-desc": "O peso da responsabilidade acrescenta ao valor da dívida no cálculo da saúde da sua conta.",
+    "no-borrows": "Sem Empréstimos",
+    "tooltip-available": "O valor máximo que você pode emprestar",
+    "your-borrows": "Seus Empréstimos"
+}
