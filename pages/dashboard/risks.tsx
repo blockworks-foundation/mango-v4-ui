@@ -4,15 +4,10 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import { DashboardNavbar } from '.'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { useQuery } from '@tanstack/react-query'
-import { emptyWallet } from '@store/mangoStore'
-import {
-  MANGO_V4_ID,
-  MangoClient,
-  getRiskStats,
-} from '@blockworks-foundation/mango-v4'
+import { Risk } from '@blockworks-foundation/mango-v4'
 import { PublicKey } from '@solana/web3.js'
 import { formatNumericValue } from 'utils/numbers'
-import { AnchorProvider, web3 } from '@coral-xyz/anchor'
+import { MANGO_DATA_API_URL } from 'utils/constants'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -43,6 +38,11 @@ type TableData = {
   data: Array<Record<string, TableRow>>
 }
 
+type RiskData = {
+  timestamp: string
+  payload: Risk
+}
+
 const formatValue = (val: string | number | PublicKey) => {
   if (val instanceof PublicKey || typeof val === 'object') {
     return val.toString()
@@ -59,23 +59,16 @@ const RiskDashboard: NextPage = () => {
 
   const { data } = useQuery(
     ['risks'],
-    () => {
-      const provider = new AnchorProvider(
-        new web3.Connection(
-          process.env.NEXT_PUBLIC_ENDPOINT ||
-            'https://mango.rpcpool.com/946ef7337da3f5b8d3e4a34e7f88',
-          'processed',
-        ),
-        emptyWallet,
-        AnchorProvider.defaultOptions(),
-      )
-      const client = MangoClient.connect(
-        provider,
-        'mainnet-beta',
-        MANGO_V4_ID['mainnet-beta'],
-      )
-      if (group) {
-        return getRiskStats(client, group)
+    async () => {
+      try {
+        const data = await fetch(
+          `${MANGO_DATA_API_URL}/user-data/risk-dashboard`,
+        )
+        const res = await data.json()
+        console.log(res)
+        return res as RiskData
+      } catch (e) {
+        console.log('Failed to load current season', e)
       }
     },
     {
@@ -83,7 +76,7 @@ const RiskDashboard: NextPage = () => {
       staleTime: 1000 * 60 * 5,
       retry: 0,
       refetchOnWindowFocus: false,
-      enabled: !!group,
+      enabled: true,
     },
   )
 
@@ -92,10 +85,11 @@ const RiskDashboard: NextPage = () => {
       <div className="col-span-12 lg:col-span-8 lg:col-start-3">
         <div className="p-8 pb-20 md:pb-16 lg:p-10">
           <h1>Dashboard</h1>
+          {data?.timestamp ? <h6> As of: {data.timestamp} UTC </h6> : null}
           <DashboardNavbar />
-          {group && data ? (
+          {group && data && data.payload ? (
             <div className="mt-4">
-              {Object.entries(data).map(
+              {Object.entries(data.payload).map(
                 ([tableType, table]: [string, TableData]) => {
                   if (!table?.data?.length) return null
                   return (
