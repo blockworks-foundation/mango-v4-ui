@@ -84,13 +84,17 @@ const DashboardSuggestedValues = ({
       ),
     [priceImpacts, bank.name],
   )
+
   const currentTier = useMemo(() => {
-    return Object.values(PRESETS).find(
-      (x) =>
-        x.initLiabWeight.toFixed(1) ===
-        bank.initLiabWeight.toNumber().toFixed(1),
+    return Object.values(LISTING_PRESETS).find((x) =>
+      x.initLiabWeight.toFixed(1) === '1.8'
+        ? x.initLiabWeight.toFixed(1) ===
+            bank?.initLiabWeight.toNumber().toFixed(1) &&
+          x.reduceOnly === bank.reduceOnly
+        : x.initLiabWeight.toFixed(1) ===
+          bank?.initLiabWeight.toNumber().toFixed(1),
     )
-  }, [PRESETS, bank.initLiabWeight])
+  }, [bank.initLiabWeight])
 
   const getSuggestedTierForListedTokens = useCallback(async () => {
     const filteredResp = priceImpactsFiltered

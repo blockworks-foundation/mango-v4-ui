@@ -208,10 +208,6 @@ const RiskDashboard: NextPage = () => {
                       const isBid = row.side === 'bid'
                       const isAsk = row.side === 'ask'
                       const collateralEnabled = bank?.maintAssetWeight.isPos()
-                      const PRESETS =
-                        bank?.oracleProvider === OracleProvider.Pyth
-                          ? getPythPresets(LISTING_PRESETS)
-                          : getSwitchBoardPresets(LISTING_PRESETS)
                       return (
                         <TrBody key={idx}>
                           {Object.entries(row).map(([key, val], valIdx) => {
@@ -316,11 +312,18 @@ const RiskDashboard: NextPage = () => {
                           </Td>
                           <Td>
                             {idx % 2 === 0 && bank
-                              ? Object.values(PRESETS).find(
-                                  (x) =>
-                                    x.initLiabWeight.toFixed(1) ===
-                                    bank?.initLiabWeight.toNumber().toFixed(1),
-                                )?.preset_name || ''
+                              ? Object.values(LISTING_PRESETS).find((x) => {
+                                  return x.initLiabWeight.toFixed(1) === '1.8'
+                                    ? x.initLiabWeight.toFixed(1) ===
+                                        bank?.initLiabWeight
+                                          .toNumber()
+                                          .toFixed(1) &&
+                                        x.reduceOnly === bank.reduceOnly
+                                    : x.initLiabWeight.toFixed(1) ===
+                                        bank?.initLiabWeight
+                                          .toNumber()
+                                          .toFixed(1)
+                                })?.preset_name || ''
                               : ''}
                           </Td>
                           <Td xBorder>
