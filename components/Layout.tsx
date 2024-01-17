@@ -227,14 +227,15 @@ const TermsOfUse = () => {
 // this will only show if the ip api doesn't return the country
 const RestrictedCountryCheck = () => {
   const { ipCountry, loadingIpCountry } = useIpAddress()
+  const groupLoaded = mangoStore((s) => s.groupLoaded)
   const [confirmedCountry, setConfirmedCountry] = useLocalStorageState(
     NON_RESTRICTED_JURISDICTION_KEY,
     false,
   )
 
   const showModal = useMemo(() => {
-    return !confirmedCountry && !ipCountry && !loadingIpCountry
-  }, [confirmedCountry, ipCountry, loadingIpCountry])
+    return !confirmedCountry && !ipCountry && !loadingIpCountry && groupLoaded
+  }, [confirmedCountry, ipCountry, loadingIpCountry, groupLoaded])
 
   return showModal ? (
     <RestrictedCountryModal
