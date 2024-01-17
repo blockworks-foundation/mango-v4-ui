@@ -151,195 +151,179 @@ const RiskDashboard: NextPage = () => {
     )
 
   return (
-    <div className="grid grid-cols-12">
-      <div className="col-span-12 lg:col-span-8 lg:col-start-3">
-        <div className="p-8 pb-20 md:pb-16 lg:p-10">
-          <h1>Dashboard</h1>
-          <DashboardNavbar />
-          {group ? (
-            <div className="mt-4">
-              <div className="mt-12">
-                <div className="mb-4">
-                  <p className="flex items-center space-x-4 text-th-fgd-4">
-                    <span>Slippage</span>
-                    <Select
-                      value={currentFilter}
-                      onChange={(filter) => setCurrentFilter(filter)}
-                      className="w-full"
-                    >
-                      {filters.map((filter) => (
-                        <Select.Option key={filter} value={filter}>
-                          <div className="flex w-full items-center justify-between">
-                            {filter}
-                          </div>
-                        </Select.Option>
-                      ))}
-                    </Select>
-                    <Input
-                      suffix="Token"
-                      type="text"
-                      value={currentSearch}
-                      onChange={(e) => setCurrentSearch(e.target.value)}
-                    ></Input>
-                  </p>
-                </div>
-                <Table>
-                  <thead>
-                    <TrHead className="sticky top-0 border bg-th-bkg-1">
-                      {heads.map((x) => (
-                        <Th key={x} xBorder className="text-left">
-                          {x}
-                        </Th>
-                      ))}
-                    </TrHead>
-                  </thead>
-                  <tbody>
-                    {transformedPis?.map((row, idx: number) => {
-                      const banks = group?.banksMapByName?.get(
-                        apiNameToBankName(row.symbol),
-                      )
-                      const bank = banks && banks[0]
+    <div className="col-span-12 lg:col-span-8 lg:col-start-3">
+      <DashboardNavbar />
+      {group ? (
+        <div className="mt-4">
+          <div className="mb-4 ml-20 mr-20">
+            <p className="flex items-center space-x-4 text-th-fgd-4">
+              <span>Slippage</span>
+              <Select
+                value={currentFilter}
+                onChange={(filter) => setCurrentFilter(filter)}
+                className="w-full"
+              >
+                {filters.map((filter) => (
+                  <Select.Option key={filter} value={filter}>
+                    <div className="flex w-full items-center justify-between">
+                      {filter}
+                    </div>
+                  </Select.Option>
+                ))}
+              </Select>
+              <Input
+                suffix="Token"
+                type="text"
+                value={currentSearch}
+                onChange={(e) => setCurrentSearch(e.target.value)}
+              ></Input>
+            </p>
+          </div>
+          <Table>
+            <thead>
+              <TrHead className="sticky top-0 border bg-th-bkg-1">
+                {heads.map((x) => (
+                  <Th key={x} xBorder className="text-left">
+                    {x}
+                  </Th>
+                ))}
+              </TrHead>
+            </thead>
+            <tbody>
+              {transformedPis?.map((row, idx: number) => {
+                const banks = group?.banksMapByName?.get(
+                  apiNameToBankName(row.symbol),
+                )
+                const bank = banks && banks[0]
 
-                      const borrowsEnabled = bank?.reduceOnly === 0
-                      const hasAssetWeight =
+                const borrowsEnabled = bank?.reduceOnly === 0
+                const hasAssetWeight =
+                  bank &&
+                  (bank.initAssetWeight.toNumber() > 0 ||
+                    bank.maintAssetWeight.toNumber() > 0)
+                const isBid = row.side === 'bid'
+                const isAsk = row.side === 'ask'
+                const collateralEnabled = bank?.maintAssetWeight.isPos()
+                return (
+                  <TrBody key={idx}>
+                    {Object.entries(row).map(([key, val], valIdx) => {
+                      const visibleValue =
+                        typeof val === 'string' ? val : val[currentFilter]
+                      const isNumericValue = typeof visibleValue === 'number'
+                      const targetAmount =
+                        (key.includes('amount_') &&
+                          Number(key.replace('amount_', ''))) ||
+                        0
+                      const uiBorrowWeightScaleStartQuote =
                         bank &&
-                        (bank.initAssetWeight.toNumber() > 0 ||
-                          bank.maintAssetWeight.toNumber() > 0)
-                      const isBid = row.side === 'bid'
-                      const isAsk = row.side === 'ask'
-                      const collateralEnabled = bank?.maintAssetWeight.isPos()
+                        toUiDecimals(bank.borrowWeightScaleStartQuote, 6)
+                      const uiDepositWeightScaleStartQuote =
+                        bank &&
+                        toUiDecimals(bank.depositWeightScaleStartQuote, 6)
+                      const notionalDeposits =
+                        (bank && bank!.uiDeposits() * bank!.uiPrice) || 0
+                      const notionalBorrows =
+                        (bank && bank!.uiBorrows() * bank!.uiPrice) || 0
+
+                      const isAboveLiqFee =
+                        (hasAssetWeight || borrowsEnabled) &&
+                        isNumericValue &&
+                        visibleValue > bank.liquidationFee.toNumber() * 100
+
+                      const targetAmountVsDeposits =
+                        isBid && targetAmount <= notionalDeposits
+                      const targetAmountVsBorrows =
+                        isAsk && targetAmount <= notionalBorrows
+
+                      const targetAmountVsAssetWeightScale =
+                        isBid &&
+                        collateralEnabled &&
+                        uiBorrowWeightScaleStartQuote &&
+                        targetAmount <= uiBorrowWeightScaleStartQuote
+
+                      const targetAmountVsLiabWeightScale =
+                        isAsk &&
+                        collateralEnabled &&
+                        uiDepositWeightScaleStartQuote &&
+                        targetAmount <= uiDepositWeightScaleStartQuote
+
                       return (
-                        <TrBody key={idx}>
-                          {Object.entries(row).map(([key, val], valIdx) => {
-                            const visibleValue =
-                              typeof val === 'string' ? val : val[currentFilter]
-                            const isNumericValue =
-                              typeof visibleValue === 'number'
-                            const targetAmount =
-                              (key.includes('amount_') &&
-                                Number(key.replace('amount_', ''))) ||
-                              0
-                            const uiBorrowWeightScaleStartQuote =
-                              bank &&
-                              toUiDecimals(bank.borrowWeightScaleStartQuote, 6)
-                            const uiDepositWeightScaleStartQuote =
-                              bank &&
-                              toUiDecimals(bank.depositWeightScaleStartQuote, 6)
-                            const notionalDeposits =
-                              (bank && bank!.uiDeposits() * bank!.uiPrice) || 0
-                            const notionalBorrows =
-                              (bank && bank!.uiBorrows() * bank!.uiPrice) || 0
-
-                            const isAboveLiqFee =
-                              (hasAssetWeight || borrowsEnabled) &&
-                              isNumericValue &&
-                              visibleValue >
-                                bank.liquidationFee.toNumber() * 100
-
-                            const targetAmountVsDeposits =
-                              isBid && targetAmount <= notionalDeposits
-                            const targetAmountVsBorrows =
-                              isAsk && targetAmount <= notionalBorrows
-
-                            const targetAmountVsAssetWeightScale =
-                              isBid &&
-                              collateralEnabled &&
-                              uiBorrowWeightScaleStartQuote &&
-                              targetAmount <= uiBorrowWeightScaleStartQuote
-
-                            const targetAmountVsLiabWeightScale =
-                              isAsk &&
-                              collateralEnabled &&
-                              uiDepositWeightScaleStartQuote &&
-                              targetAmount <= uiDepositWeightScaleStartQuote
-
-                            return (
-                              <Td
-                                xBorder
-                                key={valIdx}
-                                className={`!p-1 ${
-                                  isAboveLiqFee ? 'text-th-error' : ''
-                                }`}
-                              >
-                                <div className="flex">
-                                  <div className="mr-2 h-full">
-                                    {formatValue(visibleValue)}
-                                  </div>
-                                  {isNumericValue && (
-                                    <div className="ml-auto flex w-4">
-                                      {(targetAmountVsBorrows ||
-                                        targetAmountVsDeposits) && (
-                                        <div className="w-2 bg-[#ffff99]"></div>
-                                      )}
-                                      {(targetAmountVsAssetWeightScale ||
-                                        targetAmountVsLiabWeightScale) && (
-                                        <div className="w-2 bg-[#0066ff]"></div>
-                                      )}
-                                    </div>
-                                  )}
-                                </div>
-                              </Td>
-                            )
-                          })}
-                          <Td xBorder>
-                            {isBid &&
-                              collateralEnabled &&
-                              `${
-                                bank &&
-                                formatValue(
-                                  bank
-                                    ?.scaledInitAssetWeight(bank.price)
-                                    .toNumber(),
-                                )
-                              } / ${
-                                bank &&
-                                formatValue(bank.maintAssetWeight.toNumber())
-                              }`}
-
-                            {isAsk &&
-                              borrowsEnabled &&
-                              `${
-                                bank &&
-                                formatValue(
-                                  bank
-                                    ?.scaledInitLiabWeight(bank.price)
-                                    .toNumber(),
-                                )
-                              } / ${
-                                bank &&
-                                formatValue(bank.maintLiabWeight.toNumber())
-                              }`}
-                          </Td>
-                          <Td>
-                            {idx % 2 === 0 && bank
-                              ? Object.values(LISTING_PRESETS).find((x) => {
-                                  return x.initLiabWeight.toFixed(1) === '1.8'
-                                    ? x.initLiabWeight.toFixed(1) ===
-                                        bank?.initLiabWeight
-                                          .toNumber()
-                                          .toFixed(1) &&
-                                        x.reduceOnly === bank.reduceOnly
-                                    : x.initLiabWeight.toFixed(1) ===
-                                        bank?.initLiabWeight
-                                          .toNumber()
-                                          .toFixed(1)
-                                })?.preset_name || ''
-                              : ''}
-                          </Td>
-                          <Td xBorder>
-                            {idx % 2 === 0
-                              ? symbolToSuggestedPresetName[row.symbol]
-                                ? symbolToSuggestedPresetName[row.symbol]
-                                : 'C'
-                              : ''}
-                          </Td>
-                        </TrBody>
+                        <Td
+                          xBorder
+                          key={valIdx}
+                          className={`!p-1 ${
+                            isAboveLiqFee ? 'text-th-error' : ''
+                          }`}
+                        >
+                          <div className="flex">
+                            <div className="mr-2 h-full">
+                              {formatValue(visibleValue)}
+                            </div>
+                            {isNumericValue && (
+                              <div className="ml-auto flex w-4">
+                                {(targetAmountVsBorrows ||
+                                  targetAmountVsDeposits) && (
+                                  <div className="w-2 bg-[#ffff99]"></div>
+                                )}
+                                {(targetAmountVsAssetWeightScale ||
+                                  targetAmountVsLiabWeightScale) && (
+                                  <div className="w-2 bg-[#0066ff]"></div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </Td>
                       )
                     })}
-                  </tbody>
-                </Table>
-                <pre className="mt-6">
-                  {`font color: Red  
+                    <Td xBorder>
+                      {isBid &&
+                        collateralEnabled &&
+                        `${
+                          bank &&
+                          formatValue(
+                            bank?.scaledInitAssetWeight(bank.price).toNumber(),
+                          )
+                        } / ${
+                          bank && formatValue(bank.maintAssetWeight.toNumber())
+                        }`}
+
+                      {isAsk &&
+                        borrowsEnabled &&
+                        `${
+                          bank &&
+                          formatValue(
+                            bank?.scaledInitLiabWeight(bank.price).toNumber(),
+                          )
+                        } / ${
+                          bank && formatValue(bank.maintLiabWeight.toNumber())
+                        }`}
+                    </Td>
+                    <Td>
+                      {idx % 2 === 0 && bank
+                        ? Object.values(LISTING_PRESETS).find((x) => {
+                            return x.initLiabWeight.toFixed(1) === '1.8'
+                              ? x.initLiabWeight.toFixed(1) ===
+                                  bank?.initLiabWeight.toNumber().toFixed(1) &&
+                                  x.reduceOnly === bank.reduceOnly
+                              : x.initLiabWeight.toFixed(1) ===
+                                  bank?.initLiabWeight.toNumber().toFixed(1)
+                          })?.preset_name || ''
+                        : ''}
+                    </Td>
+                    <Td xBorder>
+                      {idx % 2 === 0
+                        ? symbolToSuggestedPresetName[row.symbol]
+                          ? symbolToSuggestedPresetName[row.symbol]
+                          : 'C'
+                        : ''}
+                    </Td>
+                  </TrBody>
+                )
+              })}
+            </tbody>
+          </Table>
+          <pre className="mt-6">
+            {`font color: Red  
 sell: liquidation fee < price impact && init or main asset weight > 0
 buy: liquidation fee < price impact && borrows enabled 
 
@@ -351,16 +335,13 @@ strip color: Blue
 sell: target amount <= ui deposit weight scale start quote && main asset weight > 0
 buy: target amount <= ui borrows weight scale start quote && main asset weight > 0
 `}
-                </pre>
-              </div>
-            </div>
-          ) : (
-            <div className="mt-8 w-full text-center">
-              Loading... make take up to 60 seconds
-            </div>
-          )}
+          </pre>
         </div>
-      </div>
+      ) : (
+        <div className="mt-8 w-full text-center">
+          Loading... make take up to 60 seconds
+        </div>
+      )}
     </div>
   )
 }
