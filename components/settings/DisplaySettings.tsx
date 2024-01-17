@@ -148,7 +148,7 @@ const DisplaySettings = () => {
         <p className={`mb-2 md:mb-0 ${SETTINGS_BUTTON_TITLE_CLASSES}`}>
           {t('settings:language')}
         </p>
-        <div className="w-full min-w-[220px] md:w-auto md:pl-4">
+        <div className="w-full min-w-[280px] md:w-auto md:pl-4">
           <ButtonGroup
             activeValue={savedLanguage}
             onChange={(l) => handleLangChange(l)}
