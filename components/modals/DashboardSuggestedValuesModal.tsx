@@ -130,7 +130,8 @@ const DashboardSuggestedValues = ({
       const preset = getPresetWithAdjustedDepositLimit(
         getPresetWithAdjustedNetBorrows(
           PRESETS[tokenTier],
-          bank.nativeDeposits().mul(bank.price).toNumber(),
+          bank.uiDeposits(),
+          bank.uiPrice,
         ),
         bank.uiPrice,
         bank.mintDecimals,
@@ -327,7 +328,8 @@ const DashboardSuggestedValues = ({
   const suggestedValues = getPresetWithAdjustedDepositLimit(
     getPresetWithAdjustedNetBorrows(
       PRESETS[proposedTier as LISTING_PRESETS_KEY] as LISTING_PRESET,
-      bank.nativeDeposits().mul(bank.price).toNumber(),
+      bank.uiDeposits(),
+      bank.uiPrice,
     ),
     bank.uiPrice,
     bank.mintDecimals,

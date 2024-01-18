@@ -128,14 +128,14 @@ const Orderbook = () => {
     if (!market) return ''
     const bidsPk =
       market instanceof Market ? market['_decoded'].bids : market.bids
-    return bidsPk.toString()
+    return bidsPk?.toString() || ''
   }, [market])
 
   const askAccountAddress = useMemo(() => {
     if (!market) return ''
     const asksPk =
       market instanceof Market ? market['_decoded'].asks : market.asks
-    return asksPk.toString()
+    return asksPk?.toString() || ''
   }, [market])
 
   useEffect(
