@@ -46,7 +46,7 @@ const TokenLogo = ({
                 Earn MNDE tokens for holding your mSOL on Mango
               </p>
               <a
-                href="https://marinade.finance/blog/introducing-marinade-earn-season-1/"
+                href="https://marinade.finance/blog/let-marinade-earn-season-2-begin/"
                 target="_blank"
                 rel="noopener noreferrer"
               >
