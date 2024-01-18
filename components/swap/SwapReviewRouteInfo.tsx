@@ -62,6 +62,8 @@ import {
   RefetchOptions,
   RefetchQueryFilters,
 } from '@tanstack/react-query'
+import { isTokenInsured } from '@components/DepositForm'
+import InlineNotification from '@components/shared/InlineNotification'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
@@ -332,7 +334,7 @@ const SwapReviewRouteInfo = ({
   setSelectedRoute,
   show,
 }: JupiterRouteInfoProps) => {
-  const { t } = useTranslation(['common', 'swap', 'trade'])
+  const { t } = useTranslation(['common', 'account', 'swap', 'trade'])
   const slippage = mangoStore((s) => s.swap.slippage)
   const wallet = useWallet()
   const [showRoutesModal, setShowRoutesModal] = useState<boolean>(false)
@@ -605,7 +607,7 @@ const SwapReviewRouteInfo = ({
       outputBank,
       outputTokenInfo.decimals,
     )
-  }, [selectedRoute])
+  }, [inputBank, outputBank, outputTokenInfo, selectedRoute])
 
   const coinGeckoPriceDifference = useMemo(() => {
     return amountOut?.toNumber()
@@ -620,6 +622,11 @@ const SwapReviewRouteInfo = ({
           .mul(100)
       : new Decimal(0)
   }, [coingeckoPrices, amountIn, amountOut])
+
+  const isInsured = useMemo(() => {
+    const group = mangoStore.getState().group
+    return isTokenInsured(outputBank, group)
+  }, [outputBank])
 
   return routes?.length &&
     selectedRoute &&
@@ -638,16 +645,16 @@ const SwapReviewRouteInfo = ({
     >
       <div className="thin-scroll flex h-full flex-col justify-between overflow-y-auto">
         <div>
-          <div className="flex items-center justify-between px-4 pt-4">
+          <div className="relative w-full px-4 pt-4">
             <IconButton
-              className="text-th-fgd-2"
+              className="absolute text-th-fgd-2"
               onClick={onClose}
               size="small"
               ref={focusRef}
             >
               <ArrowLeftIcon className="h-5 w-5" />
             </IconButton>
-            <div className="relative h-8 w-8">
+            <div className="absolute right-4 h-8 w-8">
               <CircularProgress
                 size={32}
                 indicatorWidth={1}
@@ -656,7 +663,7 @@ const SwapReviewRouteInfo = ({
               />
               {refetchRoute ? (
                 <IconButton
-                  className="absolute bottom-0 left-0 right-0 top-0 text-th-fgd-2"
+                  className="absolute inset-0 text-th-fgd-2"
                   hideBg
                   onClick={() => refetchRoute()}
                   size="small"
@@ -671,7 +678,7 @@ const SwapReviewRouteInfo = ({
               ) : null}
             </div>
           </div>
-          <div className="flex justify-center bg-th-bkg-1 px-6 pt-2">
+          <div className="flex justify-center bg-th-bkg-1 px-6 pt-4">
             <div className="mb-3 flex w-full flex-col items-center border-b border-th-bkg-3 pb-4">
               <div className="relative mb-2 w-[72px]">
                 <TokenLogo bank={inputBank} size={40} />
@@ -837,7 +844,7 @@ const SwapReviewRouteInfo = ({
                 <p className="tooltip-underline">Jupiter Fees</p>
               </Tooltip>
               <p className="text-right font-mono text-sm text-th-fgd-2">
-                ≈{' '}
+                ≈
                 <FormatNumericValue
                   value={jupiterFees}
                   decimals={outputTokenInfo.decimals}
@@ -861,7 +868,7 @@ const SwapReviewRouteInfo = ({
                 </span>
               </p>
             </div> */}
-            {borrowAmount ? (
+            {borrowAmount && inputBank ? (
               <>
                 <div className="flex justify-between">
                   <Tooltip
@@ -872,7 +879,7 @@ const SwapReviewRouteInfo = ({
                             borrowAmount: formatNumericValue(borrowAmount),
                             token: inputTokenInfo?.symbol,
                             rate: formatNumericValue(
-                              inputBank!.getBorrowRateUi(),
+                              inputBank.getBorrowRateUi(),
                               2,
                             ),
                           })
@@ -880,7 +887,7 @@ const SwapReviewRouteInfo = ({
                             borrowAmount: formatNumericValue(borrowAmount),
                             token: inputTokenInfo?.symbol,
                             rate: formatNumericValue(
-                              inputBank!.getBorrowRateUi(),
+                              inputBank.getBorrowRateUi(),
                               2,
                             ),
                           })
@@ -900,7 +907,7 @@ const SwapReviewRouteInfo = ({
                   <Tooltip
                     content={t('loan-origination-fee-tooltip', {
                       fee: `${(
-                        inputBank!.loanOriginationFeeRate.toNumber() * 100
+                        inputBank.loanOriginationFeeRate.toNumber() * 100
                       ).toFixed(3)}%`,
                     })}
                     delay={100}
@@ -913,18 +920,39 @@ const SwapReviewRouteInfo = ({
                     <FormatNumericValue
                       value={
                         borrowAmount *
-                        inputBank!.loanOriginationFeeRate.toNumber()
+                        inputBank.loanOriginationFeeRate.toNumber()
                       }
-                      decimals={inputBank!.mintDecimals}
+                      decimals={inputBank.mintDecimals}
                     />{' '}
                     <span className="font-body text-th-fgd-3">
-                      {inputBank!.name}
+                      {inputBank.name}
                     </span>
                   </p>
                 </div>
               </>
             ) : null}
           </div>
+          {!isInsured ? (
+            <div className="mt-4 px-6">
+              <InlineNotification
+                type="info"
+                desc={
+                  <>
+                    {t('account:warning-uninsured', {
+                      token: outputBank?.name,
+                    })}{' '}
+                    <a
+                      href="https://docs.mango.markets/mango-markets/socialized-losses"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {t('learn-more')}
+                    </a>
+                  </>
+                }
+              />
+            </div>
+          ) : null}
         </div>
         <div className="p-6">
           <div className="mb-4 flex items-center justify-center">

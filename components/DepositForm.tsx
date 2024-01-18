@@ -40,6 +40,7 @@ import useTokenPositionsFull from 'hooks/useAccountPositionsFull'
 import AccountSlotsFullNotification from './shared/AccountSlotsFullNotification'
 import { handleInputChange } from 'utils/account'
 import InlineNotification from './shared/InlineNotification'
+import { Bank, Group } from '@blockworks-foundation/mango-v4'
 
 interface DepositFormProps {
   onSuccess: () => void
@@ -67,6 +68,16 @@ export const walletBalanceForToken = (
   }
 }
 
+export const isTokenInsured = (
+  bank: Bank | undefined,
+  group: Group | undefined,
+) => {
+  if (!bank || !group) return true
+  const mintInfo = group.mintInfosMapByMint.get(bank.mint.toString())
+  const isInsured = mintInfo?.groupInsuranceFund
+  return isInsured
+}
+
 function DepositForm({ onSuccess, token }: DepositFormProps) {
   const { t } = useTranslation(['common', 'account', 'swap'])
   const [inputAmount, setInputAmount] = useState('')
@@ -87,10 +98,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
 
   const isInsured = useMemo(() => {
     const group = mangoStore.getState().group
-    if (!bank || !group) return true
-    const mintInfo = group.mintInfosMapByMint.get(bank.mint.toString())
-    const isInsured = mintInfo?.groupInsuranceFund
-    return isInsured
+    return isTokenInsured(bank, group)
   }, [bank])
 
   const tokenPositionsFull = useTokenPositionsFull([bank])
@@ -307,7 +315,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
             ) : null}
             {!isInsured ? (
               <InlineNotification
-                type="warning"
+                type="info"
                 desc={
                   <>
                     {t('account:warning-uninsured', { token: bank?.name })}{' '}
