@@ -51,10 +51,11 @@
     "tooltip-total-funding": "The sum of perp position funding earned and paid",
     "tooltip-total-interest": "The value of interest earned (deposits) minus interest paid (borrows)",
     "tooltip-unfollow-account": "Unfollow account",
+    "tooltip-warning-uninsured": "In the event of a socialized loss involving {{token}} you could lose funds.",
     "total-funding-earned": "Total Funding Earned",
     "unfollow": "Unfollow",
     "volume-chart": "Volume Chart",
-    "warning-uninsured": "{{token}} is not insured. In the event of a socialized loss involving {{token}} you could lose funds.",
+    "warning-uninsured": "{{token}} is not insured.",
     "week-starting": "Week starting {{week}}",
     "zero-collateral": "Zero Collateral",
     "zero-balances": "Show Zero Balances"
