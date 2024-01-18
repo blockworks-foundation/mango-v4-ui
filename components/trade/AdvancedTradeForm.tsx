@@ -81,6 +81,8 @@ import CreateAccountModal from '@components/modals/CreateAccountModal'
 import TradeformSubmitButton from './TradeformSubmitButton'
 import useIpAddress from 'hooks/useIpAddress'
 import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
+import { isTokenInsured } from '@components/DepositForm'
+import UninsuredNotification from '@components/shared/UninsuredNotification'
 
 dayjs.extend(relativeTime)
 
@@ -113,7 +115,13 @@ type TradeForm = {
 type FormErrors = Partial<Record<keyof TradeForm, string>>
 
 const AdvancedTradeForm = () => {
-  const { t } = useTranslation(['common', 'settings', 'swap', 'trade'])
+  const { t } = useTranslation([
+    'common',
+    'account',
+    'settings',
+    'swap',
+    'trade',
+  ])
   const { poolIsPerpReadyForRefresh } = useOpenPerpPositions()
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const { usedSerum3, totalSerum3, usedPerps, totalPerps } =
@@ -159,6 +167,15 @@ const AdvancedTradeForm = () => {
     const bank = group.getFirstBankByTokenIndex(selectedMarket.baseTokenIndex)
     return bank
   }, [selectedMarket])
+
+  const isInsured = useMemo(() => {
+    if (selectedMarket instanceof Serum3Market) {
+      const group = mangoStore.getState().group
+      return isTokenInsured(baseBank, group)
+    } else {
+      return selectedMarket ? selectedMarket.groupInsuranceFund : true
+    }
+  }, [baseBank, selectedMarket])
 
   // check for available account token slots
   const tokenPositionsFull = useTokenPositionsFull([baseBank, quoteBank])
@@ -1074,7 +1091,7 @@ const AdvancedTradeForm = () => {
                     decimalScale={tickDecimals}
                     name="quote"
                     id="quote"
-                    className="-mt-[1px] flex w-full items-center rounded-md rounded-t-none border border-th-input-border bg-th-input-bkg p-2 pl-9 font-mono text-sm font-bold text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover md:hover:focus:border-th-fgd-4 lg:text-base"
+                    className="mt-[-1px] flex w-full items-center rounded-md rounded-t-none border border-th-input-border bg-th-input-bkg p-2 pl-9 font-mono text-sm font-bold text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover md:hover:focus:border-th-fgd-4 lg:text-base"
                     placeholder="0.00"
                     value={tradeForm.quoteSize}
                     onValueChange={handleQuoteSizeChange}
@@ -1225,6 +1242,20 @@ const AdvancedTradeForm = () => {
               <InlineNotification
                 type="warning"
                 desc={t('trade:price-expect')}
+              />
+            </div>
+          ) : null}
+          {!isInsured &&
+          ((selectedMarket instanceof Serum3Market &&
+            tradeForm.side === 'buy') ||
+            selectedMarket instanceof PerpMarket) ? (
+            <div className="mb-4 px-4">
+              <UninsuredNotification
+                name={
+                  selectedMarket instanceof Serum3Market
+                    ? baseBank?.name
+                    : selectedMarket.name
+                }
               />
             </div>
           ) : null}
