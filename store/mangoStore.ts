@@ -134,6 +134,7 @@ const initMangoClient = (
   return MangoClient.connect(provider, CLUSTER, MANGO_V4_ID[CLUSTER], {
     prioritizationFee: opts.prioritizationFee,
     multipleConnections: opts.multipleConnections,
+    idsSource: 'api',
     prependedGlobalAdditionalInstructions:
       opts.prependedGlobalAdditionalInstructions,
     postSendTxCallback: (txCallbackOptions: TxCallbackOptions) => {
