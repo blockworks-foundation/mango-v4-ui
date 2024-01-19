@@ -167,7 +167,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
 
     const oraclePriceBand = baseBank?.oracleConfig.maxStalenessSlots.isNeg()
       ? 19
-      : 0.5
+      : 1
 
     const registerMarketix = await client!.program.methods
       .serum3RegisterMarket(
