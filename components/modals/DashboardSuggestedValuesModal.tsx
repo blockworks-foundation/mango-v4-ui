@@ -154,17 +154,17 @@ const DashboardSuggestedValues = ({
       const isThereNeedOfSendingOracleConfig =
         bank.oracleConfig.confFilter.toNumber() !== oracleConfFilter ||
         bank.oracleConfig.maxStalenessSlots.toNumber() !== maxStalenessSlots
-      const rateConfigs = {
-        adjustmentFactor: getNullOrVal(fieldsToChange.adjustmentFactor),
-        util0: getNullOrVal(fieldsToChange.util0),
-        rate0: getNullOrVal(fieldsToChange.rate0),
-        util1: getNullOrVal(fieldsToChange.util1),
-        rate1: getNullOrVal(fieldsToChange.rate1),
-        maxRate: getNullOrVal(fieldsToChange.maxRate),
-      }
-      const isThereNeedOfSendingRateConfigs = Object.values(rateConfigs).filter(
-        (x) => x !== null,
-      ).length
+      //   const rateConfigs = {
+      //     adjustmentFactor: getNullOrVal(fieldsToChange.adjustmentFactor),
+      //     util0: getNullOrVal(fieldsToChange.util0),
+      //     rate0: getNullOrVal(fieldsToChange.rate0),
+      //     util1: getNullOrVal(fieldsToChange.util1),
+      //     rate1: getNullOrVal(fieldsToChange.rate1),
+      //     maxRate: getNullOrVal(fieldsToChange.maxRate),
+      //   }
+      //   const isThereNeedOfSendingRateConfigs = Object.values(rateConfigs).filter(
+      //     (x) => x !== null,
+      //   ).length
       const ix = await client!.program.methods
         .tokenEdit(
           null,
@@ -183,34 +183,7 @@ const DashboardSuggestedValues = ({
           fieldsToChange.groupInsuranceFund === undefined
             ? null
             : fieldsToChange.groupInsuranceFund,
-          isThereNeedOfSendingRateConfigs
-            ? {
-                adjustmentFactor:
-                  fieldsToChange.adjustmentFactor === undefined
-                    ? bank.adjustmentFactor.toNumber()
-                    : fieldsToChange.adjustmentFactor,
-                util0:
-                  fieldsToChange.util0 === undefined
-                    ? bank.util0.toNumber()
-                    : fieldsToChange.util0,
-                rate0:
-                  fieldsToChange.rate0 === undefined
-                    ? bank.rate0.toNumber()
-                    : fieldsToChange.rate0,
-                util1:
-                  fieldsToChange.util1 === undefined
-                    ? bank.util1.toNumber()
-                    : fieldsToChange.util1,
-                rate1:
-                  fieldsToChange.rate1 === undefined
-                    ? bank.rate1.toNumber()
-                    : fieldsToChange.rate1,
-                maxRate:
-                  fieldsToChange.maxRate === undefined
-                    ? bank.maxRate.toNumber()
-                    : fieldsToChange.maxRate,
-              }
-            : null,
+          null,
           getNullOrVal(fieldsToChange.loanFeeRate),
           getNullOrVal(fieldsToChange.loanOriginationFeeRate),
           getNullOrVal(fieldsToChange.maintAssetWeight),
@@ -465,25 +438,25 @@ const DashboardSuggestedValues = ({
                 {`${formattedBankValues.maxRate}% @ 100% util`}
               </span>
             }
-            proposedValue={
-              (suggestedFields.rate0 ||
-                suggestedFields.rate1 ||
-                suggestedFields.util0 ||
-                suggestedFields.util1 ||
-                suggestedFields.maxRate) && (
-                <span className="text-right">
-                  {`${suggestedFields.rate0 || formattedBankValues.rate0}% @ ${
-                    suggestedFields.util0 || formattedBankValues.util0
-                  }% util, `}
-                  {`${suggestedFields.rate1 || formattedBankValues.rate1}% @ ${
-                    suggestedFields.util1 || formattedBankValues.util1
-                  }% util, `}
-                  {`${
-                    suggestedFields.maxRate || formattedBankValues.maxRate
-                  }% @ 100% util`}
-                </span>
-              )
-            }
+            // proposedValue={
+            //   (suggestedFields.rate0 ||
+            //     suggestedFields.rate1 ||
+            //     suggestedFields.util0 ||
+            //     suggestedFields.util1 ||
+            //     suggestedFields.maxRate) && (
+            //     <span className="text-right">
+            //       {`${suggestedFields.rate0 || formattedBankValues.rate0}% @ ${
+            //         suggestedFields.util0 || formattedBankValues.util0
+            //       }% util, `}
+            //       {`${suggestedFields.rate1 || formattedBankValues.rate1}% @ ${
+            //         suggestedFields.util1 || formattedBankValues.util1
+            //       }% util, `}
+            //       {`${
+            //         suggestedFields.maxRate || formattedBankValues.maxRate
+            //       }% @ 100% util`}
+            //     </span>
+            //   )
+            // }
           />
           <KeyValuePair
             label="Adjustment factor"
