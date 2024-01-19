@@ -51,6 +51,8 @@ import MaxMarketTradeAmount from './MaxMarketTradeAmount'
 import useMangoAccount from 'hooks/useMangoAccount'
 import InlineNotification from '@components/shared/InlineNotification'
 import { debounce } from 'lodash'
+import { isTokenInsured } from '@components/DepositForm'
+import UninsuredNotification from '@components/shared/UninsuredNotification'
 
 const set = mangoStore.getState().set
 
@@ -112,6 +114,11 @@ export default function SpotMarketOrderSwapForm() {
       return [baseBank, quoteBank]
     }
   }, [selectedMarket, side])
+
+  const isInsured = useMemo(() => {
+    const group = mangoStore.getState().group
+    return isTokenInsured(outputBank, group)
+  }, [outputBank])
 
   const handleBaseSizeChange = useCallback(
     debounce((e: NumberFormatValues, info: SourceInfo) => {
@@ -605,6 +612,11 @@ export default function SpotMarketOrderSwapForm() {
                 type="error"
                 desc={t('trade:error-no-route')}
               />
+            </div>
+          ) : null}
+          {!isInsured ? (
+            <div className="mb-4">
+              <UninsuredNotification name={outputBank?.name} />
             </div>
           ) : null}
           <div className="space-y-2">

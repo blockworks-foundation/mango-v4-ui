@@ -39,8 +39,8 @@ import SecondaryConnectButton from './shared/SecondaryConnectButton'
 import useTokenPositionsFull from 'hooks/useAccountPositionsFull'
 import AccountSlotsFullNotification from './shared/AccountSlotsFullNotification'
 import { handleInputChange } from 'utils/account'
-import InlineNotification from './shared/InlineNotification'
 import { Bank, Group } from '@blockworks-foundation/mango-v4'
+import UninsuredNotification from './shared/UninsuredNotification'
 
 interface DepositFormProps {
   onSuccess: () => void
@@ -313,23 +313,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
                 </div>
               </div>
             ) : null}
-            {!isInsured ? (
-              <InlineNotification
-                type="info"
-                desc={
-                  <>
-                    {t('account:warning-uninsured', { token: bank?.name })}{' '}
-                    <a
-                      href="https://docs.mango.markets/mango-markets/socialized-losses"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {t('learn-more')}
-                    </a>
-                  </>
-                }
-              />
-            ) : null}
+            {!isInsured ? <UninsuredNotification name={bank?.name} /> : null}
           </div>
           {connected ? (
             <Button

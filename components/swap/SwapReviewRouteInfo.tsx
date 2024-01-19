@@ -63,7 +63,7 @@ import {
   RefetchQueryFilters,
 } from '@tanstack/react-query'
 import { isTokenInsured } from '@components/DepositForm'
-import InlineNotification from '@components/shared/InlineNotification'
+import UninsuredNotification from '@components/shared/UninsuredNotification'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
@@ -934,23 +934,7 @@ const SwapReviewRouteInfo = ({
           </div>
           {!isInsured ? (
             <div className="mt-4 px-6">
-              <InlineNotification
-                type="info"
-                desc={
-                  <>
-                    {t('account:warning-uninsured', {
-                      token: outputBank?.name,
-                    })}{' '}
-                    <a
-                      href="https://docs.mango.markets/mango-markets/socialized-losses"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {t('learn-more')}
-                    </a>
-                  </>
-                }
-              />
+              <UninsuredNotification name={outputBank?.name} />
             </div>
           ) : null}
         </div>

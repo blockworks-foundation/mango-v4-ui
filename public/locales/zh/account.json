@@ -51,10 +51,11 @@
     "tooltip-total-funding": "赚取和支付的合约资金费总和",
     "tooltip-total-interest": "你获取的利息（存款）减你付出的利息（借贷）",
     "tooltip-unfollow-account": "取消帐户关注",
+    "tooltip-warning-uninsured": "In the event of a socialized loss involving {{token}} you could lose funds.",
     "total-funding-earned": "总资金费",
     "unfollow": "取消关注",
     "volume-chart": "交易量图表",
-    "warning-uninsured": "{{token}} is not insured. In the event of a socialized loss involving {{token}} you could lose funds.",
+    "warning-uninsured": "{{token}} is not insured.",
     "week-starting": "从{{week}}来算的一周",
     "zero-balances": "显示等于零的余额",
     "zero-collateral": "无质押品"
