@@ -1,3 +1,4 @@
+import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import {
   MangoAccount,
   PerpMarket,
@@ -26,57 +27,54 @@ export const useSpotMarketMax = (
     let leverageMax = 0
     let spotMax = 0
     try {
+      const isBuy = side === 'buy'
       const market = group.getSerum3ExternalMarket(
         selectedMarket.serumMarketExternal,
       )
-      if (side === 'buy') {
-        const quoteBank = group.getFirstBankByTokenIndex(
-          selectedMarket.quoteTokenIndex,
-        )
-        const balance = mangoAccount.getTokenBalanceUi(quoteBank)
-        const quoteLeverageMax = mangoAccount.getMaxQuoteForSerum3BidUi(
-          group,
-          selectedMarket.serumMarketExternal,
-        )
-        const unsettled =
-          spotBalances[quoteBank?.mint.toString()]?.unsettled || 0
-        const tickDecimals = getDecimalCount(market.tickSize)
-        const roundedBalanceMax = floorToDecimal(
-          balance + unsettled,
-          tickDecimals,
-        ).toNumber()
-        spotMax = roundedBalanceMax
+      const targetBank = group.getFirstBankByTokenIndex(
+        isBuy ? selectedMarket.baseTokenIndex : selectedMarket.quoteTokenIndex,
+      )
+      const sourceBank = group.getFirstBankByTokenIndex(
+        isBuy ? selectedMarket.quoteTokenIndex : selectedMarket.baseTokenIndex,
+      )
 
-        const isReduceOnly = quoteBank?.areBorrowsReduceOnly()
-        if (isReduceOnly) {
-          leverageMax = roundedBalanceMax
-        } else {
-          leverageMax = quoteLeverageMax
-        }
+      const targetRemainingDepositLimit = targetBank.getRemainingDepositLimit()
+      const balance = mangoAccount.getTokenBalanceUi(sourceBank)
+      const targetLeverageMax = mangoAccount[
+        isBuy ? 'getMaxQuoteForSerum3BidUi' : 'getMaxBaseForSerum3AskUi'
+      ](group, selectedMarket.serumMarketExternal)
+      const unsettled =
+        spotBalances[sourceBank?.mint.toString()]?.unsettled || 0
+      const decimals = getDecimalCount(
+        isBuy ? market.tickSize : market.minOrderSize,
+      )
+      const roundedBalanceMax = floorToDecimal(
+        balance + unsettled,
+        decimals,
+      ).toNumber()
+
+      spotMax = roundedBalanceMax
+
+      //if there is limit set on bank, we check how much more can be deposited
+      if (targetRemainingDepositLimit) {
+        //if you want to buy sol for usdc this calculate how much usdc you can spent to not hit limit on sol bank
+        const equivalentSourceAmount =
+          mangoAccount.calculateEquivalentSourceAmount(
+            sourceBank,
+            targetBank,
+            targetRemainingDepositLimit,
+          )
+        spotMax = Math.min(
+          roundedBalanceMax,
+          toUiDecimals(equivalentSourceAmount, sourceBank.mintDecimals),
+        )
+      }
+
+      const isReduceOnly = sourceBank?.areBorrowsReduceOnly()
+      if (isReduceOnly) {
+        leverageMax = roundedBalanceMax
       } else {
-        const baseBank = group.getFirstBankByTokenIndex(
-          selectedMarket.baseTokenIndex,
-        )
-        const baseLeverageMax = mangoAccount.getMaxBaseForSerum3AskUi(
-          group,
-          selectedMarket.serumMarketExternal,
-        )
-        const balance = mangoAccount.getTokenBalanceUi(baseBank)
-        const unsettled =
-          spotBalances[baseBank?.mint.toString()]?.unsettled || 0
-        const minOrderDecimals = getDecimalCount(market.minOrderSize)
-        const roundedBalanceMax = floorToDecimal(
-          balance + unsettled,
-          minOrderDecimals,
-        ).toNumber()
-        spotMax = roundedBalanceMax
-
-        const isReduceOnly = baseBank?.areBorrowsReduceOnly()
-        if (isReduceOnly) {
-          leverageMax = roundedBalanceMax
-        } else {
-          leverageMax = baseLeverageMax
-        }
+        leverageMax = targetLeverageMax
       }
       return useMargin ? leverageMax : Math.max(spotMax, 0)
     } catch (e) {
