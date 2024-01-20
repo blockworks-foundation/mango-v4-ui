@@ -951,7 +951,7 @@ export const DashboardNavbar = () => {
   const { asPath } = useRouter()
 
   return (
-    <div className="mb-2 flex border border-th-bkg-3">
+    <div className="mb-2 flex border-b border-th-bkg-3">
       <div>
         <Link href={'/dashboard'} shallow={true}>
           <h4

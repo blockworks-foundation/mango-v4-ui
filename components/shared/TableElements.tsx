@@ -16,23 +16,32 @@ export const Table = ({
 export const TrHead = ({
   children,
   className,
+  style,
 }: {
   children: ReactNode
   className?: string
-}) => <tr className={`border-b border-th-bkg-3 ${className}`}>{children}</tr>
+  style?: object
+}) => (
+  <tr style={style} className={`border-b border-th-bkg-3 ${className}`}>
+    {children}
+  </tr>
+)
 
 export const Th = ({
+  style,
   children,
   className,
   id,
   xBorder = false,
 }: {
+  style?: object
   children?: ReactNode
   className?: string
   id?: string
   xBorder?: boolean
 }) => (
   <th
+    style={style}
     className={`whitespace-nowrap px-2 py-3 text-xs font-normal text-th-fgd-3 first:pl-6 last:pr-6 xl:px-4 ${
       xBorder ? 'border-x border-th-bkg-3' : ''
     } ${className}`}
