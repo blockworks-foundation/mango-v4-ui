@@ -1,4 +1,4 @@
-import { HealthType } from '@blockworks-foundation/mango-v4'
+import { HealthType } from 'mango-v4-test-pack'
 import { PublicKey } from '@solana/web3.js'
 import { useMemo } from 'react'
 import mangoStore from '@store/mangoStore'
@@ -18,6 +18,7 @@ const HealthImpactTokenChange = ({
     const group = mangoStore.getState().group
     if (!group || !mangoAccount) return 0
     const uiTokenAmount = isDeposit ? uiAmount : uiAmount * -1
+
     const projectedHealth =
       mangoAccount.simHealthRatioWithTokenPositionUiChanges(
         group,

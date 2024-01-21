@@ -4,11 +4,7 @@ import type { NextPage } from 'next'
 import { ChangeEvent, ReactNode, useCallback, useEffect, useState } from 'react'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import useMangoAccount from 'hooks/useMangoAccount'
-import {
-  toUiDecimalsForQuote,
-  HealthType,
-  PerpOrder,
-} from '@blockworks-foundation/mango-v4'
+import { toUiDecimalsForQuote, HealthType, PerpOrder } from 'mango-v4-test-pack'
 import mangoStore from '@store/mangoStore'
 import { DashboardNavbar } from '.'
 import Input from '@components/forms/Input'

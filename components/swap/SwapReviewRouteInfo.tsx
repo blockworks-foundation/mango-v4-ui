@@ -46,7 +46,7 @@ import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 import Tooltip from '@components/shared/Tooltip'
 import { Disclosure, Transition } from '@headlessui/react'
 import RoutesModal from './RoutesModal'
-// import { createAssociatedTokenAccountIdempotentInstruction } from '@blockworks-foundation/mango-v4'
+// import { createAssociatedTokenAccountIdempotentInstruction } from 'mango-v4-test-pack'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { isMangoError } from 'types'
 import { useWallet } from '@solana/wallet-adapter-react'
@@ -55,7 +55,7 @@ import {
   Bank,
   TransactionErrors,
   parseTxForKnownErrors,
-} from '@blockworks-foundation/mango-v4'
+} from 'mango-v4-test-pack'
 import CircularProgress from '@components/shared/CircularProgress'
 import {
   QueryObserverResult,

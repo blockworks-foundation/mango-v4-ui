@@ -36,7 +36,7 @@ import { TelemetryEvents } from 'utils/telemetry'
 import { Prize, getClaimsAsPrizes } from './RewardsComponents'
 import { notify } from 'utils/notifications'
 import { sleep } from 'utils'
-import { createComputeBudgetIx } from '@blockworks-foundation/mango-v4'
+import { createComputeBudgetIx } from 'mango-v4-test-pack'
 
 const CLAIM_BUTTON_CLASSES =
   'raised-button group mx-auto block h-12 px-6 pt-1 font-rewards text-xl after:rounded-lg focus:outline-none lg:h-14'

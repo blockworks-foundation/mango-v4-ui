@@ -40,7 +40,7 @@ import { useRouter } from 'next/router'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import Head from 'next/head'
 import useMangoGroup from 'hooks/useMangoGroup'
-import { PerpMarket } from '@blockworks-foundation/mango-v4'
+import { PerpMarket } from 'mango-v4-test-pack'
 import { getDecimalCount } from 'utils/numbers'
 import {
   AUTO_CONNECT_WALLET,

@@ -1,4 +1,4 @@
-import { Bank, Group, MangoAccount } from '@blockworks-foundation/mango-v4'
+import { Bank, Group, MangoAccount } from 'mango-v4-test-pack'
 import Decimal from 'decimal.js'
 import { useMemo } from 'react'
 import mangoStore from '@store/mangoStore'
@@ -56,6 +56,7 @@ export const getMaxWithdrawForBank = (
     : bank.initAssetWeight.toNumber() === 0
     ? Decimal.min(accountBalance, vaultBalance)
     : Decimal.min(accountBalance, vaultBalance, maxBorrow)
+
   return Decimal.max(0, maxWithdraw)
 }
 

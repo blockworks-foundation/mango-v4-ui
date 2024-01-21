@@ -7,11 +7,7 @@ import {
 } from 'react'
 import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
-import {
-  PerpOrderSide,
-  PerpOrderType,
-  PerpPosition,
-} from '@blockworks-foundation/mango-v4'
+import { PerpOrderSide, PerpOrderType, PerpPosition } from 'mango-v4-test-pack'
 import Modal from '@components/shared/Modal'
 import Button, { LinkButton } from '@components/shared/Button'
 import { notify } from 'utils/notifications'

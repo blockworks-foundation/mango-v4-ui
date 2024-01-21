@@ -10,7 +10,7 @@ import metaplexStore from '@store/metaplexStore'
 import { useAuctionHouse, useBids } from 'hooks/market/useAuctionHouse'
 import { ImgWithLoader } from '@components/ImgWithLoader'
 // import { useTranslation } from 'next-i18next'
-import { toUiDecimals } from '@blockworks-foundation/mango-v4'
+import { toUiDecimals } from 'mango-v4-test-pack'
 import Loading from '@components/shared/Loading'
 import { notify } from 'utils/notifications'
 

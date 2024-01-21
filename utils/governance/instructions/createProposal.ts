@@ -23,7 +23,7 @@ import { MANGO_MINT } from 'utils/constants'
 import { MANGO_GOVERNANCE_PROGRAM, MANGO_REALM_PK } from '../constants'
 import { VsrClient } from '../voteStakeRegistryClient'
 import { updateVoterWeightRecord } from './updateVoteWeightRecord'
-import { createComputeBudgetIx } from '@blockworks-foundation/mango-v4'
+import { createComputeBudgetIx } from 'mango-v4-test-pack'
 
 export const createProposal = async (
   connection: Connection,

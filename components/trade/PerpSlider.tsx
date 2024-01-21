@@ -1,4 +1,4 @@
-import { MangoAccount, PerpMarket } from '@blockworks-foundation/mango-v4'
+import { MangoAccount, PerpMarket } from 'mango-v4-test-pack'
 import LeverageSlider from '@components/shared/LeverageSlider'
 import mangoStore from '@store/mangoStore'
 import BN from 'bn.js'

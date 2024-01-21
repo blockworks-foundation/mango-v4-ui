@@ -1,7 +1,4 @@
-import {
-  MangoAccount,
-  toUiDecimalsForQuote,
-} from '@blockworks-foundation/mango-v4'
+import { MangoAccount, toUiDecimalsForQuote } from 'mango-v4-test-pack'
 import WalletIcon from '@components/icons/WalletIcon'
 import EmptyState from '@components/nftMarket/EmptyState'
 import ProfileImage from '@components/profile/ProfileImage'

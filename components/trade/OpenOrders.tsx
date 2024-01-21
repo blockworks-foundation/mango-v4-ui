@@ -1,4 +1,4 @@
-import { Bank, U64_MAX_BN } from '@blockworks-foundation/mango-v4'
+import { Bank, U64_MAX_BN } from 'mango-v4-test-pack'
 import {
   PerpMarket,
   PerpOrder,
@@ -7,7 +7,7 @@ import {
   Serum3OrderType,
   Serum3SelfTradeBehavior,
   Serum3Side,
-} from '@blockworks-foundation/mango-v4'
+} from 'mango-v4-test-pack'
 import Input from '@components/forms/Input'
 import { IconButton } from '@components/shared/Button'
 import ConnectEmptyState from '@components/shared/ConnectEmptyState'

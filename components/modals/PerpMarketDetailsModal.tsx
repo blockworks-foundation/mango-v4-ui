@@ -1,7 +1,7 @@
 import { ModalProps } from '../../types/modal'
 import Modal from '../shared/Modal'
 import { useTranslation } from 'next-i18next'
-import { PerpMarket } from '@blockworks-foundation/mango-v4'
+import { PerpMarket } from 'mango-v4-test-pack'
 import Button from '@components/shared/Button'
 import useOracleProvider from 'hooks/useOracleProvider'
 import {

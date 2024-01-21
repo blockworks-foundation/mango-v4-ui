@@ -1,4 +1,4 @@
-import { Group, I64_MAX_BN } from '@blockworks-foundation/mango-v4'
+import { Group, I64_MAX_BN } from 'mango-v4-test-pack'
 import { MangoTokenStatsItem, TokenStatsItem } from 'types'
 import { MANGO_DATA_API_URL } from 'utils/constants'
 

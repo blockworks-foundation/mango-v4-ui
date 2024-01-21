@@ -1,4 +1,4 @@
-import { PerpMarket, PerpPosition } from '@blockworks-foundation/mango-v4'
+import { PerpMarket, PerpPosition } from 'mango-v4-test-pack'
 import { TwitterIcon } from '@components/icons/TwitterIcon'
 import SharePositionModal from '@components/modals/SharePositionModal'
 import Button, { IconButton, LinkButton } from '@components/shared/Button'

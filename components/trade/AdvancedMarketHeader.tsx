@@ -1,4 +1,4 @@
-import { PerpMarket } from '@blockworks-foundation/mango-v4'
+import { PerpMarket } from 'mango-v4-test-pack'
 import { IconButton, LinkButton } from '@components/shared/Button'
 import { ChartBarIcon, InformationCircleIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'

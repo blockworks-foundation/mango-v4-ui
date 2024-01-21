@@ -222,5 +222,6 @@
   "yes": "是",
   "you": "你",
   "using-ledger": "正在使用Ledger",
-  "sign-to-in-app-notifications": "登入APP通知"
+  "sign-to-in-app-notifications": "登入APP通知",
+  "max-deposit": "Maximum Deposit"
 }

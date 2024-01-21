@@ -4,7 +4,7 @@ import Tooltip from '@components/shared/Tooltip'
 import { useTranslation } from 'next-i18next'
 import mangoStore from '@store/mangoStore'
 import { useEffect, useState } from 'react'
-import { PerpMarket, Bank } from '@blockworks-foundation/mango-v4'
+import { PerpMarket, Bank } from 'mango-v4-test-pack'
 import { BorshAccountsCoder } from '@coral-xyz/anchor'
 import {
   floorToDecimal,

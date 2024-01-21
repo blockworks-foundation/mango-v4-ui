@@ -358,28 +358,6 @@
     bn.js "^5.2.1"
     eslint-config-prettier "^9.0.0"
 
-"@blockworks-foundation/mango-v4@0.21.22":
-  version "0.21.22"
-  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.21.22.tgz#cf399225b995f3d82edc523f5af03c004c9369ec"
-  integrity sha512-n+aSuqlmv6lofmpkLCs4mNF5E7jBGD4UTKE3XfJNUVeV0Vh6E3dihraT26ZkrHCW+woNPWa+26vmd3X3bk4t+w==
-  dependencies:
-    "@blockworks-foundation/mango-v4-settings" "^0.2.16"
-    "@blockworks-foundation/mangolana" "0.0.13"
-    "@coral-xyz/anchor" "^0.28.1-beta.2"
-    "@project-serum/serum" "0.13.65"
-    "@pythnetwork/client" "~2.14.0"
-    "@solana/spl-token" "0.3.7"
-    "@solana/web3.js" "^1.78.2"
-    "@switchboard-xyz/sbv2-lite" "^0.1.6"
-    big.js "^6.1.1"
-    binance-api-node "^0.12.0"
-    bs58 "^5.0.0"
-    cross-fetch "^3.1.5"
-    dotenv "^16.0.3"
-    fast-copy "^3.0.1"
-    lodash "^4.17.21"
-    node-kraken-api "^2.2.2"
-
 "@blockworks-foundation/mangolana@0.0.13":
   version "0.0.13"
   resolved "https://registry.yarnpkg.com/@blockworks-foundation/mangolana/-/mangolana-0.0.13.tgz#82a9b0846e69068de6216d20fcdcd60375d14e1e"
@@ -8394,6 +8372,28 @@ makeerror@1.0.12:
   integrity sha512-JmqCvUhmt43madlpFzG4BQzG2Z3m6tvQDNKdClZnO3VbIudJYmxsT0FNJMeiB2+JTSlTQTSbU8QdesVmwJcmLg==
   dependencies:
     tmpl "1.0.5"
+
+mango-v4-test-pack@0.21.25:
+  version "0.21.25"
+  resolved "https://registry.yarnpkg.com/mango-v4-test-pack/-/mango-v4-test-pack-0.21.25.tgz#9e1b77ebe40163d22af2de72b0ea2d904a29451d"
+  integrity sha512-GAy0dgK3UpyaGU9Np5iwjII2Ksy0ffgMDnRZVlI3gfLkgrGVJZxyxxJLxb3/LNX96KEsL2ejZayaT/PC5cbeDw==
+  dependencies:
+    "@blockworks-foundation/mango-v4-settings" "^0.2.16"
+    "@blockworks-foundation/mangolana" "0.0.13"
+    "@coral-xyz/anchor" "^0.28.1-beta.2"
+    "@project-serum/serum" "0.13.65"
+    "@pythnetwork/client" "~2.14.0"
+    "@solana/spl-token" "0.3.7"
+    "@solana/web3.js" "^1.78.2"
+    "@switchboard-xyz/sbv2-lite" "^0.1.6"
+    big.js "^6.1.1"
+    binance-api-node "^0.12.0"
+    bs58 "^5.0.0"
+    cross-fetch "^3.1.5"
+    dotenv "^16.0.3"
+    fast-copy "^3.0.1"
+    lodash "^4.17.21"
+    node-kraken-api "^2.2.2"
 
 md5.js@^1.3.4:
   version "1.3.5"

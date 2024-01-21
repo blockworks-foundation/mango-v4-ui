@@ -1,4 +1,4 @@
-import { Bank } from '@blockworks-foundation/mango-v4'
+import { Bank } from 'mango-v4-test-pack'
 import { Disclosure, Popover, Transition } from '@headlessui/react'
 import {
   ChevronDownIcon,

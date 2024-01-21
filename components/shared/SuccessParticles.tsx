@@ -1,4 +1,4 @@
-import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
+import { PerpMarket, Serum3Market } from 'mango-v4-test-pack'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import mangoStore from '@store/mangoStore'
 import useJupiterMints from 'hooks/useJupiterMints'

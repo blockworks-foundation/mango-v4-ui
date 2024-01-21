@@ -21,7 +21,7 @@ import {
 import { formatTokenSymbol } from 'utils/tokens'
 import { fetchTradeHistory, parseApiTradeHistory } from 'hooks/useTradeHistory'
 import { PublicKey } from '@solana/web3.js'
-import { PerpMarket } from '@blockworks-foundation/mango-v4'
+import { PerpMarket } from 'mango-v4-test-pack'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import SecondaryTabBar from '@components/shared/SecondaryTabBar'
 import ActivityFilters from './ActivityFilters'

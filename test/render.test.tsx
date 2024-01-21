@@ -4,7 +4,7 @@
 
 import { Connection } from '@solana/web3.js'
 import { getClient, getGroupForClient } from './utils'
-import { Group, MangoClient } from '@blockworks-foundation/mango-v4'
+import { Group, MangoClient } from 'mango-v4-test-pack'
 import { getFormattedBankValues } from 'utils/governance/listingTools'
 import { MANGO_MAINNET_GROUP } from 'utils/constants'
 

@@ -28,7 +28,7 @@ import {
   Serum3Market,
   Serum3Side,
   TokenConditionalSwap,
-} from '@blockworks-foundation/mango-v4'
+} from 'mango-v4-test-pack'
 import { Order } from '@project-serum/serum/lib/market'
 import { PublicKey } from '@solana/web3.js'
 import useLocalStorageState from 'hooks/useLocalStorageState'

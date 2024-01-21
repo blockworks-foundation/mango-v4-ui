@@ -3,7 +3,7 @@ import {
   OracleProvider,
   PerpMarket,
   Serum3Market,
-} from '@blockworks-foundation/mango-v4'
+} from 'mango-v4-test-pack'
 import mangoStore from '@store/mangoStore'
 import { useMemo } from 'react'
 import { formatTokenSymbol } from 'utils/tokens'

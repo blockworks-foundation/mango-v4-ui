@@ -2,7 +2,7 @@ import { MarketData, MarketsDataItem } from 'types'
 import useMarketsData from './useMarketsData'
 import { useMemo } from 'react'
 import mangoStore from '@store/mangoStore'
-import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
+import { PerpMarket, Serum3Market } from 'mango-v4-test-pack'
 import { useBirdeye24hrPrices } from './useBirdeye24hrPrices'
 
 type ApiData = {

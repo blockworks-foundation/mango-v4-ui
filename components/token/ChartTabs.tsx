@@ -1,4 +1,4 @@
-import { Bank } from '@blockworks-foundation/mango-v4'
+import { Bank } from 'mango-v4-test-pack'
 import TabButtons from '@components/shared/TabButtons'
 import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'

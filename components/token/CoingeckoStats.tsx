@@ -1,4 +1,4 @@
-import { Bank } from '@blockworks-foundation/mango-v4'
+import { Bank } from 'mango-v4-test-pack'
 import Change from '@components/shared/Change'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { ArrowSmallUpIcon } from '@heroicons/react/20/solid'

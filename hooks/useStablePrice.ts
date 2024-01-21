@@ -1,4 +1,4 @@
-import { I80F48, PerpMarket } from '@blockworks-foundation/mango-v4'
+import { I80F48, PerpMarket } from 'mango-v4-test-pack'
 import { useMemo } from 'react'
 import useMangoGroup from './useMangoGroup'
 import useSelectedMarket from './useSelectedMarket'

@@ -4,10 +4,7 @@ import { useTranslation } from 'next-i18next'
 import { useMemo, useState } from 'react'
 import { handleViewChange } from './AccountPage'
 import Tooltip from '@components/shared/Tooltip'
-import {
-  HealthType,
-  toUiDecimalsForQuote,
-} from '@blockworks-foundation/mango-v4'
+import { HealthType, toUiDecimalsForQuote } from 'mango-v4-test-pack'
 import HealthBar from './HealthBar'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { IconButton } from '@components/shared/Button'

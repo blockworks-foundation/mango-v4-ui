@@ -1,4 +1,4 @@
-import { Serum3Market } from '@blockworks-foundation/mango-v4'
+import { Serum3Market } from 'mango-v4-test-pack'
 import mangoStore from '@store/mangoStore'
 import { useMemo } from 'react'
 import { floorToDecimal, getDecimalCount } from 'utils/numbers'

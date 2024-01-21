@@ -5,8 +5,8 @@ import {
   PerpMarket,
   PerpPosition,
   Serum3Market,
-} from '@blockworks-foundation/mango-v4'
-import { Modify } from '@blockworks-foundation/mango-v4'
+} from 'mango-v4-test-pack'
+import { Modify } from 'mango-v4-test-pack'
 import { JsonMetadata } from '@metaplex-foundation/js'
 import { Event } from '@project-serum/serum/lib/queue'
 import { PublicKey } from '@solana/web3.js'

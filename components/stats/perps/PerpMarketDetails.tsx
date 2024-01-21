@@ -4,7 +4,7 @@ import { useTranslation } from 'next-i18next'
 import { useMemo, useState } from 'react'
 import { formatYAxis } from 'utils/formatting'
 import { PerpStatsItem } from 'types'
-import { PerpMarket } from '@blockworks-foundation/mango-v4'
+import { PerpMarket } from 'mango-v4-test-pack'
 import DetailedAreaOrBarChart from '@components/shared/DetailedAreaOrBarChart'
 import AverageFundingChart from './AverageFundingChart'
 

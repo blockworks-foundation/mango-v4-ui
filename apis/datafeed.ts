@@ -23,11 +23,7 @@ import {
   SearchSymbolResultItem,
 } from '@public/charting_library'
 import { PublicKey } from '@solana/web3.js'
-import {
-  Group,
-  PerpMarket,
-  Serum3Market,
-} from '@blockworks-foundation/mango-v4'
+import { Group, PerpMarket, Serum3Market } from 'mango-v4-test-pack'
 
 export const SUPPORTED_RESOLUTIONS = [
   '1',

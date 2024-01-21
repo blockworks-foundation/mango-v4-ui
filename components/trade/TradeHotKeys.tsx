@@ -8,7 +8,7 @@ import {
   Serum3OrderType,
   Serum3SelfTradeBehavior,
   Serum3Side,
-} from '@blockworks-foundation/mango-v4'
+} from 'mango-v4-test-pack'
 import { HotKey } from '@components/settings/HotKeysSettings'
 import mangoStore from '@store/mangoStore'
 import { ReactNode, useCallback } from 'react'

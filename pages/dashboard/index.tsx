@@ -4,7 +4,7 @@ import {
   I80F48,
   PriceImpact,
   OracleProvider,
-} from '@blockworks-foundation/mango-v4'
+} from 'mango-v4-test-pack'
 import ExplorerLink from '@components/shared/ExplorerLink'
 import { coder } from '@project-serum/anchor/dist/cjs/spl/token'
 import mangoStore from '@store/mangoStore'

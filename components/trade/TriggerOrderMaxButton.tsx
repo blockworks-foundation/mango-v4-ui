@@ -1,4 +1,4 @@
-import { PerpMarket } from '@blockworks-foundation/mango-v4'
+import { PerpMarket } from 'mango-v4-test-pack'
 import MaxAmountButton from '@components/shared/MaxAmountButton'
 import { FadeInFadeOut } from '@components/shared/Transitions'
 import { useWallet } from '@solana/wallet-adapter-react'

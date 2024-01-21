@@ -1,4 +1,4 @@
-import { HealthType } from '@blockworks-foundation/mango-v4'
+import { HealthType } from 'mango-v4-test-pack'
 import mangoStore from '@store/mangoStore'
 import { useMemo } from 'react'
 import useMangoAccount from './useMangoAccount'

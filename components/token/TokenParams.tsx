@@ -3,7 +3,7 @@ import {
   I80F48,
   toUiDecimals,
   toUiDecimalsForQuote,
-} from '@blockworks-foundation/mango-v4'
+} from 'mango-v4-test-pack'
 import Tooltip from '@components/shared/Tooltip'
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid'
 import { BN } from '@coral-xyz/anchor'

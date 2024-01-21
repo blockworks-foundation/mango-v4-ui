@@ -1,4 +1,4 @@
-import { MANGO_V4_ID, MangoClient } from '@blockworks-foundation/mango-v4'
+import { MANGO_V4_ID, MangoClient } from 'mango-v4-test-pack'
 import { AnchorProvider } from '@coral-xyz/anchor'
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import EmptyWallet from 'utils/wallet'

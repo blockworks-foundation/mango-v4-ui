@@ -21,7 +21,7 @@ import {
 import MarketLogos from './MarketLogos'
 import SoonBadge from '@components/shared/SoonBadge'
 import TabButtons from '@components/shared/TabButtons'
-import { PerpMarket } from '@blockworks-foundation/mango-v4'
+import { PerpMarket } from 'mango-v4-test-pack'
 import Loading from '@components/shared/Loading'
 import MarketChange from '@components/shared/MarketChange'
 import SheenLoader from '@components/shared/SheenLoader'

@@ -18,7 +18,7 @@ import { VsrClient } from '../voteStakeRegistryClient'
 import { MANGO_GOVERNANCE_PROGRAM, MANGO_REALM_PK } from '../constants'
 import { updateVoterWeightRecord } from './updateVoteWeightRecord'
 import { WalletContextState } from '@solana/wallet-adapter-react'
-import { MangoClient } from '@blockworks-foundation/mango-v4'
+import { MangoClient } from 'mango-v4-test-pack'
 import { notify } from 'utils/notifications'
 
 export async function castVote(

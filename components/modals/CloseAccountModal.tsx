@@ -10,7 +10,7 @@ import {
   MangoAccount,
   TokenPosition,
   toUiDecimalsForQuote,
-} from '@blockworks-foundation/mango-v4'
+} from 'mango-v4-test-pack'
 import { ExclamationCircleIcon, TrashIcon } from '@heroicons/react/20/solid'
 import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
 import { getMultipleAccounts } from '@project-serum/anchor/dist/cjs/utils/rpc'

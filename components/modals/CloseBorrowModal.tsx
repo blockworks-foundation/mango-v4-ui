@@ -14,7 +14,7 @@ import {
 } from '@components/swap/SwapForm'
 import mangoStore from '@store/mangoStore'
 import SwapSummaryInfo from '@components/swap/SwapSummaryInfo'
-import { Bank } from '@blockworks-foundation/mango-v4'
+import { Bank } from 'mango-v4-test-pack'
 import RepayForm from '@components/RepayForm'
 import { useTranslation } from 'react-i18next'
 import TokenLogo from '@components/shared/TokenLogo'

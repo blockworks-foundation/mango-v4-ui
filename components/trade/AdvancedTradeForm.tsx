@@ -7,7 +7,7 @@ import {
   Serum3OrderType,
   Serum3SelfTradeBehavior,
   Serum3Side,
-} from '@blockworks-foundation/mango-v4'
+} from 'mango-v4-test-pack'
 import Checkbox from '@components/forms/Checkbox'
 import Tooltip from '@components/shared/Tooltip'
 import mangoStore from '@store/mangoStore'

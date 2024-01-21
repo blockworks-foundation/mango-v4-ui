@@ -1,4 +1,4 @@
-import { MangoAccount } from '@blockworks-foundation/mango-v4'
+import { MangoAccount } from 'mango-v4-test-pack'
 import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
 import { useMemo } from 'react'

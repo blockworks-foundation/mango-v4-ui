@@ -1,4 +1,4 @@
-import { HealthType } from '@blockworks-foundation/mango-v4'
+import { HealthType } from 'mango-v4-test-pack'
 import {
   ArrowLeftIcon,
   ArrowUpLeftIcon,
@@ -121,8 +121,10 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
     const group = mangoStore.getState().group
     const mangoAccount = mangoStore.getState().mangoAccount.current
     const actions = mangoStore.getState().actions
+
     if (!mangoAccount || !group || !publicKey) return
     setSubmitting(true)
+
     try {
       const { signature: tx, slot } = await client.tokenWithdraw(
         group,

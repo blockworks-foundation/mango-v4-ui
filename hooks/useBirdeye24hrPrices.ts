@@ -1,4 +1,4 @@
-import { Group, Serum3Market } from '@blockworks-foundation/mango-v4'
+import { Group, Serum3Market } from 'mango-v4-test-pack'
 import mangoStore from '@store/mangoStore'
 import { useQuery } from '@tanstack/react-query'
 import { makeApiRequest } from 'apis/birdeye/helpers'

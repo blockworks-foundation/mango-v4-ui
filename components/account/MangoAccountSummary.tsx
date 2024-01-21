@@ -1,7 +1,4 @@
-import {
-  HealthType,
-  toUiDecimalsForQuote,
-} from '@blockworks-foundation/mango-v4'
+import { HealthType, toUiDecimalsForQuote } from 'mango-v4-test-pack'
 import { useTranslation } from 'next-i18next'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'

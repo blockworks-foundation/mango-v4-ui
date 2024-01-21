@@ -39,8 +39,10 @@ import SecondaryConnectButton from './shared/SecondaryConnectButton'
 import useTokenPositionsFull from 'hooks/useAccountPositionsFull'
 import AccountSlotsFullNotification from './shared/AccountSlotsFullNotification'
 import { handleInputChange } from 'utils/account'
-import { Bank, Group } from '@blockworks-foundation/mango-v4'
+import { Bank, Group } from 'mango-v4-test-pack'
 import UninsuredNotification from './shared/UninsuredNotification'
+import { toUiDecimals } from 'mango-v4-test-pack'
+import TokenMaxAmountWarnings from './shared/TokenMaxAmountWarnings'
 
 interface DepositFormProps {
   onSuccess: () => void
@@ -50,21 +52,39 @@ interface DepositFormProps {
 export const walletBalanceForToken = (
   walletTokens: TokenAccount[],
   token: string,
-): { maxAmount: number; maxDecimals: number } => {
+  ignoreLimits?: boolean,
+): {
+  maxAmount: number
+  maxDecimals: number
+  walletBalance: number
+  vaultLimit: number | null
+} => {
   const group = mangoStore.getState().group
   const bank = group?.banksMapByName.get(token)?.[0]
-
+  const depositLimitLeft = bank?.getRemainingDepositLimit()
   let walletToken
+  let depositLimitLeftUi
+  let limit = null
   if (bank) {
     const tokenMint = bank?.mint
     walletToken = tokenMint
       ? walletTokens.find((t) => t.mint.toString() === tokenMint.toString())
       : null
+    if (depositLimitLeft && !ignoreLimits) {
+      depositLimitLeftUi = toUiDecimals(depositLimitLeft, bank.mintDecimals)
+      limit = toUiDecimals(depositLimitLeft, bank.mintDecimals)
+    }
   }
 
   return {
-    maxAmount: walletToken ? walletToken.uiAmount : 0,
+    maxAmount: walletToken
+      ? depositLimitLeftUi !== undefined
+        ? Math.min(walletToken.uiAmount, depositLimitLeftUi)
+        : walletToken.uiAmount
+      : 0,
+    walletBalance: walletToken ? walletToken.uiAmount : 0,
     maxDecimals: bank?.mintDecimals || 6,
+    vaultLimit: limit,
   }
 }
 
@@ -184,6 +204,9 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
     tokenMax.maxAmount < Number(inputAmount) ||
     (selectedToken === 'SOL' && maxSolDeposit <= 0)
 
+  const depositLimitAffectingMaxAmounts =
+    tokenMax.vaultLimit !== null &&
+    tokenMax.maxAmount !== tokenMax.walletBalance
   return (
     <>
       <EnterBottomExitBottom
@@ -202,7 +225,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
             <p className="text-xs">{t('deposit-rate')}</p>
           </div>
           <div className="w-1/2 text-right">
-            <p className="whitespace-nowrap text-xs">{t('wallet-balance')}</p>
+            <p className="whitespace-nowrap text-xs">{t('max')}</p>
           </div>
         </div>
         <ActionTokenList
@@ -218,6 +241,10 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
           style={{ height: ACCOUNT_ACTION_MODAL_INNER_HEIGHT }}
         >
           <div>
+            <TokenMaxAmountWarnings
+              limitNearlyReached={depositLimitAffectingMaxAmounts}
+              bank={bank}
+            ></TokenMaxAmountWarnings>
             <SolBalanceWarnings
               amount={inputAmount}
               className="mb-4"
@@ -230,7 +257,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
                 <div className="mb-2 flex items-center space-x-2">
                   <MaxAmountButton
                     decimals={tokenMax.maxDecimals}
-                    label={t('wallet-balance')}
+                    label={t('max')}
                     onClick={setMax}
                     value={tokenMax.maxAmount}
                   />

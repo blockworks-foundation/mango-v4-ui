@@ -12,11 +12,7 @@ import {
 } from 'utils/constants'
 import { PublicKey, SYSVAR_RENT_PUBKEY, Transaction } from '@solana/web3.js'
 import { useWallet } from '@solana/wallet-adapter-react'
-import {
-  OPENBOOK_PROGRAM_ID,
-  toNative,
-  toUiDecimals,
-} from '@blockworks-foundation/mango-v4'
+import { OPENBOOK_PROGRAM_ID, toNative, toUiDecimals } from 'mango-v4-test-pack'
 import {
   MANGO_DAO_FAST_LISTING_WALLET,
   MANGO_DAO_WALLET,

@@ -1,4 +1,4 @@
-import { OPENBOOK_PROGRAM_ID } from '@blockworks-foundation/mango-v4'
+import { OPENBOOK_PROGRAM_ID } from 'mango-v4-test-pack'
 import Input from '@components/forms/Input'
 import Label from '@components/forms/Label'
 import Select from '@components/forms/Select'

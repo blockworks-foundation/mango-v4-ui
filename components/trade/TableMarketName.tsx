@@ -1,4 +1,4 @@
-import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
+import { PerpMarket, Serum3Market } from 'mango-v4-test-pack'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
