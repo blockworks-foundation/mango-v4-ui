@@ -147,7 +147,8 @@ const DashboardSuggestedValues = ({
           ? null
           : fieldsToChange.oracleConfFilter
       const maxStalenessSlots =
-        fieldsToChange.maxStalenessSlots === undefined
+        (fieldsToChange.maxStalenessSlots as number | string) === '' ||
+        fieldsToChange.maxStalenessSlots === -1
           ? null
           : fieldsToChange.maxStalenessSlots
 
@@ -176,7 +177,11 @@ const DashboardSuggestedValues = ({
                     : fieldsToChange.oracleConfFilter,
                 maxStalenessSlots:
                   fieldsToChange.maxStalenessSlots === undefined
-                    ? bank.oracleConfig.maxStalenessSlots.toNumber()
+                    ? bank.oracleConfig.maxStalenessSlots.toNumber() === -1
+                      ? null
+                      : bank.oracleConfig.maxStalenessSlots.toNumber()
+                    : fieldsToChange.maxStalenessSlots === -1
+                    ? null
                     : fieldsToChange.maxStalenessSlots,
               }
             : null,

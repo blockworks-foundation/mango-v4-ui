@@ -468,7 +468,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     }
     const mint = new PublicKey(advForm.mintPk)
     const proposalTx = []
-    console.log(proposedPreset)
+
     if (Object.keys(proposedPreset).length) {
       const registerTokenIx = await client!.program.methods
         .tokenRegister(
@@ -476,7 +476,10 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           advForm.name,
           {
             confFilter: Number(proposedPreset.oracleConfFilter),
-            maxStalenessSlots: proposedPreset.maxStalenessSlots,
+            maxStalenessSlots:
+              proposedPreset.maxStalenessSlots === -1
+                ? null
+                : proposedPreset.maxStalenessSlots,
           },
           {
             adjustmentFactor: Number(proposedPreset.adjustmentFactor),
