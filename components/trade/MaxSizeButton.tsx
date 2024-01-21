@@ -26,7 +26,7 @@ const MaxSizeButton = ({
   const { mangoAccount } = useMangoAccount()
   const { selectedMarket, price: oraclePrice } = useSelectedMarket()
   const { price, side, tradeType } = mangoStore((s) => s.tradeForm)
-  const spotMax = useSpotMarketMax(
+  const { max: spotMax } = useSpotMarketMax(
     mangoAccount,
     selectedMarket,
     side,

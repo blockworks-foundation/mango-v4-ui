@@ -7,6 +7,8 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useCallback, useMemo } from 'react'
 import { GenericMarket } from 'types'
 import { floorToDecimal, getDecimalCount } from 'utils/numbers'
+import TokenMaxAmountWarnings from '@components/shared/TokenMaxAmountWarnings'
+import useMangoGroup from 'hooks/useMangoGroup'
 
 export const useSpotMarketMax = (
   mangoAccount: MangoAccount | undefined,
@@ -16,10 +18,10 @@ export const useSpotMarketMax = (
 ) => {
   const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const max = useMemo(() => {
+    let isLimited = false
     const group = mangoStore.getState().group
-    if (!mangoAccount || !group || !selectedMarket) return 0
-    if (!(selectedMarket instanceof Serum3Market)) return 0
-
+    if (!mangoAccount || !group || !selectedMarket) return { max: 0, isLimited }
+    if (!(selectedMarket instanceof Serum3Market)) return { max: 0, isLimited }
     let leverageMax = 0
     let spotMax = 0
     try {
@@ -64,6 +66,9 @@ export const useSpotMarketMax = (
           roundedBalanceMax,
           toUiDecimals(equivalentSourceAmount, sourceBank.mintDecimals),
         )
+        isLimited =
+          roundedBalanceMax >
+          toUiDecimals(equivalentSourceAmount, sourceBank.mintDecimals)
       }
 
       const isReduceOnly = sourceBank?.areBorrowsReduceOnly()
@@ -72,10 +77,10 @@ export const useSpotMarketMax = (
       } else {
         leverageMax = targetLeverageMax
       }
-      return useMargin ? leverageMax : Math.max(spotMax, 0)
+      return { max: useMargin ? leverageMax : Math.max(spotMax, 0), isLimited }
     } catch (e) {
       console.error('Error calculating max size: ', e)
-      return 0
+      return { max: 0, isLimited: false }
     }
   }, [side, selectedMarket, mangoAccount, useMargin])
 
@@ -97,13 +102,22 @@ const SpotSlider = ({
 }) => {
   const { baseSize, quoteSize, side } = mangoStore((s) => s.tradeForm)
   const { selectedMarket, price: marketPrice } = useSelectedMarket()
+  const { group } = useMangoGroup()
   const { mangoAccount } = useMangoAccount()
-  const standardOrderMax = useSpotMarketMax(
+  const { max: standardOrderMax, isLimited } = useSpotMarketMax(
     mangoAccount,
     selectedMarket,
     side,
     useMargin,
   )
+  const targetBank =
+    selectedMarket &&
+    selectedMarket instanceof Serum3Market &&
+    group?.getFirstBankByTokenIndex(
+      side === 'buy'
+        ? selectedMarket.baseTokenIndex
+        : selectedMarket.quoteTokenIndex,
+    )
 
   const max = useMemo(() => {
     if (!isTriggerOrder) return standardOrderMax
@@ -188,6 +202,12 @@ const SpotSlider = ({
         onChange={handleSlide}
         step={step}
       />
+      {targetBank && (
+        <TokenMaxAmountWarnings
+          limitNearlyReached={isLimited}
+          bank={targetBank}
+        ></TokenMaxAmountWarnings>
+      )}
     </div>
   )
 }
