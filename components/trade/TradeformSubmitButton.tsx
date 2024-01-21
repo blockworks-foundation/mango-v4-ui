@@ -46,7 +46,7 @@ const TradeformSubmitButton = ({
             ? 'raised-sell-button'
             : 'bg-th-down-dark text-white md:hover:bg-th-down-dark md:hover:brightness-90'
         }`}
-        disabled={disabled}
+        disabled={disabled || tooMuchSize}
         size="large"
         type="submit"
       >

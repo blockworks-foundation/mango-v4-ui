@@ -145,5 +145,7 @@
     "unsettled": "Unsettled",
     "view-counterparty": "View counterparty {{pk}}",
     "volume-alert": "Volume Alert",
-    "volume-alert-desc": "Play a sound whenever volume exceeds your alert threshold"
+    "volume-alert-desc": "Play a sound whenever volume exceeds your alert threshold",
+    "warning-init-health": "You have no free collateral",
+    "warning-init-health-limit": "You have no free collateral. Closing your position via limit order might fail."
 }
