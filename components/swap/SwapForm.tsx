@@ -224,15 +224,13 @@ const SwapForm = () => {
                 />
               </div>
             ) : null}
+            {!walletSwap && (
+              <TokenMaxAmountWarnings bank={outputBank} className="mb-4" />
+            )}
             <SwapSummaryInfo
               walletSwap={walletSwap}
               setShowSettings={setShowSettings}
             />
-            {!walletSwap && (
-              <TokenMaxAmountWarnings
-                bank={outputBank}
-              ></TokenMaxAmountWarnings>
-            )}
           </div>
         </div>
       </div>

@@ -19,7 +19,7 @@ import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useMangoAccount from 'hooks/useMangoAccount'
 import {
-  ACCOUNT_ACTION_MODAL_INNER_HEIGHT,
+  BORROW_REPAY_MODAL_INNER_HEIGHT,
   INPUT_TOKEN_DEFAULT,
 } from 'utils/constants'
 import ConnectEmptyState from './shared/ConnectEmptyState'
@@ -195,7 +195,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
       <FadeInFadeOut show={!showTokenList}>
         <div
           className="flex flex-col justify-between"
-          style={{ height: ACCOUNT_ACTION_MODAL_INNER_HEIGHT }}
+          style={{ height: BORROW_REPAY_MODAL_INNER_HEIGHT }}
         >
           <div>
             <SolBalanceWarnings

@@ -215,6 +215,8 @@
   "wallet-address": "钱包地址",
   "wallet-balance": "钱包余额",
   "wallet-disconnected": "已断开钱包连接",
+  "warning-deposits-almost-full": "{{token}} deposits are almost at capacity. {{remaining}} {{token}} available",
+  "warning-deposits-full": "{{token}} deposits are at capacity",
   "withdraw": "取款",
   "withdraw-amount": "取款额",
   "list-market-token": "上架市场／币种",

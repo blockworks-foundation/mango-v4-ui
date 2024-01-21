@@ -9,7 +9,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import NumberFormat from 'react-number-format'
 import mangoStore from '@store/mangoStore'
 import {
-  ACCOUNT_ACTION_MODAL_INNER_HEIGHT,
+  DEPOSIT_WITHDRAW_MODAL_INNER_HEIGHT,
   INPUT_TOKEN_DEFAULT,
 } from './../utils/constants'
 import { notify } from './../utils/notifications'
@@ -238,18 +238,19 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
       <FadeInFadeOut show={!showTokenList}>
         <div
           className="flex flex-col justify-between"
-          style={{ height: ACCOUNT_ACTION_MODAL_INNER_HEIGHT }}
+          style={{ height: DEPOSIT_WITHDRAW_MODAL_INNER_HEIGHT }}
         >
           <div>
-            <TokenMaxAmountWarnings
-              limitNearlyReached={depositLimitAffectingMaxAmounts}
-              bank={bank}
-            ></TokenMaxAmountWarnings>
             <SolBalanceWarnings
               amount={inputAmount}
               className="mb-4"
               setAmount={setInputAmount}
               selectedToken={selectedToken}
+            />
+            <TokenMaxAmountWarnings
+              limitNearlyReached={depositLimitAffectingMaxAmounts}
+              bank={bank}
+              className="mb-4"
             />
             <div className="grid grid-cols-2">
               <div className="col-span-2 flex justify-between">

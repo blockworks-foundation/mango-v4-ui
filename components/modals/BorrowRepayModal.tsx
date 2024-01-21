@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import TabUnderline from '@components/shared/TabUnderline'
 import BorrowForm from '@components/BorrowForm'
 import RepayForm from '@components/RepayForm'
-import { ACCOUNT_ACTION_MODAL_HEIGHT } from 'utils/constants'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import useUnownedAccount from 'hooks/useUnownedAccount'
@@ -34,7 +33,7 @@ const BorrowRepayModal = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div style={{ height: ACCOUNT_ACTION_MODAL_HEIGHT }}>
+      <div style={{ height: '498px' }}>
         {!isDelegatedAccount ? (
           <>
             <div className="pb-2">

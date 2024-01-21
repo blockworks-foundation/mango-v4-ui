@@ -216,6 +216,8 @@
   "wallet-address": "Wallet Address",
   "wallet-balance": "Wallet Balance",
   "wallet-disconnected": "Disconnected from wallet",
+  "warning-deposits-almost-full": "{{token}} deposits are almost at capacity. {{remaining}} {{token}} available",
+  "warning-deposits-full": "{{token}} deposits are at capacity",
   "withdraw": "Withdraw",
   "withdraw-amount": "Withdraw Amount",
   "list-market-token": "List Market/Token",

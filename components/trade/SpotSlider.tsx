@@ -53,9 +53,9 @@ export const useSpotMarketMax = (
 
       spotMax = roundedBalanceMax
 
-      //if there is limit set on bank, we check how much more can be deposited
+      // if there is limit set on bank, we check how much more can be deposited
       if (targetRemainingDepositLimit) {
-        //if you want to buy sol for usdc this calculate how much usdc you can spent to not hit limit on sol bank
+        // if you want to buy sol for usdc this calculate how much usdc you can spent to not hit limit on sol bank
         const equivalentSourceAmount =
           mangoAccount.calculateEquivalentSourceAmount(
             sourceBank,
@@ -206,7 +206,8 @@ const SpotSlider = ({
         <TokenMaxAmountWarnings
           limitNearlyReached={isLimited}
           bank={targetBank}
-        ></TokenMaxAmountWarnings>
+          className="mt-4"
+        />
       )}
     </div>
   )

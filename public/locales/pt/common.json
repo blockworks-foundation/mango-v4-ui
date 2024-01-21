@@ -216,6 +216,8 @@
   "wallet-address": "Endereço da Carteira",
   "wallet-balance": "Saldo da Carteira",
   "wallet-disconnected": "Desconectado da carteira",
+  "warning-deposits-almost-full": "{{token}} deposits are almost at capacity. {{remaining}} {{token}} available",
+  "warning-deposits-full": "{{token}} deposits are at capacity",
   "withdraw": "Retirar",
   "withdraw-amount": "Quantia para Retirada",
   "list-market-token": "Listar Mercado/Token",

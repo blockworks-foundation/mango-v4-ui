@@ -11,7 +11,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import NumberFormat from 'react-number-format'
 import mangoStore from '@store/mangoStore'
 import {
-  ACCOUNT_ACTION_MODAL_INNER_HEIGHT,
+  BORROW_REPAY_MODAL_INNER_HEIGHT,
   INPUT_TOKEN_DEFAULT,
   TOKEN_REDUCE_ONLY_OPTIONS,
 } from './../utils/constants'
@@ -194,7 +194,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
       <FadeInFadeOut show={!showTokenList}>
         <div
           className="flex flex-col justify-between"
-          style={{ height: ACCOUNT_ACTION_MODAL_INNER_HEIGHT }}
+          style={{ height: BORROW_REPAY_MODAL_INNER_HEIGHT }}
         >
           <div>
             {initHealth <= 0 ? (
