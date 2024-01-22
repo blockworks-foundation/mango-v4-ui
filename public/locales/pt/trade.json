@@ -144,5 +144,7 @@
     "unrealized-pnl": "PnL Não Realizado",
     "unsettled": "Não Liquidado",
     "volume-alert": "Alerta de Volume",
-    "volume-alert-desc": "Tocar um som sempre que o volume exceder seu limite de alerta"
+    "volume-alert-desc": "Tocar um som sempre que o volume exceder seu limite de alerta",
+    "warning-init-health": "You have no free collateral",
+    "warning-init-health-limit": "You have no free collateral. Closing your position via limit order might fail."
 }
