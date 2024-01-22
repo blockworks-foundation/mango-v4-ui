@@ -350,21 +350,13 @@
     bn.js "^5.2.1"
     eslint-config-prettier "^9.0.0"
 
-"@blockworks-foundation/mango-v4-settings@^0.2.16":
-  version "0.2.29"
-  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4-settings/-/mango-v4-settings-0.2.29.tgz#abc3c346eac8606247ae0039b43705ba4ebd10bc"
-  integrity sha512-bD2Zb5taTmRfuoe8jvnwnvE6CfVWXrrT1/kryZvhNiHvAlVAROEM3vyQYVx3gikLMMcCR0yTYf5EXHJaNH9AWg==
+"@blockworks-foundation/mango-v4@0.21.24":
+  version "0.21.24"
+  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.21.24.tgz#537103ed9c613d2ee6cce7138269ad43e7e10b72"
+  integrity sha512-dDcW1lWgsXA7jUMsQACWD6XBJYUQQ01rCJk8WqOUtJqoXEbGACJQO5LuAxEj03jdnc4PbqYJC2b56xqFloYnWw==
   dependencies:
-    bn.js "^5.2.1"
-    eslint-config-prettier "^9.0.0"
-
-"@blockworks-foundation/mango-v4@0.21.23":
-  version "0.21.23"
-  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.21.23.tgz#1537a9a70838ca5582383f3a340f12a069044a34"
-  integrity sha512-VQLCmuJWrTy7b/E9B0BuX+nt757le515AgvEhGLVACVkMt5L0Of5dGf4eKqr55JwAx7PK1OKKFrGMBRXi250rQ==
-  dependencies:
-    "@blockworks-foundation/mango-v4-settings" "^0.2.16"
-    "@blockworks-foundation/mangolana" "0.0.13"
+    "@blockworks-foundation/mango-v4-settings" "0.4.10"
+    "@blockworks-foundation/mangolana" "0.0.14"
     "@coral-xyz/anchor" "^0.28.1-beta.2"
     "@project-serum/serum" "0.13.65"
     "@pythnetwork/client" "~2.14.0"
@@ -380,10 +372,10 @@
     lodash "^4.17.21"
     node-kraken-api "^2.2.2"
 
-"@blockworks-foundation/mangolana@0.0.13":
-  version "0.0.13"
-  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mangolana/-/mangolana-0.0.13.tgz#82a9b0846e69068de6216d20fcdcd60375d14e1e"
-  integrity sha512-/QPMHjtPpAYaDPbQVLolp5Lq4cCd77b8gBumws97L3J0DfvsKpZVYeAA0fNmSX6qq+pKqCgCywDjJeYhJ01PsQ==
+"@blockworks-foundation/mangolana@0.0.14":
+  version "0.0.14"
+  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mangolana/-/mangolana-0.0.14.tgz#f2a0e164f2cbe6e0a0db4fc10267e81ef5d2f7ec"
+  integrity sha512-KuA2+GdeKoHCBmx2HZnVb8IPomUP1w0ZiwQ1F10SLIypYfrylvPa+HSK2ak/+nzZCb8erS9Oub45UPV7cOh5ng==
   dependencies:
     "@solana/web3.js" "^1.88.0"
     bs58 "^5.0.0"

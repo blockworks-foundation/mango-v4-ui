@@ -24,9 +24,9 @@
   "dependencies": {
     "@blockworks-foundation/mango-feeds": "0.1.7",
     "@blockworks-foundation/mango-mints-redemption": "^0.0.10",
-    "@blockworks-foundation/mango-v4": "0.21.23",
+    "@blockworks-foundation/mango-v4": "0.21.24",
     "@blockworks-foundation/mango-v4-settings": "0.4.10",
-    "@blockworks-foundation/mangolana": "0.0.13",
+    "@blockworks-foundation/mangolana": "0.0.14",
     "@headlessui/react": "1.6.6",
     "@heroicons/react": "2.0.18",
     "@jup-ag/referral-sdk": "0.1.5",
