@@ -90,7 +90,7 @@
     "positions": "Positions",
     "post": "Post",
     "preview-sound": "Preview Sound",
-    "price-expect": "The execution price may be worse than you expect and full execution is not guaranteed. Your order will be filled up to a max slippage of 2.5%. Using limit orders is recommended.",
+    "price-expect": "The execution price may be worse than you expect and full execution is not guaranteed. Using limit orders is recommended.",
     "price-provided-by": "Oracle by",
     "quote": "Quote",
     "realized-pnl": "Realized PnL",
@@ -144,5 +144,7 @@
     "unrealized-pnl": "Unrealized PnL",
     "unsettled": "Unsettled",
     "volume-alert": "Volume Alert",
-    "volume-alert-desc": "Play a sound whenever volume exceeds your alert threshold"
+    "volume-alert-desc": "Play a sound whenever volume exceeds your alert threshold",
+    "warning-init-health": "You have no free collateral",
+    "warning-init-health-limit": "You have no free collateral. Closing your position via limit order might fail."
 }

@@ -81,90 +81,77 @@ const RiskDashboard: NextPage = () => {
   )
 
   return (
-    <div className="grid grid-cols-12">
-      <div className="col-span-12 lg:col-span-8 lg:col-start-3">
-        <div className="p-8 pb-20 md:pb-16 lg:p-10">
-          <h1>Dashboard</h1>
-          {data?.timestamp ? <h6> As of: {data.timestamp} UTC </h6> : null}
-          <DashboardNavbar />
-          {group && data && data.payload ? (
-            <div className="mt-4">
-              {Object.entries(data.payload).map(
-                ([tableType, table]: [string, TableData]) => {
-                  if (!table?.data?.length) return null
-                  return (
-                    <div className="mt-12" key={tableType}>
-                      <div className="mb-4">
-                        <p className="text-th-fgd-4">{table.title}</p>
-                      </div>
-                      <Table>
-                        <thead>
-                          <TrHead className="border">
-                            {Object.keys(table.data[0]).map(
-                              (colName: string) => {
-                                return (
-                                  <Th
-                                    xBorder
-                                    className="text-left"
-                                    key={colName}
-                                  >
-                                    {colName}{' '}
-                                    {colName.toLowerCase().includes('fee') ||
-                                    colName.toLowerCase().includes('slippage')
-                                      ? '(bps)'
-                                      : ''}
-                                    {colName.toLowerCase().includes('assets') ||
-                                    colName.toLowerCase().includes('liabs') ||
-                                    colName.toLowerCase().includes('equity') ||
-                                    colName.toLowerCase().includes('price') ||
-                                    colName.toLowerCase().includes('position')
-                                      ? '($)'
-                                      : ''}
-                                  </Th>
-                                )
-                              },
-                            )}
-                          </TrHead>
-                        </thead>
-                        <tbody>
-                          {table.data.map((rowData, index: number) => {
-                            return (
-                              <TrBody
-                                className={index % 2 === 0 ? 'bg-th-bkg-2' : ''}
-                                key={index}
-                              >
-                                {Object.values(rowData).map(
-                                  (val, idx: number) => {
-                                    return (
-                                      <Td
-                                        xBorder
-                                        className={`${
-                                          val?.highlight ? 'bg-th-bkg-4' : ''
-                                        }`}
-                                        key={idx}
-                                      >
-                                        {formatValue(val?.val)}
-                                      </Td>
-                                    )
-                                  },
-                                )}
-                              </TrBody>
-                            )
-                          })}
-                        </tbody>
-                      </Table>
-                    </div>
-                  )
-                },
-              )}
-            </div>
-          ) : (
-            <div className="mt-8 w-full text-center">
-              Loading... make take up to 60 seconds
-            </div>
+    <div className="col-span-12 lg:col-span-8 lg:col-start-3">
+      <DashboardNavbar />
+      {data?.timestamp ? <h6> As of: {data.timestamp} UTC </h6> : null}
+      {group && data && data.payload ? (
+        <div className="mt-4">
+          {Object.entries(data.payload).map(
+            ([tableType, table]: [string, TableData]) => {
+              if (!table?.data?.length) return null
+              return (
+                <div className="mt-12" key={tableType}>
+                  <div className="mb-4">
+                    <p className="text-th-fgd-4">{table.title}</p>
+                  </div>
+                  <Table>
+                    <thead>
+                      <TrHead className="border">
+                        {Object.keys(table.data[0]).map((colName: string) => {
+                          return (
+                            <Th xBorder className="text-left" key={colName}>
+                              {colName}{' '}
+                              {colName.toLowerCase().includes('fee') ||
+                              colName.toLowerCase().includes('slippage')
+                                ? '(bps)'
+                                : ''}
+                              {colName.toLowerCase().includes('assets') ||
+                              colName.toLowerCase().includes('liabs') ||
+                              colName.toLowerCase().includes('equity') ||
+                              colName.toLowerCase().includes('price') ||
+                              colName.toLowerCase().includes('position')
+                                ? '($)'
+                                : ''}
+                            </Th>
+                          )
+                        })}
+                      </TrHead>
+                    </thead>
+                    <tbody>
+                      {table.data.map((rowData, index: number) => {
+                        return (
+                          <TrBody
+                            className={index % 2 === 0 ? 'bg-th-bkg-2 ' : ''}
+                            key={index}
+                          >
+                            {Object.values(rowData).map((val, idx: number) => {
+                              return (
+                                <Td
+                                  xBorder
+                                  className={`${
+                                    val?.highlight ? 'bg-th-bkg-4' : ''
+                                  }`}
+                                  key={idx}
+                                >
+                                  {formatValue(val?.val)}
+                                </Td>
+                              )
+                            })}
+                          </TrBody>
+                        )
+                      })}
+                    </tbody>
+                  </Table>
+                </div>
+              )
+            },
           )}
         </div>
-      </div>
+      ) : (
+        <div className="mt-8 w-full text-center">
+          Loading... make take up to 60 seconds
+        </div>
+      )}
     </div>
   )
 }

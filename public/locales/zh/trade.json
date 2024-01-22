@@ -90,7 +90,7 @@
     "positions": "持仓",
     "post": "Post",
     "preview-sound": "声音预览",
-    "price-expect": "The execution price may be worse than you expect and full execution is not guaranteed. Your order will be filled up to a max slippage of 2.5%. Using limit orders is recommended.",
+    "price-expect": "The execution price may be worse than you expect and full execution is not guaranteed. Using limit orders is recommended.",
     "price-provided-by": "预言机来自",
     "quote": "计价",
     "realized-pnl": "已实现的盈亏",
@@ -145,5 +145,7 @@
     "unsettled": "未结清",
     "view-counterparty": "查看交易对手 {{pk}}",
     "volume-alert": "交易量警报",
-    "volume-alert-desc": "交易量超过警报设定时播放声音"
+    "volume-alert-desc": "交易量超过警报设定时播放声音",
+    "warning-init-health": "You have no free collateral",
+    "warning-init-health-limit": "You have no free collateral. Closing your position via limit order might fail."
 }

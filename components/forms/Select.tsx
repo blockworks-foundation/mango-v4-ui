@@ -16,6 +16,7 @@ interface SelectProps<T extends Values> {
   icon?: ReactNode
   placeholder?: string
   disabled?: boolean
+  renderValue?: (value: T | string) => ReactNode
 }
 
 const Select = <T extends Values>({
@@ -28,6 +29,7 @@ const Select = <T extends Values>({
   icon,
   placeholder = 'Select',
   disabled = false,
+  renderValue,
 }: SelectProps<T>) => {
   return (
     <div className={`relative ${className}`}>
@@ -43,7 +45,11 @@ const Select = <T extends Values>({
                 <div className="flex items-center">
                   {icon ? icon : null}
                   {value ? (
-                    value
+                    renderValue ? (
+                      renderValue(value)
+                    ) : (
+                      value
+                    )
                   ) : (
                     <span className="text-th-fgd-3">{placeholder}</span>
                   )}

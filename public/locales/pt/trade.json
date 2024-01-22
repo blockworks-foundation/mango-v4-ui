@@ -90,7 +90,7 @@
     "positions": "Posições",
     "post": "Postar",
     "preview-sound": "Pré-visualizar Som",
-    "price-expect": "O preço de execução pode ser pior do que você espera e a execução completa não é garantida. Seu pedido será preenchido até um máximo de 2,5% de derrapagem. É recomendado usar ordens limitadas.",
+    "price-expect": "O preço de execução pode ser pior do que você espera e a execução completa não é garantida. É recomendado usar ordens limitadas.",
     "price-provided-by": "Oráculo por",
     "quote": "Cotação",
     "realized-pnl": "PnL Realizado",
@@ -144,5 +144,7 @@
     "unrealized-pnl": "PnL Não Realizado",
     "unsettled": "Não Liquidado",
     "volume-alert": "Alerta de Volume",
-    "volume-alert-desc": "Tocar um som sempre que o volume exceder seu limite de alerta"
+    "volume-alert-desc": "Tocar um som sempre que o volume exceder seu limite de alerta",
+    "warning-init-health": "You have no free collateral",
+    "warning-init-health-limit": "You have no free collateral. Closing your position via limit order might fail."
 }

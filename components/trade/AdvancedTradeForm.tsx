@@ -1,4 +1,5 @@
 import {
+  HealthType,
   OracleProvider,
   PerpMarket,
   PerpOrderSide,
@@ -902,16 +903,57 @@ const AdvancedTradeForm = () => {
       : orderTypesArray
   }, [baseBank, mangoAccountAddress, minOrderDecimals, selectedMarket])
 
+  const initHealth = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!group || !mangoAccount) return 100
+    return mangoAccount.getHealthRatioUi(group, HealthType.init)
+  }, [mangoAccount])
+
   const tooMuchSize = useMemo(() => {
-    const { baseSize, quoteSize, side } = tradeForm
+    const { baseSize, quoteSize, side, tradeType } = tradeForm
     if (!baseSize || !quoteSize) return false
+
+    // when init health <= 0 users may not be able to close positions via limit orders. we don't want to disable the place order button in this scenario. however we still ues this const to disable the button to restrict users from entering unwanted margin positions.
+    if (initHealth <= 0 && tradeType === 'Limit' && mangoAccount) {
+      if (selectedMarket instanceof Serum3Market && baseBank && quoteBank) {
+        const balance =
+          side === 'buy'
+            ? mangoAccount?.getTokenBalanceUi(quoteBank)
+            : mangoAccount?.getTokenBalanceUi(baseBank)
+        if (balance) return false
+      }
+      if (selectedMarket instanceof PerpMarket) {
+        const basePosition = mangoAccount
+          .getPerpPosition(selectedMarket.perpMarketIndex)
+          ?.getBasePositionUi(selectedMarket)
+        if (basePosition !== 0 && basePosition !== undefined) {
+          if (basePosition > 0 && side === 'sell') {
+            return false
+          }
+          if (basePosition < 0 && side === 'buy') {
+            return false
+          }
+        }
+      }
+    }
+
+    // check the values in the trade form are not greater than the allowed account max
     const size = side === 'buy' ? new Decimal(quoteSize) : new Decimal(baseSize)
     const decimalMax =
       selectedMarket instanceof Serum3Market
         ? new Decimal(spotMax)
         : new Decimal(perpMax)
     return size.gt(decimalMax)
-  }, [perpMax, selectedMarket, spotMax, tradeForm])
+  }, [
+    baseBank,
+    initHealth,
+    mangoAccount,
+    perpMax,
+    quoteBank,
+    selectedMarket,
+    spotMax,
+    tradeForm,
+  ])
 
   const disabled =
     !serumOrPerpMarket ||
@@ -1237,6 +1279,18 @@ const AdvancedTradeForm = () => {
               />
             </div>
           </form>
+          {initHealth <= 0 ? (
+            <div className="mb-4 px-4">
+              <InlineNotification
+                type="warning"
+                desc={
+                  tradeForm.tradeType === 'Limit'
+                    ? t('trade:warning-init-health-limit')
+                    : t('trade:warning-init-health')
+                }
+              />
+            </div>
+          ) : null}
           {tradeForm.tradeType === 'Market' &&
           selectedMarket instanceof PerpMarket ? (
             <div className="mb-4 px-4">

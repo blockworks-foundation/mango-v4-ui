@@ -5,6 +5,7 @@ import OpenOrders from '@components/trade/OpenOrders'
 import mangoStore from '@store/mangoStore'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import useMangoAccount from 'hooks/useMangoAccount'
+import { useRouter } from 'next/router'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FILTER_ORDERS_FOR_MARKET_KEY } from 'utils/constants'
@@ -12,10 +13,17 @@ import { FILTER_ORDERS_FOR_MARKET_KEY } from 'utils/constants'
 const AccountOrders = () => {
   const { t } = useTranslation('trade')
   const { mangoAccount } = useMangoAccount()
+  const { asPath } = useRouter()
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
   const [activeTab, setActiveTab] = useState('trade:limit')
   const [filterForCurrentMarket, setFilterForCurrentMarket] =
     useLocalStorageState(FILTER_ORDERS_FOR_MARKET_KEY, false)
+
+  // only filter on trade page
+  const isFiltered = useMemo(() => {
+    if (asPath === '/') return false
+    return filterForCurrentMarket
+  }, [asPath, filterForCurrentMarket])
 
   const tabsWithCount: [string, number][] = useMemo(() => {
     const stopOrdersCount =
@@ -36,7 +44,7 @@ const AccountOrders = () => {
           onChange={setActiveTab}
           tabs={tabsWithCount}
         />
-        {activeTab === 'trade:limit' ? (
+        {activeTab === 'trade:limit' && asPath !== '/' ? (
           <Switch
             checked={filterForCurrentMarket}
             onChange={() => setFilterForCurrentMarket(!filterForCurrentMarket)}
@@ -47,7 +55,7 @@ const AccountOrders = () => {
       </div>
       <div className="flex flex-1 flex-col border-t border-th-bkg-3">
         {activeTab === 'trade:limit' ? (
-          <OpenOrders filterForCurrentMarket={filterForCurrentMarket} />
+          <OpenOrders filterForCurrentMarket={isFiltered} />
         ) : (
           <SwapOrders />
         )}
