@@ -83,7 +83,11 @@ const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
 
   const [walletMax, inputDecimals] = useMemo(() => {
     if (!inputBank) return ['0', 6]
-    const walletBalance = walletBalanceForToken(walletTokens, inputBank.name)
+    const walletBalance = walletBalanceForToken(
+      walletTokens,
+      inputBank.name,
+      true,
+    )
     const max = floorToDecimal(
       walletBalance.maxAmount,
       walletBalance.maxDecimals,

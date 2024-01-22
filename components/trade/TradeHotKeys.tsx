@@ -91,27 +91,18 @@ const calcSpotMarketMax = (
   let leverageMax = 0
   let spotMax = 0
   try {
-    if (side === 'buy') {
-      leverageMax = mangoAccount.getMaxQuoteForSerum3BidUi(
-        group,
-        selectedMarket.serumMarketExternal,
-      )
-      const bank = group.getFirstBankByTokenIndex(
-        selectedMarket.quoteTokenIndex,
-      )
-      const balance = mangoAccount.getTokenBalanceUi(bank)
-      const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
-      spotMax = balance + unsettled
-    } else {
-      leverageMax = mangoAccount.getMaxBaseForSerum3AskUi(
-        group,
-        selectedMarket.serumMarketExternal,
-      )
-      const bank = group.getFirstBankByTokenIndex(selectedMarket.baseTokenIndex)
-      const balance = mangoAccount.getTokenBalanceUi(bank)
-      const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
-      spotMax = balance + unsettled
-    }
+    const isBuySide = side === 'buy'
+    leverageMax = mangoAccount[
+      isBuySide ? 'getMaxQuoteForSerum3BidUi' : 'getMaxBaseForSerum3AskUi'
+    ](group, selectedMarket.serumMarketExternal)
+    const bank = group.getFirstBankByTokenIndex(
+      isBuySide
+        ? selectedMarket.quoteTokenIndex
+        : selectedMarket.baseTokenIndex,
+    )
+    const balance = mangoAccount.getTokenBalanceUi(bank)
+    const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
+    spotMax = balance + unsettled
     return useMargin ? leverageMax : Math.max(spotMax, 0)
   } catch (e) {
     console.error('Error calculating max size: ', e)

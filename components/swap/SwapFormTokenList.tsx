@@ -160,11 +160,13 @@ const SwapFormTokenList = ({
   onTokenSelect,
   type,
   useMargin,
+  walletSwap,
 }: {
   onClose: () => void
   onTokenSelect: (mintAddress: string, close: () => void) => void
   type: SwapFormTokenListType
   useMargin: boolean
+  walletSwap?: boolean
 }) => {
   const { t } = useTranslation(['common', 'search', 'swap'])
   const [search, setSearch] = useState('')
@@ -268,7 +270,11 @@ const SwapFormTokenList = ({
           const tokenBank = group.getFirstBankByMint(
             new PublicKey(token.address),
           )
-          const max = walletBalanceForToken(walletTokens, tokenBank.name)
+          const max = walletBalanceForToken(
+            walletTokens,
+            tokenBank.name,
+            walletSwap,
+          )
           const price = tokenBank.uiPrice
           return {
             ...token,

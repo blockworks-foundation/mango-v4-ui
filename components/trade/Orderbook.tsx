@@ -299,7 +299,7 @@ const Orderbook = () => {
 
       let bidSubscriptionId: number | undefined = undefined
       let askSubscriptionId: number | undefined = undefined
-      const bidsPk = new PublicKey(bidAccountAddress)
+      const bidsPk = bidAccountAddress ? new PublicKey(bidAccountAddress) : null
       if (bidsPk) {
         connection
           .getAccountInfoAndContext(bidsPk)
@@ -345,7 +345,7 @@ const Orderbook = () => {
         )
       }
 
-      const asksPk = new PublicKey(askAccountAddress)
+      const asksPk = askAccountAddress ? new PublicKey(askAccountAddress) : null
       if (asksPk) {
         connection
           .getAccountInfoAndContext(asksPk)

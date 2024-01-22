@@ -31,7 +31,7 @@ const CollateralWeightDisplay = ({ bank }: { bank: Bank }) => {
       <div className={`flex items-center ${isScaled ? 'cursor-help' : ''}`}>
         <span>{scaled.toFixed(2)}x</span>
         {isScaled ? (
-          <InformationCircleIcon className="ml-1 h-3.5 w-3.5 text-th-fgd-4" />
+          <InformationCircleIcon className="ml-1 h-4 w-4 text-th-fgd-4" />
         ) : null}
       </div>
     </Tooltip>

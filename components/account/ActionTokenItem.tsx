@@ -1,6 +1,7 @@
 import { Bank } from '@blockworks-foundation/mango-v4'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import TokenLogo from '@components/shared/TokenLogo'
+import { useVaultLimits } from '@components/swap/useVaultLimits'
 import { floorToDecimal } from 'utils/numbers'
 
 const ActionTokenItem = ({
@@ -19,6 +20,7 @@ const ActionTokenItem = ({
   showDepositRates?: boolean
 }) => {
   const { name } = bank
+  const { vaultFull } = useVaultLimits(bank)
   const decimals = floorToDecimal(customValue, bank.mintDecimals).toNumber()
     ? bank.mintDecimals
     : undefined
@@ -37,7 +39,10 @@ const ActionTokenItem = ({
         <div className="mr-2.5 flex shrink-0 items-center">
           <TokenLogo bank={bank} />
         </div>
-        <p className="text-left text-th-fgd-1">{name}</p>
+        <p className="text-left text-th-fgd-1">
+          {name}
+          {vaultFull ? <span className="pl-2 text-th-error">!!</span> : ''}
+        </p>
       </div>
       {showDepositRates ? (
         <div className="w-1/4 text-right font-mono">

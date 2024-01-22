@@ -215,6 +215,8 @@
   "wallet-address": "钱包地址",
   "wallet-balance": "钱包余额",
   "wallet-disconnected": "已断开钱包连接",
+  "warning-deposits-almost-full": "{{token}} deposits are almost at capacity. {{remaining}} {{token}} available",
+  "warning-deposits-full": "{{token}} deposits are at capacity",
   "withdraw": "取款",
   "withdraw-amount": "取款额",
   "list-market-token": "上架市场／币种",
@@ -222,6 +224,7 @@
   "yes": "是",
   "you": "你",
   "using-ledger": "正在使用Ledger",
-  "sign-to-in-app-notifications": "登入APP通知"
+  "sign-to-in-app-notifications": "登入APP通知",
+  "max-deposit": "Maximum Deposit"
  } 
  

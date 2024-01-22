@@ -636,7 +636,7 @@ const UserSetupModal = ({
                           </div>
                           <div className="w-1/2 text-right">
                             <p className="whitespace-nowrap text-xs">
-                              {t('wallet-balance')}
+                              {t('max')}
                             </p>
                           </div>
                         </div>

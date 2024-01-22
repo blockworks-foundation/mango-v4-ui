@@ -71,7 +71,7 @@ import {
   SwapTypes,
 } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
-import { PerpMarket } from '@blockworks-foundation/mango-v4/'
+import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import perpPositionsUpdater from './perpPositionsUpdater'
 import {
   DEFAULT_PRIORITY_FEE,

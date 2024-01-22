@@ -153,12 +153,13 @@ const AdvancedTradeForm = () => {
   } = useSelectedMarket()
   const { remainingBorrowsInPeriod, timeToNextPeriod } =
     useRemainingBorrowsInPeriod()
-  const spotMax = useSpotMarketMax(
+  const { max: spotMax } = useSpotMarketMax(
     mangoAccount,
     selectedMarket,
     tradeForm.side,
     savedCheckboxSettings.margin,
   )
+
   const perpMax = usePerpMarketMax(mangoAccount, selectedMarket, tradeForm.side)
 
   const baseBank = useMemo(() => {

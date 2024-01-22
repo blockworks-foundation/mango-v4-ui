@@ -216,6 +216,8 @@
   "wallet-address": "Wallet Address",
   "wallet-balance": "Wallet Balance",
   "wallet-disconnected": "Disconnected from wallet",
+  "warning-deposits-almost-full": "{{token}} deposits are almost at capacity. {{remaining}} {{token}} available",
+  "warning-deposits-full": "{{token}} deposits are at capacity",
   "withdraw": "Withdraw",
   "withdraw-amount": "Withdraw Amount",
   "list-market-token": "List Market/Token",
@@ -223,6 +225,7 @@
   "yes": "Yes",
   "you": "You",
   "using-ledger": "Using Ledger",
-  "sign-to-in-app-notifications": "Sign to in app notifications"
+  "sign-to-in-app-notifications": "Sign to in app notifications",
+  "max-deposit": "Maximum Deposit"
  }
  
