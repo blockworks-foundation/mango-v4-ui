@@ -1,4 +1,4 @@
-import { Bank, Group } from 'mango-v4-test-pack'
+import { Bank, Group } from '@blockworks-foundation/mango-v4'
 import {
   ArrowDownRightIcon,
   ArrowUpLeftIcon,

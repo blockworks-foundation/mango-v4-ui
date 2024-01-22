@@ -1,4 +1,4 @@
-import { Group, PerpPosition } from 'mango-v4-test-pack'
+import { Group, PerpPosition } from '@blockworks-foundation/mango-v4'
 import { TwitterIcon } from '@components/icons/TwitterIcon'
 import Button from '@components/shared/Button'
 import { Dialog } from '@headlessui/react'

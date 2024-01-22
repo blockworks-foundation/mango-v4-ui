@@ -1,4 +1,4 @@
-import { Bank } from 'mango-v4-test-pack'
+import { Bank } from '@blockworks-foundation/mango-v4'
 
 export const useVaultLimits = (bank: Bank | undefined) => {
   const limit = bank?.getRemainingDepositLimit()

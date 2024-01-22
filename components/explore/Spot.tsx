@@ -15,7 +15,7 @@ import ButtonGroup from '@components/forms/ButtonGroup'
 import SpotCards from './SpotCards'
 import Input from '@components/forms/Input'
 import EmptyState from '@components/nftMarket/EmptyState'
-import { Bank } from 'mango-v4-test-pack'
+import { Bank } from '@blockworks-foundation/mango-v4'
 import useBanks from 'hooks/useBanks'
 import SheenLoader from '@components/shared/SheenLoader'
 

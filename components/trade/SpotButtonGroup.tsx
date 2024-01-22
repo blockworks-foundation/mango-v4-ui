@@ -5,7 +5,7 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useCallback, useMemo, useState } from 'react'
 import { floorToDecimal } from 'utils/numbers'
 import { useSpotMarketMax } from './SpotSlider'
-import { PerpMarket } from 'mango-v4-test-pack'
+import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import Decimal from 'decimal.js'
 
 const SpotButtonGroup = ({

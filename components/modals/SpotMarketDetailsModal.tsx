@@ -2,7 +2,7 @@ import { ModalProps } from '../../types/modal'
 import Modal from '../shared/Modal'
 import { useTranslation } from 'next-i18next'
 import useSelectedMarket from 'hooks/useSelectedMarket'
-import { Serum3Market } from 'mango-v4-test-pack'
+import { Serum3Market } from '@blockworks-foundation/mango-v4'
 import Button from '@components/shared/Button'
 import useOracleProvider from 'hooks/useOracleProvider'
 import {

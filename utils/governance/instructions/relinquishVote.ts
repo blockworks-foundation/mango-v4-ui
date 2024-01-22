@@ -8,7 +8,7 @@ import {
 import { ProgramAccount } from '@solana/spl-governance'
 import { MANGO_GOVERNANCE_PROGRAM, MANGO_REALM_PK } from '../constants'
 import { WalletContextState } from '@solana/wallet-adapter-react'
-import { MangoClient } from 'mango-v4-test-pack'
+import { MangoClient } from '@blockworks-foundation/mango-v4'
 import { notify } from 'utils/notifications'
 
 export async function relinquishVote(

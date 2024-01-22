@@ -1,8 +1,8 @@
-import { IDL } from 'mango-v4-test-pack'
+import { IDL } from '@blockworks-foundation/mango-v4'
 import { BorshInstructionCoder } from '@project-serum/anchor'
 import { Connection } from '@solana/web3.js'
 import { MANGO_DATA_API_URL } from './constants'
-import { TxCallbackOptions } from 'mango-v4-test-pack/dist/types/src/client'
+import { TxCallbackOptions } from '@blockworks-foundation/mango-v4/dist/types/src/client'
 
 const coder = new BorshInstructionCoder(IDL)
 

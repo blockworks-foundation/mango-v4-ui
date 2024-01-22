@@ -6,7 +6,7 @@ import {
   Serum3Market,
   toUiDecimals,
   toUiDecimalsForQuote,
-} from 'mango-v4-test-pack'
+} from '@blockworks-foundation/mango-v4'
 
 export default function useRemainingBorrowsInPeriod(
   isSwap?: boolean,

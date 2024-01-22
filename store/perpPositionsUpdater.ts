@@ -1,4 +1,4 @@
-import { PerpPosition } from 'mango-v4-test-pack'
+import { PerpPosition } from '@blockworks-foundation/mango-v4'
 import mangoStore from './mangoStore'
 
 const perpPositionsUpdater = () => {

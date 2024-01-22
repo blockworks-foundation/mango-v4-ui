@@ -1,4 +1,4 @@
-import { Bank, toUiDecimals } from 'mango-v4-test-pack'
+import { Bank, toUiDecimals } from '@blockworks-foundation/mango-v4'
 import InlineNotification from './InlineNotification'
 import { useVaultLimits } from '@components/swap/useVaultLimits'
 import { useTranslation } from 'react-i18next'

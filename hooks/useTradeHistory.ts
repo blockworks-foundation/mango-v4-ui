@@ -1,4 +1,8 @@
-import { Group, PerpMarket, Serum3Market } from 'mango-v4-test-pack'
+import {
+  Group,
+  PerpMarket,
+  Serum3Market,
+} from '@blockworks-foundation/mango-v4'
 import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
 import { useInfiniteQuery } from '@tanstack/react-query'

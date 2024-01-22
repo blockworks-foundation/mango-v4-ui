@@ -1,4 +1,4 @@
-import { Serum3Market } from 'mango-v4-test-pack'
+import { Serum3Market } from '@blockworks-foundation/mango-v4'
 import { ChevronDownIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'

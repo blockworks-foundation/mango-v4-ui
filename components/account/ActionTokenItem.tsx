@@ -1,4 +1,4 @@
-import { Bank } from 'mango-v4-test-pack'
+import { Bank } from '@blockworks-foundation/mango-v4'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import TokenLogo from '@components/shared/TokenLogo'
 import { useVaultLimits } from '@components/swap/useVaultLimits'

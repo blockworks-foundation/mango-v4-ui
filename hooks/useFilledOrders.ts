@@ -1,4 +1,4 @@
-import { PerpOrder } from 'mango-v4-test-pack'
+import { PerpOrder } from '@blockworks-foundation/mango-v4'
 import mangoStore from '@store/mangoStore'
 import { useQuery } from '@tanstack/react-query'
 import { fetchFilledOrders } from 'utils/account'

@@ -1,6 +1,6 @@
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import useMangoGroup from 'hooks/useMangoGroup'
-import { Bank } from 'mango-v4-test-pack'
+import { Bank } from '@blockworks-foundation/mango-v4'
 import { Dispatch, SetStateAction, useMemo } from 'react'
 import { formatTokenSymbol } from 'utils/tokens'
 import TokenLogo from '@components/shared/TokenLogo'

@@ -4,7 +4,7 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { FAVORITE_SWAPS_KEY } from 'utils/constants'
 import { LinkButton } from '@components/shared/Button'
-import { Bank } from 'mango-v4-test-pack'
+import { Bank } from '@blockworks-foundation/mango-v4'
 import mangoStore from '@store/mangoStore'
 
 const set = mangoStore.getState().set

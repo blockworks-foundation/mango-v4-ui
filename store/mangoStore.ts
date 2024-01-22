@@ -27,7 +27,7 @@ import {
   ParsedFillEvent,
   getLargestPerpPositions,
   getClosestToLiquidationPerpPositions,
-} from 'mango-v4-test-pack'
+} from '@blockworks-foundation/mango-v4'
 
 import EmptyWallet from '../utils/wallet'
 import { TransactionNotification, notify } from '../utils/notifications'
@@ -71,7 +71,7 @@ import {
   SwapTypes,
 } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
-import { PerpMarket } from 'mango-v4-test-pack'
+import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import perpPositionsUpdater from './perpPositionsUpdater'
 import {
   DEFAULT_PRIORITY_FEE,
@@ -91,7 +91,7 @@ import { fetchTokenStatsData, processTokenStatsData } from 'apis/mngo'
 import { OrderTypes } from 'utils/tradeForm'
 import { usePlausible } from 'next-plausible'
 import { collectTxConfirmationData } from 'utils/transactionConfirmationData'
-import { TxCallbackOptions } from 'mango-v4-test-pack/dist/types/src/client'
+import { TxCallbackOptions } from '@blockworks-foundation/mango-v4/dist/types/src/client'
 
 const ENDPOINTS = [
   {

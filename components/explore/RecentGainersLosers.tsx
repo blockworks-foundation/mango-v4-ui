@@ -17,7 +17,7 @@ import {
 } from '@heroicons/react/20/solid'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { Bank } from 'mango-v4-test-pack'
+import { Bank } from '@blockworks-foundation/mango-v4'
 import Link from 'next/link'
 import useBanks from 'hooks/useBanks'
 import SheenLoader from '@components/shared/SheenLoader'

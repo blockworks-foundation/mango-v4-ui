@@ -1,4 +1,4 @@
-import { Bank } from 'mango-v4-test-pack'
+import { Bank } from '@blockworks-foundation/mango-v4'
 import { walletBalanceForToken } from '@components/DepositForm'
 import { getMaxWithdrawForBank } from '@components/swap/useTokenMax'
 import mangoStore from '@store/mangoStore'

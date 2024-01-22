@@ -1,4 +1,4 @@
-import { Bank } from 'mango-v4-test-pack'
+import { Bank } from '@blockworks-foundation/mango-v4'
 import BorrowRepayModal from '@components/modals/BorrowRepayModal'
 import DepositWithdrawModal from '@components/modals/DepositWithdrawModal'
 import Button from '@components/shared/Button'

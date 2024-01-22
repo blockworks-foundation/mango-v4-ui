@@ -17,7 +17,11 @@ import Decimal from 'decimal.js'
 import Tooltip from '@components/shared/Tooltip'
 import GroupSize from './GroupSize'
 // import { useViewport } from 'hooks/useViewport'
-import { BookSide, PerpMarket, Serum3Market } from 'mango-v4-test-pack'
+import {
+  BookSide,
+  PerpMarket,
+  Serum3Market,
+} from '@blockworks-foundation/mango-v4'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import { OrderbookFeed } from '@blockworks-foundation/mango-feeds'

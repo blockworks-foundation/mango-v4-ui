@@ -1,4 +1,4 @@
-import { toUiDecimalsForQuote } from 'mango-v4-test-pack'
+import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'

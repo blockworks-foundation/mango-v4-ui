@@ -1,4 +1,4 @@
-import { Bank, Group, MangoAccount } from 'mango-v4-test-pack'
+import { Bank, Group, MangoAccount } from '@blockworks-foundation/mango-v4'
 import Decimal from 'decimal.js'
 import { useMemo } from 'react'
 import mangoStore from '@store/mangoStore'

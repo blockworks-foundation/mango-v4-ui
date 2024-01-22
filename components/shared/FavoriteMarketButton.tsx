@@ -1,6 +1,6 @@
 import { StarIcon } from '@heroicons/react/24/outline'
 import { StarIcon as FilledStarIcon } from '@heroicons/react/20/solid'
-import { PerpMarket, Serum3Market } from 'mango-v4-test-pack'
+import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { DEFAULT_FAVORITE_MKTS, FAVORITE_MARKETS_KEY } from 'utils/constants'
 

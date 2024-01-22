@@ -1,4 +1,4 @@
-import { HealthType } from 'mango-v4-test-pack'
+import { HealthType } from '@blockworks-foundation/mango-v4'
 import {
   ArrowLeftIcon,
   ArrowUpLeftIcon,

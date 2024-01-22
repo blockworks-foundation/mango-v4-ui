@@ -7,7 +7,7 @@ import { JupiterV6RouteInfo } from 'types/jupiter'
 import useJupiterSwapData from './useJupiterSwapData'
 import { useMemo } from 'react'
 import { JUPITER_V6_QUOTE_API_MAINNET } from 'utils/constants'
-import { MangoAccount } from 'mango-v4-test-pack'
+import { MangoAccount } from '@blockworks-foundation/mango-v4'
 
 type SwapModes = 'ALL' | 'JUPITER' | 'MANGO'
 

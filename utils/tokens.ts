@@ -1,6 +1,9 @@
 import { PublicKey, Connection } from '@solana/web3.js'
 import { TokenInstructions } from '@project-serum/serum'
-import { getAssociatedTokenAddress, toUiDecimals } from 'mango-v4-test-pack'
+import {
+  getAssociatedTokenAddress,
+  toUiDecimals,
+} from '@blockworks-foundation/mango-v4'
 import {
   Metaplex,
   Nft,

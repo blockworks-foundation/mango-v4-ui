@@ -1,4 +1,4 @@
-import { Bank } from 'mango-v4-test-pack'
+import { Bank } from '@blockworks-foundation/mango-v4'
 import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import useJupiterMints from 'hooks/useJupiterMints'
 import Image from 'next/image'

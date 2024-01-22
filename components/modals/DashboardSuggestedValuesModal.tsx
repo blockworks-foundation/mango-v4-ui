@@ -14,7 +14,7 @@ import {
   OracleProvider,
   PriceImpact,
   toUiDecimals,
-} from 'mango-v4-test-pack'
+} from '@blockworks-foundation/mango-v4'
 import { AccountMeta, Transaction } from '@solana/web3.js'
 import { BN } from '@project-serum/anchor'
 import {

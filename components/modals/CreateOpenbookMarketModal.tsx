@@ -1,7 +1,10 @@
 import mangoStore, { CLUSTER } from '@store/mangoStore'
 import { ModalProps } from '../../types/modal'
 import Modal from '../shared/Modal'
-import { OPENBOOK_PROGRAM_ID, createComputeBudgetIx } from 'mango-v4-test-pack'
+import {
+  OPENBOOK_PROGRAM_ID,
+  createComputeBudgetIx,
+} from '@blockworks-foundation/mango-v4'
 import { ChangeEvent, useEffect, useState } from 'react'
 import Label from '@components/forms/Label'
 import Input from '@components/forms/Input'

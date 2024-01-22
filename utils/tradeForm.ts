@@ -2,7 +2,7 @@ import mangoStore from '@store/mangoStore'
 import { OrderbookL2, isMangoError } from 'types'
 import { notify } from './notifications'
 import * as sentry from '@sentry/nextjs'
-import { Bank } from 'mango-v4-test-pack'
+import { Bank } from '@blockworks-foundation/mango-v4'
 
 export const calculateLimitPriceForMarketOrder = (
   orderBook: OrderbookL2,

@@ -1,4 +1,8 @@
-import { Group, PerpMarket, Serum3Market } from 'mango-v4-test-pack'
+import {
+  Group,
+  PerpMarket,
+  Serum3Market,
+} from '@blockworks-foundation/mango-v4'
 import TradeAdvancedPage from '@components/trade/TradeAdvancedPage'
 import mangoStore, { DEFAULT_TRADE_FORM } from '@store/mangoStore'
 import type { NextPage } from 'next'

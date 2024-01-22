@@ -1,7 +1,7 @@
 import { MinusSmallIcon } from '@heroicons/react/20/solid'
 import { DownTriangle, UpTriangle } from './DirectionTriangles'
 import FormatNumericValue from './FormatNumericValue'
-import { PerpMarket, Serum3Market } from 'mango-v4-test-pack'
+import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
 import { useMemo } from 'react'
 import SheenLoader from './SheenLoader'
 import useListedMarketsWithMarketData from 'hooks/useListedMarketsWithMarketData'

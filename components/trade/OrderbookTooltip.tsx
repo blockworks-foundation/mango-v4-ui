@@ -1,4 +1,4 @@
-import { PerpMarket } from 'mango-v4-test-pack'
+import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import mangoStore from '@store/mangoStore'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useMemo } from 'react'

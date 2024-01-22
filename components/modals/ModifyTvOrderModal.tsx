@@ -12,7 +12,7 @@ import {
   Serum3OrderType,
   Serum3SelfTradeBehavior,
   Serum3Side,
-} from 'mango-v4-test-pack'
+} from '@blockworks-foundation/mango-v4'
 import mangoStore from '@store/mangoStore'
 import { PublicKey } from '@solana/web3.js'
 import { notify } from 'utils/notifications'

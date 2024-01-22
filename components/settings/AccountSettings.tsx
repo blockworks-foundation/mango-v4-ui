@@ -40,7 +40,7 @@ import useUnownedAccount from 'hooks/useUnownedAccount'
 import { useWallet } from '@solana/wallet-adapter-react'
 import CreateAccountForm from '@components/account/CreateAccountForm'
 import ConnectEmptyState from '@components/shared/ConnectEmptyState'
-import { Serum3Market } from 'mango-v4-test-pack'
+import { Serum3Market } from '@blockworks-foundation/mango-v4'
 
 export const SETTINGS_BUTTON_TITLE_CLASSES = 'text-th-fgd-1'
 

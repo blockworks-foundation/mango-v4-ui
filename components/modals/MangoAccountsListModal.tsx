@@ -10,7 +10,7 @@ import {
   HealthType,
   MangoAccount,
   toUiDecimalsForQuote,
-} from 'mango-v4-test-pack'
+} from '@blockworks-foundation/mango-v4'
 import mangoStore from '@store/mangoStore'
 import { IconButton, LinkButton } from '../shared/Button'
 import useLocalStorageState from '../../hooks/useLocalStorageState'

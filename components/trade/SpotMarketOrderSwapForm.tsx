@@ -19,7 +19,11 @@ import Loading from '@components/shared/Loading'
 import Button from '@components/shared/Button'
 import Image from 'next/image'
 import useQuoteRoutes from '@components/swap/useQuoteRoutes'
-import { HealthType, PerpMarket, Serum3Market } from 'mango-v4-test-pack'
+import {
+  HealthType,
+  PerpMarket,
+  Serum3Market,
+} from '@blockworks-foundation/mango-v4'
 import Decimal from 'decimal.js'
 import { notify } from 'utils/notifications'
 import * as sentry from '@sentry/nextjs'

@@ -1,4 +1,4 @@
-import { HealthType } from 'mango-v4-test-pack'
+import { HealthType } from '@blockworks-foundation/mango-v4'
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import { useMemo } from 'react'

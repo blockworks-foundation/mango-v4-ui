@@ -21,7 +21,7 @@ import TradeVolumeAlertModal, {
 import dayjs from 'dayjs'
 import ErrorBoundary from '@components/ErrorBoundary'
 import { useQuery } from '@tanstack/react-query'
-import { PerpMarket } from 'mango-v4-test-pack'
+import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { EmptyObject, isPerpFillEvent, PerpTradeHistory } from 'types'
 import { Market } from '@project-serum/serum'
 

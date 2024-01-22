@@ -1,4 +1,4 @@
-import { Group } from 'mango-v4-test-pack'
+import { Group } from '@blockworks-foundation/mango-v4'
 import mangoStore from '@store/mangoStore'
 
 export default function useMangoGroup(): {

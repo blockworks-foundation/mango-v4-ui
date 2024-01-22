@@ -4,7 +4,7 @@ import {
   MangoAccount,
   PerpMarket,
   Serum3Market,
-} from 'mango-v4-test-pack'
+} from '@blockworks-foundation/mango-v4'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import HealthImpact from '@components/shared/HealthImpact'
 import Tooltip from '@components/shared/Tooltip'

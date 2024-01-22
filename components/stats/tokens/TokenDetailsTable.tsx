@@ -9,7 +9,7 @@ import { useViewport } from '../../../hooks/useViewport'
 import { breakpoints } from '../../../utils/theme'
 import ContentBox from '../../shared/ContentBox'
 import Tooltip from '@components/shared/Tooltip'
-import { Bank } from 'mango-v4-test-pack'
+import { Bank } from '@blockworks-foundation/mango-v4'
 import {
   SortableColumnHeader,
   Table,

@@ -1,4 +1,4 @@
-import { Bank } from 'mango-v4-test-pack'
+import { Bank } from '@blockworks-foundation/mango-v4'
 import TokenLogo from './TokenLogo'
 import TokenReduceOnlyDesc from './TokenReduceOnlyDesc'
 import { useVaultLimits } from '@components/swap/useVaultLimits'

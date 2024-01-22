@@ -6,7 +6,7 @@ import {
   PerpPosition,
   Serum3Orders,
   TokenPosition,
-} from 'mango-v4-test-pack'
+} from '@blockworks-foundation/mango-v4'
 import { MAX_ACCOUNTS } from 'utils/constants'
 import { OpenOrders } from '@project-serum/serum'
 import { BN } from '@coral-xyz/anchor'

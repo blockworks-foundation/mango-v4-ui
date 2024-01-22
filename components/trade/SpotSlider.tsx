@@ -1,5 +1,9 @@
-import { toUiDecimals } from 'mango-v4-test-pack'
-import { MangoAccount, PerpMarket, Serum3Market } from 'mango-v4-test-pack'
+import { toUiDecimals } from '@blockworks-foundation/mango-v4'
+import {
+  MangoAccount,
+  PerpMarket,
+  Serum3Market,
+} from '@blockworks-foundation/mango-v4'
 import LeverageSlider from '@components/shared/LeverageSlider'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'

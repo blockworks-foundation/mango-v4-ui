@@ -1,4 +1,4 @@
-import { Bank } from 'mango-v4-test-pack'
+import { Bank } from '@blockworks-foundation/mango-v4'
 import { useTranslation } from 'react-i18next'
 import { TOKEN_REDUCE_ONLY_OPTIONS } from 'utils/constants'
 

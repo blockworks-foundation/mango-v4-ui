@@ -3,7 +3,7 @@ import {
   BookSideType,
   MangoClient,
   PerpMarket,
-} from 'mango-v4-test-pack'
+} from '@blockworks-foundation/mango-v4'
 import { Market, Orderbook as SpotOrderBook } from '@project-serum/serum'
 import { AccountInfo } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'

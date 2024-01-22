@@ -39,9 +39,9 @@ import SecondaryConnectButton from './shared/SecondaryConnectButton'
 import useTokenPositionsFull from 'hooks/useAccountPositionsFull'
 import AccountSlotsFullNotification from './shared/AccountSlotsFullNotification'
 import { handleInputChange } from 'utils/account'
-import { Bank, Group } from 'mango-v4-test-pack'
+import { Bank, Group } from '@blockworks-foundation/mango-v4'
 import UninsuredNotification from './shared/UninsuredNotification'
-import { toUiDecimals } from 'mango-v4-test-pack'
+import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import TokenMaxAmountWarnings from './shared/TokenMaxAmountWarnings'
 
 interface DepositFormProps {

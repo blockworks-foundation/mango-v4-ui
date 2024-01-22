@@ -1,4 +1,4 @@
-import { Group } from 'mango-v4-test-pack'
+import { Group } from '@blockworks-foundation/mango-v4'
 import { CLUSTER } from '@store/mangoStore'
 import { useQuery } from '@tanstack/react-query'
 import useMangoGroup from 'hooks/useMangoGroup'

@@ -5,7 +5,7 @@ import {
   useBids,
   useLazyListings,
 } from 'hooks/market/useAuctionHouse'
-import { toUiDecimals } from 'mango-v4-test-pack'
+import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import { MANGO_MINT_DECIMALS } from 'utils/governance/constants'
 import metaplexStore from '@store/metaplexStore'
 import { LazyBid, Listing, PublicBid } from '@metaplex-foundation/js'

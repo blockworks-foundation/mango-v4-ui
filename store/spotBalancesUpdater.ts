@@ -1,4 +1,4 @@
-import { toUiDecimals } from 'mango-v4-test-pack'
+import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import { SpotBalances } from 'types'
 import mangoStore from './mangoStore'
 

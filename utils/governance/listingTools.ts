@@ -10,7 +10,7 @@ import {
   PriceImpact,
   toUiDecimals,
   toUiDecimalsForQuote,
-} from 'mango-v4-test-pack'
+} from '@blockworks-foundation/mango-v4'
 import { Market } from '@project-serum/serum'
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import EmptyWallet from 'utils/wallet'

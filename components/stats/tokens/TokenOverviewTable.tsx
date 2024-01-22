@@ -6,7 +6,7 @@ import { breakpoints } from '../../../utils/theme'
 import { LinkButton } from '../../shared/Button'
 import ContentBox from '../../shared/ContentBox'
 import Tooltip from '@components/shared/Tooltip'
-import { Bank, toUiDecimals } from 'mango-v4-test-pack'
+import { Bank, toUiDecimals } from '@blockworks-foundation/mango-v4'
 import { NextRouter, useRouter } from 'next/router'
 import {
   SortableColumnHeader,

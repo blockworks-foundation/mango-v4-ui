@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Bank } from 'mango-v4-test-pack'
+import { Bank } from '@blockworks-foundation/mango-v4'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import ContentBox from '@components/shared/ContentBox'
 import { FadeInFadeOut } from '@components/shared/Transitions'
