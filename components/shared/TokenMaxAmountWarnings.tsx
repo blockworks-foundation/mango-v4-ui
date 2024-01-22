@@ -1,4 +1,4 @@
-import { Bank } from 'mango-v4-test-pack'
+import { Bank, toUiDecimals } from 'mango-v4-test-pack'
 import InlineNotification from './InlineNotification'
 import { useVaultLimits } from '@components/swap/useVaultLimits'
 import { useTranslation } from 'react-i18next'
@@ -22,14 +22,18 @@ const TokenMaxAmountWarnings = ({
             type="warning"
             desc={t('warning-deposits-almost-full', {
               token: bank?.name,
-              remaining: limit?.toNumber(),
+              remaining:
+                limit && bank ? toUiDecimals(limit, bank?.mintDecimals) : 0,
             })}
           />
         </div>
       ) : null}
       {vaultFull ? (
         <div className={className}>
-          <InlineNotification type="error" desc={t('warning-deposits-full')} />
+          <InlineNotification
+            type="error"
+            desc={t('warning-deposits-full', { token: bank?.name })}
+          />
         </div>
       ) : null}
     </>
