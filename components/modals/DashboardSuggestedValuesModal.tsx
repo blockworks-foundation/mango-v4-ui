@@ -155,17 +155,17 @@ const DashboardSuggestedValues = ({
       const isThereNeedOfSendingOracleConfig =
         bank.oracleConfig.confFilter.toNumber() !== oracleConfFilter ||
         bank.oracleConfig.maxStalenessSlots.toNumber() !== maxStalenessSlots
-      //   const rateConfigs = {
-      //     adjustmentFactor: getNullOrVal(fieldsToChange.adjustmentFactor),
-      //     util0: getNullOrVal(fieldsToChange.util0),
-      //     rate0: getNullOrVal(fieldsToChange.rate0),
-      //     util1: getNullOrVal(fieldsToChange.util1),
-      //     rate1: getNullOrVal(fieldsToChange.rate1),
-      //     maxRate: getNullOrVal(fieldsToChange.maxRate),
-      //   }
-      //   const isThereNeedOfSendingRateConfigs = Object.values(rateConfigs).filter(
-      //     (x) => x !== null,
-      //   ).length
+      const rateConfigs = {
+        adjustmentFactor: getNullOrVal(fieldsToChange.adjustmentFactor),
+        util0: getNullOrVal(fieldsToChange.util0),
+        rate0: getNullOrVal(fieldsToChange.rate0),
+        util1: getNullOrVal(fieldsToChange.util1),
+        rate1: getNullOrVal(fieldsToChange.rate1),
+        maxRate: getNullOrVal(fieldsToChange.maxRate),
+      }
+      const isThereNeedOfSendingRateConfigs = Object.values(rateConfigs).filter(
+        (x) => x !== null,
+      ).length
       const ix = await client!.program.methods
         .tokenEdit(
           null,
@@ -188,7 +188,16 @@ const DashboardSuggestedValues = ({
           fieldsToChange.groupInsuranceFund === undefined
             ? null
             : fieldsToChange.groupInsuranceFund,
-          null,
+          isThereNeedOfSendingRateConfigs
+            ? {
+                adjustmentFactor: fieldsToChange.adjustmentFactor!,
+                util0: fieldsToChange.util0!,
+                rate0: fieldsToChange.rate0!,
+                util1: fieldsToChange.util1!,
+                rate1: fieldsToChange.rate1!,
+                maxRate: fieldsToChange.maxRate!,
+              }
+            : null,
           getNullOrVal(fieldsToChange.loanFeeRate),
           getNullOrVal(fieldsToChange.loanOriginationFeeRate),
           getNullOrVal(fieldsToChange.maintAssetWeight),
@@ -216,7 +225,8 @@ const DashboardSuggestedValues = ({
           getNullOrVal(fieldsToChange.tokenConditionalSwapTakerFeeRate),
           getNullOrVal(fieldsToChange.tokenConditionalSwapMakerFeeRate),
           getNullOrVal(fieldsToChange.flashLoanSwapFeeRate),
-          getNullOrVal(fieldsToChange.interestCurveScaling),
+          //do not edit of interest curve scaling
+          null,
           getNullOrVal(fieldsToChange.interestTargetUtilization),
           null,
           null,
