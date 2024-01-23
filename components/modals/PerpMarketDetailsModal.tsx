@@ -3,13 +3,10 @@ import Modal from '../shared/Modal'
 import { useTranslation } from 'next-i18next'
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import Button from '@components/shared/Button'
-import useOracleProvider from 'hooks/useOracleProvider'
-import {
-  ArrowTopRightOnSquareIcon,
-  ExclamationTriangleIcon,
-} from '@heroicons/react/20/solid'
+import { ExclamationTriangleIcon } from '@heroicons/react/20/solid'
 import Tooltip from '@components/shared/Tooltip'
 import { useRouter } from 'next/router'
+import OracleProvider from '@components/shared/OracleProvider'
 
 interface PerpMarketDetailsModalProps {
   market: PerpMarket | undefined
@@ -23,7 +20,6 @@ const PerpMarketDetailsModal = ({
   market,
 }: ModalCombinedProps) => {
   const { t } = useTranslation(['common', 'trade'])
-  const { oracleProvider, oracleLinkPath } = useOracleProvider()
   const router = useRouter()
 
   const goToPerpDetails = (marketName: string) => {
@@ -86,19 +82,7 @@ const PerpMarketDetailsModal = ({
         </div>
         <div className="flex justify-between">
           <p>{t('trade:oracle')}</p>
-          {oracleLinkPath ? (
-            <a
-              className="flex items-center"
-              href={oracleLinkPath}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <span className="mr-1.5">{oracleProvider}</span>
-              <ArrowTopRightOnSquareIcon className="h-4 w-4" />
-            </a>
-          ) : (
-            <p className="text-th-fgd-2">{oracleProvider}</p>
-          )}
+          <OracleProvider />
         </div>
         <div className="flex justify-between">
           <Tooltip

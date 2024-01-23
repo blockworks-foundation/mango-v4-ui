@@ -1,9 +1,5 @@
 import { Disclosure, Transition } from '@headlessui/react'
-import {
-  ArrowTopRightOnSquareIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
-} from '@heroicons/react/20/solid'
+import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useTranslation } from 'next-i18next'
 import { useViewport } from '../../../hooks/useViewport'
 import { breakpoints } from '../../../utils/theme'
@@ -28,6 +24,7 @@ import { useCallback } from 'react'
 import { useSortableData } from 'hooks/useSortableData'
 import TableTokenName from '@components/shared/TableTokenName'
 import CollateralWeightDisplay from '@components/shared/CollateralWeightDisplay'
+import OracleProvider from '@components/shared/OracleProvider'
 
 const TokenDetailsTable = () => {
   const { t } = useTranslation(['common', 'activity', 'token', 'trade'])
@@ -178,8 +175,6 @@ const TokenDetailsTable = () => {
                   isInsured,
                   liquidationFee,
                   loanOriginationFee,
-                  oracleLinkPath,
-                  oracleProvider,
                   symbol,
                 } = data
 
@@ -211,21 +206,9 @@ const TokenDetailsTable = () => {
                       <p className="text-right">{isInsured}</p>
                     </Td>
                     <Td>
-                      {oracleLinkPath ? (
-                        <a
-                          className="flex items-center justify-end"
-                          href={oracleLinkPath}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <span className="mr-1.5 font-body">
-                            {oracleProvider}
-                          </span>
-                          <ArrowTopRightOnSquareIcon className="h-4 w-4" />
-                        </a>
-                      ) : (
-                        <p className="text-right font-body">{oracleProvider}</p>
-                      )}
+                      <div className="flex justify-end">
+                        <OracleProvider />
+                      </div>
                     </Td>
                     <Td>
                       <div className="flex justify-end">
@@ -242,7 +225,6 @@ const TokenDetailsTable = () => {
         <div className="border-b border-th-bkg-3">
           {banks.map((b, i) => {
             const bank = b.bank
-            const [oracleProvider, oracleLinkPath] = getOracleProvider(bank)
             const mintInfo = group.mintInfosMapByMint.get(bank.mint.toString())
             return (
               <Disclosure key={bank.name}>
@@ -268,7 +250,7 @@ const TokenDetailsTable = () => {
                       enterTo="opacity-100"
                     >
                       <Disclosure.Panel>
-                        <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pb-4 pt-4">
+                        <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 py-4">
                           <div className="col-span-1">
                             <Tooltip
                               content={t('asset-liability-weight-desc')}
@@ -325,23 +307,7 @@ const TokenDetailsTable = () => {
                           </div>
                           <div className="col-span-1">
                             <p className="text-xs">{t('trade:oracle')}</p>
-                            {oracleLinkPath ? (
-                              <a
-                                className="flex items-center"
-                                href={oracleLinkPath}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                <span className="mr-1.5 font-body">
-                                  {oracleProvider}
-                                </span>
-                                <ArrowTopRightOnSquareIcon className="h-4 w-4" />
-                              </a>
-                            ) : (
-                              <p className="text-right font-body">
-                                {oracleProvider}
-                              </p>
-                            )}
+                            <OracleProvider />
                           </div>
                           <div className="col-span-1">
                             <Tooltip

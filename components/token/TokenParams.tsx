@@ -5,22 +5,16 @@ import {
   toUiDecimalsForQuote,
 } from '@blockworks-foundation/mango-v4'
 import Tooltip from '@components/shared/Tooltip'
-import { ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid'
 import { BN } from '@coral-xyz/anchor'
 import mangoStore from '@store/mangoStore'
-import { getOracleProvider } from 'hooks/useOracleProvider'
 import { useTranslation } from 'next-i18next'
 import { useMemo } from 'react'
 import { formatCurrencyValue } from 'utils/numbers'
 import CollateralWeightDisplay from '@components/shared/CollateralWeightDisplay'
+import OracleProvider from '@components/shared/OracleProvider'
 
 const TokenParams = ({ bank }: { bank: Bank }) => {
   const { t } = useTranslation(['common', 'activity', 'token'])
-
-  const [oracleProvider, oracleLinkPath] = useMemo(() => {
-    if (!bank) return ['Unavaliable', '']
-    return getOracleProvider(bank)
-  }, [bank])
 
   const mintInfo = useMemo(() => {
     const group = mangoStore.getState().group
@@ -172,19 +166,7 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
         </div>
         <div className="flex justify-between border-t border-th-bkg-3 py-4">
           <p>{t('token:oracle')}</p>
-          {oracleLinkPath ? (
-            <a
-              className="flex items-center"
-              href={oracleLinkPath}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <span className="mr-1.5">{oracleProvider}</span>
-              <ArrowTopRightOnSquareIcon className="h-4 w-4" />
-            </a>
-          ) : (
-            <p className="text-th-fgd-2">{oracleProvider}</p>
-          )}
+          {bank ? <OracleProvider /> : <p>Unavailable</p>}
         </div>
         <div className="flex justify-between border-t border-th-bkg-3 py-4">
           <Tooltip content={t('token:tooltip-oracle-confidence')}>
