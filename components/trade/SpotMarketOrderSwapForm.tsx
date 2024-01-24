@@ -53,7 +53,6 @@ import InlineNotification from '@components/shared/InlineNotification'
 import { debounce } from 'lodash'
 import { isTokenInsured } from '@components/DepositForm'
 import UninsuredNotification from '@components/shared/UninsuredNotification'
-import TokenMaxAmountWarnings from '@components/shared/TokenMaxAmountWarnings'
 
 const set = mangoStore.getState().set
 
@@ -86,9 +85,7 @@ export default function SpotMarketOrderSwapForm() {
     selectedMarket,
     serumOrPerpMarket,
   } = useSelectedMarket()
-  const { amount: tokenMax, amountWithBorrow } = useTokenMax(
-    savedCheckboxSettings.margin,
-  )
+  const { amount: tokenMax, amountWithBorrow } = useTokenMax()
 
   const [inputBank, outputBank] = useMemo(() => {
     const group = mangoStore.getState().group
@@ -615,7 +612,6 @@ export default function SpotMarketOrderSwapForm() {
               />
             </div>
           ) : null}
-          <TokenMaxAmountWarnings bank={outputBank} className="mb-4" />
           {!isInsured ? (
             <div className="mb-4">
               <UninsuredNotification name={outputBank?.name} />

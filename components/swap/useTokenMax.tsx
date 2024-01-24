@@ -6,6 +6,7 @@ import { floorToDecimal } from '../../utils/numbers'
 import useMangoAccount from '../../hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { PublicKey } from '@solana/web3.js'
+import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 
 export const getMaxBorrowForBank = (
   group: Group,
@@ -35,6 +36,7 @@ const getMaxSourceForSwap = (
       inputMint,
       outputMint,
     )
+
     return rawMaxUiAmountWithBorrow
   } catch (e) {
     console.log(`failed to get max source`, e)
@@ -70,11 +72,7 @@ export const getTokenInMax = (
   const outputBank = group.getFirstBankByMint(outputMint)
 
   if (!group || !inputBank || !mangoAccount || !outputBank) {
-    return {
-      amount: new Decimal(0.0),
-      decimals: 6,
-      amountWithBorrow: new Decimal(0.0),
-    }
+    return tokenMaxFallback
   }
 
   const inputReduceOnly = inputBank.areBorrowsReduceOnly()
@@ -122,6 +120,19 @@ export const getTokenInMax = (
     amount: maxAmount,
     amountWithBorrow: maxAmountWithBorrow,
     decimals: inputBank.mintDecimals,
+    amountIsLimited:
+      !!outputBank.getRemainingDepositLimit() &&
+      maxAmount.equals(
+        floorToDecimal(rawMaxUiAmountWithBorrow, inputBank.mintDecimals),
+      ),
+    amountWithBorrowIsLimited:
+      !!outputBank.getRemainingDepositLimit() &&
+      toUiDecimals(
+        outputBank.getRemainingDepositLimit()!,
+        outputBank.mintDecimals,
+      ) *
+        outputBank.uiPrice >=
+        inputBank.uiPrice * rawMaxUiAmountWithBorrow,
   }
 }
 
@@ -129,9 +140,11 @@ export interface TokenMaxResults {
   amount: Decimal
   amountWithBorrow: Decimal
   decimals: number
+  amountIsLimited: boolean
+  amountWithBorrowIsLimited: boolean
 }
 
-export const useTokenMax = (useMargin = true): TokenMaxResults => {
+export const useTokenMax = (): TokenMaxResults => {
   const { mangoAccount } = useMangoAccount()
   const { group } = useMangoGroup()
   const inputBank = mangoStore((s) => s.swap.inputBank)
@@ -150,12 +163,8 @@ export const useTokenMax = (useMargin = true): TokenMaxResults => {
     } catch (e) {
       console.warn('Error in useTokenMax:  ', e)
     }
-    return {
-      amount: new Decimal(0),
-      amountWithBorrow: new Decimal(0),
-      decimals: 6,
-    }
-  }, [mangoAccount, group, useMargin, inputBank, outputBank])
+    return tokenMaxFallback
+  }, [mangoAccount, group, inputBank, outputBank])
 
   return tokenInMax
 }
@@ -165,11 +174,7 @@ export const useAbsInputPosition = (): TokenMaxResults => {
   const { inputBank } = mangoStore((s) => s.swap)
 
   if (!mangoAccount || !inputBank) {
-    return {
-      amount: new Decimal(0),
-      amountWithBorrow: new Decimal(0),
-      decimals: 6,
-    }
+    return tokenMaxFallback
   }
 
   const amount = new Decimal(
@@ -179,5 +184,15 @@ export const useAbsInputPosition = (): TokenMaxResults => {
     decimals: inputBank.mintDecimals,
     amount: amount,
     amountWithBorrow: amount,
+    amountIsLimited: false,
+    amountWithBorrowIsLimited: false,
   }
+}
+
+const tokenMaxFallback = {
+  amount: new Decimal(0),
+  amountWithBorrow: new Decimal(0),
+  decimals: 6,
+  amountIsLimited: false,
+  amountWithBorrowIsLimited: false,
 }
