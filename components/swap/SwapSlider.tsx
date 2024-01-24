@@ -4,6 +4,7 @@ import { TokenMaxResults } from './useTokenMax'
 import mangoStore from '@store/mangoStore'
 import { useMemo } from 'react'
 import { floorToDecimal } from 'utils/numbers'
+import TokenMaxAmountWarnings from '@components/shared/TokenMaxAmountWarnings'
 
 const SwapSlider = ({
   amount,
@@ -23,8 +24,13 @@ const SwapSlider = ({
   handleEndDrag?: () => void
 }) => {
   const { mangoAccount } = useMangoAccount()
-  const { amount: tokenMax, amountWithBorrow } = maxAmount(useMargin)
-  const { inputBank } = mangoStore((s) => s.swap)
+  const {
+    amount: tokenMax,
+    amountWithBorrow,
+    amountIsLimited,
+    amountWithBorrowIsLimited,
+  } = maxAmount(useMargin)
+  const { inputBank, outputBank } = mangoStore((s) => s.swap)
 
   const max = useMemo(() => {
     if (!inputBank) return 0
@@ -36,24 +42,42 @@ const SwapSlider = ({
   return (
     <>
       {!mangoAccount ? (
-        <LeverageSlider
-          amount={amount}
-          leverageMax={100}
-          onChange={onChange}
-          step={step}
-          handleStartDrag={handleStartDrag}
-          handleEndDrag={handleEndDrag}
-        />
+        <>
+          <LeverageSlider
+            amount={amount}
+            leverageMax={100}
+            onChange={onChange}
+            step={step}
+            handleStartDrag={handleStartDrag}
+            handleEndDrag={handleEndDrag}
+          />
+          <TokenMaxAmountWarnings
+            className="mt-4"
+            limitNearlyReached={
+              useMargin ? amountWithBorrowIsLimited : amountIsLimited
+            }
+            bank={outputBank}
+          />
+        </>
       ) : (
-        <LeverageSlider
-          amount={amount}
-          decimals={inputBank?.mintDecimals}
-          leverageMax={max}
-          onChange={onChange}
-          step={step}
-          handleStartDrag={handleStartDrag}
-          handleEndDrag={handleEndDrag}
-        />
+        <>
+          <LeverageSlider
+            amount={amount}
+            decimals={inputBank?.mintDecimals}
+            leverageMax={max}
+            onChange={onChange}
+            step={step}
+            handleStartDrag={handleStartDrag}
+            handleEndDrag={handleEndDrag}
+          />
+          <TokenMaxAmountWarnings
+            limitNearlyReached={
+              useMargin ? amountWithBorrowIsLimited : amountIsLimited
+            }
+            className="mt-4"
+            bank={outputBank}
+          />
+        </>
       )}
     </>
   )

@@ -5,14 +5,14 @@ import {
   Serum3Market,
 } from '@blockworks-foundation/mango-v4'
 import LeverageSlider from '@components/shared/LeverageSlider'
+import TokenMaxAmountWarnings from '@components/shared/TokenMaxAmountWarnings'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
+import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useCallback, useMemo } from 'react'
 import { GenericMarket } from 'types'
 import { floorToDecimal, getDecimalCount } from 'utils/numbers'
-import TokenMaxAmountWarnings from '@components/shared/TokenMaxAmountWarnings'
-import useMangoGroup from 'hooks/useMangoGroup'
 
 export const useSpotMarketMax = (
   mangoAccount: MangoAccount | undefined,
@@ -106,7 +106,6 @@ const SpotSlider = ({
 }) => {
   const { baseSize, quoteSize, side } = mangoStore((s) => s.tradeForm)
   const { selectedMarket, price: marketPrice } = useSelectedMarket()
-  const { group } = useMangoGroup()
   const { mangoAccount } = useMangoAccount()
   const { max: standardOrderMax, isLimited } = useSpotMarketMax(
     mangoAccount,
@@ -114,6 +113,8 @@ const SpotSlider = ({
     side,
     useMargin,
   )
+  const { group } = useMangoGroup()
+
   const targetBank =
     selectedMarket &&
     selectedMarket instanceof Serum3Market &&
@@ -210,7 +211,7 @@ const SpotSlider = ({
         <TokenMaxAmountWarnings
           limitNearlyReached={isLimited}
           bank={targetBank}
-          className="mt-4"
+          className="mb-4"
         />
       )}
     </div>

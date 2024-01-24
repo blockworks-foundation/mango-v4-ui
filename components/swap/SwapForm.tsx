@@ -22,7 +22,6 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useRouter } from 'next/router'
 import SwapSummaryInfo from './SwapSummaryInfo'
-import TokenMaxAmountWarnings from '@components/shared/TokenMaxAmountWarnings'
 
 const set = mangoStore.getState().set
 
@@ -224,9 +223,6 @@ const SwapForm = () => {
                 />
               </div>
             ) : null}
-            {!walletSwap && (
-              <TokenMaxAmountWarnings bank={outputBank} className="mb-4" />
-            )}
             <SwapSummaryInfo
               walletSwap={walletSwap}
               setShowSettings={setShowSettings}
