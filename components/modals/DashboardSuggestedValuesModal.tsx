@@ -190,12 +190,14 @@ const DashboardSuggestedValues = ({
             : fieldsToChange.groupInsuranceFund,
           isThereNeedOfSendingRateConfigs
             ? {
-                adjustmentFactor: fieldsToChange.adjustmentFactor!,
-                util0: fieldsToChange.util0!,
-                rate0: fieldsToChange.rate0!,
-                util1: fieldsToChange.util1!,
-                rate1: fieldsToChange.rate1!,
-                maxRate: fieldsToChange.maxRate!,
+                adjustmentFactor:
+                  fieldsToChange.adjustmentFactor ||
+                  bank.adjustmentFactor.toNumber(),
+                util0: fieldsToChange.util0 || bank.util0.toNumber(),
+                rate0: fieldsToChange.rate0 || bank.rate0.toNumber(),
+                util1: fieldsToChange.util1 || bank.util1.toNumber(),
+                rate1: fieldsToChange.rate1 || bank.rate1.toNumber(),
+                maxRate: fieldsToChange.maxRate || bank.maxRate.toNumber(),
               }
             : null,
           getNullOrVal(fieldsToChange.loanFeeRate),
@@ -453,25 +455,25 @@ const DashboardSuggestedValues = ({
                 {`${formattedBankValues.maxRate}% @ 100% util`}
               </span>
             }
-            // proposedValue={
-            //   (suggestedFields.rate0 ||
-            //     suggestedFields.rate1 ||
-            //     suggestedFields.util0 ||
-            //     suggestedFields.util1 ||
-            //     suggestedFields.maxRate) && (
-            //     <span className="text-right">
-            //       {`${suggestedFields.rate0 || formattedBankValues.rate0}% @ ${
-            //         suggestedFields.util0 || formattedBankValues.util0
-            //       }% util, `}
-            //       {`${suggestedFields.rate1 || formattedBankValues.rate1}% @ ${
-            //         suggestedFields.util1 || formattedBankValues.util1
-            //       }% util, `}
-            //       {`${
-            //         suggestedFields.maxRate || formattedBankValues.maxRate
-            //       }% @ 100% util`}
-            //     </span>
-            //   )
-            // }
+            proposedValue={
+              (suggestedFields.rate0 ||
+                suggestedFields.rate1 ||
+                suggestedFields.util0 ||
+                suggestedFields.util1 ||
+                suggestedFields.maxRate) && (
+                <span className="text-right">
+                  {`${suggestedFields.rate0 || formattedBankValues.rate0}% @ ${
+                    suggestedFields.util0 || formattedBankValues.util0
+                  }% util, `}
+                  {`${suggestedFields.rate1 || formattedBankValues.rate1}% @ ${
+                    suggestedFields.util1 || formattedBankValues.util1
+                  }% util, `}
+                  {`${
+                    suggestedFields.maxRate || formattedBankValues.maxRate
+                  }% @ 100% util`}
+                </span>
+              )
+            }
           />
           <KeyValuePair
             label="Adjustment factor"
