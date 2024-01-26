@@ -514,7 +514,7 @@ const DashboardSuggestedValues = ({
           />
           <KeyValuePair
             label="Net borrows in window / Net borrow limit per window quote"
-            value={`$${formattedBankValues.minVaultToDepositsRatio} / $${formattedBankValues.netBorrowLimitPerWindowQuote}`}
+            value={`$${formattedBankValues.netBorrowsInWindow} / $${formattedBankValues.netBorrowLimitPerWindowQuote}`}
             proposedValue={
               (suggestedFields.minVaultToDepositsRatio ||
                 suggestedFields.netBorrowLimitPerWindowQuote) &&

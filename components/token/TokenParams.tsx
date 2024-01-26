@@ -166,7 +166,7 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
         </div>
         <div className="flex justify-between border-t border-th-bkg-3 py-4">
           <p>{t('token:oracle')}</p>
-          {bank ? <OracleProvider /> : <p>Unavailable</p>}
+          {bank ? <OracleProvider bank={bank} /> : <p>Unavailable</p>}
         </div>
         <div className="flex justify-between border-t border-th-bkg-3 py-4">
           <Tooltip content={t('token:tooltip-oracle-confidence')}>

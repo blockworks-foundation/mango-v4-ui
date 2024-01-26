@@ -207,7 +207,7 @@ const TokenDetailsTable = () => {
                     </Td>
                     <Td>
                       <div className="flex justify-end">
-                        <OracleProvider />
+                        <OracleProvider bank={bank} />
                       </div>
                     </Td>
                     <Td>
@@ -307,7 +307,7 @@ const TokenDetailsTable = () => {
                           </div>
                           <div className="col-span-1">
                             <p className="text-xs">{t('trade:oracle')}</p>
-                            <OracleProvider />
+                            <OracleProvider bank={bank} />
                           </div>
                           <div className="col-span-1">
                             <Tooltip

@@ -1,9 +1,11 @@
+import { Bank } from '@blockworks-foundation/mango-v4'
 import PythIcon from '@components/icons/PythIcon'
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid'
 import useOracleProvider from 'hooks/useOracleProvider'
 
-const OracleProvider = () => {
-  const { oracleProvider, oracleLinkPath } = useOracleProvider()
+//will use selected market from mango store if no bank provided
+const OracleProvider = ({ bank }: { bank?: Bank }) => {
+  const { oracleProvider, oracleLinkPath } = useOracleProvider(bank)
   return oracleLinkPath ? (
     <a
       className="flex items-center"

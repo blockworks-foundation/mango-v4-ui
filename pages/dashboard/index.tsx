@@ -356,7 +356,7 @@ const Dashboard: NextPage = () => {
                                   'second',
                                 ),
                               )})`}
-                              value={`$${formattedBankValues.minVaultToDepositsRatio} / $${formattedBankValues.netBorrowLimitPerWindowQuote}`}
+                              value={`$${formattedBankValues.netBorrowsInWindow} / $${formattedBankValues.netBorrowLimitPerWindowQuote}`}
                             />
                             <KeyValuePair
                               label="Group Insurance Fund"

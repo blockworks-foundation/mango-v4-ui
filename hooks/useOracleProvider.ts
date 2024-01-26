@@ -51,13 +51,14 @@ export const getOracleProvider = (
   }
 }
 
-const useOracleProvider = () => {
+//will use selected market from mango store if no bank provided
+const useOracleProvider = (bank?: Bank) => {
   const { selectedMarket } = useSelectedMarket()
 
   const [oracleProvider, oracleLinkPath] = useMemo(() => {
     if (!selectedMarket) return ['', '']
-    return getOracleProvider(selectedMarket)
-  }, [selectedMarket])
+    return getOracleProvider(bank || selectedMarket)
+  }, [selectedMarket, bank])
 
   return { oracleProvider, oracleLinkPath }
 }
