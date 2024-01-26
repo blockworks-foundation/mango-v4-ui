@@ -5,10 +5,19 @@ import {
   ProgramAccount,
   pubkeyFilter,
 } from '@solana/spl-governance'
-import { Connection, PublicKey } from '@solana/web3.js'
+import {
+  Connection,
+  PublicKey,
+  RpcResponseAndContext,
+  SignatureResult,
+  Transaction,
+  VersionedTransaction,
+} from '@solana/web3.js'
 import { TokenProgramAccount } from './accounts/vsrAccounts'
 import { MintLayout, RawMint } from '@solana/spl-token'
 import { BN } from '@coral-xyz/anchor'
+import { awaitTransactionSignatureConfirmation } from '@blockworks-foundation/mangolana/lib/transactions'
+import { MangoError, tryStringify } from '@blockworks-foundation/mango-v4'
 
 export async function fetchRealm({
   connection,
@@ -156,4 +165,79 @@ export const compareObjectsAndGetDifferentKeys = <T extends object>(
   })
 
   return diffKeys as (keyof T)[]
+}
+
+export const sendTxAndConfirm = async (
+  multipleConnections: Connection[] = [],
+  connection: Connection,
+  tx: Transaction | VersionedTransaction,
+  latestBlockhash: {
+    lastValidBlockHeight: number
+    blockhash: string
+  },
+) => {
+  let signature = ''
+  const abortController = new AbortController()
+  try {
+    const allConnections = [connection, ...multipleConnections]
+    const rawTransaction = tx.serialize()
+    signature = await Promise.any(
+      allConnections.map((c) => {
+        return c.sendRawTransaction(rawTransaction, {
+          skipPreflight: true,
+        })
+      }),
+    )
+    await Promise.any(
+      allConnections.map((c) =>
+        awaitTransactionSignatureConfirmation({
+          txid: signature,
+          confirmLevel: 'processed',
+          connection: c,
+          timeoutStrategy: {
+            block: latestBlockhash,
+          },
+          abortSignal: abortController.signal,
+        }),
+      ),
+    )
+    abortController.abort()
+    return signature
+  } catch (e) {
+    abortController.abort()
+    if (e instanceof AggregateError) {
+      for (const individualError of e.errors) {
+        const stringifiedError = tryStringify(individualError)
+        throw new MangoError({
+          txid: signature,
+          message: `${
+            stringifiedError
+              ? stringifiedError
+              : individualError
+              ? individualError
+              : 'Unknown error'
+          }`,
+        })
+      }
+    }
+    if (isErrorWithSignatureResult(e)) {
+      const stringifiedError = tryStringify(e?.value?.err)
+      throw new MangoError({
+        txid: signature,
+        message: `${stringifiedError ? stringifiedError : e?.value?.err}`,
+      })
+    }
+    const stringifiedError = tryStringify(e)
+    throw new MangoError({
+      txid: signature,
+      message: `${stringifiedError ? stringifiedError : e}`,
+    })
+  }
+}
+
+function isErrorWithSignatureResult(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  err: any,
+): err is RpcResponseAndContext<SignatureResult> {
+  return err && typeof err.value !== 'undefined'
 }

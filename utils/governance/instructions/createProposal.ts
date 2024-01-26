@@ -23,10 +23,15 @@ import { MANGO_MINT } from 'utils/constants'
 import { MANGO_GOVERNANCE_PROGRAM, MANGO_REALM_PK } from '../constants'
 import { VsrClient } from '../voteStakeRegistryClient'
 import { updateVoterWeightRecord } from './updateVoteWeightRecord'
-import { createComputeBudgetIx } from '@blockworks-foundation/mango-v4'
+import {
+  createComputeBudgetIx,
+  MangoClient,
+} from '@blockworks-foundation/mango-v4'
+import { sendTxAndConfirm } from '../tools'
 
 export const createProposal = async (
   connection: Connection,
+  mangoClient: MangoClient,
   wallet: WalletSigner,
   governance: PublicKey,
   tokenOwnerRecord: ProgramAccount<TokenOwnerRecord>,
@@ -144,16 +149,12 @@ export const createProposal = async (
 
   const signedTransactions = await wallet.signAllTransactions(transactions)
   for (const tx of signedTransactions) {
-    const rawTransaction = tx.serialize()
-    const address = await connection.sendRawTransaction(rawTransaction, {
-      skipPreflight: true,
-    })
-
-    await connection.confirmTransaction({
-      blockhash: latestBlockhash.blockhash,
-      lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
-      signature: address,
-    })
+    await sendTxAndConfirm(
+      mangoClient.opts.multipleConnections,
+      connection,
+      tx,
+      latestBlockhash,
+    )
   }
   return proposalAddress
 }
