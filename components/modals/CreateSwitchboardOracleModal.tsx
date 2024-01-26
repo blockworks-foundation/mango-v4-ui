@@ -21,6 +21,7 @@ import Loading from '@components/shared/Loading'
 import { WhirlpoolContext, buildWhirlpoolClient } from '@orca-so/whirlpools-sdk'
 import { LIQUIDITY_STATE_LAYOUT_V4 } from '@raydium-io/raydium-sdk'
 import { LISTING_PRESETS_KEY } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
+import { sendTxAndConfirm } from 'utils/governance/tools'
 
 const poolAddressError = 'no-pool-address-found'
 const wrongTierPassedForCreation = 'Wrong tier passed for creation of oracle'
@@ -58,6 +59,7 @@ const CreateSwitchboardOracleModal = ({
 }: RaydiumProps | OrcaProps) => {
   const { t } = useTranslation(['governance'])
   const connection = mangoStore((s) => s.connection)
+  const client = mangoStore((s) => s.client)
   const wallet = useWallet()
   const quoteTokenName = 'USD'
   const pythUsdOracle = 'Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD'
@@ -355,15 +357,12 @@ const CreateSwitchboardOracleModal = ({
       }
       const signedTransactions = await wallet.signAllTransactions!(transactions)
       for (const tx of signedTransactions) {
-        const rawTransaction = tx.serialize()
-        const address = await connection.sendRawTransaction(rawTransaction, {
-          skipPreflight: true,
-        })
-        await connection.confirmTransaction({
-          blockhash: latestBlockhash.blockhash,
-          lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
-          signature: address,
-        })
+        await sendTxAndConfirm(
+          client.opts.multipleConnections,
+          connection,
+          tx,
+          latestBlockhash,
+        )
       }
       setCreatingOracle(false)
       onClose()

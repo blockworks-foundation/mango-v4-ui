@@ -64,6 +64,7 @@ import {
 } from '@tanstack/react-query'
 import { isTokenInsured } from '@components/DepositForm'
 import UninsuredNotification from '@components/shared/UninsuredNotification'
+import { sendTxAndConfirm } from 'utils/governance/tools'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
@@ -227,7 +228,6 @@ export const fetchJupiterWalletSwapTransaction = async (
   ).json()
 
   const { swapTransaction } = transactions
-
   const parsedSwapTransaction = VersionedTransaction.deserialize(
     Buffer.from(swapTransaction, 'base64'),
   )
@@ -413,6 +413,7 @@ const SwapReviewRouteInfo = ({
   const onWalletSwap = useCallback(async () => {
     if (!selectedRoute || !inputBank || !outputBank || !wallet.publicKey) return
     const actions = mangoStore.getState().actions
+    const client = mangoStore.getState().client
     const set = mangoStore.getState().set
     const connection = mangoStore.getState().connection
     setSubmitting(true)
@@ -424,17 +425,15 @@ const SwapReviewRouteInfo = ({
         inputBank.mint,
         outputBank.mint,
       )
-
+      const latestBlockhash = await connection.getLatestBlockhash()
       const sign = wallet.signTransaction!
       const signed = await sign(vtx)
-      const rawTransaction = signed.serialize()
-
-      const txid = await connection.sendRawTransaction(rawTransaction, {
-        skipPreflight: true,
-        maxRetries: 2,
-      })
-
-      await connection.confirmTransaction(txid)
+      const txid = await sendTxAndConfirm(
+        client.opts.multipleConnections,
+        connection,
+        signed,
+        latestBlockhash,
+      )
       set((s) => {
         s.swap.amountIn = ''
         s.swap.amountOut = ''

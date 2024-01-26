@@ -268,6 +268,7 @@ const DashboardSuggestedValues = ({
           const index = proposals ? Object.values(proposals).length : 0
           const proposalAddress = await createProposal(
             connection,
+            client,
             walletSigner,
             MANGO_DAO_WALLET_GOVERNANCE,
             voter.tokenOwnerRecord!,

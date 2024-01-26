@@ -64,7 +64,6 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
   const connection = mangoStore((s) => s.connection)
   const client = mangoStore((s) => s.client)
   const voter = GovernanceStore((s) => s.voter)
-
   const vsrClient = GovernanceStore((s) => s.vsrClient)
   const proposals = GovernanceStore((s) => s.proposals)
   const proposalsLoading = GovernanceStore((s) => s.loadingProposals)
@@ -192,6 +191,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
     try {
       const proposalAddress = await createProposal(
         connection,
+        client,
         walletSigner,
         MANGO_DAO_WALLET_GOVERNANCE,
         voter.tokenOwnerRecord!,
@@ -213,18 +213,19 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
     }
     setProposing(false)
   }, [
+    isFormValid,
     advForm,
+    proposals,
     baseBank,
     client,
-    connection,
     group,
-    isFormValid,
-    proposals,
     quoteBank,
-    t,
+    wallet,
+    connection,
     voter.tokenOwnerRecord,
     vsrClient,
-    wallet,
+    fee,
+    t,
   ])
 
   const goToPropsPage = async () => {

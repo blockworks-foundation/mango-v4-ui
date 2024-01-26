@@ -583,6 +583,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       if (!simulation.value.err) {
         const proposalAddress = await createProposal(
           connection,
+          client,
           walletSigner,
           MANGO_DAO_WALLET_GOVERNANCE,
           voter.tokenOwnerRecord!,
