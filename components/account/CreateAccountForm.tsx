@@ -1,7 +1,7 @@
 import { ChangeEvent, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'next-i18next'
 import mangoStore from '@store/mangoStore'
-import { createSolanaMessage, notify } from '../../utils/notifications'
+import { createLedgerMessage, notify } from '../../utils/notifications'
 import Button, { IconButton, LinkButton } from '../shared/Button'
 import BounceLoader from '../shared/BounceLoader'
 import Input from '../forms/Input'
@@ -88,7 +88,7 @@ const CreateAccountForm = ({
       )
       if (tx) {
         if (signToNotifications) {
-          createSolanaMessage(walletContext, setCookie)
+          createLedgerMessage(walletContext, setCookie, connection)
         }
         const pk = walletContext.wallet.adapter.publicKey
 
