@@ -94,15 +94,15 @@ const Fees = () => {
       }
       transformedData.unshift(perpFeeChartData[0])
 
-      if (feesDaysToShow === '30') {
+      if (feesPerpDaysToShow === '30') {
         feeChartData = groupPerpByHourlyInterval(transformedData, 24)
-      } else if (feesDaysToShow === '7') {
+      } else if (feesPerpDaysToShow === '7') {
         feeChartData = groupPerpByHourlyInterval(transformedData, 4)
       } else feeChartData = transformedData
     }
 
     return feeChartData
-  }, [feesDaysToShow, perpFeeChartData, showCumulativePerpFees])
+  }, [feesPerpDaysToShow, perpFeeChartData, showCumulativePerpFees])
 
   return (
     <>
