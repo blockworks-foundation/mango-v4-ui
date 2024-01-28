@@ -226,7 +226,7 @@ const CoingeckoStats = ({
               </p>
             </div>
           </div>
-          <div className="flex justify-between border-b border-t border-th-bkg-3 py-4 md:border-b-0 md:pb-0">
+          <div className="flex justify-between border-y border-th-bkg-3 py-4 md:border-b-0 md:pb-0">
             <p>{t('token:all-time-low')}</p>
             <div className="flex flex-col items-end">
               <div className="flex items-center font-mono text-th-fgd-2">
@@ -286,7 +286,7 @@ const CoingeckoStats = ({
           </div>
           <div
             className={`flex justify-between border-t border-th-bkg-3 ${
-              max_supply ? 'py-4' : 'border-b pt-4 md:pb-4'
+              max_supply ? 'py-4' : 'pt-4 md:pb-4'
             }`}
           >
             <p>{t('token:total-supply')}</p>

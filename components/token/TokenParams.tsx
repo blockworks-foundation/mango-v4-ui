@@ -106,7 +106,7 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
               {t('token:deposit-borrow-scaling-start')}
             </p>
           </Tooltip>
-          <div className="flex space-x-2">
+          <div className="flex flex-wrap justify-end space-x-2">
             <p className="font-mono text-th-fgd-2">
               {bank.name === 'USDC'
                 ? `$${toUiDecimalsForQuote(
