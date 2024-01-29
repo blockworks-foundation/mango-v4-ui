@@ -157,6 +157,13 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     )
   }, [presets, proposedPresetTargetAmount])
 
+  useEffect(() => {
+    setAdvForm((prevState) => ({
+      ...prevState,
+      fastListing: false,
+    }))
+  }, [preset])
+
   const quoteBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
   const minVoterWeight = useMemo(
     () =>
@@ -215,6 +222,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           connection,
         }),
       ])
+
       const index = proposals ? Object.values(proposals).length : 0
 
       const bankNum = 0
@@ -244,6 +252,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         openBookMarketExternalPk: marketPk?.toBase58() || '',
         proposalTitle: `List ${tokenInfo.symbol} on Mango-v4`,
         listForSwapOnly: false,
+        fastListing: false,
       })
       setLoadingListingParams(false)
       setIsPyth(isPyth)
