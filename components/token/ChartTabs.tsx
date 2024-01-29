@@ -7,9 +7,57 @@ import { TokenStatsItem } from 'types'
 import { formatYAxis } from 'utils/formatting'
 import DetailedAreaOrBarChart from '@components/shared/DetailedAreaOrBarChart'
 import TokenRatesChart from './TokenRatesChart'
+import Switch from '@components/forms/Switch'
+
+interface GroupedTokenDataItem extends TokenStatsItem {
+  intervalStartMillis: number
+}
+
+const groupTokenByHourlyInterval = (
+  data: TokenStatsItem[],
+  daysToShow: string,
+  dataKey: 'total_deposits' | 'total_borrows',
+) => {
+  let intervalDurationHours
+  if (daysToShow === '30') {
+    intervalDurationHours = 24
+  } else if (daysToShow === '7') {
+    intervalDurationHours = 4
+  } else {
+    intervalDurationHours = 1
+  }
+  const intervalMillis = intervalDurationHours * 60 * 60 * 1000
+  const groupedData = []
+  let currentGroup: GroupedTokenDataItem | null = null
+  for (let i = 0; i < data.length; i++) {
+    const obj = data[i]
+    const date = new Date(obj.date_hour)
+    const intervalStartMillis =
+      Math.floor(date.getTime() / intervalMillis) * intervalMillis
+    if (
+      !currentGroup ||
+      currentGroup.intervalStartMillis !== intervalStartMillis
+    ) {
+      currentGroup = {
+        ...obj,
+        intervalStartMillis: intervalStartMillis,
+      }
+      groupedData.push(currentGroup)
+    } else {
+      currentGroup[dataKey] += obj[dataKey]
+    }
+  }
+  return groupedData
+}
 
 const ChartTabs = ({ bank }: { bank: Bank }) => {
   const { t } = useTranslation('token')
+  const [showDepositsRelativeChange, setShowDepositsRelativeChange] =
+    useState(true)
+  const [showDepositsNotional, setShowDepositsNotional] = useState(false)
+  const [showBorrowsRelativeChange, setShowBorrowsRelativeChange] =
+    useState(true)
+  const [showBorrowsNotional, setShowBorrowsNotional] = useState(false)
   const [activeDepositsTab, setActiveDepositsTab] = useState('token:deposits')
   const [activeBorrowsTab, setActiveBorrowsTab] = useState('token:borrows')
   const [depositDaysToShow, setDepositDaysToShow] = useState('30')
@@ -27,22 +75,84 @@ const ChartTabs = ({ bank }: { bank: Bank }) => {
     }
   }, [tokenStatsInitialLoad])
 
-  const statsHistory = useMemo(() => {
+  const formattedStats = useMemo(() => {
     if (!tokenStats?.length) return []
-    return tokenStats.reduce((a: TokenStatsItem[], c: TokenStatsItem) => {
-      if (c.token_index === bank.tokenIndex) {
-        const copy = { ...c }
-        a.push(copy)
-      }
-      return a.sort(
+    return tokenStats
+      .filter((c) => c.token_index === bank.tokenIndex)
+      .sort(
         (a, b) =>
           new Date(a.date_hour).getTime() - new Date(b.date_hour).getTime(),
       )
-    }, [])
-  }, [tokenStats, bank])
+  }, [bank, tokenStats])
+
+  const depositsStats = useMemo(() => {
+    if (!formattedStats.length) return []
+
+    if (showDepositsRelativeChange) {
+      if (!showDepositsNotional) return formattedStats
+      return formattedStats.map((currentStat) => {
+        currentStat = {
+          ...currentStat,
+          total_deposits: currentStat.total_deposits * bank.uiPrice,
+        }
+        return currentStat
+      })
+    }
+
+    return formattedStats
+      .map((currentStat, index, array) => {
+        const previousStat = array[index - 1]
+
+        if (previousStat) {
+          const isNotionalMultiplier = showDepositsNotional ? bank.uiPrice : 1
+          currentStat = {
+            ...currentStat,
+            total_deposits:
+              (currentStat.total_deposits - previousStat.total_deposits) *
+              isNotionalMultiplier,
+          }
+        }
+
+        return currentStat
+      })
+      .slice(1)
+  }, [bank, formattedStats, showDepositsNotional, showDepositsRelativeChange])
+
+  const borrowsStats = useMemo(() => {
+    if (!formattedStats.length) return []
+
+    if (showBorrowsRelativeChange) {
+      if (!showBorrowsNotional) return formattedStats
+      return formattedStats.map((currentStat) => {
+        currentStat = {
+          ...currentStat,
+          total_borrows: currentStat.total_borrows * bank.uiPrice,
+        }
+        return currentStat
+      })
+    }
+
+    return formattedStats
+      .map((currentStat, index, array) => {
+        const previousStat = array[index - 1]
+
+        if (previousStat) {
+          const isNotionalMultiplier = showBorrowsNotional ? bank.uiPrice : 1
+          currentStat = {
+            ...currentStat,
+            total_borrows:
+              (currentStat.total_borrows - previousStat.total_borrows) *
+              isNotionalMultiplier,
+          }
+        }
+
+        return currentStat
+      })
+      .slice(1)
+  }, [bank, formattedStats, showBorrowsNotional, showBorrowsRelativeChange])
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2">
+    <div className="grid grid-cols-1 overflow-x-hidden md:grid-cols-2">
       <div className="col-span-1 border-b border-th-bkg-3 md:border-b-0 md:border-r">
         <div className="w-full">
           <TabButtons
@@ -54,32 +164,69 @@ const ChartTabs = ({ bank }: { bank: Bank }) => {
               ['token:deposit-rates', 0],
             ]}
           />
-          <div className="h-[412px] border-t border-th-bkg-3 px-6 py-6 sm:h-96">
+          <div className="border-t border-th-bkg-3">
             {activeDepositsTab === 'token:deposits' ? (
-              <DetailedAreaOrBarChart
-                changeAsPercent
-                data={statsHistory}
-                daysToShow={depositDaysToShow}
-                setDaysToShow={setDepositDaysToShow}
-                heightClass="h-64"
-                loaderHeightClass="h-[334px]"
-                domain={[0, 'dataMax']}
-                loading={loadingTokenStats}
-                small
-                tickFormat={(x) => formatYAxis(x)}
-                title={`${t('token:deposits')}`}
-                xKey="date_hour"
-                yKey={'total_deposits'}
-              />
+              <>
+                <div className="px-4 pt-4 md:px-6 lg:pt-6">
+                  <DetailedAreaOrBarChart
+                    changeAsPercent
+                    hideChange={!showDepositsRelativeChange}
+                    data={
+                      showDepositsRelativeChange
+                        ? depositsStats
+                        : groupTokenByHourlyInterval(
+                            depositsStats,
+                            depositDaysToShow,
+                            'total_deposits',
+                          )
+                    }
+                    daysToShow={depositDaysToShow}
+                    setDaysToShow={setDepositDaysToShow}
+                    heightClass="h-64"
+                    loaderHeightClass="h-[334px]"
+                    domain={[0, 'dataMax']}
+                    loading={loadingTokenStats}
+                    small
+                    tickFormat={(x) => formatYAxis(x)}
+                    title={`${t('token:deposits')}`}
+                    xKey="date_hour"
+                    yKey={'total_deposits'}
+                    chartType={showDepositsRelativeChange ? 'area' : 'bar'}
+                    prefix={showDepositsNotional ? '$' : ''}
+                  />
+                </div>
+                <div className="mt-2 flex justify-end space-x-4 border-t border-th-bkg-3 px-4 py-2 md:px-6">
+                  <Switch
+                    checked={showDepositsRelativeChange}
+                    onChange={() =>
+                      setShowDepositsRelativeChange(!showDepositsRelativeChange)
+                    }
+                    small
+                  >
+                    {t('stats:show-relative')}
+                  </Switch>
+                  <Switch
+                    checked={showDepositsNotional}
+                    onChange={() =>
+                      setShowDepositsNotional(!showDepositsNotional)
+                    }
+                    small
+                  >
+                    {t('stats:notional')}
+                  </Switch>
+                </div>
+              </>
             ) : (
-              <TokenRatesChart
-                data={statsHistory}
-                dataKey="deposit_apr"
-                daysToShow={depositRateDaysToShow}
-                loading={loadingTokenStats}
-                setDaysToShow={setDepositRateDaysToShow}
-                title={`${t('token:average-deposit-rate')} (APR)`}
-              />
+              <div className="px-4 pt-4 md:px-6 lg:pt-6">
+                <TokenRatesChart
+                  data={formattedStats}
+                  dataKey="deposit_apr"
+                  daysToShow={depositRateDaysToShow}
+                  loading={loadingTokenStats}
+                  setDaysToShow={setDepositRateDaysToShow}
+                  title={`${t('token:average-deposit-rate')} (APR)`}
+                />
+              </div>
             )}
           </div>
         </div>
@@ -95,32 +242,69 @@ const ChartTabs = ({ bank }: { bank: Bank }) => {
               ['token:borrow-rates', 0],
             ]}
           />
-          <div className="h-[412px] border-t border-th-bkg-3 px-6 py-6 sm:h-96">
+          <div className="border-t border-th-bkg-3">
             {activeBorrowsTab === 'token:borrows' ? (
-              <DetailedAreaOrBarChart
-                changeAsPercent
-                data={statsHistory}
-                daysToShow={borrowDaysToShow}
-                setDaysToShow={setBorrowDaysToShow}
-                heightClass="h-64"
-                loaderHeightClass="h-[334px]"
-                domain={[0, 'dataMax']}
-                loading={loadingTokenStats}
-                small
-                tickFormat={(x) => formatYAxis(x)}
-                title={`${t('token:borrows')}`}
-                xKey="date_hour"
-                yKey={'total_borrows'}
-              />
+              <>
+                <div className="px-4 pt-4 md:px-6 lg:pt-6">
+                  <DetailedAreaOrBarChart
+                    changeAsPercent
+                    hideChange={!showBorrowsRelativeChange}
+                    data={
+                      showBorrowsRelativeChange
+                        ? borrowsStats
+                        : groupTokenByHourlyInterval(
+                            borrowsStats,
+                            borrowDaysToShow,
+                            'total_borrows',
+                          )
+                    }
+                    daysToShow={borrowDaysToShow}
+                    setDaysToShow={setBorrowDaysToShow}
+                    heightClass="h-64"
+                    loaderHeightClass="h-[334px]"
+                    domain={[0, 'dataMax']}
+                    loading={loadingTokenStats}
+                    small
+                    tickFormat={(x) => formatYAxis(x)}
+                    title={`${t('token:borrows')}`}
+                    xKey="date_hour"
+                    yKey={'total_borrows'}
+                    chartType={showBorrowsRelativeChange ? 'area' : 'bar'}
+                    prefix={showBorrowsNotional ? '$' : ''}
+                  />
+                </div>
+                <div className="mt-2 flex justify-end space-x-4 border-t border-th-bkg-3 px-4 py-2 md:px-6">
+                  <Switch
+                    checked={showBorrowsRelativeChange}
+                    onChange={() =>
+                      setShowBorrowsRelativeChange(!showBorrowsRelativeChange)
+                    }
+                    small
+                  >
+                    {t('stats:show-relative')}
+                  </Switch>
+                  <Switch
+                    checked={showBorrowsNotional}
+                    onChange={() =>
+                      setShowBorrowsNotional(!showBorrowsNotional)
+                    }
+                    small
+                  >
+                    {t('stats:notional')}
+                  </Switch>
+                </div>
+              </>
             ) : (
-              <TokenRatesChart
-                data={statsHistory}
-                dataKey="borrow_apr"
-                daysToShow={borrowRateDaysToShow}
-                loading={loadingTokenStats}
-                setDaysToShow={setBorrowRateDaysToShow}
-                title={`${t('token:average-borrow-rate')} (APR)`}
-              />
+              <div className="px-4 pt-4 md:px-6 lg:pt-6">
+                <TokenRatesChart
+                  data={formattedStats}
+                  dataKey="borrow_apr"
+                  daysToShow={borrowRateDaysToShow}
+                  loading={loadingTokenStats}
+                  setDaysToShow={setBorrowRateDaysToShow}
+                  title={`${t('token:average-borrow-rate')} (APR)`}
+                />
+              </div>
             )}
           </div>
         </div>
