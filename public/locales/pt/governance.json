@@ -110,5 +110,6 @@
     "create-oracle": "Criar oráculo",
     "tier": "Nível",
     "on-boarding-description-1": "Se você deseja usar tokens delegados, vá para a visualização de votação e selecione a carteira no canto superior direito.",
-    "create-bigger-market": "Criar mercado com fila de eventos maior - custo ~7.5 SOL"
+    "create-bigger-market": "Criar mercado com fila de eventos maior - custo ~7.5 SOL",
+    "fast-listing": "Fast listing"
 }

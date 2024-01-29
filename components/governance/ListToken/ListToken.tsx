@@ -18,6 +18,7 @@ import {
   toUiDecimals,
 } from '@blockworks-foundation/mango-v4'
 import {
+  MANGO_DAO_FAST_LISTING_GOVERNANCE,
   MANGO_DAO_FAST_LISTING_WALLET,
   MANGO_DAO_WALLET,
   MANGO_DAO_WALLET_GOVERNANCE,
@@ -76,6 +77,7 @@ type TokenListForm = {
   proposalTitle: string
   proposalDescription: string
   listForSwapOnly: boolean
+  fastListing: boolean
 }
 
 const defaultTokenListFormValues: TokenListForm = {
@@ -92,6 +94,7 @@ const defaultTokenListFormValues: TokenListForm = {
   proposalTitle: '',
   proposalDescription: '',
   listForSwapOnly: false,
+  fastListing: false,
 }
 
 const TWENTY_K_USDC_BASE = '20000000000'
@@ -469,7 +472,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     const mint = new PublicKey(advForm.mintPk)
     const proposalTx = []
 
-    if (Object.keys(proposedPreset).length) {
+    if (Object.keys(proposedPreset).length && !advForm.fastListing) {
       const registerTokenIx = await client!.program.methods
         .tokenRegister(
           Number(advForm.tokenIndex),
@@ -548,12 +551,16 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         )
         .accounts({
           group: group!.publicKey,
-          admin: MANGO_DAO_WALLET,
+          admin: advForm.fastListing
+            ? MANGO_DAO_FAST_LISTING_WALLET
+            : MANGO_DAO_WALLET,
           serumProgram: new PublicKey(advForm.openBookProgram),
           serumMarketExternal: new PublicKey(advForm.openBookMarketExternalPk),
           baseBank: new PublicKey(advForm.baseBankPk),
           quoteBank: new PublicKey(advForm.quoteBankPk),
-          payer: MANGO_DAO_WALLET,
+          payer: advForm.fastListing
+            ? MANGO_DAO_FAST_LISTING_WALLET
+            : MANGO_DAO_WALLET,
         })
         .instruction()
       proposalTx.push(registerMarketix)
@@ -561,7 +568,9 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     const rp = new ReferralProvider(connection)
 
     const tx = await rp.initializeReferralTokenAccount({
-      payerPubKey: MANGO_DAO_WALLET,
+      payerPubKey: advForm.fastListing
+        ? MANGO_DAO_FAST_LISTING_WALLET
+        : MANGO_DAO_WALLET,
       referralAccountPubKey: JUPITER_REFERRAL_PK,
       mint: mint,
     })
@@ -585,7 +594,9 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           connection,
           client,
           walletSigner,
-          MANGO_DAO_WALLET_GOVERNANCE,
+          advForm.fastListing
+            ? MANGO_DAO_FAST_LISTING_GOVERNANCE
+            : MANGO_DAO_WALLET_GOVERNANCE,
           voter.tokenOwnerRecord!,
           advForm.proposalTitle,
           advForm.proposalDescription,
@@ -865,6 +876,22 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                               </div>
                             )}
                           </div>
+                          {proposedPreset.preset_key === 'UNTRUSTED' && (
+                            <div>
+                              <Label text={t('fast-listing')} />
+                              <Checkbox
+                                checked={advForm.fastListing}
+                                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                  handleSetAdvForm(
+                                    'fastListing',
+                                    e.target.checked,
+                                  )
+                                }
+                              >
+                                <></>
+                              </Checkbox>
+                            </div>
+                          )}
                           <div>
                             <Label text={t('base-bank')} />
                             <Input
