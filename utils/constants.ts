@@ -148,6 +148,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   crown: true,
   dai: true,
   dual: true,
+  elon: true,
   eth: true,
   ethpo: true,
   'eth (portal)': true,
