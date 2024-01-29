@@ -101,9 +101,7 @@ const CreateAccountForm = ({
           (acc) => acc.accountNum === newAccountNum,
         )
         const filteredMangoAccounts = reloadedMangoAccounts?.length
-          ? reloadedMangoAccounts.filter(
-              (acc) => !acc.name.includes('Leverage Stake'),
-            )
+          ? reloadedMangoAccounts
           : []
         if (newAccount) {
           set((s) => {

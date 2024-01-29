@@ -669,10 +669,7 @@ const mangoStore = create<MangoStore>()(
               client.getMangoAccountsForOwner(group, ownerPk),
               client.getMangoAccountsForDelegate(group, ownerPk),
             ])
-            const mangoAccounts = [
-              ...ownerMangoAccounts,
-              ...delegateAccounts,
-            ].filter((acc) => !acc.name.includes('Leverage Stake'))
+            const mangoAccounts = [...ownerMangoAccounts, ...delegateAccounts]
             const selectedAccountIsNotInAccountsList = mangoAccounts.find(
               (x) =>
                 x.publicKey.toBase58() ===
