@@ -9,6 +9,9 @@ import DetailedAreaOrBarChart from '@components/shared/DetailedAreaOrBarChart'
 import TokenRatesChart from './TokenRatesChart'
 import Switch from '@components/forms/Switch'
 
+const SWITCH_WRAPPER_CLASSES =
+  'mt-4 flex justify-end space-x-4 border-t border-th-bkg-3 px-4 py-2 md:px-6'
+
 interface GroupedTokenDataItem extends TokenStatsItem {
   intervalStartMillis: number
 }
@@ -195,7 +198,7 @@ const ChartTabs = ({ bank }: { bank: Bank }) => {
                     prefix={showDepositsNotional ? '$' : ''}
                   />
                 </div>
-                <div className="mt-2 flex justify-end space-x-4 border-t border-th-bkg-3 px-4 py-2 md:px-6">
+                <div className={SWITCH_WRAPPER_CLASSES}>
                   <Switch
                     checked={showDepositsRelativeChange}
                     onChange={() =>
@@ -273,7 +276,7 @@ const ChartTabs = ({ bank }: { bank: Bank }) => {
                     prefix={showBorrowsNotional ? '$' : ''}
                   />
                 </div>
-                <div className="mt-2 flex justify-end space-x-4 border-t border-th-bkg-3 px-4 py-2 md:px-6">
+                <div className={SWITCH_WRAPPER_CLASSES}>
                   <Switch
                     checked={showBorrowsRelativeChange}
                     onChange={() =>
