@@ -350,10 +350,10 @@
     bn.js "^5.2.1"
     eslint-config-prettier "^9.0.0"
 
-"@blockworks-foundation/mango-v4@0.21.27":
-  version "0.21.27"
-  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.21.27.tgz#1abb4ab908e6f9ae69db47b54dc7d6188e321cb1"
-  integrity sha512-lBS5bGkfokNvS6Q+rXjHFnfDVpJ8tmaV4WxyDTz6JYnGDQtui2JimpZ78sO4R7cqiaH6QEUSIPykpsA4dLaccg==
+"@blockworks-foundation/mango-v4@0.21.28":
+  version "0.21.28"
+  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.21.28.tgz#41748d456bc2ec3f4e24968402cc035140a0277f"
+  integrity sha512-XN/NxTISxi5ejJn0HT7RaRgz5ExPSU0PgN5ehSsgyFlUbGS3Fa0Pf80HJ7YQfI3nfl5OuEeR8wiRBMDhqJu+9g==
   dependencies:
     "@blockworks-foundation/mango-v4-settings" "0.4.10"
     "@blockworks-foundation/mangolana" "0.0.14"
