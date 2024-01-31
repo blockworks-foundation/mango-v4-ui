@@ -81,7 +81,7 @@ export const SEND_TELEMETRY_KEY = 'sendTelemetry-0.1'
 
 export const SLOTS_WARNING_KEY = 'tokenSlotsWarning-0.1'
 
-export const NEW_LISTING_BANNER_KEY = 'new-listing-banner-0.2'
+export const NEW_LISTING_BANNER_KEY = 'new-listing-banner-0.3'
 
 export const NON_RESTRICTED_JURISDICTION_KEY = 'non-restricted-jurisdiction-0.1'
 

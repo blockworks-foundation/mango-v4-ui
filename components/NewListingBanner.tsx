@@ -1,4 +1,5 @@
 import { XMarkIcon } from '@heroicons/react/20/solid'
+import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import useMangoGroup from 'hooks/useMangoGroup'
@@ -16,17 +17,27 @@ const NewListingBanner = () => {
 
   const latestListing = useMemo(() => {
     if (!group) return
-    const mintInfos = Array.from(group.mintInfosMapByTokenIndex).map(
-      ([, mintInfo]) => mintInfo,
+    const latest = group.getFirstBankByMint(
+      new PublicKey('JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN'),
     )
-    if (mintInfos?.length) {
-      const latestInfo = mintInfos.sort((a, b) => {
-        return b.registrationTime.toNumber() - a.registrationTime.toNumber()
-      })[0]
-      const latest = group.getFirstBankByMint(latestInfo.mint)
-      return latest
-    } else return
+
+    return latest
   }, [group])
+
+  // const latestListing = useMemo(() => {
+  //   if (!group) return
+  //   const mintInfos = Array.from(group.mintInfosMapByTokenIndex).map(
+  //     ([, mintInfo]) => mintInfo,
+  //   )
+  //   if (mintInfos?.length) {
+  //     const latestInfo = mintInfos.sort((a, b) => {
+  //       return b.registrationTime.toNumber() - a.registrationTime.toNumber()
+  //     })[0]
+  //     const latest = group.getFirstBankByMint(latestInfo.mint)
+
+  //     return latest
+  //   } else return
+  // }, [group])
 
   const newMarketName = useMemo(() => {
     if (!latestListing || !group || !serumMarkets || !serumMarkets?.length)
@@ -57,16 +68,16 @@ const NewListingBanner = () => {
               >
                 {`${t('trade')} ${latestListing.name}`}
               </Link>{' '}
-              <span className="text-[rgba(0,0,0,0.4)]">|</span>{' '}
+              {/* <span className="text-[rgba(0,0,0,0.4)]">|</span>{' '} */}
             </>
           ) : null}
-          <Link
+          {/* <Link
             className="text-black underline md:hover:text-black md:hover:no-underline"
             href={`/swap?in=USDC&out=${latestListing.name}`}
             shallow
           >
             {`${t('swap')} ${latestListing.name}`}
-          </Link>
+          </Link> */}
         </div>
       </div>
       <button
