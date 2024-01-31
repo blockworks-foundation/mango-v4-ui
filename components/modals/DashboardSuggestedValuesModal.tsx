@@ -24,7 +24,10 @@ import {
 import { createProposal } from 'utils/governance/instructions/createProposal'
 import { notify } from 'utils/notifications'
 import Button from '@components/shared/Button'
-import { compareObjectsAndGetDifferentKeys } from 'utils/governance/tools'
+import {
+  compareObjectsAndGetDifferentKeys,
+  tryGetPubKey,
+} from 'utils/governance/tools'
 import { Disclosure } from '@headlessui/react'
 import {
   LISTING_PRESET,
@@ -40,6 +43,9 @@ import {
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 import Select from '@components/forms/Select'
 import Loading from '@components/shared/Loading'
+import Label from '@components/forms/Label'
+import Input from '@components/forms/Input'
+import Switch from '@components/forms/Switch'
 
 const DashboardSuggestedValues = ({
   isOpen,
@@ -60,8 +66,10 @@ const DashboardSuggestedValues = ({
   const voter = GovernanceStore((s) => s.voter)
   const vsrClient = GovernanceStore((s) => s.vsrClient)
   const proposals = GovernanceStore((s) => s.proposals)
+  const [oracle, setOracle] = useState('')
+  const [forcePythOracle, setForcePythOracle] = useState(false)
   const PRESETS =
-    bank?.oracleProvider === OracleProvider.Pyth
+    bank?.oracleProvider === OracleProvider.Pyth || forcePythOracle
       ? getPythPresets(LISTING_PRESETS)
       : getSwitchBoardPresets(LISTING_PRESETS)
 
@@ -70,6 +78,10 @@ const DashboardSuggestedValues = ({
   const [suggestedTier, setSuggestedTier] =
     useState<LISTING_PRESETS_KEY>('liab_1')
   const [proposing, setProposing] = useState(false)
+
+  useEffect(() => {
+    setForcePythOracle(bank?.oracleProvider === OracleProvider.Pyth)
+  }, [bank.oracleProvider])
 
   const getApiTokenName = (bankName: string) => {
     if (bankName === 'ETH (Portal)') {
@@ -168,7 +180,7 @@ const DashboardSuggestedValues = ({
       ).length
       const ix = await client!.program.methods
         .tokenEdit(
-          null,
+          oracle ? tryGetPubKey(oracle) : null,
           isThereNeedOfSendingOracleConfig
             ? {
                 confFilter:
@@ -363,6 +375,15 @@ const DashboardSuggestedValues = ({
           {bank.name} - Suggested tier: {PRESETS[suggestedTier].preset_name}{' '}
           Current tier: ~{currentTier?.preset_name}
         </span>
+        <div className="py-4">
+          <p className="mb-2">
+            I want to use pyth oracle (will show presets available for pyth)
+          </p>
+          <Switch
+            checked={forcePythOracle}
+            onChange={(checked) => setForcePythOracle(checked)}
+          />
+        </div>
         <Select
           value={PRESETS[proposedTier].preset_name}
           onChange={(tier: LISTING_PRESETS_KEY) => setProposedTier(tier)}
@@ -380,6 +401,21 @@ const DashboardSuggestedValues = ({
         </Select>
       </h3>
       <div className="flex max-h-[600px] w-full flex-col overflow-auto">
+        <div className="p-4">
+          <div className="mb-2">
+            <Label text="Oracle pk (Leave empty if no change)" />
+            <Input
+              type="text"
+              value={oracle}
+              onChange={(e) => {
+                setOracle(e.target.value)
+              }}
+            />
+            {oracle !== '' && !tryGetPubKey(oracle) && (
+              <div className="text-th-error">Invalid publickey</div>
+            )}
+          </div>
+        </div>
         <Disclosure.Panel>
           <KeyValuePair
             label="Loan Fee Rate"
