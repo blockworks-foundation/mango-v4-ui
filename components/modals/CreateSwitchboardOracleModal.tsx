@@ -36,6 +36,7 @@ type BaseProps = ModalProps & {
   baseTokenPk: string
   baseTokenName: string
   tierKey: LISTING_PRESETS_KEY
+  isSolPool: boolean
 }
 
 type RaydiumProps = BaseProps & {
@@ -56,6 +57,7 @@ const CreateSwitchboardOracleModal = ({
   raydiumPoolAddress,
   orcaPoolAddress,
   tierKey,
+  isSolPool,
 }: RaydiumProps | OrcaProps) => {
   const { t } = useTranslation(['governance'])
   const connection = mangoStore((s) => s.connection)
@@ -157,28 +159,54 @@ const CreateSwitchboardOracleModal = ({
       ])
 
       let onFailureTaskDesc
-      if (!isReversePool) {
+      if (!isSolPool) {
+        if (!isReversePool) {
+          onFailureTaskDesc = [
+            {
+              lpExchangeRateTask: {
+                [poolPropertyName]: poolAddress,
+              },
+            },
+          ]
+        } else {
+          onFailureTaskDesc = [
+            {
+              valueTask: {
+                big: 1,
+              },
+            },
+            {
+              divideTask: {
+                job: {
+                  tasks: [
+                    {
+                      lpExchangeRateTask: {
+                        [poolPropertyName]: poolAddress,
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          ]
+        }
+      } else {
         onFailureTaskDesc = [
           {
             lpExchangeRateTask: {
               [poolPropertyName]: poolAddress,
             },
           },
-        ]
-      } else {
-        onFailureTaskDesc = [
           {
-            valueTask: {
-              big: 1,
-            },
-          },
-          {
-            divideTask: {
+            multiplyTask: {
               job: {
                 tasks: [
                   {
-                    lpExchangeRateTask: {
-                      [poolPropertyName]: poolAddress,
+                    oracleTask: {
+                      //pyth sol address
+                      pythAddress:
+                        'H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG',
+                      pythAllowedConfidenceInterval: 0.1,
                     },
                   },
                 ],
@@ -187,6 +215,7 @@ const CreateSwitchboardOracleModal = ({
           },
         ]
       }
+
       const settingFromLib = tierSettings[tierKey]
 
       if (!settingFromLib) {
