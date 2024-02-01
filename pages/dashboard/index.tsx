@@ -36,6 +36,7 @@ import useBanks from 'hooks/useBanks'
 import { PythHttpClient } from '@pythnetwork/client'
 import { MAINNET_PYTH_PROGRAM } from 'utils/governance/constants'
 import { PublicKey } from '@solana/web3.js'
+import { notify } from 'utils/notifications'
 
 dayjs.extend(relativeTime)
 
@@ -103,6 +104,22 @@ const Dashboard: NextPage = () => {
       }
     }
   }, [banks])
+
+  useEffect(() => {
+    if (banks.length) {
+      const banksWithZeroPrice = banks.filter((x) => x.price.isZero())
+
+      if (banksWithZeroPrice?.length) {
+        banksWithZeroPrice.map((x) =>
+          notify({
+            type: 'error',
+            description: `${x.name} reported price 0`,
+            title: '0 price detected',
+          }),
+        )
+      }
+    }
+  }, [banks.length])
 
   useEffect(() => {
     const handleGetPriceImapcts = async () => {
