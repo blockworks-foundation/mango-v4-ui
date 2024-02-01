@@ -155,6 +155,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   'eth (portal)': true,
   eurc: true,
   gecko: true,
+  gofx: true,
   guac: true,
   hnt: true,
   jitosol: true,
