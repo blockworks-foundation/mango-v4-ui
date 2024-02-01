@@ -60,6 +60,7 @@ import Checkbox from '@components/forms/Checkbox'
 import { ReferralProvider } from '@jup-ag/referral-sdk'
 import { BN } from '@coral-xyz/anchor'
 import Select from '@components/forms/Select'
+import { WRAPPED_SOL_MINT } from '@metaplex-foundation/js'
 
 type FormErrors = Partial<Record<keyof TokenListForm, string>>
 
@@ -134,6 +135,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const [orcaPoolAddress, setOrcaPoolAddress] = useState('')
   const [raydiumPoolAddress, setRaydiumPoolAddress] = useState('')
   const [oracleModalOpen, setOracleModalOpen] = useState(false)
+  const [isSolPool, setIsSolPool] = useState(false)
   const [isPyth, setIsPyth] = useState(false)
   const presets = useMemo(() => {
     return !isPyth
@@ -149,13 +151,11 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     baseTokenPrice,
     currentTokenInfo?.decimals || 0,
   )
-  useEffect(() => {
-    setPreset(
-      Object.values(presets).find(
-        (x) => x.preset_target_amount === proposedPresetTargetAmount,
-      ) || presets.UNTRUSTED,
-    )
-  }, [presets, proposedPresetTargetAmount])
+
+  const suggestedPreset =
+    Object.values(presets).find(
+      (x) => x.preset_target_amount === proposedPresetTargetAmount,
+    ) || presets.UNTRUSTED
 
   useEffect(() => {
     setAdvForm((prevState) => ({
@@ -380,6 +380,32 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       (x) => x.label?.toLowerCase().includes('raydium'),
     )
 
+    if (!orcaPool?.ammKey && !raydiumPool?.ammKey) {
+      try {
+        const dex = await fetch(
+          `https://api.dexscreener.com/latest/dex/search?q=${tokenMint.toBase58()}`,
+        )
+        const resp = await dex.json()
+        if (!resp?.pairs?.length) {
+          return
+        }
+        const bestSolPool = resp.pairs.find(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (x: any) => x.quoteToken.address === WRAPPED_SOL_MINT.toBase58(),
+        )
+        if (bestSolPool.dexId.includes('raydium')) {
+          setRaydiumPoolAddress(bestSolPool.pairAddress)
+        }
+        if (bestSolPool.dexId.includes('orca')) {
+          setOrcaPoolAddress(bestSolPool.pairAddress)
+        }
+        setIsSolPool(true)
+        return
+      } catch (e) {
+        console.log(e)
+      }
+    }
+    console.log('123123123')
     setOrcaPoolAddress(orcaPool?.ammKey || '')
     setRaydiumPoolAddress(raydiumPool?.ammKey || '')
   }
@@ -724,35 +750,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                   <p>{t('symbol')}</p>
                   <p className="text-th-fgd-2">{currentTokenInfo?.symbol}</p>
                 </div>
-                <div className="mb-2 flex items-center justify-between">
-                  <p>{t('tier')}</p>
-                  <Select
-                    value={proposedPreset.preset_name}
-                    onChange={(val) => {
-                      setPreset(LISTING_PRESETS[val as LISTING_PRESETS_KEY]!)
-                    }}
-                    className="w-[200px]"
-                  >
-                    {Object.keys(LISTING_PRESETS).map((name) => (
-                      <Select.Option key={name} value={name}>
-                        <div className="flex w-full items-center justify-between">
-                          {
-                            LISTING_PRESETS[name as LISTING_PRESETS_KEY]
-                              .preset_name
-                          }{' '}
-                          {`{${
-                            LISTING_PRESETS[name as LISTING_PRESETS_KEY]
-                              .preset_key
-                          }}`}
-                          {LISTING_PRESETS[name as LISTING_PRESETS_KEY]
-                            .preset_target_amount === proposedPresetTargetAmount
-                            ? '- suggested'
-                            : ''}
-                        </div>
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </div>
                 <div className="flex items-center justify-between">
                   <p>{t('mint')}</p>
                   <p className="flex items-center">
@@ -798,6 +795,44 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                       </Disclosure.Button>
                       <Disclosure.Panel>
                         <div className="space-y-4 rounded-md rounded-t-none bg-th-bkg-2 p-4">
+                          <div className="mb-2 flex items-center justify-between">
+                            <p>
+                              {t('tier')} (suggested:{' '}
+                              {suggestedPreset.preset_name})
+                            </p>
+                            <Select
+                              value={proposedPreset.preset_name}
+                              onChange={(val) => {
+                                setPreset(
+                                  LISTING_PRESETS[val as LISTING_PRESETS_KEY]!,
+                                )
+                              }}
+                              className="w-[200px]"
+                            >
+                              {Object.keys(LISTING_PRESETS).map((name) => (
+                                <Select.Option key={name} value={name}>
+                                  <div className="flex w-full items-center justify-between">
+                                    {
+                                      LISTING_PRESETS[
+                                        name as LISTING_PRESETS_KEY
+                                      ].preset_name
+                                    }{' '}
+                                    {`{${
+                                      LISTING_PRESETS[
+                                        name as LISTING_PRESETS_KEY
+                                      ].preset_key
+                                    }}`}
+                                    {LISTING_PRESETS[
+                                      name as LISTING_PRESETS_KEY
+                                    ].preset_target_amount ===
+                                    proposedPresetTargetAmount
+                                      ? '- suggested'
+                                      : ''}
+                                  </div>
+                                </Select.Option>
+                              ))}
+                            </Select>
+                          </div>
                           <div>
                             <Label text={t('oracle')} />
                             <Input
@@ -1098,6 +1133,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                       openbookMarketPk={advForm.openBookMarketExternalPk}
                       isOpen={oracleModalOpen}
                       onClose={closeCreateOracleModal}
+                      isSolPool={isSolPool}
                     ></CreateSwitchboardOracleModal>
                   </li>
                 ) : null}
