@@ -1108,6 +1108,7 @@ const mangoStore = create<MangoStore>()(
                 connection,
                 10000,
               )) as SerumEvent[]
+
               loadedFills = serumFills.filter((f) => !f?.eventFlags?.maker)
             } else if (perpMarket) {
               const perpFills = (await perpMarket.loadFills(
