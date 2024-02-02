@@ -43,6 +43,7 @@ import {
   INPUT_TOKEN_DEFAULT,
   LAST_ACCOUNT_KEY,
   MANGO_DATA_API_URL,
+  MANGO_DATA_OPENBOOK_URL,
   MANGO_MAINNET_GROUP,
   MAX_PRIORITY_FEE_KEYS,
   OUTPUT_TOKEN_DEFAULT,
@@ -56,7 +57,6 @@ import {
   OrderbookL2,
   PerpStatsItem,
   PerpTradeHistory,
-  SerumEvent,
   SpotBalances,
   SpotTradeHistory,
   SwapHistoryItem,
@@ -69,6 +69,7 @@ import {
   PositionStat,
   OrderbookTooltip,
   SwapTypes,
+  SerumFill,
 } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
@@ -235,7 +236,7 @@ export type MangoStore = {
   selectedMarket: {
     name: string | undefined
     current: Serum3Market | PerpMarket | undefined
-    fills: (ParsedFillEvent | SerumEvent)[]
+    fills: (ParsedFillEvent | SerumFill)[]
     bidsAccount: BookSide | Orderbook | undefined
     asksAccount: BookSide | Orderbook | undefined
     orderbook: OrderbookL2
@@ -1088,7 +1089,6 @@ const mangoStore = create<MangoStore>()(
           const selectedMarket = get().selectedMarket.current
           const group = get().group
           const client = get().client
-          const connection = get().connection
           try {
             let serumMarket
             let perpMarket
@@ -1102,13 +1102,12 @@ const mangoStore = create<MangoStore>()(
               perpMarket = selectedMarket
             }
 
-            let loadedFills: (ParsedFillEvent | SerumEvent)[] = []
+            let loadedFills: (ParsedFillEvent | SerumFill)[] = []
             if (serumMarket) {
-              const serumFills = (await serumMarket.loadFills(
-                connection,
-                10000,
-              )) as SerumEvent[]
-              loadedFills = serumFills.filter((f) => !f?.eventFlags?.maker)
+              const response = await fetch(
+                `${MANGO_DATA_OPENBOOK_URL}/${serumMarket.address.toBase58()}/recent-fills`,
+              )
+              loadedFills = await response.json() as SerumFill[]
             } else if (perpMarket) {
               const perpFills = (await perpMarket.loadFills(
                 client,

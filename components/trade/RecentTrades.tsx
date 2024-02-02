@@ -105,7 +105,7 @@ const RecentTrades = () => {
     if (!latestFillId) {
       const fillId = isPerpFillEvent(latesetFill)
         ? latesetFill.takerClientOrderId
-        : latesetFill.orderId
+        : latesetFill.seq_num
       setLatestFillId(fillId.toString())
     }
   }, [fills])
@@ -115,10 +115,10 @@ const RecentTrades = () => {
     if (!soundSettings['recent-trades'] || !quoteBank || !latesetFill) return
     const fillId = isPerpFillEvent(latesetFill)
       ? latesetFill.takerClientOrderId
-      : latesetFill.orderId
+      : latesetFill.seq_num
     setLatestFillId(fillId.toString())
     const fillsLimitIndex = fills.findIndex((f) => {
-      const id = isPerpFillEvent(f) ? f.takerClientOrderId : f.orderId
+      const id = isPerpFillEvent(f) ? f.takerClientOrderId : f.seq_num
       return id.toString() === fillId.toString()
     })
     const newFillsVolumeValue = fills
@@ -251,7 +251,7 @@ const RecentTrades = () => {
                     } else {
                       side = trade.side
                       size = trade.size
-                      time = ''
+                      time = new Date(trade.block_datetime + 'Z').getTime() / 1000;
                     }
 
                     const formattedPrice = formatPrice(market, trade.price)

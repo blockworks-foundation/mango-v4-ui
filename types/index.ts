@@ -76,35 +76,35 @@ export type PerpFillEvent = ParsedFillEvent
 
 export type CombinedTradeHistory = ReturnType<typeof formatTradeHistory>
 
+export type CombinedFillEventTypes =
+  | PerpFillEvent
+  | SerumFill
+
 export type CombinedTradeHistoryTypes =
   | SpotTradeHistory
   | PerpTradeHistory
-  | PerpFillEvent
-  | SerumEvent
 
 export const isSerumFillEvent = (
-  t: CombinedTradeHistoryTypes,
-): t is SerumEvent => {
-  if ('eventFlags' in t) return true
+  t: CombinedFillEventTypes,
+): t is SerumFill => {
+  if ('seq_num' in t) return true
   else return false
 }
 
 export const isPerpFillEvent = (
-  t: CombinedTradeHistoryTypes,
+  t: CombinedFillEventTypes,
 ): t is PerpFillEvent => {
   if ('takerSide' in t) return true
   else return false
 }
 
-export type SerumEvent = Modify<
-  Event,
-  {
-    price: number
-    size: number
-    side: string
-    feeCost: number
-  }
->
+export type SerumFill = {
+  block_datetime: string
+  price: number
+  size: number
+  side: string
+  seq_num: number
+}
 
 export type GenericMarket = Serum3Market | PerpMarket
 
