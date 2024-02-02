@@ -391,8 +391,11 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         }
         const bestSolPool = resp.pairs.find(
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (x: any) => x.quoteToken.address === WRAPPED_SOL_MINT.toBase58(),
+          (x: any) =>
+            x.quoteToken.address === WRAPPED_SOL_MINT.toBase58() ||
+            x.baseToken.address === WRAPPED_SOL_MINT.toBase58(),
         )
+
         if (bestSolPool.dexId.includes('raydium')) {
           setRaydiumPoolAddress(bestSolPool.pairAddress)
         }
