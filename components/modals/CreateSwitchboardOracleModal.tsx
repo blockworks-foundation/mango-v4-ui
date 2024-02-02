@@ -22,6 +22,7 @@ import { WhirlpoolContext, buildWhirlpoolClient } from '@orca-so/whirlpools-sdk'
 import { LIQUIDITY_STATE_LAYOUT_V4 } from '@raydium-io/raydium-sdk'
 import { LISTING_PRESETS_KEY } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 import { sendTxAndConfirm } from 'utils/governance/tools'
+import { WRAPPED_SOL_MINT } from '@metaplex-foundation/js'
 
 const poolAddressError = 'no-pool-address-found'
 const wrongTierPassedForCreation = 'Wrong tier passed for creation of oracle'
@@ -30,6 +31,7 @@ const SWITCHBOARD_PERMISSIONLESS_QUE =
   '5JYwqvKkqp35w8Nq3ba4z1WYUeJQ1rB36V8XvaGp6zn1'
 const SWITCHBOARD_PERMISSIONLESS_CRANK =
   'BKtF8yyQsj3Ft6jb2nkfpEKzARZVdGgdEPs6mFmZNmbA'
+const pythSolOracle = 'H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG'
 
 type BaseProps = ModalProps & {
   openbookMarketPk: string
@@ -115,7 +117,11 @@ const CreateSwitchboardOracleModal = ({
 
   const [creatingOracle, setCreatingOracle] = useState(false)
 
-  const isPoolReversed = async (type: 'orca' | 'raydium', poolPk: string) => {
+  const isPoolReversed = async (
+    type: 'orca' | 'raydium',
+    poolPk: string,
+    baseMint: string,
+  ) => {
     if (type === 'orca') {
       const context = WhirlpoolContext.from(
         connection,
@@ -124,12 +130,12 @@ const CreateSwitchboardOracleModal = ({
       )
       const whirlPoolClient = buildWhirlpoolClient(context)
       const whirlpool = await whirlPoolClient.getPool(new PublicKey(poolPk))
-      return whirlpool.getTokenAInfo().mint.toBase58() == USDC_MINT || false
+      return whirlpool.getTokenAInfo().mint.toBase58() == baseMint || false
     }
     if (type === 'raydium') {
       const info = await connection.getAccountInfo(new PublicKey(poolPk))
       const poolState = LIQUIDITY_STATE_LAYOUT_V4.decode(info!.data)
-      return poolState.baseMint.toBase58() === USDC_MINT || false
+      return poolState.baseMint.toBase58() === baseMint || false
     }
     return false
   }
@@ -149,6 +155,7 @@ const CreateSwitchboardOracleModal = ({
       const isReversePool = await isPoolReversed(
         orcaPoolAddress ? 'orca' : 'raydium',
         poolAddress!,
+        !isSolPool ? USDC_MINT : WRAPPED_SOL_MINT.toBase58(),
       )
 
       const program = await SwitchboardProgram.load(CLUSTER, connection)
@@ -158,55 +165,46 @@ const CreateSwitchboardOracleModal = ({
         CrankAccount.load(program, SWITCHBOARD_PERMISSIONLESS_CRANK),
       ])
 
-      let onFailureTaskDesc
-      if (!isSolPool) {
-        if (!isReversePool) {
-          onFailureTaskDesc = [
-            {
-              lpExchangeRateTask: {
-                [poolPropertyName]: poolAddress,
-              },
-            },
-          ]
-        } else {
-          onFailureTaskDesc = [
-            {
-              valueTask: {
-                big: 1,
-              },
-            },
-            {
-              divideTask: {
-                job: {
-                  tasks: [
-                    {
-                      lpExchangeRateTask: {
-                        [poolPropertyName]: poolAddress,
-                      },
-                    },
-                  ],
-                },
-              },
-            },
-          ]
-        }
-      } else {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let onFailureTaskDesc: { [key: string]: any }[]
+      if (!isReversePool) {
         onFailureTaskDesc = [
           {
             lpExchangeRateTask: {
               [poolPropertyName]: poolAddress,
             },
           },
-          {
+        ]
+        if (isSolPool) {
+          onFailureTaskDesc.push({
             multiplyTask: {
               job: {
                 tasks: [
                   {
                     oracleTask: {
-                      //pyth sol address
-                      pythAddress:
-                        'H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG',
+                      pythAddress: pythSolOracle,
                       pythAllowedConfidenceInterval: 0.1,
+                    },
+                  },
+                ],
+              },
+            },
+          })
+        }
+      } else {
+        onFailureTaskDesc = [
+          {
+            valueTask: {
+              big: 1,
+            },
+          },
+          {
+            divideTask: {
+              job: {
+                tasks: [
+                  {
+                    lpExchangeRateTask: {
+                      [poolPropertyName]: poolAddress,
                     },
                   },
                 ],
@@ -214,6 +212,22 @@ const CreateSwitchboardOracleModal = ({
             },
           },
         ]
+        if (isSolPool) {
+          onFailureTaskDesc.push({
+            multiplyTask: {
+              job: {
+                tasks: [
+                  {
+                    oracleTask: {
+                      pythAddress: pythSolOracle,
+                      pythAllowedConfidenceInterval: 0.1,
+                    },
+                  },
+                ],
+              },
+            },
+          })
+        }
       }
 
       const settingFromLib = tierSettings[tierKey]
