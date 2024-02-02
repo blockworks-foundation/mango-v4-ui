@@ -405,7 +405,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         console.log(e)
       }
     }
-    console.log('123123123')
     setOrcaPoolAddress(orcaPool?.ammKey || '')
     setRaydiumPoolAddress(raydiumPool?.ammKey || '')
   }
