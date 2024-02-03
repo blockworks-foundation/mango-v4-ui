@@ -19,6 +19,8 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { useTranslation } from 'next-i18next'
 import useSolBalance from 'hooks/useSolBalance'
 import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 const setMangoStore = mangoStore.getState().set
 
@@ -267,7 +269,13 @@ const TransactionNotification = ({
               <p
                 className={`mb-0 mt-0.5 break-all text-sm leading-tight text-th-fgd-4`}
               >
-                {parsedDescription}
+                <ReactMarkdown
+                  components={{ a: LinkRenderer }}
+                  className="markdown"
+                  remarkPlugins={[remarkGfm]}
+                >
+                  {parsedDescription}
+                </ReactMarkdown>
               </p>
             ) : null}
             {txid ? (
@@ -314,3 +322,14 @@ const TransactionNotification = ({
 }
 
 export default TransactionNotificationList
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function LinkRenderer(props: any) {
+  return (
+    // eslint-disable-next-line react/prop-types
+    <a href={props.href} target="_blank" rel="noreferrer">
+      {/* eslint-disable-next-line react/prop-types */}
+      {props.children}
+    </a>
+  )
+}
