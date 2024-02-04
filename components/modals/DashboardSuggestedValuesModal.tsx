@@ -91,7 +91,7 @@ const DashboardSuggestedValues = ({
   }
   const priceImpactsFiltered = useMemo(
     () =>
-      getMidPriceImpacts(priceImpacts).filter(
+      getMidPriceImpacts(priceImpacts.length ? priceImpacts : []).filter(
         (x) => x.symbol === getApiTokenName(bank.name),
       ),
     [priceImpacts, bank.name],
@@ -645,10 +645,7 @@ const DashboardSuggestedValues = ({
           />
           <KeyValuePair
             label="Deposit Limit"
-            value={`${toUiDecimals(
-              new BN(formattedBankValues.depositLimit.toString()),
-              bank.mintDecimals,
-            )}`}
+            value={`${formattedBankValues.depositLimit}`}
             proposedValue={
               suggestedFields.depositLimit !== undefined &&
               `${toUiDecimals(
