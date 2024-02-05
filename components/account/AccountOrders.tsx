@@ -44,7 +44,7 @@ const AccountOrders = () => {
           onChange={setActiveTab}
           tabs={tabsWithCount}
         />
-        {activeTab === 'trade:limit' && asPath !== '/' ? (
+        {activeTab === 'trade:limit' && asPath.includes('/trade') ? (
           <Switch
             checked={filterForCurrentMarket}
             onChange={() => setFilterForCurrentMarket(!filterForCurrentMarket)}
