@@ -359,7 +359,13 @@ const ClaimPage = () => {
                         <p className="-mb-1.5 font-rewards text-base text-white">
                           {item}
                         </p>
-                        <p className="-mb-1.5 font-rewards text-yellow-300">
+                        <p
+                          className={`-mb-1.5 font-rewards ${
+                            rarity.toLowerCase() === 'common'
+                              ? 'text-blue-600'
+                              : 'text-yellow-300'
+                          }`}
+                        >
                           {rarity}
                         </p>
                         <p className="-mb-1 font-rewards text-white">{info}</p>
