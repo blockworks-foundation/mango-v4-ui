@@ -202,8 +202,9 @@ export const createLedgerMessage = async (
 }
 
 function enrichError(
-  notification: TransactionNotification,
+  unparsedNotification: TransactionNotification,
 ): TransactionNotification {
+  const notification = { ...unparsedNotification }
   if (
     notification.txid !== null &&
     notification.type == 'error' &&
@@ -218,7 +219,9 @@ function enrichError(
       } else if (errorCode === 1) {
         notification.description = 'Error Code 0x1: Insufficient funds'
       }
-    } catch (e) {}
+    } catch (e) {
+      console.log('error while parsing txn error: ', e)
+    }
   }
   return notification
 }
