@@ -5,11 +5,7 @@ import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import mangoStore, { CLUSTER } from '@store/mangoStore'
 import { Token } from 'types/jupiter'
 import { handleGetRoutes } from '@components/swap/useQuoteRoutes'
-import {
-  JUPITER_PRICE_API_MAINNET,
-  JUPITER_REFERRAL_PK,
-  USDC_MINT,
-} from 'utils/constants'
+import { JUPITER_PRICE_API_MAINNET, USDC_MINT } from 'utils/constants'
 import { PublicKey, SYSVAR_RENT_PUBKEY, Transaction } from '@solana/web3.js'
 import { useWallet } from '@solana/wallet-adapter-react'
 import {
@@ -57,7 +53,6 @@ import {
   LISTING_PRESETS_KEY,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 import Checkbox from '@components/forms/Checkbox'
-import { ReferralProvider } from '@jup-ag/referral-sdk'
 import { BN } from '@coral-xyz/anchor'
 import Select from '@components/forms/Select'
 import { WRAPPED_SOL_MINT } from '@metaplex-foundation/js'
@@ -268,7 +263,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       onlyDirect = false,
     ) => {
       const SLIPPAGE_BPS = 50
-      const FEE = 0
       const walletForCheck = wallet.publicKey
         ? wallet.publicKey?.toBase58()
         : emptyPk
@@ -279,7 +273,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         toNative(amount, 6).toNumber(),
         SLIPPAGE_BPS,
         mode,
-        FEE,
         walletForCheck,
         undefined, // mangoAccount
         'JUPITER',
@@ -601,21 +594,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         })
         .instruction()
       proposalTx.push(registerMarketix)
-    }
-    const rp = new ReferralProvider(connection)
-
-    const tx = await rp.initializeReferralTokenAccount({
-      payerPubKey: advForm.fastListing
-        ? MANGO_DAO_FAST_LISTING_WALLET
-        : MANGO_DAO_WALLET,
-      referralAccountPubKey: JUPITER_REFERRAL_PK,
-      mint: mint,
-    })
-    const isExistingAccount =
-      (await connection.getBalance(tx.referralTokenAccountPubKey)) > 1
-
-    if (!isExistingAccount) {
-      proposalTx.push(...tx.tx.instructions)
     }
 
     const walletSigner = wallet as never

@@ -408,7 +408,7 @@
     near-api-js "^0.44.2"
     near-seed-phrase "^0.2.0"
 
-"@coral-xyz/anchor@0.28.1-beta.2", "@coral-xyz/anchor@^0.26.0", "@coral-xyz/anchor@^0.27.0", "@coral-xyz/anchor@^0.28.0", "@coral-xyz/anchor@^0.28.1-beta.2", "@coral-xyz/anchor@~0.27.0":
+"@coral-xyz/anchor@^0.26.0", "@coral-xyz/anchor@^0.27.0", "@coral-xyz/anchor@^0.28.0", "@coral-xyz/anchor@^0.28.1-beta.2", "@coral-xyz/anchor@~0.27.0":
   version "0.27.0"
   resolved "https://registry.yarnpkg.com/@coral-xyz/anchor/-/anchor-0.27.0.tgz#621e5ef123d05811b97e49973b4ed7ede27c705c"
   integrity sha512-+P/vPdORawvg3A9Wj02iquxb4T0C5m4P6aZBVYysKl4Amk+r6aMPZkUhilBkD6E4Nuxnoajv3CFykUfkGE0n5g==
@@ -1243,16 +1243,6 @@
   dependencies:
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
-
-"@jup-ag/referral-sdk@0.1.5":
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/@jup-ag/referral-sdk/-/referral-sdk-0.1.5.tgz#02a8bc901154659e75a5f31ae9a3e3edd28cd6cd"
-  integrity sha512-0R/NuBkIj2otpLnatacZqIwVAwL+OIheSlT+a2atAaNuf2WceL4lKZ/EZWm1AVTFhmFd/07HHN9PJ2fma9AMPA==
-  dependencies:
-    "@coral-xyz/anchor" "0.28.1-beta.2"
-    "@solana/spl-token" "0.3.8"
-    "@solana/web3.js" "^1.77.3"
-    lodash "^4.17.21"
 
 "@keystonehq/bc-ur-registry-sol@^0.3.1":
   version "0.3.1"
@@ -2339,15 +2329,6 @@
     "@solana/buffer-layout-utils" "^0.2.0"
     buffer "^6.0.3"
 
-"@solana/spl-token@0.3.8":
-  version "0.3.8"
-  resolved "https://registry.yarnpkg.com/@solana/spl-token/-/spl-token-0.3.8.tgz#8e9515ea876e40a4cc1040af865f61fc51d27edf"
-  integrity sha512-ogwGDcunP9Lkj+9CODOWMiVJEdRtqHAtX2rWF62KxnnSWtMZtV9rDhTrZFshiyJmxDnRL/1nKE1yJHg4jjs3gg==
-  dependencies:
-    "@solana/buffer-layout" "^4.0.0"
-    "@solana/buffer-layout-utils" "^0.2.0"
-    buffer "^6.0.3"
-
 "@solana/spl-token@^0.1.6", "@solana/spl-token@^0.1.8":
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/@solana/spl-token/-/spl-token-0.1.8.tgz#f06e746341ef8d04165e21fc7f555492a2a0faa6"
@@ -2764,7 +2745,7 @@
     "@wallet-standard/app" "^1.0.1"
     "@wallet-standard/base" "^1.0.1"
 
-"@solana/web3.js@^1.17.0", "@solana/web3.js@^1.21.0", "@solana/web3.js@^1.22.0", "@solana/web3.js@^1.32.0", "@solana/web3.js@^1.36.0", "@solana/web3.js@^1.50.1", "@solana/web3.js@^1.56.2", "@solana/web3.js@^1.63.1", "@solana/web3.js@^1.66.2", "@solana/web3.js@^1.68.0", "@solana/web3.js@^1.75.0", "@solana/web3.js@^1.77.3", "@solana/web3.js@^1.78.2", "@solana/web3.js@^1.78.3", "@solana/web3.js@^1.87.6", "@solana/web3.js@^1.88.0":
+"@solana/web3.js@^1.17.0", "@solana/web3.js@^1.21.0", "@solana/web3.js@^1.22.0", "@solana/web3.js@^1.32.0", "@solana/web3.js@^1.36.0", "@solana/web3.js@^1.50.1", "@solana/web3.js@^1.56.2", "@solana/web3.js@^1.63.1", "@solana/web3.js@^1.66.2", "@solana/web3.js@^1.68.0", "@solana/web3.js@^1.75.0", "@solana/web3.js@^1.78.2", "@solana/web3.js@^1.78.3", "@solana/web3.js@^1.87.6", "@solana/web3.js@^1.88.0":
   version "1.89.1"
   resolved "https://registry.yarnpkg.com/@solana/web3.js/-/web3.js-1.89.1.tgz#52df6820f2d088c4558aa359af40580a03d10ec9"
   integrity sha512-t9TTLtPQxtQB3SAf/5E8xPXfVDsC6WGOsgKY02l2cbe0HLymT7ynE8Hu48Lk5qynHCquj6nhISfEHcjMkYpu/A==
