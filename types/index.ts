@@ -535,6 +535,7 @@ export type MarketsDataItem = {
   price_history: { price: number; time: string }[] | undefined
   quote_volume_1h: number
   quote_volume_24h: number
+  notionalQuoteVolume: number | undefined
 }
 
 export type cumOrderbookSide = {

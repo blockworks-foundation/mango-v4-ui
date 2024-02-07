@@ -4,6 +4,7 @@ import {
 } from 'hooks/useListedMarketsWithMarketData'
 
 export type AllowedKeys =
+  | 'notionalQuoteVolume'
   | 'quote_volume_24h'
   | 'quote_volume_1h'
   | 'change_24h'

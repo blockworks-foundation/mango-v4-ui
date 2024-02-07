@@ -67,6 +67,7 @@ export default function useListedMarketsWithMarketData() {
 
   const serumMarketsWithData = useMemo(() => {
     if (!serumMarkets || !serumMarkets.length) return []
+    const group = mangoStore.getState().group
     const allSpotMarkets: SerumMarketWithMarketData[] =
       serumMarkets as SerumMarketWithMarketData[]
     if (spotData && birdeyeSpotDailyPrices?.length) {
@@ -74,6 +75,15 @@ export default function useListedMarketsWithMarketData() {
         const spotEntries = Object.entries(spotData).find(
           (e) => e[0].toLowerCase() === market.name.toLowerCase(),
         )
+        const marketData = spotEntries
+          ? spotEntries[1][0]
+          : ({} as MarketsDataItem)
+        const quoteBankPrice = group?.getFirstBankByTokenIndex(
+          market.quoteTokenIndex,
+        )?.uiPrice
+        marketData.notionalQuoteVolume = marketData?.quote_volume_24h
+          ? marketData?.quote_volume_24h * (quoteBankPrice || 1)
+          : 0
         const birdeyePrices = birdeyeSpotDailyPrices.find(
           (prices) => prices.marketIndex === market.marketIndex,
         )
@@ -98,10 +108,9 @@ export default function useListedMarketsWithMarketData() {
         const change = currentPrice
           ? ((currentPrice - pastPrice) / pastPrice) * 100
           : 0
-
         market.rollingChange = change
         market.priceHistory = priceHistory
-        market.marketData = spotEntries ? spotEntries[1][0] : undefined
+        market.marketData = marketData
       }
     }
     return [...allSpotMarkets].sort((a, b) => a.name.localeCompare(b.name))
@@ -132,7 +141,7 @@ export default function useListedMarketsWithMarketData() {
       .sort((a, b) =>
         a.oracleLastUpdatedSlot == 0 ? -1 : a.name.localeCompare(b.name),
       )
-  }, [perpData, perpMarkets])
+  }, [currentPrices, perpData, perpMarkets])
 
   const isLoading = loadingMarketsData || loadingBirdeyeSpotDailyPrices
 

@@ -53,13 +53,14 @@ const MARKET_LINK_CLASSES =
 const MARKET_LINK_DISABLED_CLASSES =
   'flex w-full items-center justify-between py-2 px-4 md:hover:cursor-not-allowed'
 
+export const DEFAULT_SORT_KEY: AllowedKeys = 'notionalQuoteVolume'
+
 const MarketSelectDropdown = () => {
   const { t } = useTranslation(['common', 'trade'])
   const { selectedMarket } = useSelectedMarket()
   const [spotOrPerp, setSpotOrPerp] = useState(
     selectedMarket instanceof PerpMarket ? 'perp' : 'spot',
   )
-  const defaultSortByKey: AllowedKeys = 'quote_volume_24h'
   const [search, setSearch] = useState('')
   const [isOpen, setIsOpen] = useState(false)
   const { group } = useMangoGroup()
@@ -81,7 +82,7 @@ const MarketSelectDropdown = () => {
 
   const unsortedPerpMarketsToShow = useMemo(() => {
     if (!perpMarketsWithData.length) return []
-    return sortPerpMarkets(perpMarketsWithData, defaultSortByKey)
+    return sortPerpMarkets(perpMarketsWithData, DEFAULT_SORT_KEY)
   }, [perpMarketsWithData])
 
   const spotQuoteTokens: string[] = useMemo(() => {
@@ -109,11 +110,11 @@ const MarketSelectDropdown = () => {
       })
       return search
         ? startSearch(filteredMarkets, search)
-        : sortSpotMarkets(filteredMarkets, defaultSortByKey)
+        : sortSpotMarkets(filteredMarkets, DEFAULT_SORT_KEY)
     } else {
       return search
         ? startSearch(serumMarketsWithData, search)
-        : sortSpotMarkets(serumMarketsWithData, defaultSortByKey)
+        : sortSpotMarkets(serumMarketsWithData, DEFAULT_SORT_KEY)
     }
   }, [group, search, serumMarketsWithData, spotBaseFilter])
 
@@ -369,9 +370,9 @@ const MarketSelectDropdown = () => {
                     </p>
                     <p className="col-span-1 hidden sm:flex sm:justify-end">
                       <SortableColumnHeader
-                        sortKey="marketData.quote_volume_24h"
+                        sortKey="marketData.notionalQuoteVolume"
                         sort={() =>
-                          requestSerumSort('marketData.quote_volume_24h')
+                          requestSerumSort('marketData.notionalQuoteVolume')
                         }
                         sortConfig={serumSortConfig}
                         title={t('daily-volume')}
