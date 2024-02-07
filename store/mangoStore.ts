@@ -83,15 +83,12 @@ import {
   IOrderLineAdapter,
 } from '@public/charting_library/charting_library'
 import { nftThemeMeta } from 'utils/theme'
-import maxBy from 'lodash/maxBy'
-import mapValues from 'lodash/mapValues'
-import groupBy from 'lodash/groupBy'
-import sampleSize from 'lodash/sampleSize'
 import { fetchTokenStatsData, processTokenStatsData } from 'apis/mngo'
 import { OrderTypes } from 'utils/tradeForm'
 import { usePlausible } from 'next-plausible'
 import { collectTxConfirmationData } from 'utils/transactionConfirmationData'
 import { TxCallbackOptions } from '@blockworks-foundation/mango-v4/dist/types/src/client'
+import { PriorityFeesWebSocket } from 'apis/priorityFees/streaming'
 
 const ENDPOINTS = [
   {
@@ -1162,40 +1159,12 @@ const mangoStore = create<MangoStore>()(
           const currentTelemetry = get().telemetry
           if (!mangoAccount || !group || !client) return
 
-          const altResponse = await connection.getAddressLookupTable(
-            group.addressLookupTables[0],
-          )
-          const altKeys = altResponse.value?.state.addresses
-          if (!altKeys) return
+          const ws = new PriorityFeesWebSocket()
+          ws.connect()
 
-          const addresses = sampleSize(altKeys, MAX_PRIORITY_FEE_KEYS)
-
-          const fees = await connection.getRecentPrioritizationFees({
-            lockedWritableAccounts: addresses,
-          })
-
-          if (fees.length < 1) return
-
-          // get max priority fee per slot (and sort by slot from old to new)
-          const maxFeeBySlot = mapValues(groupBy(fees, 'slot'), (items) =>
-            maxBy(items, 'prioritizationFee'),
-          )
-          const maximumFees = Object.values(maxFeeBySlot).sort(
-            (a, b) => a!.slot - b!.slot,
-          ) as RecentPrioritizationFees[]
-
-          // get median of last 20 fees
-          const recentFees = maximumFees.slice(
-            Math.max(maximumFees.length - 20, 0),
-          )
-          const mid = Math.floor(recentFees.length / 2)
-          const medianFee =
-            recentFees.length % 2 !== 0
-              ? recentFees[mid].prioritizationFee
-              : (recentFees[mid - 1].prioritizationFee +
-                  recentFees[mid].prioritizationFee) /
-                2
-          const feeEstimate = Math.ceil(medianFee * feeMultiplier)
+          // ws subscribe
+          const feeEstimate = 0
+          console.log(feeEstimate)
 
           const provider = client.program.provider as AnchorProvider
           provider.opts.skipPreflight = true
