@@ -164,6 +164,27 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     }))
   }, [preset])
 
+  useEffect(() => {
+    const handleOracleUpdate = async () => {
+      if (currentTokenInfo) {
+        setLoadingListingParams(true)
+        const { oraclePk, isPyth } = await getOracle({
+          baseSymbol: currentTokenInfo.symbol,
+          quoteSymbol: 'usd',
+          connection,
+          targetAmount: proposedPreset.preset_target_amount,
+        })
+        setAdvForm({
+          ...advForm,
+          oraclePk: oraclePk || '',
+        })
+        setLoadingListingParams(false)
+        setIsPyth(isPyth)
+      }
+    }
+    handleOracleUpdate()
+  }, [proposedPreset.preset_name])
+
   const quoteBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
   const minVoterWeight = useMemo(
     () =>
@@ -206,14 +227,14 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   }
 
   const getListingParams = useCallback(
-    async (tokenInfo: Token, targetAmount: number) => {
+    async (tokenInfo: Token) => {
       setLoadingListingParams(true)
       const [{ oraclePk, isPyth }, marketPk] = await Promise.all([
         getOracle({
           baseSymbol: tokenInfo.symbol,
           quoteSymbol: 'usd',
           connection,
-          targetAmount: targetAmount,
+          targetAmount: 0,
         }),
         getBestMarket({
           baseMint: mint,
@@ -430,8 +451,8 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     setBaseTokenPrice(priceInfo.data[mint]?.price || 0)
     setCurrentTokenInfo(tokenInfo)
     if (tokenInfo) {
-      const targetAmount = await handleLiquidityCheck(new PublicKey(mint))
-      getListingParams(tokenInfo, targetAmount)
+      await handleLiquidityCheck(new PublicKey(mint))
+      getListingParams(tokenInfo)
     }
   }, [getListingParams, handleLiquidityCheck, jupiterTokens, mint, t])
 
@@ -678,13 +699,13 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const closeCreateOpenBookMarketModal = () => {
     setCreateOpenbookMarket(false)
     if (currentTokenInfo && proposedPresetTargetAmount) {
-      getListingParams(currentTokenInfo, proposedPresetTargetAmount)
+      getListingParams(currentTokenInfo)
     }
   }
   const closeCreateOracleModal = () => {
     setOracleModalOpen(false)
     if (currentTokenInfo && proposedPresetTargetAmount) {
-      getListingParams(currentTokenInfo, proposedPresetTargetAmount)
+      getListingParams(currentTokenInfo)
     }
   }
 
