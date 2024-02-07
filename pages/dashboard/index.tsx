@@ -315,6 +315,10 @@ const Dashboard: NextPage = () => {
                               value={`${formattedBankValues.loanOriginationFeeRate} bps`}
                             />
                             <KeyValuePair
+                              label="Flash Loan swap fee rate"
+                              value={`${formattedBankValues.flashLoanSwapFeeRate} bps`}
+                            />
+                            <KeyValuePair
                               label="Collected fees native"
                               value={`${formattedBankValues.collectedFeesNative} ($${formattedBankValues.collectedFeesNativePrice})`}
                             />
