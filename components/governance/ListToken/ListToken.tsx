@@ -680,10 +680,10 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       getListingParams(currentTokenInfo)
     }
   }
-  const closeCreateOracleModal = () => {
+  const closeCreateOracleModal = (oraclePk?: PublicKey) => {
     setOracleModalOpen(false)
-    if (currentTokenInfo && proposedPresetTargetAmount) {
-      getListingParams(currentTokenInfo)
+    if (oraclePk) {
+      handleSetAdvForm('oraclePk', oraclePk.toBase58())
     }
   }
 
@@ -833,7 +833,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                                       name as LISTING_PRESETS_KEY
                                     ].preset_target_amount ===
                                     proposedPresetTargetAmount
-                                      ? '- suggested'
+                                      ? ' - suggested'
                                       : ''}
                                   </div>
                                 </Select.Option>
