@@ -49,6 +49,7 @@ import CloseBorrowModal from './modals/CloseBorrowModal'
 import { floorToDecimal } from 'utils/numbers'
 import SheenLoader from './shared/SheenLoader'
 import useAccountInterest from 'hooks/useAccountInterest'
+import { handleGoToTradePage } from 'utils/markets'
 
 export const handleOpenCloseBorrowModal = (borrowBank: Bank) => {
   const group = mangoStore.getState().group
@@ -642,11 +643,12 @@ export const ActionsMenu = ({
   const { isUnownedAccount } = useUnownedAccount()
   const { isDesktop } = useViewport()
 
-  const spotMarket = useMemo(() => {
-    return spotMarkets.find((m) => {
-      const base = m.name.split('/')[0]
-      return base.toUpperCase() === bank.name.toUpperCase()
-    })
+  const hasSpotMarket = useMemo(() => {
+    const markets = spotMarkets.filter(
+      (m) => m.baseTokenIndex === bank?.tokenIndex,
+    )
+    if (markets?.length) return true
+    return false
   }, [spotMarkets])
 
   const handleShowActionModals = useCallback(
@@ -704,10 +706,6 @@ export const ActionsMenu = ({
     }
     router.push('/swap', undefined, { shallow: true })
   }, [bank, router, set])
-
-  const handleTrade = useCallback(() => {
-    router.push(`/trade?name=${spotMarket?.name}`, undefined, { shallow: true })
-  }, [spotMarket, router])
 
   return (
     <>
@@ -796,8 +794,12 @@ export const ActionsMenu = ({
                   <ActionsLinkButton onClick={handleSwap}>
                     {t('swap')}
                   </ActionsLinkButton>
-                  {spotMarket ? (
-                    <ActionsLinkButton onClick={handleTrade}>
+                  {hasSpotMarket ? (
+                    <ActionsLinkButton
+                      onClick={() =>
+                        handleGoToTradePage(bank, spotMarkets, router)
+                      }
+                    >
                       {t('trade')}
                     </ActionsLinkButton>
                   ) : null}
