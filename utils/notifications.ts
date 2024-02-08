@@ -37,6 +37,7 @@ export function notify(newNotification: {
   description?: string
   txid?: string
   noSound?: boolean
+  noMangoIdlEnrichment?: boolean
 }) {
   const setMangoStore = mangoStore.getState().set
   const notifications = mangoStore.getState().transactionNotifications
@@ -71,7 +72,9 @@ export function notify(newNotification: {
     ...newNotification,
   }
 
-  const parsedNotif = enrichError(newNotif)
+  const parsedNotif = !newNotification.noMangoIdlEnrichment
+    ? enrichError(newNotif)
+    : newNotif
   if (
     !parsedNotif.txid ||
     !notifications.find(
@@ -206,7 +209,7 @@ function enrichError(
 ): TransactionNotification {
   const notification = { ...unparsedNotification }
   if (
-    notification.txid !== null &&
+    notification.txid &&
     notification.type == 'error' &&
     notification.description
   ) {
