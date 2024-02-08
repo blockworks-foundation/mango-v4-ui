@@ -9,6 +9,7 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import { useTranslation } from 'next-i18next'
 import { useRouter } from 'next/router'
 import { useMemo, useState } from 'react'
+import { handleGoToTradePage } from 'utils/markets'
 
 const ActionPanel = ({ bank }: { bank: Bank }) => {
   const { t } = useTranslation('common')
@@ -25,23 +26,6 @@ const ActionPanel = ({ bank }: { bank: Bank }) => {
     }
     return []
   }, [group])
-
-  const handleTrade = () => {
-    const markets = spotMarkets.filter(
-      (m) => m.baseTokenIndex === bank?.tokenIndex,
-    )
-    if (markets) {
-      if (markets.length === 1) {
-        router.push(`/trade?name=${markets[0].name}`)
-      }
-      if (markets.length > 1) {
-        const market = markets.find((mkt) => !mkt.reduceOnly)
-        if (market) {
-          router.push(`/trade?name=${market.name}`)
-        }
-      }
-    }
-  }
 
   return (
     <>
@@ -87,7 +71,7 @@ const ActionPanel = ({ bank }: { bank: Bank }) => {
               !mangoAccount ||
               !serumMarkets.find((m) => m.baseTokenIndex === bank?.tokenIndex)
             }
-            onClick={handleTrade}
+            onClick={() => handleGoToTradePage(bank, spotMarkets, router)}
           >
             {t('trade')}
           </Button>

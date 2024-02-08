@@ -1,7 +1,9 @@
+import { Bank, Serum3Market } from '@blockworks-foundation/mango-v4'
 import {
   PerpMarketWithMarketData,
   SerumMarketWithMarketData,
 } from 'hooks/useListedMarketsWithMarketData'
+import { NextRouter } from 'next/router'
 
 export type AllowedKeys =
   | 'notionalQuoteVolume'
@@ -90,4 +92,25 @@ export const startSearch = (
     .sort((i1, i2) => i1.matchingIdx - i2.matchingIdx)
     .sort((i1, i2) => i2.matchingSymbolPercent - i1.matchingSymbolPercent)
     .map((item) => item.token)
+}
+
+export const handleGoToTradePage = (
+  bank: Bank | undefined,
+  spotMarkets: Serum3Market[],
+  router: NextRouter,
+) => {
+  const markets = spotMarkets.filter(
+    (m) => m.baseTokenIndex === bank?.tokenIndex,
+  )
+  if (markets) {
+    if (markets.length === 1) {
+      router.push(`/trade?name=${markets[0].name}`)
+    }
+    if (markets.length > 1) {
+      const market = markets.find((mkt) => !mkt.reduceOnly)
+      if (market) {
+        router.push(`/trade?name=${market.name}`)
+      }
+    }
+  }
 }
