@@ -417,6 +417,7 @@ const CreateSwitchboardOracleModal = ({
       })
       window.open(
         `https://app.switchboard.xyz/solana/mainnet-beta/feed/${aggregatorAccount.publicKey.toBase58()}`,
+        '_blank',
       )
       setCreatingOracle(false)
       onClose(aggregatorAccount.publicKey)
