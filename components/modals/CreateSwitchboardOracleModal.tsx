@@ -378,15 +378,10 @@ const CreateSwitchboardOracleModal = ({
       const transferAuthIx = aggregatorAccount.setAuthorityInstruction(payer, {
         newAuthority: MANGO_DAO_WALLET,
       })
-      const pushToCrankIx = await crankAccount.pushInstruction(payer, {
-        aggregatorAccount: aggregatorAccount,
-      })
 
       const latestBlockhash = await connection.getLatestBlockhash('processed')
-      const txChunks = chunk(
-        [...txArray1, lockTx, transferAuthIx, pushToCrankIx],
-        1,
-      )
+      const txChunks = chunk([...txArray1, lockTx, transferAuthIx], 1)
+
       const transactions: Transaction[] = []
 
       for (const chunkIndex in txChunks) {
