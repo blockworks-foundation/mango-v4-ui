@@ -178,6 +178,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   samo: true,
   slcl: true,
   sol: true,
+  step: true,
   stsol: true,
   tbtc: true,
   usdc: true,
