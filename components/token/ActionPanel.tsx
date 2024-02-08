@@ -50,9 +50,7 @@ const ActionPanel = ({ bank }: { bank: Bank }) => {
         <h2 className="mb-4 text-lg">Your {bank?.name}</h2>
         <div className="border-b border-th-bkg-4">
           <div className="flex justify-between border-t border-th-bkg-4 py-3">
-            <p>
-              {bank.name} {t('balance')}
-            </p>
+            <p>{t('balance')}</p>
             <p className="font-mono text-th-fgd-2">
               {mangoAccount ? (
                 <FormatNumericValue

@@ -131,7 +131,7 @@ export const getTokenInMax = (
         outputBank.getRemainingDepositLimit()!,
         outputBank.mintDecimals,
       ) *
-        outputBank.uiPrice >=
+        outputBank.uiPrice <=
         inputBank.uiPrice * rawMaxUiAmountWithBorrow,
   }
 }
