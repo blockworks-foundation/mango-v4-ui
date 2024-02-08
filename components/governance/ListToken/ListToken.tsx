@@ -822,7 +822,13 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                                       LISTING_PRESETS[
                                         name as LISTING_PRESETS_KEY
                                       ].preset_key
-                                    }}`}
+                                    }}${
+                                      LISTING_PRESETS[
+                                        name as LISTING_PRESETS_KEY
+                                      ].oracle === 0
+                                        ? ' - PYTH only'
+                                        : ''
+                                    }`}
                                     {LISTING_PRESETS[
                                       name as LISTING_PRESETS_KEY
                                     ].preset_target_amount ===
@@ -1103,7 +1109,9 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                     ) : null}
                   </li>
                 ) : null}
-                {!advForm.oraclePk && !loadingListingParams ? (
+                {!advForm.oraclePk &&
+                !loadingListingParams &&
+                proposedPreset.oracle !== 0 ? (
                   <li
                     className={`my-4 pl-2 ${
                       !advForm.openBookMarketExternalPk &&
