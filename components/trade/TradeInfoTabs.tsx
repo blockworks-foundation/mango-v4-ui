@@ -57,8 +57,8 @@ const TradeInfoTabs = () => {
   ])
 
   return (
-    <div className="hide-scroll h-full overflow-y-scroll">
-      <div className="hide-scroll flex items-center overflow-x-auto border-b border-th-bkg-3">
+    <div className="h-full">
+      <div className="hide-scroll flex w-full items-center overflow-x-auto border-b border-th-bkg-3 lg:fixed lg:top-0 lg:z-10">
         <div className="w-full md:w-auto md:border-r md:border-th-bkg-3 lg:w-full">
           <TabButtons
             activeValue={selectedTab}
@@ -74,7 +74,9 @@ const TradeInfoTabs = () => {
           size={isTablet ? 'large' : 'small'}
         />
       </div>
-      <TabContent selectedTab={selectedTab} />
+      <div className="thin-scroll overflow-y-auto md:h-[calc(100%-48px)] lg:relative lg:top-12">
+        <TabContent selectedTab={selectedTab} />
+      </div>
     </div>
   )
 }
