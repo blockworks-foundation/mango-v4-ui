@@ -38,14 +38,16 @@ const AccountOrders = () => {
 
   return (
     <>
-      <div className="flex items-center justify-between p-4 md:px-6">
+      <div className="flex flex-col p-4 sm:flex-row sm:items-center sm:justify-between md:px-6">
         <TabsText
           activeTab={activeTab}
+          className="w-full justify-center sm:w-auto"
           onChange={setActiveTab}
           tabs={tabsWithCount}
         />
         {activeTab === 'trade:limit' && asPath.includes('/trade') ? (
           <Switch
+            className="mt-6 flex justify-end sm:mt-0"
             checked={filterForCurrentMarket}
             onChange={() => setFilterForCurrentMarket(!filterForCurrentMarket)}
           >
