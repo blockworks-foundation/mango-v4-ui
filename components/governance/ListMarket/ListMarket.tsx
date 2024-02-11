@@ -445,9 +445,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
                   <div className="mt-2 flex items-center justify-between">
                     <p>{t('price-tick')}</p>
                     <p className="text-th-fgd-2">
-                      {tradingParams.priceIncrement <= 1e-9
-                        ? '1e-8'
-                        : tradingParams.priceIncrement.toString()}
+                      {tradingParams.priceIncrement.toString()}
                     </p>
                   </div>
                 ) : null}

@@ -149,10 +149,7 @@ const CreateOpenbookMarketModal = ({
       baseMint: baseMint || '',
       quoteMint: quoteMint || '',
       minimumOrderSize: tradingParams.minOrderSize.toString(),
-      minimumPriceTickSize:
-        tradingParams.priceIncrement <= 1e-9
-          ? '1e-8'
-          : tradingParams.priceIncrement.toString(),
+      minimumPriceTickSize: tradingParams.priceIncrement.toString(),
       xlMarket: false,
     })
   }, [
