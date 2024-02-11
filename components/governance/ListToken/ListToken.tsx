@@ -109,6 +109,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const fee = mangoStore((s) => s.priorityFee)
   const loadingVoter = GovernanceStore((s) => s.loadingVoter)
   const proposals = GovernanceStore((s) => s.proposals)
+  const refetchProposals = GovernanceStore((s) => s.refetchProposals)
   const getCurrentVotingPower = GovernanceStore((s) => s.getCurrentVotingPower)
   const connectionContext = GovernanceStore((s) => s.connectionContext)
   const { t } = useTranslation(['governance'])
@@ -520,13 +521,17 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       })
       return
     }
+    const newProposals = await refetchProposals()
+
+    const index = proposals ? Object.values(newProposals).length : 0
+
     const mint = new PublicKey(advForm.mintPk)
     const proposalTx = []
 
     if (Object.keys(proposedPreset).length && !advForm.fastListing) {
       const registerTokenIx = await client!.program.methods
         .tokenRegister(
-          Number(advForm.tokenIndex),
+          Number(index),
           advForm.name,
           {
             confFilter: Number(proposedPreset.oracleConfFilter),
@@ -579,7 +584,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       proposalTx.push(registerTokenIx)
     } else {
       const trustlessIx = await client!.program.methods
-        .tokenRegisterTrustless(Number(advForm.tokenIndex), advForm.name)
+        .tokenRegisterTrustless(Number(index), advForm.name)
         .accounts({
           mint: mint,
           payer: MANGO_DAO_FAST_LISTING_WALLET,
@@ -596,7 +601,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     if (!advForm.listForSwapOnly) {
       const registerMarketix = await client!.program.methods
         .serum3RegisterMarket(
-          Number(advForm.marketIndex),
+          Number(index),
           advForm.marketName,
           proposedPreset.oraclePriceBand,
         )
@@ -636,7 +641,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           voter.tokenOwnerRecord!,
           advForm.proposalTitle,
           advForm.proposalDescription,
-          advForm.tokenIndex,
+          index,
           proposalTx,
           vsrClient,
           fee,
@@ -665,12 +670,14 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     voter.voteWeight,
     voter.tokenOwnerRecord,
     minVoterWeight,
+    refetchProposals,
+    proposals,
     proposedPreset,
-    connection,
     t,
     mintVoterWeightNumber,
     client,
     group,
+    connection,
     fee,
   ])
 
@@ -862,6 +869,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                           <div>
                             <Label text={t('token-index')} />
                             <Input
+                              disabled={true}
                               hasError={formErrors.tokenIndex !== undefined}
                               type="number"
                               value={advForm.tokenIndex.toString()}
