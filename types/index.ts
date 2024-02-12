@@ -7,6 +7,7 @@ import {
   Serum3Market,
 } from '@blockworks-foundation/mango-v4'
 import { Modify } from '@blockworks-foundation/mango-v4'
+import { OpenbookV2Market } from '@blockworks-foundation/mango-v4/dist/types/src/accounts/openbookV2'
 import { JsonMetadata } from '@metaplex-foundation/js'
 import { Event } from '@project-serum/serum/lib/queue'
 import { PublicKey } from '@solana/web3.js'
@@ -106,7 +107,7 @@ export type SerumEvent = Modify<
   }
 >
 
-export type GenericMarket = Serum3Market | PerpMarket
+export type GenericMarket = Serum3Market | PerpMarket | OpenbookV2Market
 
 export type TradeHistoryApiResponseType = {
   trade_type: string

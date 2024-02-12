@@ -7,7 +7,9 @@ import {
   Serum3OrderType,
   Serum3SelfTradeBehavior,
   Serum3Side,
+  OpenbookV2Market,
 } from '@blockworks-foundation/mango-v4'
+import { MarketAccount } from '@openbook-dex/openbook-v2'
 import Checkbox from '@components/forms/Checkbox'
 import Tooltip from '@components/shared/Tooltip'
 import mangoStore from '@store/mangoStore'
@@ -78,6 +80,7 @@ import AccountSlotsFullNotification from '@components/shared/AccountSlotsFullNot
 import DepositWithdrawModal from '@components/modals/DepositWithdrawModal'
 import CreateAccountModal from '@components/modals/CreateAccountModal'
 import TradeformSubmitButton from './TradeformSubmitButton'
+import BigNumber from 'bignumber.js'
 
 dayjs.extend(relativeTime)
 
@@ -169,11 +172,14 @@ const AdvancedTradeForm = () => {
 
   // check for available perp account slots if perp market
   const perpSlotsFull = useMemo(() => {
-    if (!selectedMarket || selectedMarket instanceof Serum3Market) return false
-    const hasSlot = usedPerps.find(
-      (market) => market.marketIndex === selectedMarket.perpMarketIndex,
-    )
-    return usedPerps.length >= totalPerps.length && !hasSlot
+    if (selectedMarket instanceof PerpMarket) {
+      const hasSlot = usedPerps.find(
+        (market) => market.marketIndex === selectedMarket.perpMarketIndex,
+      )
+      return usedPerps.length >= totalPerps.length && !hasSlot
+    } else {
+      return false
+    }
   }, [usedPerps, totalPerps, selectedMarket])
 
   const setTradeType = useCallback(
@@ -370,6 +376,13 @@ const AdvancedTradeForm = () => {
 
   const tickDecimals = useMemo(() => {
     if (!serumOrPerpMarket) return 1
+    if (serumOrPerpMarket instanceof MarketAccount) {
+      const tickSize = new BigNumber(10)
+        .pow(serumOrPerpMarket.baseDecimals - serumOrPerpMarket.quoteDecimals)
+        .times(new BigNumber(serumOrPerpMarket.quoteLotSize.toString()))
+        .div(new BigNumber(serumOrPerpMarket.baseLotSize.toString()))
+        .toNumber()
+    }
     const tickSize = serumOrPerpMarket.tickSize
     const tickDecimals = getDecimalCount(tickSize)
     return tickDecimals
@@ -674,6 +687,36 @@ const AdvancedTradeForm = () => {
           selectedMarket.reduceOnly || tradeForm.reduceOnly,
           undefined,
           undefined,
+        )
+        actions.fetchOpenOrders(true)
+        set((s) => {
+          s.successAnimation.trade = true
+        })
+        if (soundSettings['swap-success']) {
+          successSound.play()
+        }
+        notify({
+          type: 'success',
+          title: 'Transaction successful',
+          txid: tx,
+        })
+      } else if (selectedMarket instanceof OpenbookV2Market) {
+        const spotOrderType = tradeForm.ioc
+          ? Serum3OrderType.immediateOrCancel
+          : tradeForm.postOnly && tradeForm.tradeType !== 'Market'
+          ? Serum3OrderType.postOnly
+          : Serum3OrderType.limit
+        const { signature: tx } = await client.openbookV2PlaceOrder(
+          group,
+          mangoAccount,
+          selectedMarket.openbookMarketExternal,
+          tradeForm.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
+          price,
+          baseSize,
+          Serum3SelfTradeBehavior.decrementTake,
+          spotOrderType,
+          Date.now(),
+          10,
         )
         actions.fetchOpenOrders(true)
         set((s) => {

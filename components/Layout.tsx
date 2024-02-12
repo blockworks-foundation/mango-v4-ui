@@ -166,7 +166,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
         >
           <TopBar />
           <NewListingBanner />
-          {asPath !== '/rewards' ? <PromoBanner /> : null}
+          {/* {asPath !== '/rewards' ? <PromoBanner /> : null} */}
           {children}
           <StatusBar collapsed={isCollapsed} />
         </div>

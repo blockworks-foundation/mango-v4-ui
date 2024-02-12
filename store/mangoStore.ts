@@ -70,7 +70,7 @@ import {
   SwapTypes,
 } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
-import { PerpMarket } from '@blockworks-foundation/mango-v4/'
+import { PerpMarket, OpenbookV2Market } from '@blockworks-foundation/mango-v4/'
 import perpPositionsUpdater from './perpPositionsUpdater'
 import {
   DEFAULT_PRIORITY_FEE,
@@ -89,9 +89,9 @@ import sampleSize from 'lodash/sampleSize'
 import { fetchTokenStatsData, processTokenStatsData } from 'apis/mngo'
 import { OrderTypes } from 'utils/tradeForm'
 import { usePlausible } from 'next-plausible'
-import { OpenbookV2Market } from '@blockworks-foundation/mango-v4/dist/types/src/accounts/openbookV2'
+import { OpenOrdersAccount } from '@openbook-dex/openbook-v2'
 
-const GROUP = new PublicKey('2xDjFmWRyvoP6LWoRaDBmVL5EeeKzFfvP81Wa9HH9J6V')
+const GROUP = new PublicKey('DTenAtYztNUHZBvqXUFM5jCB4X8cUUfgkCaDVDPddm8M')
 
 const ENDPOINTS = [
   {
@@ -109,8 +109,7 @@ const ENDPOINTS = [
   {
     name: 'devnet',
     url: 'https://mango.devnet.rpcpool.com',
-    websocket:
-      'https://mango.devnet.rpcpool.com',
+    websocket: 'https://mango.devnet.rpcpool.com',
     custom: false,
   },
 ]
@@ -141,7 +140,6 @@ const initMangoClient = (
   console.log('programId', MANGO_V4_ID[CLUSTER].toString())
   return MangoClient.connect(provider, CLUSTER, MANGO_V4_ID[CLUSTER], {
     prioritizationFee: opts.prioritizationFee,
-    multipleConnections: opts.multipleConnections,
     prependedGlobalAdditionalInstructions:
       opts.prependedGlobalAdditionalInstructions,
     postSendTxCallback: ({ txid }: { txid: string }) => {
@@ -202,7 +200,7 @@ export type MangoStore = {
     initialLoad: boolean
     lastSlot: number
     openOrderAccounts: OpenOrders[]
-    openOrders: Record<string, Order[] | PerpOrder[]>
+    openOrders: Record<string, Order[] | PerpOrder[] | OpenOrdersAccount[]>
     perpPositions: PerpPosition[]
     spotBalances: SpotBalances
     swapHistory: {
@@ -235,7 +233,7 @@ export type MangoStore = {
   priorityFee: number
   selectedMarket: {
     name: string | undefined
-    current: Serum3Market | PerpMarket | undefined
+    current: Serum3Market | PerpMarket | OpenbookV2Market | undefined
     fills: (ParsedFillEvent | SerumEvent)[]
     bidsAccount: BookSide | Orderbook | undefined
     asksAccount: BookSide | Orderbook | undefined
@@ -580,7 +578,9 @@ const mangoStore = create<MangoStore>()(
               return m
             })
 
-            const openbookMarkets = Array.from(group.openbookV2MarketsMapByExternal.values())
+            const openbookMarkets = Array.from(
+              group.openbookV2MarketsMapByExternal.values(),
+            )
 
             const perpMarkets = Array.from(group.perpMarketsMapByName.values())
               .filter(
@@ -662,6 +662,8 @@ const mangoStore = create<MangoStore>()(
           }
         },
         fetchMangoAccounts: async (ownerPk: PublicKey) => {
+          console.log('fetchMangoAccounts=====')
+
           const set = get().set
           const actions = get().actions
           try {
@@ -671,14 +673,25 @@ const mangoStore = create<MangoStore>()(
             if (!group) throw new Error('Group not loaded')
             if (!client) throw new Error('Client not loaded')
 
-            const [ownerMangoAccounts, delegateAccounts] = await Promise.all([
-              client.getMangoAccountsForOwner(group, ownerPk),
-              client.getMangoAccountsForDelegate(group, ownerPk),
-            ])
-            const mangoAccounts = [
-              ...ownerMangoAccounts,
-              ...delegateAccounts,
-            ].filter((acc) => !acc.name.includes('Leverage Stake'))
+            console.log('11111111')
+
+            const ownerMangoAccounts = await client
+              .getMangoAccountsForOwner(group, ownerPk)
+              .catch((e) => console.log('-=-=-=-', e))
+            // const [ownerMangoAccounts] = await Promise.all([
+            // client.getMangoAccountsForDelegate(group, ownerPk),
+            // ])
+            console.log(
+              '222222222 ownerMangoAccounts: ',
+              group,
+              ownerMangoAccounts,
+            )
+
+            const mangoAccounts = [...ownerMangoAccounts].filter(
+              (acc) => !acc.name.includes('Leverage Stake'),
+            )
+            console.log('=====mangoAccounts', mangoAccounts)
+
             const selectedAccountIsNotInAccountsList = mangoAccounts.find(
               (x) =>
                 x.publicKey.toBase58() ===
@@ -766,7 +779,10 @@ const mangoStore = create<MangoStore>()(
           if (!mangoAccount || !group) return
 
           try {
-            const openOrders: Record<string, Order[] | PerpOrder[]> = {}
+            const openOrders: Record<
+              string,
+              Order[] | PerpOrder[] | OpenOrdersAccount[]
+            > = {}
             let serumOpenOrderAccounts: OpenOrders[] = []
 
             const activeSerumMarketIndices = [
@@ -814,6 +830,16 @@ const mangoStore = create<MangoStore>()(
                 openOrders[market.publicKey.toString()] = orders
               }),
             )
+
+            if (mangoAccount.openbookV2Active()?.length) {
+              await mangoAccount.reloadOpenbookV2OpenOrders(client)
+              Array.from(
+                mangoAccount.openbookV2OosMapByMarketIndex.values(),
+              ).forEach((order) => {
+                const marketPk = order.market.toString()
+                openOrders[marketPk] = order
+              })
+            }
 
             set((s) => {
               s.mangoAccount.openOrders = openOrders
@@ -1061,7 +1087,7 @@ const mangoStore = create<MangoStore>()(
             {
               prioritizationFee: get().priorityFee,
               prependedGlobalAdditionalInstructions: instructions,
-              multipleConnections: client.multipleConnections,
+              multipleConnections: [],
             },
             null,
           )
@@ -1107,7 +1133,7 @@ const mangoStore = create<MangoStore>()(
               serumMarket = group.getSerum3ExternalMarket(
                 selectedMarket.serumMarketExternal,
               )
-            } else {
+            } else if (selectedMarket instanceof PerpMarket) {
               perpMarket = selectedMarket
             }
 
@@ -1151,7 +1177,7 @@ const mangoStore = create<MangoStore>()(
               prependedGlobalAdditionalInstructions:
                 get().prependedGlobalAdditionalInstructions,
               prioritizationFee: DEFAULT_PRIORITY_FEE,
-              multipleConnections: client.multipleConnections,
+              multipleConnections: [],
             },
             null,
           )
@@ -1215,7 +1241,7 @@ const mangoStore = create<MangoStore>()(
                 prioritizationFee: feeEstimate,
                 prependedGlobalAdditionalInstructions:
                   get().prependedGlobalAdditionalInstructions,
-                multipleConnections: client.multipleConnections,
+                multipleConnections: [],
               },
               telemetry,
             )

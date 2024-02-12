@@ -75,6 +75,7 @@ export const findSerum3MarketPkInOpenOrders = (
   let foundedMarketPk: string | undefined = undefined
   for (const [marketPk, orders] of Object.entries(openOrders)) {
     for (const order of orders) {
+      if (!('orderId' in order)) continue
       if (order.orderId.eq(o.orderId)) {
         foundedMarketPk = marketPk
         break
@@ -108,6 +109,52 @@ const OpenOrders = ({
   const { isUnownedAccount } = useUnownedAccount()
   const { selectedMarket } = useSelectedMarket()
   const { filledOrders, fetchingFilledOrders } = useFilledOrders()
+
+  const handleCancelOpenbookV2Order = useCallback(
+    async (o: Order) => {
+      const client = mangoStore.getState().client
+      const group = mangoStore.getState().group
+      const mangoAccount = mangoStore.getState().mangoAccount.current
+      const actions = mangoStore.getState().actions
+      if (!group || !mangoAccount) return
+      const marketPk = findSerum3MarketPkInOpenOrders(o)
+      if (!marketPk) return
+      const market = group.getOpenbookV2MarketByExternalMarket(
+        new PublicKey(marketPk),
+      )
+
+      setCancelId(o.orderId.toString())
+      try {
+        const { signature: tx } = await client.openbookV2CancelOrder(
+          group,
+          mangoAccount,
+          market!.openbookMarketExternal,
+          o.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
+          o.orderId,
+        )
+
+        actions.fetchOpenOrders()
+        notify({
+          type: 'success',
+          title: 'Transaction successful',
+          txid: tx,
+        })
+      } catch (e) {
+        console.error('Error canceling', e)
+        if (isMangoError(e)) {
+          notify({
+            title: t('trade:cancel-order-error'),
+            description: e.message,
+            txid: e.txid,
+            type: 'error',
+          })
+        }
+      } finally {
+        setCancelId('')
+      }
+    },
+    [t],
+  )
 
   const handleCancelSerumOrder = useCallback(
     async (o: Order) => {
@@ -537,7 +584,9 @@ const OpenOrders = ({
                               onClick={() =>
                                 order instanceof PerpOrder
                                   ? handleCancelPerpOrder(order)
-                                  : handleCancelSerumOrder(order)
+                                  : 'orderId' in order
+                                  ? handleCancelSerumOrder(order)
+                                  : handleCancelOpenbookV2Order(order)
                               }
                               size="small"
                             >

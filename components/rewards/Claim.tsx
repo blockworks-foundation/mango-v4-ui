@@ -59,6 +59,7 @@ const RewardsComponent = dynamic(() => import('./RewardsComponents'), {
 })
 
 const ClaimPage = () => {
+  return null
   const [isClaiming, setIsClaiming] = useState(false)
   const [claimProgress, setClaimProgress] = useState(0)
   const [distribution, setDistribution] = useState<Distribution | undefined>(

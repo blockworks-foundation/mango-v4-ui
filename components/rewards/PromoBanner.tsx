@@ -25,6 +25,7 @@ const LINK_TEXT_CLASSES =
 const TEXT_CLASSES = 'mr-2 text-center text-th-fgd-1 lg:text-base'
 
 const PromoBanner = () => {
+  return null
   const [showBanner, setShowBanner] = useLocalStorageState(
     MANGO_MINTS_BANNER_KEY,
     {},
