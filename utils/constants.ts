@@ -178,6 +178,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   samo: true,
   slcl: true,
   sol: true,
+  step: true,
   stsol: true,
   tbtc: true,
   usdc: true,
@@ -191,10 +192,6 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
 }
 
 export const DEFAULT_FAVORITE_MKTS = ['SOL-PERP', 'ETH-PERP', 'BTC-PERP']
-
-export const JUPITER_REFERRAL_PK = new PublicKey(
-  'EV4qhLE2yPKdUPdQ74EWJUn21xT3eGQxG3DRR1g9NNFc',
-)
 
 export const WHITE_LIST_API = 'https://api.mngo.cloud/whitelist/v1/'
 export const DAILY_SECONDS = 86400

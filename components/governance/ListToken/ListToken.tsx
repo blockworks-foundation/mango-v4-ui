@@ -5,11 +5,7 @@ import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import mangoStore, { CLUSTER } from '@store/mangoStore'
 import { Token } from 'types/jupiter'
 import { handleGetRoutes } from '@components/swap/useQuoteRoutes'
-import {
-  JUPITER_PRICE_API_MAINNET,
-  JUPITER_REFERRAL_PK,
-  USDC_MINT,
-} from 'utils/constants'
+import { JUPITER_PRICE_API_MAINNET, USDC_MINT } from 'utils/constants'
 import { PublicKey, SYSVAR_RENT_PUBKEY, Transaction } from '@solana/web3.js'
 import { useWallet } from '@solana/wallet-adapter-react'
 import {
@@ -57,7 +53,6 @@ import {
   LISTING_PRESETS_KEY,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 import Checkbox from '@components/forms/Checkbox'
-import { ReferralProvider } from '@jup-ag/referral-sdk'
 import { BN } from '@coral-xyz/anchor'
 import Select from '@components/forms/Select'
 import { WRAPPED_SOL_MINT } from '@metaplex-foundation/js'
@@ -114,6 +109,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const fee = mangoStore((s) => s.priorityFee)
   const loadingVoter = GovernanceStore((s) => s.loadingVoter)
   const proposals = GovernanceStore((s) => s.proposals)
+  const refetchProposals = GovernanceStore((s) => s.refetchProposals)
   const getCurrentVotingPower = GovernanceStore((s) => s.getCurrentVotingPower)
   const connectionContext = GovernanceStore((s) => s.connectionContext)
   const { t } = useTranslation(['governance'])
@@ -164,6 +160,27 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     }))
   }, [preset])
 
+  useEffect(() => {
+    const handleOracleUpdate = async () => {
+      if (currentTokenInfo) {
+        setLoadingListingParams(true)
+        const { oraclePk, isPyth } = await getOracle({
+          baseSymbol: currentTokenInfo.symbol,
+          quoteSymbol: 'usd',
+          connection,
+          targetAmount: proposedPreset.preset_target_amount,
+        })
+        setAdvForm({
+          ...advForm,
+          oraclePk: oraclePk || '',
+        })
+        setLoadingListingParams(false)
+        setIsPyth(isPyth)
+      }
+    }
+    handleOracleUpdate()
+  }, [proposedPreset.preset_name])
+
   const quoteBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
   const minVoterWeight = useMemo(
     () =>
@@ -206,14 +223,14 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   }
 
   const getListingParams = useCallback(
-    async (tokenInfo: Token, targetAmount: number) => {
+    async (tokenInfo: Token) => {
       setLoadingListingParams(true)
       const [{ oraclePk, isPyth }, marketPk] = await Promise.all([
         getOracle({
           baseSymbol: tokenInfo.symbol,
           quoteSymbol: 'usd',
           connection,
-          targetAmount: targetAmount,
+          targetAmount: 0,
         }),
         getBestMarket({
           baseMint: mint,
@@ -268,7 +285,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       onlyDirect = false,
     ) => {
       const SLIPPAGE_BPS = 50
-      const FEE = 0
       const walletForCheck = wallet.publicKey
         ? wallet.publicKey?.toBase58()
         : emptyPk
@@ -279,7 +295,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         toNative(amount, 6).toNumber(),
         SLIPPAGE_BPS,
         mode,
-        FEE,
         walletForCheck,
         undefined, // mangoAccount
         'JUPITER',
@@ -430,8 +445,8 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     setBaseTokenPrice(priceInfo.data[mint]?.price || 0)
     setCurrentTokenInfo(tokenInfo)
     if (tokenInfo) {
-      const targetAmount = await handleLiquidityCheck(new PublicKey(mint))
-      getListingParams(tokenInfo, targetAmount)
+      await handleLiquidityCheck(new PublicKey(mint))
+      getListingParams(tokenInfo)
     }
   }, [getListingParams, handleLiquidityCheck, jupiterTokens, mint, t])
 
@@ -506,13 +521,17 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       })
       return
     }
+    const newProposals = await refetchProposals()
+
+    const index = proposals ? Object.values(newProposals).length : 0
+
     const mint = new PublicKey(advForm.mintPk)
     const proposalTx = []
 
     if (Object.keys(proposedPreset).length && !advForm.fastListing) {
       const registerTokenIx = await client!.program.methods
         .tokenRegister(
-          Number(advForm.tokenIndex),
+          Number(index),
           advForm.name,
           {
             confFilter: Number(proposedPreset.oracleConfFilter),
@@ -565,7 +584,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       proposalTx.push(registerTokenIx)
     } else {
       const trustlessIx = await client!.program.methods
-        .tokenRegisterTrustless(Number(advForm.tokenIndex), advForm.name)
+        .tokenRegisterTrustless(Number(index), advForm.name)
         .accounts({
           mint: mint,
           payer: MANGO_DAO_FAST_LISTING_WALLET,
@@ -582,7 +601,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     if (!advForm.listForSwapOnly) {
       const registerMarketix = await client!.program.methods
         .serum3RegisterMarket(
-          Number(advForm.marketIndex),
+          Number(index),
           advForm.marketName,
           proposedPreset.oraclePriceBand,
         )
@@ -601,21 +620,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         })
         .instruction()
       proposalTx.push(registerMarketix)
-    }
-    const rp = new ReferralProvider(connection)
-
-    const tx = await rp.initializeReferralTokenAccount({
-      payerPubKey: advForm.fastListing
-        ? MANGO_DAO_FAST_LISTING_WALLET
-        : MANGO_DAO_WALLET,
-      referralAccountPubKey: JUPITER_REFERRAL_PK,
-      mint: mint,
-    })
-    const isExistingAccount =
-      (await connection.getBalance(tx.referralTokenAccountPubKey)) > 1
-
-    if (!isExistingAccount) {
-      proposalTx.push(...tx.tx.instructions)
     }
 
     const walletSigner = wallet as never
@@ -637,7 +641,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           voter.tokenOwnerRecord!,
           advForm.proposalTitle,
           advForm.proposalDescription,
-          advForm.tokenIndex,
+          index,
           proposalTx,
           vsrClient,
           fee,
@@ -666,25 +670,27 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     voter.voteWeight,
     voter.tokenOwnerRecord,
     minVoterWeight,
+    refetchProposals,
+    proposals,
     proposedPreset,
-    connection,
     t,
     mintVoterWeightNumber,
     client,
     group,
+    connection,
     fee,
   ])
 
   const closeCreateOpenBookMarketModal = () => {
     setCreateOpenbookMarket(false)
     if (currentTokenInfo && proposedPresetTargetAmount) {
-      getListingParams(currentTokenInfo, proposedPresetTargetAmount)
+      getListingParams(currentTokenInfo)
     }
   }
-  const closeCreateOracleModal = () => {
+  const closeCreateOracleModal = (oraclePk?: PublicKey) => {
     setOracleModalOpen(false)
-    if (currentTokenInfo && proposedPresetTargetAmount) {
-      getListingParams(currentTokenInfo, proposedPresetTargetAmount)
+    if (oraclePk) {
+      handleSetAdvForm('oraclePk', oraclePk.toBase58())
     }
   }
 
@@ -823,12 +829,18 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                                       LISTING_PRESETS[
                                         name as LISTING_PRESETS_KEY
                                       ].preset_key
-                                    }}`}
+                                    }}${
+                                      LISTING_PRESETS[
+                                        name as LISTING_PRESETS_KEY
+                                      ].oracle === 0
+                                        ? ' - PYTH only'
+                                        : ''
+                                    }`}
                                     {LISTING_PRESETS[
                                       name as LISTING_PRESETS_KEY
                                     ].preset_target_amount ===
                                     proposedPresetTargetAmount
-                                      ? '- suggested'
+                                      ? ' - suggested'
                                       : ''}
                                   </div>
                                 </Select.Option>
@@ -857,6 +869,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                           <div>
                             <Label text={t('token-index')} />
                             <Input
+                              disabled={true}
                               hasError={formErrors.tokenIndex !== undefined}
                               type="number"
                               value={advForm.tokenIndex.toString()}
@@ -1104,7 +1117,9 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                     ) : null}
                   </li>
                 ) : null}
-                {!advForm.oraclePk && !loadingListingParams ? (
+                {!advForm.oraclePk &&
+                !loadingListingParams &&
+                proposedPreset.oracle !== 0 ? (
                   <li
                     className={`my-4 pl-2 ${
                       !advForm.openBookMarketExternalPk &&

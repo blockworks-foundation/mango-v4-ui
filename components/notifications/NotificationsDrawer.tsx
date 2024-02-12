@@ -23,6 +23,8 @@ import {
 } from 'utils/notifications'
 import mangoStore from '@store/mangoStore'
 import { ttCommons, ttCommonsExpanded, ttCommonsMono } from 'utils/fonts'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 const NotificationsDrawer = ({
   isOpen,
@@ -199,7 +201,15 @@ const NotificationsDrawer = ({
                                 )}
                               </p>
                             </div>
-                            <p>{notification.content}</p>
+                            <p>
+                              <ReactMarkdown
+                                components={{ a: LinkRenderer }}
+                                className="markdown"
+                                remarkPlugins={[remarkGfm]}
+                              >
+                                {notification.content}
+                              </ReactMarkdown>
+                            </p>
                           </div>
                         </div>
                       ))}
@@ -249,3 +259,14 @@ const NotificationsDrawer = ({
 }
 
 export default NotificationsDrawer
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function LinkRenderer(props: any) {
+  return (
+    // eslint-disable-next-line react/prop-types
+    <a href={props.href} target="_blank" rel="noreferrer">
+      {/* eslint-disable-next-line react/prop-types */}
+      {props.children}
+    </a>
+  )
+}

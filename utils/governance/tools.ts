@@ -154,7 +154,6 @@ export const compareObjectsAndGetDifferentKeys = <T extends object>(
   object2: T,
 ): (keyof T)[] => {
   const diffKeys: string[] = []
-
   Object.keys(object1).forEach((key) => {
     if (
       object1[key as keyof typeof object1] !==

@@ -91,7 +91,7 @@ const DashboardSuggestedValues = ({
   }
   const priceImpactsFiltered = useMemo(
     () =>
-      getMidPriceImpacts(priceImpacts).filter(
+      getMidPriceImpacts(priceImpacts.length ? priceImpacts : []).filter(
         (x) => x.symbol === getApiTokenName(bank.name),
       ),
     [priceImpacts, bank.name],
@@ -175,6 +175,7 @@ const DashboardSuggestedValues = ({
         rate1: getNullOrVal(fieldsToChange.rate1),
         maxRate: getNullOrVal(fieldsToChange.maxRate),
       }
+
       const isThereNeedOfSendingRateConfigs = Object.values(rateConfigs).filter(
         (x) => x !== null,
       ).length
@@ -248,7 +249,7 @@ const DashboardSuggestedValues = ({
           null,
           false,
           false,
-          getNullOrVal(fieldsToChange.depositLimit)
+          getNullOrVal(fieldsToChange.depositLimit) !== null
             ? new BN(fieldsToChange.depositLimit!.toString())
             : null,
         )
@@ -350,7 +351,10 @@ const DashboardSuggestedValues = ({
         suggestedFormattedPreset,
       ).filter(
         (x: string) =>
-          suggestedFormattedPreset[x as keyof SuggestedFormattedPreset],
+          suggestedFormattedPreset[x as keyof SuggestedFormattedPreset] !==
+            undefined &&
+          suggestedFormattedPreset[x as keyof SuggestedFormattedPreset] !==
+            null,
       )
     : []
 
@@ -636,19 +640,8 @@ const DashboardSuggestedValues = ({
             }
           />
           <KeyValuePair
-            label="Interest Curve Scaling"
-            value={`${formattedBankValues.interestCurveScaling}`}
-            proposedValue={
-              suggestedFields.interestCurveScaling !== undefined &&
-              `${suggestedFields.interestCurveScaling}`
-            }
-          />
-          <KeyValuePair
             label="Deposit Limit"
-            value={`${toUiDecimals(
-              new BN(formattedBankValues.depositLimit.toString()),
-              bank.mintDecimals,
-            )}`}
+            value={`${formattedBankValues.depositLimit}`}
             proposedValue={
               suggestedFields.depositLimit !== undefined &&
               `${toUiDecimals(

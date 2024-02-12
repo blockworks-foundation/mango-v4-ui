@@ -11,6 +11,7 @@ import {
   Transaction,
   TransactionInstruction,
 } from '@solana/web3.js'
+import { IDL } from '@blockworks-foundation/mango-v4'
 
 export type TransactionNotification = {
   type: 'success' | 'info' | 'error' | 'confirm'
@@ -36,6 +37,7 @@ export function notify(newNotification: {
   description?: string
   txid?: string
   noSound?: boolean
+  noMangoIdlEnrichment?: boolean
 }) {
   const setMangoStore = mangoStore.getState().set
   const notifications = mangoStore.getState().transactionNotifications
@@ -70,15 +72,18 @@ export function notify(newNotification: {
     ...newNotification,
   }
 
+  const parsedNotif = !newNotification.noMangoIdlEnrichment
+    ? enrichError(newNotif)
+    : newNotif
   if (
-    !newNotif.txid ||
+    !parsedNotif.txid ||
     !notifications.find(
-      (n) => n.txid == newNotif.txid && n.type == newNotif.type,
+      (n) => n.txid == parsedNotif.txid && n.type == parsedNotif.type,
     )
   ) {
     setMangoStore((state) => {
       state.transactionNotificationIdCounter = newId
-      state.transactionNotifications = [...notifications, newNotif]
+      state.transactionNotifications = [...notifications, parsedNotif]
     })
   }
 }
@@ -197,4 +202,29 @@ export const createLedgerMessage = async (
     return
   }
   setCookie(payload.address, token)
+}
+
+function enrichError(
+  unparsedNotification: TransactionNotification,
+): TransactionNotification {
+  const notification = { ...unparsedNotification }
+  if (
+    notification.txid &&
+    notification.type == 'error' &&
+    notification.description
+  ) {
+    try {
+      const errorObject = JSON.parse(notification.description)
+      const errorCode = errorObject.value.err.InstructionError[1].Custom
+      if (errorCode - 6000 >= 0) {
+        const idlError = IDL.errors[errorCode - 6000]
+        notification.description = `Error Code ${idlError.code}: ${idlError.name} (${idlError.msg})`
+      } else if (errorCode === 1) {
+        notification.description = 'Error Code 0x1: Insufficient funds'
+      }
+    } catch (e) {
+      console.log('error while parsing txn error: ', e)
+    }
+  }
+  return notification
 }

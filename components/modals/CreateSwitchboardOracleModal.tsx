@@ -20,7 +20,10 @@ import { useCallback, useState } from 'react'
 import Loading from '@components/shared/Loading'
 import { WhirlpoolContext, buildWhirlpoolClient } from '@orca-so/whirlpools-sdk'
 import { LIQUIDITY_STATE_LAYOUT_V4 } from '@raydium-io/raydium-sdk'
-import { LISTING_PRESETS_KEY } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
+import {
+  LISTING_PRESETS,
+  LISTING_PRESETS_KEY,
+} from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 import { sendTxAndConfirm } from 'utils/governance/tools'
 import { WRAPPED_SOL_MINT } from '@metaplex-foundation/js'
 
@@ -39,6 +42,7 @@ type BaseProps = ModalProps & {
   baseTokenName: string
   tierKey: LISTING_PRESETS_KEY
   isSolPool: boolean
+  onClose: (oraclePk?: PublicKey) => void
 }
 
 type RaydiumProps = BaseProps & {
@@ -374,15 +378,10 @@ const CreateSwitchboardOracleModal = ({
       const transferAuthIx = aggregatorAccount.setAuthorityInstruction(payer, {
         newAuthority: MANGO_DAO_WALLET,
       })
-      const pushToCrankIx = await crankAccount.pushInstruction(payer, {
-        aggregatorAccount: aggregatorAccount,
-      })
 
       const latestBlockhash = await connection.getLatestBlockhash('processed')
-      const txChunks = chunk(
-        [...txArray1, lockTx, transferAuthIx, pushToCrankIx],
-        1,
-      )
+      const txChunks = chunk([...txArray1, lockTx, transferAuthIx], 1)
+
       const transactions: Transaction[] = []
 
       for (const chunkIndex in txChunks) {
@@ -407,8 +406,16 @@ const CreateSwitchboardOracleModal = ({
           latestBlockhash,
         )
       }
+      notify({
+        type: 'success',
+        title: 'Successfully created oracle',
+      })
+      window.open(
+        `https://app.switchboard.xyz/solana/mainnet-beta/feed/${aggregatorAccount.publicKey.toBase58()}`,
+        '_blank',
+      )
       setCreatingOracle(false)
-      onClose()
+      onClose(aggregatorAccount.publicKey)
     } catch (e) {
       setCreatingOracle(false)
       if (e === poolAddressError) {
@@ -454,10 +461,15 @@ const CreateSwitchboardOracleModal = ({
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="space-y-4 pb-4">
         <p>
-          {t('create-switch-oracle')} {baseTokenName}/USD
+          {t('create-switch-oracle')} {baseTokenName}/USD for tier{' '}
+          {LISTING_PRESETS[tierKey].preset_name}
         </p>
         <p>
           {t('estimated-oracle-cost')} {tierSettings[tierKey]?.fundAmount} SOL
+        </p>
+        <p>
+          This oracle can be used only with this tier or lower, cant be used
+          with higher tiers
         </p>
       </div>
 

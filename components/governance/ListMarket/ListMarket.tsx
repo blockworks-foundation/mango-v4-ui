@@ -67,6 +67,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
   const vsrClient = GovernanceStore((s) => s.vsrClient)
   const proposals = GovernanceStore((s) => s.proposals)
   const proposalsLoading = GovernanceStore((s) => s.loadingProposals)
+  const refetchProposals = GovernanceStore((s) => s.refetchProposals)
 
   const [advForm, setAdvForm] = useState<ListMarketForm>({
     ...defaultFormValues,
@@ -161,7 +162,9 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
       return
     }
     setProposing(true)
+    const proposals = await refetchProposals()
     const index = proposals ? Object.values(proposals).length : 0
+
     const proposalTx = []
 
     const oraclePriceBand = baseBank?.oracleConfig.maxStalenessSlots.isNeg()
@@ -169,11 +172,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
       : 1
 
     const registerMarketix = await client!.program.methods
-      .serum3RegisterMarket(
-        advForm.marketIndex,
-        advForm.marketName,
-        oraclePriceBand,
-      )
+      .serum3RegisterMarket(index, advForm.marketName, oraclePriceBand)
       .accounts({
         group: group!.publicKey,
         admin: MANGO_DAO_WALLET,
@@ -445,9 +444,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
                   <div className="mt-2 flex items-center justify-between">
                     <p>{t('price-tick')}</p>
                     <p className="text-th-fgd-2">
-                      {tradingParams.priceIncrement <= 1e-9
-                        ? '1e-8'
-                        : tradingParams.priceIncrement.toString()}
+                      {tradingParams.priceIncrement.toString()}
                     </p>
                   </div>
                 ) : null}
@@ -493,6 +490,7 @@ const ListMarket = ({ goBack }: { goBack: () => void }) => {
                       <div>
                         <Label text={t('market-index')} />
                         <Input
+                          disabled={true}
                           hasError={formErrors.marketIndex !== undefined}
                           type="number"
                           value={advForm.marketIndex.toString()}
