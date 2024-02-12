@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import mangoStore from '@store/mangoStore'
 import { Keypair, PublicKey } from '@solana/web3.js'
 import { useRouter } from 'next/router'
@@ -23,8 +23,9 @@ const HydrateStore = () => {
   const { mangoAccountPk, mangoAccountAddress } = useMangoAccount()
   const connection = mangoStore((s) => s.connection)
   const slowNetwork = useNetworkSpeed()
-  const { wallet } = useWallet()
+  const { wallet, publicKey } = useWallet()
   const telemetry = usePlausible<TelemetryEvents>()
+  const [liteRpcWs, setLiteRpcWs] = useState<null | WebSocket>(null)
 
   const [, setLastWalletName] = useLocalStorageState(LAST_WALLET_NAME, '')
 
@@ -116,10 +117,21 @@ const HydrateStore = () => {
           localStorage.getItem(PRIORITY_FEE_KEY) ??
             DEFAULT_PRIORITY_FEE_LEVEL.value,
         )
+        // Send a JSON-RPC request
+        const message = JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'blockPrioritizationFeesSubscribe',
+          interval: 30,
+        })
+
+        liteRpcWs?.send(message)
+        // Listen for messages from the server
+
         actions.estimatePriorityFee(priorityFeeMultiplier, telemetry)
       }
     },
-    (slowNetwork ? 60 : 10) * SECONDS,
+    (slowNetwork ? 60 : 30) * SECONDS,
   )
 
   // The websocket library solana/web3.js uses closes its websocket connection when the subscription list
@@ -133,6 +145,42 @@ const HydrateStore = () => {
       connection.removeAccountChangeListener(id)
     }
   }, [connection])
+
+  useEffect(() => {
+    let ws: null | WebSocket = null
+    if (liteRpcWs === null && publicKey) {
+      const wsUrl = new URL('wss://api.mngo.cloud/lite-rpc/v1/')
+      ws = new WebSocket(wsUrl)
+      ws.addEventListener('open', () => {
+        console.log('Fee WebSocket opened')
+        setLiteRpcWs(ws)
+      })
+      ws.addEventListener('close', () => {
+        console.log('Fee WebSocket closed')
+      })
+      ws.addEventListener('error', () => {
+        console.log('Fee WebSocket error')
+        setLiteRpcWs(null)
+      })
+      ws.addEventListener('message', function incoming(data) {
+        console.log(
+          'Received:',
+          JSON.parse(data.data)?.params?.result?.value?.by_tx[10],
+        )
+      })
+    }
+
+    // Clean up the WebSocket connection on unmount
+    return () => {
+      if (ws?.readyState === ws?.OPEN) {
+        ws?.close(1000)
+      }
+
+      if (liteRpcWs?.readyState === liteRpcWs?.OPEN) {
+        liteRpcWs?.close(1000)
+      }
+    }
+  }, [publicKey])
 
   // watch selected Mango Account for changes
   useEffect(() => {

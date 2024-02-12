@@ -92,6 +92,7 @@ import { OrderTypes } from 'utils/tradeForm'
 import { usePlausible } from 'next-plausible'
 import { collectTxConfirmationData } from 'utils/transactionConfirmationData'
 import { TxCallbackOptions } from '@blockworks-foundation/mango-v4/dist/types/src/client'
+import { TelemetryEvents } from 'utils/telemetry'
 
 const ENDPOINTS = [
   {
@@ -329,6 +330,7 @@ export type MangoStore = {
     estimatePriorityFee: (
       feeMultiplier: number,
       telemetry: ReturnType<typeof usePlausible> | null,
+      feeToUse?: number,
     ) => Promise<void>
   }
 }
@@ -1152,7 +1154,7 @@ const mangoStore = create<MangoStore>()(
             state.client = newClient
           })
         },
-        estimatePriorityFee: async (feeMultiplier, telemetry) => {
+        estimatePriorityFee: async (feeMultiplier, telemetry, feeToUse) => {
           const set = get().set
           const group = mangoStore.getState().group
           const client = mangoStore.getState().client
@@ -1199,7 +1201,7 @@ const mangoStore = create<MangoStore>()(
 
           const provider = client.program.provider as AnchorProvider
           provider.opts.skipPreflight = true
-
+          console.log(feeEstimate)
           if (currentFee !== feeEstimate || !currentTelemetry) {
             const newClient = initMangoClient(
               provider,
