@@ -1,11 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import TabButtons from '../shared/TabButtons'
 import TokenList from '../TokenList'
 import UnsettledTrades from '@components/trade/UnsettledTrades'
 import { useUnsettledSpotBalances } from 'hooks/useUnsettledSpotBalances'
 import { useViewport } from 'hooks/useViewport'
 import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
-import mangoStore from '@store/mangoStore'
+import mangoStore, { AccountPageTab } from '@store/mangoStore'
 import PerpPositions from '@components/trade/PerpPositions'
 import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
 import HistoryTabs from './HistoryTabs'
@@ -15,7 +15,8 @@ import AccountOverview from './AccountOverview'
 import AccountOrders from './AccountOrders'
 
 const AccountTabs = () => {
-  const [activeTab, setActiveTab] = useState('overview')
+  const activeTab = mangoStore((s) => s.accountPageTab)
+  const set = mangoStore.getState().set
   const { mangoAccount } = useMangoAccount()
   const { isMobile, isTablet } = useViewport()
   const unsettledSpotBalances = useUnsettledSpotBalances()
@@ -23,7 +24,7 @@ const AccountTabs = () => {
   const { openPerpPositions } = useOpenPerpPositions()
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
 
-  const tabsWithCount: [string, number][] = useMemo(() => {
+  const tabsWithCount: [AccountPageTab, number][] = useMemo(() => {
     const unsettledTradeCount =
       Object.values(unsettledSpotBalances).flat().length +
       unsettledPerpPositions?.length
@@ -32,7 +33,7 @@ const AccountTabs = () => {
       mangoAccount?.tokenConditionalSwaps.filter((tcs) => tcs.isConfigured)
         ?.length || 0
 
-    const tabs: [string, number][] = [
+    const tabs: [AccountPageTab, number][] = [
       ['overview', 0],
       ['balances', 0],
       ['trade:positions', openPerpPositions.length],
@@ -54,16 +55,22 @@ const AccountTabs = () => {
 
   return (
     <>
-      <div className="hide-scroll flex items-center overflow-x-auto border-b border-th-bkg-3">
-        <TabButtons
-          activeValue={activeTab}
-          onChange={(v) => setActiveTab(v)}
-          values={tabsWithCount}
-          showBorders
-          fillWidth={isMobile || isTablet}
-        />
+      <div className="hide-scroll flex items-center justify-between overflow-x-auto border-b border-th-bkg-3">
+        <div className="w-full md:w-auto" id="account-tabs">
+          <TabButtons
+            activeValue={activeTab}
+            onChange={(v: AccountPageTab) =>
+              set((state) => {
+                state.accountPageTab = v
+              })
+            }
+            values={tabsWithCount}
+            showBorders
+            fillWidth={isMobile || isTablet}
+          />
+        </div>
         <ManualRefresh
-          classNames="fixed bottom-16 right-4 md:relative md:px-2 lg:px-0 lg:pr-6 md:bottom-0 md:right-0 z-10 shadow-lg md:shadow-none bg-th-bkg-3 md:bg-transparent"
+          classNames="fixed bottom-16 right-4 md:relative md:pr-2 lg:pr-4 md:bottom-0 md:right-0 z-10 shadow-lg md:shadow-none bg-th-bkg-3 md:bg-transparent"
           hideBg={isMobile || isTablet}
           size={isTablet ? 'large' : 'small'}
         />

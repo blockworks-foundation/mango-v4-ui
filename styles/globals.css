@@ -840,3 +840,59 @@ a.page-link:hover {
 .recharts-layer .recharts-pie-sector {
   @apply focus:outline-none;
 }
+
+/* ui tour */
+
+.driver-popover.ui-tour {
+  @apply bg-th-bkg-3 p-6;
+}
+
+.driver-popover.ui-tour .driver-popover-title,
+.driver-popover.ui-tour .driver-popover-description {
+  @apply font-body text-th-fgd-1;
+}
+
+.driver-popover.ui-tour .driver-popover-description {
+  @apply mb-6;
+}
+
+.driver-popover.ui-tour .driver-popover-progress-text {
+  @apply text-th-active;
+}
+
+.driver-popover.ui-tour .driver-popover-navigation-btns {
+  @apply gap-1;
+}
+
+.driver-popover.ui-tour button {
+  @apply default-transition rounded-md border-transparent bg-th-button px-3 py-2 font-bold text-th-fgd-1 focus:outline-none;
+  text-shadow: none;
+}
+
+.driver-popover.ui-tour button:hover {
+  @apply bg-th-button-hover;
+}
+
+.driver-popover.ui-tour .driver-popover-arrow-side-left.driver-popover-arrow {
+  border-left-color: var(--bkg-3);
+}
+
+.driver-popover.ui-tour .driver-popover-arrow-side-right.driver-popover-arrow {
+  border-right-color: var(--bkg-3);
+}
+
+.driver-popover.ui-tour .driver-popover-arrow-side-top.driver-popover-arrow {
+  border-top-color: var(--bkg-3);
+}
+
+.driver-popover.ui-tour .driver-popover-arrow-side-bottom.driver-popover-arrow {
+  border-bottom-color: var(--bkg-3);
+}
+
+.driver-popover.ui-tour .driver-popover-close-btn {
+  @apply bg-transparent p-0 text-th-fgd-3;
+}
+
+.driver-popover.ui-tour .driver-popover-close-btn:hover {
+  @apply bg-transparent text-th-fgd-1;
+}

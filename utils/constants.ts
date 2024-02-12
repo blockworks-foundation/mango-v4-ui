@@ -23,7 +23,7 @@ export const SHOW_ZERO_BALANCES_KEY = 'show-zero-balances-0.2'
 
 export const SIDEBAR_COLLAPSE_KEY = 'sidebar-0.1'
 
-export const ONBOARDING_TOUR_KEY = 'showOnboardingTour-0.1'
+export const UI_TOURS_KEY = 'uiToursCompleted-0.1'
 
 export const PREFERRED_EXPLORER_KEY = 'preferredExplorer-0.1'
 
