@@ -76,8 +76,6 @@ const AccountTabs = () => {
 }
 
 const TabContent = ({ activeTab }: { activeTab: string }) => {
-  const unsettledSpotBalances = useUnsettledSpotBalances()
-  const unsettledPerpPositions = useUnsettledPerpPositions()
   switch (activeTab) {
     case 'overview':
       return <AccountOverview />
@@ -88,12 +86,7 @@ const TabContent = ({ activeTab }: { activeTab: string }) => {
     case 'trade:orders':
       return <AccountOrders />
     case 'trade:unsettled':
-      return (
-        <UnsettledTrades
-          unsettledSpotBalances={unsettledSpotBalances}
-          unsettledPerpPositions={unsettledPerpPositions}
-        />
-      )
+      return <UnsettledTrades />
     case 'history':
       return <HistoryTabs />
     default:

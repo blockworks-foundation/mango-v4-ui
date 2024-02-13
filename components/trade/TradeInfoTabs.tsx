@@ -84,20 +84,13 @@ const TradeInfoTabs = () => {
 export default TradeInfoTabs
 
 const TabContent = ({ selectedTab }: { selectedTab: string }) => {
-  const unsettledSpotBalances = useUnsettledSpotBalances()
-  const unsettledPerpPositions = useUnsettledPerpPositions()
   switch (selectedTab) {
     case 'balances':
       return <SwapTradeBalances />
     case 'trade:orders':
       return <AccountOrders />
     case 'trade:unsettled':
-      return (
-        <UnsettledTrades
-          unsettledSpotBalances={unsettledSpotBalances}
-          unsettledPerpPositions={unsettledPerpPositions}
-        />
-      )
+      return <UnsettledTrades />
     case 'trade:positions':
       return <PerpPositions />
     case 'trade-history':

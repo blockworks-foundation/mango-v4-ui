@@ -1,8 +1,10 @@
 import { Bank } from '@blockworks-foundation/mango-v4'
 import DepositWithdrawModal from '@components/modals/DepositWithdrawModal'
-import Button from '@components/shared/Button'
+import Button, { LinkButton } from '@components/shared/Button'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
+import Modal from '@components/shared/Modal'
 import Tooltip from '@components/shared/Tooltip'
+import UnsettledTrades from '@components/trade/UnsettledTrades'
 import { ArrowDownTrayIcon, ArrowUpTrayIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
 import useAccountInterest from 'hooks/useAccountInterest'
@@ -11,6 +13,8 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
 import { useTranslation } from 'next-i18next'
 import { useMemo, useState } from 'react'
+import { ModalProps } from 'types/modal'
+import { formatCurrencyValue } from 'utils/numbers'
 
 const ActionPanel = ({ bank }: { bank: Bank }) => {
   const { t } = useTranslation(['common', 'trade'])
@@ -19,6 +23,7 @@ const ActionPanel = ({ bank }: { bank: Bank }) => {
   const [showDepositModal, setShowDepositModal] = useState<
     'deposit' | 'withdraw' | ''
   >('')
+  const [showSettleModal, setShowSettleModal] = useState(false)
   const { data: totalInterestData } = useAccountInterest()
   const [depositRate, borrowRate] = useMemo(() => {
     const depositRate = bank.getDepositRateUi()
@@ -84,12 +89,7 @@ const ActionPanel = ({ bank }: { bank: Bank }) => {
           <div className="flex justify-between border-t border-th-bkg-4 py-3">
             <p>{t('collateral-value')}</p>
             <p className="font-mono text-th-fgd-2">
-              $
-              {mangoAccount ? (
-                <FormatNumericValue value={collateralValue} decimals={2} />
-              ) : (
-                '0.00'
-              )}
+              {mangoAccount ? formatCurrencyValue(collateralValue) : '$0.00'}
             </p>
           </div>
           <div className="flex justify-between border-t border-th-bkg-4 py-3">
@@ -107,16 +107,21 @@ const ActionPanel = ({ bank }: { bank: Bank }) => {
           </div>
           <div className="flex justify-between border-t border-th-bkg-4 py-3">
             <p>{t('trade:unsettled')}</p>
-            <p className="font-mono text-th-fgd-2">
-              {unsettled ? (
-                <FormatNumericValue
-                  value={unsettled}
-                  decimals={bank.mintDecimals}
-                />
-              ) : (
-                0
-              )}
-            </p>
+            {unsettled ? (
+              <div className="flex space-x-2">
+                <p className="font-mono text-th-fgd-2">
+                  <FormatNumericValue
+                    value={unsettled}
+                    decimals={bank.mintDecimals}
+                  />
+                </p>
+                <LinkButton onClick={() => setShowSettleModal(true)}>
+                  {t('trade:settle')}
+                </LinkButton>
+              </div>
+            ) : (
+              <p className="font-mono text-th-fgd-2">0</p>
+            )}
           </div>
           <div className="flex justify-between border-t border-th-bkg-4 py-3">
             <p>{t('interest-earned')}</p>
@@ -191,8 +196,26 @@ const ActionPanel = ({ bank }: { bank: Bank }) => {
           token={bank?.name}
         />
       ) : null}
+      {showSettleModal ? (
+        <UnsettledModal
+          isOpen={showSettleModal}
+          onClose={() => setShowSettleModal(false)}
+        />
+      ) : null}
     </>
   )
 }
 
 export default ActionPanel
+
+const UnsettledModal = ({ isOpen, onClose }: ModalProps) => {
+  const { t } = useTranslation('trade')
+  return (
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <h2 className="mb-4 text-center md:mb-0">{t('unsettled-balances')}</h2>
+      <div className="border-t border-th-bkg-3 md:border-t-0">
+        <UnsettledTrades />
+      </div>
+    </Modal>
+  )
+}
