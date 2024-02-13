@@ -42,7 +42,7 @@ import useFilledOrders from 'hooks/useFilledOrders'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import Link from 'next/link'
-import { ChangeEvent, useCallback, useState } from 'react'
+import { ChangeEvent, Fragment, useCallback, useState } from 'react'
 import { isMangoError } from 'types'
 import { notify } from 'utils/notifications'
 import { getDecimalCount } from 'utils/numbers'
@@ -52,6 +52,7 @@ import PerpSideBadge from './PerpSideBadge'
 import TableMarketName from './TableMarketName'
 import { useSortableData } from 'hooks/useSortableData'
 import { BN } from '@project-serum/anchor'
+import { Popover, Transition } from '@headlessui/react'
 
 type TableData = {
   expiryTimestamp: number | undefined
@@ -101,6 +102,7 @@ const OpenOrders = ({
   const [loadingModifyOrder, setLoadingModifyOrder] = useState(false)
   const [modifiedOrderSize, setModifiedOrderSize] = useState('')
   const [modifiedOrderPrice, setModifiedOrderPrice] = useState('')
+  const [showCancelPopover, setShowCancelPopover] = useState('')
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const { mangoAccountAddress } = useMangoAccount()
@@ -108,6 +110,45 @@ const OpenOrders = ({
   const { isUnownedAccount } = useUnownedAccount()
   const { selectedMarket } = useSelectedMarket()
   const { filledOrders, fetchingFilledOrders } = useFilledOrders()
+
+  // const handleCancelAllForSpotMarket = useCallback(
+  //   async (o: Order) => {
+  //     const client = mangoStore.getState().client
+  //     const group = mangoStore.getState().group
+  //     const mangoAccount = mangoStore.getState().mangoAccount.current
+  //     if (!group || !mangoAccount) return
+  //     const marketPk = findSerum3MarketPkInOpenOrders(o)
+  //     if (!marketPk) return
+  //     const market = group.getSerum3MarketByExternalMarket(
+  //       new PublicKey(marketPk),
+  //     )
+  //     try {
+  //       const { signature: tx } = await client.serum3CancelAllOrders(
+  //         group,
+  //         mangoAccount,
+  //         market.serumMarketExternal,
+  //       )
+  //       const actions = mangoStore.getState().actions
+  //       actions.fetchOpenOrders()
+  //       notify({
+  //         type: 'success',
+  //         title: 'Transaction successful',
+  //         txid: tx,
+  //       })
+  //     } catch (e) {
+  //       console.error('Error canceling', e)
+  //       if (isMangoError(e)) {
+  //         notify({
+  //           title: t('trade:cancel-order-error'),
+  //           description: e.message,
+  //           txid: e.txid,
+  //           type: 'error',
+  //         })
+  //       }
+  //     }
+  //   },
+  //   [t],
+  // )
 
   const handleCancelSerumOrder = useCallback(
     async (o: Order) => {
@@ -377,6 +418,24 @@ const OpenOrders = ({
     sortConfig,
   } = useSortableData(formattedTableData())
 
+  const handleCancelButton = useCallback(
+    (order: Order | PerpOrder, market: PerpMarket | Serum3Market) => {
+      const hasMultipleOrders =
+        tableData.filter((data) => data.market.publicKey === market.publicKey)
+          ?.length > 1
+      if (hasMultipleOrders) {
+        setShowCancelPopover(order.orderId.toString())
+      } else {
+        if (order instanceof PerpOrder) {
+          handleCancelPerpOrder(order)
+        } else {
+          handleCancelSerumOrder(order)
+        }
+      }
+    },
+    [handleCancelPerpOrder, handleCancelSerumOrder, tableData],
+  )
+
   return mangoAccountAddress && tableData.length ? (
     showTableView ? (
       <Table>
@@ -477,7 +536,7 @@ const OpenOrders = ({
                   <>
                     <Td className="w-[14.28%]">
                       <input
-                        className="h-8 w-full rounded-l-none rounded-r-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono text-sm hover:border-th-fgd-3 focus:border-th-fgd-3 focus:outline-none"
+                        className="h-8 w-full rounded-none border-x-0 border-b-2 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono text-sm hover:border-th-fgd-3 focus:border-th-fgd-3 focus:outline-none"
                         type="text"
                         value={modifiedOrderSize}
                         onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -488,7 +547,7 @@ const OpenOrders = ({
                     <Td className="w-[14.28%]">
                       <input
                         autoFocus
-                        className="h-8 w-full rounded-l-none rounded-r-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono text-sm hover:border-th-fgd-3 focus:border-th-fgd-3 focus:outline-none"
+                        className="h-8 w-full rounded-none border-x-0 border-b-2 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono text-sm hover:border-th-fgd-3 focus:border-th-fgd-3 focus:outline-none"
                         type="text"
                         value={modifiedOrderPrice}
                         onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -500,7 +559,7 @@ const OpenOrders = ({
                 )}
                 <Td className="w-[14.28%] text-right font-mono">
                   {fetchingFilledOrders ? (
-                    <div className="items flex justify-end">
+                    <div className="flex justify-end">
                       <SheenLoader className="flex justify-end">
                         <div className="h-4 w-8 bg-th-bkg-2" />
                       </SheenLoader>
@@ -532,7 +591,38 @@ const OpenOrders = ({
                             <PencilIcon className="h-4 w-4" />
                           </IconButton>
                           <Tooltip content={t('cancel')}>
-                            <IconButton
+                            <Popover>
+                              <div className="relative">
+                                <Popover.Button
+                                  className={`flex items-center justify-center border border-th-button text-th-fgd-1 md:hover:border-th-button-hover md:hover:text-th-fgd-1`}
+                                  onClick={() =>
+                                    handleCancelButton(order, market)
+                                  }
+                                >
+                                  <TrashIcon className="h-4 w-4" />
+                                </Popover.Button>
+                                <Transition
+                                  appear={true}
+                                  show={
+                                    showCancelPopover ===
+                                    order.orderId.toString()
+                                  }
+                                  as={Fragment}
+                                  enter="transition ease-in duration-100"
+                                  enterFrom="scale-90"
+                                  enterTo="scale-100"
+                                  leave="transition ease-out duration-100"
+                                  leaveFrom="opacity-100"
+                                  leaveTo="opacity-0"
+                                >
+                                  <Popover.Panel
+                                    className={`thin-scroll absolute z-20 max-h-60 w-32 space-y-2 overflow-auto rounded-md bg-th-bkg-2 p-4`}
+                                    static
+                                  ></Popover.Panel>
+                                </Transition>
+                              </div>
+                            </Popover>
+                            {/* <IconButton
                               disabled={cancelId === orderId.toString()}
                               onClick={() =>
                                 order instanceof PerpOrder
@@ -546,7 +636,7 @@ const OpenOrders = ({
                               ) : (
                                 <TrashIcon className="h-4 w-4" />
                               )}
-                            </IconButton>
+                            </IconButton> */}
                           </Tooltip>
                         </>
                       ) : (
