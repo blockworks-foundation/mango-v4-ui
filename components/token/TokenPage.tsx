@@ -66,9 +66,6 @@ const fetchTokenInfo = async (tokenId: string | undefined) => {
 
 const TokenPage = () => {
   const { t } = useTranslation(['common', 'token'])
-  // const [cmsTokenData, setCmsTokenData] = useState<TokenPage[] | undefined>(
-  //   undefined,
-  // )
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const { token } = router.query
@@ -84,16 +81,6 @@ const TokenPage = () => {
       ? 'ETH (Portal)'
       : token.toString()
   }, [token])
-
-  // useEffect(() => {
-  //   if (bankName) {
-  //     const fetchCmsData = async () => {
-  //       const tokenData = await fetchCMSTokenPage(bankName)
-  //       setCmsTokenData(tokenData)
-  //     }
-  //     fetchCmsData()
-  //   }
-  // }, [bankName])
 
   const bank = useMemo(() => {
     if (group && bankName) {

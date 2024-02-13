@@ -8,19 +8,18 @@ import mangoStore from '@store/mangoStore'
 import useAccountInterest from 'hooks/useAccountInterest'
 import useHealthContributions from 'hooks/useHealthContributions'
 import useMangoAccount from 'hooks/useMangoAccount'
+import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
 import { useTranslation } from 'next-i18next'
 import { useMemo, useState } from 'react'
 
 const ActionPanel = ({ bank }: { bank: Bank }) => {
   const { t } = useTranslation(['common', 'trade'])
   const { mangoAccount } = useMangoAccount()
-  const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const { initContributions } = useHealthContributions()
   const [showDepositModal, setShowDepositModal] = useState<
     'deposit' | 'withdraw' | ''
   >('')
   const { data: totalInterestData } = useAccountInterest()
-
   const [depositRate, borrowRate] = useMemo(() => {
     const depositRate = bank.getDepositRateUi()
     const borrowRate = bank.getBorrowRateUi()
@@ -29,8 +28,23 @@ const ActionPanel = ({ bank }: { bank: Bank }) => {
 
   const collateralValue =
     initContributions.find((val) => val.asset === bank.name)?.contribution || 0
+  const spotBalances = mangoStore((s) => s.mangoAccount.spotBalances)
   const inOrders = spotBalances[bank.mint.toString()]?.inOrders || 0
-  const unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
+  let unsettled = spotBalances[bank.mint.toString()]?.unsettled || 0
+  const unsettledPerpPositions = useUnsettledPerpPositions()
+
+  if (bank.name === 'USDC' && unsettledPerpPositions?.length) {
+    const group = mangoStore.getState().group
+    const unsettledPositionValues = []
+    for (const position of unsettledPerpPositions) {
+      const market = group?.getPerpMarketByMarketIndex(position.marketIndex)
+      if (market) {
+        const posUnsettled = position.getUnsettledPnlUi(market)
+        unsettledPositionValues.push(posUnsettled)
+      }
+    }
+    unsettled = unsettled + unsettledPositionValues.reduce((a, c) => a + c, 0)
+  }
 
   const symbol = bank.name === 'MSOL' ? 'mSOL' : bank.name
   const hasInterestEarned = totalInterestData?.find(
@@ -42,6 +56,11 @@ const ActionPanel = ({ bank }: { bank: Bank }) => {
   const interestAmount = hasInterestEarned
     ? hasInterestEarned.borrow_interest * -1 +
       hasInterestEarned.deposit_interest
+    : 0
+
+  const interestValue = hasInterestEarned
+    ? hasInterestEarned.borrow_interest_usd * -1 +
+      hasInterestEarned.deposit_interest_usd
     : 0
 
   return (
@@ -101,16 +120,26 @@ const ActionPanel = ({ bank }: { bank: Bank }) => {
           </div>
           <div className="flex justify-between border-t border-th-bkg-4 py-3">
             <p>{t('interest-earned')}</p>
-            <p className="font-mono text-th-fgd-2">
-              {interestAmount ? (
-                <FormatNumericValue
-                  value={interestAmount}
-                  decimals={bank.mintDecimals}
-                />
-              ) : (
-                0
-              )}
-            </p>
+            <div>
+              <p className="text-right font-mono text-th-fgd-2">
+                {interestAmount ? (
+                  <FormatNumericValue
+                    value={interestAmount}
+                    decimals={bank.mintDecimals}
+                  />
+                ) : (
+                  0
+                )}
+              </p>
+              <p className="text-right font-mono text-xs text-th-fgd-3">
+                $
+                {interestValue ? (
+                  <FormatNumericValue value={interestValue} decimals={2} />
+                ) : (
+                  0
+                )}
+              </p>
+            </div>
           </div>
           <div className="flex justify-between border-t border-th-bkg-4 py-3">
             <p>{t('rates')}</p>
