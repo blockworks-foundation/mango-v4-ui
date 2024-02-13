@@ -81,6 +81,7 @@ import DepositWithdrawModal from '@components/modals/DepositWithdrawModal'
 import CreateAccountModal from '@components/modals/CreateAccountModal'
 import TradeformSubmitButton from './TradeformSubmitButton'
 import BigNumber from 'bignumber.js'
+import { isOpenbookV2Market } from 'types/openbook'
 
 dayjs.extend(relativeTime)
 
@@ -376,14 +377,16 @@ const AdvancedTradeForm = () => {
 
   const tickDecimals = useMemo(() => {
     if (!serumOrPerpMarket) return 1
-    if (serumOrPerpMarket instanceof MarketAccount) {
-      const tickSize = new BigNumber(10)
+    let tickSize
+    if (isOpenbookV2Market(serumOrPerpMarket)) {
+      tickSize = new BigNumber(10)
         .pow(serumOrPerpMarket.baseDecimals - serumOrPerpMarket.quoteDecimals)
         .times(new BigNumber(serumOrPerpMarket.quoteLotSize.toString()))
         .div(new BigNumber(serumOrPerpMarket.baseLotSize.toString()))
         .toNumber()
+    } else {
+      tickSize = serumOrPerpMarket.tickSize
     }
-    const tickSize = serumOrPerpMarket.tickSize
     const tickDecimals = getDecimalCount(tickSize)
     return tickDecimals
   }, [serumOrPerpMarket])

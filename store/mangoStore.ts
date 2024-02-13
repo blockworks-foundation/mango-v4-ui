@@ -602,15 +602,15 @@ const mangoStore = create<MangoStore>()(
               state.openbookMarkets = openbookMarkets
               state.perpMarkets = perpMarkets
               state.selectedMarket.current = selectedMarket
-              if (!state.swap.inputBank && !state.swap.outputBank) {
+              if (!state.swap.inputBank || !state.swap.outputBank) {
                 state.swap.inputBank = inputBank
                 state.swap.outputBank = outputBank
               } else {
                 state.swap.inputBank = group.getFirstBankByMint(
-                  state.swap.inputBank!.mint,
+                  state.swap.inputBank.mint,
                 )
                 state.swap.outputBank = group.getFirstBankByMint(
-                  state.swap.outputBank!.mint,
+                  state.swap.outputBank.mint,
                 )
               }
             })
@@ -675,28 +675,19 @@ const mangoStore = create<MangoStore>()(
 
             console.log('11111111')
 
-            const ownerMangoAccounts = await client
+            const mangoAccounts = await client
               .getMangoAccountsForOwner(group, ownerPk)
               .catch((e) => console.log('-=-=-=-', e))
             // const [ownerMangoAccounts] = await Promise.all([
             // client.getMangoAccountsForDelegate(group, ownerPk),
             // ])
-            console.log(
-              '222222222 ownerMangoAccounts: ',
-              group,
-              ownerMangoAccounts,
-            )
+            console.log('222222222 ownerMangoAccounts: ', group, mangoAccounts)
 
-            const mangoAccounts = [...ownerMangoAccounts].filter(
-              (acc) => !acc.name.includes('Leverage Stake'),
-            )
+            // const mangoAccounts = [...ownerMangoAccounts].filter(
+            //   (acc) => !acc.name.includes('Leverage Stake'),
+            // )
             console.log('=====mangoAccounts', mangoAccounts)
 
-            const selectedAccountIsNotInAccountsList = mangoAccounts.find(
-              (x) =>
-                x.publicKey.toBase58() ===
-                selectedMangoAccount?.publicKey.toBase58(),
-            )
             if (!mangoAccounts?.length) {
               set((state) => {
                 state.mangoAccounts = []
@@ -704,6 +695,12 @@ const mangoStore = create<MangoStore>()(
               })
               return
             }
+
+            const selectedAccountIsNotInAccountsList = mangoAccounts.find(
+              (x) =>
+                x.publicKey.toBase58() ===
+                selectedMangoAccount?.publicKey.toBase58(),
+            )
 
             let newSelectedMangoAccount = selectedMangoAccount
             if (!selectedMangoAccount || !selectedAccountIsNotInAccountsList) {
