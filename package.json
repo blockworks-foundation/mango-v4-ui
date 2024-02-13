@@ -49,6 +49,7 @@
     "big.js": "6.2.1",
     "bignumber.js": "9.1.2",
     "clsx": "1.2.1",
+    "contentful": "10.6.21",
     "csv-stringify": "6.3.2",
     "d3-interpolate": "3.0.1",
     "date-fns": "2.29.3",
