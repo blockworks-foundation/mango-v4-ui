@@ -12,6 +12,10 @@ import TradeHistory from './TradeHistory'
 import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
 import ManualRefresh from '@components/shared/ManualRefresh'
 import AccountOrders from '@components/account/AccountOrders'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import { FILTER_HISTORY_FOR_MARKET_KEY } from 'utils/constants'
+import Switch from '@components/forms/Switch'
+import { useTranslation } from 'react-i18next'
 
 const TradeInfoTabs = () => {
   const [selectedTab, setSelectedTab] = useState('balances')
@@ -84,24 +88,38 @@ const TradeInfoTabs = () => {
 export default TradeInfoTabs
 
 const TabContent = ({ selectedTab }: { selectedTab: string }) => {
-  const unsettledSpotBalances = useUnsettledSpotBalances()
-  const unsettledPerpPositions = useUnsettledPerpPositions()
+  const { t } = useTranslation('trade')
+  const [filterHistoryForCurrentMarket, setFilterHistoryForCurrentMarket] =
+    useLocalStorageState(FILTER_HISTORY_FOR_MARKET_KEY, false)
   switch (selectedTab) {
     case 'balances':
       return <SwapTradeBalances />
     case 'trade:orders':
       return <AccountOrders />
     case 'trade:unsettled':
-      return (
-        <UnsettledTrades
-          unsettledSpotBalances={unsettledSpotBalances}
-          unsettledPerpPositions={unsettledPerpPositions}
-        />
-      )
+      return <UnsettledTrades />
     case 'trade:positions':
       return <PerpPositions />
     case 'trade-history':
-      return <TradeHistory />
+      return (
+        <>
+          <div className="border-b border-th-bkg-3">
+            <div className="flex justify-end px-4 py-3 md:px-6">
+              <Switch
+                checked={filterHistoryForCurrentMarket}
+                onChange={() =>
+                  setFilterHistoryForCurrentMarket(
+                    !filterHistoryForCurrentMarket,
+                  )
+                }
+              >
+                {t('filter-current-market')}
+              </Switch>
+            </div>
+          </div>
+          <TradeHistory filterForMarket={filterHistoryForCurrentMarket} />
+        </>
+      )
     default:
       return <SwapTradeBalances />
   }

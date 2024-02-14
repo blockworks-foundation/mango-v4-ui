@@ -43,16 +43,18 @@ const ManualRefresh = ({
   return (
     <div className={`${classNames} rounded-full`}>
       <Tooltip content={t('refresh-data')} className="py-1 text-xs">
-        <IconButton
-          hideBg={hideBg}
-          onClick={handleRefreshData}
-          disabled={spin}
-          size={size}
-        >
-          <ArrowPathIcon
-            className={`h-5 w-5 ${spin ? 'animate-spin' : null}`}
-          />
-        </IconButton>
+        <div id="account-refresh">
+          <IconButton
+            hideBg={hideBg}
+            onClick={handleRefreshData}
+            disabled={spin}
+            size={size}
+          >
+            <ArrowPathIcon
+              className={`h-5 w-5 ${spin ? 'animate-spin' : null}`}
+            />
+          </IconButton>
+        </div>
       </Tooltip>
     </div>
   )
