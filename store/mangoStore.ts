@@ -184,7 +184,16 @@ export const DEFAULT_TRADE_FORM: TradeForm = {
   reduceOnly: false,
 }
 
+export type AccountPageTab =
+  | 'overview'
+  | 'balances'
+  | 'trade:positions'
+  | 'trade:orders'
+  | 'trade:unsettled'
+  | 'history'
+
 export type MangoStore = {
+  accountPageTab: AccountPageTab
   activityFeed: {
     feed: Array<ActivityFeed>
     loading: boolean
@@ -378,6 +387,7 @@ const mangoStore = create<MangoStore>()(
     )
 
     return {
+      accountPageTab: 'overview',
       activityFeed: {
         feed: [],
         loading: true,
