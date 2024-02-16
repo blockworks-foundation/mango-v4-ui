@@ -10,7 +10,7 @@ import { coder } from '@project-serum/anchor/dist/cjs/spl/token'
 import mangoStore from '@store/mangoStore'
 import useMangoGroup from 'hooks/useMangoGroup'
 import type { NextPage } from 'next'
-import { ReactNode, useCallback, useEffect, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import {
   ArrowTopRightOnSquareIcon,
@@ -23,8 +23,8 @@ import BN from 'bn.js'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import {
+  getApiTokenName,
   getFormattedBankValues,
-  getPriceImpacts,
 } from 'utils/governance/listingTools'
 import GovernancePageWrapper from '@components/governance/GovernancePageWrapper'
 import TokenLogo from '@components/shared/TokenLogo'
@@ -37,6 +37,12 @@ import { PythHttpClient } from '@pythnetwork/client'
 import { MAINNET_PYTH_PROGRAM } from 'utils/governance/constants'
 import { PublicKey } from '@solana/web3.js'
 import { notify } from 'utils/notifications'
+import {
+  LISTING_PRESETS,
+  MidPriceImpact,
+  getMidPriceImpacts,
+  getProposedKey,
+} from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 
 dayjs.extend(relativeTime)
 
@@ -63,9 +69,50 @@ const Dashboard: NextPage = () => {
   const { group } = useMangoGroup()
   const connection = mangoStore((s) => s.connection)
   const { banks } = useBanks()
-  const [isOpenSuggestionModal, setIsOpenSuggestionModal] = useState(false)
-  const [priceImpacts, setPriceImapcts] = useState<PriceImpact[]>([])
+  const [openedSuggestedModal, setOpenedSuggestedModal] = useState<
+    string | null
+  >(null)
+  const priceImpacts: PriceImpact[] = group?.pis || []
   const [stickyIndex, setStickyIndex] = useState(-1)
+
+  const midPriceImp = useMemo(
+    () => getMidPriceImpacts(priceImpacts.length ? priceImpacts : []),
+    [priceImpacts],
+  )
+
+  const getSuggestedAndCurrentTier = (bank: Bank) => {
+    const currentTier = Object.values(LISTING_PRESETS).find((x) => {
+      return x.initLiabWeight.toFixed(1) === '1.8'
+        ? x.initLiabWeight.toFixed(1) ===
+            bank?.initLiabWeight.toNumber().toFixed(1) &&
+            x.reduceOnly === bank.reduceOnly
+        : x.initLiabWeight.toFixed(1) ===
+            bank?.initLiabWeight.toNumber().toFixed(1)
+    })
+
+    const filteredResp = midPriceImp
+      .filter((x) => x.avg_price_impact_percent < 1)
+      .reduce((acc: { [key: string]: MidPriceImpact }, val: MidPriceImpact) => {
+        if (
+          !acc[val.symbol] ||
+          val.target_amount > acc[val.symbol].target_amount
+        ) {
+          acc[val.symbol] = val
+        }
+        return acc
+      }, {})
+    const priceImpact = filteredResp[getApiTokenName(bank.name)]
+
+    const suggestedTierKey = getProposedKey(
+      priceImpact?.target_amount,
+      bank.oracleProvider === OracleProvider.Pyth,
+    )
+
+    return {
+      suggestedTierKey,
+      currentTier,
+    }
+  }
 
   const getPythLink = async (pythOraclePk: PublicKey) => {
     const pythClient = new PythHttpClient(connection, MAINNET_PYTH_PROGRAM)
@@ -121,16 +168,6 @@ const Dashboard: NextPage = () => {
     }
   }, [banks.length])
 
-  useEffect(() => {
-    const handleGetPriceImapcts = async () => {
-      const [resp] = await Promise.all([getPriceImpacts()])
-      setPriceImapcts(resp)
-    }
-    if (group) {
-      handleGetPriceImapcts()
-    }
-  }, [connection, group])
-
   return (
     <GovernancePageWrapper noStyles={true}>
       <div className="col-span-12 lg:col-span-8 lg:col-start-3">
@@ -171,7 +208,12 @@ const Dashboard: NextPage = () => {
                 Collpase All
               </Button>
             </div>
-            <h3 className="mb-3 mt-6 text-base text-th-fgd-3">Banks</h3>
+            <h3 className="mb-3 mt-6 flex text-base text-th-fgd-3">
+              <span>Banks</span>
+              <span className="ml-auto">
+                Current / <span className="text-th-success">Suggested</span>{' '}
+              </span>
+            </h3>
             <div className="border-b border-th-bkg-3">
               {banks
                 .sort((a, b) => a.name.localeCompare(b.name))
@@ -184,6 +226,9 @@ const Dashboard: NextPage = () => {
                     group,
                     bank,
                   )
+
+                  const { currentTier, suggestedTierKey } =
+                    getSuggestedAndCurrentTier(bank)
 
                   return (
                     <Disclosure key={bank.publicKey.toString()}>
@@ -203,11 +248,21 @@ const Dashboard: NextPage = () => {
                               className="flex w-full items-center justify-between"
                               aria-label="panel"
                             >
-                              <div className="flex items-center">
+                              <div className="flex flex-1 items-center">
                                 <TokenLogo bank={bank} />
                                 <p className="ml-2 text-th-fgd-2">
                                   {formattedBankValues.name} Bank
                                 </p>
+                                <div className="ml-auto flex space-x-2">
+                                  <div>{currentTier?.preset_name}</div>
+                                  <div>/</div>
+                                  <div className="text-th-success">
+                                    {
+                                      LISTING_PRESETS[suggestedTierKey]
+                                        .preset_name
+                                    }
+                                  </div>
+                                </div>
                               </div>
                               <ChevronDownIcon
                                 className={`${
@@ -486,17 +541,27 @@ const Dashboard: NextPage = () => {
                               <div className="mb-4 mt-2 flex">
                                 <Button
                                   className=" ml-auto"
-                                  onClick={() => setIsOpenSuggestionModal(true)}
+                                  onClick={() =>
+                                    setOpenedSuggestedModal(
+                                      bank.mint.toBase58(),
+                                    )
+                                  }
                                 >
                                   Check suggested values
-                                  {isOpenSuggestionModal && (
+                                  {openedSuggestedModal ===
+                                    bank.mint.toBase58() && (
                                     <DashboardSuggestedValues
-                                      priceImpacts={priceImpacts}
+                                      midPriceImp={midPriceImp}
+                                      currentTier={currentTier}
+                                      suggestedTierKey={suggestedTierKey}
                                       group={group}
                                       bank={bank}
-                                      isOpen={isOpenSuggestionModal}
+                                      isOpen={
+                                        openedSuggestedModal ===
+                                        bank.mint.toBase58()
+                                      }
                                       onClose={() =>
-                                        setIsOpenSuggestionModal(false)
+                                        setOpenedSuggestedModal(null)
                                       }
                                     ></DashboardSuggestedValues>
                                   )}
