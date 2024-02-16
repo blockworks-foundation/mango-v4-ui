@@ -6,6 +6,7 @@ import Button, { IconButton } from '@components/shared/Button'
 import { Disclosure } from '@headlessui/react'
 import {
   ArrowLeftIcon,
+  CheckCircleIcon,
   ChevronDownIcon,
   ChevronRightIcon,
   InformationCircleIcon,
@@ -51,12 +52,11 @@ const Learn: NextPage = () => {
   }, [quiz])
 
   return !quizToShow ? (
-    <div
-      className="mx-auto flex max-w-xl flex-col items-center justify-center py-12 text-center"
-      style={{ minHeight: 'calc(100vh - 104px)' }}
-    >
-      <h1 className="mb-1">Learn to Earn</h1>
-      <p className="text-base">Earn tokens for learning about Mango</p>
+    <div className="mx-auto flex max-w-xl flex-col items-center py-12 text-center">
+      <h1 className="mb-1">Learn 2 Earn</h1>
+      <p className="text-base">
+        Earn rewards points for becoming a quiz master.
+      </p>
       <div className="w-full space-y-2 pt-6">
         {quizzes.map((quiz) => (
           <button
@@ -159,6 +159,16 @@ const Quiz = ({ quiz }: { quiz: Quiz }) => {
     setShowResult(false)
   }
 
+  const getResultsHeadingText = (score: number) => {
+    if (!score) {
+      return 'Whoops 😲'
+    } else if (score < 50) {
+      return 'Try Again'
+    } else if (score < 100) {
+      return 'Almost There...'
+    } else return 'Congratulations 🎉'
+  }
+
   return (
     <>
       <div className="flex h-12 w-full items-center justify-between bg-th-bkg-2 px-4 md:px-6">
@@ -245,16 +255,28 @@ const Quiz = ({ quiz }: { quiz: Quiz }) => {
           </>
         ) : (
           <>
-            <h2 className="mb-4">Results</h2>
-            <div className="mb-6 border-b border-th-bkg-4">
-              <div className="flex justify-between border-t border-th-bkg-4 p-4">
-                <p>Score</p>
-                <p className="font-mono text-th-fgd-1">
-                  {(result.correctAnswers / questions.length) * 100}%
+            <h2 className="mb-4">
+              {getResultsHeadingText(
+                (result.correctAnswers / questions.length) * 100,
+              )}
+            </h2>
+            <p>You scored</p>
+            <span className="font-display text-5xl text-th-fgd-1">
+              {(result.correctAnswers / questions.length) * 100}%
+            </span>
+            {result.correctAnswers !== questions.length ? (
+              <div className="mx-auto mt-2 w-max rounded-full border border-th-fgd-4 px-3 py-1">
+                <p className="text-th-fgd-2">
+                  Try again to earn rewards points.
                 </p>
               </div>
+            ) : null}
+            <div className="my-6 border-b border-th-bkg-4">
               <div className="flex justify-between border-t border-th-bkg-4 p-4">
-                <p>Correct Answers</p>
+                <div className="flex items-center">
+                  <CheckCircleIcon className="mr-1 h-4 w-4 text-th-success" />
+                  <p>Correct Answers</p>
+                </div>
                 <p className="font-mono text-th-fgd-1">
                   {result.correctAnswers}
                 </p>
@@ -267,7 +289,10 @@ const Quiz = ({ quiz }: { quiz: Quiz }) => {
                         className={`w-full border-t border-th-bkg-4 p-4 text-left focus:outline-none`}
                       >
                         <div className="flex items-center justify-between">
-                          <p>Wrong Answers</p>
+                          <div className="flex items-center">
+                            <XCircleIcon className="mr-1 h-4 w-4 text-th-error" />
+                            <p>Wrong Answers</p>
+                          </div>
                           <div className="flex items-center space-x-2">
                             <p className="font-mono text-th-fgd-1">
                               {result.wrongAnswers.length}
@@ -292,7 +317,7 @@ const Quiz = ({ quiz }: { quiz: Quiz }) => {
                                     }`}
                                   >
                                     <div className="flex items-start">
-                                      <XCircleIcon className="mr-1.5 mt-0.5 h-4 w-4 shrink-0 text-th-error" />
+                                      <XCircleIcon className="mr-1 mt-0.5 h-4 w-4 shrink-0 text-th-error" />
                                       <p className="font-bold text-th-fgd-1">
                                         {answer.question}
                                       </p>
@@ -352,22 +377,39 @@ const Quiz = ({ quiz }: { quiz: Quiz }) => {
                 </Disclosure>
               ) : (
                 <div className="flex justify-between border-t border-th-bkg-4 p-4">
-                  <p>Wrong Answers</p>
+                  <div className="flex items-center">
+                    <XCircleIcon className="mr-1 h-4 w-4 text-th-error" />
+                    <p>Wrong Answers</p>
+                  </div>
                   <p className="font-mono text-th-fgd-1">0</p>
                 </div>
               )}
             </div>
-            <div className="flex justify-end space-x-3">
-              <Button onClick={handleTryAgain} secondary>
-                Redo
-              </Button>
-              <Button
-                onClick={() =>
-                  router.push('/learn', undefined, { shallow: true })
-                }
-              >
-                Exit
-              </Button>
+            <div className="flex justify-center space-x-3">
+              {result.correctAnswers === questions.length ? (
+                <Button
+                  onClick={() =>
+                    router.push('/learn', undefined, { shallow: true })
+                  }
+                  size="large"
+                >
+                  Claim Rewards Points
+                </Button>
+              ) : (
+                <>
+                  <Button onClick={handleTryAgain} secondary size="large">
+                    Try Again
+                  </Button>
+                  <Button
+                    onClick={() =>
+                      router.push('/learn', undefined, { shallow: true })
+                    }
+                    size="large"
+                  >
+                    Exit
+                  </Button>
+                </>
+              )}
             </div>
           </>
         )}
