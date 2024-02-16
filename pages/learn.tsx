@@ -12,8 +12,6 @@ import {
   InformationCircleIcon,
   XCircleIcon,
 } from '@heroicons/react/20/solid'
-import Image from 'next/image'
-import { formatNumericValue } from 'utils/numbers'
 import { useRouter } from 'next/router'
 
 export async function getStaticProps({ locale }: { locale: string }) {
@@ -60,7 +58,7 @@ const Learn: NextPage = () => {
       <div className="w-full space-y-2 pt-6">
         {quizzes.map((quiz) => (
           <button
-            className="flex w-full items-center justify-between rounded-xl bg-th-bkg-2 p-4 pl-6 text-left md:hover:bg-th-bkg-3"
+            className="flex w-full items-center justify-between rounded-xl bg-th-bkg-2 p-4 text-left md:p-6 md:hover:bg-th-bkg-3"
             key={quiz.name}
             onClick={() => goToQuiz(quiz.slug)}
           >
@@ -72,7 +70,7 @@ const Learn: NextPage = () => {
               </div>
             </div>
             <div className="flex items-center space-x-2 pl-4">
-              <div className="flex w-max items-center rounded-full bg-th-bkg-1 px-3 py-1">
+              {/* <div className="flex w-max items-center rounded-full bg-th-bkg-1 px-3 py-1">
                 <p className="mr-0.5">
                   Earn:{' '}
                   <span className="font-mono text-th-fgd-1">
@@ -85,7 +83,7 @@ const Learn: NextPage = () => {
                   height={16}
                   width={16}
                 />
-              </div>
+              </div> */}
               <ChevronRightIcon className="h-6 w-6" />
             </div>
           </button>
@@ -196,7 +194,7 @@ const Quiz = ({ quiz }: { quiz: Quiz }) => {
             width:
               showIntro || showResult
                 ? '0%'
-                : `${(currentQuestion + 1 / quiz.questions.length) * 100}%`,
+                : `${((currentQuestion + 1) / quiz.questions.length) * 100}%`,
             opacity: showResult ? 0 : 100,
           }}
           className="flex bg-th-active transition-all duration-700 ease-out"
@@ -212,7 +210,11 @@ const Quiz = ({ quiz }: { quiz: Quiz }) => {
                 {intro.docs.linkText}
               </a>
             ) : null}
-            <Button className="mt-6" onClick={() => setShowIntro(false)}>
+            <Button
+              className="mt-6"
+              onClick={() => setShowIntro(false)}
+              size="large"
+            >
               Let&apos;s Go
             </Button>
           </>
@@ -232,7 +234,7 @@ const Quiz = ({ quiz }: { quiz: Quiz }) => {
                   onClick={() => handleAnswer(choice, index)}
                 >
                   <div
-                    className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${
+                    className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs ${
                       answerIndex === index
                         ? 'bg-th-active text-th-bkg-1'
                         : 'bg-th-bkg-1 text-th-fgd-3'
@@ -242,7 +244,7 @@ const Quiz = ({ quiz }: { quiz: Quiz }) => {
                       {String.fromCharCode(97 + index).toUpperCase()}
                     </span>
                   </div>
-                  <span>{choice}</span>
+                  <span className="mx-6 text-base">{choice}</span>
                   <div className="h-6 w-6" />
                 </button>
               ))}
@@ -262,7 +264,7 @@ const Quiz = ({ quiz }: { quiz: Quiz }) => {
             </h2>
             <p>You scored</p>
             <span className="font-display text-5xl text-th-fgd-1">
-              {(result.correctAnswers / questions.length) * 100}%
+              {((result.correctAnswers / questions.length) * 100).toFixed()}%
             </span>
             {result.correctAnswers !== questions.length ? (
               <div className="mx-auto mt-2 w-max rounded-full border border-th-fgd-4 px-3 py-1">
