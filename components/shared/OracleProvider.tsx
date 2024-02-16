@@ -1,5 +1,6 @@
 import { Bank } from '@blockworks-foundation/mango-v4'
 import PythIcon from '@components/icons/PythIcon'
+import SwitchboardIcon from '@components/icons/SwitchboardIcon'
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid'
 import useOracleProvider from 'hooks/useOracleProvider'
 
@@ -15,6 +16,9 @@ const OracleProvider = ({ bank }: { bank?: Bank }) => {
     >
       {oracleProvider === 'Pyth' ? (
         <PythIcon className="mr-1.5 h-4 w-4" />
+      ) : null}
+      {oracleProvider === 'Switchboard' ? (
+        <SwitchboardIcon className="mr-1.5 h-4 w-4" />
       ) : null}
       <span className="mr-1.5">{oracleProvider}</span>
       <ArrowTopRightOnSquareIcon className="h-4 w-4" />
