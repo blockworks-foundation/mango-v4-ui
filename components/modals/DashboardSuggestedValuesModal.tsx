@@ -1,4 +1,4 @@
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useState } from 'react'
 import { ModalProps } from '../../types/modal'
 import Modal from '../shared/Modal'
 import mangoStore from '@store/mangoStore'
@@ -6,13 +6,13 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import GovernanceStore from '@store/governanceStore'
 import {
   formatSuggestedValues,
+  getApiTokenName,
   getFormattedBankValues,
 } from 'utils/governance/listingTools'
 import {
   Bank,
   Group,
   OracleProvider,
-  PriceImpact,
   toUiDecimals,
 } from '@blockworks-foundation/mango-v4'
 import { AccountMeta, Transaction } from '@solana/web3.js'
@@ -34,10 +34,8 @@ import {
   LISTING_PRESETS,
   LISTING_PRESETS_KEY,
   MidPriceImpact,
-  getMidPriceImpacts,
   getPresetWithAdjustedDepositLimit,
   getPresetWithAdjustedNetBorrows,
-  getProposedKey,
   getPythPresets,
   getSwitchBoardPresets,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
@@ -52,11 +50,15 @@ const DashboardSuggestedValues = ({
   onClose,
   bank,
   group,
-  priceImpacts,
+  suggestedTierKey,
+  currentTier,
+  midPriceImp,
 }: ModalProps & {
   bank: Bank
   group: Group
-  priceImpacts: PriceImpact[]
+  suggestedTierKey: LISTING_PRESETS_KEY
+  currentTier: LISTING_PRESET | undefined
+  midPriceImp: MidPriceImpact[]
 }) => {
   const client = mangoStore((s) => s.client)
   //do not deconstruct wallet is used for anchor to sign
@@ -74,62 +76,12 @@ const DashboardSuggestedValues = ({
       : getSwitchBoardPresets(LISTING_PRESETS)
 
   const [proposedTier, setProposedTier] =
-    useState<LISTING_PRESETS_KEY>('liab_1')
-  const [suggestedTier, setSuggestedTier] =
-    useState<LISTING_PRESETS_KEY>('liab_1')
+    useState<LISTING_PRESETS_KEY>(suggestedTierKey)
   const [proposing, setProposing] = useState(false)
 
   useEffect(() => {
     setForcePythOracle(bank?.oracleProvider === OracleProvider.Pyth)
   }, [bank.oracleProvider])
-
-  const getApiTokenName = (bankName: string) => {
-    if (bankName === 'ETH (Portal)') {
-      return 'ETH'
-    }
-    return bankName
-  }
-  const priceImpactsFiltered = useMemo(
-    () =>
-      getMidPriceImpacts(priceImpacts.length ? priceImpacts : []).filter(
-        (x) => x.symbol === getApiTokenName(bank.name),
-      ),
-    [priceImpacts, bank.name],
-  )
-
-  const currentTier = useMemo(() => {
-    return Object.values(LISTING_PRESETS).find((x) =>
-      x.initLiabWeight.toFixed(1) === '1.8'
-        ? x.initLiabWeight.toFixed(1) ===
-            bank?.initLiabWeight.toNumber().toFixed(1) &&
-          x.reduceOnly === bank.reduceOnly
-        : x.initLiabWeight.toFixed(1) ===
-          bank?.initLiabWeight.toNumber().toFixed(1),
-    )
-  }, [bank.initLiabWeight])
-
-  const getSuggestedTierForListedTokens = useCallback(async () => {
-    const filteredResp = priceImpactsFiltered
-      .filter((x) => x.avg_price_impact_percent < 1)
-      .reduce((acc: { [key: string]: MidPriceImpact }, val: MidPriceImpact) => {
-        if (
-          !acc[val.symbol] ||
-          val.target_amount > acc[val.symbol].target_amount
-        ) {
-          acc[val.symbol] = val
-        }
-        return acc
-      }, {})
-    const priceImpact = filteredResp[getApiTokenName(bank.name)]
-
-    const suggestedTier = getProposedKey(
-      priceImpact?.target_amount,
-      bank.oracleProvider === OracleProvider.Pyth,
-    )
-
-    setProposedTier(suggestedTier)
-    setSuggestedTier(suggestedTier)
-  }, [bank.name, bank.oracleProvider, priceImpactsFiltered.toString()])
 
   const proposeNewSuggestedValues = useCallback(
     async (
@@ -148,6 +100,7 @@ const DashboardSuggestedValues = ({
         bank.uiPrice,
         bank.mintDecimals,
       )
+      console.log(preset)
 
       const fieldsToChange = invalidFieldsKeys.reduce(
         (obj, key) => ({ ...obj, [key]: preset[key as keyof typeof preset] }),
@@ -314,16 +267,13 @@ const DashboardSuggestedValues = ({
       connection,
       fee,
       group,
+      oracle,
       proposals,
       voter.tokenOwnerRecord,
       vsrClient,
       wallet,
     ],
   )
-
-  useEffect(() => {
-    getSuggestedTierForListedTokens()
-  }, [getSuggestedTierForListedTokens])
 
   const mintInfo = group.mintInfosMapByMint.get(bank.mint.toString())
 
@@ -376,8 +326,8 @@ const DashboardSuggestedValues = ({
     >
       <h3 className="mb-6">
         <span>
-          {bank.name} - Suggested tier: {PRESETS[suggestedTier].preset_name}{' '}
-          Current tier: ~{currentTier?.preset_name}
+          {bank.name} - Suggested tier: {PRESETS[suggestedTierKey].preset_name}{' '}
+          Current tier: ~ {currentTier?.preset_name}
         </span>
         <div className="py-4">
           <p className="mb-2">
@@ -398,7 +348,7 @@ const DashboardSuggestedValues = ({
               <div className="flex w-full items-center justify-between">
                 {PRESETS[name as LISTING_PRESETS_KEY].preset_name}{' '}
                 {`{${PRESETS[name as LISTING_PRESETS_KEY].preset_key}}`}
-                {name === suggestedTier ? '- suggested' : ''}
+                {name === suggestedTierKey ? ' - suggested' : ''}
               </div>
             </Select.Option>
           ))}
@@ -668,18 +618,20 @@ const DashboardSuggestedValues = ({
           />
           <div>
             <h3 className="mb-4 pl-6">Price impacts</h3>
-            {priceImpactsFiltered.map((x) => (
-              <div className="flex pl-6" key={x.target_amount}>
-                <p className="mr-4 w-[150px] space-x-4">
-                  <span>Amount:</span>
-                  <span>${x.target_amount}</span>
-                </p>
-                <p className="space-x-4">
-                  <span>Price impact:</span>{' '}
-                  <span>{x.avg_price_impact_percent.toFixed(3)}%</span>
-                </p>
-              </div>
-            ))}
+            {midPriceImp
+              .filter((x) => x.symbol === getApiTokenName(bank.name))
+              .map((x) => (
+                <div className="flex pl-6" key={x.target_amount}>
+                  <p className="mr-4 w-[150px] space-x-4">
+                    <span>Amount:</span>
+                    <span>${x.target_amount}</span>
+                  </p>
+                  <p className="space-x-4">
+                    <span>Price impact:</span>{' '}
+                    <span>{x.avg_price_impact_percent.toFixed(3)}%</span>
+                  </p>
+                </div>
+              ))}
           </div>
         </Disclosure.Panel>
 

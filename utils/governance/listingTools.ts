@@ -457,10 +457,9 @@ export type MidPriceImpact = Omit<
   'side' | 'min_price_impact_percent' | 'max_price_impact_percent'
 >
 
-export const getPriceImpacts = async () => {
-  const resp = await fetch(
-    'https://api.mngo.cloud/data/v4/risk/listed-tokens-one-week-price-impacts',
-  )
-  const jsonReps = (await resp.json()) as PriceImpact[]
-  return jsonReps
+export const getApiTokenName = (bankName: string) => {
+  if (bankName === 'ETH (Portal)') {
+    return 'ETH'
+  }
+  return bankName
 }
