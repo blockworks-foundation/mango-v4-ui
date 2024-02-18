@@ -12,7 +12,7 @@ const FAQS = [
   },
   {
     q: 'What is a rewards season?',
-    a: 'Each weekly cycle is called a Season. They run from midnight Friday UTC to the following midnight Friday UTC.',
+    a: 'Each weekly cycle is called a Season. They run from midnight Sunday UTC to the following midnight Sunday UTC.',
   },
   {
     q: 'What are the rewards tiers?',
@@ -20,11 +20,11 @@ const FAQS = [
   },
   {
     q: 'How do the prizes work?',
-    a: "At the end of each Season loot boxes are distributed based on the amount of points earned relative to the other participants in your tier. Everyone will win one or more prizes so you're guaranteed to get something.",
+    a: 'At the end of each Season prizes are allocated to the participants of each rewards tier. The more points you have the better chance you have to win more valuable prizes. You can claim your prizes for the season when you see the claim banner (usually on the same day as the season end). This page will automatically show the prize reveal when the claim is ready. The next season will start before you have claimed for the previous season. You can keep earning points for the new season in the meantime.',
   },
   {
     q: 'How do I claim my rewards?',
-    a: 'At the end of each season (midnight Friday UTC) there is a 48 hour window where you can claim your prizes. Come back to this page to claim. If you fail to claim your prizes during this period they will be lost.',
+    a: "At the end of each season and when the claim is ready you'll see a banner to claim your prizes. Come back to this page to claim within 2 days. If you fail to claim your prizes during this period they will be lost.",
   },
 ]
 

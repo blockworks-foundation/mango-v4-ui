@@ -26,7 +26,7 @@ import Tooltip from './shared/Tooltip'
 import { copyToClipboard } from 'utils'
 import mangoStore from '@store/mangoStore'
 import UserSetupModal from './modals/UserSetupModal'
-import { IS_ONBOARDED_KEY } from 'utils/constants'
+import { IS_ONBOARDED_KEY, UI_TOURS_KEY } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import SettingsModal from './modals/SettingsModal'
 import DepositWithdrawIcon from './icons/DepositWithdrawIcon'
@@ -44,6 +44,7 @@ import TopBarStore from '@store/topBarStore'
 import MedalIcon from './icons/MedalIcon'
 import BridgeModal from './modals/BridgeModal'
 import { useViewport } from 'hooks/useViewport'
+import { TOURS, startAccountTour } from 'utils/tours'
 
 export const TOPBAR_ICON_BUTTON_CLASSES =
   'relative flex h-16 w-10 sm:w-16 items-center justify-center sm:border-l sm:border-th-bkg-3 focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2'
@@ -67,6 +68,7 @@ const TopBar = () => {
   } = useAccountPointsAndRank(mangoAccountAddress, seasonPointsToFetchId)
   const { data: isWhiteListed } = useIsWhiteListed()
   const router = useRouter()
+  const { asPath, query } = useRouter()
   const themeData = mangoStore((s) => s.themeData)
 
   const [action, setAction] = useState<'deposit' | 'withdraw'>('deposit')
@@ -81,13 +83,21 @@ const TopBar = () => {
   const { isUnownedAccount } = useUnownedAccount()
   const showUserSetup = mangoStore((s) => s.showUserSetup)
   const [, setIsOnboarded] = useLocalStorageState(IS_ONBOARDED_KEY)
+  const [seenAccountTours] = useLocalStorageState(UI_TOURS_KEY, [])
 
   const handleCloseSetup = useCallback(() => {
     set((s) => {
       s.showUserSetup = false
     })
     setIsOnboarded(true)
-  }, [setIsOnboarded])
+    if (
+      asPath === '/' &&
+      !query?.view &&
+      !seenAccountTours.includes(TOURS.ACCOUNT)
+    ) {
+      startAccountTour(mangoAccountAddress)
+    }
+  }, [setIsOnboarded, seenAccountTours, asPath, query, mangoAccountAddress])
 
   const handleShowSetup = useCallback(() => {
     set((s) => {

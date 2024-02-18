@@ -12,7 +12,7 @@ import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
-import { PerpMarket, PerpPosition } from '@blockworks-foundation/mango-v4'
+import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import TableMarketName from './TableMarketName'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useWallet } from '@solana/wallet-adapter-react'
@@ -20,16 +20,14 @@ import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import { isMangoError } from 'types'
+import { useUnsettledSpotBalances } from 'hooks/useUnsettledSpotBalances'
+import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
 
-const UnsettledTrades = ({
-  unsettledSpotBalances,
-  unsettledPerpPositions,
-}: {
-  unsettledSpotBalances: any
-  unsettledPerpPositions: PerpPosition[]
-}) => {
+const UnsettledTrades = () => {
   const { t } = useTranslation(['common', 'trade'])
   const { group } = useMangoGroup()
+  const unsettledSpotBalances = useUnsettledSpotBalances()
+  const unsettledPerpPositions = useUnsettledPerpPositions()
   const [settleMktAddress, setSettleMktAddress] = useState<string>('')
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
@@ -136,8 +134,8 @@ const UnsettledTrades = ({
   if (!group) return null
 
   return mangoAccountAddress &&
-    Object.values(unsettledSpotBalances).flat().concat(unsettledPerpPositions)
-      .length ? (
+    (Object.values(unsettledSpotBalances)?.length ||
+      unsettledPerpPositions?.length) ? (
     showTableView ? (
       <Table>
         <thead>
@@ -163,22 +161,22 @@ const UnsettledTrades = ({
                   <TableMarketName market={market} />
                 </Td>
                 <Td className="text-right font-mono">
-                  <div className="flex justify-end">
+                  <div className="flex flex-wrap justify-end">
                     {unsettledSpotBalances[mktAddress].base ? (
-                      <div>
+                      <p>
                         <FormatNumericValue
                           value={unsettledSpotBalances[mktAddress].base}
                         />{' '}
                         <span className="font-body text-th-fgd-4">{base}</span>
-                      </div>
+                      </p>
                     ) : null}
                     {unsettledSpotBalances[mktAddress].quote ? (
-                      <div className="ml-4">
+                      <p className="ml-3">
                         <FormatNumericValue
                           value={unsettledSpotBalances[mktAddress].quote}
                         />{' '}
                         <span className="font-body text-th-fgd-4">{quote}</span>
-                      </div>
+                      </p>
                     ) : null}
                   </div>
                 </Td>
@@ -212,12 +210,14 @@ const UnsettledTrades = ({
                 <Td>
                   <TableMarketName market={market} />
                 </Td>
-                <Td className="text-right font-mono">
-                  <FormatNumericValue
-                    value={position.getUnsettledPnlUi(market)}
-                    decimals={2}
-                  />{' '}
-                  <span className="font-body text-th-fgd-4">USDC</span>
+                <Td>
+                  <p className="text-right font-mono">
+                    <FormatNumericValue
+                      value={position.getUnsettledPnlUi(market)}
+                      decimals={2}
+                    />{' '}
+                    <span className="font-body text-th-fgd-4">USDC</span>
+                  </p>
                 </Td>
                 {!isUnownedAccount ? (
                   <Td>
@@ -254,13 +254,13 @@ const UnsettledTrades = ({
             >
               <TableMarketName market={market} />
               <div className="flex items-center space-x-3">
-                <div className="font-mono">
+                <p className="font-mono text-th-fgd-1">
                   <FormatNumericValue
                     value={position.getUnsettledPnlUi(market)}
                     decimals={market.baseDecimals}
                   />{' '}
                   <span className="font-body text-th-fgd-4">USDC</span>
-                </div>
+                </p>
                 {!isUnownedAccount ? (
                   <IconButton
                     onClick={() => handleSettlePerpFunds(market)}
@@ -291,22 +291,24 @@ const UnsettledTrades = ({
             >
               <TableMarketName market={market} />
               <div className="flex items-center space-x-3">
-                {unsettledSpotBalances[mktAddress].base ? (
-                  <span className="font-mono text-sm">
-                    <FormatNumericValue
-                      value={unsettledSpotBalances[mktAddress].base}
-                    />{' '}
-                    <span className="font-body text-th-fgd-4">{base}</span>
-                  </span>
-                ) : null}
-                {unsettledSpotBalances[mktAddress].quote ? (
-                  <span className="font-mono text-sm">
-                    <FormatNumericValue
-                      value={unsettledSpotBalances[mktAddress].quote}
-                    />{' '}
-                    <span className="font-body text-th-fgd-4">{quote}</span>
-                  </span>
-                ) : null}
+                <div>
+                  {unsettledSpotBalances[mktAddress].base ? (
+                    <p className="text-right font-mono text-sm text-th-fgd-1">
+                      <FormatNumericValue
+                        value={unsettledSpotBalances[mktAddress].base}
+                      />{' '}
+                      <span className="font-body text-th-fgd-4">{base}</span>
+                    </p>
+                  ) : null}
+                  {unsettledSpotBalances[mktAddress].quote ? (
+                    <p className="text-right font-mono text-sm text-th-fgd-1">
+                      <FormatNumericValue
+                        value={unsettledSpotBalances[mktAddress].quote}
+                      />{' '}
+                      <span className="font-body text-th-fgd-4">{quote}</span>
+                    </p>
+                  ) : null}
+                </div>
                 {!isUnownedAccount ? (
                   <IconButton
                     onClick={() => handleSettleSerumFunds(mktAddress)}

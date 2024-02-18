@@ -49,6 +49,7 @@ const Explore = () => {
           className={`flex h-10 flex-col items-center justify-end md:items-start ${
             activeTab === 'tokens' ? 'mb-4 lg:mb-0' : ''
           }`}
+          id="account-explore-tabs"
         >
           <TabsText
             activeTab={activeTab}

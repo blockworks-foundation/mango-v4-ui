@@ -23,7 +23,7 @@ export const SHOW_ZERO_BALANCES_KEY = 'show-zero-balances-0.2'
 
 export const SIDEBAR_COLLAPSE_KEY = 'sidebar-0.1'
 
-export const ONBOARDING_TOUR_KEY = 'showOnboardingTour-0.1'
+export const UI_TOURS_KEY = 'uiToursCompleted-0.1'
 
 export const PREFERRED_EXPLORER_KEY = 'preferredExplorer-0.1'
 
@@ -86,6 +86,7 @@ export const NEW_LISTING_BANNER_KEY = 'new-listing-banner-0.3'
 export const NON_RESTRICTED_JURISDICTION_KEY = 'non-restricted-jurisdiction-0.1'
 
 export const FILTER_ORDERS_FOR_MARKET_KEY = 'filterOrdersForMarket-0.1'
+export const FILTER_HISTORY_FOR_MARKET_KEY = 'filterHistoryForMarket-0.1'
 
 // Unused
 export const PROFILE_CATEGORIES = [

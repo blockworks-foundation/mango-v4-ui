@@ -1,28 +1,29 @@
-import Change from '@components/shared/Change'
 import DailyRange from '@components/shared/DailyRange'
 import { useTranslation } from 'next-i18next'
 import { useRouter } from 'next/router'
 import { useMemo, useState } from 'react'
-import FlipNumbers from 'react-flip-numbers'
-import { formatCurrencyValue } from 'utils/numbers'
 import Link from 'next/link'
 import SheenLoader from '@components/shared/SheenLoader'
 import useMangoGroup from 'hooks/useMangoGroup'
 import useJupiterMints from 'hooks/useJupiterMints'
-import useLocalStorageState from 'hooks/useLocalStorageState'
-import { ANIMATION_SETTINGS_KEY } from 'utils/constants'
-import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import ActionPanel from './ActionPanel'
 import ChartTabs from './ChartTabs'
-import CoingeckoStats from './CoingeckoStats'
 import { useQuery } from '@tanstack/react-query'
-import FormatNumericValue from '@components/shared/FormatNumericValue'
 import TopTokenAccounts from './TopTokenAccounts'
 import TokenParams from './TokenParams'
 import { formatTokenSymbol } from 'utils/tokens'
 import TokenLogo from '@components/shared/TokenLogo'
-import { ArrowLeftIcon } from '@heroicons/react/20/solid'
+import {
+  ArrowLeftIcon,
+  ArrowTopRightOnSquareIcon,
+  ArrowTrendingUpIcon,
+  ArrowsRightLeftIcon,
+} from '@heroicons/react/20/solid'
 import RateCurveChart from './RateCurveChart'
+import PriceChart from './PriceChart'
+import Button from '@components/shared/Button'
+import mangoStore from '@store/mangoStore'
+import { fetchCMSTokenPage } from 'utils/contentful'
 
 const DEFAULT_COINGECKO_VALUES = {
   ath: 0,
@@ -70,10 +71,7 @@ const TokenPage = () => {
   const { token } = router.query
   const { group } = useMangoGroup()
   const { mangoTokens } = useJupiterMints()
-  const [animationSettings] = useLocalStorageState(
-    ANIMATION_SETTINGS_KEY,
-    INITIAL_ANIMATION_SETTINGS,
-  )
+  const spotMarkets = mangoStore((s) => s.serumMarkets)
 
   const bankName = useMemo(() => {
     if (!token) return
@@ -102,23 +100,64 @@ const TokenPage = () => {
     }
   }, [bank, mangoTokens])
 
-  const { data: coingeckoTokenInfo, isLoading: loadingCoingeckoInfo } =
-    useQuery<CoingeckoDataType, Error>(
-      ['coingecko-token-info', coingeckoId],
-      () => fetchTokenInfo(coingeckoId),
-      {
-        cacheTime: 1000 * 60 * 15,
-        staleTime: 1000 * 60 * 5,
-        retry: 3,
-        refetchOnWindowFocus: false,
-        enabled: !!coingeckoId,
-      },
-    )
+  const { data: coingeckoTokenInfo } = useQuery<CoingeckoDataType, Error>(
+    ['coingecko-token-info', coingeckoId],
+    () => fetchTokenInfo(coingeckoId),
+    {
+      cacheTime: 1000 * 60 * 15,
+      staleTime: 1000 * 60 * 5,
+      retry: 3,
+      refetchOnWindowFocus: false,
+      enabled: !!coingeckoId,
+    },
+  )
 
-  const { high_24h, low_24h, price_change_percentage_24h } =
-    coingeckoTokenInfo?.market_data
-      ? coingeckoTokenInfo.market_data
-      : DEFAULT_COINGECKO_VALUES
+  const { data: cmsTokenData } = useQuery(
+    ['cms-token-data', bankName],
+    () => fetchCMSTokenPage(bankName),
+    {
+      cacheTime: 1000 * 60 * 15,
+      staleTime: 1000 * 60 * 5,
+      retry: 3,
+      refetchOnWindowFocus: false,
+      enabled: !!bankName,
+    },
+  )
+
+  const { high_24h, low_24h } = coingeckoTokenInfo?.market_data
+    ? coingeckoTokenInfo.market_data
+    : DEFAULT_COINGECKO_VALUES
+
+  const formatCoingeckoName = (name: string) => {
+    if (name === 'Wrapped Solana') return 'Solana'
+    if (name.includes('Wormhole')) return name.replace('Wormhole', 'Portal')
+    return name
+  }
+
+  const handleTrade = () => {
+    const markets = spotMarkets.filter(
+      (m) => m.baseTokenIndex === bank?.tokenIndex,
+    )
+    if (markets) {
+      if (markets.length === 1) {
+        router.push(`/trade?name=${markets[0].name}`)
+      }
+      if (markets.length > 1) {
+        const market = markets.find((mkt) => !mkt.reduceOnly)
+        if (market) {
+          router.push(`/trade?name=${market.name}`)
+        }
+      }
+    }
+  }
+
+  const handleSwap = () => {
+    if (bank?.name === 'USDC') {
+      router.push(`/swap?in=USDC&out=SOL`)
+    } else {
+      router.push(`/swap?in=USDC&out=${bank?.name}`)
+    }
+  }
 
   return (
     <>
@@ -139,55 +178,69 @@ const TokenPage = () => {
       </div>
       {bank && bankName ? (
         <>
-          <div className="flex flex-col border-b border-th-bkg-3 px-6 py-5 md:flex-row md:items-center md:justify-between">
-            <div className="mb-4 md:mb-1">
-              <div className="mb-1.5 flex items-center space-x-2">
-                <TokenLogo bank={bank} />
-                {coingeckoTokenInfo ? (
-                  <h1 className="text-base font-normal">
-                    {coingeckoTokenInfo.name}
-                  </h1>
-                ) : (
-                  <h1 className="text-base font-normal">{bank.name}</h1>
-                )}
+          <div className="flex flex-col border-b border-th-bkg-3 px-6 pb-4 pt-6 md:flex-row md:items-center md:justify-between">
+            <div className="mb-4 flex flex-col md:mb-1 md:flex-row md:items-center md:space-x-4">
+              <div className="mb-2 w-12 shrink-0 md:mb-0">
+                <TokenLogo bank={bank} size={48} />
               </div>
-              <div className="flex flex-wrap items-end font-display text-4xl text-th-fgd-1 sm:text-5xl">
-                <div className="mb-0.5 mr-3 sm:mb-2">
-                  {animationSettings['number-scroll'] ? (
-                    <FlipNumbers
-                      height={48}
-                      width={35}
-                      play
-                      delay={0.05}
-                      duration={1}
-                      numbers={formatCurrencyValue(bank.uiPrice)}
-                    />
+              <div>
+                <div className="flex flex-wrap items-end">
+                  {coingeckoTokenInfo?.name ? (
+                    <h1 className="mb-1.5 mr-3">
+                      {formatCoingeckoName(coingeckoTokenInfo.name)}
+                    </h1>
                   ) : (
-                    <FormatNumericValue value={bank.uiPrice} isUsd />
+                    <h1 className="mb-1.5 mr-3">{bank.name}</h1>
                   )}
+                  {cmsTokenData?.length ? (
+                    <a
+                      className="mb-2 flex cursor-pointer items-center text-th-fgd-3 md:hover:text-th-fgd-2"
+                      href={`https://mango.markets/explore/tokens/${cmsTokenData[0]?.slug}`}
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      <span>What is {bank?.name}?</span>
+                      <ArrowTopRightOnSquareIcon className="ml-1 h-4 w-4" />
+                    </a>
+                  ) : null}
                 </div>
-                {coingeckoTokenInfo?.market_data ? (
-                  <div className="mb-2">
-                    <Change change={price_change_percentage_24h} suffix="%" />
-                  </div>
+                {high_24h.usd && low_24h.usd ? (
+                  <DailyRange
+                    high={high_24h.usd}
+                    low={low_24h.usd}
+                    price={bank.uiPrice}
+                  />
                 ) : null}
               </div>
-              {high_24h.usd && low_24h.usd ? (
-                <DailyRange
-                  high={high_24h.usd}
-                  low={low_24h.usd}
-                  price={bank.uiPrice}
-                />
-              ) : null}
             </div>
-            <ActionPanel bank={bank} />
+            <div className="flex space-x-4 pt-4 sm:pt-0">
+              <Button
+                className="flex w-full items-center justify-center sm:w-auto"
+                onClick={handleSwap}
+                size="large"
+              >
+                <ArrowsRightLeftIcon className="mr-2 h-5 w-5" />
+                <span>{t('swap')}</span>
+              </Button>
+              <Button
+                className="flex w-full items-center justify-center sm:w-auto"
+                onClick={handleTrade}
+                size="large"
+              >
+                <ArrowTrendingUpIcon className="mr-2 h-5 w-5" />
+                <span>{t('trade')}</span>
+              </Button>
+            </div>
           </div>
-          <ChartTabs bank={bank} />
-          <div className="border-y border-th-bkg-3 px-6 pb-2 pt-6">
-            <RateCurveChart bank={bank} />
+          <div className="grid grid-cols-12 border-b border-th-bkg-3">
+            <div className="col-span-12 lg:col-span-7 xl:col-span-8">
+              <PriceChart bank={bank} />
+            </div>
+            <div className="col-span-12 lg:col-span-5 xl:col-span-4">
+              <ActionPanel bank={bank} />
+            </div>
           </div>
-          <TopTokenAccounts bank={bank} />
-          {coingeckoTokenInfo?.market_data ? (
+          {/* {coingeckoTokenInfo?.market_data ? (
             <CoingeckoStats
               bank={bank}
               coingeckoData={coingeckoTokenInfo.market_data}
@@ -203,7 +256,15 @@ const TokenPage = () => {
               <span className="mb-0.5 text-2xl">🦎</span>
               <p>No CoinGecko data...</p>
             </div>
-          )}
+          )} */}
+          {/* <div className="px-4 pb-4 pt-6 md:px-6">
+            <h2>{bank?.name} on Mango</h2>
+          </div> */}
+          <ChartTabs bank={bank} />
+          <div className="border-y border-th-bkg-3 px-6 pb-2 pt-6">
+            <RateCurveChart bank={bank} />
+          </div>
+          <TopTokenAccounts bank={bank} />
           <TokenParams bank={bank} />
         </>
       ) : loading ? (
