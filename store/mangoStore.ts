@@ -8,7 +8,6 @@ import {
   Connection,
   Keypair,
   PublicKey,
-  RecentPrioritizationFees,
   TransactionInstruction,
 } from '@solana/web3.js'
 import { OpenOrders, Order } from '@project-serum/serum/lib/market'
@@ -44,7 +43,6 @@ import {
   LAST_ACCOUNT_KEY,
   MANGO_DATA_API_URL,
   MANGO_MAINNET_GROUP,
-  MAX_PRIORITY_FEE_KEYS,
   OUTPUT_TOKEN_DEFAULT,
   PAGINATION_PAGE_LENGTH,
   RPC_PROVIDER_KEY,
@@ -83,16 +81,11 @@ import {
   IOrderLineAdapter,
 } from '@public/charting_library/charting_library'
 import { nftThemeMeta } from 'utils/theme'
-import maxBy from 'lodash/maxBy'
-import mapValues from 'lodash/mapValues'
-import groupBy from 'lodash/groupBy'
-import sampleSize from 'lodash/sampleSize'
 import { fetchTokenStatsData, processTokenStatsData } from 'apis/mngo'
 import { OrderTypes } from 'utils/tradeForm'
 import { usePlausible } from 'next-plausible'
 import { collectTxConfirmationData } from 'utils/transactionConfirmationData'
 import { TxCallbackOptions } from '@blockworks-foundation/mango-v4/dist/types/src/client'
-import { TelemetryEvents } from 'utils/telemetry'
 
 const ENDPOINTS = [
   {
@@ -139,6 +132,7 @@ const initMangoClient = (
     prependedGlobalAdditionalInstructions:
       opts.prependedGlobalAdditionalInstructions,
     postSendTxCallback: (txCallbackOptions: TxCallbackOptions) => {
+      console.log(opts)
       if (telemetry) {
         telemetry('postSendTx', {
           props: { fee: opts.prioritizationFee },
@@ -336,10 +330,10 @@ export type MangoStore = {
     setPrependedGlobalAdditionalInstructions: (
       instructions: TransactionInstruction[],
     ) => void
-    estimatePriorityFee: (
+    updateFee: (
       feeMultiplier: number,
+      fee: number,
       telemetry: ReturnType<typeof usePlausible> | null,
-      feeToUse?: number,
     ) => Promise<void>
   }
 }
@@ -1164,54 +1158,16 @@ const mangoStore = create<MangoStore>()(
             state.client = newClient
           })
         },
-        estimatePriorityFee: async (feeMultiplier, telemetry, feeToUse) => {
+        updateFee: async (feeMultiplier, fee, telemetry) => {
           const set = get().set
-          const group = mangoStore.getState().group
           const client = mangoStore.getState().client
-
-          const mangoAccount = get().mangoAccount.current
           const currentFee = get().priorityFee
           const currentTelemetry = get().telemetry
-          if (!mangoAccount || !group || !client) return
-
-          const altResponse = await connection.getAddressLookupTable(
-            group.addressLookupTables[0],
-          )
-          const altKeys = altResponse.value?.state.addresses
-          if (!altKeys) return
-
-          const addresses = sampleSize(altKeys, MAX_PRIORITY_FEE_KEYS)
-
-          const fees = await connection.getRecentPrioritizationFees({
-            lockedWritableAccounts: addresses,
-          })
-
-          if (fees.length < 1) return
-
-          // get max priority fee per slot (and sort by slot from old to new)
-          const maxFeeBySlot = mapValues(groupBy(fees, 'slot'), (items) =>
-            maxBy(items, 'prioritizationFee'),
-          )
-          const maximumFees = Object.values(maxFeeBySlot).sort(
-            (a, b) => a!.slot - b!.slot,
-          ) as RecentPrioritizationFees[]
-
-          // get median of last 20 fees
-          const recentFees = maximumFees.slice(
-            Math.max(maximumFees.length - 20, 0),
-          )
-          const mid = Math.floor(recentFees.length / 2)
-          const medianFee =
-            recentFees.length % 2 !== 0
-              ? recentFees[mid].prioritizationFee
-              : (recentFees[mid - 1].prioritizationFee +
-                  recentFees[mid].prioritizationFee) /
-                2
-          const feeEstimate = Math.ceil(medianFee * feeMultiplier)
-
           const provider = client.program.provider as AnchorProvider
           provider.opts.skipPreflight = true
-          console.log(feeEstimate)
+
+          const feeEstimate = Math.ceil(fee * feeMultiplier)
+
           if (currentFee !== feeEstimate || !currentTelemetry) {
             const newClient = initMangoClient(
               provider,
