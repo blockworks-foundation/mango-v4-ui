@@ -132,7 +132,6 @@ const initMangoClient = (
     prependedGlobalAdditionalInstructions:
       opts.prependedGlobalAdditionalInstructions,
     postSendTxCallback: (txCallbackOptions: TxCallbackOptions) => {
-      console.log(opts)
       if (telemetry) {
         telemetry('postSendTx', {
           props: { fee: opts.prioritizationFee },
