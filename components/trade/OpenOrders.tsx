@@ -659,6 +659,7 @@ const OpenOrders = ({
                                   })}
                                 >
                                   <IconButton
+                                    disabled={loadingCancel}
                                     onClick={() =>
                                       order instanceof PerpOrder
                                         ? handleCancelAllPerpOrders(order)
@@ -868,6 +869,7 @@ const OpenOrders = ({
                             })}
                           >
                             <IconButton
+                              disabled={loadingCancel}
                               onClick={() =>
                                 order instanceof PerpOrder
                                   ? handleCancelAllPerpOrders(order)
