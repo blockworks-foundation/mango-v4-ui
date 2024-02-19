@@ -5,6 +5,8 @@ import { useMemo } from 'react'
 import { ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import Quiz from '@components/quiz/Quiz'
+import Image from 'next/image'
+import { formatNumericValue } from 'utils/numbers'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -55,13 +57,36 @@ const Learn: NextPage = () => {
             onClick={() => goToQuiz(quiz.slug)}
           >
             <div>
-              <h3>{quiz.name}</h3>
-              <p>{quiz.description}</p>
+              <div className="flex items-center">
+                {quiz.imagePath ? (
+                  <Image
+                    className="mr-2.5"
+                    src={quiz.imagePath}
+                    height={40}
+                    width={40}
+                    alt="Quiz Image"
+                  />
+                ) : null}
+                <div>
+                  <h3>{quiz.name}</h3>
+                  <p>{quiz.description}</p>
+                </div>
+              </div>
               <div className="mt-3 w-max rounded-full border border-th-fgd-4 px-3 py-1">
                 <p className="text-xs">{quiz.questions.length} questions</p>
               </div>
             </div>
             <div className="flex items-center space-x-2 pl-4">
+              {quiz.points ? (
+                <div className="flex w-max items-center rounded-full bg-th-bkg-1 px-3 py-1">
+                  <p>
+                    <span className="font-mono text-th-fgd-1">
+                      {formatNumericValue(quiz.points)}
+                    </span>{' '}
+                    Points
+                  </p>
+                </div>
+              ) : null}
               {/* <div className="flex w-max items-center rounded-full bg-th-bkg-1 px-3 py-1">
                 <p className="mr-0.5">
                   Earn:{' '}

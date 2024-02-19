@@ -10,6 +10,7 @@ import {
   XCircleIcon,
 } from '@heroicons/react/20/solid'
 import { Disclosure } from '@headlessui/react'
+import Image from 'next/image'
 
 type RESULT = {
   correctAnswers: number
@@ -116,6 +117,15 @@ const Quiz = ({ quiz }: { quiz: Quiz }) => {
         <div className="mx-auto mt-12 w-full max-w-xl rounded-xl bg-th-bkg-2 p-8">
           {showIntro ? (
             <>
+              {quiz.imagePath ? (
+                <Image
+                  className="mx-auto mb-3"
+                  src={quiz.imagePath}
+                  height={48}
+                  width={48}
+                  alt="Quiz Image"
+                />
+              ) : null}
               <h2 className="mb-2">{intro.title}</h2>
               <p className="text-base">{intro.description}</p>
               {intro?.docs ? (
@@ -130,6 +140,13 @@ const Quiz = ({ quiz }: { quiz: Quiz }) => {
               >
                 Let&apos;s Go
               </Button>
+              {quiz.points ? (
+                <div className="mx-auto mt-6 w-max rounded-full border border-th-fgd-4 px-3 py-1">
+                  <p className="text-th-fgd-2">
+                    {`Score ${quiz.questions.length}/${quiz.questions.length} to earn ${quiz.points} rewards points`}
+                  </p>
+                </div>
+              ) : null}
             </>
           ) : !showResult ? (
             <>
