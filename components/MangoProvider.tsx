@@ -142,10 +142,12 @@ const HydrateStore = () => {
     return () => {
       if (ws?.readyState === ws?.OPEN) {
         ws?.close(1000)
+        setLiteRpcWs(null)
       }
 
       if (liteRpcWs?.readyState === liteRpcWs?.OPEN) {
         liteRpcWs?.close(1000)
+        setLiteRpcWs(null)
       }
     }
   }, [publicKey])
