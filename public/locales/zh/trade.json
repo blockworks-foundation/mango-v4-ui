@@ -9,6 +9,7 @@
     "book": "单薄",
     "buys": "买",
     "cancel-all": "取消全部",
+    "cancel-all-orders": "Cancel all {{market}} orders",
     "cancel-order": "取消订单",
     "cancel-order-error": "取消订单失败",
     "close-all": "全部平仓",

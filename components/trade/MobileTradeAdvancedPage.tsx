@@ -14,7 +14,7 @@ const MobileTradeAdvancedPage = () => {
   const [activeTab, setActiveTab] = useState('trade:book')
   const [showChart, setShowChart] = useState(false)
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3">
+    <div className="grid grid-cols-2 pb-20 sm:grid-cols-3">
       <div className="col-span-2 sm:col-span-3">
         <FavoriteMarketsBar />
       </div>

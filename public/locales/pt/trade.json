@@ -9,6 +9,7 @@
     "book": "Livro",
     "buys": "Compras",
     "cancel-all": "Cancelar Todos",
+    "cancel-all-orders": "Cancel all {{market}} orders",
     "cancel-order": "Cancelar Pedido",
     "cancel-order-error": "Falha ao cancelar pedido",
     "close-all": "Fechar Todos",
