@@ -129,25 +129,11 @@ const HydrateStore = () => {
   //fee estimates
   // -------------------------------------------------------------------------------------------------------
   useEffect(() => {
-    let ws: null | WebSocket = null
-    console.log(liteRpcWs, publicKey)
     if (liteRpcWs === null && publicKey) {
       try {
-        ws = handleEstimateFeeWithWs(setLiteRpcWs, telemetry)
+        handleEstimateFeeWithWs(setLiteRpcWs, telemetry)
       } catch (e) {
         console.log(e)
-      }
-    }
-
-    return () => {
-      if (ws?.readyState === ws?.OPEN) {
-        ws?.close(1000)
-        setLiteRpcWs(null)
-      }
-
-      if (liteRpcWs?.readyState === liteRpcWs?.OPEN) {
-        liteRpcWs?.close(1000)
-        setLiteRpcWs(null)
       }
     }
   }, [publicKey])
