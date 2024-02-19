@@ -306,10 +306,14 @@ const handleEstimateFeeWithWs = (
       console.log('Fee WebSocket closed')
       setWs(null)
     })
-    ws.addEventListener('error', (e) => {
-      console.log('Fee WebSocket error')
-      setWs(null)
-      throw e
+    ws.addEventListener('error', () => {
+      try {
+        console.log('Fee WebSocket error')
+        setWs(null)
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
     })
     ws.addEventListener('message', function incoming(data: { data: string }) {
       try {
