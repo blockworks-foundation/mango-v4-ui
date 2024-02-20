@@ -342,6 +342,14 @@
     keccak256 "^1.0.6"
     merkletreejs "^0.3.11"
 
+"@blockworks-foundation/mango-v4-settings@0.14.15":
+  version "0.14.15"
+  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4-settings/-/mango-v4-settings-0.14.15.tgz#0ac04f2cffbd27a4129bc2086ec1418e29393880"
+  integrity sha512-GBo43KCosdaohbtS3Rtz8e2zsLsiN3JqTfLKVtStRYO3f2tQLzeo/D2Khz07psw2egq6TCNZJH7+v32iGrPq0w==
+  dependencies:
+    bn.js "^5.2.1"
+    eslint-config-prettier "^9.0.0"
+
 "@blockworks-foundation/mango-v4-settings@0.4.10":
   version "0.4.10"
   resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4-settings/-/mango-v4-settings-0.4.10.tgz#7a30db53c81abea56c2dd83e928259246e3b4e7d"
@@ -350,12 +358,12 @@
     bn.js "^5.2.1"
     eslint-config-prettier "^9.0.0"
 
-"@blockworks-foundation/mango-v4@0.21.29":
-  version "0.21.29"
-  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.21.29.tgz#4ff5f6c7efed7daa6f34ac2779a3fd5785a5566e"
-  integrity sha512-gu+U55g52ttLu+44z66+5NDhLYaCGujjUjQm1/jVHbE4iXwgQoBCxY/QD6a0rZVR9tJYs+epoCL3KK9q0AUqCg==
+"@blockworks-foundation/mango-v4@0.21.31":
+  version "0.21.31"
+  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.21.31.tgz#b57511a66bc4a69d30e6e23f8053acf9fb21552f"
+  integrity sha512-KYGRvbqagsiTOnvu2yirdRuirXl2ei//b1VkCXtXJ2TCQE6lPyvMe24HziXzWbn9rymAnSohooKCvODQXDGFug==
   dependencies:
-    "@blockworks-foundation/mango-v4-settings" "0.4.10"
+    "@blockworks-foundation/mango-v4-settings" "0.14.15"
     "@blockworks-foundation/mangolana" "0.0.14"
     "@coral-xyz/anchor" "^0.28.1-beta.2"
     "@project-serum/serum" "0.13.65"
@@ -2553,7 +2561,7 @@
   dependencies:
     "@solana/wallet-adapter-base" "^0.9.23"
 
-"@solana/wallet-adapter-solflare@0.6.27":
+"@solana/wallet-adapter-solflare@0.6.27", "@solana/wallet-adapter-solflare@^0.6.28":
   version "0.6.27"
   resolved "https://registry.yarnpkg.com/@solana/wallet-adapter-solflare/-/wallet-adapter-solflare-0.6.27.tgz#49ba2dfecca4bee048e65d302216d1b732d7e39e"
   integrity sha512-MBBx9B1pI8ChCT70sgxrmeib1S7G9tRQzfMHqJPdGQ2jGtukY0Puzma2OBsIAsH5Aw9rUUUFZUK+8pzaE+mgAg==
@@ -2564,7 +2572,7 @@
     "@solflare-wallet/sdk" "^1.3.0"
     "@wallet-standard/wallet" "^1.0.1"
 
-"@solana/wallet-adapter-solflare@0.6.28", "@solana/wallet-adapter-solflare@^0.6.28":
+"@solana/wallet-adapter-solflare@0.6.28":
   version "0.6.28"
   resolved "https://registry.yarnpkg.com/@solana/wallet-adapter-solflare/-/wallet-adapter-solflare-0.6.28.tgz#3de42a43220cca361050ebd1755078012a5b0fe2"
   integrity sha512-iiUQtuXp8p4OdruDawsm1dRRnzUCcsu+lKo8OezESskHtbmZw2Ifej0P99AbJbBAcBw7q4GPI6987Vh05Si5rw==

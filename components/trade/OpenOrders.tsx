@@ -130,7 +130,7 @@ const OpenOrders = ({
           market.serumMarketExternal,
         )
         const actions = mangoStore.getState().actions
-        await actions.fetchOpenOrders()
+        await actions.fetchOpenOrders(true)
         notify({
           type: 'success',
           title: 'Transaction successful',
