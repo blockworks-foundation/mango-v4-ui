@@ -28,7 +28,6 @@ export const getOracleProvider = (
     name = formatTokenSymbol(baseBank.name)
   }
 
-  if (name === 'USDC') return ['N/A', '']
   if (name === 'RENDER') {
     name = 'RNDR'
   }

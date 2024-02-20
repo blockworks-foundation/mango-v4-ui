@@ -5,10 +5,10 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 import { Serum3Market } from '@blockworks-foundation/mango-v4'
 import Button from '@components/shared/Button'
 import { ExclamationTriangleIcon } from '@heroicons/react/20/solid'
-import useMangoGroup from 'hooks/useMangoGroup'
 import { useMemo } from 'react'
 import Tooltip from '@components/shared/Tooltip'
 import OracleProvider from '@components/shared/OracleProvider'
+import mangoStore from '@store/mangoStore'
 
 interface SpotMarketDetailsModalProps {
   market: Serum3Market | undefined
@@ -23,21 +23,30 @@ const SpotMarketDetailsModal = ({
 }: ModalCombinedProps) => {
   const { t } = useTranslation(['common', 'trade'])
   const { serumOrPerpMarket } = useSelectedMarket()
-  const { group } = useMangoGroup()
 
   const [baseBank, quoteBank] = useMemo(() => {
+    const group = mangoStore.getState().group
     if (!group || !market) return [undefined, undefined]
     const base = group.getFirstBankByTokenIndex(market.baseTokenIndex)
     const quote = group.getFirstBankByTokenIndex(market.quoteTokenIndex)
     return [base, quote]
-  }, [group, market])
+  }, [market])
 
   const [baseMintInfo, quoteMintInfo] = useMemo(() => {
-    if (!baseBank || !quoteBank) return [undefined, undefined]
-    const base = group!.mintInfosMapByMint.get(baseBank.mint.toString())
-    const quote = group!.mintInfosMapByMint.get(quoteBank.mint.toString())
+    const group = mangoStore.getState().group
+    if (!baseBank || !quoteBank || !group) return [undefined, undefined]
+    const base = group.mintInfosMapByMint.get(baseBank.mint.toString())
+    const quote = group.mintInfosMapByMint.get(quoteBank.mint.toString())
     return [base, quote]
   }, [baseBank, quoteBank])
+
+  const [bidLeverage, askLeverage] = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!group || !market) return [undefined, undefined]
+    const bid = market.maxBidLeverage(group).toFixed(1)
+    const ask = market.maxAskLeverage(group).toFixed(1)
+    return [bid, ask]
+  }, [market])
 
   return market && serumOrPerpMarket ? (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -68,8 +77,12 @@ const SpotMarketDetailsModal = ({
           </p>
         </div>
         <div className="flex justify-between">
-          <p>{t('trade:max-leverage')}</p>
-          <p className="font-mono text-th-fgd-2">5x</p>
+          <p>{t('trade:max-buy-leverage')}</p>
+          <p className="font-mono text-th-fgd-2">{bidLeverage}x</p>
+        </div>
+        <div className="flex justify-between">
+          <p>{t('trade:max-sell-leverage')}</p>
+          <p className="font-mono text-th-fgd-2">{askLeverage}x</p>
         </div>
         <div className="flex justify-between">
           <p>{t('trade:oracle')}</p>
@@ -81,7 +94,7 @@ const SpotMarketDetailsModal = ({
               content={
                 <div>
                   {t('trade:tooltip-insured', {
-                    tokenOrMarket: baseBank!.name,
+                    tokenOrMarket: baseBank?.name,
                   })}
                   <a
                     className="mt-2 flex items-center"
@@ -95,7 +108,7 @@ const SpotMarketDetailsModal = ({
               }
             >
               <p className="tooltip-underline">
-                {t('trade:insured', { token: baseBank!.name })}
+                {t('trade:insured', { token: baseBank?.name })}
               </p>
             </Tooltip>
             <p className="font-mono text-th-fgd-2">
@@ -109,7 +122,7 @@ const SpotMarketDetailsModal = ({
               content={
                 <div>
                   {t('trade:tooltip-insured', {
-                    tokenOrMarket: quoteBank!.name,
+                    tokenOrMarket: quoteBank?.name,
                   })}
                   <a
                     className="mt-2 flex items-center"
@@ -123,7 +136,7 @@ const SpotMarketDetailsModal = ({
               }
             >
               <p className="tooltip-underline">
-                {t('trade:insured', { token: quoteBank!.name })}
+                {t('trade:insured', { token: quoteBank?.name })}
               </p>
             </Tooltip>
             <p className="font-mono text-th-fgd-2">

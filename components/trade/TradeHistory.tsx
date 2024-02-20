@@ -38,7 +38,7 @@ import { useSortableData } from 'hooks/useSortableData'
 import { useCallback } from 'react'
 import { useHiddenMangoAccounts } from 'hooks/useHiddenMangoAccounts'
 
-const TradeHistory = () => {
+const TradeHistory = ({ filterForMarket }: { filterForMarket?: boolean }) => {
   const { t } = useTranslation(['common', 'trade'])
   const group = mangoStore.getState().group
   const { selectedMarket } = useSelectedMarket()
@@ -64,8 +64,14 @@ const TradeHistory = () => {
       const data = { ...trade, marketName, value, sortTime }
       formatted.push(data)
     }
-    return formatted
-  }, [combinedTradeHistory])
+    if (!filterForMarket) {
+      return formatted
+    } else {
+      return formatted.filter(
+        (trade) => trade.marketName === selectedMarket?.name,
+      )
+    }
+  }, [combinedTradeHistory, filterForMarket, selectedMarket])
 
   const {
     items: tableData,
@@ -75,8 +81,7 @@ const TradeHistory = () => {
 
   if (!selectedMarket || !group) return null
 
-  return mangoAccountAddress &&
-    (combinedTradeHistory.length || loadingTradeHistory) ? (
+  return mangoAccountAddress && (tableData?.length || loadingTradeHistory) ? (
     <>
       {showTableView ? (
         <div className="thin-scroll overflow-x-auto">

@@ -61,8 +61,12 @@ const ChartTabs = ({ bank }: { bank: Bank }) => {
   const [showBorrowsRelativeChange, setShowBorrowsRelativeChange] =
     useState(true)
   const [showBorrowsNotional, setShowBorrowsNotional] = useState(false)
-  const [activeDepositsTab, setActiveDepositsTab] = useState('token:deposits')
-  const [activeBorrowsTab, setActiveBorrowsTab] = useState('token:borrows')
+  const [activeDepositsTab, setActiveDepositsTab] = useState(
+    'token:total-deposits',
+  )
+  const [activeBorrowsTab, setActiveBorrowsTab] = useState(
+    'token:total-borrows',
+  )
   const [depositDaysToShow, setDepositDaysToShow] = useState('30')
   const [borrowDaysToShow, setBorrowDaysToShow] = useState('30')
   const [depositRateDaysToShow, setDepositRateDaysToShow] = useState('30')
@@ -163,12 +167,12 @@ const ChartTabs = ({ bank }: { bank: Bank }) => {
             onChange={(v) => setActiveDepositsTab(v)}
             showBorders
             values={[
-              ['token:deposits', 0],
+              ['token:total-deposits', 0],
               ['token:deposit-rates', 0],
             ]}
           />
           <div className="border-t border-th-bkg-3">
-            {activeDepositsTab === 'token:deposits' ? (
+            {activeDepositsTab === 'token:total-deposits' ? (
               <>
                 <div className="px-4 pt-4 md:px-6 lg:pt-6">
                   <DetailedAreaOrBarChart
@@ -241,12 +245,12 @@ const ChartTabs = ({ bank }: { bank: Bank }) => {
             onChange={(v) => setActiveBorrowsTab(v)}
             showBorders
             values={[
-              ['token:borrows', 0],
+              ['token:total-borrows', 0],
               ['token:borrow-rates', 0],
             ]}
           />
           <div className="border-t border-th-bkg-3">
-            {activeBorrowsTab === 'token:borrows' ? (
+            {activeBorrowsTab === 'token:total-borrows' ? (
               <>
                 <div className="px-4 pt-4 md:px-6 lg:pt-6">
                   <DetailedAreaOrBarChart

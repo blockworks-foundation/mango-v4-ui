@@ -48,9 +48,9 @@
   "close-borrow": "結清{{token}}借貸",
   "collateral-value": "質押品價值",
   "confirm": "確認",
-  "confirm-jurisdiction": "Confirm Jurisdiction",
-  "confirm-jurisdiction-desc": "It's against our Terms of Service to use Mango if you're a resident, citizen or are located in any of the following jurisdictions.",
-  "confirm-non-restricted-jurisdiction": "I confirm I am not a resident, citizen or are located in a prohibited jurisdiction",
+  "confirm-jurisdiction": "確認管轄區",
+  "confirm-jurisdiction-desc": "如果你是居民、公民或位於以下任何司法管轄區，則使用 Mango 違反我們的服務條款。",
+  "confirm-non-restricted-jurisdiction": "我確認我不是居民、公民或是位於被禁止的管轄區",
   "connect": "連接",
   "connect-balances": "連接而查看資產餘額",
   "connect-helper": "連接來開始",
@@ -215,8 +215,8 @@
   "wallet-address": "錢包地址",
   "wallet-balance": "錢包餘額",
   "wallet-disconnected": "已斷開錢包連接",
-  "warning-deposits-almost-full": "{{token}} deposits are almost at capacity. {{remaining}} {{token}} available",
-  "warning-deposits-full": "{{token}} deposits are at capacity",
+  "warning-deposits-almost-full": "{{token}} 存款將達到限量。 {{remaining}} {{token}} 剩下",
+  "warning-deposits-full": "{{token}} 存款已達到限量",
   "withdraw": "取款",
   "withdraw-amount": "取款額",
   "list-market-token": "上架市場／幣種",
@@ -225,5 +225,5 @@
   "you": "你",
   "using-ledger": "正在使用Ledger",
   "sign-to-in-app-notifications": "登入APP通知",
-  "max-deposit": "Maximum Deposit"
+  "max-deposit": "最大存款"
 }
