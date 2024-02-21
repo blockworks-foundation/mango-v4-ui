@@ -2,6 +2,8 @@ import '../styles/globals.css'
 import 'react-nice-dates/build/style.css'
 import '../styles/datepicker.css'
 import 'driver.js/dist/driver.css'
+import 'slick-carousel/slick/slick.css'
+import 'slick-carousel/slick/slick-theme.css'
 import type { AppProps } from 'next/app'
 import { useCallback, useMemo } from 'react'
 import {

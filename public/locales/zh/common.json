@@ -19,6 +19,7 @@
   "all": "全部",
   "amount": "数量",
   "amount-owed": "欠款",
+  "announcements": "Announcements",
   "asked-sign-transaction": "你会被要求签署交易",
   "asset-liability-weight": "资产/债务权重",
   "asset-liability-weight-desc": "资产权重在账户健康计算中对质押品价值进行扣减。资产权重越低，资产对质押品的影响越小。债务权重恰恰相反（在健康计算中增加债务价值）。",

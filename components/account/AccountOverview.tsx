@@ -15,6 +15,7 @@ import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import CreateAccountModal from '@components/modals/CreateAccountModal'
 import { FaceSmileIcon } from '@heroicons/react/20/solid'
 import Button from '@components/shared/Button'
+import Announcements from './Announcements'
 
 const EMPTY_STATE_WRAPPER_CLASSES =
   'flex h-[180px] flex-col justify-center pb-4 md:h-full'
@@ -115,6 +116,12 @@ const AccountOverview = () => {
         <div className="col-span-12 md:col-span-4">
           <AccountHeroStats accountValue={accountValue} />
         </div>
+      </div>
+      <div className="px-4 pt-10 md:px-6">
+        <h2 className="mb-4 text-center text-lg md:text-left">
+          {t('announcements')}
+        </h2>
+        <Announcements />
       </div>
       <Explore />
       {showCreateAccountModal ? (

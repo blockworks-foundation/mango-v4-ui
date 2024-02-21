@@ -11,6 +11,7 @@ const nextConfig = {
       'arweave.net',
       'www.dual.finance',
       'shdw-drive.genesysgo.net',
+      'images.ctfassets.net',
     ],
   },
   reactStrictMode: true,
