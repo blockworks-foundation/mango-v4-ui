@@ -23,8 +23,6 @@ const Announcements = () => {
     },
   )
 
-  console.log(announcements)
-
   const sliderSettings = {
     arrows: false,
     dots: false,
@@ -68,7 +66,7 @@ const Announcements = () => {
     : false
 
   return announcements?.length ? (
-    <div className="flex items-center">
+    <div className="flex items-center justify-center">
       {showArrows ? (
         <button
           className="mr-4 flex h-8 w-8 items-center justify-center rounded-full border-2 border-th-bkg-4"
@@ -77,11 +75,12 @@ const Announcements = () => {
           <ChevronLeftIcon className="h-5 w-5 text-th-fgd-1" />
         </button>
       ) : null}
-      <div className={` ${showArrows ? 'w-[calc(100%-88px)]' : 'w-full'}`}>
+      <div className={` ${showArrows ? 'w-[calc(100%-120px)]' : 'w-full'}`}>
         <Slider ref={sliderRef} {...sliderSettings}>
           {announcements.map((announcement, i) => (
             <div
-              className={i !== announcements.length - 1 ? 'pr-3' : 'pr-[1px]'}
+              // className={i !== announcements.length - 1 ? 'pr-3' : 'pr-[1px]'}
+              className="px-2"
               key={announcement.title + i}
             >
               <Announcement data={announcement} />
@@ -91,7 +90,7 @@ const Announcements = () => {
       </div>
       {showArrows ? (
         <button
-          className="ml-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-th-bkg-4"
+          className="ml-4 flex h-8 w-8 items-center justify-center rounded-full border-2 border-th-bkg-4"
           onClick={nextSlide}
         >
           <ChevronRightIcon className="h-5 w-5 text-th-fgd-1" />
@@ -104,7 +103,7 @@ const Announcements = () => {
 export default Announcements
 
 const classNames =
-  'border border-th-bkg-4 py-3 px-4 rounded-lg flex items-center justify-between md:hover:bg-th-bkg-3'
+  'bg-th-bkg-2 p-4 rounded-lg block w-full md:hover:bg-th-bkg-3'
 
 const AnnouncementWrapper = ({
   children,
@@ -160,7 +159,7 @@ const Announcement = ({ data }: { data: AppAnnouncement }) => {
         ) : null}
         <div>
           {/* <p className="mb-1 text-xs leading-none text-th-active">{category}</p> */}
-          <p className="block font-display text-sm text-th-fgd-2">{title}</p>
+          <p className="block font-display text-sm text-th-fgd-1">{title}</p>
           <p className="block text-sm text-th-fgd-3">{description}</p>
         </div>
       </span>

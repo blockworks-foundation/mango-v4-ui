@@ -118,9 +118,9 @@ const AccountOverview = () => {
         </div>
       </div>
       <div className="px-4 pt-10 md:px-6">
-        <h2 className="mb-4 text-center text-lg md:text-left">
+        {/* <h2 className="mb-4 text-center text-lg md:text-left">
           {t('announcements')}
-        </h2>
+        </h2> */}
         <Announcements />
       </div>
       <Explore />
