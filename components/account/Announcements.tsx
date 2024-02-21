@@ -8,9 +8,18 @@ import { usePlausible } from 'next-plausible'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
 import { AppAnnouncement, fetchCMSAnnounements } from 'utils/contentful'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import { SHOW_ANNOUNCEMENTS_KEY } from 'utils/constants'
+import { LinkButton } from '@components/shared/Button'
+import { useTranslation } from 'react-i18next'
 
 const Announcements = () => {
   const { width } = useViewport()
+  const { t } = useTranslation('account')
+  const [showAnnouncements, setShowAnnouncements] = useLocalStorageState(
+    SHOW_ANNOUNCEMENTS_KEY,
+    true,
+  )
 
   const { data: announcements } = useQuery(
     ['announcements-data'],
@@ -65,37 +74,43 @@ const Announcements = () => {
     ? slides < announcements.length
     : false
 
-  return announcements?.length ? (
-    <div className="flex items-center justify-center">
-      {showArrows ? (
-        <button
-          className="mr-4 flex h-8 w-8 items-center justify-center rounded-full border-2 border-th-bkg-4"
-          onClick={prevSlide}
-        >
-          <ChevronLeftIcon className="h-5 w-5 text-th-fgd-1" />
-        </button>
-      ) : null}
-      <div className={` ${showArrows ? 'w-[calc(100%-120px)]' : 'w-full'}`}>
-        <Slider ref={sliderRef} {...sliderSettings}>
-          {announcements.map((announcement, i) => (
-            <div
-              // className={i !== announcements.length - 1 ? 'pr-3' : 'pr-[1px]'}
-              className="px-2"
-              key={announcement.title + i}
-            >
-              <Announcement data={announcement} />
-            </div>
-          ))}
-        </Slider>
+  return announcements?.length && showAnnouncements ? (
+    <div className="px-2 pt-10 md:px-4">
+      <div className="flex items-center justify-center">
+        {showArrows ? (
+          <button
+            className="mr-4 flex h-8 w-8 items-center justify-center rounded-full border-2 border-th-bkg-4"
+            onClick={prevSlide}
+          >
+            <ChevronLeftIcon className="h-5 w-5 text-th-fgd-1" />
+          </button>
+        ) : null}
+        <div className={` ${showArrows ? 'w-[calc(100%-120px)]' : 'w-full'}`}>
+          <Slider ref={sliderRef} {...sliderSettings}>
+            {announcements.map((announcement, i) => (
+              <div className="px-2" key={announcement.title + i}>
+                <Announcement data={announcement} />
+              </div>
+            ))}
+          </Slider>
+        </div>
+        {showArrows ? (
+          <button
+            className="ml-4 flex h-8 w-8 items-center justify-center rounded-full border-2 border-th-bkg-4"
+            onClick={nextSlide}
+          >
+            <ChevronRightIcon className="h-5 w-5 text-th-fgd-1" />
+          </button>
+        ) : null}
       </div>
-      {showArrows ? (
-        <button
-          className="ml-4 flex h-8 w-8 items-center justify-center rounded-full border-2 border-th-bkg-4"
-          onClick={nextSlide}
+      <div className="mt-2 flex justify-center px-2 md:justify-end">
+        <LinkButton
+          className="text-xs font-normal text-th-fgd-3"
+          onClick={() => setShowAnnouncements(false)}
         >
-          <ChevronRightIcon className="h-5 w-5 text-th-fgd-1" />
-        </button>
-      ) : null}
+          {t('hide-announcements')}
+        </LinkButton>
+      </div>
     </div>
   ) : null
 }
@@ -158,7 +173,6 @@ const Announcement = ({ data }: { data: AppAnnouncement }) => {
           />
         ) : null}
         <div>
-          {/* <p className="mb-1 text-xs leading-none text-th-active">{category}</p> */}
           <p className="block font-display text-sm text-th-fgd-1">{title}</p>
           <p className="block text-sm text-th-fgd-3">{description}</p>
         </div>
