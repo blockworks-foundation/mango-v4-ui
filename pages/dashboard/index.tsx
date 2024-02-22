@@ -506,7 +506,7 @@ const Dashboard: NextPage = () => {
                               value={formattedBankValues.interestCurveScaling}
                             />
                             <KeyValuePair
-                              label="Interest Targe tUtilization"
+                              label="Interest Target Utilization"
                               value={
                                 formattedBankValues.interestTargetUtilization
                               }
