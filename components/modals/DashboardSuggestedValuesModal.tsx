@@ -96,7 +96,7 @@ const DashboardSuggestedValues = ({
           PRESETS[tokenTier],
           bank.uiDeposits(),
           bank.uiPrice,
-          PRESETS[tokenTier].netBorrowLimitPerWindowQuote,
+          toUiDecimals(PRESETS[tokenTier].netBorrowLimitPerWindowQuote, 6),
         ),
         bank.uiPrice,
         bank.mintDecimals,
@@ -285,7 +285,11 @@ const DashboardSuggestedValues = ({
       PRESETS[proposedTier as LISTING_PRESETS_KEY] as LISTING_PRESET,
       bank.uiDeposits(),
       bank.uiPrice,
-      PRESETS[proposedTier as LISTING_PRESETS_KEY].netBorrowLimitPerWindowQuote,
+      toUiDecimals(
+        PRESETS[proposedTier as LISTING_PRESETS_KEY]
+          .netBorrowLimitPerWindowQuote,
+        6,
+      ),
     ),
     bank.uiPrice,
     bank.mintDecimals,
