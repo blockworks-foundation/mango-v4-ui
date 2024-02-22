@@ -169,8 +169,8 @@ const Layout = ({ children }: { children: ReactNode }) => {
           }`}
         >
           <TopBar />
-          <NewListingBanner />
           {asPath !== '/rewards' ? <PromoBanner /> : null}
+          <NewListingBanner />
           <div className="pb-12 md:pb-[27px]">
             {children}
             <WarningBanner />

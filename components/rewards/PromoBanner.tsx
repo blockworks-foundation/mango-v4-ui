@@ -16,14 +16,6 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import useMangoAccount from 'hooks/useMangoAccount'
 dayjs.extend(relativeTime)
 
-const BANNER_WRAPPER_CLASSES =
-  'flex flex-wrap items-center justify-center border-b border-th-bkg-3 bg-th-bkg-2 px-10 py-3'
-
-const LINK_TEXT_CLASSES =
-  'bg-gradient-to-b from-mango-classic-theme-active to-mango-classic-theme-down bg-clip-text font-bold text-transparent lg:text-base'
-
-const TEXT_CLASSES = 'mr-2 text-center text-th-fgd-1 lg:text-base'
-
 const PromoBanner = () => {
   const [showBanner, setShowBanner] = useLocalStorageState(
     MANGO_MINTS_BANNER_KEY,
@@ -69,10 +61,11 @@ const PromoBanner = () => {
           claimEndsIn || ''
         }.`}
         linkText="Claim Now"
+        isClaim
       />
     ) : !hasClosedBanner ? (
       <BannerContent
-        text={`Season ${currentSeasonId} of Mango Mints ends ${
+        text={`Season ${currentSeasonId} of rewards ends ${
           seasonEndsIn || ''
         }.`}
         linkText="Let's Go"
@@ -94,18 +87,34 @@ const BannerContent = ({
   linkText,
   onClickLink,
   onClose,
+  isClaim,
 }: {
   text: string
   linkText: string
   onClickLink?: () => void
   onClose?: () => void
+  isClaim?: boolean
 }) => {
   return (
     <div className="relative">
-      <div className={BANNER_WRAPPER_CLASSES}>
-        <p className={TEXT_CLASSES}>{text}</p>
+      <div
+        className={`flex flex-wrap items-center justify-center border-b border-th-bkg-3 bg-gradient-to-r from-th-bkg-1 ${
+          isClaim ? 'via-orange-800' : 'via-th-bkg-3'
+        } to-th-bkg-1 px-10 py-3`}
+      >
+        <p
+          className={`mr-2 text-center ${
+            isClaim ? 'text-white' : 'text-th-fgd-1'
+          } lg:text-base`}
+        >
+          {text}
+        </p>
         <Link
-          className={LINK_TEXT_CLASSES}
+          className={`font-bold ${
+            isClaim
+              ? 'text-yellow-400 md:hover:text-yellow-500'
+              : 'text-th-fgd-1'
+          } lg:text-base`}
           href="/rewards"
           onClick={onClickLink}
         >
