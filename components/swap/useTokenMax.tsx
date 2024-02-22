@@ -116,23 +116,26 @@ export const getTokenInMax = (
     ? Decimal.min(spotMax, leverageMax, inputBankVaultBalance)
     : Decimal.min(leverageMax, inputBankVaultBalance)
 
+  const notionalValueOfOutputTokenLimitLeft =
+    outputBank.getRemainingDepositLimit() !== null
+      ? toUiDecimals(
+          outputBank.getRemainingDepositLimit()!,
+          outputBank.mintDecimals,
+        ) * outputBank.uiPrice
+      : null
+
   return {
     amount: maxAmount,
     amountWithBorrow: maxAmountWithBorrow,
     decimals: inputBank.mintDecimals,
     amountIsLimited:
-      !!outputBank.getRemainingDepositLimit() &&
-      maxAmount.equals(
-        floorToDecimal(rawMaxUiAmountWithBorrow, inputBank.mintDecimals),
-      ),
+      !!notionalValueOfOutputTokenLimitLeft &&
+      notionalValueOfOutputTokenLimitLeft <=
+        inputBank.uiPrice * maxAmount.toNumber(),
     amountWithBorrowIsLimited:
-      !!outputBank.getRemainingDepositLimit() &&
-      toUiDecimals(
-        outputBank.getRemainingDepositLimit()!,
-        outputBank.mintDecimals,
-      ) *
-        outputBank.uiPrice <=
-        inputBank.uiPrice * rawMaxUiAmountWithBorrow,
+      !!notionalValueOfOutputTokenLimitLeft &&
+      notionalValueOfOutputTokenLimitLeft <=
+        inputBank.uiPrice * maxAmountWithBorrow.toNumber(),
   }
 }
 
