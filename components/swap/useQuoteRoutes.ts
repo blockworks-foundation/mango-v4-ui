@@ -134,12 +134,10 @@ export const handleGetRoutes = async (
     } else {
       // TODO: replace with client method
       const totalSlots =
-        mangoAccount.tokensActive().length +
+        2 * mangoAccount.tokensActive().length +
         mangoAccount.serum3Active().length +
-        mangoAccount.tokenConditionalSwapsActive().length +
-        mangoAccount.perpActive().length +
-        mangoAccount.perpOrdersActive().length
-      maxAccounts = 56 - 2 * totalSlots
+        2 * mangoAccount.perpActive().length
+      maxAccounts = 54 - totalSlots
     }
 
     const routes = []
