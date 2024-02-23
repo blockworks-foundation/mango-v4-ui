@@ -2,6 +2,7 @@ import { Bank, toUiDecimals } from '@blockworks-foundation/mango-v4'
 import InlineNotification from './InlineNotification'
 import { useVaultLimits } from '@components/swap/useVaultLimits'
 import { useTranslation } from 'react-i18next'
+import { formatNumericValue } from 'utils/numbers'
 
 const TokenMaxAmountWarnings = ({
   bank,
@@ -23,7 +24,12 @@ const TokenMaxAmountWarnings = ({
             desc={t('warning-deposits-almost-full', {
               token: bank?.name,
               remaining:
-                limit && bank ? toUiDecimals(limit, bank?.mintDecimals) : 0,
+                limit && bank
+                  ? formatNumericValue(
+                      toUiDecimals(limit, bank.mintDecimals),
+                      bank.mintDecimals,
+                    )
+                  : 0,
             })}
           />
         </div>
