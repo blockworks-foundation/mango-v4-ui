@@ -204,5 +204,5 @@ const tokenMaxFallback = {
   amountWithBorrowIsLimited: false,
 }
 
-const approxeq = (v1: number, v2: number, epsilon = 1) =>
+const approxeq = (v1: number, v2: number, epsilon = 0.5) =>
   Math.abs(v1 - v2) <= epsilon
