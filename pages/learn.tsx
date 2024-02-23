@@ -1,6 +1,6 @@
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import { NextPage } from 'next'
-import { quizzes } from 'utils/quiz'
+import { Quiz as QuizType, quizzes } from 'utils/quiz'
 import { useMemo } from 'react'
 import { ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
@@ -24,6 +24,17 @@ export async function getStaticProps({ locale }: { locale: string }) {
       // Will be passed to the page component as props
     },
   }
+}
+
+const shuffleQuiz = (quiz: QuizType) => {
+  for (let i = quiz.questions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[quiz.questions[i], quiz.questions[j]] = [
+      quiz.questions[j],
+      quiz.questions[i],
+    ]
+  }
+  return quiz
 }
 
 const Learn: NextPage = () => {
@@ -109,7 +120,7 @@ const Learn: NextPage = () => {
     </div>
   ) : (
     <div className="mx-auto flex flex-col items-center pb-12 text-center">
-      <Quiz quiz={quizToShow} />
+      <Quiz quiz={shuffleQuiz(quizToShow)} />
     </div>
   )
 }
