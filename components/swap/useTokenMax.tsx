@@ -130,12 +130,16 @@ export const getTokenInMax = (
     decimals: inputBank.mintDecimals,
     amountIsLimited:
       !!notionalValueOfOutputTokenLimitLeft &&
-      notionalValueOfOutputTokenLimitLeft <=
+      approxeq(
+        notionalValueOfOutputTokenLimitLeft,
         inputBank.uiPrice * maxAmount.toNumber(),
+      ),
     amountWithBorrowIsLimited:
       !!notionalValueOfOutputTokenLimitLeft &&
-      notionalValueOfOutputTokenLimitLeft <=
+      approxeq(
+        notionalValueOfOutputTokenLimitLeft,
         inputBank.uiPrice * maxAmountWithBorrow.toNumber(),
+      ),
   }
 }
 
@@ -199,3 +203,6 @@ const tokenMaxFallback = {
   amountIsLimited: false,
   amountWithBorrowIsLimited: false,
 }
+
+const approxeq = (v1: number, v2: number, epsilon = 0.1) =>
+  Math.abs(v1 - v2) <= epsilon
