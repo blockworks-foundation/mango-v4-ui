@@ -11,6 +11,10 @@ import {
 } from '@heroicons/react/20/solid'
 import { Disclosure } from '@headlessui/react'
 import Image from 'next/image'
+import { useWallet } from '@solana/wallet-adapter-react'
+import useMangoAccount from 'hooks/useMangoAccount'
+import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes'
+import { useQueryClient } from '@tanstack/react-query'
 
 type RESULT = {
   correctAnswers: number
@@ -22,8 +26,11 @@ const DEFAULT_RESULT = {
   wrongAnswers: [],
 }
 
-const Quiz = ({ quiz }: { quiz: Quiz }) => {
+const Quiz = ({ quiz, idx }: { quiz: Quiz; idx: number }) => {
   const router = useRouter()
+  const queryClient = useQueryClient()
+  const { publicKey, signMessage } = useWallet()
+  const { mangoAccount } = useMangoAccount()
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [answerIndex, setAnswerIndex] = useState<number | null>(null)
   const [isCorrectAnswer, setIsCorrectAnswer] = useState<boolean | null>(null)
@@ -78,6 +85,32 @@ const Quiz = ({ quiz }: { quiz: Quiz }) => {
     } else if (score < 100) {
       return 'Almost There...'
     } else return 'Congratulations 🎉'
+  }
+
+  const completeQuiz = async () => {
+    const quizId = idx + 1
+    const mangoAccountPk = mangoAccount?.publicKey.toBase58()
+    const message = new TextEncoder().encode(mangoAccountPk)
+    const signature = await signMessage!(message)
+    const rawResponse = await fetch(
+      'https://api.mngo.cloud/data/v4/user-data/complete-quiz',
+      {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          wallet_pk: publicKey?.toBase58(),
+          quiz_id: idx + 1,
+          mango_account: mangoAccountPk,
+          signature: bs58.encode(signature),
+        }),
+      },
+    )
+    await rawResponse.json()
+    queryClient.invalidateQueries(['quiz-completed', mangoAccountPk, quizId])
+    router.push('/learn', undefined, { shallow: true })
   }
 
   return (
@@ -321,12 +354,7 @@ const Quiz = ({ quiz }: { quiz: Quiz }) => {
               </div>
               <div className="flex justify-center space-x-3">
                 {result.correctAnswers === questions.length ? (
-                  <Button
-                    onClick={() =>
-                      router.push('/learn', undefined, { shallow: true })
-                    }
-                    size="large"
-                  >
+                  <Button onClick={completeQuiz} size="large">
                     Claim Rewards Points
                   </Button>
                 ) : (
