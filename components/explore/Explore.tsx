@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import PerpMarketsTable from './PerpMarketsTable'
-import { useTranslation } from 'react-i18next'
 import mangoStore from '@store/mangoStore'
 import RecentGainersLosers from './RecentGainersLosers'
 import Spot from './Spot'
@@ -8,11 +7,13 @@ import useBanks from 'hooks/useBanks'
 import TabsText from '@components/shared/TabsText'
 import useFollowedAccounts from 'hooks/useFollowedAccounts'
 import FollowedAccounts from './FollowedAccounts'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import { SHOW_ANNOUNCEMENTS_KEY } from 'utils/constants'
 
 const Explore = () => {
-  const { t } = useTranslation(['common'])
   const { banks } = useBanks()
   const { data: followedAccounts } = useFollowedAccounts()
+  const [showAnnouncements] = useLocalStorageState(SHOW_ANNOUNCEMENTS_KEY, true)
   const perpStats = mangoStore((s) => s.perpStats.data)
   const [activeTab, setActiveTab] = useState('tokens')
 
@@ -37,12 +38,12 @@ const Explore = () => {
   }, [banks, followedAccounts])
 
   return (
-    <>
-      <div className="px-4 pt-10 md:px-6">
+    <div className={showAnnouncements ? 'pt-4' : 'pt-10'}>
+      {/* <div className="px-4 pt-10 md:px-6">
         <h2 className="mb-4 text-center text-lg md:text-left">
           {t('explore')}
         </h2>
-      </div>
+      </div> */}
       <RecentGainersLosers />
       <div className="z-10 w-max px-4 pt-8 md:px-6">
         <div
@@ -62,7 +63,7 @@ const Explore = () => {
       <div className="pb-20 md:pb-0">
         <TabContent activeTab={activeTab} />
       </div>
-    </>
+    </div>
   )
 }
 

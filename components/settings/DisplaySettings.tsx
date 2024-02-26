@@ -18,6 +18,7 @@ import { useCallback } from 'react'
 import { useRouter } from 'next/router'
 import {
   NOTIFICATION_POSITION_KEY,
+  SHOW_ANNOUNCEMENTS_KEY,
   SIZE_INPUT_UI_KEY,
   TRADE_CHART_UI_KEY,
   TRADE_LAYOUT_KEY,
@@ -25,6 +26,7 @@ import {
 import mangoStore from '@store/mangoStore'
 import { CUSTOM_SKINS } from 'utils/theme'
 import { SETTINGS_BUTTON_TITLE_CLASSES } from './AccountSettings'
+import Switch from '@components/forms/Switch'
 
 const NOTIFICATION_POSITIONS = [
   'bottom-left',
@@ -88,6 +90,11 @@ const DisplaySettings = () => {
   )
 
   const [, setTradeLayout] = useLocalStorageState(TRADE_LAYOUT_KEY, 'chartLeft')
+
+  const [showAnnouncements, setShowAnnouncements] = useLocalStorageState(
+    SHOW_ANNOUNCEMENTS_KEY,
+    true,
+  )
 
   // add nft skins to theme selection list
   useEffect(() => {
@@ -235,6 +242,13 @@ const DisplaySettings = () => {
             names={TRADING_CHARTS.map((val) => t(`settings:${val}`))}
           />
         </div>
+      </div>
+      <div className="flex items-center justify-between border-t border-th-bkg-3 p-4">
+        <p className={SETTINGS_BUTTON_TITLE_CLASSES}>{t('announcements')}</p>
+        <Switch
+          checked={showAnnouncements}
+          onChange={() => setShowAnnouncements(!showAnnouncements)}
+        />
       </div>
     </div>
   )
