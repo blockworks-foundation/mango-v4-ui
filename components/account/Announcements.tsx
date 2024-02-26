@@ -144,6 +144,7 @@ const AnnouncementWrapper = ({
       className={classNames}
       href={path}
       rel="noopener noreferrer"
+      target="_blank"
       onClick={trackClick}
     >
       {children}
