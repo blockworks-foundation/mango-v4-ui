@@ -35,15 +35,27 @@ const fetchJupiterRoute = async (
   if (!inputMint || !outputMint) return
   try {
     {
-      const paramsString = new URLSearchParams({
+      const paramObj: {
+        inputMint: string
+        outputMint: string
+        amount: string
+        slippageBps: string
+        swapMode: string
+        onlyDirectRoutes: string
+        maxAccounts?: string
+      } = {
         inputMint: inputMint.toString(),
         outputMint: outputMint.toString(),
         amount: amount.toString(),
         slippageBps: Math.ceil(slippage * 100).toString(),
-        maxAccounts: maxAccounts.toString(),
         swapMode,
         onlyDirectRoutes: `${onlyDirectRoutes}`,
-      }).toString()
+      }
+      //exact out is not supporting max account
+      if (swapMode === 'ExactIn') {
+        paramObj.maxAccounts = maxAccounts.toString()
+      }
+      const paramsString = new URLSearchParams(paramObj).toString()
       const response = await fetch(
         `${JUPITER_V6_QUOTE_API_MAINNET}/quote?${paramsString}`,
       )
