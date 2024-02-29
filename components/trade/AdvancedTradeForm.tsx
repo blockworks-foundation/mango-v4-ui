@@ -9,7 +9,6 @@ import {
   Serum3Side,
   OpenbookV2Market,
 } from '@blockworks-foundation/mango-v4'
-import { MarketAccount } from '@openbook-dex/openbook-v2'
 import Checkbox from '@components/forms/Checkbox'
 import Tooltip from '@components/shared/Tooltip'
 import mangoStore from '@store/mangoStore'
@@ -81,7 +80,7 @@ import DepositWithdrawModal from '@components/modals/DepositWithdrawModal'
 import CreateAccountModal from '@components/modals/CreateAccountModal'
 import TradeformSubmitButton from './TradeformSubmitButton'
 import BigNumber from 'bignumber.js'
-import { isOpenbookV2Market } from 'types/openbook'
+import { isOpenbookV2ExternalMarket } from 'types/openbook'
 
 dayjs.extend(relativeTime)
 
@@ -378,7 +377,7 @@ const AdvancedTradeForm = () => {
   const tickDecimals = useMemo(() => {
     if (!serumOrPerpMarket) return 1
     let tickSize
-    if (isOpenbookV2Market(serumOrPerpMarket)) {
+    if (isOpenbookV2ExternalMarket(serumOrPerpMarket)) {
       tickSize = new BigNumber(10)
         .pow(serumOrPerpMarket.baseDecimals - serumOrPerpMarket.quoteDecimals)
         .times(new BigNumber(serumOrPerpMarket.quoteLotSize.toString()))
@@ -510,6 +509,7 @@ const AdvancedTradeForm = () => {
 
   const isFormValid = useCallback(
     (form: TradeForm) => {
+      return true
       const { baseSize, price, orderType, side } = form
       const invalidFields: FormErrors = {}
       setFormErrors({})
@@ -1161,12 +1161,12 @@ const AdvancedTradeForm = () => {
             </div>
             <div className="mb-4 mt-6 flex px-3 md:px-4">
               <TradeformSubmitButton
-                disabled={disabled}
+                disabled={false}
                 placingOrder={placingOrder}
                 setShowCreateAccountModal={setShowCreateAccountModal}
                 setShowDepositModal={setShowDepositModal}
                 sideNames={sideNames}
-                tooMuchSize={tooMuchSize}
+                tooMuchSize={false}
                 useMargin={savedCheckboxSettings.margin}
               />
             </div>

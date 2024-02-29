@@ -1,5 +1,6 @@
 import {
   Group,
+  OpenbookV2Market,
   PerpMarket,
   Serum3Market,
 } from '@blockworks-foundation/mango-v4'
@@ -10,6 +11,7 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
+import { ExtendedMarketAccount } from 'types/openbook'
 import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 
 export async function getStaticProps({ locale }: { locale: string }) {
@@ -35,13 +37,21 @@ export async function getStaticProps({ locale }: { locale: string }) {
 
 const getOraclePriceForMarket = (
   group: Group,
-  mkt: Serum3Market | PerpMarket,
+  mkt: Serum3Market | PerpMarket | OpenbookV2Market,
 ): number => {
   let price: number
   if (mkt instanceof Serum3Market) {
     const baseBank = group.getFirstBankByTokenIndex(mkt.baseTokenIndex)
     const quoteBank = group.getFirstBankByTokenIndex(mkt.quoteTokenIndex)
     const market = group.getSerum3ExternalMarket(mkt.serumMarketExternal)
+    price = floorToDecimal(
+      baseBank.uiPrice / quoteBank.uiPrice,
+      getDecimalCount(market.tickSize),
+    ).toNumber()
+  } else if (mkt instanceof OpenbookV2Market) {
+    const baseBank = group.getFirstBankByTokenIndex(mkt.baseTokenIndex)
+    const quoteBank = group.getFirstBankByTokenIndex(mkt.quoteTokenIndex)
+    const market = group.getSerum3ExternalMarket(mkt.openbookMarketExternal)
     price = floorToDecimal(
       baseBank.uiPrice / quoteBank.uiPrice,
       getDecimalCount(market.tickSize),
@@ -63,17 +73,24 @@ const Trade: NextPage = () => {
     const group = mangoStore.getState().group
     const serumMarkets = mangoStore.getState().serumMarkets
     const perpMarkets = mangoStore.getState().perpMarkets
+    const openbookMarkets = mangoStore.getState().openbookMarkets
 
     if (group && marketName && typeof marketName === 'string') {
       const mkt =
         serumMarkets.find((m) => m.name === marketName) ||
-        perpMarkets.find((m) => m.name === marketName)
+        perpMarkets.find((m) => m.name === marketName) ||
+        openbookMarkets.find((m) => m.name === marketName)
 
       if (mkt) {
         let tickSize = 4
         if (mkt instanceof Serum3Market) {
           const market = group.getSerum3ExternalMarket(mkt.serumMarketExternal)
           tickSize = market.tickSize
+        } else if (mkt instanceof OpenbookV2Market) {
+          const market = group.getOpenbookV2ExternalMarket(
+            mkt.openbookMarketExternal,
+          )
+          tickSize = (market as ExtendedMarketAccount).tickSize
         } else {
           tickSize = mkt.tickSize
         }

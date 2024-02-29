@@ -10,7 +10,7 @@ import useJupiterMints from './useJupiterMints'
 import useMangoGroup from './useMangoGroup'
 import { CUSTOM_TOKEN_ICONS } from 'utils/constants'
 import BigNumber from 'bignumber.js'
-import { MarketAccount } from '@openbook-dex/openbook-v2'
+import { ExtendedMarketAccount } from 'types/openbook'
 
 export default function useSelectedMarket() {
   const { group } = useMangoGroup()
@@ -71,9 +71,13 @@ export default function useSelectedMarket() {
     if (selectedMarket instanceof Serum3Market) {
       return group?.getSerum3ExternalMarket(selectedMarket.serumMarketExternal)
     } else if (selectedMarket instanceof OpenbookV2Market) {
-      return group?.getOpenbookV2ExternalMarket(
+      const mkt = group?.getOpenbookV2ExternalMarket(
         selectedMarket.openbookMarketExternal,
-      ) as MarketAccount
+      ) as ExtendedMarketAccount
+      mkt.tickSize = 0.01
+      mkt.minOrderSize = 0.01
+      mkt.publicKey = selectedMarket.openbookMarketExternal
+      return mkt
     } else {
       return selectedMarket
     }

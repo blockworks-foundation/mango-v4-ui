@@ -39,6 +39,10 @@ import { useViewport } from 'hooks/useViewport'
 import TokenLogo from '@components/shared/TokenLogo'
 import MarketLogos from './MarketLogos'
 import { OrderTypes } from 'utils/tradeForm'
+import {
+  ExtendedMarketAccount,
+  isOpenbookV2ExternalMarket,
+} from 'types/openbook'
 
 const sizeCompacter = Intl.NumberFormat('en', {
   maximumFractionDigits: 6,
@@ -49,7 +53,7 @@ const SHOW_EXPONENTIAL_THRESHOLD = 0.00001
 
 const Orderbook = () => {
   const { t } = useTranslation(['common', 'trade'])
-  const { serumOrPerpMarket: market } = useSelectedMarket()
+  const { serumOrPerpMarket: market, selectedMarket } = useSelectedMarket()
   const connection = mangoStore((s) => s.connection)
 
   const [tickSize, setTickSize] = useState(0)
@@ -72,9 +76,15 @@ const Orderbook = () => {
     if (market instanceof PerpMarket) {
       const quote = group.getFirstBankByTokenIndex(market.settleTokenIndex)
       return [undefined, quote]
+    } else if (isOpenbookV2ExternalMarket(market)) {
+      const base = group.getFirstBankByMint(market.baseMint)
+      const quote = group.getFirstBankByMint(market.quoteMint)
+      return [base, quote]
     } else {
-      const base = group.getFirstBankByMint(market.baseMintAddress)
-      const quote = group.getFirstBankByMint(market.quoteMintAddress)
+      const base = group.getFirstBankByMint((market as Market).baseMintAddress)
+      const quote = group.getFirstBankByMint(
+        (market as Market).quoteMintAddress,
+      )
       return [base, quote]
     }
   }, [market])
@@ -173,7 +183,7 @@ const Orderbook = () => {
     const market = getMarket()
     if (!group || !market) return
 
-    if (useOrderbookFeed) {
+    if (false) {
       if (!orderbookFeed.current) {
         orderbookFeed.current = new OrderbookFeed(
           `wss://api.mngo.cloud/orderbook/v1/`,
@@ -307,13 +317,20 @@ const Orderbook = () => {
             try {
               if (!info || !market) return
               const decodedBook = decodeBook(client, market, info, 'bids')
+              const decodedBookL2 = decodeBookL2(
+                decodedBook,
+                selectedMarket,
+                market,
+              )
+              console.log('decodingL2:', decodedBookL2)
+
               set((state) => {
                 state.selectedMarket.lastSeenSlot.bids = context.slot
                 state.selectedMarket.bidsAccount = decodedBook
-                state.selectedMarket.orderbook.bids = decodeBookL2(decodedBook)
+                state.selectedMarket.orderbook.bids = decodedBookL2
               })
             } catch (e) {
-              console.log(e)
+              console.error(e)
               return
             }
           })
@@ -325,14 +342,17 @@ const Orderbook = () => {
             if (context.slot > lastSeenSlot) {
               try {
                 if (!market) return
-                const decodedBook = decodeBook(client, market!, info, 'bids')
+                const decodedBook = decodeBook(client, market, info, 'bids')
                 if (decodedBook instanceof BookSide) {
                   updatePerpMarketOnGroup(decodedBook, 'bids')
                 }
                 set((state) => {
                   state.selectedMarket.bidsAccount = decodedBook
-                  state.selectedMarket.orderbook.bids =
-                    decodeBookL2(decodedBook)
+                  state.selectedMarket.orderbook.bids = decodeBookL2(
+                    decodedBook,
+                    selectedMarket,
+                    market,
+                  )
                   state.selectedMarket.lastSeenSlot.bids = context.slot
                 })
               } catch (e) {
@@ -355,7 +375,11 @@ const Orderbook = () => {
               const decodedBook = decodeBook(client, market, info, 'asks')
               set((state) => {
                 state.selectedMarket.asksAccount = decodedBook
-                state.selectedMarket.orderbook.asks = decodeBookL2(decodedBook)
+                state.selectedMarket.orderbook.asks = decodeBookL2(
+                  decodedBook,
+                  selectedMarket,
+                  market,
+                )
                 state.selectedMarket.lastSeenSlot.asks = context.slot
               })
             } catch (e) {
@@ -377,8 +401,11 @@ const Orderbook = () => {
                 }
                 set((state) => {
                   state.selectedMarket.asksAccount = decodedBook
-                  state.selectedMarket.orderbook.asks =
-                    decodeBookL2(decodedBook)
+                  state.selectedMarket.orderbook.asks = decodeBookL2(
+                    decodedBook,
+                    selectedMarket,
+                    market,
+                  )
                   state.selectedMarket.lastSeenSlot.asks = context.slot
                 })
               } catch (e) {
@@ -806,7 +833,9 @@ const Line = (props: {
 
 export default Orderbook
 
-function usersOpenOrderPrices(market: Market | PerpMarket | null) {
+function usersOpenOrderPrices(
+  market: Market | PerpMarket | ExtendedMarketAccount | null,
+) {
   if (!market) return []
   const openOrders = mangoStore.getState().mangoAccount.openOrders
   const marketPk = market.publicKey.toString()

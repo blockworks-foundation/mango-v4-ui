@@ -56,8 +56,12 @@ const MarketSelectDropdown = () => {
   const [isOpen, setIsOpen] = useState(false)
   const { group } = useMangoGroup()
   const [spotBaseFilter, setSpotBaseFilter] = useState('All')
-  const { perpMarketsWithData, serumMarketsWithData, openbookMarketsWithData, isLoading } =
-    useListedMarketsWithMarketData()
+  const {
+    perpMarketsWithData,
+    serumMarketsWithData,
+    openbookMarketsWithData,
+    isLoading,
+  } = useListedMarketsWithMarketData()
   const { isDesktop } = useViewport()
   const focusRef = useRef<HTMLInputElement>(null)
   const { query } = useRouter()
@@ -101,10 +105,17 @@ const MarketSelectDropdown = () => {
   }, [group, serumMarketsWithData, openbookMarketsWithData])
 
   const unsortedSpotMarketsToShow = useMemo(() => {
-    if (!serumMarketsWithData.length || !openbookMarketsWithData.length || !group) return []
-    const allSpotMarketsWithData = serumMarketsWithData.concat(openbookMarketsWithData.map((m) => {
-      return { ...m, name: m.name + '-V2' }
-    }))
+    if (
+      !serumMarketsWithData.length ||
+      !openbookMarketsWithData.length ||
+      !group
+    )
+      return []
+    const allSpotMarketsWithData = serumMarketsWithData.concat(
+      openbookMarketsWithData.map((m) => {
+        return { ...m, name: m.name + '-V2' }
+      }),
+    )
     if (spotBaseFilter !== 'All') {
       const filteredMarkets = allSpotMarketsWithData.filter((m: any) => {
         const quoteBank = group.getFirstBankByTokenIndex(m.quoteTokenIndex)
@@ -384,18 +395,17 @@ const MarketSelectDropdown = () => {
                   </div>
                   {spotMarketsToShow.length ? (
                     spotMarketsToShow.map((m) => {
-                      console.log(m)
                       const baseBank = group?.getFirstBankByTokenIndex(
                         m.baseTokenIndex,
                       )
                       const quoteBank = group?.getFirstBankByTokenIndex(
                         m.quoteTokenIndex,
                       )
-                      const market = m.serumMarketExternal ? group?.getSerum3ExternalMarket(
-                        m.serumMarketExternal,
-                      ) : group?.getOpenbookV2ExternalMarket(
-                        m.openbookMarketExternal,
-                      )
+                      const market = m.serumMarketExternal
+                        ? group?.getSerum3ExternalMarket(m.serumMarketExternal)
+                        : group?.getOpenbookV2ExternalMarket(
+                            m.openbookMarketExternal,
+                          )
                       let leverage
                       if (group && m.maxBidLeverage) {
                         leverage = m.maxBidLeverage(group)

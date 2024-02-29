@@ -91,7 +91,7 @@ import { OrderTypes } from 'utils/tradeForm'
 import { usePlausible } from 'next-plausible'
 import { OpenOrdersAccount } from '@openbook-dex/openbook-v2'
 
-const GROUP = new PublicKey('DTenAtYztNUHZBvqXUFM5jCB4X8cUUfgkCaDVDPddm8M')
+const GROUP = new PublicKey('7SDejCUPsF3g59GgMsmvxw8dJkkJbT3exoH4RZirwnkM')
 
 const ENDPOINTS = [
   {
@@ -136,8 +136,8 @@ const initMangoClient = (
   //for analytics use
   telemetry: ReturnType<typeof usePlausible> | null,
 ): MangoClient => {
-  console.log('cluster', CLUSTER)
-  console.log('programId', MANGO_V4_ID[CLUSTER].toString())
+  // console.log('cluster', CLUSTER)
+  // console.log('programId', MANGO_V4_ID[CLUSTER].toString())
   return MangoClient.connect(provider, CLUSTER, MANGO_V4_ID[CLUSTER], {
     prioritizationFee: opts.prioritizationFee,
     prependedGlobalAdditionalInstructions:
@@ -590,10 +590,19 @@ const mangoStore = create<MangoStore>()(
               )
               .sort((a, b) => a.name.localeCompare(b.name))
 
-            const selectedMarket =
-              serumMarkets.find((m) => m.name === selectedMarketName) ||
-              perpMarkets.find((m) => m.name === selectedMarketName) ||
+            let selectedMarket: Serum3Market | OpenbookV2Market | PerpMarket =
               serumMarkets[0]
+            if (selectedMarketName.includes('V2')) {
+              selectedMarket =
+                openbookMarkets.find(
+                  (m) => selectedMarketName?.includes(m.name),
+                ) || openbookMarkets[0]
+            } else {
+              selectedMarket =
+                serumMarkets.find((m) => m.name === selectedMarketName) ||
+                perpMarkets.find((m) => m.name === selectedMarketName) ||
+                serumMarkets[0]
+            }
 
             set((state) => {
               state.group = group
@@ -662,8 +671,6 @@ const mangoStore = create<MangoStore>()(
           }
         },
         fetchMangoAccounts: async (ownerPk: PublicKey) => {
-          console.log('fetchMangoAccounts=====')
-
           const set = get().set
           const actions = get().actions
           try {
@@ -673,20 +680,18 @@ const mangoStore = create<MangoStore>()(
             if (!group) throw new Error('Group not loaded')
             if (!client) throw new Error('Client not loaded')
 
-            console.log('11111111')
-
             const mangoAccounts = await client
               .getMangoAccountsForOwner(group, ownerPk)
               .catch((e) => console.log('-=-=-=-', e))
             // const [ownerMangoAccounts] = await Promise.all([
             // client.getMangoAccountsForDelegate(group, ownerPk),
             // ])
-            console.log('222222222 ownerMangoAccounts: ', group, mangoAccounts)
+            // console.log('222222222 ownerMangoAccounts: ', group, mangoAccounts)
 
             // const mangoAccounts = [...ownerMangoAccounts].filter(
             //   (acc) => !acc.name.includes('Leverage Stake'),
             // )
-            console.log('=====mangoAccounts', mangoAccounts)
+            // console.log('=====mangoAccounts', mangoAccounts)
 
             if (!mangoAccounts?.length) {
               set((state) => {

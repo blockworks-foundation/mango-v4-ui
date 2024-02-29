@@ -145,6 +145,5 @@
       "@sentry/nextjs>@sentry/webpack-plugin>@sentry/cli": true,
       "@blockworks-foundation/mango-mints-redemption>keccak256>keccak": true
     }
-  },
-  "packageManager": "yarn@4.1.0"
+  }
 }
