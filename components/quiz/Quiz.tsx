@@ -15,6 +15,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes'
 import { useQueryClient } from '@tanstack/react-query'
+import { useQuizCompleted } from 'hooks/useQuiz'
 
 type RESULT = {
   correctAnswers: number
@@ -31,6 +32,7 @@ const Quiz = ({ quiz }: { quiz: QuizType }) => {
   const queryClient = useQueryClient()
   const { publicKey, signMessage } = useWallet()
   const { mangoAccount } = useMangoAccount()
+  const { data: solved } = useQuizCompleted(mangoAccount?.publicKey, quiz.id)
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [answerIndex, setAnswerIndex] = useState<number | null>(null)
   const [isCorrectAnswer, setIsCorrectAnswer] = useState<boolean | null>(null)
@@ -350,7 +352,16 @@ const Quiz = ({ quiz }: { quiz: QuizType }) => {
                 )}
               </div>
               <div className="flex justify-center space-x-3">
-                {result.correctAnswers === questions.length ? (
+                {solved ? (
+                  <Button
+                    onClick={() =>
+                      router.push('/learn', undefined, { shallow: true })
+                    }
+                    size="large"
+                  >
+                    Exit
+                  </Button>
+                ) : result.correctAnswers === questions.length ? (
                   <Button onClick={completeQuiz} size="large">
                     Claim Rewards Points
                   </Button>
