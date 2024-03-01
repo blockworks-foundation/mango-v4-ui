@@ -60,7 +60,7 @@ const Learn: NextPage = () => {
         Earn rewards points for becoming a quiz master.
       </p>
       <div className="w-full space-y-2 pt-6">
-        {quizzes.map((quiz, index) => (
+        {[...quizzes].reverse().map((quiz, index) => (
           <QuizCard key={index} quiz={quiz} />
         ))}
       </div>

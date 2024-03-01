@@ -269,7 +269,7 @@ const Quiz = ({ quiz }: { quiz: QuizType }) => {
                         </Disclosure.Button>
                         <Disclosure.Panel className="pb-2">
                           {result.wrongAnswers.map((answer) => (
-                            <div className="mb-2" key={answer.id}>
+                            <div className="mb-2" key={answer.question}>
                               <Disclosure>
                                 {({ open }) => (
                                   <>
