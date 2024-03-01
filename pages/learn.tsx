@@ -2,10 +2,9 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import { NextPage } from 'next'
 import { Quiz as QuizType, quizzes } from 'utils/quiz'
 import { useMemo } from 'react'
-import { ChevronRightIcon } from '@heroicons/react/20/solid'
+import { CheckCircleIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
-import { formatNumericValue } from 'utils/numbers'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useQuizCompleted } from 'hooks/useQuiz'
 import Quiz from '@components/quiz/Quiz'
@@ -62,20 +61,20 @@ const Learn: NextPage = () => {
       </p>
       <div className="w-full space-y-2 pt-6">
         {quizzes.map((quiz, index) => (
-          <QuizCard key={index} quiz={quiz} index={index} />
+          <QuizCard key={index} quiz={quiz} />
         ))}
       </div>
     </div>
   ) : (
     <div className="mx-auto flex flex-col items-center pb-12 text-center">
-      <Quiz quiz={shuffleQuiz(quizToShow!.quiz)} idx={quizToShow!.index!} />
+      <Quiz quiz={shuffleQuiz(quizToShow.quiz)} />
     </div>
   )
 }
 
-const QuizCard = ({ quiz, index }: { quiz: QuizType; index: number }) => {
+const QuizCard = ({ quiz }: { quiz: QuizType }) => {
   const { mangoAccount } = useMangoAccount()
-  const { data: solved } = useQuizCompleted(mangoAccount?.publicKey, index + 1)
+  const { data: solved } = useQuizCompleted(mangoAccount?.publicKey, quiz.id)
   const router = useRouter()
   const goToQuiz = (quiz: string) => {
     const query = { ...router.query, ['quiz']: quiz }
@@ -91,7 +90,6 @@ const QuizCard = ({ quiz, index }: { quiz: QuizType; index: number }) => {
       onClick={() => goToQuiz(quiz.slug)}
     >
       <div>
-        {`completed: ${solved}`}
         <div className="flex items-center">
           {quiz.imagePath ? (
             <Image
@@ -112,14 +110,10 @@ const QuizCard = ({ quiz, index }: { quiz: QuizType; index: number }) => {
         </div>
       </div>
       <div className="flex items-center space-x-2 pl-4">
-        {quiz.points ? (
-          <div className="flex w-max items-center rounded-full bg-th-bkg-1 px-3 py-1">
-            <p>
-              <span className="font-mono text-th-fgd-1">
-                {formatNumericValue(quiz.points)}
-              </span>{' '}
-              Points
-            </p>
+        {solved ? (
+          <div className="flex w-max items-center rounded-full bg-th-up-muted py-1 pl-1.5 pr-3">
+            <CheckCircleIcon className="mr-1 h-4 w-4 text-th-fgd-1" />
+            <p className="text-th-fgd-1">Completed</p>
           </div>
         ) : null}
         {/* <div className="flex w-max items-center rounded-full bg-th-bkg-1 px-3 py-1">

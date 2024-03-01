@@ -1,4 +1,4 @@
-import { Quiz, QuizQuestion } from 'utils/quiz'
+import { Quiz as QuizType, QuizQuestion } from 'utils/quiz'
 import { useState } from 'react'
 import Button, { IconButton } from '@components/shared/Button'
 import { useRouter } from 'next/router'
@@ -26,7 +26,7 @@ const DEFAULT_RESULT = {
   wrongAnswers: [],
 }
 
-const Quiz = ({ quiz, idx }: { quiz: Quiz; idx: number }) => {
+const Quiz = ({ quiz }: { quiz: QuizType }) => {
   const router = useRouter()
   const queryClient = useQueryClient()
   const { publicKey, signMessage } = useWallet()
@@ -88,7 +88,6 @@ const Quiz = ({ quiz, idx }: { quiz: Quiz; idx: number }) => {
   }
 
   const completeQuiz = async () => {
-    const quizId = idx + 1
     const mangoAccountPk = mangoAccount?.publicKey.toBase58()
     const message = new TextEncoder().encode(mangoAccountPk)
     const signature = await signMessage!(message)
@@ -102,14 +101,14 @@ const Quiz = ({ quiz, idx }: { quiz: Quiz; idx: number }) => {
         },
         body: JSON.stringify({
           wallet_pk: publicKey?.toBase58(),
-          quiz_id: idx + 1,
+          quiz_id: quiz.id,
           mango_account: mangoAccountPk,
           signature: bs58.encode(signature),
         }),
       },
     )
     await rawResponse.json()
-    queryClient.invalidateQueries(['quiz-completed', mangoAccountPk, quizId])
+    queryClient.invalidateQueries(['quiz-completed', mangoAccountPk, quiz.id])
     router.push('/learn', undefined, { shallow: true })
   }
 
@@ -173,13 +172,11 @@ const Quiz = ({ quiz, idx }: { quiz: Quiz; idx: number }) => {
               >
                 Let&apos;s Go
               </Button>
-              {quiz.points ? (
-                <div className="mx-auto mt-6 w-max rounded-full border border-th-fgd-4 px-3 py-1">
-                  <p className="text-th-fgd-2">
-                    {`Score ${quiz.questions.length}/${quiz.questions.length} to earn ${quiz.points} rewards points`}
-                  </p>
-                </div>
-              ) : null}
+              <div className="mx-auto mt-6 w-max rounded-full border border-th-fgd-4 px-3 py-1">
+                <p className="text-th-fgd-2">
+                  {`Score ${quiz.questions.length}/${quiz.questions.length} to earn rewards points`}
+                </p>
+              </div>
             </>
           ) : !showResult ? (
             <>

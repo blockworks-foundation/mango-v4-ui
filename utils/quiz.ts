@@ -1,7 +1,7 @@
 export type Quiz = {
+  id: number
   name: string
   description: string
-  points?: number
   imagePath?: string
   intro: {
     title: string
@@ -234,8 +234,8 @@ const nosanaQuiz = [
 export const quizzes = [
   {
     name: 'Know Nosana',
+    id: 1,
     description: 'Think you know Nosana?',
-    points: 10,
     imagePath: '/icons/nos.svg',
     intro: {
       title: 'Know Nosana',
@@ -247,8 +247,8 @@ export const quizzes = [
   },
   {
     name: 'Account Health',
+    id: 2,
     description: 'Learn how account health works on Mango.',
-    points: 10,
     intro: {
       title: 'Health is Wealth',
       description:
