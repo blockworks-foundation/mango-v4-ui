@@ -1,16 +1,16 @@
 import { useQuery } from '@tanstack/react-query'
-import { getQuizCompleted } from 'apis/quiz'
+import { getCompletedQuizzes } from 'apis/quiz'
 
-export const useQuizCompleted = (mangoAccount?: string, quizId?: number) => {
+export const useQuizCompleted = (wallet?: string) => {
   return useQuery(
-    ['quiz-completed', mangoAccount, quizId],
-    () => getQuizCompleted(mangoAccount!, quizId!),
+    ['quiz-completed', wallet],
+    () => getCompletedQuizzes(wallet!),
     {
       cacheTime: 1000 * 60 * 10,
       staleTime: 1000 * 60,
       retry: 3,
       refetchOnWindowFocus: false,
-      enabled: !!mangoAccount && quizId !== undefined,
+      enabled: !!wallet,
     },
   )
 }

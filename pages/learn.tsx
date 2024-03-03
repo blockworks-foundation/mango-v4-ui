@@ -5,9 +5,9 @@ import { useMemo } from 'react'
 import { CheckCircleIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
-import useMangoAccount from 'hooks/useMangoAccount'
 import { useQuizCompleted } from 'hooks/useQuiz'
 import Quiz from '@components/quiz/Quiz'
+import { useWallet } from '@solana/wallet-adapter-react'
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -73,8 +73,8 @@ const Learn: NextPage = () => {
 }
 
 const QuizCard = ({ quiz }: { quiz: QuizType }) => {
-  const { mangoAccountAddress } = useMangoAccount()
-  const { data: solved } = useQuizCompleted(mangoAccountAddress, quiz.id)
+  const { publicKey } = useWallet()
+  const { data: solved } = useQuizCompleted(publicKey?.toBase58())
   const router = useRouter()
   const goToQuiz = (quiz: string) => {
     const query = { ...router.query, ['quiz']: quiz }
@@ -109,8 +109,9 @@ const QuizCard = ({ quiz }: { quiz: QuizType }) => {
           <p className="text-xs">{quiz.questions.length} questions</p>
         </div>
       </div>
+
       <div className="flex items-center space-x-2 pl-4">
-        {solved ? (
+        {solved?.find((x) => x.quiz_id === quiz.id) ? (
           <div className="flex w-max items-center rounded-full bg-th-up-muted py-1 pl-1.5 pr-3">
             <CheckCircleIcon className="mr-1 h-4 w-4 text-th-fgd-1" />
             <p className="text-th-fgd-1">Completed</p>

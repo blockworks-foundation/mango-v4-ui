@@ -16,6 +16,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes'
 import { useQueryClient } from '@tanstack/react-query'
 import { useQuizCompleted } from 'hooks/useQuiz'
+import { notify } from 'utils/notifications'
 
 type RESULT = {
   correctAnswers: number
@@ -32,7 +33,7 @@ const Quiz = ({ quiz }: { quiz: QuizType }) => {
   const queryClient = useQueryClient()
   const { connected, publicKey, signMessage } = useWallet()
   const { mangoAccountAddress } = useMangoAccount()
-  const { data: solved } = useQuizCompleted(mangoAccountAddress, quiz.id)
+  const { data: solved } = useQuizCompleted(publicKey?.toBase58())
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [answerIndex, setAnswerIndex] = useState<number | null>(null)
   const [isCorrectAnswer, setIsCorrectAnswer] = useState<boolean | null>(null)
@@ -109,11 +110,12 @@ const Quiz = ({ quiz }: { quiz: QuizType }) => {
       },
     )
     await rawResponse.json()
-    queryClient.invalidateQueries([
-      'quiz-completed',
-      mangoAccountAddress,
-      quiz.id,
-    ])
+    queryClient.invalidateQueries(['quiz-completed', publicKey?.toBase58()])
+    notify({
+      type: 'success',
+      title: 'Well done!',
+      description: 'Well done! 50 Rewards Points are on the way',
+    })
     router.push('/learn', undefined, { shallow: true })
   }
 
@@ -183,7 +185,7 @@ const Quiz = ({ quiz }: { quiz: QuizType }) => {
                 <p className="text-th-fgd-2">
                   {!connected
                     ? 'Connect wallet to earn rewards points'
-                    : solved
+                    : solved?.find((x) => x.quiz_id === quiz.id)
                     ? 'Rewards Points Claimed'
                     : mangoAccountAddress
                     ? `Score ${quiz.questions.length}/${quiz.questions.length} to earn rewards points`
@@ -363,7 +365,8 @@ const Quiz = ({ quiz }: { quiz: QuizType }) => {
                 )}
               </div>
               <div className="flex justify-center space-x-3">
-                {solved || !canClaimPoints ? (
+                {solved?.find((x) => x.quiz_id === quiz.id) ||
+                !canClaimPoints ? (
                   <Button
                     onClick={() =>
                       router.push('/learn', undefined, { shallow: true })
