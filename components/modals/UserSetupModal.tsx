@@ -276,7 +276,7 @@ const UserSetupModal = ({
           src="/logos/logo-mark.svg"
           alt="next"
         />
-        <div className="absolute left-0 top-0 z-10 flex h-1.5 w-full flex-grow bg-th-bkg-3">
+        <div className="absolute left-0 top-0 z-10 flex h-1.5 w-full grow bg-th-bkg-3">
           <div
             style={{
               width: `${(showSetupStep / 3) * 100}%`,
