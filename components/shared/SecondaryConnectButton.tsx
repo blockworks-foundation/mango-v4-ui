@@ -17,7 +17,7 @@ const SecondaryConnectButton = ({
   isLarge?: boolean
 }) => {
   const { t } = useTranslation('common')
-  const { wallets, select } = useWallet()
+  const { connect, wallet, wallets, select } = useWallet()
   const [lastWalletName] = useLocalStorageState<WalletName | null>(
     LAST_WALLET_NAME,
     '',
@@ -30,6 +30,8 @@ const SecondaryConnectButton = ({
       set((s) => {
         s.showUserSetup = true
       })
+    } else if (wallet) {
+      connect()
     } else if (lastWalletName) {
       select(lastWalletName)
     } else {
@@ -47,7 +49,7 @@ const SecondaryConnectButton = ({
         })
       }
     }
-  }, [isOnboarded, lastWalletName, select, wallets])
+  }, [connect, isOnboarded, lastWalletName, select, wallet, wallets])
 
   return (
     <Button
