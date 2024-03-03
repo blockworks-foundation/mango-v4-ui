@@ -5,7 +5,7 @@ import { useMemo } from 'react'
 import { CheckCircleIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
-import { useQuizCompleted } from 'hooks/useQuiz'
+import { useCompletedQuizzes } from 'hooks/useQuiz'
 import Quiz from '@components/quiz/Quiz'
 import { useWallet } from '@solana/wallet-adapter-react'
 
@@ -74,7 +74,7 @@ const Learn: NextPage = () => {
 
 const QuizCard = ({ quiz }: { quiz: QuizType }) => {
   const { publicKey } = useWallet()
-  const { data: solved } = useQuizCompleted(publicKey?.toBase58())
+  const { data: solved } = useCompletedQuizzes(publicKey?.toBase58())
   const router = useRouter()
   const goToQuiz = (quiz: string) => {
     const query = { ...router.query, ['quiz']: quiz }

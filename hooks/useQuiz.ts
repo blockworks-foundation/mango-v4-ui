@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 import { getCompletedQuizzes } from 'apis/quiz'
 
-export const useQuizCompleted = (wallet?: string) => {
+export const useCompletedQuizzes = (wallet?: string) => {
   return useQuery(
-    ['quiz-completed', wallet],
+    ['completed-quizzes', wallet],
     () => getCompletedQuizzes(wallet!),
     {
       cacheTime: 1000 * 60 * 10,
