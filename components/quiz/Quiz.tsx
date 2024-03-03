@@ -30,9 +30,9 @@ const DEFAULT_RESULT = {
 const Quiz = ({ quiz }: { quiz: QuizType }) => {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const { publicKey, signMessage } = useWallet()
-  const { mangoAccount } = useMangoAccount()
-  const { data: solved } = useQuizCompleted(mangoAccount?.publicKey, quiz.id)
+  const { connected, publicKey, signMessage } = useWallet()
+  const { mangoAccountAddress } = useMangoAccount()
+  const { data: solved } = useQuizCompleted(mangoAccountAddress, quiz.id)
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [answerIndex, setAnswerIndex] = useState<number | null>(null)
   const [isCorrectAnswer, setIsCorrectAnswer] = useState<boolean | null>(null)
@@ -90,8 +90,7 @@ const Quiz = ({ quiz }: { quiz: QuizType }) => {
   }
 
   const completeQuiz = async () => {
-    const mangoAccountPk = mangoAccount?.publicKey.toBase58()
-    const message = new TextEncoder().encode(mangoAccountPk)
+    const message = new TextEncoder().encode(mangoAccountAddress)
     const signature = await signMessage!(message)
     const rawResponse = await fetch(
       'https://api.mngo.cloud/data/v4/user-data/complete-quiz',
@@ -104,15 +103,21 @@ const Quiz = ({ quiz }: { quiz: QuizType }) => {
         body: JSON.stringify({
           wallet_pk: publicKey?.toBase58(),
           quiz_id: quiz.id,
-          mango_account: mangoAccountPk,
+          mango_account: mangoAccountAddress,
           signature: bs58.encode(signature),
         }),
       },
     )
     await rawResponse.json()
-    queryClient.invalidateQueries(['quiz-completed', mangoAccountPk, quiz.id])
+    queryClient.invalidateQueries([
+      'quiz-completed',
+      mangoAccountAddress,
+      quiz.id,
+    ])
     router.push('/learn', undefined, { shallow: true })
   }
+
+  const canClaimPoints = connected && mangoAccountAddress
 
   return (
     <>
@@ -176,7 +181,13 @@ const Quiz = ({ quiz }: { quiz: QuizType }) => {
               </Button>
               <div className="mx-auto mt-6 w-max rounded-full border border-th-fgd-4 px-3 py-1">
                 <p className="text-th-fgd-2">
-                  {`Score ${quiz.questions.length}/${quiz.questions.length} to earn rewards points`}
+                  {!connected
+                    ? 'Connect wallet to earn rewards points'
+                    : solved
+                    ? 'Rewards Points Claimed'
+                    : mangoAccountAddress
+                    ? `Score ${quiz.questions.length}/${quiz.questions.length} to earn rewards points`
+                    : 'Create a Mango Account to earn rewards points'}
                 </p>
               </div>
             </>
@@ -352,7 +363,7 @@ const Quiz = ({ quiz }: { quiz: QuizType }) => {
                 )}
               </div>
               <div className="flex justify-center space-x-3">
-                {solved ? (
+                {solved || !canClaimPoints ? (
                   <Button
                     onClick={() =>
                       router.push('/learn', undefined, { shallow: true })

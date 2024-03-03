@@ -1,10 +1,9 @@
-import { PublicKey } from '@metaplex-foundation/js'
 import { useQuery } from '@tanstack/react-query'
 import { getQuizCompleted } from 'apis/quiz'
 
-export const useQuizCompleted = (mangoAccount?: PublicKey, quizId?: number) => {
+export const useQuizCompleted = (mangoAccount?: string, quizId?: number) => {
   return useQuery(
-    ['quiz-completed', mangoAccount?.toBase58(), quizId],
+    ['quiz-completed', mangoAccount, quizId],
     () => getQuizCompleted(mangoAccount!, quizId!),
     {
       cacheTime: 1000 * 60 * 10,

@@ -73,8 +73,8 @@ const Learn: NextPage = () => {
 }
 
 const QuizCard = ({ quiz }: { quiz: QuizType }) => {
-  const { mangoAccount } = useMangoAccount()
-  const { data: solved } = useQuizCompleted(mangoAccount?.publicKey, quiz.id)
+  const { mangoAccountAddress } = useMangoAccount()
+  const { data: solved } = useQuizCompleted(mangoAccountAddress, quiz.id)
   const router = useRouter()
   const goToQuiz = (quiz: string) => {
     const query = { ...router.query, ['quiz']: quiz }
