@@ -556,6 +556,15 @@ const SwapReviewRouteInfo = ({
     )
   }, [inputBank, outputBank, outputTokenInfo, selectedRoute])
 
+  const flashLoanFee = useMemo(() => {
+    if (!inputBank || !outputBank) return 0
+    const rate = Math.max(
+      inputBank.flashLoanSwapFeeRate,
+      outputBank.flashLoanSwapFeeRate,
+    )
+    return amountIn.mul(rate).toNumber()
+  }, [amountIn, inputBank, outputBank])
+
   const coinGeckoPriceDifference = useMemo(() => {
     return amountOut?.toNumber()
       ? amountIn
@@ -773,6 +782,21 @@ const SwapReviewRouteInfo = ({
                 {selectedRoute?.priceImpactPct * 100 < 0.1
                   ? '<0.1%'
                   : `${(selectedRoute?.priceImpactPct * 100).toFixed(2)}%`}
+              </p>
+            </div>
+            <div className="flex justify-between">
+              <Tooltip content={t('swap:tooltip-flash-loan-fee')}>
+                <p className="tooltip-underline">{t('swap:flash-loan-fee')}</p>
+              </Tooltip>
+              <p className="text-right font-mono text-sm text-th-fgd-2">
+                ≈
+                <FormatNumericValue
+                  value={flashLoanFee}
+                  decimals={inputBank?.mintDecimals}
+                />{' '}
+                <span className="font-body text-th-fgd-3">
+                  {inputBank?.name}
+                </span>
               </p>
             </div>
             <div className="flex justify-between">
