@@ -784,21 +784,23 @@ const SwapReviewRouteInfo = ({
                   : `${(selectedRoute?.priceImpactPct * 100).toFixed(2)}%`}
               </p>
             </div>
-            <div className="flex justify-between">
-              <Tooltip content={t('swap:tooltip-flash-loan-fee')}>
-                <p className="tooltip-underline">{t('swap:flash-loan-fee')}</p>
-              </Tooltip>
-              <p className="text-right font-mono text-sm text-th-fgd-2">
-                ≈
-                <FormatNumericValue
-                  value={flashLoanFee}
-                  decimals={inputBank?.mintDecimals}
-                />{' '}
-                <span className="font-body text-th-fgd-3">
-                  {inputBank?.name}
-                </span>
-              </p>
-            </div>
+            {!isWalletSwap ? (
+              <div className="flex justify-between">
+                {/* <Tooltip content={t('swap:tooltip-flash-loan-fee')}> */}
+                <p>{t('swap:flash-loan-fee')}</p>
+                {/* </Tooltip> */}
+                <p className="text-right font-mono text-sm text-th-fgd-2">
+                  ≈
+                  <FormatNumericValue
+                    value={flashLoanFee}
+                    decimals={inputBank?.mintDecimals}
+                  />{' '}
+                  <span className="font-body text-th-fgd-3">
+                    {inputBank?.name}
+                  </span>
+                </p>
+              </div>
+            ) : null}
             <div className="flex justify-between">
               <Tooltip
                 content={
