@@ -330,6 +330,10 @@ export const formatSuggestedValues = (
     depositLimit: suggestedParams.depositLimit,
     flashLoanSwapFeeRate: suggestedParams.flashLoanSwapFeeRate,
     reduceOnly: suggestedParams.reduceOnly,
+    zeroUtilRate: (100 * suggestedParams.zeroUtilRate).toFixed(),
+    platformLiquidationFee: (
+      suggestedParams.platformLiquidationFee * 100
+    ).toFixed(2),
   }
 }
 
@@ -440,6 +444,10 @@ export const getFormattedBankValues = (group: Group, bank: Bank) => {
     reduceOnly: bank.reduceOnly,
     groupInsuranceFund: !!group?.mintInfosMapByMint.get(bank.mint.toString())
       ?.groupInsuranceFund,
+    zeroUtilRate: (100 * bank.zeroUtilRate.toNumber()).toFixed(),
+    platformLiquidationFee: (
+      bank.platformLiquidationFee.toNumber() * 100
+    ).toFixed(2),
   }
 }
 

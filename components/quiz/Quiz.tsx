@@ -16,7 +16,6 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCompletedQuizzes } from 'hooks/useQuiz'
-import { notify } from 'utils/notifications'
 
 type RESULT = {
   correctAnswers: number
@@ -111,11 +110,6 @@ const Quiz = ({ quiz }: { quiz: QuizType }) => {
     )
     await rawResponse.json()
     queryClient.invalidateQueries(['completed-quizzes', publicKey?.toBase58()])
-    notify({
-      type: 'success',
-      title: 'Well done!',
-      description: 'Well done! 50 Rewards Points are on the way',
-    })
     router.push('/learn', undefined, { shallow: true })
   }
 

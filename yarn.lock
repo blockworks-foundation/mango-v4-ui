@@ -350,10 +350,18 @@
     bn.js "^5.2.1"
     eslint-config-prettier "^9.0.0"
 
-"@blockworks-foundation/mango-v4@0.21.32":
-  version "0.21.32"
-  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.21.32.tgz#1704ae0a6e69f79ced3d9f1781c3e46764d8449c"
-  integrity sha512-cj8/CHnBJVuUIXGb3AVgzJ1CeNi++zh9bnm6b4i2O9gOkPj0EgnfDsv4i8gvJzNbACKeRCRFvrCytOcQHAE+/Q==
+"@blockworks-foundation/mango-v4-settings@0.14.16":
+  version "0.14.16"
+  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4-settings/-/mango-v4-settings-0.14.16.tgz#8b73f9dd637444a55ef75f1d988be61bd3be8bee"
+  integrity sha512-+zT60xnivn0Zc3pFgPQTw44Zk0YNRQ3PnBo64IEHUADkN5RhdIJ6P9pDfdc5nucarCvrOBhMY06u8zaD4QC+Ag==
+  dependencies:
+    bn.js "^5.2.1"
+    eslint-config-prettier "^9.0.0"
+
+"@blockworks-foundation/mango-v4@0.22.4":
+  version "0.22.4"
+  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.22.4.tgz#fe9ff7fd0ab42a0b922d471f561a05954f7a857f"
+  integrity sha512-lutP7Tpr6pbXo12+MIGQLei+TMe4Y3SBJhwUjeh3lgGcXgdW2hG2GQzDy8uiBBEk8vKwdLLgffOZEWbxCtOliw==
   dependencies:
     "@blockworks-foundation/mango-v4-settings" "0.14.15"
     "@blockworks-foundation/mangolana" "0.0.14"
@@ -2558,7 +2566,7 @@
   dependencies:
     "@solana/wallet-adapter-base" "^0.9.23"
 
-"@solana/wallet-adapter-solflare@0.6.27":
+"@solana/wallet-adapter-solflare@0.6.27", "@solana/wallet-adapter-solflare@^0.6.28":
   version "0.6.27"
   resolved "https://registry.yarnpkg.com/@solana/wallet-adapter-solflare/-/wallet-adapter-solflare-0.6.27.tgz#49ba2dfecca4bee048e65d302216d1b732d7e39e"
   integrity sha512-MBBx9B1pI8ChCT70sgxrmeib1S7G9tRQzfMHqJPdGQ2jGtukY0Puzma2OBsIAsH5Aw9rUUUFZUK+8pzaE+mgAg==
@@ -2569,7 +2577,7 @@
     "@solflare-wallet/sdk" "^1.3.0"
     "@wallet-standard/wallet" "^1.0.1"
 
-"@solana/wallet-adapter-solflare@0.6.28", "@solana/wallet-adapter-solflare@^0.6.28":
+"@solana/wallet-adapter-solflare@0.6.28":
   version "0.6.28"
   resolved "https://registry.yarnpkg.com/@solana/wallet-adapter-solflare/-/wallet-adapter-solflare-0.6.28.tgz#3de42a43220cca361050ebd1755078012a5b0fe2"
   integrity sha512-iiUQtuXp8p4OdruDawsm1dRRnzUCcsu+lKo8OezESskHtbmZw2Ifej0P99AbJbBAcBw7q4GPI6987Vh05Si5rw==

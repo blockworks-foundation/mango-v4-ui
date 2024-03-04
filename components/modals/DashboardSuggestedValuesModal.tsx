@@ -206,9 +206,12 @@ const DashboardSuggestedValues = ({
           getNullOrVal(fieldsToChange.depositLimit) !== null
             ? new BN(fieldsToChange.depositLimit!.toString())
             : null,
+          getNullOrVal(fieldsToChange.zeroUtilRate),
+          getNullOrVal(fieldsToChange.platformLiquidationFee),
         )
         .accounts({
           group: group!.publicKey,
+          fallbackOracle: bank.fallbackOracle,
           oracle: bank.oracle,
           admin: MANGO_DAO_WALLET,
           mintInfo: mintInfo.publicKey,
@@ -620,6 +623,22 @@ const DashboardSuggestedValues = ({
             proposedValue={
               suggestedFields.reduceOnly !== undefined &&
               `${suggestedFields.reduceOnly}`
+            }
+          />
+          <KeyValuePair
+            label="Zero Util Rate"
+            value={`${formattedBankValues.zeroUtilRate} bps`}
+            proposedValue={
+              suggestedFields.zeroUtilRate &&
+              `${suggestedFields.zeroUtilRate} bps`
+            }
+          />
+          <KeyValuePair
+            label="Liquidation Fee"
+            value={`${formattedBankValues.platformLiquidationFee} bps`}
+            proposedValue={
+              suggestedFields.platformLiquidationFee &&
+              `${suggestedFields.platformLiquidationFee} bps`
             }
           />
           <div>

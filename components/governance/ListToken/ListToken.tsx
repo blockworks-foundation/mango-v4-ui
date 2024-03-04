@@ -571,8 +571,11 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           Number(proposedPreset.interestTargetUtilization),
           proposedPreset.groupInsuranceFund,
           new BN(proposedPreset.depositLimit.toString()),
+          Number(proposedPreset.zeroUtilRate),
+          Number(proposedPreset.platformLiquidationFee),
         )
         .accounts({
+          fallbackOracle: PublicKey.default,
           admin: MANGO_DAO_WALLET,
           group: group!.publicKey,
           mint: mint,
