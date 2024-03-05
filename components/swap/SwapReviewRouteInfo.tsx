@@ -503,6 +503,12 @@ const SwapReviewRouteInfo = ({
               type: 'error',
             })
           }
+        } else {
+          notify({
+            title: 'Transaction failed',
+            description: `${e}`,
+            type: 'error',
+          })
         }
       } finally {
         setSubmitting(false)
