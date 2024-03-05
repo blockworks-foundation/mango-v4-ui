@@ -506,7 +506,7 @@ const SwapReviewRouteInfo = ({
         } else {
           notify({
             title: 'Transaction failed',
-            description: `${e}`,
+            description: `${e} - please retry`,
             type: 'error',
           })
         }
