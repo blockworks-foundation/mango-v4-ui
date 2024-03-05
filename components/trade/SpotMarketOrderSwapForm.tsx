@@ -332,7 +332,7 @@ export default function SpotMarketOrderSwapForm() {
       } else {
         notify({
           title: 'Transaction failed',
-          description: `${e} - please retry`,
+          description: `${e} - please try again`,
           type: 'error',
         })
       }
