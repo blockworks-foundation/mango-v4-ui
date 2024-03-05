@@ -409,6 +409,7 @@ const SwapReviewRouteInfo = ({
 
   const onSwap = useCallback(async () => {
     if (!selectedRoute) return
+    let directRouteFallbackUsed = false
     try {
       const client = mangoStore.getState().client
       const group = mangoStore.getState().group
@@ -503,6 +504,33 @@ const SwapReviewRouteInfo = ({
               type: 'error',
             })
           }
+        } else {
+          const stringError = `${e}`
+          if (
+            stringError.toLowerCase().includes('max accounts') &&
+            routes?.length &&
+            routes.length > 1
+          ) {
+            directRouteFallbackUsed = true
+            setSelectedRoute(
+              routes.filter(
+                (x) =>
+                  JSON.stringify(x.routePlan) !==
+                  JSON.stringify(selectedRoute.routePlan),
+              )[0],
+            )
+            notify({
+              title: 'Transaction failed',
+              description: `${stringError} - please review route and click swap again`,
+              type: 'error',
+            })
+          } else {
+            notify({
+              title: 'Transaction failed',
+              description: `${stringError} - please try again`,
+              type: 'error',
+            })
+          }
         }
       } finally {
         setSubmitting(false)
@@ -510,18 +538,20 @@ const SwapReviewRouteInfo = ({
     } catch (e) {
       console.error('Swap error:', e)
     } finally {
-      onClose()
+      if (!directRouteFallbackUsed) {
+        onClose()
+      }
     }
   }, [
-    amountIn,
-    inputBank,
-    outputBank,
-    onClose,
-    onSuccess,
     selectedRoute,
-    slippage,
-    soundSettings,
     wallet.publicKey,
+    slippage,
+    amountIn,
+    soundSettings,
+    onSuccess,
+    t,
+    routes,
+    onClose,
   ])
 
   const onClick = isWalletSwap ? onWalletSwap : onSwap

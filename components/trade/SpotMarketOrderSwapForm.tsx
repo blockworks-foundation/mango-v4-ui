@@ -23,6 +23,8 @@ import {
   HealthType,
   PerpMarket,
   Serum3Market,
+  TransactionErrors,
+  parseTxForKnownErrors,
 } from '@blockworks-foundation/mango-v4'
 import Decimal from 'decimal.js'
 import { notify } from 'utils/notifications'
@@ -305,10 +307,32 @@ export default function SpotMarketOrderSwapForm() {
       console.error('onSwap error: ', e)
       sentry.captureException(e)
       if (isMangoError(e)) {
+        const slippageExceeded = await parseTxForKnownErrors(
+          connection,
+          e?.txid,
+        )
+        if (
+          slippageExceeded ===
+          TransactionErrors.JupiterSlippageToleranceExceeded
+        ) {
+          notify({
+            title: t('swap:error-slippage-exceeded'),
+            description: t('swap:error-slippage-exceeded-desc'),
+            txid: e?.txid,
+            type: 'error',
+          })
+        } else {
+          notify({
+            title: 'Transaction failed',
+            description: e.message,
+            txid: e?.txid,
+            type: 'error',
+          })
+        }
+      } else {
         notify({
           title: 'Transaction failed',
-          description: e.message,
-          txid: e?.txid,
+          description: `${e} - please try again`,
           type: 'error',
         })
       }
