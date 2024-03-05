@@ -409,7 +409,7 @@ const SwapReviewRouteInfo = ({
 
   const onSwap = useCallback(async () => {
     if (!selectedRoute) return
-    let directRouteFallback = false
+    let directRouteFallbackUsed = false
     try {
       const client = mangoStore.getState().client
       const group = mangoStore.getState().group
@@ -511,7 +511,7 @@ const SwapReviewRouteInfo = ({
             routes?.length &&
             routes.length > 1
           ) {
-            directRouteFallback = true
+            directRouteFallbackUsed = true
             setSelectedRoute(
               routes.filter(
                 (x) =>
@@ -538,7 +538,7 @@ const SwapReviewRouteInfo = ({
     } catch (e) {
       console.error('Swap error:', e)
     } finally {
-      if (!directRouteFallback) {
+      if (!directRouteFallbackUsed) {
         onClose()
       }
     }
