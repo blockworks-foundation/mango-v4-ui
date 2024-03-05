@@ -92,6 +92,24 @@ const MarketSwapForm = ({
       ),
   })
 
+  const { bestRoute: bestDirectRoute } = useQuoteRoutes({
+    inputMint: inputBank?.mint.toString(),
+    outputMint: outputBank?.mint.toString(),
+    amount: quoteAmount,
+    slippage,
+    swapMode,
+    wallet: publicKey?.toBase58(),
+    mangoAccount,
+    mode: 'JUPITER_DIRECT',
+    enabled: () =>
+      !!(
+        inputBank?.mint &&
+        outputBank?.mint &&
+        quoteAmount &&
+        !isDraggingSlider
+      ),
+  })
+
   const amountInAsDecimal: Decimal | null = useMemo(() => {
     return Number(amountInFormValue)
       ? new Decimal(amountInFormValue)
@@ -293,7 +311,13 @@ const MarketSwapForm = ({
         onClose={() => setShowConfirm(false)}
         onSuccess={onSuccess}
         refetchRoute={refetchRoute}
-        routes={bestRoute ? [bestRoute] : undefined}
+        routes={
+          bestRoute
+            ? ([bestRoute, bestDirectRoute].filter(
+                (x) => x && !x.error,
+              ) as JupiterV6RouteInfo[])
+            : undefined
+        }
         selectedRoute={selectedRoute}
         setSelectedRoute={setSelectedRoute}
         show={showConfirm}

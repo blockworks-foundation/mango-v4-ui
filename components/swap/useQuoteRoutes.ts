@@ -9,7 +9,7 @@ import { useMemo } from 'react'
 import { JUPITER_V6_QUOTE_API_MAINNET } from 'utils/constants'
 import { MangoAccount } from '@blockworks-foundation/mango-v4'
 
-type SwapModes = 'ALL' | 'JUPITER' | 'MANGO'
+type SwapModes = 'ALL' | 'JUPITER' | 'MANGO' | 'JUPITER_DIRECT'
 
 type useQuoteRoutesPropTypes = {
   inputMint: string | undefined
@@ -168,14 +168,18 @@ export const handleGetRoutes = async (
     //   routes.push(mangoRoute)
     // }
 
-    if (mode === 'ALL' || mode === 'JUPITER') {
+    if (mode === 'ALL' || mode === 'JUPITER' || mode === 'JUPITER_DIRECT') {
       const jupiterRoute = await fetchJupiterRoute(
         inputMint,
         outputMint,
         amount,
         slippage,
         swapMode,
-        jupiterOnlyDirectRoutes,
+        jupiterOnlyDirectRoutes
+          ? jupiterOnlyDirectRoutes
+          : mode === 'JUPITER_DIRECT'
+          ? true
+          : false,
         maxAccounts,
       )
       routes.push(jupiterRoute)
@@ -230,7 +234,16 @@ const useQuoteRoutes = ({
   }, [amount, decimals])
 
   const res = useQuery<{ bestRoute: JupiterV6RouteInfo | null }, Error>(
-    ['swap-routes', inputMint, outputMint, amount, slippage, swapMode, wallet],
+    [
+      'swap-routes',
+      inputMint,
+      outputMint,
+      amount,
+      slippage,
+      swapMode,
+      wallet,
+      mode,
+    ],
     async () =>
       handleGetRoutes(
         inputMint,
