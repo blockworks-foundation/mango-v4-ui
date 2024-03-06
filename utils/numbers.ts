@@ -1,10 +1,11 @@
 import Decimal from 'decimal.js'
 
 export const formatNumericValue = (
-  value: number | string | Decimal,
+  value: number | string | Decimal | undefined,
   decimals?: number,
   roundUp?: boolean,
 ): string => {
+  if (!value) return '–'
   const numberValue = Number(value)
   let formattedValue
   if (decimals !== undefined) {
