@@ -141,10 +141,10 @@ const MarketSelectDropdown = () => {
 
   const filteredSerumMarkets = serumMarketsToShow.filter((x) => {
     const baseBank = group?.getFirstBankByTokenIndex(x.baseTokenIndex)
-    if (
-      baseBank?.reduceOnly === TOKEN_REDUCE_ONLY_OPTIONS.ENABLED &&
-      mangoAccount
-    ) {
+    if (baseBank?.reduceOnly === TOKEN_REDUCE_ONLY_OPTIONS.ENABLED) {
+      if (!mangoAccount) {
+        return false
+      }
       const borrowedAmount = mangoAccount
         ? new Decimal(mangoAccount.getTokenBorrowsUi(baseBank))
             .toDecimalPlaces(baseBank.mintDecimals, Decimal.ROUND_UP)
