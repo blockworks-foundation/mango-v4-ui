@@ -20,6 +20,7 @@ import TokenReduceOnlyDesc from '@components/shared/TokenReduceOnlyDesc'
 import PopularSwapTokens from './PopularSwapTokens'
 import { useViewport } from 'hooks/useViewport'
 import { isBankVisibleForUser } from 'utils/bank'
+import { TOKEN_REDUCE_ONLY_OPTIONS } from 'utils/constants'
 
 export type SwapFormTokenListType =
   | 'input'
@@ -323,15 +324,24 @@ const SwapFormTokenList = ({
   const filteredSortedTokens = sortedTokens.filter((x) => {
     const tokenPk = new PublicKey(x.address)
     const tokenBank = group?.getFirstBankByMint(tokenPk)
-    return (
-      group &&
-      tokenBank &&
-      isBankVisibleForUser(
-        tokenBank,
-        x.amount?.isZero() ? 0 : 1,
-        x.amountWithBorrow?.isZero() ? 0 : 1,
+    if (tokenBank?.reduceOnly === TOKEN_REDUCE_ONLY_OPTIONS.ENABLED) {
+      const borrowedAmount = mangoAccount
+        ? new Decimal(mangoAccount.getTokenBorrowsUi(tokenBank))
+            .toDecimalPlaces(tokenBank.mintDecimals, Decimal.ROUND_UP)
+            .toNumber()
+        : 0
+      return (
+        group &&
+        tokenBank &&
+        isBankVisibleForUser(
+          tokenBank,
+          borrowedAmount,
+          x.amount?.isZero() ? 0 : 1,
+        )
       )
-    )
+    } else {
+      return true
+    }
   })
 
   useEffect(() => {
