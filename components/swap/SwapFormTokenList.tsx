@@ -19,6 +19,8 @@ import { walletBalanceForToken } from '@components/DepositForm'
 import TokenReduceOnlyDesc from '@components/shared/TokenReduceOnlyDesc'
 import PopularSwapTokens from './PopularSwapTokens'
 import { useViewport } from 'hooks/useViewport'
+import { isBankVisibleForUser } from 'utils/bank'
+import { TOKEN_REDUCE_ONLY_OPTIONS } from 'utils/constants'
 
 export type SwapFormTokenListType =
   | 'input'
@@ -316,7 +318,31 @@ const SwapFormTokenList = ({
     setSearch(e.target.value)
   }
 
-  const sortedTokens = search ? startSearch(tokenInfos, search) : tokenInfos
+  const sortedTokens: TokenInfoWithAmounts[] = search
+    ? startSearch(tokenInfos, search)
+    : (tokenInfos as [])
+  const filteredSortedTokens = sortedTokens.filter((x) => {
+    const tokenPk = new PublicKey(x.address)
+    const tokenBank = group?.getFirstBankByMint(tokenPk)
+    if (tokenBank?.reduceOnly === TOKEN_REDUCE_ONLY_OPTIONS.ENABLED) {
+      const borrowedAmount = mangoAccount
+        ? new Decimal(mangoAccount.getTokenBorrowsUi(tokenBank))
+            .toDecimalPlaces(tokenBank.mintDecimals, Decimal.ROUND_UP)
+            .toNumber()
+        : 0
+      return (
+        group &&
+        tokenBank &&
+        isBankVisibleForUser(
+          tokenBank,
+          borrowedAmount,
+          x.amount?.isZero() ? 0 : 1,
+        )
+      )
+    } else {
+      return true
+    }
+  })
 
   useEffect(() => {
     if (focusRef?.current && isDesktop) {
@@ -382,8 +408,8 @@ const SwapFormTokenList = ({
             : 'h-[calc(100%-128px)]'
         } overflow-auto py-2`}
       >
-        {sortedTokens?.length ? (
-          sortedTokens.map((token) => (
+        {filteredSortedTokens?.length ? (
+          filteredSortedTokens.map((token) => (
             <TokenItem
               key={token.address}
               token={token}

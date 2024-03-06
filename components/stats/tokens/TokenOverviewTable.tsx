@@ -37,7 +37,7 @@ const TokenOverviewTable = () => {
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const router = useRouter()
-  const banks = useBanksWithBalances()
+  const banks = useBanksWithBalances(undefined, true)
 
   const formattedTableData = useCallback(() => {
     const formatted = []
