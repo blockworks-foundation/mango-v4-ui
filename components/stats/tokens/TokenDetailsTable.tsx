@@ -31,7 +31,7 @@ const TokenDetailsTable = () => {
   const { group } = useMangoGroup()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
-  const banks = useBanksWithBalances()
+  const banks = useBanksWithBalances(undefined, true)
   const router = useRouter()
 
   const formattedTableData = useCallback(() => {

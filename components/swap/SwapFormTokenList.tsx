@@ -19,6 +19,7 @@ import { walletBalanceForToken } from '@components/DepositForm'
 import TokenReduceOnlyDesc from '@components/shared/TokenReduceOnlyDesc'
 import PopularSwapTokens from './PopularSwapTokens'
 import { useViewport } from 'hooks/useViewport'
+import { isBankVisibleForUser } from 'utils/bank'
 
 export type SwapFormTokenListType =
   | 'input'
@@ -316,7 +317,22 @@ const SwapFormTokenList = ({
     setSearch(e.target.value)
   }
 
-  const sortedTokens = search ? startSearch(tokenInfos, search) : tokenInfos
+  const sortedTokens: TokenInfoWithAmounts[] = search
+    ? startSearch(tokenInfos, search)
+    : (tokenInfos as [])
+  const filteredSortedTokens = sortedTokens.filter((x) => {
+    const tokenPk = new PublicKey(x.address)
+    const tokenBank = group?.getFirstBankByMint(tokenPk)
+    return (
+      group &&
+      tokenBank &&
+      isBankVisibleForUser(
+        tokenBank,
+        x.amount?.isZero() ? 0 : 1,
+        x.amountWithBorrow?.isZero() ? 0 : 1,
+      )
+    )
+  })
 
   useEffect(() => {
     if (focusRef?.current && isDesktop) {
@@ -382,8 +398,8 @@ const SwapFormTokenList = ({
             : 'h-[calc(100%-128px)]'
         } overflow-auto py-2`}
       >
-        {sortedTokens?.length ? (
-          sortedTokens.map((token) => (
+        {filteredSortedTokens?.length ? (
+          filteredSortedTokens.map((token) => (
             <TokenItem
               key={token.address}
               token={token}

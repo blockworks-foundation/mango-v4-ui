@@ -37,6 +37,10 @@ import { useSortableData } from 'hooks/useSortableData'
 import { SortableColumnHeader } from '@components/shared/TableElements'
 import { useViewport } from 'hooks/useViewport'
 import { useRouter } from 'next/router'
+import { TOKEN_REDUCE_ONLY_OPTIONS } from 'utils/constants'
+import { isBankVisibleForUser } from 'utils/bank'
+import Decimal from 'decimal.js'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 type Currencies = {
   [key: string]: string
@@ -70,6 +74,7 @@ const MarketSelectDropdown = () => {
   const { isDesktop } = useViewport()
   const focusRef = useRef<HTMLInputElement>(null)
   const { query } = useRouter()
+  const { mangoAccount } = useMangoAccount()
 
   // switch to spot tab on spot markets
   useEffect(() => {
@@ -133,6 +138,26 @@ const MarketSelectDropdown = () => {
     requestSort: requestSerumSort,
     sortConfig: serumSortConfig,
   } = useSortableData(unsortedSerumMarketsToShow)
+
+  const filteredSerumMarkets = serumMarketsToShow.filter((x) => {
+    const baseBank = group?.getFirstBankByTokenIndex(x.baseTokenIndex)
+    if (
+      baseBank?.reduceOnly === TOKEN_REDUCE_ONLY_OPTIONS.ENABLED &&
+      mangoAccount
+    ) {
+      const borrowedAmount = mangoAccount
+        ? new Decimal(mangoAccount.getTokenBorrowsUi(baseBank))
+            .toDecimalPlaces(baseBank.mintDecimals, Decimal.ROUND_UP)
+            .toNumber()
+        : 0
+      const balance = mangoAccount
+        ? mangoAccount.getTokenBalanceUi(baseBank)
+        : 0
+      return isBankVisibleForUser(baseBank, borrowedAmount, balance)
+    } else {
+      return true
+    }
+  })
 
   useEffect(() => {
     if (focusRef?.current && spotOrPerp === 'spot' && isDesktop && isOpen) {
@@ -379,8 +404,8 @@ const MarketSelectDropdown = () => {
                       />
                     </p>
                   </div>
-                  {serumMarketsToShow.length ? (
-                    serumMarketsToShow.map((m) => {
+                  {filteredSerumMarkets.length ? (
+                    filteredSerumMarkets.map((m) => {
                       const baseBank = group?.getFirstBankByTokenIndex(
                         m.baseTokenIndex,
                       )
