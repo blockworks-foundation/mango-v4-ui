@@ -78,21 +78,21 @@ export const getFee = (activity: any, mangoAccountAddress: string) => {
     fee = { value: formatFee(settleFee), symbol }
   }
   if (activity_type === 'liquidate_token_with_token') {
-    const { side, liab_amount, liab_price, asset_amount, asset_price } =
+    const { side, liab_transfer, liab_price, asset_transfer, asset_price } =
       activity.activity_details
     if (side === 'liqee') {
       fee = {
         value: formatCurrencyValue(
-          Math.abs(liab_amount * liab_price) -
-            Math.abs(asset_amount * asset_price),
+          Math.abs(liab_transfer * liab_price) -
+            Math.abs(asset_transfer * asset_price),
         ),
         symbol: '',
       }
     } else {
       fee = {
         value: formatCurrencyValue(
-          Math.abs(asset_amount * asset_price) -
-            Math.abs(liab_amount * liab_price),
+          Math.abs(asset_transfer * asset_price) -
+            Math.abs(liab_transfer * liab_price),
         ),
         symbol: '',
       }
@@ -127,20 +127,20 @@ export const getCreditAndDebit = (
   let credit = { value: '0', symbol: '' }
   let debit = { value: '0', symbol: '' }
   if (activity_type === 'liquidate_token_with_token') {
-    const { side, liab_amount, liab_symbol, asset_amount, asset_symbol } =
+    const { side, liab_transfer, liab_symbol, asset_transfer, asset_symbol } =
       activity.activity_details
     if (side === 'liqee') {
-      credit = { value: formatNumericValue(liab_amount), symbol: liab_symbol }
+      credit = { value: formatNumericValue(liab_transfer), symbol: liab_symbol }
       debit = {
-        value: formatNumericValue(asset_amount),
+        value: formatNumericValue(asset_transfer),
         symbol: asset_symbol,
       }
     } else {
       credit = {
-        value: formatNumericValue(asset_amount),
+        value: formatNumericValue(asset_transfer),
         symbol: asset_symbol,
       }
-      debit = { value: formatNumericValue(liab_amount), symbol: liab_symbol }
+      debit = { value: formatNumericValue(liab_transfer), symbol: liab_symbol }
     }
   }
   if (activity_type === 'liquidate_perp_base_position_or_positive_pnl') {
@@ -237,8 +237,8 @@ export const getValue = (activity: any, mangoAccountAddress: string) => {
   const { activity_type } = activity
   let value = 0
   if (activity_type === 'liquidate_token_with_token') {
-    const { asset_amount, asset_price } = activity.activity_details
-    value = Math.abs(asset_amount * asset_price)
+    const { asset_transfer, asset_price } = activity.activity_details
+    value = Math.abs(asset_transfer * asset_price)
   }
   if (activity_type === 'liquidate_perp_base_position_or_positive_pnl') {
     const { base_transfer, price, quote_transfer, side } =
