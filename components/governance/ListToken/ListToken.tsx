@@ -573,6 +573,8 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           new BN(proposedPreset.depositLimit.toString()),
           Number(proposedPreset.zeroUtilRate),
           Number(proposedPreset.platformLiquidationFee),
+          false,
+          Number(proposedPreset.collateralFeePerDay),
         )
         .accounts({
           fallbackOracle: PublicKey.default,

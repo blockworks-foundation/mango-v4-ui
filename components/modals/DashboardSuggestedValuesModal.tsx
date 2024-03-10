@@ -208,6 +208,9 @@ const DashboardSuggestedValues = ({
             : null,
           getNullOrVal(fieldsToChange.zeroUtilRate),
           getNullOrVal(fieldsToChange.platformLiquidationFee),
+          null,
+          getNullOrVal(fieldsToChange.collateralFeePerDay),
+          null,
         )
         .accounts({
           group: group!.publicKey,
