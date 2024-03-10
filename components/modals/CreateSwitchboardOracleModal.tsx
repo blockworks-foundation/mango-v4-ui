@@ -26,6 +26,7 @@ import {
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 import { sendTxAndConfirm } from 'utils/governance/tools'
 import { WRAPPED_SOL_MINT } from '@metaplex-foundation/js'
+import { createComputeBudgetIx } from '@blockworks-foundation/mango-v4'
 
 const poolAddressError = 'no-pool-address-found'
 const wrongTierPassedForCreation = 'Wrong tier passed for creation of oracle'
@@ -71,6 +72,7 @@ const CreateSwitchboardOracleModal = ({
   const wallet = useWallet()
   const quoteTokenName = 'USD'
   const pythUsdOracle = 'Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD'
+  const switchboardUsdDaoOracle = 'FwYfsmj5x8YZXtQBNo2Cz8TE7WRCMFqA6UTffK4xQKMH'
   const tierToSwapValue: { [key in LISTING_PRESETS_KEY]?: string } = {
     asset_100: '10000',
     asset_20: '2000',
@@ -187,7 +189,7 @@ const CreateSwitchboardOracleModal = ({
                   {
                     oracleTask: {
                       pythAddress: pythSolOracle,
-                      pythAllowedConfidenceInterval: 0.1,
+                      pythAllowedConfidenceInterval: 10,
                     },
                   },
                 ],
@@ -224,7 +226,7 @@ const CreateSwitchboardOracleModal = ({
                   {
                     oracleTask: {
                       pythAddress: pythSolOracle,
-                      pythAllowedConfidenceInterval: 0.1,
+                      pythAllowedConfidenceInterval: 10,
                     },
                   },
                 ],
@@ -292,17 +294,39 @@ const CreateSwitchboardOracleModal = ({
                       },
                     },
                     {
-                      multiplyTask: {
-                        job: {
-                          tasks: [
-                            {
-                              oracleTask: {
-                                pythAddress: pythUsdOracle,
-                                pythAllowedConfidenceInterval: 0.1,
+                      conditionalTask: {
+                        attempt: [
+                          {
+                            multiplyTask: {
+                              job: {
+                                tasks: [
+                                  {
+                                    oracleTask: {
+                                      pythAddress: pythUsdOracle,
+                                      pythAllowedConfidenceInterval: 10,
+                                    },
+                                  },
+                                ],
                               },
                             },
-                          ],
-                        },
+                          },
+                        ],
+                        onFailure: [
+                          {
+                            multiplyTask: {
+                              job: {
+                                tasks: [
+                                  {
+                                    oracleTask: {
+                                      switchboardAddress:
+                                        switchboardUsdDaoOracle,
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          },
+                        ],
                       },
                     },
                   ],
@@ -354,17 +378,39 @@ const CreateSwitchboardOracleModal = ({
                       },
                     },
                     {
-                      multiplyTask: {
-                        job: {
-                          tasks: [
-                            {
-                              oracleTask: {
-                                pythAddress: pythUsdOracle,
-                                pythAllowedConfidenceInterval: 0.1,
+                      conditionalTask: {
+                        attempt: [
+                          {
+                            multiplyTask: {
+                              job: {
+                                tasks: [
+                                  {
+                                    oracleTask: {
+                                      pythAddress: pythUsdOracle,
+                                      pythAllowedConfidenceInterval: 10,
+                                    },
+                                  },
+                                ],
                               },
                             },
-                          ],
-                        },
+                          },
+                        ],
+                        onFailure: [
+                          {
+                            multiplyTask: {
+                              job: {
+                                tasks: [
+                                  {
+                                    oracleTask: {
+                                      switchboardAddress:
+                                        switchboardUsdDaoOracle,
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          },
+                        ],
                       },
                     },
                   ],
@@ -380,15 +426,28 @@ const CreateSwitchboardOracleModal = ({
       })
 
       const latestBlockhash = await connection.getLatestBlockhash('processed')
-      const txChunks = chunk([...txArray1, lockTx, transferAuthIx], 1)
-
+      const instructions = chunk(
+        [...[...txArray1, lockTx, transferAuthIx].flatMap((x) => x.ixns)],
+        1,
+      )
+      const signers = [
+        ...[...txArray1, lockTx, transferAuthIx].flatMap((x) => x.signers),
+      ]
       const transactions: Transaction[] = []
 
-      for (const chunkIndex in txChunks) {
-        const chunk = txChunks[chunkIndex]
+      for (const chunkIndex in instructions) {
+        const chunk = instructions[chunkIndex]
         const tx = new Transaction()
-        const singers = [...chunk.flatMap((x) => x.signers)]
-        tx.add(...chunk.flatMap((x) => x.ixns))
+        const singers = signers.filter((x) =>
+          chunk.find((instruction) =>
+            instruction.keys
+              .filter((key) => key.isSigner)
+              .find((key) => key.pubkey.equals(x.publicKey)),
+          ),
+        )
+
+        tx.add(createComputeBudgetIx(80000))
+        tx.add(...chunk.flatMap((x) => x))
         tx.lastValidBlockHeight = latestBlockhash.lastValidBlockHeight
         tx.recentBlockhash = latestBlockhash.blockhash
         tx.feePayer = payer
