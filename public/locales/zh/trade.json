@@ -129,6 +129,7 @@
     "tooltip-est-liq-price": "预计清算价格是单独计算的，不考虑其他市场/币种的价格变化。",
     "tooltip-insured": "如果发生破产，{{tokenOrMarket}}损失是否可以从保险基金中归还",
     "tooltip-ioc": "IOC交易若不吃单就会被取消。任何无法立刻成交的部分将被取消",
+    "tooltip-lifetime-funding": "Total funding earned or paid in this market for your account. This value does not reset when you close and re-enter a position.",
     "tooltip-post": "Post交易若不挂单就会被取消。",
     "tooltip-size-base-quote": "以{{token}}显示数量",
     "tooltip-private-counterparty": "交易对手已启用私人帐户",

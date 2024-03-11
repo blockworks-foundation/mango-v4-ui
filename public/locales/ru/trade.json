@@ -129,6 +129,7 @@
     "tooltip-est-liq-price": "Estimated liquidation price is calculated in isolation and does not factor price changes in other markets/tokens.",
     "tooltip-ioc": "Immediate-Or-Cancel (IOC) orders are guaranteed to be the taker and must be executed immediately. Any portion of the order that can't be filled immediately will be cancelled",
     "tooltip-insured": "Whether or not {{tokenOrMarket}} losses can be recovered from the insurance fund in the event of bankruptcies.",
+    "tooltip-lifetime-funding": "Total funding earned or paid in this market for your account. This value does not reset when you close and re-enter a position.",
     "tooltip-post": "Post orders are guaranteed to be the maker or they will be canceled",
     "tooltip-size-base-quote": "Show size in {{token}}",
     "tooltip-private-counterparty": "Counterparty has Private Account enabled",
