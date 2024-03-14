@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { fetchTokenStatsData, processTokenStatsData } from 'apis/mngo'
 import useMangoGroup from './useMangoGroup'
-import { PublicKey } from '@metaplex-foundation/js'
+import { PublicKey } from '@solana/web3.js'
 
 const refetchMs = 24 * 60 * 60 * 1000
 

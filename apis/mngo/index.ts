@@ -1,5 +1,5 @@
 import { Group } from '@blockworks-foundation/mango-v4'
-import { PublicKey } from '@metaplex-foundation/js'
+import { PublicKey } from '@solana/web3.js'
 import { MangoTokenStatsItem, TokenStatsItem } from 'types'
 import { MANGO_DATA_API_URL } from 'utils/constants'
 
