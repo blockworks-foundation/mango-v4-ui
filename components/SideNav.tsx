@@ -464,7 +464,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 />
               }
               panelTitle={mangoAccount?.name ? mangoAccount.name : t('account')}
-              showTooltip={false}
               title={
                 <div className="w-24 text-left">
                   <p className="mb-0.5 whitespace-nowrap text-xs">
@@ -586,7 +585,6 @@ export const ExpandableMenuItem = ({
   hideIconBg,
   icon,
   panelTitle,
-  showTooltip = true,
   title,
 }: {
   active?: boolean
@@ -596,14 +594,10 @@ export const ExpandableMenuItem = ({
   hideIconBg?: boolean
   icon: ReactNode
   panelTitle?: string
-  showTooltip?: boolean
   title: string | ReactNode
 }) => {
   const { theme } = useTheme()
-  const { width } = useViewport()
-  const hideTooltip = width >= breakpoints.lg
   const themeData = mangoStore((s) => s.themeData)
-  // const [isOpen, setIsOpen] = useState(false)
 
   const [isOverButton, setIsOverButton] = useState(false)
   const [isOverList, setIsOverList] = useState(false)
@@ -640,58 +634,52 @@ export const ExpandableMenuItem = ({
 
   return collapsed ? (
     <Popover className={`relative z-30 ${alignBottom ? '' : 'py-2 pl-4'}`}>
-      <Tooltip
-        content={title}
-        placement="right"
-        show={showTooltip && !hideTooltip}
+      <Popover.Button
+        className={`${
+          active
+            ? 'text-th-active'
+            : theme === 'Light'
+            ? 'text-th-fgd-3'
+            : 'text-th-fgd-2'
+        } ${
+          alignBottom
+            ? 'focus-visible:bg-th-bkg-3'
+            : 'w-[48px] focus-visible:text-th-active'
+        } md:hover:text-th-active`}
+        ref={button}
+        onTouchStart={() => {
+          setIsTouchInput(true)
+        }}
+        onMouseEnter={() => {
+          setIsOverButton(true)
+        }}
+        onMouseLeave={() => {
+          setIsOverButton(false)
+        }}
+        onClick={() => {
+          setHasClicked(true)
+          setIsOpen(!isOpen)
+        }}
+        onKeyDown={() => {
+          setIsOpen(!isOpen)
+        }}
       >
-        <Popover.Button
-          className={`${
-            active
-              ? 'text-th-active'
-              : theme === 'Light'
-              ? 'text-th-fgd-3'
-              : 'text-th-fgd-2'
+        <div
+          className={` ${
+            hideIconBg
+              ? ''
+              : `flex h-8 w-8 items-center justify-center rounded-full ${
+                  theme === 'Light' ? 'bg-th-bkg-2' : 'bg-th-bkg-3'
+                }`
           } ${
             alignBottom
-              ? 'focus-visible:bg-th-bkg-3'
-              : 'w-[48px] focus-visible:text-th-active'
-          } md:hover:text-th-active`}
-          ref={button}
-          onTouchStart={() => {
-            setIsTouchInput(true)
-          }}
-          onMouseEnter={() => {
-            setIsOverButton(true)
-          }}
-          onMouseLeave={() => {
-            setIsOverButton(false)
-          }}
-          onClick={() => {
-            setHasClicked(true)
-            setIsOpen(!isOpen)
-          }}
-          onKeyDown={() => {
-            setIsOpen(!isOpen)
-          }}
+              ? 'flex h-[64px] w-[64px] items-center justify-center hover:bg-th-bkg-2'
+              : ''
+          }`}
         >
-          <div
-            className={` ${
-              hideIconBg
-                ? ''
-                : `flex h-8 w-8 items-center justify-center rounded-full ${
-                    theme === 'Light' ? 'bg-th-bkg-2' : 'bg-th-bkg-3'
-                  }`
-            } ${
-              alignBottom
-                ? 'flex h-[64px] w-[64px] items-center justify-center hover:bg-th-bkg-2'
-                : ''
-            }`}
-          >
-            {icon}
-          </div>
-        </Popover.Button>
-      </Tooltip>
+          {icon}
+        </div>
+      </Popover.Button>
       <Transition
         show={isOpen}
         as={Fragment}
@@ -723,11 +711,7 @@ export const ExpandableMenuItem = ({
                 <h3 className="text-sm font-bold">{panelTitle}</h3>
               ) : null}
             </div>
-            <div
-            // onClick={() => close()}
-            >
-              {children}
-            </div>
+            <div>{children}</div>
           </div>
         </Popover.Panel>
       </Transition>
