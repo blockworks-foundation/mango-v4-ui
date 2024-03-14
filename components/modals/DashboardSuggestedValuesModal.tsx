@@ -208,7 +208,9 @@ const DashboardSuggestedValues = ({
             : null,
           getNullOrVal(fieldsToChange.zeroUtilRate),
           getNullOrVal(fieldsToChange.platformLiquidationFee),
-          null,
+          fieldsToChange.disableAssetLiquidation === undefined
+            ? null
+            : fieldsToChange.disableAssetLiquidation,
           getNullOrVal(fieldsToChange.collateralFeePerDay),
           null,
         )
