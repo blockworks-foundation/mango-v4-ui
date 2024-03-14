@@ -711,7 +711,7 @@ export const ExpandableMenuItem = ({
                 <h3 className="text-sm font-bold">{panelTitle}</h3>
               ) : null}
             </div>
-            <div>{children}</div>
+            <div onClick={() => setIsOpen(false)}>{children}</div>
           </div>
         </Popover.Panel>
       </Transition>
