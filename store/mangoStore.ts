@@ -835,11 +835,15 @@ const mangoStore = create<MangoStore>()(
 
             if (mangoAccount.openbookV2Active()?.length) {
               await mangoAccount.reloadOpenbookV2OpenOrders(client)
+              console.log(
+                'mangoAccount.openbookV2OosMapByMarketIndex.values()',
+                mangoAccount.openbookV2OosMapByMarketIndex.values(),
+              )
               Array.from(
                 mangoAccount.openbookV2OosMapByMarketIndex.values(),
               ).forEach((order) => {
                 const marketPk = order.market.toString()
-                openOrders[marketPk] = order
+                openOrders[marketPk] = [order]
               })
             }
 

@@ -321,7 +321,7 @@ const Orderbook = () => {
                 decodedBook,
                 selectedMarket,
                 market,
-              )
+              ).sort((a, b) => b[0] - a[0])
               console.log('decodingL2:', decodedBookL2)
 
               set((state) => {
@@ -352,7 +352,7 @@ const Orderbook = () => {
                     decodedBook,
                     selectedMarket,
                     market,
-                  )
+                  ).sort((a, b) => b[0] - a[0])
                   state.selectedMarket.lastSeenSlot.bids = context.slot
                 })
               } catch (e) {
@@ -379,7 +379,7 @@ const Orderbook = () => {
                   decodedBook,
                   selectedMarket,
                   market,
-                )
+                ).sort((a, b) => a[0] - b[0])
                 state.selectedMarket.lastSeenSlot.asks = context.slot
               })
             } catch (e) {
@@ -405,7 +405,7 @@ const Orderbook = () => {
                     decodedBook,
                     selectedMarket,
                     market,
-                  )
+                  ).sort((a, b) => a[0] - b[0])
                   state.selectedMarket.lastSeenSlot.asks = context.slot
                 })
               } catch (e) {

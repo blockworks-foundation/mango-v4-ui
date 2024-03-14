@@ -1,4 +1,8 @@
-import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
+import {
+  OpenbookV2Market,
+  PerpMarket,
+  Serum3Market,
+} from '@blockworks-foundation/mango-v4'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -9,7 +13,7 @@ const TableMarketName = ({
   market,
   side,
 }: {
-  market: PerpMarket | Serum3Market
+  market: PerpMarket | Serum3Market | OpenbookV2Market
   side?: string
 }) => {
   const { selectedMarket } = useSelectedMarket()
@@ -30,7 +34,7 @@ const NameAndSide = ({
   market,
   side,
 }: {
-  market: PerpMarket | Serum3Market
+  market: PerpMarket | Serum3Market | OpenbookV2Market
   side?: string
 }) => {
   const { t } = useTranslation('common')

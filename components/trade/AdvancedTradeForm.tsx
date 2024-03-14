@@ -9,8 +9,6 @@ import {
   Serum3Side,
   OpenbookV2Market,
   OpenbookV2Side,
-  OpenbookV2OrderType,
-  OpenbookV2SelfTradeBehavior,
 } from '@blockworks-foundation/mango-v4'
 import Checkbox from '@components/forms/Checkbox'
 import Tooltip from '@components/shared/Tooltip'
@@ -708,10 +706,26 @@ const AdvancedTradeForm = () => {
         })
       } else if (selectedMarket instanceof OpenbookV2Market) {
         const spotOrderType = tradeForm.ioc
-          ? OpenbookV2OrderType.immediateOrCancel
+          ? Serum3OrderType.immediateOrCancel
           : tradeForm.postOnly && tradeForm.tradeType !== 'Market'
-          ? OpenbookV2OrderType.postOnly
-          : OpenbookV2OrderType.limit
+          ? Serum3OrderType.postOnly
+          : Serum3OrderType.limit
+        console.log(
+          'mangoAccount.openbookV2.length',
+          mangoAccount.openbookV2.length,
+        )
+        if (mangoAccount.openbookV2.length === 0) {
+          await client.accountExpandV3(
+            group,
+            mangoAccount,
+            mangoAccount.tokens.length,
+            mangoAccount.serum3.length,
+            mangoAccount.perps.length,
+            mangoAccount.perpOpenOrders.length,
+            mangoAccount.tokenConditionalSwaps.length,
+            1,
+          )
+        }
         const { signature: tx } = await client.openbookV2PlaceOrder(
           group,
           mangoAccount,
@@ -719,7 +733,7 @@ const AdvancedTradeForm = () => {
           tradeForm.side === 'buy' ? OpenbookV2Side.bid : OpenbookV2Side.ask,
           price,
           baseSize,
-          OpenbookV2SelfTradeBehavior.decrementTake,
+          Serum3SelfTradeBehavior.decrementTake,
           spotOrderType,
           Date.now(),
           10,

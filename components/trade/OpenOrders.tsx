@@ -1,4 +1,8 @@
-import { Bank, U64_MAX_BN } from '@blockworks-foundation/mango-v4'
+import {
+  Bank,
+  OpenbookV2Market,
+  U64_MAX_BN,
+} from '@blockworks-foundation/mango-v4'
 import {
   PerpMarket,
   PerpOrder,
@@ -52,14 +56,17 @@ import PerpSideBadge from './PerpSideBadge'
 import TableMarketName from './TableMarketName'
 import { useSortableData } from 'hooks/useSortableData'
 import { BN } from '@project-serum/anchor'
+import { ExtendedMarketAccount, isOpenbookV2OpenOrder } from 'types/openbook'
+import { OpenOrdersAccount } from '@openbook-dex/openbook-v2'
+import BigNumber from 'bignumber.js'
 
 type TableData = {
   expiryTimestamp: number | undefined
   filledQuantity: number
-  market: Serum3Market | PerpMarket
+  market: Serum3Market | PerpMarket | OpenbookV2Market
   marketName: string
   minOrderSize: number
-  order: Order | PerpOrder
+  order: Order | PerpOrder | OpenOrdersAccount
   orderId: BN
   price: number
   side: string
@@ -111,47 +118,45 @@ const OpenOrders = ({
   const { filledOrders, fetchingFilledOrders } = useFilledOrders()
 
   const handleCancelOpenbookV2Order = useCallback(
-    async (o: Order) => {
-      const client = mangoStore.getState().client
-      const group = mangoStore.getState().group
-      const mangoAccount = mangoStore.getState().mangoAccount.current
-      const actions = mangoStore.getState().actions
-      if (!group || !mangoAccount) return
-      const marketPk = findSerum3MarketPkInOpenOrders(o)
-      if (!marketPk) return
-      const market = group.getOpenbookV2MarketByExternalMarket(
-        new PublicKey(marketPk),
-      )
-
-      setCancelId(o.orderId.toString())
-      try {
-        const { signature: tx } = await client.openbookV2CancelOrder(
-          group,
-          mangoAccount,
-          market!.openbookMarketExternal,
-          o.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
-          o.orderId,
-        )
-
-        actions.fetchOpenOrders()
-        notify({
-          type: 'success',
-          title: 'Transaction successful',
-          txid: tx,
-        })
-      } catch (e) {
-        console.error('Error canceling', e)
-        if (isMangoError(e)) {
-          notify({
-            title: t('trade:cancel-order-error'),
-            description: e.message,
-            txid: e.txid,
-            type: 'error',
-          })
-        }
-      } finally {
-        setCancelId('')
-      }
+    async (_o: OpenOrdersAccount) => {
+      // const client = mangoStore.getState().client
+      // const group = mangoStore.getState().group
+      // const mangoAccount = mangoStore.getState().mangoAccount.current
+      // const actions = mangoStore.getState().actions
+      // if (!group || !mangoAccount) return
+      // const marketPk = findSerum3MarketPkInOpenOrders(o)
+      // if (!marketPk) return
+      // const market = group.getOpenbookV2MarketByExternalMarket(
+      //   new PublicKey(marketPk),
+      // )
+      // setCancelId(o.orderId.toString())
+      // try {
+      //   const { signature: tx } = await client.openbookV2CancelOrder(
+      //     group,
+      //     mangoAccount,
+      //     market!.openbookMarketExternal,
+      //     o.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
+      //     o.orderId,
+      //   )
+      //   actions.fetchOpenOrders()
+      //   notify({
+      //     type: 'success',
+      //     title: 'Transaction successful',
+      //     txid: tx,
+      //   })
+      // } catch (e) {
+      //   console.error('Error canceling', e)
+      //   if (isMangoError(e)) {
+      //     notify({
+      //       title: t('trade:cancel-order-error'),
+      //       description: e.message,
+      //       txid: e.txid,
+      //       type: 'error',
+      //     })
+      //   }
+      // } finally {
+      //   setCancelId('')
+      // }
     },
     [t],
   )
@@ -203,11 +208,12 @@ const OpenOrders = ({
   )
 
   const modifyOrder = useCallback(
-    async (o: PerpOrder | Order) => {
+    async (o: PerpOrder | Order | OpenOrdersAccount) => {
       const client = mangoStore.getState().client
       const group = mangoStore.getState().group
       const mangoAccount = mangoStore.getState().mangoAccount.current
       const actions = mangoStore.getState().actions
+      if (isOpenbookV2OpenOrder(o)) return
       const baseSize = modifiedOrderSize ? Number(modifiedOrderSize) : o.size
       const price = modifiedOrderPrice ? Number(modifiedOrderPrice) : o.price
       if (!group || !mangoAccount) return
@@ -310,7 +316,11 @@ const OpenOrders = ({
     [t],
   )
 
-  const showEditOrderForm = (order: Order | PerpOrder, tickSize: number) => {
+  const showEditOrderForm = (
+    order: Order | PerpOrder | OpenOrdersAccount,
+    tickSize: number,
+  ) => {
+    if (isOpenbookV2OpenOrder(order)) return
     setModifyOrderId(order.orderId.toString())
     setModifiedOrderSize(order.size.toString())
     setModifiedOrderPrice(order.price.toFixed(getDecimalCount(tickSize)))
@@ -339,14 +349,23 @@ const OpenOrders = ({
         } else return orders
       })
       .map(([marketPk, orders]) => {
+        console.log('orders', orders)
         for (const order of orders) {
-          let market: PerpMarket | Serum3Market
+          let market: PerpMarket | Serum3Market | OpenbookV2Market
           let tickSize: number
           let minOrderSize: number
           let expiryTimestamp: number | undefined
           let value: number
           let filledQuantity = 0
+          let side = 'bid'
+          let size
+          let price
+          let orderId: BN
           if (order instanceof PerpOrder) {
+            size = order.size
+            price = order.price
+            orderId = order.orderId
+            side = 'bid' in order.side ? 'long' : 'short'
             market = group.getPerpMarketByMarketIndex(order.perpMarketIndex)
             tickSize = market.tickSize
             minOrderSize = market.minOrderSize
@@ -368,7 +387,36 @@ const OpenOrders = ({
               )
               filledQuantity = filledOrder ? filledOrder.quantity : 0
             }
+          } else if (isOpenbookV2OpenOrder(order)) {
+            side = 'buy'
+            size = order.position
+            price = 1
+            orderId = new BN(1)
+            market = group.openbookV2MarketsMapByExternal.get(marketPk)!
+            const openbookMarket = group.getOpenbookV2ExternalMarket(
+              market.openbookMarketExternal,
+            ) as ExtendedMarketAccount
+            const quoteBank = group.getFirstBankByTokenIndex(
+              market.quoteTokenIndex,
+            )
+
+            tickSize = new BigNumber(10)
+              .pow(openbookMarket.baseDecimals - openbookMarket.quoteDecimals)
+              .times(new BigNumber(openbookMarket.quoteLotSize.toString()))
+              .div(new BigNumber(openbookMarket.baseLotSize.toString()))
+              .toNumber()
+
+            minOrderSize = 0.01
+            value = size * price * quoteBank.uiPrice
+            const filledOrder = filledOrders?.fills?.find(
+              (f) => orderId.toString() === f.order_id,
+            )
+            filledQuantity = filledOrder ? filledOrder.quantity : 0
           } else {
+            side = order.side
+            size = order.size
+            price = order.price
+            orderId = order.orderId
             market = group.getSerum3MarketByExternalMarket(
               new PublicKey(marketPk),
             )
@@ -380,23 +428,13 @@ const OpenOrders = ({
             )
             tickSize = serumMarket.tickSize
             minOrderSize = serumMarket.minOrderSize
-            value = order.size * order.price * quoteBank.uiPrice
+            value = size * price * quoteBank.uiPrice
             const filledOrder = filledOrders?.fills?.find(
-              (f) => order.orderId.toString() === f.order_id,
+              (f) => orderId.toString() === f.order_id,
             )
             filledQuantity = filledOrder ? filledOrder.quantity : 0
           }
-          const side =
-            order instanceof PerpOrder
-              ? 'bid' in order.side
-                ? 'long'
-                : 'short'
-              : order.side
-          const price = order.price
-          const size = order.size
-          const orderId = order.orderId
           const marketName = market.name
-
           const data = {
             expiryTimestamp,
             filledQuantity,
@@ -765,7 +803,9 @@ const OpenOrders = ({
                           onClick={() =>
                             order instanceof PerpOrder
                               ? handleCancelPerpOrder(order)
-                              : handleCancelSerumOrder(order)
+                              : 'orderId' in order
+                              ? handleCancelSerumOrder(order)
+                              : handleCancelOpenbookV2Order(order)
                           }
                           size="small"
                         >

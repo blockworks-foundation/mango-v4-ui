@@ -1,4 +1,8 @@
-import { Serum3Market, PerpMarket } from '@blockworks-foundation/mango-v4'
+import {
+  Serum3Market,
+  PerpMarket,
+  OpenbookV2Market,
+} from '@blockworks-foundation/mango-v4'
 import useJupiterMints from 'hooks/useJupiterMints'
 import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import Image from 'next/legacy/image'
@@ -11,7 +15,7 @@ const MarketLogos = ({
   market,
   size = 'medium',
 }: {
-  market: Serum3Market | PerpMarket
+  market: Serum3Market | PerpMarket | OpenbookV2Market
   size?: 'xs' | 'small' | 'medium' | 'large'
 }) => {
   const { group } = useMangoGroup()
