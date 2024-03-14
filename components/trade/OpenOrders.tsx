@@ -389,7 +389,7 @@ const OpenOrders = ({
             }
           } else if (isOpenbookV2OpenOrder(order)) {
             side = 'buy'
-            size = order.position
+            size = 0.01
             price = 1
             orderId = new BN(1)
             market = group.openbookV2MarketsMapByExternal.get(marketPk)!
