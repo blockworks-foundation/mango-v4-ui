@@ -11,8 +11,6 @@ export function useTokenStats(mint?: PublicKey) {
     ? [group?.publicKey.toBase58(), mint.toBase58()]
     : [group?.publicKey.toBase58(), 'all']
 
-  console.log(criteria)
-
   return useQuery(
     ['tokenStats', criteria],
     async () => {
