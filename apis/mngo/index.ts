@@ -6,7 +6,7 @@ import { MANGO_DATA_API_URL } from 'utils/constants'
 export const fetchTokenStatsData = async (group: Group, mint?: PublicKey) => {
   let url = `${MANGO_DATA_API_URL}/token-historical-stats?mango-group=${group?.publicKey.toString()}`
   if (mint) {
-    url = `${url}&mint=${mint!.toBase58()}`
+    url = `${url}&mint=${mint.toBase58()}`
   }
   const response = await fetch(url)
   if (!response.ok) {
