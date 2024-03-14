@@ -649,7 +649,7 @@ export const ActionsMenu = ({
     )
     if (markets?.length) return true
     return false
-  }, [spotMarkets])
+  }, [bank, spotMarkets])
 
   const handleShowActionModals = useCallback(
     (token: string, action: 'borrow' | 'deposit' | 'withdraw' | 'repay') => {
