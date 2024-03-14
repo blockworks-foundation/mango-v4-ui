@@ -1,13 +1,13 @@
 import { Bank } from '@blockworks-foundation/mango-v4'
 import TabButtons from '@components/shared/TabButtons'
-import mangoStore from '@store/mangoStore'
 import { useTranslation } from 'next-i18next'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { TokenStatsItem } from 'types'
 import { formatYAxis } from 'utils/formatting'
 import DetailedAreaOrBarChart from '@components/shared/DetailedAreaOrBarChart'
 import TokenRatesChart from './TokenRatesChart'
 import Switch from '@components/forms/Switch'
+import { useTokenStats } from 'hooks/useTokenStats'
 
 const SWITCH_WRAPPER_CLASSES =
   'mt-4 flex justify-end space-x-4 border-t border-th-bkg-3 px-4 py-2 md:px-6'
@@ -71,20 +71,11 @@ const ChartTabs = ({ bank }: { bank: Bank }) => {
   const [borrowDaysToShow, setBorrowDaysToShow] = useState('30')
   const [depositRateDaysToShow, setDepositRateDaysToShow] = useState('30')
   const [borrowRateDaysToShow, setBorrowRateDaysToShow] = useState('30')
-  const tokenStats = mangoStore((s) => s.tokenStats.data)
-  const loadingTokenStats = mangoStore((s) => s.tokenStats.loading)
-  const tokenStatsInitialLoad = mangoStore((s) => s.tokenStats.initialLoad)
-
-  useEffect(() => {
-    if (!tokenStatsInitialLoad) {
-      const actions = mangoStore.getState().actions
-      actions.fetchTokenStats()
-    }
-  }, [tokenStatsInitialLoad])
-
+  const { data: tokenStats, isLoading } = useTokenStats(bank.mint)
+  console.log(tokenStats)
   const formattedStats = useMemo(() => {
-    if (!tokenStats?.length) return []
-    return tokenStats
+    if (!tokenStats?.data?.length) return []
+    return tokenStats.data
       .filter((c) => c.token_index === bank.tokenIndex)
       .sort(
         (a, b) =>
@@ -192,7 +183,7 @@ const ChartTabs = ({ bank }: { bank: Bank }) => {
                     heightClass="h-64"
                     loaderHeightClass="h-[334px]"
                     domain={[0, 'dataMax']}
-                    loading={loadingTokenStats}
+                    loading={isLoading}
                     small
                     tickFormat={(x) => formatYAxis(x)}
                     title={`${t('token:deposits')}`}
@@ -229,7 +220,7 @@ const ChartTabs = ({ bank }: { bank: Bank }) => {
                   data={formattedStats}
                   dataKey="deposit_apr"
                   daysToShow={depositRateDaysToShow}
-                  loading={loadingTokenStats}
+                  loading={isLoading}
                   setDaysToShow={setDepositRateDaysToShow}
                   title={`${t('token:average-deposit-rate')} (APR)`}
                 />
@@ -270,7 +261,7 @@ const ChartTabs = ({ bank }: { bank: Bank }) => {
                     heightClass="h-64"
                     loaderHeightClass="h-[334px]"
                     domain={[0, 'dataMax']}
-                    loading={loadingTokenStats}
+                    loading={isLoading}
                     small
                     tickFormat={(x) => formatYAxis(x)}
                     title={`${t('token:borrows')}`}
@@ -307,7 +298,7 @@ const ChartTabs = ({ bank }: { bank: Bank }) => {
                   data={formattedStats}
                   dataKey="borrow_apr"
                   daysToShow={borrowRateDaysToShow}
-                  loading={loadingTokenStats}
+                  loading={isLoading}
                   setDaysToShow={setBorrowRateDaysToShow}
                   title={`${t('token:average-borrow-rate')} (APR)`}
                 />

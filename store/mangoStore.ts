@@ -59,10 +59,8 @@ import {
   SpotTradeHistory,
   SwapHistoryItem,
   TradeForm,
-  TokenStatsItem,
   NFT,
   TourSettings,
-  MangoTokenStatsItem,
   ThemeData,
   PositionStat,
   OrderbookTooltip,
@@ -81,7 +79,6 @@ import {
   IOrderLineAdapter,
 } from '@public/charting_library/charting_library'
 import { nftThemeMeta } from 'utils/theme'
-import { fetchTokenStatsData, processTokenStatsData } from 'apis/mngo'
 import { OrderTypes } from 'utils/tradeForm'
 import { usePlausible } from 'next-plausible'
 import { collectTxConfirmationData } from 'utils/transactionConfirmationData'
@@ -276,12 +273,6 @@ export type MangoStore = {
   }
   set: (x: (x: MangoStore) => void) => void
   themeData: ThemeData
-  tokenStats: {
-    initialLoad: boolean
-    loading: boolean
-    data: TokenStatsItem[] | null
-    mangoStats: MangoTokenStatsItem[]
-  }
   tradeForm: TradeForm
   tradingView: {
     orderLines: Map<string | BN, IOrderLineAdapter>
@@ -320,7 +311,6 @@ export type MangoStore = {
       offset?: number,
       limit?: number,
     ) => Promise<void>
-    fetchTokenStats: () => void
     fetchTourSettings: (walletPk: string) => void
     fetchWalletTokens: (walletPk: PublicKey) => Promise<void>
     connectMangoClientWithWallet: (wallet: WalletAdapter) => Promise<void>
@@ -472,12 +462,6 @@ const mangoStore = create<MangoStore>()(
         triggerPrice: '',
       },
       themeData: nftThemeMeta.default,
-      tokenStats: {
-        initialLoad: false,
-        loading: true,
-        data: [],
-        mangoStats: [],
-      },
       tradeForm: DEFAULT_TRADE_FORM,
       tradingView: {
         orderLines: new Map(),
@@ -955,36 +939,6 @@ const mangoStore = create<MangoStore>()(
               })
             }
           }, timeout)
-        },
-        fetchTokenStats: async () => {
-          const set = get().set
-          const group = get().group
-          if (!group) return
-
-          set((state) => {
-            state.tokenStats.loading = true
-          })
-
-          try {
-            const rawData = await fetchTokenStatsData(group)
-            const [data, mangoStats] = processTokenStatsData(rawData, group)
-
-            set((state) => {
-              state.tokenStats.data = data
-              state.tokenStats.mangoStats = mangoStats
-              state.tokenStats.initialLoad = true
-              state.tokenStats.loading = false
-            })
-          } catch (error) {
-            set((state) => {
-              state.tokenStats.loading = false
-            })
-            console.log('Failed to fetch token stats data', error)
-            notify({
-              title: 'Failed to fetch token stats data',
-              type: 'error',
-            })
-          }
         },
         fetchWalletTokens: async (walletPk: PublicKey) => {
           const set = get().set
