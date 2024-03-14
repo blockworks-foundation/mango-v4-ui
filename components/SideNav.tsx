@@ -224,13 +224,13 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 <MenuItem
                   active={
                     pathname === '/' &&
-                    !query?.view &&
-                    activeAccountTab === 'overview'
+                    ((!!query?.view && query.view.includes('overview')) ||
+                      (activeAccountTab === 'overview' && !query?.view))
                   }
                   collapsed={false}
                   icon={<Squares2X2Icon className="h-4 w-4" />}
                   title={t('overview')}
-                  pagePath="/"
+                  pagePath="/?view=overview"
                   hideIconBg
                   showTooltip={false}
                 />

@@ -67,6 +67,8 @@ const AccountView = ({ view }: { view: ViewToShow }) => {
       return <AccountStats hideView={handleHideChart} />
     case 'health-contributions':
       return <HealthContributions hideView={handleHideChart} />
+    case 'overview':
+      return <AccountTabs view="overview" />
     case 'balances':
       return <AccountTabs view="balances" />
     case 'positions':
