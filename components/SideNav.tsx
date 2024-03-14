@@ -15,10 +15,23 @@ import {
   ArchiveBoxArrowDownIcon,
   ExclamationTriangleIcon,
   DocumentTextIcon,
+  Squares2X2Icon,
+  HomeIcon,
+  BookOpenIcon,
+  QueueListIcon,
+  LockClosedIcon,
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
-import React, { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
+import React, {
+  Fragment,
+  ReactNode,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { Disclosure, Popover, Transition } from '@headlessui/react'
 import MangoAccountSummary from './account/MangoAccountSummary'
 import Tooltip from './shared/Tooltip'
@@ -48,6 +61,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { connected, publicKey } = useWallet()
   const { theme } = useTheme()
   const group = mangoStore.getState().group
+  const activeAccountTab = mangoStore((s) => s.accountPageTab)
   const themeData = mangoStore((s) => s.themeData)
   const nfts = mangoStore((s) => s.wallet.nfts.data)
   const { mangoAccount } = useMangoAccount()
@@ -194,13 +208,98 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               </div>
             </Link>
             <div className="flex flex-col items-start">
-              <MenuItem
+              {/* <MenuItem
                 active={pathname === '/'}
                 collapsed={collapsed}
                 icon={<CurrencyDollarIcon className="h-5 w-5" />}
                 title={t('account')}
                 pagePath="/"
-              />
+              /> */}
+              <ExpandableMenuItem
+                active={pathname === '/'}
+                collapsed={collapsed}
+                icon={<HomeIcon className="h-5 w-5" />}
+                title={t('account')}
+              >
+                <MenuItem
+                  active={
+                    pathname === '/' &&
+                    !query?.view &&
+                    activeAccountTab === 'overview'
+                  }
+                  collapsed={false}
+                  icon={<Squares2X2Icon className="h-4 w-4" />}
+                  title={t('overview')}
+                  pagePath="/"
+                  hideIconBg
+                  showTooltip={false}
+                />
+                <MenuItem
+                  active={
+                    pathname === '/' &&
+                    ((!!query?.view && query.view.includes('balances')) ||
+                      (activeAccountTab === 'balances' && !query?.view))
+                  }
+                  collapsed={false}
+                  icon={<CurrencyDollarIcon className="h-4 w-4" />}
+                  title={t('balances')}
+                  pagePath="/?view=balances"
+                  hideIconBg
+                  showTooltip={false}
+                />
+                <MenuItem
+                  active={
+                    pathname === '/' &&
+                    ((!!query?.view && query.view.includes('positions')) ||
+                      (activeAccountTab === 'trade:positions' && !query?.view))
+                  }
+                  collapsed={false}
+                  icon={<PerpIcon className="h-4 w-4" />}
+                  title={t('trade:positions')}
+                  pagePath="/?view=positions"
+                  hideIconBg
+                  showTooltip={false}
+                />
+                <MenuItem
+                  active={
+                    pathname === '/' &&
+                    ((!!query?.view && query.view.includes('orders')) ||
+                      (activeAccountTab === 'trade:orders' && !query?.view))
+                  }
+                  collapsed={false}
+                  icon={<QueueListIcon className="h-4 w-4" />}
+                  title={t('trade:orders')}
+                  pagePath="/?view=orders"
+                  hideIconBg
+                  showTooltip={false}
+                />
+                <MenuItem
+                  active={
+                    pathname === '/' &&
+                    ((!!query?.view && query.view.includes('unsettled')) ||
+                      (activeAccountTab === 'trade:unsettled' && !query?.view))
+                  }
+                  collapsed={false}
+                  icon={<LockClosedIcon className="h-4 w-4" />}
+                  title={t('trade:unsettled')}
+                  pagePath="/?view=unsettled"
+                  hideIconBg
+                  showTooltip={false}
+                />
+                <MenuItem
+                  active={
+                    pathname === '/' &&
+                    ((!!query?.view && query.view.includes('history')) ||
+                      (activeAccountTab === 'history' && !query?.view))
+                  }
+                  collapsed={false}
+                  icon={<BookOpenIcon className="h-4 w-4" />}
+                  title={t('history')}
+                  pagePath="/?view=history"
+                  hideIconBg
+                  showTooltip={false}
+                />
+              </ExpandableMenuItem>
               <MenuItem
                 active={pathname === '/swap'}
                 collapsed={collapsed}
@@ -221,7 +320,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                       !query?.name)
                   }
                   collapsed={false}
-                  icon={<PerpIcon className="h-5 w-5" />}
+                  icon={<PerpIcon className="h-4 w-4" />}
                   title={t('perp')}
                   pagePath="/trade?name=SOL-PERP"
                   hideIconBg
@@ -234,7 +333,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                     !query.name.includes('PERP')
                   }
                   collapsed={false}
-                  icon={<CoinIcon className="h-5 w-5" />}
+                  icon={<CoinIcon className="h-4 w-4" />}
                   title={t('spot')}
                   pagePath="/trade?name=SOL/USDC"
                   hideIconBg
@@ -279,7 +378,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 <MenuItem
                   active={pathname === '/search'}
                   collapsed={false}
-                  icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+                  icon={<MagnifyingGlassIcon className="h-4 w-4" />}
                   title={t('search:search-accounts')}
                   pagePath="/search"
                   hideIconBg
@@ -288,7 +387,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 <MenuItem
                   active={pathname === '/governance/list'}
                   collapsed={false}
-                  icon={<PlusCircleIcon className="h-5 w-5" />}
+                  icon={<PlusCircleIcon className="h-4 w-4" />}
                   title={t('common:list-market-token')}
                   pagePath="/governance/list"
                   hideIconBg
@@ -297,7 +396,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 <MenuItem
                   active={pathname === '/governance/vote'}
                   collapsed={false}
-                  icon={<ArchiveBoxArrowDownIcon className="h-5 w-5" />}
+                  icon={<ArchiveBoxArrowDownIcon className="h-4 w-4" />}
                   title={t('common:vote')}
                   pagePath="/governance/vote"
                   hideIconBg
@@ -305,7 +404,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 />
                 <MenuItem
                   collapsed={false}
-                  icon={<DocumentTextIcon className="h-5 w-5" />}
+                  icon={<DocumentTextIcon className="h-4 w-4" />}
                   title={t('documentation')}
                   pagePath="https://docs.mango.markets"
                   hideIconBg
@@ -314,7 +413,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 />
                 <MenuItem
                   collapsed={false}
-                  icon={<BuildingLibraryIcon className="h-5 w-5" />}
+                  icon={<BuildingLibraryIcon className="h-4 w-4" />}
                   title={t('governance')}
                   pagePath="https://dao.mango.markets"
                   hideIconBg
@@ -332,7 +431,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               /> */}
                 <MenuItem
                   collapsed={false}
-                  icon={<NewspaperIcon className="h-5 w-5" />}
+                  icon={<NewspaperIcon className="h-4 w-4" />}
                   title={t('terms-of-use')}
                   pagePath="https://docs.mango.markets/legal"
                   hideIconBg
@@ -341,7 +440,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 />
                 <MenuItem
                   collapsed={false}
-                  icon={<ExclamationTriangleIcon className="h-5 w-5" />}
+                  icon={<ExclamationTriangleIcon className="h-4 w-4" />}
                   title={t('risks')}
                   pagePath="https://docs.mango.markets/mango-markets/risks"
                   hideIconBg
@@ -504,70 +603,134 @@ export const ExpandableMenuItem = ({
   const { width } = useViewport()
   const hideTooltip = width >= breakpoints.lg
   const themeData = mangoStore((s) => s.themeData)
+  // const [isOpen, setIsOpen] = useState(false)
+
+  const [isOverButton, setIsOverButton] = useState(false)
+  const [isOverList, setIsOverList] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
+  const [isTouchInput, setIsTouchInput] = useState(false)
+  const [hasClicked, setHasClicked] = useState(false)
+  const button = useRef<HTMLButtonElement>(null)
+
+  useLayoutEffect(() => {
+    if (
+      isOpen &&
+      !isOverButton &&
+      !isOverList &&
+      !isTouchInput &&
+      button?.current
+    ) {
+      button.current.click()
+      setIsOpen(false)
+    } else if (
+      !isOpen &&
+      (isOverButton || isOverList) &&
+      !isTouchInput &&
+      button?.current
+    ) {
+      button.current.click()
+      setIsOpen(true)
+    }
+  }, [isOverButton, isOverList])
+
+  useLayoutEffect(() => {
+    setIsTouchInput(false)
+    setHasClicked(false)
+  }, [hasClicked])
 
   return collapsed ? (
     <Popover className={`relative z-30 ${alignBottom ? '' : 'py-2 pl-4'}`}>
-      {({ open, close }) => (
-        <>
-          <Tooltip
-            content={title}
-            placement="right"
-            show={showTooltip && !open && !hideTooltip}
-          >
-            <Popover.Button
-              className={`${
-                active
-                  ? 'text-th-active'
-                  : theme === 'Light'
-                  ? 'text-th-fgd-3'
-                  : 'text-th-fgd-2'
-              } ${
-                alignBottom
-                  ? 'focus-visible:bg-th-bkg-3'
-                  : 'focus-visible:text-th-active'
-              } md:hover:text-th-active`}
-              onClick={() => setIsOpen(!isOpen)}
-            >
-              <div
-                className={` ${
-                  hideIconBg
-                    ? ''
-                    : `flex h-8 w-8 items-center justify-center rounded-full ${
-                        theme === 'Light' ? 'bg-th-bkg-2' : 'bg-th-bkg-3'
-                      }`
-                } ${
-                  alignBottom
-                    ? 'flex h-[64px] w-[64px] items-center justify-center hover:bg-th-bkg-2'
-                    : ''
-                }`}
-              >
-                {icon}
-              </div>
-            </Popover.Button>
-          </Tooltip>
-          <Popover.Panel
-            className={`absolute left-[64px] z-20 w-56 rounded-md rounded-l-none bg-th-bkg-1 focus:outline-none ${
+      <Tooltip
+        content={title}
+        placement="right"
+        show={showTooltip && !hideTooltip}
+      >
+        <Popover.Button
+          className={`${
+            active
+              ? 'text-th-active'
+              : theme === 'Light'
+              ? 'text-th-fgd-3'
+              : 'text-th-fgd-2'
+          } ${
+            alignBottom
+              ? 'focus-visible:bg-th-bkg-3'
+              : 'w-[48px] focus-visible:text-th-active'
+          } md:hover:text-th-active`}
+          ref={button}
+          onTouchStart={() => {
+            setIsTouchInput(true)
+          }}
+          onMouseEnter={() => {
+            setIsOverButton(true)
+          }}
+          onMouseLeave={() => {
+            setIsOverButton(false)
+          }}
+          onClick={() => {
+            setHasClicked(true)
+            setIsOpen(!isOpen)
+          }}
+          onKeyDown={() => {
+            setIsOpen(!isOpen)
+          }}
+        >
+          <div
+            className={` ${
+              hideIconBg
+                ? ''
+                : `flex h-8 w-8 items-center justify-center rounded-full ${
+                    theme === 'Light' ? 'bg-th-bkg-2' : 'bg-th-bkg-3'
+                  }`
+            } ${
               alignBottom
-                ? 'bottom-0 rounded-b-none border-b-0 p-0'
-                : 'top-1/2 -translate-y-1/2'
+                ? 'flex h-[64px] w-[64px] items-center justify-center hover:bg-th-bkg-2'
+                : ''
             }`}
           >
-            <div
-              className={`rounded-md rounded-l-none bg-th-bkg-2 ${
-                alignBottom ? 'pb-2 pt-4' : 'py-2'
-              }`}
-            >
-              <div className="flex items-center justify-between pl-4 pr-2">
-                {panelTitle ? (
-                  <h3 className="text-sm font-bold">{panelTitle}</h3>
-                ) : null}
-              </div>
-              <div onClick={() => close()}>{children}</div>
+            {icon}
+          </div>
+        </Popover.Button>
+      </Tooltip>
+      <Transition
+        show={isOpen}
+        as={Fragment}
+        enter="transition ease-out duration-200"
+        enterFrom="opacity-0"
+        enterTo="opacity-100"
+        leave="transition ease-in duration-200"
+        leaveFrom="opacity-100"
+        leaveTo="opacity-0"
+      >
+        <Popover.Panel
+          className={`absolute left-[64px] z-20 w-56 rounded-md rounded-l-none bg-th-bkg-1 focus:outline-none ${
+            alignBottom ? 'bottom-0 rounded-b-none border-b-0 p-0' : 'top-0'
+          }`}
+          onMouseEnter={() => {
+            setIsOverList(true)
+          }}
+          onMouseLeave={() => {
+            setIsOverList(false)
+          }}
+        >
+          <div
+            className={`rounded-md rounded-l-none bg-th-bkg-2 ${
+              alignBottom ? 'pb-2 pt-4' : 'py-2'
+            }`}
+          >
+            <div className="flex items-center justify-between pl-4 pr-2">
+              {panelTitle ? (
+                <h3 className="text-sm font-bold">{panelTitle}</h3>
+              ) : null}
             </div>
-          </Popover.Panel>
-        </>
-      )}
+            <div
+            // onClick={() => close()}
+            >
+              {children}
+            </div>
+          </div>
+        </Popover.Panel>
+      </Transition>
     </Popover>
   ) : (
     <Disclosure>

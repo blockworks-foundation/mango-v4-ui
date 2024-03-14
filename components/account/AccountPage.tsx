@@ -6,6 +6,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import AccountStats from './AccountStats'
 import PerpStatsPage from '@components/stats/perps/PerpStatsPage'
 import TokenPage from '@components/token/TokenPage'
+import mangoStore from '@store/mangoStore'
 
 export type ViewToShow =
   | ''
@@ -16,6 +17,12 @@ export type ViewToShow =
   | 'hourly-funding'
   | 'hourly-volume'
   | 'health-contributions'
+  | 'overview'
+  | 'balances'
+  | 'positions'
+  | 'orders'
+  | 'unsettled'
+  | 'history'
 
 export const handleViewChange = (view: ViewToShow, router: NextRouter) => {
   const query = { ...router.query, ['view']: view }
@@ -25,6 +32,7 @@ export const handleViewChange = (view: ViewToShow, router: NextRouter) => {
 }
 
 const AccountPage = () => {
+  const activeAccountTab = mangoStore((s) => s.accountPageTab)
   const router = useRouter()
   const { market, token, view } = router.query
 
@@ -35,7 +43,7 @@ const AccountPage = () => {
   ) : view ? (
     <AccountView view={view as ViewToShow} />
   ) : (
-    <AccountTabs />
+    <AccountTabs view={activeAccountTab} />
   )
 }
 
@@ -59,6 +67,16 @@ const AccountView = ({ view }: { view: ViewToShow }) => {
       return <AccountStats hideView={handleHideChart} />
     case 'health-contributions':
       return <HealthContributions hideView={handleHideChart} />
+    case 'balances':
+      return <AccountTabs view="balances" />
+    case 'positions':
+      return <AccountTabs view="trade:positions" />
+    case 'orders':
+      return <AccountTabs view="trade:orders" />
+    case 'unsettled':
+      return <AccountTabs view="trade:unsettled" />
+    case 'history':
+      return <AccountTabs view="history" />
     default:
       return null
   }
