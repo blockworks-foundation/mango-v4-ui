@@ -18,6 +18,7 @@ import EmptyState from '@components/nftMarket/EmptyState'
 import { Bank } from '@blockworks-foundation/mango-v4'
 import useBanks from 'hooks/useBanks'
 import SheenLoader from '@components/shared/SheenLoader'
+import { useViewport } from 'hooks/useViewport'
 
 export type BankWithMarketData = {
   bank: Bank
@@ -92,6 +93,7 @@ const Spot = () => {
   const { t } = useTranslation(['common', 'explore', 'trade'])
   const { group } = useMangoGroup()
   const { banks } = useBanks()
+  const { isDesktop } = useViewport()
   const { serumMarketsWithData, isLoading: loadingMarketsData } =
     useListedMarketsWithMarketData()
   const [sortByKey, setSortByKey] = useState<AllowedKeys>('quote_volume_24h')
@@ -122,7 +124,7 @@ const Spot = () => {
     return search
       ? startSearch(banksWithMarketData, search)
       : sortTokens(banksWithMarketData, sortByKey)
-  }, [search, banksWithMarketData, sortByKey, showTableView])
+  }, [search, banksWithMarketData, sortByKey])
 
   const handleUpdateSearch = (e: ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value)
@@ -131,8 +133,8 @@ const Spot = () => {
   return (
     <div className="lg:-mt-10">
       <div className="flex flex-col px-4 md:px-6 lg:flex-row lg:items-center lg:justify-end 2xl:px-12">
-        <div className="flex w-full flex-col lg:w-auto lg:flex-row lg:space-x-3">
-          <div className="relative mb-3 w-full lg:mb-0 lg:w-40">
+        <div className="flex w-full flex-col md:w-auto md:flex-row md:space-x-3">
+          <div className="relative mb-3 w-full md:mb-0 lg:w-40">
             <Input
               heightClass="h-10 pl-8"
               type="text"
@@ -142,14 +144,16 @@ const Spot = () => {
             <MagnifyingGlassIcon className="absolute left-2 top-3 h-4 w-4" />
           </div>
           <div className="flex space-x-3">
-            <div className="w-full lg:w-48">
-              <ButtonGroup
-                activeValue={sortByKey}
-                onChange={(v) => setSortByKey(v)}
-                names={[t('trade:24h-volume'), t('rolling-change')]}
-                values={['quote_volume_24h', 'change_24h']}
-              />
-            </div>
+            {!showTableView || !isDesktop ? (
+              <div className="w-full md:w-48">
+                <ButtonGroup
+                  activeValue={sortByKey}
+                  onChange={(v) => setSortByKey(v)}
+                  names={[t('trade:24h-volume'), t('rolling-change')]}
+                  values={['quote_volume_24h', 'change_24h']}
+                />
+              </div>
+            ) : null}
             <div className="flex">
               <button
                 className={`flex w-10 items-center justify-center rounded-l-md border border-th-bkg-3 focus:outline-none md:hover:bg-th-bkg-3 ${
