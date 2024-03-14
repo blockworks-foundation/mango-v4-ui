@@ -130,6 +130,7 @@
     "tooltip-ioc": "Ordens Immediate-Or-Cancel (IOC) são garantidas para serem taker e devem ser executadas imediatamente. Qualquer parte da ordem que não possa ser preenchida imediatamente será cancelada",
     "tooltip-insured": "Se as perdas de {{tokenOrMarket}} podem ser recuperadas do fundo de seguro em caso de falências.",
     "tooltip-lifetime-funding": "Total funding earned or paid in this market for your account. This value does not reset when you close and re-enter a position.",
+    "tooltip-limit-price-difference": "Percentage difference from the oracle price",
     "tooltip-post": "Ordens post são garantidas para serem maker ou serão canceladas",
     "tooltip-size-base-quote": "Mostrar tamanho em {{token}}",
     "tooltip-private-counterparty": "Contraparte tem Conta Privada ativada",
