@@ -418,8 +418,14 @@ const MenuItem = ({
   showTooltip?: boolean
 }) => {
   const { theme } = useTheme()
+  const { width } = useViewport()
+  const hideTooltip = width >= breakpoints.lg
   return (
-    <Tooltip content={title} placement="right" show={collapsed && showTooltip}>
+    <Tooltip
+      content={title}
+      placement="right"
+      show={collapsed && showTooltip && !hideTooltip}
+    >
       <Link
         href={pagePath}
         onClick={onClick ? onClick : undefined}
@@ -495,6 +501,8 @@ export const ExpandableMenuItem = ({
   title: string | ReactNode
 }) => {
   const { theme } = useTheme()
+  const { width } = useViewport()
+  const hideTooltip = width >= breakpoints.lg
   const themeData = mangoStore((s) => s.themeData)
   const [isOpen, setIsOpen] = useState(false)
 
@@ -505,7 +513,7 @@ export const ExpandableMenuItem = ({
           <Tooltip
             content={title}
             placement="right"
-            show={showTooltip && !open}
+            show={showTooltip && !open && !hideTooltip}
           >
             <Popover.Button
               className={`${
