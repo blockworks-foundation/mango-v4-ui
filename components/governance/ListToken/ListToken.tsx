@@ -573,7 +573,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           new BN(proposedPreset.depositLimit.toString()),
           Number(proposedPreset.zeroUtilRate),
           Number(proposedPreset.platformLiquidationFee),
-          false,
+          proposedPreset.disableAssetLiquidation,
           Number(proposedPreset.collateralFeePerDay),
         )
         .accounts({
