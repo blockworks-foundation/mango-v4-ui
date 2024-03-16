@@ -16,10 +16,10 @@ import {
   ExclamationTriangleIcon,
   DocumentTextIcon,
   Squares2X2Icon,
-  HomeIcon,
   BookOpenIcon,
   QueueListIcon,
   LockClosedIcon,
+  ChartPieIcon,
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
@@ -218,7 +218,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               <ExpandableMenuItem
                 active={pathname === '/'}
                 collapsed={collapsed}
-                icon={<HomeIcon className="h-5 w-5" />}
+                icon={<ChartPieIcon className="h-5 w-5" />}
                 title={t('account')}
               >
                 <MenuItem
