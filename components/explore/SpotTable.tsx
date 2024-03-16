@@ -1,5 +1,5 @@
 import { useTranslation } from 'next-i18next'
-import { useCallback } from 'react'
+import { Fragment, useCallback } from 'react'
 import useMangoGroup from 'hooks/useMangoGroup'
 import {
   SortableColumnHeader,
@@ -34,6 +34,9 @@ import TableTokenName from '@components/shared/TableTokenName'
 import { LinkButton } from '@components/shared/Button'
 import { formatTokenSymbol } from 'utils/tokens'
 import CollateralWeightDisplay from '@components/shared/CollateralWeightDisplay'
+import WatchlistButton from './WatchlistButton'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import { TOKEN_WATCHLIST_KEY } from 'utils/constants'
 
 type TableData = {
   assetWeight: string
@@ -59,6 +62,7 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
   const { theme } = useThemeWrapper()
   const { width } = useViewport()
   const router = useRouter()
+  const [watchlist] = useLocalStorageState(TOKEN_WATCHLIST_KEY, [])
   const showTableView = width ? width > breakpoints.md : false
 
   const formattedTableData = useCallback(
@@ -225,144 +229,189 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
                 <Th />
               </TrHead>
             </thead>
-            <tbody>
-              {tableData.map((data) => {
-                const {
-                  available,
-                  baseBank,
-                  borrowRate,
-                  change,
-                  depositRate,
-                  market,
-                  price,
-                  priceHistory,
-                  tokenName,
-                  volume,
-                  isUp,
-                } = data
+            <tbody className="relative">
+              {tableData
+                .sort((a: TableData, b: TableData) => {
+                  const aInWatchlist = watchlist.includes(a.baseBank.tokenIndex)
+                  const bInWatchlist = watchlist.includes(b.baseBank.tokenIndex)
 
-                if (!baseBank) return null
+                  if (aInWatchlist && !bInWatchlist) {
+                    return -1
+                  } else if (!aInWatchlist && bInWatchlist) {
+                    return 1
+                  } else {
+                    return 0
+                  }
+                })
+                .map((data) => {
+                  const {
+                    available,
+                    baseBank,
+                    borrowRate,
+                    change,
+                    depositRate,
+                    market,
+                    price,
+                    priceHistory,
+                    tokenName,
+                    volume,
+                    isUp,
+                  } = data
 
-                return (
-                  <TrBody
-                    className="default-transition md:hover:cursor-pointer md:hover:bg-th-bkg-2"
-                    key={tokenName}
-                    onClick={() =>
-                      goToTokenPage(tokenName.split(' ')[0], router)
-                    }
-                  >
-                    <Td>
-                      <TableTokenName bank={baseBank} symbol={tokenName} />
-                    </Td>
-                    <Td>
-                      <div className="flex flex-col text-right">
-                        <p>
-                          {price ? (
-                            <>
-                              <FormatNumericValue value={price} isUsd />
-                            </>
-                          ) : (
-                            '–'
-                          )}
-                        </p>
-                      </div>
-                    </Td>
-                    <Td>
-                      <div className="flex flex-col items-end">
-                        {market && price ? (
-                          <Change change={change} suffix="%" />
-                        ) : (
-                          <span>–</span>
-                        )}
-                      </div>
-                    </Td>
-                    <Td>
-                      {priceHistory.length ? (
-                        <div className="h-10 w-24">
-                          <SimpleAreaChart
-                            color={isUp ? COLORS.UP[theme] : COLORS.DOWN[theme]}
-                            data={priceHistory}
-                            name={tokenName}
-                            xKey="time"
-                            yKey="price"
+                  if (!baseBank) return null
+
+                  return (
+                    <Fragment key={tokenName}>
+                      <tr className="absolute flex h-16 items-center">
+                        <td>
+                          <WatchlistButton
+                            className="h-full px-6"
+                            tokenIndex={baseBank.tokenIndex}
                           />
-                        </div>
-                      ) : (
-                        <p className="mb-0 font-body text-th-fgd-4">
-                          {t('unavailable')}
-                        </p>
-                      )}
-                    </Td>
-                    <Td>
-                      <div className="flex flex-col text-right">
-                        <p>
-                          {!market || !market?.marketData ? (
-                            '–'
-                          ) : volume ? (
-                            <span>
-                              {numberCompacter.format(volume)}{' '}
-                              <span className="font-body text-th-fgd-4">
-                                USDC
-                              </span>
-                            </span>
+                        </td>
+                      </tr>
+                      <TrBody
+                        className="default-transition border-t-0 md:hover:cursor-pointer md:hover:bg-th-bkg-2"
+                        onClick={() =>
+                          goToTokenPage(tokenName.split(' ')[0], router)
+                        }
+                      >
+                        <Td>
+                          <div className="pl-8">
+                            <TableTokenName
+                              bank={baseBank}
+                              symbol={tokenName}
+                            />
+                          </div>
+                        </Td>
+                        <Td>
+                          <div className="flex flex-col text-right">
+                            <p>
+                              {price ? (
+                                <>
+                                  <FormatNumericValue value={price} isUsd />
+                                </>
+                              ) : (
+                                '–'
+                              )}
+                            </p>
+                          </div>
+                        </Td>
+                        <Td>
+                          <div className="flex flex-col items-end">
+                            {market && price ? (
+                              <Change change={change} suffix="%" />
+                            ) : (
+                              <span>–</span>
+                            )}
+                          </div>
+                        </Td>
+                        <Td>
+                          {priceHistory.length ? (
+                            <div className="h-10 w-24">
+                              <SimpleAreaChart
+                                color={
+                                  isUp ? COLORS.UP[theme] : COLORS.DOWN[theme]
+                                }
+                                data={priceHistory}
+                                name={tokenName}
+                                xKey="time"
+                                yKey="price"
+                              />
+                            </div>
                           ) : (
-                            <span>
-                              0{' '}
-                              <span className="font-body text-th-fgd-4">
-                                USDC
-                              </span>
-                            </span>
+                            <p className="mb-0 font-body text-th-fgd-4">
+                              {t('unavailable')}
+                            </p>
                           )}
-                        </p>
-                      </div>
-                    </Td>
-                    <Td>
-                      <div className="flex flex-col text-right">
-                        <BankAmountWithValue
-                          amount={available}
-                          bank={baseBank}
-                          fixDecimals={false}
-                          stacked
-                        />
-                      </div>
-                    </Td>
-                    <Td className="font-mono">
-                      <div className="flex justify-end">
-                        <CollateralWeightDisplay bank={baseBank} />
-                      </div>
-                    </Td>
-                    <Td>
-                      <div className="flex justify-end space-x-1.5">
-                        <p className="text-th-up">
-                          <FormatNumericValue
-                            value={depositRate}
-                            decimals={2}
-                          />
-                          %
-                        </p>
-                        <span className="text-th-fgd-4">|</span>
-                        <p className="text-th-down">
-                          <FormatNumericValue value={borrowRate} decimals={2} />
-                          %
-                        </p>
-                      </div>
-                    </Td>
-                    <Td>
-                      <div className="flex justify-end">
-                        <ChevronRightIcon className="h-5 w-5 text-th-fgd-3" />
-                      </div>
-                    </Td>
-                  </TrBody>
-                )
-              })}
+                        </Td>
+                        <Td>
+                          <div className="flex flex-col text-right">
+                            <p>
+                              {!market || !market?.marketData ? (
+                                '–'
+                              ) : volume ? (
+                                <span>
+                                  {numberCompacter.format(volume)}{' '}
+                                  <span className="font-body text-th-fgd-4">
+                                    USDC
+                                  </span>
+                                </span>
+                              ) : (
+                                <span>
+                                  0{' '}
+                                  <span className="font-body text-th-fgd-4">
+                                    USDC
+                                  </span>
+                                </span>
+                              )}
+                            </p>
+                          </div>
+                        </Td>
+                        <Td>
+                          <div className="flex flex-col text-right">
+                            <BankAmountWithValue
+                              amount={available}
+                              bank={baseBank}
+                              fixDecimals={false}
+                              stacked
+                            />
+                          </div>
+                        </Td>
+                        <Td className="font-mono">
+                          <div className="flex justify-end">
+                            <CollateralWeightDisplay bank={baseBank} />
+                          </div>
+                        </Td>
+                        <Td>
+                          <div className="flex justify-end space-x-1.5">
+                            <p className="text-th-up">
+                              <FormatNumericValue
+                                value={depositRate}
+                                decimals={2}
+                              />
+                              %
+                            </p>
+                            <span className="text-th-fgd-4">|</span>
+                            <p className="text-th-down">
+                              <FormatNumericValue
+                                value={borrowRate}
+                                decimals={2}
+                              />
+                              %
+                            </p>
+                          </div>
+                        </Td>
+                        <Td>
+                          <div className="flex justify-end">
+                            <ChevronRightIcon className="h-5 w-5 text-th-fgd-3" />
+                          </div>
+                        </Td>
+                      </TrBody>
+                    </Fragment>
+                  )
+                })}
             </tbody>
           </Table>
         </div>
       ) : (
         <div className="border-b border-th-bkg-3">
-          {tableData.map((data) => {
-            return <MobileSpotItem key={data.tokenName} data={data} />
-          })}
+          {tableData
+            .sort((a: TableData, b: TableData) => {
+              const aInWatchlist = watchlist.includes(a.baseBank.tokenIndex)
+              const bInWatchlist = watchlist.includes(b.baseBank.tokenIndex)
+
+              if (aInWatchlist && !bInWatchlist) {
+                return -1
+              } else if (!aInWatchlist && bInWatchlist) {
+                return 1
+              } else {
+                return 0
+              }
+            })
+            .map((data) => {
+              return <MobileSpotItem key={data.tokenName} data={data} />
+            })}
         </div>
       )}
     </ContentBox>
@@ -394,56 +443,66 @@ const MobileSpotItem = ({ data }: { data: TableData }) => {
     <Disclosure>
       {({ open }) => (
         <>
-          <Disclosure.Button
-            className={`w-full border-t border-th-bkg-3 p-4 text-left first:border-t-0 focus:outline-none`}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex flex-1 items-center">
-                <div className="flex shrink-0 items-center">
-                  <TokenLogo bank={baseBank} />
+          <div className="flex border-t border-th-bkg-3 first:border-t-0">
+            <div className="flex h-[73px] items-center justify-center">
+              <WatchlistButton
+                className="h-full px-4"
+                tokenIndex={baseBank.tokenIndex}
+              />
+            </div>
+            <Disclosure.Button
+              className={`w-full p-4 pl-0 text-left focus:outline-none`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex flex-1 items-center">
+                  <div className="flex shrink-0 items-center">
+                    <TokenLogo bank={baseBank} />
+                  </div>
+                  <p className="ml-3 leading-tight text-th-fgd-1">
+                    {tokenName}
+                  </p>
                 </div>
-                <p className="ml-3 leading-tight text-th-fgd-1">{tokenName}</p>
-              </div>
-              <div className="flex items-center space-x-3 sm:grid sm:grid-cols-2 sm:gap-3 sm:space-x-0">
-                {priceHistory.length ? (
-                  <div className="flex justify-end sm:min-w-[80px] sm:grid-cols-1">
-                    <div className="h-10 w-20">
-                      <SimpleAreaChart
-                        color={isUp ? COLORS.UP[theme] : COLORS.DOWN[theme]}
-                        data={priceHistory}
-                        name={tokenName}
-                        xKey="time"
-                        yKey="price"
+                <div className="flex items-center space-x-3 sm:grid sm:grid-cols-2 sm:gap-3 sm:space-x-0">
+                  {priceHistory.length ? (
+                    <div className="flex justify-end sm:min-w-[80px] sm:grid-cols-1">
+                      <div className="h-10 w-20">
+                        <SimpleAreaChart
+                          color={isUp ? COLORS.UP[theme] : COLORS.DOWN[theme]}
+                          data={priceHistory}
+                          name={tokenName}
+                          xKey="time"
+                          yKey="price"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="mb-0 flex justify-end text-th-fgd-4">
+                      {t('unavailable')}
+                    </p>
+                  )}
+                  <div className="flex min-w-[140px] justify-end sm:grid-cols-1">
+                    <div className="flex items-center space-x-3">
+                      <div className="flex flex-col items-end">
+                        <p className="font-mono text-th-fgd-2">
+                          {price ? (
+                            <FormatNumericValue value={price} isUsd />
+                          ) : (
+                            '-'
+                          )}
+                        </p>
+                        {market ? <Change change={change} suffix="%" /> : null}
+                      </div>
+                      <ChevronDownIcon
+                        className={`${
+                          open ? 'rotate-180' : 'rotate-0'
+                        } h-6 w-6 shrink-0 text-th-fgd-3`}
                       />
                     </div>
                   </div>
-                ) : (
-                  <p className="mb-0 flex justify-end text-th-fgd-4">
-                    {t('unavailable')}
-                  </p>
-                )}
-                <div className="flex min-w-[140px] justify-end sm:grid-cols-1">
-                  <div className="flex items-center space-x-3">
-                    <div className="flex flex-col items-end">
-                      <p className="font-mono text-th-fgd-2">
-                        {price ? (
-                          <FormatNumericValue value={price} isUsd />
-                        ) : (
-                          '-'
-                        )}
-                      </p>
-                      {market ? <Change change={change} suffix="%" /> : null}
-                    </div>
-                    <ChevronDownIcon
-                      className={`${
-                        open ? 'rotate-180' : 'rotate-0'
-                      } h-6 w-6 shrink-0 text-th-fgd-3`}
-                    />
-                  </div>
                 </div>
               </div>
-            </div>
-          </Disclosure.Button>
+            </Disclosure.Button>
+          </div>
           <Transition
             enter="transition ease-in duration-200"
             enterFrom="opacity-0"

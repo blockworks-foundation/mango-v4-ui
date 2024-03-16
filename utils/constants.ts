@@ -1,4 +1,4 @@
-import { PublicKey } from '@metaplex-foundation/js'
+import { PublicKey } from '@solana/web3.js'
 
 export const LAST_ACCOUNT_KEY = 'mangoAccount-0.4'
 
@@ -89,6 +89,8 @@ export const FILTER_ORDERS_FOR_MARKET_KEY = 'filterOrdersForMarket-0.1'
 export const FILTER_HISTORY_FOR_MARKET_KEY = 'filterHistoryForMarket-0.1'
 
 export const SHOW_ANNOUNCEMENTS_KEY = 'showAnnouncements-0.1'
+
+export const TOKEN_WATCHLIST_KEY = 'watchlist-0.1'
 
 // Unused
 export const PROFILE_CATEGORIES = [

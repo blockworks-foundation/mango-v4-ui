@@ -19,6 +19,8 @@ import { Bank } from '@blockworks-foundation/mango-v4'
 import useBanks from 'hooks/useBanks'
 import SheenLoader from '@components/shared/SheenLoader'
 import { useViewport } from 'hooks/useViewport'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import { TOKEN_WATCHLIST_KEY } from 'utils/constants'
 
 export type BankWithMarketData = {
   bank: Bank
@@ -51,30 +53,32 @@ const startSearch = (items: BankWithMarketData[], searchValue: string) => {
     .map((item) => item.token)
 }
 
-const sortTokens = (tokens: BankWithMarketData[], sortByKey: AllowedKeys) => {
+const sortTokens = (
+  tokens: BankWithMarketData[],
+  sortByKey: AllowedKeys,
+  watchlist: number[],
+) => {
   return tokens.sort((a: BankWithMarketData, b: BankWithMarketData) => {
+    const aInWatchlist = watchlist.includes(a.bank.tokenIndex)
+    const bInWatchlist = watchlist.includes(b.bank.tokenIndex)
+
+    // Prioritize tokens in the watchlist
+    if (aInWatchlist && !bInWatchlist) {
+      return -1 // a should come before b
+    } else if (!aInWatchlist && bInWatchlist) {
+      return 1 // b should come before a
+    }
+
     let aValue: number | undefined
     let bValue: number | undefined
     if (sortByKey === 'change_24h') {
-      const aPrice = a?.bank?.uiPrice || 0
-      const bPrice = b?.bank?.uiPrice || 0
-      const aPastPrice = a.market?.marketData?.price_24h
-      const bPastPrice = b.market?.marketData?.price_24h
-      const aVolume = a.market?.marketData?.quote_volume_24h || 0
-      const bVolume = b.market?.marketData?.quote_volume_24h || 0
-      aValue =
-        aVolume > 0 && aPastPrice
-          ? ((aPrice - aPastPrice) / aPastPrice) * 100
-          : undefined
-      bValue =
-        bVolume > 0 && bPastPrice
-          ? ((bPrice - bPastPrice) / bPastPrice) * 100
-          : undefined
+      aValue = a?.market?.rollingChange
+      bValue = b?.market?.rollingChange
     } else {
       aValue = a?.market?.marketData?.[sortByKey]
       bValue = b?.market?.marketData?.[sortByKey]
     }
-    // Handle marketData[sortByKey] is undefined
+    // handle marketData[sortByKey] is undefined
     if (typeof aValue === 'undefined' && typeof bValue === 'undefined') {
       return 0 // Consider them equal
     }
@@ -90,6 +94,7 @@ const sortTokens = (tokens: BankWithMarketData[], sortByKey: AllowedKeys) => {
 }
 
 const Spot = () => {
+  const [watchlist] = useLocalStorageState(TOKEN_WATCHLIST_KEY, [])
   const { t } = useTranslation(['common', 'explore', 'trade'])
   const { group } = useMangoGroup()
   const { banks } = useBanks()
@@ -123,8 +128,8 @@ const Spot = () => {
     if (!banksWithMarketData.length) return []
     return search
       ? startSearch(banksWithMarketData, search)
-      : sortTokens(banksWithMarketData, sortByKey)
-  }, [search, banksWithMarketData, sortByKey])
+      : sortTokens(banksWithMarketData, sortByKey, watchlist)
+  }, [search, banksWithMarketData, sortByKey, watchlist])
 
   const handleUpdateSearch = (e: ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value)
