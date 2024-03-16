@@ -7,6 +7,7 @@ import {
   ConfirmOptions,
   Connection,
   Keypair,
+  LAMPORTS_PER_SOL,
   PublicKey,
   TransactionInstruction,
 } from '@solana/web3.js'
@@ -1123,7 +1124,11 @@ const mangoStore = create<MangoStore>()(
           const provider = client.program.provider as AnchorProvider
           provider.opts.skipPreflight = true
 
-          const feeEstimate = Math.ceil(fee * feeMultiplier)
+          //limit fee estimate to prevent error
+          const feeEstimate = Math.min(
+            Math.ceil(fee * feeMultiplier),
+            LAMPORTS_PER_SOL * 0.01,
+          )
 
           if (currentFee !== feeEstimate || !currentTelemetry) {
             const newClient = initMangoClient(
