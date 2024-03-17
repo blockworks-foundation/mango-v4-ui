@@ -627,10 +627,17 @@ export const ExpandableMenuItem = ({
     }
   }, [isOverButton, isOverList])
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     setIsTouchInput(false)
     setHasClicked(false)
   }, [hasClicked])
+
+  // hack for weird bug where isOverList is true when it shouldn't be (only in account nav => click link in menu then overview tab and quickly hover account main menu icon)
+  useEffect(() => {
+    if (isOverButton && isOverList) {
+      setIsOverList(false)
+    }
+  }, [isOverButton, isOverList])
 
   return collapsed ? (
     <Popover className={`relative z-30 ${alignBottom ? '' : 'py-2 pl-4'}`}>
