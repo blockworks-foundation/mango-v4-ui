@@ -7,8 +7,10 @@ import { useCookies } from 'hooks/notifications/useCookies'
 import { useNotificationSocket } from 'hooks/notifications/useNotificationSocket'
 import { formatNumericValue } from 'utils/numbers'
 import { TOPBAR_ICON_BUTTON_CLASSES } from '@components/TopBar'
+import { useTranslation } from 'react-i18next'
 
 const NotificationsButton = () => {
+  const { t } = useTranslation('notifications')
   useCookies()
   useNotificationSocket()
 
@@ -33,6 +35,7 @@ const NotificationsButton = () => {
       <button
         className={TOPBAR_ICON_BUTTON_CLASSES}
         onClick={() => toggleModal()}
+        title={t('notifications')}
       >
         <BellIcon className="h-5 w-5" />
         <span className="sr-only">Notifications</span>

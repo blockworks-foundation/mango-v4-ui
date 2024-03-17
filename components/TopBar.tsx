@@ -278,7 +278,7 @@ const TopBar = () => {
               <button
                 onClick={() => handleDepositWithdrawModal('deposit')}
                 className={TOPBAR_ICON_BUTTON_CLASSES}
-                title="Deposit Withdraw"
+                title="Deposit/Withdraw"
               >
                 <DepositWithdrawIcon className="h-6 w-6" />
               </button>
@@ -301,6 +301,7 @@ const TopBar = () => {
             <button
               className={TOPBAR_ICON_BUTTON_CLASSES}
               onClick={() => setShowSettingsModal(true)}
+              title={t('settings')}
             >
               <Cog8ToothIcon className="h-5 w-5" />
               <span className="sr-only">Settings</span>

@@ -34,7 +34,6 @@ import React, {
 } from 'react'
 import { Disclosure, Popover, Transition } from '@headlessui/react'
 import MangoAccountSummary from './account/MangoAccountSummary'
-import Tooltip from './shared/Tooltip'
 import { HealthType } from '@blockworks-foundation/mango-v4'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
@@ -232,7 +231,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                   title={t('overview')}
                   pagePath="/?view=overview"
                   hideIconBg
-                  showTooltip={false}
                 />
                 <MenuItem
                   active={
@@ -245,7 +243,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                   title={t('balances')}
                   pagePath="/?view=balances"
                   hideIconBg
-                  showTooltip={false}
                 />
                 <MenuItem
                   active={
@@ -258,7 +255,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                   title={t('trade:positions')}
                   pagePath="/?view=positions"
                   hideIconBg
-                  showTooltip={false}
                 />
                 <MenuItem
                   active={
@@ -271,7 +267,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                   title={t('trade:orders')}
                   pagePath="/?view=orders"
                   hideIconBg
-                  showTooltip={false}
                 />
                 <MenuItem
                   active={
@@ -284,7 +279,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                   title={t('trade:unsettled')}
                   pagePath="/?view=unsettled"
                   hideIconBg
-                  showTooltip={false}
                 />
                 <MenuItem
                   active={
@@ -297,7 +291,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                   title={t('history')}
                   pagePath="/?view=history"
                   hideIconBg
-                  showTooltip={false}
                 />
               </ExpandableMenuItem>
               <MenuItem
@@ -324,7 +317,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                   title={t('perp')}
                   pagePath="/trade?name=SOL-PERP"
                   hideIconBg
-                  showTooltip={false}
                 />
                 <MenuItem
                   active={
@@ -337,7 +329,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                   title={t('spot')}
                   pagePath="/trade?name=SOL/USDC"
                   hideIconBg
-                  showTooltip={false}
                 />
               </ExpandableMenuItem>
               <MenuItem
@@ -382,7 +373,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                   title={t('search:search-accounts')}
                   pagePath="/search"
                   hideIconBg
-                  showTooltip={false}
                 />
                 <MenuItem
                   active={pathname === '/governance/list'}
@@ -391,7 +381,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                   title={t('common:list-market-token')}
                   pagePath="/governance/list"
                   hideIconBg
-                  showTooltip={false}
                 />
                 <MenuItem
                   active={pathname === '/governance/vote'}
@@ -400,7 +389,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                   title={t('common:vote')}
                   pagePath="/governance/vote"
                   hideIconBg
-                  showTooltip={false}
                 />
                 <MenuItem
                   collapsed={false}
@@ -409,7 +397,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                   pagePath="https://docs.mango.markets"
                   hideIconBg
                   isExternal
-                  showTooltip={false}
                 />
                 <MenuItem
                   collapsed={false}
@@ -418,7 +405,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                   pagePath="https://dao.mango.markets"
                   hideIconBg
                   isExternal
-                  showTooltip={false}
                 />
                 {/* <MenuItem
                 collapsed={false}
@@ -427,7 +413,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 pagePath="https://forms.gle/JgV4w7SJ2kPH89mq7"
                 hideIconBg
                 isExternal
-                showTooltip={false}
               /> */}
                 <MenuItem
                   collapsed={false}
@@ -436,7 +421,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                   pagePath="https://docs.mango.markets/legal"
                   hideIconBg
                   isExternal
-                  showTooltip={false}
                 />
                 <MenuItem
                   collapsed={false}
@@ -445,7 +429,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                   pagePath="https://docs.mango.markets/mango-markets/risks"
                   hideIconBg
                   isExternal
-                  showTooltip={false}
                 />
               </ExpandableMenuItem>
             </div>
@@ -503,7 +486,6 @@ const MenuItem = ({
   pagePath,
   hideIconBg,
   isExternal,
-  showTooltip = true,
 }: {
   active?: boolean
   collapsed: boolean
@@ -513,67 +495,59 @@ const MenuItem = ({
   pagePath: string
   hideIconBg?: boolean
   isExternal?: boolean
-  showTooltip?: boolean
 }) => {
   const { theme } = useTheme()
-  const { width } = useViewport()
-  const hideTooltip = width >= breakpoints.lg
   return (
-    <Tooltip
-      content={title}
-      placement="right"
-      show={collapsed && showTooltip && !hideTooltip}
+    <Link
+      href={pagePath}
+      onClick={onClick ? onClick : undefined}
+      shallow={true}
+      className={`flex cursor-pointer pl-4 focus:outline-none focus-visible:text-th-active md:hover:text-th-active ${
+        active
+          ? 'text-th-active'
+          : theme === 'Light'
+          ? 'text-th-fgd-3'
+          : 'text-th-fgd-2'
+      } ${hideIconBg ? 'py-1' : 'py-1.5 xl:py-2'}`}
+      target={isExternal ? '_blank' : ''}
+      rel={isExternal ? 'noopener noreferrer' : ''}
+      title={title}
     >
-      <Link
-        href={pagePath}
-        onClick={onClick ? onClick : undefined}
-        shallow={true}
-        className={`flex cursor-pointer pl-4 focus:outline-none focus-visible:text-th-active md:hover:text-th-active ${
-          active
-            ? 'text-th-active'
-            : theme === 'Light'
-            ? 'text-th-fgd-3'
-            : 'text-th-fgd-2'
-        } ${hideIconBg ? 'py-1' : 'py-1.5 xl:py-2'}`}
-        target={isExternal ? '_blank' : ''}
-        rel={isExternal ? 'noopener noreferrer' : ''}
-      >
-        <div className="flex w-full items-center">
-          <div className="flex items-center">
-            {icon ? (
-              <div
-                className={
-                  hideIconBg
-                    ? ''
-                    : `flex h-8 w-8 items-center justify-center rounded-full ${
-                        theme === 'Light' ? 'bg-th-bkg-2' : 'bg-th-bkg-3'
-                      }`
-                }
-              >
-                {icon}
-              </div>
-            ) : null}
-            <Transition
-              show={!collapsed}
-              as={Fragment}
-              enter={`transition-all ease-in duration-${sideBarAnimationDuration}`}
-              enterFrom="opacity-50"
-              enterTo="opacity-100"
-              leave={`transition-all ease-out duration-${sideBarAnimationDuration}`}
-              leaveFrom="opacity-100"
-              leaveTo="opacity-0"
+      <div className="flex w-full items-center">
+        <div className="flex items-center">
+          {icon ? (
+            <div
+              className={
+                hideIconBg
+                  ? ''
+                  : `flex h-8 w-8 items-center justify-center rounded-full ${
+                      theme === 'Light' ? 'bg-th-bkg-2' : 'bg-th-bkg-3'
+                    }`
+              }
             >
-              <span className="ml-3 whitespace-nowrap 2xl:text-base">
-                {title}
-              </span>
-            </Transition>
-          </div>
-          {isExternal ? (
-            <ArrowTopRightOnSquareIcon className="ml-2 h-3 w-3" />
+              {icon}
+            </div>
           ) : null}
+          <Transition
+            show={!collapsed}
+            as={Fragment}
+            enter={`transition-all ease-in duration-${sideBarAnimationDuration}`}
+            enterFrom="opacity-50"
+            enterTo="opacity-100"
+            leave={`transition-all ease-out duration-${sideBarAnimationDuration}`}
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <span className="ml-3 whitespace-nowrap 2xl:text-base">
+              {title}
+            </span>
+          </Transition>
         </div>
-      </Link>
-    </Tooltip>
+        {isExternal ? (
+          <ArrowTopRightOnSquareIcon className="ml-2 h-3 w-3" />
+        ) : null}
+      </div>
+    </Link>
   )
 }
 
@@ -670,6 +644,7 @@ export const ExpandableMenuItem = ({
         onKeyDown={() => {
           setIsOpen(!isOpen)
         }}
+        title={`${title}`}
       >
         <div
           className={` ${
