@@ -158,7 +158,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
     <>
       <div
         className={`transition-all duration-${sideBarAnimationDuration} ${
-          collapsed ? 'w-[64px]' : 'w-[200px]'
+          collapsed ? 'w-[64px]' : 'hide-scroll w-[200px] overflow-y-auto'
         } border-r border-th-bkg-3 bg-th-bkg-1 bg-contain`}
         // style={
         //   collapsed

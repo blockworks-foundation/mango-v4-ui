@@ -155,13 +155,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
               className={`h-4 w-4 shrink-0 ${!isCollapsed ? 'rotate-180' : ''}`}
             />
           </button>
-          <div
-            className={`hide-scroll h-full ${
-              !isCollapsed ? 'overflow-y-auto' : ''
-            }`}
-          >
-            <SideNav collapsed={isCollapsed} />
-          </div>
+          <SideNav collapsed={isCollapsed} />
         </div>
         <div
           className={`w-full transition-all duration-${sideBarAnimationDuration} ease-in-out ${
