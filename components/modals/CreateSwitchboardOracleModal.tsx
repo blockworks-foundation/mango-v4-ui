@@ -255,17 +255,17 @@ const CreateSwitchboardOracleModal = ({
       }
       const [aggregatorAccount, txArray1] =
         await queueAccount.createFeedInstructions(payer, {
-          name: `ab1/${quoteTokenName}`,
+          name: `${baseTokenName}/${quoteTokenName}`,
           batchSize: settingFromLib.batchSize,
           minRequiredOracleResults: settingFromLib.minRequiredOracleResults,
           minRequiredJobResults: 2,
           minUpdateDelaySeconds: settingFromLib.minUpdateDelaySeconds,
           forceReportPeriod: 60 * 60,
-          withdrawAuthority: payer,
+          withdrawAuthority: MANGO_DAO_WALLET,
           authority: payer,
           crankDataBuffer: crankAccount.dataBuffer?.publicKey,
           crankPubkey: crankAccount.publicKey,
-          fundAmount: 0,
+          fundAmount: settingFromLib.fundAmount,
           slidingWindow: true,
           disableCrank: false,
           maxPriorityFeeMultiplier: 5,
