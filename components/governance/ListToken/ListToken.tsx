@@ -200,10 +200,12 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     ) || presets.UNTRUSTED
 
   useEffect(() => {
-    setAdvForm((prevState) => ({
-      ...prevState,
-      fastListing: false,
-    }))
+    if (advForm.fastListing) {
+      setAdvForm((prevState) => ({
+        ...prevState,
+        fastListing: false,
+      }))
+    }
   }, [preset])
 
   useEffect(() => {
@@ -351,7 +353,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   )
 
   const handleLiquidityCheck = useCallback(
-    async (tokenMint: PublicKey) => {
+    async (tokenMint: PublicKey, isLST: boolean) => {
       try {
         const swaps = await Promise.all([
           handleGetRoutesWithFixedArgs(250000, tokenMint, 'ExactIn'),
@@ -405,6 +407,14 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
             : 0
 
         setProposedProposedTargetAmount(targetAmount)
+        if (isLST) {
+          const suggestedPreset =
+            Object.values(presets).find(
+              (x) => x.preset_target_amount <= targetAmount,
+            ) || presets.UNTRUSTED
+
+          setPreset(suggestedPreset)
+        }
         setPriceImpact(midTierCheck ? midTierCheck.priceImpactPct * 100 : 100)
         handleGetPoolParams(targetAmount, tokenMint)
         return targetAmount
@@ -493,7 +503,10 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     setCurrentTokenInfo(tokenInfo)
     if (tokenInfo) {
       const lstPool = await getLstStakePool(connection, mint)
-      const targetAmount = await handleLiquidityCheck(new PublicKey(mint))
+      const targetAmount = await handleLiquidityCheck(
+        new PublicKey(mint),
+        !!lstPool,
+      )
       getListingParams(
         tokenInfo,
         lstPool ? WRAPPED_SOL_MINT.toBase58() : USDC_MINT,
