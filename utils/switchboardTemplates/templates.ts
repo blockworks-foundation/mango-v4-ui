@@ -11,7 +11,7 @@ export const LSTExactIn = (
         - jsonParseTask:
                   path: $.outAmount
         - divideTask:
-                 scalar: 1000000000
+                 scalar: ${nativeInAmount}
         onFailure:
         - splStakePoolTask:
             pubkey: ${stakePoolAddress}
