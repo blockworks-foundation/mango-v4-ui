@@ -37,6 +37,7 @@ import CollateralWeightDisplay from '@components/shared/CollateralWeightDisplay'
 import WatchlistButton from './WatchlistButton'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { TOKEN_WATCHLIST_KEY } from 'utils/constants'
+import TableRatesDisplay from '@components/shared/TableRatesDisplay'
 
 type TableData = {
   assetWeight: string
@@ -365,21 +366,10 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
                         </Td>
                         <Td>
                           <div className="flex justify-end space-x-1.5">
-                            <p className="text-th-up">
-                              <FormatNumericValue
-                                value={depositRate}
-                                decimals={2}
-                              />
-                              %
-                            </p>
-                            <span className="text-th-fgd-4">|</span>
-                            <p className="text-th-down">
-                              <FormatNumericValue
-                                value={borrowRate}
-                                decimals={2}
-                              />
-                              %
-                            </p>
+                            <TableRatesDisplay
+                              borrowRate={borrowRate}
+                              depositRate={depositRate}
+                            />
                           </div>
                         </Td>
                         <Td>
@@ -547,14 +537,11 @@ const MobileSpotItem = ({ data }: { data: TableData }) => {
                 </div>
                 <div className="col-span-1">
                   <p className="text-xs text-th-fgd-3">{t('rates')}</p>
-                  <div className="flex space-x-1.5">
-                    <p className="font-mono text-th-up">
-                      <FormatNumericValue value={depositRate} decimals={2} />%
-                    </p>
-                    <span className="text-th-fgd-4">|</span>
-                    <p className="font-mono text-th-down">
-                      <FormatNumericValue value={borrowRate} decimals={2} />%
-                    </p>
+                  <div className="flex space-x-1.5 font-mono">
+                    <TableRatesDisplay
+                      borrowRate={borrowRate}
+                      depositRate={depositRate}
+                    />
                   </div>
                 </div>
                 <div className="col-span-1">

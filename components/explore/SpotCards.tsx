@@ -17,6 +17,7 @@ import useThemeWrapper from 'hooks/useThemeWrapper'
 import TokenReduceOnlyDesc from '@components/shared/TokenReduceOnlyDesc'
 import CollateralWeightDisplay from '@components/shared/CollateralWeightDisplay'
 import WatchlistButton from './WatchlistButton'
+import TableRatesDisplay from '@components/shared/TableRatesDisplay'
 
 const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
   const { t } = useTranslation(['common', 'explore', 'trade'])
@@ -144,13 +145,10 @@ const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
                   <p className="tooltip-underline mb-1">{t('rates')}</p>
                 </Tooltip>
                 <div className="flex space-x-1.5 font-mono">
-                  <p className="text-th-up">
-                    <FormatNumericValue value={depositRate} decimals={2} />%
-                  </p>
-                  <span className="text-th-fgd-4">|</span>
-                  <p className="text-th-down">
-                    <FormatNumericValue value={borrowRate} decimals={2} />%
-                  </p>
+                  <TableRatesDisplay
+                    borrowRate={borrowRate}
+                    depositRate={depositRate}
+                  />
                 </div>
               </div>
               <Button

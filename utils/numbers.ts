@@ -5,7 +5,7 @@ export const formatNumericValue = (
   decimals?: number,
   roundUp?: boolean,
 ): string => {
-  if (!value) return '–'
+  if (!value && value !== 0) return '–'
   const numberValue = Number(value)
   let formattedValue
   if (decimals !== undefined) {

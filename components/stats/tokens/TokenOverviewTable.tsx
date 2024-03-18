@@ -17,7 +17,6 @@ import {
   TrHead,
 } from '@components/shared/TableElements'
 import useMangoGroup from 'hooks/useMangoGroup'
-import FormatNumericValue from '@components/shared/FormatNumericValue'
 import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 import useBanksWithBalances from 'hooks/useBanksWithBalances'
 import Decimal from 'decimal.js'
@@ -25,6 +24,7 @@ import { useCallback } from 'react'
 import { useSortableData } from 'hooks/useSortableData'
 import TableTokenName from '@components/shared/TableTokenName'
 import { formatTokenSymbol } from 'utils/tokens'
+import TableRatesDisplay from '@components/shared/TableRatesDisplay'
 
 export const goToTokenPage = (token: string, router: NextRouter) => {
   const query = { ...router.query, ['token']: token }
@@ -253,18 +253,10 @@ const TokenOverviewTable = () => {
                     </Td>
                     <Td>
                       <div className="flex justify-end space-x-1.5">
-                        <p className="text-th-up">
-                          <FormatNumericValue
-                            value={depositRate}
-                            decimals={2}
-                          />
-                          %
-                        </p>
-                        <span className="text-th-fgd-4">|</span>
-                        <p className="text-th-down">
-                          <FormatNumericValue value={borrowRate} decimals={2} />
-                          %
-                        </p>
+                        <TableRatesDisplay
+                          borrowRate={borrowRate}
+                          depositRate={depositRate}
+                        />
                       </div>
                     </Td>
                     <Td>
@@ -369,25 +361,12 @@ const TokenOverviewTable = () => {
                           </div>
                           <div className="col-span-1">
                             <p className="text-xs">{t('rates')}</p>
-                            <p className="space-x-2">
-                              <span className="font-mono text-th-up">
-                                <FormatNumericValue
-                                  value={depositRate}
-                                  decimals={2}
-                                />
-                                %
-                              </span>
-                              <span className="font-normal text-th-fgd-4">
-                                |
-                              </span>
-                              <span className="font-mono text-th-down">
-                                <FormatNumericValue
-                                  value={borrowRate}
-                                  decimals={2}
-                                />
-                                %
-                              </span>
-                            </p>
+                            <div className="flex space-x-1.5 font-mono">
+                              <TableRatesDisplay
+                                borrowRate={borrowRate}
+                                depositRate={depositRate}
+                              />
+                            </div>
                           </div>
                           <div className="col-span-1">
                             <p className="text-xs">{t('utilization')}</p>

@@ -50,6 +50,7 @@ import { floorToDecimal } from 'utils/numbers'
 import SheenLoader from './shared/SheenLoader'
 import useAccountInterest from 'hooks/useAccountInterest'
 import { handleGoToTradePage } from 'utils/markets'
+import TableRatesDisplay from './shared/TableRatesDisplay'
 
 export const handleOpenCloseBorrowModal = (borrowBank: Bank) => {
   const group = mangoStore.getState().group
@@ -424,25 +425,10 @@ const TokenList = () => {
                     </Td>
                     <Td>
                       <div className="flex justify-end space-x-1.5">
-                        <Tooltip content={t('deposit-rate')}>
-                          <p className="cursor-help text-th-up">
-                            <FormatNumericValue
-                              value={depositRate}
-                              decimals={2}
-                            />
-                            %
-                          </p>
-                        </Tooltip>
-                        <span className="text-th-fgd-4">|</span>
-                        <Tooltip content={t('borrow-rate')}>
-                          <p className="cursor-help text-th-down">
-                            <FormatNumericValue
-                              value={borrowRate}
-                              decimals={2}
-                            />
-                            %
-                          </p>
-                        </Tooltip>
+                        <TableRatesDisplay
+                          borrowRate={borrowRate}
+                          depositRate={depositRate}
+                        />
                       </div>
                     </Td>
                     <Td>
@@ -601,15 +587,12 @@ const MobileTokenListItem = ({ data }: { data: TableData }) => {
                 </div>
                 <div className="col-span-1">
                   <p className="text-xs text-th-fgd-3">{t('rates')}</p>
-                  <p className="space-x-2 font-mono">
-                    <span className="text-th-up">
-                      <FormatNumericValue value={depositRate} decimals={2} />%
-                    </span>
-                    <span className="font-normal text-th-fgd-4">|</span>
-                    <span className="text-th-down">
-                      <FormatNumericValue value={borrowRate} decimals={2} />%
-                    </span>
-                  </p>
+                  <div className="flex space-x-1.5 font-mono">
+                    <TableRatesDisplay
+                      borrowRate={borrowRate}
+                      depositRate={depositRate}
+                    />
+                  </div>
                 </div>
                 <div className="col-span-1">
                   <ActionsMenu bank={bank} />
