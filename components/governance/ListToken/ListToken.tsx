@@ -6,7 +6,12 @@ import mangoStore, { CLUSTER } from '@store/mangoStore'
 import { Token } from 'types/jupiter'
 import { handleGetRoutes } from '@components/swap/useQuoteRoutes'
 import { JUPITER_PRICE_API_MAINNET, USDC_MINT } from 'utils/constants'
-import { PublicKey, SYSVAR_RENT_PUBKEY, Transaction } from '@solana/web3.js'
+import {
+  Connection,
+  PublicKey,
+  SYSVAR_RENT_PUBKEY,
+  Transaction,
+} from '@solana/web3.js'
 import { useWallet } from '@solana/wallet-adapter-react'
 import {
   OPENBOOK_PROGRAM_ID,
@@ -56,6 +61,44 @@ import Checkbox from '@components/forms/Checkbox'
 import { BN } from '@coral-xyz/anchor'
 import Select from '@components/forms/Select'
 import { WRAPPED_SOL_MINT } from '@metaplex-foundation/js'
+import { struct, u8, publicKey, u64, option } from '@raydium-io/raydium-sdk'
+
+const feeFields = [u64('denominator'), u64('numerator')]
+const StakePoolLayout = struct([
+  u8('accountType'),
+  publicKey('manager'),
+  publicKey('staker'),
+  publicKey('stakeDepositAuthority'),
+  u8('stakeWithdrawBumpSeed'),
+  publicKey('validatorList'),
+  publicKey('reserveStake'),
+  publicKey('poolMint'),
+  publicKey('managerFeeAccount'),
+  publicKey('tokenProgramId'),
+  u64('totalLamports'),
+  u64('poolTokenSupply'),
+  u64('lastUpdateEpoch'),
+  struct(
+    [u64('unixTimestamp'), u64('epoch'), publicKey('custodian')],
+    'lockup',
+  ),
+  struct(feeFields, 'epochFee'),
+  option(struct(feeFields), 'nextEpochFee'),
+  option(publicKey(), 'preferredDepositValidatorVoteAddress'),
+  option(publicKey(), 'preferredWithdrawValidatorVoteAddress'),
+  struct(feeFields, 'stakeDepositFee'),
+  struct(feeFields, 'stakeWithdrawalFee'),
+  option(struct(feeFields), 'nextStakeWithdrawalFee'),
+  u8('stakeReferralFee'),
+  option(publicKey(), 'solDepositAuthority'),
+  struct(feeFields, 'solDepositFee'),
+  u8('solReferralFee'),
+  option(publicKey(), 'solWithdrawAuthority'),
+  struct(feeFields, 'solWithdrawalFee'),
+  option(struct(feeFields), 'nextSolWithdrawalFee'),
+  u64('lastEpochPoolTokenSupply'),
+  u64('lastEpochTotalLamports'),
+])
 
 type FormErrors = Partial<Record<keyof TokenListForm, string>>
 
@@ -141,6 +184,9 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const [proposedPresetTargetAmount, setProposedProposedTargetAmount] =
     useState(0)
   const [preset, setPreset] = useState<LISTING_PRESET>(presets.UNTRUSTED)
+  const [isLST, setIsLST] = useState(false)
+  const [lstStakePoolAddress, setLstStakePoolAddress] = useState('')
+  const QUOTE_MINT = isLST ? WRAPPED_SOL_MINT.toBase58() : USDC_MINT
 
   const proposedPreset = getPresetWithAdjustedDepositLimit(
     preset,
@@ -150,14 +196,16 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
 
   const suggestedPreset =
     Object.values(presets).find(
-      (x) => x.preset_target_amount === proposedPresetTargetAmount,
+      (x) => x.preset_target_amount <= proposedPresetTargetAmount,
     ) || presets.UNTRUSTED
 
   useEffect(() => {
-    setAdvForm((prevState) => ({
-      ...prevState,
-      fastListing: false,
-    }))
+    if (advForm.fastListing) {
+      setAdvForm((prevState) => ({
+        ...prevState,
+        fastListing: false,
+      }))
+    }
   }, [preset])
 
   useEffect(() => {
@@ -181,7 +229,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     handleOracleUpdate()
   }, [proposedPreset.preset_name])
 
-  const quoteBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
+  const quoteBank = group?.getFirstBankByMint(new PublicKey(QUOTE_MINT))
   const minVoterWeight = useMemo(
     () =>
       governances
@@ -223,18 +271,18 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   }
 
   const getListingParams = useCallback(
-    async (tokenInfo: Token) => {
+    async (tokenInfo: Token, quoteMint: string, targetAmount: number) => {
       setLoadingListingParams(true)
       const [{ oraclePk, isPyth }, marketPk] = await Promise.all([
         getOracle({
           baseSymbol: tokenInfo.symbol,
           quoteSymbol: 'usd',
           connection,
-          targetAmount: 0,
+          targetAmount: targetAmount,
         }),
         getBestMarket({
           baseMint: mint,
-          quoteMint: USDC_MINT,
+          quoteMint: quoteMint,
           cluster: CLUSTER,
           connection,
         }),
@@ -263,7 +311,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         marketName: `${tokenInfo.symbol}/USDC`,
         baseBankPk: baseBank.toBase58(),
         quoteBankPk: group!
-          .getFirstBankByMint(new PublicKey(USDC_MINT))
+          .getFirstBankByMint(new PublicKey(quoteMint))
           .publicKey.toBase58(),
         marketIndex: index,
         openBookMarketExternalPk: marketPk?.toBase58() || '',
@@ -274,7 +322,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       setLoadingListingParams(false)
       setIsPyth(isPyth)
     },
-    [advForm, client.programId, connection, group, mint, proposals],
+    [connection, mint, proposals, group, client.programId, advForm],
   )
 
   const handleGetRoutesWithFixedArgs = useCallback(
@@ -305,7 +353,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   )
 
   const handleLiquidityCheck = useCallback(
-    async (tokenMint: PublicKey) => {
+    async (tokenMint: PublicKey, isLST: boolean) => {
       try {
         const swaps = await Promise.all([
           handleGetRoutesWithFixedArgs(250000, tokenMint, 'ExactIn'),
@@ -359,6 +407,14 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
             : 0
 
         setProposedProposedTargetAmount(targetAmount)
+        if (isLST) {
+          const suggestedPreset =
+            Object.values(presets).find(
+              (x) => x.preset_target_amount <= targetAmount,
+            ) || presets.UNTRUSTED
+
+          setPreset(suggestedPreset)
+        }
         setPriceImpact(midTierCheck ? midTierCheck.priceImpactPct * 100 : 100)
         handleGetPoolParams(targetAmount, tokenMint)
         return targetAmount
@@ -401,6 +457,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           `https://api.dexscreener.com/latest/dex/search?q=${tokenMint.toBase58()}`,
         )
         const resp = await dex.json()
+
         if (!resp?.pairs?.length) {
           return
         }
@@ -411,10 +468,10 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
             x.baseToken.address === WRAPPED_SOL_MINT.toBase58(),
         )
 
-        if (bestSolPool.dexId.includes('raydium')) {
+        if (bestSolPool?.dexId.includes('raydium')) {
           setRaydiumPoolAddress(bestSolPool.pairAddress)
         }
-        if (bestSolPool.dexId.includes('orca')) {
+        if (bestSolPool?.dexId.includes('orca')) {
           setOrcaPoolAddress(bestSolPool.pairAddress)
         }
         setIsSolPool(true)
@@ -445,8 +502,18 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     setBaseTokenPrice(priceInfo.data[mint]?.price || 0)
     setCurrentTokenInfo(tokenInfo)
     if (tokenInfo) {
-      await handleLiquidityCheck(new PublicKey(mint))
-      getListingParams(tokenInfo)
+      const lstPool = await getLstStakePool(connection, mint)
+      const targetAmount = await handleLiquidityCheck(
+        new PublicKey(mint),
+        !!lstPool,
+      )
+      getListingParams(
+        tokenInfo,
+        lstPool ? WRAPPED_SOL_MINT.toBase58() : USDC_MINT,
+        lstPool ? targetAmount : 0,
+      )
+      setIsLST(!!lstPool)
+      setLstStakePoolAddress(lstPool)
     }
   }, [getListingParams, handleLiquidityCheck, jupiterTokens, mint, t])
 
@@ -459,6 +526,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     setRaydiumPoolAddress('')
     setProposedProposedTargetAmount(0)
     setBaseTokenPrice(0)
+    setIsLST(false)
   }
 
   const isFormValid = useCallback(
@@ -689,7 +757,11 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const closeCreateOpenBookMarketModal = () => {
     setCreateOpenbookMarket(false)
     if (currentTokenInfo && proposedPresetTargetAmount) {
-      getListingParams(currentTokenInfo)
+      getListingParams(
+        currentTokenInfo,
+        QUOTE_MINT,
+        isLST ? proposedPresetTargetAmount : 0,
+      )
     }
   }
   const closeCreateOracleModal = (oraclePk?: PublicKey) => {
@@ -763,6 +835,12 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                   <p>{t('symbol')}</p>
                   <p className="text-th-fgd-2">{currentTokenInfo?.symbol}</p>
                 </div>
+                {isLST && (
+                  <div className="mb-2 flex items-center justify-between">
+                    <p>LST detected</p>
+                    <p className="text-th-fgd-2">SOL used as quote</p>
+                  </div>
+                )}
                 <div className="flex items-center justify-between">
                   <p>{t('mint')}</p>
                   <p className="flex items-center">
@@ -1156,6 +1234,9 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                       isOpen={oracleModalOpen}
                       onClose={closeCreateOracleModal}
                       isSolPool={isSolPool}
+                      stakePoolAddress={lstStakePoolAddress}
+                      tokenDecimals={currentTokenInfo.decimals}
+                      tokenPrice={baseTokenPrice}
                     ></CreateSwitchboardOracleModal>
                   </li>
                 ) : null}
@@ -1201,3 +1282,36 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
 }
 
 export default ListToken
+
+const getLstStakePool = async (connection: Connection, mint: string) => {
+  try {
+    let poolAddress = ''
+    const resp = await connection.getAddressLookupTable(
+      new PublicKey('EhWxBHdmQ3yDmPzhJbKtGMM9oaZD42emt71kSieghy5'),
+    )
+    if (resp.value) {
+      const accounts = await connection.getMultipleAccountsInfo(
+        resp.value.state.addresses,
+      )
+      for (const idx in accounts) {
+        try {
+          const acc = accounts[idx]
+          const stakeAddressPk = resp.value?.state.addresses[idx]
+          if (acc?.data) {
+            const decoded = StakePoolLayout.decode(acc?.data)
+            if (decoded.poolMint.toBase58() === mint && stakeAddressPk) {
+              poolAddress = stakeAddressPk?.toBase58()
+              break
+            }
+          }
+          // eslint-disable-next-line no-empty
+        } catch (e) {}
+      }
+    }
+
+    return poolAddress
+  } catch (e) {
+    console.log(e)
+    return ''
+  }
+}
