@@ -161,18 +161,20 @@ const CreateSwitchboardOracleModal = ({
       const swapValue = tierToSwapValue[tierKey]
       setCreatingOracle(true)
       const payer = wallet!.publicKey!
-      if (!orcaPoolAddress && !raydiumPoolAddress) {
+      if (!orcaPoolAddress && !raydiumPoolAddress && !stakePoolAddress) {
         throw poolAddressError
       }
       const poolPropertyName = orcaPoolAddress
         ? 'orcaPoolAddress'
         : 'raydiumPoolAddress'
       const poolAddress = orcaPoolAddress ? orcaPoolAddress : raydiumPoolAddress
-      const isReversePool = await isPoolReversed(
-        orcaPoolAddress ? 'orca' : 'raydium',
-        poolAddress!,
-        !isSolPool ? USDC_MINT : WRAPPED_SOL_MINT.toBase58(),
-      )
+      const isReversePool = !stakePoolAddress
+        ? await isPoolReversed(
+            orcaPoolAddress ? 'orca' : 'raydium',
+            poolAddress!,
+            !isSolPool ? USDC_MINT : WRAPPED_SOL_MINT.toBase58(),
+          )
+        : false
 
       const program = await SwitchboardProgram.load(CLUSTER, connection)
 
@@ -253,17 +255,17 @@ const CreateSwitchboardOracleModal = ({
       }
       const [aggregatorAccount, txArray1] =
         await queueAccount.createFeedInstructions(payer, {
-          name: `${baseTokenName}/${quoteTokenName}`,
+          name: `ab1/${quoteTokenName}`,
           batchSize: settingFromLib.batchSize,
           minRequiredOracleResults: settingFromLib.minRequiredOracleResults,
           minRequiredJobResults: 2,
           minUpdateDelaySeconds: settingFromLib.minUpdateDelaySeconds,
           forceReportPeriod: 60 * 60,
-          withdrawAuthority: MANGO_DAO_WALLET,
+          withdrawAuthority: payer,
           authority: payer,
           crankDataBuffer: crankAccount.dataBuffer?.publicKey,
           crankPubkey: crankAccount.publicKey,
-          fundAmount: settingFromLib.fundAmount,
+          fundAmount: 0,
           slidingWindow: true,
           disableCrank: false,
           maxPriorityFeeMultiplier: 5,
@@ -465,6 +467,7 @@ const CreateSwitchboardOracleModal = ({
       const signers = [
         ...[...txArray1, lockTx, transferAuthIx].flatMap((x) => x.signers),
       ]
+
       const transactions: Transaction[] = []
 
       for (const chunkIndex in instructions) {
@@ -508,6 +511,7 @@ const CreateSwitchboardOracleModal = ({
       setCreatingOracle(false)
       onClose(aggregatorAccount.publicKey)
     } catch (e) {
+      console.log(e)
       setCreatingOracle(false)
       if (e === poolAddressError) {
         notify({
@@ -549,7 +553,6 @@ const CreateSwitchboardOracleModal = ({
     stakePoolAddress,
     tierKey,
     tierSettings,
-    tierToSwapValue,
     tokenDecimals,
     tokenPrice,
     wallet,

@@ -1288,6 +1288,7 @@ const getLstStakePool = async (connection: Connection, mint: string) => {
             const decoded = StakePoolLayout.decode(acc?.data)
             if (decoded.poolMint.toBase58() === mint && stakeAddressPk) {
               poolAddress = stakeAddressPk?.toBase58()
+              break
             }
           }
           // eslint-disable-next-line no-empty

@@ -56,7 +56,7 @@ export const LSTExactOut = (
                 job:
                   tasks:
                     - httpTask:
-                        url: https://api.sanctum.so/v1/swap/quote?input=${inMint}&outputLstMint=S1o11111111111111111111111111111111111111112&amount=${nativeOutSolAmount}&mode=ExactOut
+                        url: https://api.sanctum.so/v1/swap/quote?input=${inMint}&outputLstMint=So11111111111111111111111111111111111111112&amount=${nativeOutSolAmount}&mode=ExactOut
                     - jsonParseTask:
                               path: $.inAmount
         - httpTask:
