@@ -838,7 +838,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                 {isLST && (
                   <div className="mb-2 flex items-center justify-between">
                     <p>LST detected</p>
-                    <p className="text-th-fgd-2">SOL used as quote</p>
+                    <p className="text-th-fgd-2">Quote token SOL</p>
                   </div>
                 )}
                 <div className="flex items-center justify-between">
