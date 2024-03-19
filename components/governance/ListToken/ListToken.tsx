@@ -665,6 +665,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       const trustlessIx = await client!.program.methods
         .tokenRegisterTrustless(Number(index), advForm.name)
         .accounts({
+          fallbackOracle: PublicKey.default,
           mint: mint,
           payer: MANGO_DAO_FAST_LISTING_WALLET,
           rent: SYSVAR_RENT_PUBKEY,
