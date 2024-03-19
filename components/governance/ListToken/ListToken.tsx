@@ -271,7 +271,12 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   }
 
   const getListingParams = useCallback(
-    async (tokenInfo: Token, quoteMint: string, targetAmount: number) => {
+    async (
+      tokenInfo: Token,
+      quoteMint: string,
+      targetAmount: number,
+      isLST: boolean,
+    ) => {
       setLoadingListingParams(true)
       const [{ oraclePk, isPyth }, marketPk] = await Promise.all([
         getOracle({
@@ -308,7 +313,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         name: tokenInfo.symbol,
         tokenIndex: index,
         openBookProgram: OPENBOOK_PROGRAM_ID[CLUSTER].toBase58(),
-        marketName: `${tokenInfo.symbol}/USDC`,
+        marketName: `${tokenInfo.symbol}/${isLST ? 'SOL' : 'USDC'}`,
         baseBankPk: baseBank.toBase58(),
         quoteBankPk: group!
           .getFirstBankByMint(new PublicKey(quoteMint))
@@ -322,7 +327,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       setLoadingListingParams(false)
       setIsPyth(isPyth)
     },
-    [connection, mint, proposals, group, client.programId, advForm],
+    [connection, mint, proposals, group, client.programId, advForm, quoteBank],
   )
 
   const handleGetRoutesWithFixedArgs = useCallback(
@@ -511,6 +516,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         tokenInfo,
         lstPool ? WRAPPED_SOL_MINT.toBase58() : USDC_MINT,
         lstPool ? targetAmount : 0,
+        !!lstPool,
       )
       setIsLST(!!lstPool)
       setLstStakePoolAddress(lstPool)
@@ -761,6 +767,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         currentTokenInfo,
         QUOTE_MINT,
         isLST ? proposedPresetTargetAmount : 0,
+        isLST,
       )
     }
   }
