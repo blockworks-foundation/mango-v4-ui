@@ -160,6 +160,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const [advForm, setAdvForm] = useState<TokenListForm>({
     ...defaultTokenListFormValues,
   })
+
   const [loadingListingParams, setLoadingListingParams] = useState(false)
   const [formErrors, setFormErrors] = useState<FormErrors>({})
   const [priceImpact, setPriceImpact] = useState<number>(0)
@@ -218,10 +219,10 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           connection,
           targetAmount: proposedPreset.preset_target_amount,
         })
-        setAdvForm({
-          ...advForm,
+        setAdvForm((prevState) => ({
+          ...prevState,
           oraclePk: oraclePk || '',
-        })
+        }))
         setLoadingListingParams(false)
         setIsPyth(isPyth)
       }
