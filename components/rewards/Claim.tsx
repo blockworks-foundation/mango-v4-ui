@@ -37,6 +37,7 @@ import { Prize, getClaimsAsPrizes } from './RewardsComponents'
 import { notify } from 'utils/notifications'
 import { sleep } from 'utils'
 import { createComputeBudgetIx } from '@blockworks-foundation/mango-v4'
+import SendTweetModal from './SendTweetModal'
 
 const CLAIM_BUTTON_CLASSES =
   'raised-button group mx-auto block h-12 px-6 pt-1 font-rewards text-xl after:rounded-lg focus:outline-none lg:h-14'
@@ -60,6 +61,8 @@ const RewardsComponent = dynamic(() => import('./RewardsComponents'), {
 
 const ClaimPage = () => {
   const [isClaiming, setIsClaiming] = useState(false)
+  const [showTweetModal, setShowTweetModal] = useState(false)
+  const [hasSeenTweetModal, setHasSeenTweetModal] = useState(false)
   const [claimProgress, setClaimProgress] = useState(0)
   const [distribution, setDistribution] = useState<Distribution | undefined>(
     undefined,
@@ -174,6 +177,11 @@ const ClaimPage = () => {
       handleTokenMetadata()
     }
   }, [claims, handleTokenMetadata])
+
+  const handleShowTweetModal = () => {
+    setShowTweetModal(true)
+    setHasSeenTweetModal(true)
+  }
 
   const handleClaimRewards = useCallback(async () => {
     if (!distribution || !publicKey || !claims || !rewardsClient) return
@@ -305,6 +313,10 @@ const ClaimPage = () => {
     claimProgress,
   ])
 
+  const handleClaimButton = () => {
+    hasSeenTweetModal ? handleClaimRewards() : handleShowTweetModal()
+  }
+
   useEffect(() => {
     if (tokenRewardsInfo.length && claims?.length) {
       const claimsAsPrizes = getClaimsAsPrizes(
@@ -409,7 +421,8 @@ const ClaimPage = () => {
         ) : rewardsWasShown ? (
           <button
             className={CLAIM_BUTTON_CLASSES}
-            onClick={() => handleClaimRewards()}
+            // onClick={() => handleClaimRewards()}
+            onClick={handleClaimButton}
           >
             <span className="block text-th-fgd-1 group-hover:mt-1 group-active:mt-2">{`Claim ${
               claims!.length
@@ -431,6 +444,12 @@ const ClaimPage = () => {
             </span>
           </button>
         )}
+        {showTweetModal ? (
+          <SendTweetModal
+            isOpen={showTweetModal}
+            onClose={() => setShowTweetModal(false)}
+          />
+        ) : null}
       </div>
       <div
         className={`fixed bottom-0 left-0 right-0 top-0 z-[1000] ${
