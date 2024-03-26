@@ -168,6 +168,23 @@ const Dashboard: NextPage = () => {
     }
   }, [banks.length])
 
+  const sortByTier = (tier: string | undefined) => {
+    const tierOrder: Record<string, number> = {
+      AAA: 0,
+      AA: 1,
+      A: 2,
+      'A-': 3,
+      BBB: 4,
+      BB: 5,
+      B: 6,
+      C: 7,
+    }
+    if (tier) {
+      return tierOrder[tier]
+    }
+    return Infinity
+  }
+
   return (
     <GovernancePageWrapper noStyles={true}>
       <div className="col-span-12 lg:col-span-8 lg:col-start-3">
@@ -216,7 +233,14 @@ const Dashboard: NextPage = () => {
             </h3>
             <div className="border-b border-th-bkg-3">
               {banks
-                .sort((a, b) => a.name.localeCompare(b.name))
+                .sort((a, b) => {
+                  const aTier = getSuggestedAndCurrentTier(a)
+                  const bTier = getSuggestedAndCurrentTier(b)
+                  return (
+                    sortByTier(aTier?.currentTier?.preset_name) -
+                    sortByTier(bTier?.currentTier?.preset_name)
+                  )
+                })
                 .map((bank, i) => {
                   const mintInfo = group.mintInfosMapByMint.get(
                     bank.mint.toString(),
@@ -248,12 +272,14 @@ const Dashboard: NextPage = () => {
                               className="flex w-full items-center justify-between"
                               aria-label="panel"
                             >
-                              <div className="flex flex-1 items-center">
+                              <div className="flex items-center">
                                 <TokenLogo bank={bank} />
                                 <p className="ml-2 text-th-fgd-2">
                                   {formattedBankValues.name} Bank
                                 </p>
-                                <div className="ml-auto flex space-x-2">
+                              </div>
+                              <div className="flex items-center space-x-3">
+                                <div className="flex space-x-2">
                                   <div>{currentTier?.preset_name}</div>
                                   <div>/</div>
                                   <div className="text-th-success">
@@ -263,12 +289,12 @@ const Dashboard: NextPage = () => {
                                     }
                                   </div>
                                 </div>
+                                <ChevronDownIcon
+                                  className={`${
+                                    open ? 'rotate-180' : 'rotate-0'
+                                  } h-5 w-5 text-th-fgd-3`}
+                                />
                               </div>
-                              <ChevronDownIcon
-                                className={`${
-                                  open ? 'rotate-180' : 'rotate-0'
-                                } h-5 w-5 text-th-fgd-3`}
-                              />
                             </Disclosure.Button>
                           </div>
                           <Disclosure.Panel>
