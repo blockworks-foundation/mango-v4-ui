@@ -17,7 +17,7 @@ const useOpenPerpPositions = () => {
 
     const checkPerps = async (): Promise<boolean> => {
       const newMangoAccount = await client.getMangoAccount(mangoAccountPk!)
-      console.log(newMangoAccount)
+
       return newMangoAccount.perps.every((x) => x.takerBaseLots.isZero())
     }
 
