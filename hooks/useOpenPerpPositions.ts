@@ -11,12 +11,13 @@ const useOpenPerpPositions = () => {
     successCallback: () => void,
     timeoutCallback?: () => void,
   ): Promise<'ready' | 'timeout'> => {
-    const timeout = 15000
+    const timeout = 25000
     let interval: NodeJS.Timeout
     let isTimeout = false
 
     const checkPerps = async (): Promise<boolean> => {
       const newMangoAccount = await client.getMangoAccount(mangoAccountPk!)
+      console.log(newMangoAccount)
       return newMangoAccount.perps.every((x) => x.takerBaseLots.isZero())
     }
 
