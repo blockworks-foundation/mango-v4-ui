@@ -1,6 +1,7 @@
 import mangoStore from '@store/mangoStore'
 import { useMemo } from 'react'
 import useMangoAccount from './useMangoAccount'
+import { sleep } from 'utils'
 
 const useOpenPerpPositions = () => {
   const { mangoAccountAddress, mangoAccountPk } = useMangoAccount()
@@ -16,8 +17,8 @@ const useOpenPerpPositions = () => {
     let isTimeout = false
 
     const checkPerps = async (): Promise<boolean> => {
+      await sleep(200)
       const newMangoAccount = await client.getMangoAccount(mangoAccountPk!)
-
       return newMangoAccount.perps.every((x) => x.takerBaseLots.isZero())
     }
 
