@@ -81,16 +81,18 @@ const RiskDashboard: NextPage = () => {
   )
 
   return (
-    <div className="col-span-12 lg:col-span-8 lg:col-start-3">
+    <div>
       <DashboardNavbar />
-      {data?.timestamp ? <h6> As of: {data.timestamp} UTC </h6> : null}
+      {data?.timestamp ? (
+        <h6 className="mx-4 mt-4 md:mx-6"> As of: {data.timestamp} UTC </h6>
+      ) : null}
       {group && data && data.payload ? (
         <div className="mt-4">
           {Object.entries(data.payload).map(
             ([tableType, table]: [string, TableData]) => {
               if (!table?.data?.length) return null
               return (
-                <div className="mt-12" key={tableType}>
+                <div className="px-4 md:px-6" key={tableType}>
                   <div className="mb-4">
                     <p className="text-th-fgd-4">{table.title}</p>
                   </div>

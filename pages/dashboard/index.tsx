@@ -4,6 +4,7 @@ import {
   I80F48,
   PriceImpact,
   OracleProvider,
+  toUiDecimalsForQuote,
 } from '@blockworks-foundation/mango-v4'
 import ExplorerLink from '@components/shared/ExplorerLink'
 import { coder } from '@project-serum/anchor/dist/cjs/spl/token'
@@ -15,6 +16,7 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import {
   ArrowTopRightOnSquareIcon,
   ChevronDownIcon,
+  ExclamationTriangleIcon,
 } from '@heroicons/react/20/solid'
 import { Disclosure } from '@headlessui/react'
 import MarketLogos from '@components/trade/MarketLogos'
@@ -43,8 +45,13 @@ import {
   getMidPriceImpacts,
   getProposedKey,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
+import Tooltip from '@components/shared/Tooltip'
 
 dayjs.extend(relativeTime)
+
+type BanksWarningObject = {
+  [key: string]: Record<string, string>
+}
 
 export async function getStaticProps({ locale }: { locale: string }) {
   return {
@@ -168,6 +175,82 @@ const Dashboard: NextPage = () => {
     }
   }, [banks.length])
 
+  const warningBanks: BanksWarningObject | undefined = useMemo(() => {
+    if (!banks?.length) return
+    const warnings = banks.reduce((acc: BanksWarningObject, bank) => {
+      acc[bank.name] = {}
+      return acc
+    }, {})
+
+    for (const bank of banks) {
+      const deposits = toUiDecimals(
+        bank.indexedDeposits.mul(bank.depositIndex).toNumber(),
+        bank.mintDecimals,
+      )
+
+      const depositLimit = toUiDecimals(bank.depositLimit, bank.mintDecimals)
+
+      const depositsValue = deposits * bank.uiPrice
+
+      const depositsScaleStart = toUiDecimalsForQuote(
+        bank.depositWeightScaleStartQuote,
+      )
+
+      const netBorrowsInWindow = toUiDecimalsForQuote(
+        I80F48.fromI64(bank.netBorrowsInWindow).mul(bank.price),
+      )
+
+      const netBorrowLimitPerWindowQuote = toUiDecimals(
+        bank.netBorrowLimitPerWindowQuote,
+        6,
+      )
+
+      const borrowsValue =
+        toUiDecimals(
+          bank.indexedBorrows.mul(bank.borrowIndex).toNumber(),
+          bank.mintDecimals,
+        ) * bank.uiPrice
+
+      const borrowsScaleStart = toUiDecimalsForQuote(
+        bank.borrowWeightScaleStartQuote,
+      )
+
+      const oracleConfFilter = 100 * bank.oracleConfig.confFilter.toNumber()
+      const lastKnownConfidence =
+        bank._oracleLastKnownDeviation instanceof I80F48 &&
+        !bank._oracleLastKnownDeviation.isZero()
+          ? bank._oracleLastKnownDeviation
+              ?.div(bank.price)
+              .mul(I80F48.fromNumber(100))
+              .toNumber()
+          : 0
+
+      if (depositsValue > depositsScaleStart) {
+        warnings[bank.name].depositWeightScaleStartQuote =
+          'Deposits value exceeds scaling start quote'
+      }
+      if (borrowsValue > borrowsScaleStart) {
+        warnings[bank.name].borrowWeightScaleStartQuote =
+          'Borrows value exceeds scaling start quote'
+      }
+      if (deposits >= depositLimit) {
+        warnings[bank.name].depositLimit = 'Deposits are at capacity'
+      }
+      if (netBorrowsInWindow >= netBorrowLimitPerWindowQuote) {
+        warnings[bank.name].netBorrowLimitPerWindowQuote =
+          'Net borrows in current window are at capacity'
+      }
+      if (lastKnownConfidence && lastKnownConfidence > oracleConfFilter) {
+        warnings[
+          bank.name
+        ].oracleConfFilter = `Oracle confidence is outside the limit. Current: ${lastKnownConfidence.toFixed(
+          2,
+        )}% limit: ${oracleConfFilter.toFixed(2)}%`
+      }
+    }
+    return warnings
+  }, [banks])
+
   const sortByTier = (tier: string | undefined) => {
     const tierOrder: Record<string, number> = {
       AAA: 0,
@@ -186,11 +269,11 @@ const Dashboard: NextPage = () => {
   }
 
   return (
-    <GovernancePageWrapper noStyles={true}>
-      <div className="col-span-12 lg:col-span-8 lg:col-start-3">
-        <DashboardNavbar />
+    <>
+      <DashboardNavbar />
+      <GovernancePageWrapper>
         {group ? (
-          <div className="ml-80 mr-80 mt-4">
+          <div className="mx-4 mt-4 lg:mx-0">
             <ExplorerLink
               address={group?.publicKey.toString()}
               anchorData
@@ -205,10 +288,25 @@ const Dashboard: NextPage = () => {
                       '[aria-expanded=false][aria-label=panel]',
                     ),
                   ]
+                  console.log(panels)
                   panels.map((panel) => (panel as HTMLElement).click())
                 }}
               >
                 Expand All
+              </Button>
+              <Button
+                secondary
+                size="small"
+                onClick={() => {
+                  const panels = [
+                    ...document.querySelectorAll(
+                      '[aria-expanded=false][aria-label=panel].has-warning',
+                    ),
+                  ]
+                  panels.map((panel) => (panel as HTMLElement).click())
+                }}
+              >
+                Expand Warnings
               </Button>
               <Button
                 secondary
@@ -227,7 +325,7 @@ const Dashboard: NextPage = () => {
             </div>
             <h3 className="mb-3 mt-6 flex text-base text-th-fgd-3">
               <span>Banks</span>
-              <span className="ml-auto">
+              <span className="ml-auto pr-12 text-sm font-normal">
                 Current / <span className="text-th-success">Suggested</span>{' '}
               </span>
             </h3>
@@ -254,29 +352,95 @@ const Dashboard: NextPage = () => {
                   const { currentTier, suggestedTierKey } =
                     getSuggestedAndCurrentTier(bank)
 
+                  const depositLimitWarning =
+                    warningBanks?.[bank.name]?.depositLimit ?? null
+
+                  const depositWeightScaleStartQuoteWarning =
+                    warningBanks?.[bank.name]?.depositWeightScaleStartQuote ??
+                    null
+
+                  const depositWarnings = [
+                    depositLimitWarning,
+                    depositWeightScaleStartQuoteWarning,
+                  ].filter(Boolean)
+
+                  const borrowWeightScaleStartQuoteWarning =
+                    warningBanks?.[bank.name]?.borrowWeightScaleStartQuote ??
+                    null
+
+                  const netBorrowLimitPerWindowQuoteWarning =
+                    warningBanks?.[bank.name]?.netBorrowLimitPerWindowQuote ??
+                    null
+
+                  const borrowWarnings = [
+                    borrowWeightScaleStartQuoteWarning,
+                    netBorrowLimitPerWindowQuoteWarning,
+                  ].filter(Boolean)
+
+                  const oracleConfFilterWarning =
+                    warningBanks?.[bank.name]?.oracleConfFilter ?? null
+
+                  const oracleWarnings = [oracleConfFilterWarning].filter(
+                    Boolean,
+                  )
+
+                  const showWarningTooltip =
+                    warningBanks && Object.keys(warningBanks[bank.name]).length
+
                   return (
                     <Disclosure key={bank.publicKey.toString()}>
                       {({ open }) => (
                         <>
                           <div
-                            className={`w-full border-t border-th-bkg-3 p-4 md:hover:bg-th-bkg-4 ${
+                            className={`default-transition w-full border-t border-th-bkg-3 md:hover:bg-th-bkg-2 ${
                               open
                                 ? i === stickyIndex
-                                  ? 'sticky top-0 bg-th-bkg-4'
-                                  : 'bg-th-bkg-4'
+                                  ? 'sticky top-0 bg-th-bkg-3'
+                                  : 'bg-th-bkg-3'
                                 : ''
                             }`}
                             id={`parent-item-${i}`}
                           >
                             <Disclosure.Button
-                              className="flex w-full items-center justify-between"
+                              className={`flex w-full items-center justify-between p-4 ${
+                                showWarningTooltip ? 'has-warning' : ''
+                              }`}
                               aria-label="panel"
                             >
                               <div className="flex items-center">
                                 <TokenLogo bank={bank} />
-                                <p className="ml-2 text-th-fgd-2">
-                                  {formattedBankValues.name} Bank
-                                </p>
+                                <Tooltip
+                                  content={
+                                    showWarningTooltip ? (
+                                      <div className="space-y-1.5">
+                                        {Object.values(
+                                          warningBanks[bank.name],
+                                        ).map((value, index) => (
+                                          <p key={value}>
+                                            {index + 1}. {value}
+                                          </p>
+                                        ))}
+                                      </div>
+                                    ) : (
+                                      ''
+                                    )
+                                  }
+                                >
+                                  <div className="flex items-center">
+                                    <p
+                                      className={`ml-2 ${
+                                        showWarningTooltip
+                                          ? 'tooltip-underline text-th-warning'
+                                          : 'text-th-fgd-2'
+                                      }`}
+                                    >
+                                      {formattedBankValues.name} Bank
+                                    </p>
+                                    {showWarningTooltip ? (
+                                      <ExclamationTriangleIcon className="ml-2 h-4 w-4 cursor-help text-th-warning" />
+                                    ) : null}
+                                  </div>
+                                </Tooltip>
                               </div>
                               <div className="flex items-center space-x-3">
                                 <div className="flex space-x-2">
@@ -298,6 +462,38 @@ const Dashboard: NextPage = () => {
                             </Disclosure.Button>
                           </div>
                           <Disclosure.Panel>
+                            {bank.mint.toBase58() !== USDC_MINT ? (
+                              <div className="my-3 flex">
+                                <Button
+                                  className="ml-auto"
+                                  onClick={() =>
+                                    setOpenedSuggestedModal(
+                                      bank.mint.toBase58(),
+                                    )
+                                  }
+                                  size="small"
+                                >
+                                  Check suggested values
+                                  {openedSuggestedModal ===
+                                    bank.mint.toBase58() && (
+                                    <DashboardSuggestedValues
+                                      midPriceImp={midPriceImp}
+                                      currentTier={currentTier}
+                                      suggestedTierKey={suggestedTierKey}
+                                      group={group}
+                                      bank={bank}
+                                      isOpen={
+                                        openedSuggestedModal ===
+                                        bank.mint.toBase58()
+                                      }
+                                      onClose={() =>
+                                        setOpenedSuggestedModal(null)
+                                      }
+                                    ></DashboardSuggestedValues>
+                                  )}
+                                </Button>
+                              </div>
+                            ) : null}
                             <KeyValuePair
                               label="Mint"
                               value={
@@ -434,10 +630,12 @@ const Dashboard: NextPage = () => {
                             <KeyValuePair
                               label="Deposits"
                               value={`${formattedBankValues.deposits} ($${formattedBankValues.depositsPrice})`}
+                              warnings={depositWarnings}
                             />
                             <KeyValuePair
                               label="Borrows"
                               value={`${formattedBankValues.borrows} ($${formattedBankValues.borrowsPrice})`}
+                              warnings={borrowWarnings}
                             />
                             <KeyValuePair
                               label="Deposit weight scale start quote"
@@ -509,6 +707,7 @@ const Dashboard: NextPage = () => {
                                       .toFixed(2)
                                   : 'null'
                               }%)`}
+                              warnings={oracleWarnings}
                             />
                             <KeyValuePair
                               label="Oracle: Max Staleness"
@@ -563,37 +762,6 @@ const Dashboard: NextPage = () => {
                                 formattedBankValues.maintWeightShiftDurationInv
                               }
                             />
-                            {bank.mint.toBase58() !== USDC_MINT && (
-                              <div className="mb-4 mt-2 flex">
-                                <Button
-                                  className=" ml-auto"
-                                  onClick={() =>
-                                    setOpenedSuggestedModal(
-                                      bank.mint.toBase58(),
-                                    )
-                                  }
-                                >
-                                  Check suggested values
-                                  {openedSuggestedModal ===
-                                    bank.mint.toBase58() && (
-                                    <DashboardSuggestedValues
-                                      midPriceImp={midPriceImp}
-                                      currentTier={currentTier}
-                                      suggestedTierKey={suggestedTierKey}
-                                      group={group}
-                                      bank={bank}
-                                      isOpen={
-                                        openedSuggestedModal ===
-                                        bank.mint.toBase58()
-                                      }
-                                      onClose={() =>
-                                        setOpenedSuggestedModal(null)
-                                      }
-                                    ></DashboardSuggestedValues>
-                                  )}
-                                </Button>
-                              </div>
-                            )}
                           </Disclosure.Panel>
                         </>
                       )}
@@ -996,23 +1164,52 @@ const Dashboard: NextPage = () => {
         ) : (
           'Loading'
         )}
-      </div>
-    </GovernancePageWrapper>
+      </GovernancePageWrapper>
+    </>
   )
 }
 
 const KeyValuePair = ({
   label,
   value,
+  warnings,
 }: {
   label: string
   value: number | ReactNode | string
+  warnings?: (string | null)[]
 }) => {
   return (
     <div className="flex items-center justify-between border-t border-th-bkg-2 px-6 py-3 md:hover:bg-th-bkg-2">
-      <span className="mr-4 flex flex-col whitespace-nowrap text-th-fgd-3">
-        {label}
-      </span>
+      <Tooltip
+        content={
+          warnings?.length ? (
+            <div className="space-y-1.5">
+              {warnings.map((value, index) => (
+                <p key={value}>
+                  {index + 1}. {value}
+                </p>
+              ))}
+            </div>
+          ) : (
+            ''
+          )
+        }
+      >
+        <div className="flex items-center">
+          <span
+            className={`mr-4 flex flex-col whitespace-nowrap ${
+              warnings?.length
+                ? 'tooltip-underline text-th-warning'
+                : 'text-th-fgd-3'
+            }`}
+          >
+            {label}
+          </span>
+          {warnings?.length ? (
+            <ExclamationTriangleIcon className="h-4 w-4 cursor-help text-th-warning" />
+          ) : null}
+        </div>
+      </Tooltip>
       <span className="flex flex-col font-mono text-th-fgd-2">
         <div>
           <span>{value}</span>
