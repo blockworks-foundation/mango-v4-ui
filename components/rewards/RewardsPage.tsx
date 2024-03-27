@@ -26,7 +26,7 @@ const RewardsPage = () => {
   ) : (
     <Leaderboards
       leaderboard={showLeaderboards}
-      goBack={() => setShowLeaderboards('')}
+      // goBack={() => setShowLeaderboards('')}
     />
   )
 }

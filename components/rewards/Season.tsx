@@ -1,8 +1,4 @@
 import Select from '@components/forms/Select'
-import AcornIcon from '@components/icons/AcornIcon'
-import MangoIcon from '@components/icons/MangoIcon'
-import RobotIcon from '@components/icons/RobotIcon'
-import WhaleIcon from '@components/icons/WhaleIcon'
 import SheenLoader from '@components/shared/SheenLoader'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
@@ -17,7 +13,6 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { abbreviateAddress } from 'utils/formatting'
 import { tiers } from './RewardsPage'
-import RewardsTierCard from './RewardsTierCard'
 import Faqs from './Faqs'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -35,6 +30,7 @@ import {
 } from 'types'
 import Tooltip from '@components/shared/Tooltip'
 import { useHiddenMangoAccounts } from 'hooks/useHiddenMangoAccounts'
+import Leaderboards from './Leaderboards'
 
 const fetchSeasonTradesData = async (
   startDate: string,
@@ -214,7 +210,11 @@ const Season = ({
       </div>
       <div className="mx-auto grid max-w-[1140px] grid-cols-12 gap-4 p-8 pt-0 lg:p-10 lg:pt-0">
         <div className="order-2 col-span-12 lg:order-1 lg:col-span-7">
-          <div className="mb-4 rounded-2xl border border-th-bkg-3 p-6 pb-0">
+          <div className="mb-4 rounded-2xl border border-th-bkg-3 p-6">
+            <h2 className="rewards-h2 mb-4">Leaderboard</h2>
+            <Leaderboards leaderboard="seed" />
+          </div>
+          {/* <div className="mb-4 rounded-2xl border border-th-bkg-3 p-6 pb-0">
             <h2 className="rewards-h2 mb-4">Rewards Tiers</h2>
             <div className="mb-6 space-y-2">
               <RewardsTierCard
@@ -246,14 +246,14 @@ const Season = ({
                 status={accountTier?.tier === 'bot' ? 'Your Tier' : ''}
               />
             </div>
-          </div>
+          </div> */}
           <div ref={faqRef}>
             <Faqs />
           </div>
         </div>
         <div className="order-1 col-span-12 lg:order-2 lg:col-span-5">
           <div className="mb-4 rounded-2xl border border-th-bkg-3 p-6">
-            <h2 className="rewards-h2 mb-4">Your Points</h2>
+            <h2 className="rewards-h2 mb-4">Your Tickets</h2>
             <div className="mb-4 flex h-14 w-full items-center rounded-xl bg-th-bkg-2 px-3">
               {!loadingAccountPointsAndRank ? (
                 accountPointsAndRank?.total_points ? (
