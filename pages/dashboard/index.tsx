@@ -183,6 +183,7 @@ const Dashboard: NextPage = () => {
     }, {})
 
     for (const bank of banks) {
+      if (bank.areDepositsReduceOnly()) continue
       const deposits = toUiDecimals(
         bank.indexedDeposits.mul(bank.depositIndex).toNumber(),
         bank.mintDecimals,
@@ -191,6 +192,7 @@ const Dashboard: NextPage = () => {
       const depositLimit = toUiDecimals(bank.depositLimit, bank.mintDecimals)
 
       const depositsValue = deposits * bank.uiPrice
+      if (depositsValue < 10) continue
 
       const depositsScaleStart = toUiDecimalsForQuote(
         bank.depositWeightScaleStartQuote,
@@ -233,7 +235,7 @@ const Dashboard: NextPage = () => {
         warnings[bank.name].borrowWeightScaleStartQuote =
           'Borrows value exceeds scaling start quote'
       }
-      if (deposits >= depositLimit) {
+      if (depositLimit && deposits >= depositLimit) {
         warnings[bank.name].depositLimit = 'Deposits are at capacity'
       }
       if (netBorrowsInWindow >= netBorrowLimitPerWindowQuote) {
@@ -288,7 +290,6 @@ const Dashboard: NextPage = () => {
                       '[aria-expanded=false][aria-label=panel]',
                     ),
                   ]
-                  console.log(panels)
                   panels.map((panel) => (panel as HTMLElement).click())
                 }}
               >
@@ -334,10 +335,18 @@ const Dashboard: NextPage = () => {
                 .sort((a, b) => {
                   const aTier = getSuggestedAndCurrentTier(a)
                   const bTier = getSuggestedAndCurrentTier(b)
-                  return (
-                    sortByTier(aTier?.currentTier?.preset_name) -
-                    sortByTier(bTier?.currentTier?.preset_name)
-                  )
+                  const aIsReduceOnly = a.areDepositsReduceOnly()
+                  const bIsReduceOnly = b.areDepositsReduceOnly()
+                  if (aIsReduceOnly && !bIsReduceOnly) {
+                    return 1
+                  } else if (!aIsReduceOnly && bIsReduceOnly) {
+                    return -1
+                  } else {
+                    return (
+                      sortByTier(aTier?.currentTier?.preset_name) -
+                      sortByTier(bTier?.currentTier?.preset_name)
+                    )
+                  }
                 })
                 .map((bank, i) => {
                   const mintInfo = group.mintInfosMapByMint.get(
@@ -430,14 +439,24 @@ const Dashboard: NextPage = () => {
                                     <p
                                       className={`ml-2 ${
                                         showWarningTooltip
-                                          ? 'tooltip-underline text-th-warning'
+                                          ? `tooltip-underline ${
+                                              oracleWarnings.length
+                                                ? 'text-th-error'
+                                                : 'text-th-warning'
+                                            }`
                                           : 'text-th-fgd-2'
                                       }`}
                                     >
                                       {formattedBankValues.name} Bank
                                     </p>
                                     {showWarningTooltip ? (
-                                      <ExclamationTriangleIcon className="ml-2 h-4 w-4 cursor-help text-th-warning" />
+                                      <ExclamationTriangleIcon
+                                        className={`ml-2 h-4 w-4 cursor-help ${
+                                          oracleWarnings.length
+                                            ? 'text-th-error'
+                                            : 'text-th-warning'
+                                        }`}
+                                      />
                                     ) : null}
                                   </div>
                                 </Tooltip>
@@ -1178,6 +1197,9 @@ const KeyValuePair = ({
   value: number | ReactNode | string
   warnings?: (string | null)[]
 }) => {
+  const isOracleWarning = warnings?.length
+    ? warnings.some((str) => str && str.toLowerCase().includes('oracle'))
+    : false
   return (
     <div className="flex items-center justify-between border-t border-th-bkg-2 px-6 py-3 md:hover:bg-th-bkg-2">
       <Tooltip
@@ -1199,14 +1221,20 @@ const KeyValuePair = ({
           <span
             className={`mr-4 flex flex-col whitespace-nowrap ${
               warnings?.length
-                ? 'tooltip-underline text-th-warning'
+                ? `tooltip-underline ${
+                    isOracleWarning ? 'text-th-error' : 'text-th-warning'
+                  }`
                 : 'text-th-fgd-3'
             }`}
           >
             {label}
           </span>
           {warnings?.length ? (
-            <ExclamationTriangleIcon className="h-4 w-4 cursor-help text-th-warning" />
+            <ExclamationTriangleIcon
+              className={`h-4 w-4 cursor-help ${
+                isOracleWarning ? 'text-th-error' : 'text-th-warning'
+              }`}
+            />
           ) : null}
         </div>
       </Tooltip>
