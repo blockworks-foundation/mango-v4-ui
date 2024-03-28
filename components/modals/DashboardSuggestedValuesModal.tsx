@@ -333,11 +333,7 @@ const DashboardSuggestedValues = ({
   )
 
   return (
-    <Modal
-      panelClassNames={' !max-w-[800px]'}
-      isOpen={isOpen}
-      onClose={onClose}
-    >
+    <Modal panelClassNames="!max-w-[800px]" isOpen={isOpen} onClose={onClose}>
       <h3 className="mb-6">
         <span>
           {bank.name} - Suggested tier: {PRESETS[suggestedTierKey].preset_name}{' '}
@@ -368,7 +364,7 @@ const DashboardSuggestedValues = ({
           ))}
         </Select>
       </h3>
-      <div className="flex max-h-[600px] w-full flex-col overflow-auto">
+      <div className="flex w-full flex-col">
         <div className="p-4">
           <div className="mb-2">
             <Label text="Oracle pk (Leave empty if no change)" />

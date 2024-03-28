@@ -50,7 +50,7 @@ function Modal({
         aria-hidden="true"
       />
       <div
-        className={`fixed inset-0 flex items-center sm:justify-center ${
+        className={`fixed inset-0 flex  items-center sm:justify-center ${
           fullScreen ? '' : 'sm:px-4'
         }`}
       >
@@ -59,10 +59,10 @@ function Modal({
             themeData.fonts.display.variable
           } ${
             themeData.fonts.mono.variable
-          } h-full w-full bg-th-bkg-1 font-body ${
+          } thin-scroll h-full max-h-[calc(100vh-5%)] w-full overflow-auto bg-th-bkg-1 font-body ${
             fullScreen
               ? ''
-              : 'p-4 sm:h-auto sm:max-w-md sm:rounded-lg sm:border sm:border-th-bkg-3 sm:p-6'
+              : 'p-4  sm:max-w-md sm:rounded-lg sm:border sm:border-th-bkg-3 sm:p-6'
           } relative ${panelClassNames}`}
         >
           <div>{children}</div>
