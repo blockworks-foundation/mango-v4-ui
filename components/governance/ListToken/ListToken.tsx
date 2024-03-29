@@ -1298,24 +1298,39 @@ const getLstStakePool = async (connection: Connection, mint: string) => {
     const resp = await connection.getAddressLookupTable(
       new PublicKey('EhWxBHdmQ3yDmPzhJbKtGMM9oaZD42emt71kSieghy5'),
     )
-    if (resp.value) {
-      const accounts = await connection.getMultipleAccountsInfo(
-        resp.value.state.addresses,
-      )
-      for (const idx in accounts) {
-        try {
-          const acc = accounts[idx]
-          const stakeAddressPk = resp.value?.state.addresses[idx]
-          if (acc?.data) {
-            const decoded = StakePoolLayout.decode(acc?.data)
-            if (decoded.poolMint.toBase58() === mint && stakeAddressPk) {
-              poolAddress = stakeAddressPk?.toBase58()
-              break
-            }
+    const addresses = [
+      'CgntPoLka5pD5fesJYhGmUCF8KU1QS1ZmZiuAuMZr2az',
+      '7ge2xKsZXmqPxa3YmXxXmzCp9Hc2ezrTxh6PECaxCwrL',
+      'GUAMR8ciiaijraJeLDEDrFVaueLm9YzWWY9R7CBPL9rA',
+      'Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb',
+      'CtMyWsrUtAwXWiGr9WjHT5fC3p3fgV8cyGpLTo2LJzG1',
+      '2qyEeSAWKfU18AFthrF7JA8z8ZCi1yt76Tqs917vwQTV',
+      'DqhH94PjkZsjAqEze2BEkWhFQJ6EyU6MdtMphMgnXqeK',
+      'F8h46pYkaqPJNP2MRkUUUtRkf8efCkpoqehn9g1bTTm7',
+      '5oc4nmbNTda9fx8Tw57ShLD132aqDK65vuHH4RU1K4LZ',
+      'stk9ApL5HeVAwPLr3TLhDXdZS8ptVu7zp6ov8HFDuMi',
+      ...(resp.value?.state.addresses || []).map((x) => x.toBase58()),
+    ]
+    //remove duplicates
+    const possibleStakePoolsAddresses = [...new Set(addresses)].map(
+      (x) => new PublicKey(x),
+    )
+    const accounts = await connection.getMultipleAccountsInfo(
+      possibleStakePoolsAddresses,
+    )
+    for (const idx in accounts) {
+      try {
+        const acc = accounts[idx]
+        const stakeAddressPk = possibleStakePoolsAddresses[idx]
+        if (acc?.data) {
+          const decoded = StakePoolLayout.decode(acc?.data)
+          if (decoded.poolMint.toBase58() === mint && stakeAddressPk) {
+            poolAddress = stakeAddressPk?.toBase58()
+            break
           }
-          // eslint-disable-next-line no-empty
-        } catch (e) {}
-      }
+        }
+        // eslint-disable-next-line no-empty
+      } catch (e) {}
     }
 
     return poolAddress
