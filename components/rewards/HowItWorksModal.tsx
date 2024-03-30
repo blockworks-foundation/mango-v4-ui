@@ -23,7 +23,8 @@ const HowItWorksModal = ({ isOpen, onClose }: ModalProps) => {
           <h3 className="text-base">Weekly Draw</h3>
           <p className="text-center">
             At midnight UTC every Sunday winners are randomly drawn for each
-            weekly prize. The most valuable prizes are drawn first.
+            prize in the guaranteed pool. The most valuable prizes are drawn
+            first.
           </p>
         </div>
         <div className="flex flex-col items-center">
@@ -44,7 +45,7 @@ const HowItWorksModal = ({ isOpen, onClose }: ModalProps) => {
           <h3 className="text-base">Claiming Prizes</h3>
           <p className="text-center">
             After the draws you&apos;ll be able to find out if your a winner by
-            returning to this page when the claim is ready. Prizes can be
+            returning to this page when the claim is announced. Prizes can be
             claimed for 48 hours. Unclaimed prizes will be rolled into the
             jackpot.
           </p>
