@@ -89,7 +89,8 @@ const Leaderboards = ({
   }, [leadersForTier, mangoAccountAddress])
 
   return (
-    <div className="mx-auto min-h-screen max-w-[1140px] flex-col items-center">
+    <div className="mb-4 rounded-2xl border border-th-bkg-3 p-6">
+      <h2 className="rewards-h2 mb-4">Leaderboard</h2>
       {/* <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center">
           <IconButton className="mr-2" hideBg onClick={goBack} size="small">
@@ -118,6 +119,10 @@ const Leaderboards = ({
         </Select>
       </div> */}
       <div className="space-y-2">
+        <div className="flex items-center justify-between px-4">
+          <p>Account</p>
+          <p>Tickets</p>
+        </div>
         {accountTier?.tier === leaderboardToShow &&
         accountPointsAndRank?.rank &&
         !isInTop20 ? (
