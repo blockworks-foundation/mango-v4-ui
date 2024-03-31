@@ -40,13 +40,18 @@ const NewListingBanner = () => {
 
   const showForNewListing = latestListing && latestListing.uiPrice
 
+  // change this to false when token launches
+  const isPreLaunch = latestListing?.name === 'W'
+
   return (!hasSeenNewListingBanner && showForNewListing) ||
     (showForNewListing && hasSeenNewListingBanner !== latestListing?.name) ? (
     <div className="flex items-center justify-between border-b border-th-bkg-3 bg-gradient-to-r from-th-bkg-1 via-th-bkg-2 to-th-bkg-1 px-4 py-2">
       <div className="h-5 w-5" />
       <div className="mx-4 flex flex-wrap items-center justify-center text-th-fgd-1">
         <span className="mx-1.5">
-          {t('new-token-live', { tokenName: latestListing.name })}
+          {!isPreLaunch
+            ? t('new-token-live', { tokenName: latestListing.name })
+            : `Pre-launch W is live.`}
         </span>
         <div>
           {newMarketName ? (
@@ -56,18 +61,22 @@ const NewListingBanner = () => {
                 href={`/trade?name=${newMarketName}`}
                 shallow
               >
-                {`${t('trade')} ${latestListing.name}`}
+                {!isPreLaunch
+                  ? `${t('trade')} ${latestListing.name}`
+                  : 'Place Your Bids'}
               </Link>{' '}
-              <span className="text-th-fgd-4">|</span>{' '}
+              {!isPreLaunch ? <span className="text-th-fgd-4">|</span> : null}{' '}
             </>
           ) : null}
-          <Link
-            className="font-bold text-th-fgd-1"
-            href={`/swap?in=USDC&out=${latestListing.name}`}
-            shallow
-          >
-            {`${t('swap')} ${latestListing.name}`}
-          </Link>
+          {!isPreLaunch ? (
+            <Link
+              className="font-bold text-th-fgd-1"
+              href={`/swap?in=USDC&out=${latestListing.name}`}
+              shallow
+            >
+              {`${t('swap')} ${latestListing.name}`}
+            </Link>
+          ) : null}
         </div>
       </div>
       <button
