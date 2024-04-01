@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NEW_LISTING_BANNER_KEY } from 'utils/constants'
+import TokenLogo from './shared/TokenLogo'
 
 const NewListingBanner = () => {
   const { t } = useTranslation('common')
@@ -48,6 +49,7 @@ const NewListingBanner = () => {
     <div className="flex items-center justify-between border-b border-th-bkg-3 bg-gradient-to-r from-th-bkg-1 via-th-bkg-2 to-th-bkg-1 px-4 py-2">
       <div className="h-5 w-5" />
       <div className="mx-4 flex flex-wrap items-center justify-center text-th-fgd-1">
+        <TokenLogo bank={latestListing} size={16} />
         <span className="mx-1.5">
           {!isPreLaunch
             ? t('new-token-live', { tokenName: latestListing.name })
