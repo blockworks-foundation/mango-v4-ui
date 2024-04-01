@@ -59,10 +59,10 @@ function Modal({
             themeData.fonts.display.variable
           } ${
             themeData.fonts.mono.variable
-          } thin-scroll max-h-[calc(100vh-5%)] w-full overflow-auto bg-th-bkg-1 font-body ${
+          } thin-scroll w-full overflow-auto bg-th-bkg-1 font-body ${
             fullScreen
-              ? ''
-              : 'p-4  sm:max-w-md sm:rounded-lg sm:border sm:border-th-bkg-3 sm:p-6'
+              ? 'h-full'
+              : 'max-h-[calc(100vh-5%)] p-4 sm:max-w-md sm:rounded-lg sm:border sm:border-th-bkg-3 sm:p-6'
           } relative ${panelClassNames}`}
         >
           <div>{children}</div>
