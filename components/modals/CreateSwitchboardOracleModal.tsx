@@ -505,7 +505,7 @@ const CreateSwitchboardOracleModal = ({
         title: 'Successfully created oracle',
       })
       window.open(
-        `https://app.switchboard.xyz/solana/mainnet-beta/feed/${aggregatorAccount.publicKey.toBase58()}`,
+        `https://app.switchboard.xyz/solana/mainnet/feed/${aggregatorAccount.publicKey.toBase58()}`,
         '_blank',
       )
       setCreatingOracle(false)
