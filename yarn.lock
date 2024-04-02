@@ -391,6 +391,17 @@
     node-fetch "2.6.11"
     ws "^8.16.0"
 
+"@blockworks-foundation/mangolana@0.0.15":
+  version "0.0.15"
+  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mangolana/-/mangolana-0.0.15.tgz#8a603675028f7d7ab400cc58bf3058d2e7514cde"
+  integrity sha512-P31XW2w2lFBgzM+529H2f3Kz8rNC7+h0pYZub9kOcsACAt7TwLksg1fGuzSvekLn6M1JmVpPa9nISdAVfsZB5g==
+  dependencies:
+    "@solana/web3.js" "^1.88.0"
+    bs58 "^5.0.0"
+    isomorphic-ws "^5.0.0"
+    node-fetch "2.6.11"
+    ws "^8.16.0"
+
 "@bundlr-network/client@^0.8.8":
   version "0.8.9"
   resolved "https://registry.yarnpkg.com/@bundlr-network/client/-/client-0.8.9.tgz#58e969a5d80f8d25d212d46bb7a060730a3c1736"
