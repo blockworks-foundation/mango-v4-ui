@@ -7,6 +7,7 @@ import {
   toUiDecimalsForQuote,
 } from '@blockworks-foundation/mango-v4'
 import ExplorerLink from '@components/shared/ExplorerLink'
+import { BorshAccountsCoder } from '@coral-xyz/anchor'
 import { coder } from '@project-serum/anchor/dist/cjs/spl/token'
 import mangoStore from '@store/mangoStore'
 import useMangoGroup from 'hooks/useMangoGroup'
@@ -49,8 +50,65 @@ import Tooltip from '@components/shared/Tooltip'
 
 dayjs.extend(relativeTime)
 
-type BanksWarningObject = {
-  [key: string]: Record<string, string>
+type BankWarningObject = {
+  depositWeightScaleStartQuote?: string
+  borrowWeightScaleStartQuote?: string
+  depositLimit?: string
+  netBorrowLimitPerWindowQuote?: string
+  oracleConfFilter?: string
+  oracleLiveliness?: string
+}
+
+const getSuggestedAndCurrentTier = (
+  bank: Bank,
+  midPriceImp: MidPriceImpact[],
+) => {
+  const currentTier = Object.values(LISTING_PRESETS).find((x) => {
+    return x.initLiabWeight.toFixed(1) === '1.8'
+      ? x.initLiabWeight.toFixed(1) ===
+          bank?.initLiabWeight.toNumber().toFixed(1) &&
+          x.reduceOnly === bank.reduceOnly
+      : x.initLiabWeight.toFixed(1) ===
+          bank?.initLiabWeight.toNumber().toFixed(1)
+  })
+
+  const filteredResp = midPriceImp
+    .filter((x) => x.avg_price_impact_percent < 1)
+    .reduce((acc: { [key: string]: MidPriceImpact }, val: MidPriceImpact) => {
+      if (
+        !acc[val.symbol] ||
+        val.target_amount > acc[val.symbol].target_amount
+      ) {
+        acc[val.symbol] = val
+      }
+      return acc
+    }, {})
+  const priceImpact = filteredResp[getApiTokenName(bank.name)]
+
+  const suggestedTierKey = getProposedKey(
+    priceImpact?.target_amount,
+    bank.oracleProvider === OracleProvider.Pyth,
+  )
+
+  return {
+    suggestedTierKey,
+    currentTier,
+  }
+}
+
+const getPythLink = async (pythOraclePk: PublicKey) => {
+  const connection = mangoStore.getState().connection
+  const pythClient = new PythHttpClient(connection, MAINNET_PYTH_PROGRAM)
+  const pythAccounts = await pythClient.getData()
+  const feed = pythAccounts.products.find(
+    (x) => x.price_account === pythOraclePk.toBase58(),
+  )
+  window.open(
+    feed
+      ? `https://pyth.network/price-feeds/${feed.asset_type.toLowerCase()}-${feed.base.toLowerCase()}-${feed.quote_currency.toLowerCase()}?cluster=solana-mainnet-beta`
+      : `https://explorer.solana.com/address/${pythOraclePk.toBase58()}`,
+    '_blank',
+  )
 }
 
 export async function getStaticProps({ locale }: { locale: string }) {
@@ -74,66 +132,13 @@ export async function getStaticProps({ locale }: { locale: string }) {
 
 const Dashboard: NextPage = () => {
   const { group } = useMangoGroup()
-  const connection = mangoStore((s) => s.connection)
   const { banks } = useBanks()
-  const [openedSuggestedModal, setOpenedSuggestedModal] = useState<
-    string | null
-  >(null)
-  const priceImpacts: PriceImpact[] = group?.pis || []
   const [stickyIndex, setStickyIndex] = useState(-1)
 
-  const midPriceImp = useMemo(
-    () => getMidPriceImpacts(priceImpacts.length ? priceImpacts : []),
-    [priceImpacts],
-  )
-
-  const getSuggestedAndCurrentTier = (bank: Bank) => {
-    const currentTier = Object.values(LISTING_PRESETS).find((x) => {
-      return x.initLiabWeight.toFixed(1) === '1.8'
-        ? x.initLiabWeight.toFixed(1) ===
-            bank?.initLiabWeight.toNumber().toFixed(1) &&
-            x.reduceOnly === bank.reduceOnly
-        : x.initLiabWeight.toFixed(1) ===
-            bank?.initLiabWeight.toNumber().toFixed(1)
-    })
-
-    const filteredResp = midPriceImp
-      .filter((x) => x.avg_price_impact_percent < 1)
-      .reduce((acc: { [key: string]: MidPriceImpact }, val: MidPriceImpact) => {
-        if (
-          !acc[val.symbol] ||
-          val.target_amount > acc[val.symbol].target_amount
-        ) {
-          acc[val.symbol] = val
-        }
-        return acc
-      }, {})
-    const priceImpact = filteredResp[getApiTokenName(bank.name)]
-
-    const suggestedTierKey = getProposedKey(
-      priceImpact?.target_amount,
-      bank.oracleProvider === OracleProvider.Pyth,
-    )
-
-    return {
-      suggestedTierKey,
-      currentTier,
-    }
-  }
-
-  const getPythLink = async (pythOraclePk: PublicKey) => {
-    const pythClient = new PythHttpClient(connection, MAINNET_PYTH_PROGRAM)
-    const pythAccounts = await pythClient.getData()
-    const feed = pythAccounts.products.find(
-      (x) => x.price_account === pythOraclePk.toBase58(),
-    )
-    window.open(
-      feed
-        ? `https://pyth.network/price-feeds/${feed.asset_type.toLowerCase()}-${feed.base.toLowerCase()}-${feed.quote_currency.toLowerCase()}?cluster=solana-mainnet-beta`
-        : `https://explorer.solana.com/address/${pythOraclePk.toBase58()}`,
-      '_blank',
-    )
-  }
+  const midPriceImp = useMemo(() => {
+    const priceImpacts: PriceImpact[] = group?.pis || []
+    return getMidPriceImpacts(priceImpacts.length ? priceImpacts : [])
+  }, [group?.pis])
 
   const handleScroll = useCallback(() => {
     for (let i = 0; i < banks.length; i++) {
@@ -174,84 +179,6 @@ const Dashboard: NextPage = () => {
       }
     }
   }, [banks.length])
-
-  const warningBanks: BanksWarningObject | undefined = useMemo(() => {
-    if (!banks?.length) return
-    const warnings = banks.reduce((acc: BanksWarningObject, bank) => {
-      acc[bank.name] = {}
-      return acc
-    }, {})
-
-    for (const bank of banks) {
-      if (bank.areDepositsReduceOnly()) continue
-      const deposits = toUiDecimals(
-        bank.indexedDeposits.mul(bank.depositIndex).toNumber(),
-        bank.mintDecimals,
-      )
-
-      const depositLimit = toUiDecimals(bank.depositLimit, bank.mintDecimals)
-
-      const depositsValue = deposits * bank.uiPrice
-      if (depositsValue < 10) continue
-
-      const depositsScaleStart = toUiDecimalsForQuote(
-        bank.depositWeightScaleStartQuote,
-      )
-
-      const netBorrowsInWindow = toUiDecimalsForQuote(
-        I80F48.fromI64(bank.netBorrowsInWindow).mul(bank.price),
-      )
-
-      const netBorrowLimitPerWindowQuote = toUiDecimals(
-        bank.netBorrowLimitPerWindowQuote,
-        6,
-      )
-
-      const borrowsValue =
-        toUiDecimals(
-          bank.indexedBorrows.mul(bank.borrowIndex).toNumber(),
-          bank.mintDecimals,
-        ) * bank.uiPrice
-
-      const borrowsScaleStart = toUiDecimalsForQuote(
-        bank.borrowWeightScaleStartQuote,
-      )
-
-      const oracleConfFilter = 100 * bank.oracleConfig.confFilter.toNumber()
-      const lastKnownConfidence =
-        bank._oracleLastKnownDeviation instanceof I80F48 &&
-        !bank._oracleLastKnownDeviation.isZero()
-          ? bank._oracleLastKnownDeviation
-              ?.div(bank.price)
-              .mul(I80F48.fromNumber(100))
-              .toNumber()
-          : 0
-
-      if (depositsValue > depositsScaleStart) {
-        warnings[bank.name].depositWeightScaleStartQuote =
-          'Deposits value exceeds scaling start quote'
-      }
-      if (borrowsValue > borrowsScaleStart) {
-        warnings[bank.name].borrowWeightScaleStartQuote =
-          'Borrows value exceeds scaling start quote'
-      }
-      if (depositLimit && deposits >= depositLimit) {
-        warnings[bank.name].depositLimit = 'Deposits are at capacity'
-      }
-      if (netBorrowsInWindow >= netBorrowLimitPerWindowQuote) {
-        warnings[bank.name].netBorrowLimitPerWindowQuote =
-          'Net borrows in current window are at capacity'
-      }
-      if (lastKnownConfidence && lastKnownConfidence > oracleConfFilter) {
-        warnings[
-          bank.name
-        ].oracleConfFilter = `Oracle confidence is outside the limit. Current: ${lastKnownConfidence.toFixed(
-          2,
-        )}% limit: ${oracleConfFilter.toFixed(2)}%`
-      }
-    }
-    return warnings
-  }, [banks])
 
   const sortByTier = (tier: string | undefined) => {
     const tierOrder: Record<string, number> = {
@@ -333,8 +260,8 @@ const Dashboard: NextPage = () => {
             <div className="border-b border-th-bkg-3">
               {banks
                 .sort((a, b) => {
-                  const aTier = getSuggestedAndCurrentTier(a)
-                  const bTier = getSuggestedAndCurrentTier(b)
+                  const aTier = getSuggestedAndCurrentTier(a, midPriceImp)
+                  const bTier = getSuggestedAndCurrentTier(b, midPriceImp)
                   const aIsReduceOnly = a.areDepositsReduceOnly()
                   const bIsReduceOnly = b.areDepositsReduceOnly()
                   if (aIsReduceOnly && !bIsReduceOnly) {
@@ -349,442 +276,14 @@ const Dashboard: NextPage = () => {
                   }
                 })
                 .map((bank, i) => {
-                  const mintInfo = group.mintInfosMapByMint.get(
-                    bank.mint.toString(),
-                  )
-
-                  const formattedBankValues = getFormattedBankValues(
-                    group,
-                    bank,
-                  )
-
-                  const { currentTier, suggestedTierKey } =
-                    getSuggestedAndCurrentTier(bank)
-
-                  const depositLimitWarning =
-                    warningBanks?.[bank.name]?.depositLimit ?? null
-
-                  const depositWeightScaleStartQuoteWarning =
-                    warningBanks?.[bank.name]?.depositWeightScaleStartQuote ??
-                    null
-
-                  const depositWarnings = [
-                    depositLimitWarning,
-                    depositWeightScaleStartQuoteWarning,
-                  ].filter(Boolean)
-
-                  const borrowWeightScaleStartQuoteWarning =
-                    warningBanks?.[bank.name]?.borrowWeightScaleStartQuote ??
-                    null
-
-                  const netBorrowLimitPerWindowQuoteWarning =
-                    warningBanks?.[bank.name]?.netBorrowLimitPerWindowQuote ??
-                    null
-
-                  const borrowWarnings = [
-                    borrowWeightScaleStartQuoteWarning,
-                    netBorrowLimitPerWindowQuoteWarning,
-                  ].filter(Boolean)
-
-                  const oracleConfFilterWarning =
-                    warningBanks?.[bank.name]?.oracleConfFilter ?? null
-
-                  const oracleWarnings = [oracleConfFilterWarning].filter(
-                    Boolean,
-                  )
-
-                  const showWarningTooltip =
-                    warningBanks && Object.keys(warningBanks[bank.name]).length
-
                   return (
-                    <Disclosure key={bank.publicKey.toString()}>
-                      {({ open }) => (
-                        <>
-                          <div
-                            className={`default-transition w-full border-t border-th-bkg-3 md:hover:bg-th-bkg-2 ${
-                              open
-                                ? i === stickyIndex
-                                  ? 'sticky top-0 bg-th-bkg-3'
-                                  : 'bg-th-bkg-3'
-                                : ''
-                            }`}
-                            id={`parent-item-${i}`}
-                          >
-                            <Disclosure.Button
-                              className={`flex w-full items-center justify-between p-4 ${
-                                showWarningTooltip ? 'has-warning' : ''
-                              }`}
-                              aria-label="panel"
-                            >
-                              <div className="flex items-center">
-                                <TokenLogo bank={bank} />
-                                <Tooltip
-                                  content={
-                                    showWarningTooltip ? (
-                                      <div className="space-y-1.5">
-                                        {Object.values(
-                                          warningBanks[bank.name],
-                                        ).map((value, index) => (
-                                          <p key={value}>
-                                            {index + 1}. {value}
-                                          </p>
-                                        ))}
-                                      </div>
-                                    ) : (
-                                      ''
-                                    )
-                                  }
-                                >
-                                  <div className="flex items-center">
-                                    <p
-                                      className={`ml-2 ${
-                                        showWarningTooltip
-                                          ? `tooltip-underline ${
-                                              oracleWarnings.length
-                                                ? 'text-th-error'
-                                                : 'text-th-warning'
-                                            }`
-                                          : 'text-th-fgd-2'
-                                      }`}
-                                    >
-                                      {formattedBankValues.name} Bank
-                                    </p>
-                                    {showWarningTooltip ? (
-                                      <ExclamationTriangleIcon
-                                        className={`ml-2 h-4 w-4 cursor-help ${
-                                          oracleWarnings.length
-                                            ? 'text-th-error'
-                                            : 'text-th-warning'
-                                        }`}
-                                      />
-                                    ) : null}
-                                  </div>
-                                </Tooltip>
-                              </div>
-                              <div className="flex items-center space-x-3">
-                                <div className="flex space-x-2">
-                                  <div>{currentTier?.preset_name}</div>
-                                  <div>/</div>
-                                  <div className="text-th-success">
-                                    {
-                                      LISTING_PRESETS[suggestedTierKey]
-                                        .preset_name
-                                    }
-                                  </div>
-                                </div>
-                                <ChevronDownIcon
-                                  className={`${
-                                    open ? 'rotate-180' : 'rotate-0'
-                                  } h-5 w-5 text-th-fgd-3`}
-                                />
-                              </div>
-                            </Disclosure.Button>
-                          </div>
-                          <Disclosure.Panel>
-                            {bank.mint.toBase58() !== USDC_MINT ? (
-                              <div className="my-3 flex">
-                                <Button
-                                  className="ml-auto"
-                                  onClick={() =>
-                                    setOpenedSuggestedModal(
-                                      bank.mint.toBase58(),
-                                    )
-                                  }
-                                  size="small"
-                                >
-                                  Check suggested values
-                                  {openedSuggestedModal ===
-                                    bank.mint.toBase58() && (
-                                    <DashboardSuggestedValues
-                                      midPriceImp={midPriceImp}
-                                      currentTier={currentTier}
-                                      suggestedTierKey={suggestedTierKey}
-                                      group={group}
-                                      bank={bank}
-                                      isOpen={
-                                        openedSuggestedModal ===
-                                        bank.mint.toBase58()
-                                      }
-                                      onClose={() =>
-                                        setOpenedSuggestedModal(null)
-                                      }
-                                    ></DashboardSuggestedValues>
-                                  )}
-                                </Button>
-                              </div>
-                            ) : null}
-                            <KeyValuePair
-                              label="Mint"
-                              value={
-                                <ExplorerLink address={bank.mint.toString()} />
-                              }
-                            />
-                            <KeyValuePair
-                              label="Bank"
-                              value={
-                                <ExplorerLink
-                                  address={formattedBankValues.publicKey.toString()}
-                                  anchorData
-                                />
-                              }
-                            />
-                            <KeyValuePair
-                              label="MintInfo"
-                              value={
-                                <ExplorerLink
-                                  address={mintInfo!.publicKey.toString()}
-                                  anchorData
-                                />
-                              }
-                            />
-                            <KeyValuePair
-                              label="Vault"
-                              value={
-                                <ExplorerLink
-                                  address={formattedBankValues.vault}
-                                  anchorData
-                                />
-                              }
-                            />
-                            <KeyValuePair
-                              label="Oracle"
-                              value={
-                                bank.oracleProvider ==
-                                OracleProvider.Switchboard ? (
-                                  <a
-                                    href={`https://app.switchboard.xyz/solana/mainnet/feed/${bank.oracle.toString()}`}
-                                    className={`flex items-center break-all text-th-fgd-2 hover:text-th-fgd-3`}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                  >
-                                    {bank.oracle.toString()}
-                                    <ArrowTopRightOnSquareIcon className="ml-2 h-5 w-5 whitespace-nowrap" />
-                                  </a>
-                                ) : (
-                                  <a
-                                    onClick={() => getPythLink(bank.oracle)}
-                                    className={`flex cursor-pointer items-center break-all text-th-fgd-2 hover:text-th-fgd-3`}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                  >
-                                    {bank.oracle.toString()}
-                                    <ArrowTopRightOnSquareIcon className="ml-2 h-5 w-5 whitespace-nowrap" />
-                                  </a>
-                                )
-                              }
-                            />
-                            <KeyValuePair
-                              label="Token Index"
-                              value={formattedBankValues.tokenIndex}
-                            />
-                            <KeyValuePair
-                              label="Mint Decimals"
-                              value={formattedBankValues.mintDecimals}
-                            />
-                            <KeyValuePair
-                              label="Oracle Price"
-                              value={`$${bank.uiPrice}`}
-                            />
-                            <KeyValuePair
-                              label="Stable Price"
-                              value={`$${formattedBankValues.stablePrice}`}
-                            />
-                            <KeyValuePair
-                              label="Last stable price updated"
-                              value={formattedBankValues.lastStablePriceUpdated}
-                            />
-                            <KeyValuePair
-                              label="Stable Price: delay interval"
-                              value={`${formattedBankValues.stablePriceModel.delayIntervalSeconds}s`}
-                            />
-                            <KeyValuePair
-                              label="Stable Price: growth limits"
-                              value={`${formattedBankValues.stablePriceGrowthLimitsDelay}% delay / ${formattedBankValues.stablePriceGrowthLimitsStable}% stable`}
-                            />
-                            <VaultData bank={bank} />
-                            <KeyValuePair
-                              label="Loan Fee Rate"
-                              value={`${formattedBankValues.loanFeeRate} bps`}
-                            />
-                            <KeyValuePair
-                              label="Loan origination fee rate"
-                              value={`${formattedBankValues.loanOriginationFeeRate} bps`}
-                            />
-                            <KeyValuePair
-                              label="Collected fees native"
-                              value={`${formattedBankValues.collectedFeesNative} ($${formattedBankValues.collectedFeesNativePrice})`}
-                            />
-                            <KeyValuePair
-                              label="Dust"
-                              value={formattedBankValues.dust}
-                            />
-                            <KeyValuePair
-                              label="Reduce Only"
-                              value={`${
-                                bank.reduceOnly
-                              } (Are deposits reduce only - ${bank.areDepositsReduceOnly()}, Are borrows reduce only - ${bank.areBorrowsReduceOnly()})`}
-                            />
-                            <KeyValuePair
-                              label="Avg Utilization"
-                              value={`${formattedBankValues.avgUtilization}%`}
-                            />
-                            <KeyValuePair
-                              label="Maint Asset/Liab Weight"
-                              value={`${formattedBankValues.maintAssetWeight} /
-                              ${formattedBankValues.maintLiabWeight}`}
-                            />
-                            <KeyValuePair
-                              label="Init Asset/Liab Weight"
-                              value={`${formattedBankValues.initAssetWeight} /
-                              ${formattedBankValues.initLiabWeight}`}
-                            />
-                            <KeyValuePair
-                              label="Liquidation fee"
-                              value={`${formattedBankValues.liquidationFee}%`}
-                            />
-                            <KeyValuePair
-                              label="Scaled Init Asset/Liab Weight"
-                              value={`${formattedBankValues.scaledInitAssetWeight} / ${formattedBankValues.scaledInitLiabWeight}`}
-                            />
-                            <KeyValuePair
-                              label="Deposits"
-                              value={`${formattedBankValues.deposits} ($${formattedBankValues.depositsPrice})`}
-                              warnings={depositWarnings}
-                            />
-                            <KeyValuePair
-                              label="Borrows"
-                              value={`${formattedBankValues.borrows} ($${formattedBankValues.borrowsPrice})`}
-                              warnings={borrowWarnings}
-                            />
-                            <KeyValuePair
-                              label="Deposit weight scale start quote"
-                              value={`$${formattedBankValues.depositWeightScaleStartQuote}`}
-                            />
-                            <KeyValuePair
-                              label="Borrow weight scale start quote"
-                              value={`$${formattedBankValues.borrowWeightScaleStartQuote}`}
-                            />
-                            <KeyValuePair
-                              label={`Net borrows in window (next window starts ${dayjs().to(
-                                dayjs().add(
-                                  bank.getTimeToNextBorrowLimitWindowStartsTs(),
-                                  'second',
-                                ),
-                              )})`}
-                              value={`$${formattedBankValues.netBorrowsInWindow} / $${formattedBankValues.netBorrowLimitPerWindowQuote}`}
-                            />
-                            <KeyValuePair
-                              label="Group Insurance Fund"
-                              value={`${mintInfo!.groupInsuranceFund}`}
-                            />
-                            <KeyValuePair
-                              label="Min vault to deposits ratio"
-                              value={`${formattedBankValues.minVaultToDepositsRatio}%`}
-                            />
-                            <KeyValuePair
-                              label="Rate params"
-                              value={
-                                <span className="text-right">
-                                  {`${formattedBankValues.rate0}% @ ${formattedBankValues.util0}% util, `}
-                                  {`${formattedBankValues.rate1}% @ ${formattedBankValues.util1}% util, `}
-                                  {`${formattedBankValues.maxRate}% @ 100% util`}
-                                </span>
-                              }
-                            />
-                            <KeyValuePair
-                              label="Adjustment factor"
-                              value={`${formattedBankValues.adjustmentFactor}%`}
-                            />
-                            <KeyValuePair
-                              label="Deposit rate"
-                              value={`${formattedBankValues.depositRate}%`}
-                            />
-                            <KeyValuePair
-                              label="Borrow rate"
-                              value={`${formattedBankValues.borrowRate}%`}
-                            />
-                            <KeyValuePair
-                              label="Last index update"
-                              value={formattedBankValues.lastIndexUpdate}
-                            />
-                            <KeyValuePair
-                              label="Last rates updated"
-                              value={formattedBankValues.lastRatesUpdate}
-                            />
-                            <KeyValuePair
-                              label="Oracle: Conf Filter"
-                              value={`${
-                                formattedBankValues.oracleConfFilter
-                              }% (Last known confidence ${
-                                bank._oracleLastKnownDeviation instanceof
-                                  I80F48 &&
-                                !bank._oracleLastKnownDeviation.isZero()
-                                  ? bank._oracleLastKnownDeviation
-                                      ?.div(bank.price)
-                                      .mul(I80F48.fromNumber(100))
-                                      .toNumber()
-                                      .toFixed(2)
-                                  : 'null'
-                              }%)`}
-                              warnings={oracleWarnings}
-                            />
-                            <KeyValuePair
-                              label="Oracle: Max Staleness"
-                              value={`${bank.oracleConfig.maxStalenessSlots} slots (Last updated slot ${bank._oracleLastUpdatedSlot})`}
-                            />
-                            <KeyValuePair
-                              label="Deposit limit"
-                              value={
-                                formattedBankValues.depositLimit
-                                  ? `${formattedBankValues.depositLimit} ${
-                                      bank.name
-                                    } ($${(
-                                      formattedBankValues.depositLimit *
-                                      bank.uiPrice
-                                    ).toFixed(2)})`
-                                  : 'None'
-                              }
-                            />
-                            <KeyValuePair
-                              label="Interest Curve Scaling"
-                              value={formattedBankValues.interestCurveScaling}
-                            />
-                            <KeyValuePair
-                              label="Interest Target Utilization"
-                              value={
-                                formattedBankValues.interestTargetUtilization
-                              }
-                            />
-                            <KeyValuePair
-                              label="Maint Weight Shift Start"
-                              value={formattedBankValues.maintWeightShiftStart}
-                            />
-                            <KeyValuePair
-                              label="Maint Weight Shift End"
-                              value={formattedBankValues.maintWeightShiftEnd}
-                            />
-                            <KeyValuePair
-                              label="Maint Weight Shift Asset Target"
-                              value={
-                                formattedBankValues.maintWeightShiftAssetTarget
-                              }
-                            />
-                            <KeyValuePair
-                              label="Maint Weight Shift Liab Target"
-                              value={
-                                formattedBankValues.maintWeightShiftLiabTarget
-                              }
-                            />
-                            <KeyValuePair
-                              label="Maint Weight Shift Duration Inv"
-                              value={
-                                formattedBankValues.maintWeightShiftDurationInv
-                              }
-                            />
-                          </Disclosure.Panel>
-                        </>
-                      )}
-                    </Disclosure>
+                    <BankDisclosure
+                      bank={bank}
+                      key={bank.name}
+                      index={i}
+                      midPriceImp={midPriceImp}
+                      isSticky={i === stickyIndex}
+                    />
                   )
                 })}
             </div>
@@ -1185,6 +684,527 @@ const Dashboard: NextPage = () => {
         )}
       </GovernancePageWrapper>
     </>
+  )
+}
+
+const BankDisclosure = ({
+  bank,
+  index,
+  midPriceImp,
+  isSticky,
+}: {
+  bank: Bank
+  index: number
+  midPriceImp: MidPriceImpact[]
+  isSticky: boolean
+}) => {
+  const { group } = useMangoGroup()
+  const [isStale, setIsStale] = useState(false)
+  const [openedSuggestedModal, setOpenedSuggestedModal] = useState<
+    string | null
+  >(null)
+
+  const { currentTier, suggestedTierKey } = getSuggestedAndCurrentTier(
+    bank,
+    midPriceImp,
+  )
+
+  const warnings = useMemo(() => {
+    const warnings: BankWarningObject = {}
+
+    if (bank.areDepositsReduceOnly()) return
+    const deposits = toUiDecimals(
+      bank.indexedDeposits.mul(bank.depositIndex).toNumber(),
+      bank.mintDecimals,
+    )
+
+    const depositLimit = toUiDecimals(bank.depositLimit, bank.mintDecimals)
+
+    const depositsValue = deposits * bank.uiPrice
+    if (depositsValue < 10) return
+
+    const depositsScaleStart = toUiDecimalsForQuote(
+      bank.depositWeightScaleStartQuote,
+    )
+
+    const netBorrowsInWindow = toUiDecimalsForQuote(
+      I80F48.fromI64(bank.netBorrowsInWindow).mul(bank.price),
+    )
+
+    const netBorrowLimitPerWindowQuote = toUiDecimals(
+      bank.netBorrowLimitPerWindowQuote,
+      6,
+    )
+
+    const borrowsValue =
+      toUiDecimals(
+        bank.indexedBorrows.mul(bank.borrowIndex).toNumber(),
+        bank.mintDecimals,
+      ) * bank.uiPrice
+
+    const borrowsScaleStart = toUiDecimalsForQuote(
+      bank.borrowWeightScaleStartQuote,
+    )
+
+    const oracleConfFilter = 100 * bank.oracleConfig.confFilter.toNumber()
+    const lastKnownConfidence =
+      bank._oracleLastKnownDeviation instanceof I80F48 &&
+      !bank._oracleLastKnownDeviation.isZero()
+        ? bank._oracleLastKnownDeviation
+            ?.div(bank.price)
+            .mul(I80F48.fromNumber(100))
+            .toNumber()
+        : 0
+
+    if (depositsValue > depositsScaleStart) {
+      warnings.depositWeightScaleStartQuote =
+        'Deposits value exceeds scaling start quote'
+    }
+    if (borrowsValue > borrowsScaleStart) {
+      warnings.borrowWeightScaleStartQuote =
+        'Borrows value exceeds scaling start quote'
+    }
+    if (depositLimit && deposits >= depositLimit) {
+      warnings.depositLimit = 'Deposits are at capacity'
+    }
+    if (netBorrowsInWindow >= netBorrowLimitPerWindowQuote) {
+      warnings.netBorrowLimitPerWindowQuote =
+        'Net borrows in current window are at capacity'
+    }
+    if (lastKnownConfidence && lastKnownConfidence > oracleConfFilter) {
+      warnings.oracleConfFilter = `Oracle confidence is outside the limit. Current: ${lastKnownConfidence.toFixed(
+        2,
+      )}% limit: ${oracleConfFilter.toFixed(2)}%`
+    }
+    if (isStale) {
+      warnings.oracleLiveliness = 'Oracle is stale'
+    }
+    return warnings
+  }, [bank, isStale])
+
+  useEffect(() => {
+    const client = mangoStore.getState().client
+    const connection = mangoStore.getState().connection
+    const group = mangoStore.getState().group
+    if (!group) return
+
+    const coder = new BorshAccountsCoder(client.program.idl)
+    const decimals = group.getMintDecimals(bank.mint)
+    const subId = connection.onAccountChange(
+      bank.oracle,
+      async (info, context) => {
+        const { lastUpdatedSlot } = await group.decodePriceFromOracleAi(
+          coder,
+          bank.oracle,
+          info,
+          decimals,
+          client,
+        )
+
+        const oracleWriteSlot = context.slot
+        const accountSlot = mangoStore.getState().mangoAccount.lastSlot
+        const highestSlot = Math.max(oracleWriteSlot, accountSlot)
+        const maxStalenessSlots = bank.oracleConfig.maxStalenessSlots.toNumber()
+        setIsStale(
+          maxStalenessSlots > 0 &&
+            highestSlot - lastUpdatedSlot > maxStalenessSlots,
+        )
+      },
+      'processed',
+    )
+    return () => {
+      if (typeof subId !== 'undefined') {
+        connection.removeAccountChangeListener(subId)
+      }
+    }
+  }, [bank])
+
+  const depositLimitWarning = warnings?.depositLimit ?? null
+
+  const depositWeightScaleStartQuoteWarning =
+    warnings?.depositWeightScaleStartQuote ?? null
+
+  const depositWarnings = [
+    depositLimitWarning,
+    depositWeightScaleStartQuoteWarning,
+  ].filter(Boolean)
+
+  const borrowWeightScaleStartQuoteWarning =
+    warnings?.borrowWeightScaleStartQuote ?? null
+
+  const netBorrowLimitPerWindowQuoteWarning =
+    warnings?.netBorrowLimitPerWindowQuote ?? null
+
+  const borrowWarnings = [
+    borrowWeightScaleStartQuoteWarning,
+    netBorrowLimitPerWindowQuoteWarning,
+  ].filter(Boolean)
+
+  const oracleConfFilterWarning = warnings?.oracleConfFilter ?? null
+  const oracleLivelinessWarning = warnings?.oracleLiveliness ?? null
+
+  const oracleWarnings = [
+    oracleConfFilterWarning,
+    oracleLivelinessWarning,
+  ].filter(Boolean)
+
+  const showWarningTooltip = warnings && Object.keys(warnings).length
+
+  if (!group) return null
+  const mintInfo = group.mintInfosMapByMint.get(bank.mint.toString())
+
+  const formattedBankValues = getFormattedBankValues(group, bank)
+  return (
+    <Disclosure key={bank.publicKey.toString()}>
+      {({ open }) => (
+        <>
+          <div
+            className={`default-transition w-full border-t border-th-bkg-3 md:hover:bg-th-bkg-2 ${
+              open
+                ? isSticky
+                  ? 'sticky top-0 bg-th-bkg-3'
+                  : 'bg-th-bkg-3'
+                : ''
+            }`}
+            id={`parent-item-${index}`}
+          >
+            <Disclosure.Button
+              className={`flex w-full items-center justify-between p-4 ${
+                showWarningTooltip ? 'has-warning' : ''
+              }`}
+              aria-label="panel"
+            >
+              <div className="flex items-center">
+                <TokenLogo bank={bank} />
+                <Tooltip
+                  content={
+                    showWarningTooltip ? (
+                      <div className="space-y-1.5">
+                        {Object.values(warnings).map((value, i) => (
+                          <p key={value}>
+                            {i + 1}. {value}
+                          </p>
+                        ))}
+                      </div>
+                    ) : (
+                      ''
+                    )
+                  }
+                >
+                  <div className="flex items-center">
+                    <p
+                      className={`ml-2 ${
+                        showWarningTooltip
+                          ? `tooltip-underline ${
+                              oracleWarnings.length
+                                ? 'text-th-error'
+                                : 'text-th-warning'
+                            }`
+                          : 'text-th-fgd-2'
+                      }`}
+                    >
+                      {formattedBankValues.name} Bank
+                    </p>
+                    {showWarningTooltip ? (
+                      <ExclamationTriangleIcon
+                        className={`ml-2 h-4 w-4 cursor-help ${
+                          oracleWarnings.length
+                            ? 'text-th-error'
+                            : 'text-th-warning'
+                        }`}
+                      />
+                    ) : null}
+                  </div>
+                </Tooltip>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="flex space-x-2">
+                  <div>{currentTier?.preset_name}</div>
+                  <div>/</div>
+                  <div className="text-th-success">
+                    {LISTING_PRESETS[suggestedTierKey].preset_name}
+                  </div>
+                </div>
+                <ChevronDownIcon
+                  className={`${
+                    open ? 'rotate-180' : 'rotate-0'
+                  } h-5 w-5 text-th-fgd-3`}
+                />
+              </div>
+            </Disclosure.Button>
+          </div>
+          <Disclosure.Panel>
+            {bank.mint.toBase58() !== USDC_MINT ? (
+              <div className="my-3 flex">
+                <Button
+                  className="ml-auto"
+                  onClick={() => setOpenedSuggestedModal(bank.mint.toBase58())}
+                  size="small"
+                >
+                  Check suggested values
+                  {openedSuggestedModal === bank.mint.toBase58() && (
+                    <DashboardSuggestedValues
+                      midPriceImp={midPriceImp}
+                      currentTier={currentTier}
+                      suggestedTierKey={suggestedTierKey}
+                      group={group}
+                      bank={bank}
+                      isOpen={openedSuggestedModal === bank.mint.toBase58()}
+                      onClose={() => setOpenedSuggestedModal(null)}
+                    ></DashboardSuggestedValues>
+                  )}
+                </Button>
+              </div>
+            ) : null}
+            <KeyValuePair
+              label="Mint"
+              value={<ExplorerLink address={bank.mint.toString()} />}
+            />
+            <KeyValuePair
+              label="Bank"
+              value={
+                <ExplorerLink
+                  address={formattedBankValues.publicKey.toString()}
+                  anchorData
+                />
+              }
+            />
+            <KeyValuePair
+              label="MintInfo"
+              value={
+                <ExplorerLink
+                  address={mintInfo!.publicKey.toString()}
+                  anchorData
+                />
+              }
+            />
+            <KeyValuePair
+              label="Vault"
+              value={
+                <ExplorerLink address={formattedBankValues.vault} anchorData />
+              }
+            />
+            <KeyValuePair
+              label="Oracle"
+              value={
+                bank.oracleProvider == OracleProvider.Switchboard ? (
+                  <a
+                    href={`https://app.switchboard.xyz/solana/mainnet-beta/feed/${bank.oracle.toString()}`}
+                    className={`flex items-center break-all text-th-fgd-2 hover:text-th-fgd-3`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {bank.oracle.toString()}
+                    <ArrowTopRightOnSquareIcon className="ml-2 h-5 w-5 whitespace-nowrap" />
+                  </a>
+                ) : (
+                  <a
+                    onClick={() => getPythLink(bank.oracle)}
+                    className={`flex cursor-pointer items-center break-all text-th-fgd-2 hover:text-th-fgd-3`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {bank.oracle.toString()}
+                    <ArrowTopRightOnSquareIcon className="ml-2 h-5 w-5 whitespace-nowrap" />
+                  </a>
+                )
+              }
+            />
+            <KeyValuePair
+              label="Token Index"
+              value={formattedBankValues.tokenIndex}
+            />
+            <KeyValuePair
+              label="Mint Decimals"
+              value={formattedBankValues.mintDecimals}
+            />
+            <KeyValuePair label="Oracle Price" value={`$${bank.uiPrice}`} />
+            <KeyValuePair
+              label="Stable Price"
+              value={`$${formattedBankValues.stablePrice}`}
+            />
+            <KeyValuePair
+              label="Last stable price updated"
+              value={formattedBankValues.lastStablePriceUpdated}
+            />
+            <KeyValuePair
+              label="Stable Price: delay interval"
+              value={`${formattedBankValues.stablePriceModel.delayIntervalSeconds}s`}
+            />
+            <KeyValuePair
+              label="Stable Price: growth limits"
+              value={`${formattedBankValues.stablePriceGrowthLimitsDelay}% delay / ${formattedBankValues.stablePriceGrowthLimitsStable}% stable`}
+            />
+            <VaultData bank={bank} />
+            <KeyValuePair
+              label="Loan Fee Rate"
+              value={`${formattedBankValues.loanFeeRate} bps`}
+            />
+            <KeyValuePair
+              label="Loan origination fee rate"
+              value={`${formattedBankValues.loanOriginationFeeRate} bps`}
+            />
+            <KeyValuePair
+              label="Collected fees native"
+              value={`${formattedBankValues.collectedFeesNative} ($${formattedBankValues.collectedFeesNativePrice})`}
+            />
+            <KeyValuePair label="Dust" value={formattedBankValues.dust} />
+            <KeyValuePair
+              label="Reduce Only"
+              value={`${
+                bank.reduceOnly
+              } (Are deposits reduce only - ${bank.areDepositsReduceOnly()}, Are borrows reduce only - ${bank.areBorrowsReduceOnly()})`}
+            />
+            <KeyValuePair
+              label="Avg Utilization"
+              value={`${formattedBankValues.avgUtilization}%`}
+            />
+            <KeyValuePair
+              label="Maint Asset/Liab Weight"
+              value={`${formattedBankValues.maintAssetWeight} /
+                              ${formattedBankValues.maintLiabWeight}`}
+            />
+            <KeyValuePair
+              label="Init Asset/Liab Weight"
+              value={`${formattedBankValues.initAssetWeight} /
+                              ${formattedBankValues.initLiabWeight}`}
+            />
+            <KeyValuePair
+              label="Liquidation fee"
+              value={`${formattedBankValues.liquidationFee}%`}
+            />
+            <KeyValuePair
+              label="Scaled Init Asset/Liab Weight"
+              value={`${formattedBankValues.scaledInitAssetWeight} / ${formattedBankValues.scaledInitLiabWeight}`}
+            />
+            <KeyValuePair
+              label="Deposits"
+              value={`${formattedBankValues.deposits} ($${formattedBankValues.depositsPrice})`}
+              warnings={depositWarnings}
+            />
+            <KeyValuePair
+              label="Borrows"
+              value={`${formattedBankValues.borrows} ($${formattedBankValues.borrowsPrice})`}
+              warnings={borrowWarnings}
+            />
+            <KeyValuePair
+              label="Deposit weight scale start quote"
+              value={`$${formattedBankValues.depositWeightScaleStartQuote}`}
+            />
+            <KeyValuePair
+              label="Borrow weight scale start quote"
+              value={`$${formattedBankValues.borrowWeightScaleStartQuote}`}
+            />
+            <KeyValuePair
+              label={`Net borrows in window (next window starts ${dayjs().to(
+                dayjs().add(
+                  bank.getTimeToNextBorrowLimitWindowStartsTs(),
+                  'second',
+                ),
+              )})`}
+              value={`$${formattedBankValues.netBorrowsInWindow} / $${formattedBankValues.netBorrowLimitPerWindowQuote}`}
+            />
+            <KeyValuePair
+              label="Group Insurance Fund"
+              value={`${mintInfo!.groupInsuranceFund}`}
+            />
+            <KeyValuePair
+              label="Min vault to deposits ratio"
+              value={`${formattedBankValues.minVaultToDepositsRatio}%`}
+            />
+            <KeyValuePair
+              label="Rate params"
+              value={
+                <span className="text-right">
+                  {`${formattedBankValues.rate0}% @ ${formattedBankValues.util0}% util, `}
+                  {`${formattedBankValues.rate1}% @ ${formattedBankValues.util1}% util, `}
+                  {`${formattedBankValues.maxRate}% @ 100% util`}
+                </span>
+              }
+            />
+            <KeyValuePair
+              label="Adjustment factor"
+              value={`${formattedBankValues.adjustmentFactor}%`}
+            />
+            <KeyValuePair
+              label="Deposit rate"
+              value={`${formattedBankValues.depositRate}%`}
+            />
+            <KeyValuePair
+              label="Borrow rate"
+              value={`${formattedBankValues.borrowRate}%`}
+            />
+            <KeyValuePair
+              label="Last index update"
+              value={formattedBankValues.lastIndexUpdate}
+            />
+            <KeyValuePair
+              label="Last rates updated"
+              value={formattedBankValues.lastRatesUpdate}
+            />
+            <KeyValuePair
+              label="Oracle: Conf Filter"
+              value={`${
+                formattedBankValues.oracleConfFilter
+              }% (Last known confidence ${
+                bank._oracleLastKnownDeviation instanceof I80F48 &&
+                !bank._oracleLastKnownDeviation.isZero()
+                  ? bank._oracleLastKnownDeviation
+                      ?.div(bank.price)
+                      .mul(I80F48.fromNumber(100))
+                      .toNumber()
+                      .toFixed(2)
+                  : 'null'
+              }%)`}
+              warnings={[oracleConfFilterWarning].filter(Boolean)}
+            />
+            <KeyValuePair
+              label="Oracle: Max Staleness"
+              value={`${bank.oracleConfig.maxStalenessSlots} slots (Last updated slot ${bank._oracleLastUpdatedSlot})`}
+              warnings={[oracleLivelinessWarning].filter(Boolean)}
+            />
+            <KeyValuePair
+              label="Deposit limit"
+              value={
+                formattedBankValues.depositLimit
+                  ? `${formattedBankValues.depositLimit} ${bank.name} ($${(
+                      formattedBankValues.depositLimit * bank.uiPrice
+                    ).toFixed(2)})`
+                  : 'None'
+              }
+            />
+            <KeyValuePair
+              label="Interest Curve Scaling"
+              value={formattedBankValues.interestCurveScaling}
+            />
+            <KeyValuePair
+              label="Interest Target Utilization"
+              value={formattedBankValues.interestTargetUtilization}
+            />
+            <KeyValuePair
+              label="Maint Weight Shift Start"
+              value={formattedBankValues.maintWeightShiftStart}
+            />
+            <KeyValuePair
+              label="Maint Weight Shift End"
+              value={formattedBankValues.maintWeightShiftEnd}
+            />
+            <KeyValuePair
+              label="Maint Weight Shift Asset Target"
+              value={formattedBankValues.maintWeightShiftAssetTarget}
+            />
+            <KeyValuePair
+              label="Maint Weight Shift Liab Target"
+              value={formattedBankValues.maintWeightShiftLiabTarget}
+            />
+            <KeyValuePair
+              label="Maint Weight Shift Duration Inv"
+              value={formattedBankValues.maintWeightShiftDurationInv}
+            />
+          </Disclosure.Panel>
+        </>
+      )}
+    </Disclosure>
   )
 }
 
