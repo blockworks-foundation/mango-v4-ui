@@ -39,7 +39,7 @@ const SecurityCouncilModal = ({
     useSecurityCouncilDao()
   const [proposing, setProposing] = useState(false)
 
-  //0 no borrows
+  //2 no borrows
   //1 no borrows no deposits
   const proposeReduceOnly = useCallback(
     async (bank: Bank, mode: number) => {
