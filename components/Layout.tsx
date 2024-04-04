@@ -130,7 +130,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
   if (!mounted) return null
-  console.log(showCollateralFeeWarning)
+
   return (
     <main
       className={`${themeData.fonts.body.variable} ${themeData.fonts.display.variable} ${themeData.fonts.mono.variable} font-sans`}
