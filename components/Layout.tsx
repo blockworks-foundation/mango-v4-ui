@@ -42,6 +42,8 @@ import useUnownedAccount from 'hooks/useUnownedAccount'
 import NewListingBanner from './NewListingBanner'
 import useIpAddress from 'hooks/useIpAddress'
 import RestrictedCountryModal from './modals/RestrictedCountryModal'
+import useCollateralFeePositions from 'hooks/useCollateralFeePositions'
+import CollateralFeeWarningModal from './modals/CollateralFeeWarningModal'
 
 export const sideBarAnimationDuration = 300
 const termsLastUpdated = 1679441610978
@@ -49,6 +51,7 @@ const termsLastUpdated = 1679441610978
 const Layout = ({ children }: { children: ReactNode }) => {
   const themeData = mangoStore((s) => s.themeData)
   const { theme } = useTheme()
+  const { showCollateralFeeWarning } = useCollateralFeePositions()
   const [isCollapsed, setIsCollapsed] = useLocalStorageState(
     SIDEBAR_COLLAPSE_KEY,
     false,
@@ -127,7 +130,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
   if (!mounted) return null
-
+  console.log(showCollateralFeeWarning)
   return (
     <main
       className={`${themeData.fonts.body.variable} ${themeData.fonts.display.variable} ${themeData.fonts.mono.variable} font-sans`}
@@ -188,6 +191,9 @@ const Layout = ({ children }: { children: ReactNode }) => {
             warningLevel={WARNING_LEVEL.FULL}
           />
         ) : null}
+        {showCollateralFeeWarning && (
+          <CollateralFeeWarningModal isOpen={showCollateralFeeWarning} />
+        )}
       </div>
     </main>
   )
