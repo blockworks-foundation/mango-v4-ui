@@ -47,6 +47,7 @@ import {
   getProposedKey,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 import Tooltip from '@components/shared/Tooltip'
+import SecurityCouncilModal from '@components/modals/SecurityCouncilModal'
 
 dayjs.extend(relativeTime)
 
@@ -703,6 +704,9 @@ const BankDisclosure = ({
   const [openedSuggestedModal, setOpenedSuggestedModal] = useState<
     string | null
   >(null)
+  const [securityModalOpen, setSecurityModalOpen] = useState<string | null>(
+    null,
+  )
 
   const { currentTier, suggestedTierKey } = getSuggestedAndCurrentTier(
     bank,
@@ -956,6 +960,25 @@ const BankDisclosure = ({
                 </Button>
               </div>
             ) : null}
+
+            <div className="my-3 flex">
+              <Button
+                className="ml-auto"
+                onClick={() => setSecurityModalOpen(bank.mint.toBase58())}
+                size="small"
+              >
+                Security council
+                {securityModalOpen === bank.mint.toBase58() && (
+                  <SecurityCouncilModal
+                    group={group}
+                    bank={bank}
+                    isOpen={securityModalOpen === bank.mint.toBase58()}
+                    onClose={() => setSecurityModalOpen(null)}
+                  ></SecurityCouncilModal>
+                )}
+              </Button>
+            </div>
+
             <KeyValuePair
               label="Mint"
               value={<ExplorerLink address={bank.mint.toString()} />}
