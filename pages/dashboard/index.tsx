@@ -1145,6 +1145,10 @@ const BankDisclosure = ({
               value={`${formattedBankValues.minVaultToDepositsRatio}%`}
             />
             <KeyValuePair
+              label="Collateral fee per day"
+              value={`${formattedBankValues.collateralFeePerDay * 100}%`}
+            />
+            <KeyValuePair
               label="Rate params"
               value={
                 <span className="text-right">
