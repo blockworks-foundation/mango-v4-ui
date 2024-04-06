@@ -26,8 +26,14 @@ import useUnownedAccount from 'hooks/useUnownedAccount'
 import SecondaryTabBar from '@components/shared/SecondaryTabBar'
 import ActivityFilters from './ActivityFilters'
 import { useTranslation } from 'react-i18next'
+import FundingTable from './FundingTable'
 
-const TABS = ['activity:activity-feed', 'activity:swaps', 'activity:trades']
+const TABS = [
+  'activity:activity-feed',
+  'activity:swaps',
+  'activity:trades',
+  'funding',
+]
 
 const HistoryTabs = () => {
   const { t } = useTranslation(['common', 'account', 'activity', 'trade'])
@@ -216,6 +222,8 @@ const TabContent = ({ activeTab }: { activeTab: string }) => {
       return <SwapHistoryTable />
     case 'activity:trades':
       return <TradeHistory />
+    case 'funding':
+      return <FundingTable />
     default:
       return <ActivityFeedTable />
   }

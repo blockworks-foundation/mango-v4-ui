@@ -593,3 +593,57 @@ export interface FilledOrder {
 }
 
 export type SwapTypes = 'swap' | 'trade:trigger-order'
+
+export type MarginFundingFeed = {
+  activity_type: string
+  date_time: string
+  activity_details: PerpFundingItem | CollateralFundingItem
+}
+
+type PerpFundingFeed = {
+  activity_type: string
+  date_time: string
+  activity_details: PerpFundingItem
+}
+
+type PerpFundingItem = {
+  date_time: string
+  long_funding: number
+  perp_market: string
+  price: number
+  short_funding: number
+}
+
+type CollateralFundingFeed = {
+  activity_type: string
+  date_time: string
+  activity_details: CollateralFundingItem
+}
+
+type CollateralFundingItem = {
+  date_time: string
+  fee_tokens: number
+  fee_value_usd: number
+  signature: string
+  slot: number
+  symbol: string
+  token_price: number
+}
+
+export function isPerpFundingItem(
+  item: MarginFundingFeed,
+): item is PerpFundingFeed {
+  if (item.activity_type === 'perp_funding') {
+    return true
+  }
+  return false
+}
+
+export function isCollateralFundingItem(
+  item: MarginFundingFeed,
+): item is CollateralFundingFeed {
+  if (item.activity_type === 'mango_token_collateral_fees') {
+    return true
+  }
+  return false
+}
