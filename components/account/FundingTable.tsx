@@ -1,5 +1,6 @@
 import { Bank, PerpMarket } from '@blockworks-foundation/mango-v4'
 import { LinkButton } from '@components/shared/Button'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 import SheenLoader from '@components/shared/SheenLoader'
 import {
   SortableColumnHeader,
@@ -10,16 +11,23 @@ import {
   TrBody,
   TrHead,
 } from '@components/shared/TableElements'
+import TokenLogo from '@components/shared/TokenLogo'
 import MarketLogos from '@components/trade/MarketLogos'
+import { Disclosure, Transition } from '@headlessui/react'
 import mangoStore from '@store/mangoStore'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { useSortableData } from 'hooks/useSortableData'
+import { useViewport } from 'hooks/useViewport'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { MarginFundingFeed, isPerpFundingItem } from 'types'
+import {
+  MarginFundingFeed,
+  isCollateralFundingItem,
+  isPerpFundingItem,
+} from 'types'
 import { MANGO_DATA_API_URL, PAGINATION_PAGE_LENGTH } from 'utils/constants'
-import { formatCurrencyValue } from 'utils/numbers'
+import { breakpoints } from 'utils/theme'
 
 type FundingItem = {
   asset: string
@@ -27,6 +35,7 @@ type FundingItem = {
   marketOrBank: PerpMarket | Bank | undefined
   time: string
   type: string
+  value?: number
 }
 
 const fetchMarginFunding = async (mangoAccountPk: string, offset = 0) => {
@@ -48,6 +57,8 @@ const fetchMarginFunding = async (mangoAccountPk: string, offset = 0) => {
 const FundingTable = () => {
   const { t } = useTranslation(['common', 'account'])
   const { mangoAccountAddress } = useMangoAccount()
+  const { width } = useViewport()
+  const showTableView = width ? width > breakpoints.md : false
 
   const {
     data: fundingData,
@@ -68,8 +79,6 @@ const FundingTable = () => {
         pages.length * PAGINATION_PAGE_LENGTH,
     },
   )
-
-  console.log(fundingData)
 
   const tableData: FundingItem[] = useMemo(() => {
     if (!fundingData || !fundingData?.pages.length) return []
@@ -95,6 +104,22 @@ const FundingTable = () => {
           data.push(perpFundingItem)
         }
       }
+      if (isCollateralFundingItem(item)) {
+        const asset = item.activity_details.symbol
+        const amount = item.activity_details.fee_tokens * -1
+        const value = item.activity_details.fee_value_usd * -1
+        const type = 'Collateral'
+        const bank = group?.banksMapByName.get(asset)?.[0]
+        const collateralFundingItem = {
+          asset,
+          amount,
+          marketOrBank: bank,
+          type,
+          time,
+          value,
+        }
+        data.push(collateralFundingItem)
+      }
     })
     data.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
     return data
@@ -108,76 +133,177 @@ const FundingTable = () => {
 
   return (
     <>
-      <Table>
-        <thead>
-          <TrHead>
-            <Th className="text-left">
-              <SortableColumnHeader
-                sortKey="time"
-                sort={() => requestSort('time')}
-                sortConfig={sortConfig}
-                title={t('date')}
-              />
-            </Th>
-            <Th>
-              <div className="flex justify-end">
+      {showTableView ? (
+        <Table>
+          <thead>
+            <TrHead>
+              <Th className="text-left">
                 <SortableColumnHeader
-                  sortKey="asset"
-                  sort={() => requestSort('asset')}
+                  sortKey="time"
+                  sort={() => requestSort('time')}
                   sortConfig={sortConfig}
-                  title={t('asset')}
+                  title={t('date')}
                 />
-              </div>
-            </Th>
-            <Th>
-              <div className="flex justify-end">
-                <SortableColumnHeader
-                  sortKey="type"
-                  sort={() => requestSort('type')}
-                  sortConfig={sortConfig}
-                  title={t('account:funding-type')}
-                />
-              </div>
-            </Th>
-            <Th>
-              <div className="flex justify-end">
-                <SortableColumnHeader
-                  sortKey="amount"
-                  sort={() => requestSort('amount')}
-                  sortConfig={sortConfig}
-                  title={t('amount')}
-                />
-              </div>
-            </Th>
-          </TrHead>
-        </thead>
-        <tbody>
-          {sortedTableData.map((item, i) => {
-            const { asset, amount, marketOrBank, time, type } = item
-            return (
-              <TrBody key={asset + amount + i}>
-                <Td>
-                  <TableDateDisplay date={time} showSeconds />
-                </Td>
-                <Td>
-                  <div className="flex items-center justify-end">
-                    {marketOrBank instanceof PerpMarket ? (
-                      <MarketLogos market={marketOrBank} />
-                    ) : null}
-                    <p className="font-body">{asset}</p>
+              </Th>
+              <Th>
+                <div className="flex justify-end">
+                  <SortableColumnHeader
+                    sortKey="asset"
+                    sort={() => requestSort('asset')}
+                    sortConfig={sortConfig}
+                    title={t('asset')}
+                  />
+                </div>
+              </Th>
+              <Th>
+                <div className="flex justify-end">
+                  <SortableColumnHeader
+                    sortKey="type"
+                    sort={() => requestSort('type')}
+                    sortConfig={sortConfig}
+                    title={t('account:funding-type')}
+                  />
+                </div>
+              </Th>
+              <Th>
+                <div className="flex justify-end">
+                  <SortableColumnHeader
+                    sortKey="amount"
+                    sort={() => requestSort('amount')}
+                    sortConfig={sortConfig}
+                    title={t('amount')}
+                  />
+                </div>
+              </Th>
+            </TrHead>
+          </thead>
+          <tbody>
+            {sortedTableData.map((item, i) => {
+              const { asset, amount, marketOrBank, time, type, value } = item
+              return (
+                <TrBody key={asset + amount + i}>
+                  <Td>
+                    <TableDateDisplay date={time} />
+                  </Td>
+                  <Td>
+                    <div className="flex items-center justify-end">
+                      {marketOrBank ? (
+                        marketOrBank instanceof PerpMarket ? (
+                          <MarketLogos market={marketOrBank} />
+                        ) : (
+                          <TokenLogo bank={marketOrBank} />
+                        )
+                      ) : null}
+                      <p className="font-body">{asset}</p>
+                    </div>
+                  </Td>
+                  <Td>
+                    <p className="text-right font-body">{type}</p>
+                  </Td>
+                  <Td>
+                    <p>
+                      {type === 'Perp' ? (
+                        <span
+                          className={`flex flex-col items-end ${
+                            amount > 0 ? 'text-th-up' : 'text-th-down'
+                          }`}
+                        >
+                          <FormatNumericValue value={amount} isUsd />
+                        </span>
+                      ) : (
+                        <span className="flex flex-col items-end">
+                          <span className="text-th-down">
+                            <FormatNumericValue value={amount} />{' '}
+                            <span className="font-body text-th-fgd-4">
+                              {asset}
+                            </span>
+                          </span>
+                          {value ? (
+                            <span className="text-xs text-th-fgd-4">
+                              <FormatNumericValue value={value} isUsd />
+                            </span>
+                          ) : null}
+                        </span>
+                      )}
+                    </p>
+                  </Td>
+                </TrBody>
+              )
+            })}
+          </tbody>
+        </Table>
+      ) : (
+        sortedTableData.map((item, i) => {
+          const { asset, amount, marketOrBank, time, type, value } = item
+          return (
+            <Disclosure key={asset + amount + i}>
+              <>
+                <Disclosure.Button
+                  className={`w-full border-b border-th-bkg-3 p-4 text-left first:border-t-0 focus:outline-none`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <TableDateDisplay date={time} />
+                    </div>
+                    <div>
+                      <div className="mb-0.5 flex items-center justify-end">
+                        {marketOrBank ? (
+                          marketOrBank instanceof PerpMarket ? (
+                            <MarketLogos market={marketOrBank} size="small" />
+                          ) : (
+                            <TokenLogo bank={marketOrBank} size={16} />
+                          )
+                        ) : null}
+                        <p className="text-right">{asset}</p>
+                      </div>
+                      <p className="font-mono">
+                        {type === 'Perp' ? (
+                          <span
+                            className={`flex flex-col items-end ${
+                              amount > 0 ? 'text-th-up' : 'text-th-down'
+                            }`}
+                          >
+                            <FormatNumericValue value={amount} isUsd />
+                          </span>
+                        ) : (
+                          <span className="flex flex-col items-end">
+                            <span className="text-th-down">
+                              <FormatNumericValue value={amount} />{' '}
+                              <span className="font-body text-th-fgd-4">
+                                {asset}
+                              </span>
+                            </span>
+                            {value ? (
+                              <span className="text-xs text-th-fgd-4">
+                                <FormatNumericValue value={value} isUsd />
+                              </span>
+                            ) : null}
+                          </span>
+                        )}
+                      </p>
+                    </div>
                   </div>
-                </Td>
-                <Td>
-                  <p className="text-right">{type}</p>
-                </Td>
-                <Td>
-                  <p className="text-right">{formatCurrencyValue(amount)}</p>
-                </Td>
-              </TrBody>
-            )
-          })}
-        </tbody>
-      </Table>
+                </Disclosure.Button>
+                <Transition
+                  enter="transition ease-in duration-200"
+                  enterFrom="opacity-0"
+                  enterTo="opacity-100"
+                >
+                  <Disclosure.Panel>
+                    <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 py-4">
+                      <div className="col-span-1">
+                        <p className="text-xs text-th-fgd-3">
+                          {t('available')}
+                        </p>
+                      </div>
+                    </div>
+                  </Disclosure.Panel>
+                </Transition>
+              </>
+            </Disclosure>
+          )
+        })
+      )}
       {isLoading || isFetchingNextPage ? (
         <div className="mt-2 space-y-2 px-4 md:px-6">
           {[...Array(20)].map((x, i) => (
@@ -187,7 +313,7 @@ const FundingTable = () => {
           ))}
         </div>
       ) : null}
-      {tableData.length ? (
+      {tableData.length && !(tableData.length % PAGINATION_PAGE_LENGTH) ? (
         <LinkButton className="mx-auto my-6" onClick={() => fetchNextPage()}>
           {t('show-more')}
         </LinkButton>
