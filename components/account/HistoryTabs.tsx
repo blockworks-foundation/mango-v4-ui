@@ -26,7 +26,21 @@ import useUnownedAccount from 'hooks/useUnownedAccount'
 import SecondaryTabBar from '@components/shared/SecondaryTabBar'
 import ActivityFilters from './ActivityFilters'
 import { useTranslation } from 'react-i18next'
-import FundingTable from './FundingTable'
+import FundingTable, { fetchMarginFunding } from './FundingTable'
+import {
+  MarginFundingFeed,
+  isCollateralFundingItem,
+  isPerpFundingItem,
+} from 'types'
+import dayjs from 'dayjs'
+
+type FundingExportItem = {
+  asset: string
+  amount: string
+  time: string
+  type: string
+  value?: string
+}
 
 const TABS = [
   'activity:activity-feed',
@@ -171,11 +185,71 @@ const HistoryTabs = () => {
     setLoadExportData(false)
   }
 
+  const exportFundingDataToCSV = async () => {
+    setLoadExportData(true)
+    try {
+      const fundingHistory = await fetchMarginFunding(
+        mangoAccountAddress,
+        0,
+        true,
+      )
+      if (fundingHistory && fundingHistory?.length) {
+        const dataToExport: FundingExportItem[] = []
+        fundingHistory.forEach((item: MarginFundingFeed) => {
+          const time = dayjs(item.date_time).format('DD MMM YYYY, h:mma')
+          if (isPerpFundingItem(item)) {
+            const asset = item.activity_details.perp_market
+            const amount =
+              item.activity_details.long_funding +
+              item.activity_details.short_funding
+            const type = 'Perp'
+            const perpFundingItem = {
+              time,
+              asset,
+              type,
+              amount: formatCurrencyValue(amount),
+            }
+            if (Math.abs(amount) > 0) {
+              dataToExport.push(perpFundingItem)
+            }
+          }
+          if (isCollateralFundingItem(item)) {
+            const asset = item.activity_details.symbol
+            const amount = item.activity_details.fee_tokens * -1
+            const value = item.activity_details.fee_value_usd * -1
+            const type = 'Collateral'
+            const collateralFundingItem = {
+              time,
+              asset,
+              type,
+              amount: formatNumericValue(amount),
+              value: formatCurrencyValue(value),
+            }
+            dataToExport.push(collateralFundingItem)
+          }
+        })
+        dataToExport.sort(
+          (a, b) => new Date(b.time).getTime() - new Date(a.time).getTime(),
+        )
+
+        const title = `${mangoAccountAddress}-Funding-${new Date().toLocaleDateString()}`
+
+        handleExport(dataToExport, title)
+      }
+    } catch (e) {
+      console.log('failed to export funding data', e)
+    } finally {
+      setLoadExportData(false)
+    }
+  }
+
   const handleExportData = (dataType: string) => {
     if (dataType === 'activity:activity-feed') {
       exportActivityDataToCSV()
     } else if (dataType === 'activity:swaps') {
       exportSwapsDataToCSV()
+    } else if (dataType === 'funding') {
+      exportFundingDataToCSV()
     } else {
       exportTradesDataToCSV()
     }

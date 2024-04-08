@@ -38,10 +38,15 @@ type FundingItem = {
   value?: number
 }
 
-const fetchMarginFunding = async (mangoAccountPk: string, offset = 0) => {
+export const fetchMarginFunding = async (
+  mangoAccountPk: string,
+  offset = 0,
+  noLimit?: boolean,
+) => {
+  const params = noLimit ? '' : `&limit=${PAGINATION_PAGE_LENGTH}`
   try {
     const response = await fetch(
-      `${MANGO_DATA_API_URL}/stats/margin-funding?mango-account=${mangoAccountPk}&offset=${offset}&limit=${PAGINATION_PAGE_LENGTH}`,
+      `${MANGO_DATA_API_URL}/stats/margin-funding?mango-account=${mangoAccountPk}&offset=${offset}${params}`,
     )
     const parsedResponse = await response.json()
 
