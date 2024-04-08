@@ -191,9 +191,9 @@ const Layout = ({ children }: { children: ReactNode }) => {
             warningLevel={WARNING_LEVEL.FULL}
           />
         ) : null}
-        {showCollateralFeeWarning && (
+        {showCollateralFeeWarning ? (
           <CollateralFeeWarningModal isOpen={showCollateralFeeWarning} />
-        )}
+        ) : null}
       </div>
     </main>
   )
