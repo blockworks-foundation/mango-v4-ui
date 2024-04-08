@@ -1034,6 +1034,15 @@ const BankDisclosure = ({
               }
             />
             <KeyValuePair
+              label="Fallback Oracle"
+              value={
+                <ExplorerLink
+                  address={formattedBankValues.fallbackOracle.toBase58()}
+                  anchorData
+                />
+              }
+            />
+            <KeyValuePair
               label="Token Index"
               value={formattedBankValues.tokenIndex}
             />

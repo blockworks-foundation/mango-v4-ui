@@ -125,6 +125,9 @@ const initMangoClient = (
 ): MangoClient => {
   return MangoClient.connect(provider, CLUSTER, MANGO_V4_ID[CLUSTER], {
     prioritizationFee: opts.prioritizationFee,
+    fallbackOracleConfig: [
+      new PublicKey('Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD'), // USDC pyth oracle
+    ],
     multipleConnections: opts.multipleConnections,
     idsSource: 'api',
     prependedGlobalAdditionalInstructions:

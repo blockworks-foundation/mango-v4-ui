@@ -369,7 +369,7 @@ export const getFormattedBankValues = (group: Group, bank: Bank) => {
       toUiDecimals(bank.collectedFeesNative.toNumber(), bank.mintDecimals) *
       bank.uiPrice
     ).toFixed(2),
-    dust: bank.dust.toNumber(),
+    dust: toUiDecimals(bank.dust, bank.mintDecimals),
     deposits: toUiDecimals(
       bank.indexedDeposits.mul(bank.depositIndex).toNumber(),
       bank.mintDecimals,
