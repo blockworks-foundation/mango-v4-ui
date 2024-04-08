@@ -63,14 +63,8 @@ export const getClaimsAsPrizes = (
   nftsRewardsInfo: (Sft | SftWithToken | Nft | NftWithToken)[],
 ) =>
   claims.map((x) => {
-    const rarity =
-      x.mintProperties.name.toLowerCase() === 'gpu'
-        ? 'legendary'
-        : x.mintProperties.rarity.toLowerCase()
-    const type =
-      x.mintProperties.name.toLowerCase() === 'gpu'
-        ? 'nft'
-        : x.mintProperties.type.toLowerCase()
+    const rarity = x.mintProperties.rarity.toLowerCase()
+    const type = x.mintProperties.type.toLowerCase()
     const tokenInfo =
       type === 'token'
         ? tokensInfo.find((t) => t.address === x.mint.toBase58())
