@@ -6,7 +6,7 @@ import {
 import dynamic from 'next/dynamic'
 import { web3 } from '@project-serum/anchor'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { PublicKey } from '@solana/web3.js'
+import { Connection, PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
 import { useCurrentSeason, useDistribution } from 'hooks/useRewards'
 import { chunk } from 'lodash'
@@ -38,6 +38,7 @@ import { notify } from 'utils/notifications'
 import { sleep } from 'utils'
 import { createComputeBudgetIx } from '@blockworks-foundation/mango-v4'
 import SendTweetModal from './SendTweetModal'
+import { LITE_RPC_URL } from '@components/settings/RpcSettings'
 
 const CLAIM_BUTTON_CLASSES =
   'raised-button group mx-auto block h-12 px-6 pt-1 font-rewards text-xl after:rounded-lg focus:outline-none lg:h-14'
@@ -145,13 +146,19 @@ const ClaimPage = () => {
       const metaplex = new Metaplex(connection)
 
       const tokens = claims!
-        .filter((x) => x.mintProperties.type.toLowerCase() === 'token')
+        .filter(
+          (x) =>
+            x.mintProperties.type.toLowerCase() === 'token' &&
+            x.mintProperties.name.toLowerCase() !== 'gpu',
+        )
         .map((t) => jupiterTokens.find((x) => x.address === t.mint.toBase58()))
         .filter((x) => x)
         .map((x) => x as Token)
 
       const nfts = claims!.filter(
-        (x) => x.mintProperties.type.toLowerCase() === 'nft',
+        (x) =>
+          x.mintProperties.type.toLowerCase() === 'nft' ||
+          x.mintProperties.name.toLowerCase() === 'gpu',
       )
       const nftsInfos: (Sft | SftWithToken | Nft | NftWithToken)[] = []
 
@@ -252,6 +259,7 @@ const ClaimPage = () => {
         connection,
         wallet,
         transactionInstructions,
+        backupConnections: [new Connection(LITE_RPC_URL, 'recent')],
         callbacks: {
           afterFirstBatchSign: (signedCount) => {
             console.log('afterFirstBatchSign', signedCount)
