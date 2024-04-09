@@ -16,9 +16,10 @@ const CollateralFeeWarningModal = ({ isOpen }: WarningProps) => {
     setWasModalOpen,
     marginPositionBalanceWithBanks,
     collateralFeeBanks,
+    ltvRatio,
   } = useCollateralFeePopupConditions()
   console.log(marginPositionBalanceWithBanks)
-  //current collateral fee can be get from marginPositionBalanceWithBanks
+
   return (
     <Modal
       isOpen={isOpen}
@@ -31,7 +32,7 @@ const CollateralFeeWarningModal = ({ isOpen }: WarningProps) => {
       </h2>
       <a
         className="mb-6 flex justify-center text-base font-bold"
-        href="https://docs.mango.markets/collateral-fees"
+        href="https://docs.mango.markets/mango-markets/fees"
         target="_blank"
         rel="noopener noreferrer"
       >
@@ -56,12 +57,16 @@ const CollateralFeeWarningModal = ({ isOpen }: WarningProps) => {
                   <TableTokenName bank={bank} symbol={bank.name} />
                 </Td>
                 <Td>
-                  <p>{(bank.collateralFeePerDay * 365 * 100).toFixed(2)}</p>
+                  <p>
+                    {(ltvRatio * bank.collateralFeePerDay * 365 * 100).toFixed(
+                      2,
+                    )}
+                  </p>
                 </Td>
                 <Td>
                   <div className="flex flex-col items-end">
                     <BankAmountWithValue
-                      amount={bank.collateralFeePerDay * balance}
+                      amount={ltvRatio * bank.collateralFeePerDay * balance}
                       bank={bank}
                       stacked
                     />
