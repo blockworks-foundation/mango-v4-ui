@@ -6,7 +6,7 @@
     "assets": "资产",
     "assets-liabilities": "资产和债务",
     "collateral": "Collateral",
-    "collateral-funding-modal-heading": "You'll be charged collateral funding fees in X hours",
+    "collateral-funding-modal-heading": "You'll be charged collateral fees in {{remaining_hours}} hours",
     "collateral-value": "质押品价值",
     "custom-account-options-saved": "已改高级设定",
     "cumulative-interest-chart": "累积利息图表",

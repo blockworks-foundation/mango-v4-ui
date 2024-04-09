@@ -5,6 +5,9 @@ import { useTranslation } from 'react-i18next'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import TableTokenName from '@components/shared/TableTokenName'
 import BankAmountWithValue from '@components/shared/BankAmountWithValue'
+import useMangoAccount from 'hooks/useMangoAccount'
+import useMangoGroup from 'hooks/useMangoGroup'
+import { useMemo } from 'react'
 
 type WarningProps = {
   isOpen: boolean
@@ -19,6 +22,19 @@ const CollateralFeeWarningModal = ({ isOpen }: WarningProps) => {
     ltvRatio,
   } = useCollateralFeePopupConditions()
   console.log(marginPositionBalanceWithBanks)
+  const { mangoAccount } = useMangoAccount()
+  const { group } = useMangoGroup()
+  const lastCharge = mangoAccount?.lastCollateralFeeCharge.toNumber()
+  const collateralFeeInterval = group?.collateralFeeInterval.toNumber()
+
+  const hoursTillNextCharge = useMemo(() => {
+    if (!lastCharge || !collateralFeeInterval) return
+    const nowInSeconds = Date.now() / 1000
+    const timeUntilChargeInSeconds =
+      lastCharge + collateralFeeInterval - nowInSeconds
+    const timeUntilChargeInHours = timeUntilChargeInSeconds / 3600
+    return Math.round(timeUntilChargeInHours * 100) / 100
+  }, [lastCharge, collateralFeeInterval])
 
   return (
     <Modal
@@ -28,7 +44,9 @@ const CollateralFeeWarningModal = ({ isOpen }: WarningProps) => {
       hideClose
     >
       <h2 className="mb-2 text-center">
-        {t('collateral-funding-modal-heading')}
+        {t('collateral-funding-modal-heading', {
+          remaining_hours: hoursTillNextCharge,
+        })}
       </h2>
       <a
         className="mb-6 flex justify-center text-base font-bold"
