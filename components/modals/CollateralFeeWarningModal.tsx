@@ -4,10 +4,10 @@ import Button from '@components/shared/Button'
 import { useTranslation } from 'react-i18next'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import TableTokenName from '@components/shared/TableTokenName'
-import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useMemo } from 'react'
+import FormatNumericValue from '@components/shared/FormatNumericValue'
 
 type WarningProps = {
   isOpen: boolean
@@ -69,13 +69,14 @@ const CollateralFeeWarningModal = ({ isOpen }: WarningProps) => {
         <tbody>
           {collateralFeeBanks.map((b) => {
             const { bank, balance } = b
+            const dailyFee = ltvRatio * bank.collateralFeePerDay * balance
             return (
               <TrBody key={bank.name}>
                 <Td>
                   <TableTokenName bank={bank} symbol={bank.name} />
                 </Td>
                 <Td>
-                  <p>
+                  <p className="text-right">
                     {(ltvRatio * bank.collateralFeePerDay * 365 * 100).toFixed(
                       2,
                     )}
@@ -83,11 +84,13 @@ const CollateralFeeWarningModal = ({ isOpen }: WarningProps) => {
                 </Td>
                 <Td>
                   <div className="flex flex-col items-end">
-                    <BankAmountWithValue
-                      amount={ltvRatio * bank.collateralFeePerDay * balance}
-                      bank={bank}
-                      stacked
-                    />
+                    <p>
+                      <FormatNumericValue value={dailyFee} />
+                      <span className="font-body"> {bank.name}</span>
+                    </p>
+                    <span className="font-mono text-th-fgd-4">
+                      $<FormatNumericValue value={dailyFee * bank.uiPrice} />
+                    </span>
                   </div>
                 </Td>
               </TrBody>
