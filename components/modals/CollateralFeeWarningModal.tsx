@@ -44,7 +44,7 @@ const CollateralFeeWarningModal = ({ isOpen }: WarningProps) => {
         })}
       </h2>
       <a
-        className="mb-6 flex justify-center text-base font-bold"
+        className="mb-6 flex justify-center text-base font-bold focus:outline-none"
         href="https://docs.mango.markets/mango-markets/fees"
         target="_blank"
         rel="noopener noreferrer"
@@ -75,6 +75,7 @@ const CollateralFeeWarningModal = ({ isOpen }: WarningProps) => {
                     {(ltvRatio * bank.collateralFeePerDay * 365 * 100).toFixed(
                       2,
                     )}
+                    %
                   </p>
                 </Td>
                 <Td>
