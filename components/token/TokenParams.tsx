@@ -12,6 +12,7 @@ import { useMemo } from 'react'
 import { formatCurrencyValue } from 'utils/numbers'
 import CollateralWeightDisplay from '@components/shared/CollateralWeightDisplay'
 import OracleProvider from '@components/shared/OracleProvider'
+import { CollateralFundingFeeTooltip } from '@components/stats/tokens/TokenDetailsTable'
 
 const TokenParams = ({ bank }: { bank: Bank }) => {
   const { t } = useTranslation(['common', 'activity', 'token'])
@@ -86,6 +87,16 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
             {(bank.liquidationFee.toNumber() * 100).toFixed(2)}%
           </p>
         </div>
+        <div className="flex justify-between border-t border-th-bkg-3 py-4">
+          <Tooltip content={<CollateralFundingFeeTooltip />}>
+            <p className="tooltip-underline">
+              {t('stats:collateral-funding-fee')}
+            </p>
+          </Tooltip>
+          <p className="font-mono text-th-fgd-2">
+            {(bank.collateralFeePerDay * 365 * 100).toFixed(2)}%
+          </p>
+        </div>
         {mintInfo ? (
           <div className="flex justify-between border-t border-th-bkg-3 py-4">
             <Tooltip
@@ -100,7 +111,9 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
             </p>
           </div>
         ) : null}
-        <div className="flex justify-between border-y border-th-bkg-3 py-4 md:border-b-0">
+      </div>
+      <div className="col-span-1 px-6 pb-4 md:pt-4">
+        <div className="flex justify-between pb-4">
           <Tooltip content={t('token:tooltip-deposit-borrow-scaling-start')}>
             <p className="tooltip-underline">
               {t('token:deposit-borrow-scaling-start')}
@@ -128,9 +141,7 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
             </p>
           </div>
         </div>
-      </div>
-      <div className="col-span-1 px-6 pb-4 md:pt-4">
-        <div className="flex justify-between py-4 md:pt-0">
+        <div className="flex justify-between border-t border-th-bkg-3 py-4">
           <Tooltip content={t('token:tooltip-net-borrow-period')}>
             <p className="tooltip-underline">{t('token:net-borrow-period')}</p>
           </Tooltip>
