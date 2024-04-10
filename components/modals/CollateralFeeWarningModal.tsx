@@ -15,13 +15,8 @@ type WarningProps = {
 
 const CollateralFeeWarningModal = ({ isOpen }: WarningProps) => {
   const { t } = useTranslation(['account'])
-  const {
-    setWasModalOpen,
-    marginPositionBalanceWithBanks,
-    collateralFeeBanks,
-    ltvRatio,
-  } = useCollateralFeePopupConditions()
-  console.log(marginPositionBalanceWithBanks)
+  const { setWasModalOpen, collateralFeeBanks, ltvRatio } =
+    useCollateralFeePopupConditions()
   const { mangoAccount } = useMangoAccount()
   const { group } = useMangoGroup()
   const lastCharge = mangoAccount?.lastCollateralFeeCharge.toNumber()
