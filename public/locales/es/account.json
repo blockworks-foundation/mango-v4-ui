@@ -6,7 +6,7 @@
     "assets": "Assets",
     "assets-liabilities": "Assets & Liabilities",
     "collateral": "Collateral",
-    "collateral-funding-modal-heading": "You'll be charged collateral funding fees in X hours",
+    "collateral-funding-modal-heading": "You'll be charged collateral fees in {{remaining_hours}} hours",
     "collateral-value": "Collateral Value",
     "custom-account-options-saved": "Advanced options set",
     "cumulative-interest-chart": "Cumulative Interest Chart",
