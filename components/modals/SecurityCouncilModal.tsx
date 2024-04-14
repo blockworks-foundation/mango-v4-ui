@@ -41,8 +41,8 @@ const SecurityCouncilModal = ({
 
   //2 no borrows
   //1 no borrows no deposits
-  const proposeReduceOnly = useCallback(
-    async (bank: Bank, mode: number) => {
+  const proposeEdit = useCallback(
+    async (bank: Bank, mode: number | null, initAssetWeight: number | null) => {
       if (!currentVoter) {
         notify({
           type: 'error',
@@ -64,7 +64,7 @@ const SecurityCouncilModal = ({
           null,
           null,
           null,
-          null,
+          initAssetWeight,
           null,
           null,
           null,
@@ -122,6 +122,7 @@ const SecurityCouncilModal = ({
         const simTransaction = new Transaction({ feePayer: wallet.publicKey })
         simTransaction.add(...proposalTx)
         const simulation = await connection.simulateTransaction(simTransaction)
+
         if (!simulation.value.err) {
           const proposals = await getAllProposals(
             connection,
@@ -210,15 +211,22 @@ const SecurityCouncilModal = ({
         </div>
       ) : null}
       <div className="mt-6 space-y-3">
-        <Button onClick={() => proposeReduceOnly(bank, 1)} disabled={proposing}>
+        <Button onClick={() => proposeEdit(bank, 1, null)} disabled={proposing}>
           {proposing ? (
             <Loading className="w-5"></Loading>
           ) : (
             'No borrows no deposits'
           )}
         </Button>
-        <Button onClick={() => proposeReduceOnly(bank, 2)} disabled={proposing}>
+        <Button onClick={() => proposeEdit(bank, 2, null)} disabled={proposing}>
           {proposing ? <Loading className="w-5"></Loading> : 'No borrows'}
+        </Button>
+        <Button onClick={() => proposeEdit(bank, null, 0)} disabled={proposing}>
+          {proposing ? (
+            <Loading className="w-5"></Loading>
+          ) : (
+            '0 init asset weight'
+          )}
         </Button>
       </div>
     </Modal>

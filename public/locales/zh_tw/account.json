@@ -5,9 +5,12 @@
     "advanced-options-desc": "Mango帳戶對帳戶一次可以持有的幣種數量和市場數量有限制。 這是 Solana 帳戶的特徵之一。 使用滑桿為你的新帳戶自訂幣種以市場位置。",
     "assets": "資產",
     "assets-liabilities": "資產和債務",
+    "collateral": "Collateral",
+    "collateral-funding-modal-heading": "You'll be charged collateral fees in {{remaining_hours}} hours",
     "collateral-value": "質押品價值",
     "custom-account-options-saved": "已改高級設定",
     "cumulative-interest-chart": "累積利息圖表",
+    "daily-fee": "Daily Fee",
     "daily-volume": "24小時交易量",
     "export": "導出{{dataType}}",
     "find-accounts": "尋找帳戶",
@@ -29,6 +32,7 @@
     "no-data": "無數據可顯示",
     "no-pnl-history": "無盈虧歷史",
     "not-following-yet": "你尚未關注任何帳戶...",
+    "okay-got-it": "Okay, Got It",
     "open-settings": "打開設定",
     "pnl-chart": "盈虧圖表",
     "pnl-history": "盈虧歷史",
@@ -59,6 +63,7 @@
     "volume-chart": "交易量圖表",
     "warning-uninsured": "{{token}}不受保證。",
     "week-starting": "從{{week}}來算的一周",
+    "whats-this": "What's This?",
     "zero-balances": "顯示等於零的餘額",
     "zero-collateral": "無質押品"
 }

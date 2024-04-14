@@ -186,6 +186,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   step: true,
   stsol: true,
   tbtc: true,
+  tnsr: true,
   usdc: true,
   usdh: true,
   usdt: true,
@@ -226,3 +227,5 @@ export const MANGO_MAINNET_GROUP = new PublicKey(
 )
 
 export const MAX_PERP_SLIPPAGE = 0.025
+
+export const COLLATERAL_FEE_KEY = 'collateral_fee_modal_v1'

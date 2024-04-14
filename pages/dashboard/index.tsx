@@ -1012,7 +1012,7 @@ const BankDisclosure = ({
               value={
                 bank.oracleProvider == OracleProvider.Switchboard ? (
                   <a
-                    href={`https://app.switchboard.xyz/solana/mainnet-beta/feed/${bank.oracle.toString()}`}
+                    href={`https://app.switchboard.xyz/solana/mainnet/feed/${bank.oracle.toString()}`}
                     className={`flex items-center break-all text-th-fgd-2 hover:text-th-fgd-3`}
                     target="_blank"
                     rel="noreferrer"
