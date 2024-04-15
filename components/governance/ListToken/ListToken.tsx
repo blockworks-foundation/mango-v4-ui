@@ -51,8 +51,6 @@ import CreateSwitchboardOracleModal from '@components/modals/CreateSwitchboardOr
 import {
   LISTING_PRESETS,
   calculateMarketTradingParams,
-  getSwitchBoardPresets,
-  getPythPresets,
   LISTING_PRESET,
   getPresetWithAdjustedDepositLimit,
   LISTING_PRESETS_KEY,
@@ -176,12 +174,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const [raydiumPoolAddress, setRaydiumPoolAddress] = useState('')
   const [oracleModalOpen, setOracleModalOpen] = useState(false)
   const [isSolPool, setIsSolPool] = useState(false)
-  const [isPyth, setIsPyth] = useState(false)
-  const presets = useMemo(() => {
-    return !isPyth
-      ? getSwitchBoardPresets(LISTING_PRESETS)
-      : getPythPresets(LISTING_PRESETS)
-  }, [isPyth])
+  const presets = LISTING_PRESETS
   const [proposedPresetTargetAmount, setProposedProposedTargetAmount] =
     useState(0)
   const [preset, setPreset] = useState<LISTING_PRESET>(presets.UNTRUSTED)
@@ -213,7 +206,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     const handleOracleUpdate = async () => {
       if (currentTokenInfo) {
         setLoadingListingParams(true)
-        const { oraclePk, isPyth } = await getOracle({
+        const { oraclePk } = await getOracle({
           baseSymbol: currentTokenInfo.symbol,
           quoteSymbol: 'usd',
           connection,
@@ -224,7 +217,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           oraclePk: oraclePk || '',
         }))
         setLoadingListingParams(false)
-        setIsPyth(isPyth)
       }
     }
     handleOracleUpdate()
@@ -279,7 +271,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       isLST: boolean,
     ) => {
       setLoadingListingParams(true)
-      const [{ oraclePk, isPyth }, marketPk] = await Promise.all([
+      const [{ oraclePk }, marketPk] = await Promise.all([
         getOracle({
           baseSymbol: tokenInfo.symbol,
           quoteSymbol: 'usd',
@@ -326,7 +318,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         fastListing: false,
       })
       setLoadingListingParams(false)
-      setIsPyth(isPyth)
     },
     [connection, mint, proposals, group, client.programId, advForm, quoteBank],
   )
@@ -921,13 +912,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                                       LISTING_PRESETS[
                                         name as LISTING_PRESETS_KEY
                                       ].preset_key
-                                    }}${
-                                      LISTING_PRESETS[
-                                        name as LISTING_PRESETS_KEY
-                                      ].oracle === 0
-                                        ? ' - PYTH only'
-                                        : ''
-                                    }`}
+                                    }}`}
                                     {LISTING_PRESETS[
                                       name as LISTING_PRESETS_KEY
                                     ].preset_target_amount ===
