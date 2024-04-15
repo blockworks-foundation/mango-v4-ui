@@ -43,7 +43,7 @@ export const getOracle = async ({
         baseSymbol,
         quoteSymbol,
         connection,
-        noLock: targetAmount === 0 || targetAmount === 1000,
+        noLock: targetAmount === 0,
       })
       oraclePk = switchBoardOracle
     }

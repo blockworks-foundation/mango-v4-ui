@@ -86,10 +86,7 @@ const getSuggestedAndCurrentTier = (
     }, {})
   const priceImpact = filteredResp[getApiTokenName(bank.name)]
 
-  const suggestedTierKey = getProposedKey(
-    priceImpact?.target_amount,
-    bank.oracleProvider === OracleProvider.Pyth,
-  )
+  const suggestedTierKey = getProposedKey(priceImpact?.target_amount)
 
   return {
     suggestedTierKey,

@@ -84,9 +84,13 @@ const CreateSwitchboardOracleModal = ({
   const pythUsdOracle = 'Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD'
   const switchboardUsdDaoOracle = 'FwYfsmj5x8YZXtQBNo2Cz8TE7WRCMFqA6UTffK4xQKMH'
   const tierToSwapValue: { [key in LISTING_PRESETS_KEY]?: string } = {
+    asset_5000: '500000',
+    asset_250: '25000',
     asset_100: '10000',
     asset_20: '2000',
+    asset_10: '1000',
     liab_5: '500',
+    liab_3: '500',
     liab_1: '100',
     UNTRUSTED: '100',
   }
@@ -99,35 +103,59 @@ const CreateSwitchboardOracleModal = ({
       minUpdateDelaySeconds: number
     }
   } = {
+    asset_5000: {
+      fundAmount: 6.5,
+      minRequiredOracleResults: 2,
+      minUpdateDelaySeconds: 60,
+      batchSize: 5,
+    },
+    asset_250: {
+      fundAmount: 6.5,
+      minRequiredOracleResults: 2,
+      minUpdateDelaySeconds: 60,
+      batchSize: 5,
+    },
     asset_100: {
-      fundAmount: 64,
-      minRequiredOracleResults: 3,
-      minUpdateDelaySeconds: 6,
+      fundAmount: 6.5,
+      minRequiredOracleResults: 2,
+      minUpdateDelaySeconds: 60,
       batchSize: 5,
     },
     asset_20: {
-      fundAmount: 32,
+      fundAmount: 3.3,
       minRequiredOracleResults: 1,
-      minUpdateDelaySeconds: 6,
+      minUpdateDelaySeconds: 60,
+      batchSize: 2,
+    },
+    asset_10: {
+      fundAmount: 3.3,
+      minRequiredOracleResults: 1,
+      minUpdateDelaySeconds: 60,
       batchSize: 2,
     },
     liab_5: {
-      fundAmount: 10,
+      fundAmount: 3.3,
       minRequiredOracleResults: 1,
-      minUpdateDelaySeconds: 20,
+      minUpdateDelaySeconds: 60,
+      batchSize: 2,
+    },
+    liab_3: {
+      fundAmount: 3.3,
+      minRequiredOracleResults: 1,
+      minUpdateDelaySeconds: 60,
       batchSize: 2,
     },
     liab_1: {
-      fundAmount: 10,
-      batchSize: 2,
+      fundAmount: 3.3,
       minRequiredOracleResults: 1,
-      minUpdateDelaySeconds: 20,
+      minUpdateDelaySeconds: 60,
+      batchSize: 2,
     },
     UNTRUSTED: {
-      fundAmount: 0.64,
+      fundAmount: 0.34,
       batchSize: 2,
       minRequiredOracleResults: 1,
-      minUpdateDelaySeconds: 300,
+      minUpdateDelaySeconds: 600,
     },
   }
 

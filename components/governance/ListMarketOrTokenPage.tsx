@@ -57,18 +57,7 @@ const ListMarketOrTokenPage = () => {
               </li>
             </ul>
             {connected ? (
-              <div className="grid grid-cols-2 gap-6">
-                <div className={BUTTON_WRAPPER_CLASSES}>
-                  <img
-                    src="/images/list-market.png"
-                    className="mb-2 h-10 w-auto"
-                  />
-                  <h2 className="mb-2">{t('list-spot-market')}</h2>
-                  <p className="mb-4">{t('list-spot-market-desc')}</p>
-                  <Button onClick={() => setListOption(LIST_OPTIONS.MARKET)}>
-                    {t('list-spot-market')}
-                  </Button>
-                </div>
+              <div className="grid-row-2 grid gap-6">
                 <div className={BUTTON_WRAPPER_CLASSES}>
                   <img
                     src="/images/list-token.png"
@@ -78,6 +67,17 @@ const ListMarketOrTokenPage = () => {
                   <p className="mb-4">{t('list-token-desc')}</p>
                   <Button onClick={() => setListOption(LIST_OPTIONS.TOKEN)}>
                     {t('list-token')}
+                  </Button>
+                </div>
+                <div className={BUTTON_WRAPPER_CLASSES}>
+                  <img
+                    src="/images/list-market.png"
+                    className="mb-2 h-10 w-auto"
+                  />
+                  <h2 className="mb-2">{t('list-spot-market')}</h2>
+                  <p className="mb-4">{t('list-spot-market-desc')}</p>
+                  <Button onClick={() => setListOption(LIST_OPTIONS.MARKET)}>
+                    {t('list-spot-market')}
                   </Button>
                 </div>
               </div>
