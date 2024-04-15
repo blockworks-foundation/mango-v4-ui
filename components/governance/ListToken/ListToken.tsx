@@ -365,16 +365,16 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           handleGetRoutesWithFixedArgs(100000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(20000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(10000, tokenMint, 'ExactIn'),
-          handleGetRoutesWithFixedArgs(3000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(5000, tokenMint, 'ExactIn'),
+          handleGetRoutesWithFixedArgs(3000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(1000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(5000000, tokenMint, 'ExactOut'),
           handleGetRoutesWithFixedArgs(250000, tokenMint, 'ExactOut'),
           handleGetRoutesWithFixedArgs(100000, tokenMint, 'ExactOut'),
           handleGetRoutesWithFixedArgs(20000, tokenMint, 'ExactOut'),
           handleGetRoutesWithFixedArgs(10000, tokenMint, 'ExactOut'),
-          handleGetRoutesWithFixedArgs(3000, tokenMint, 'ExactOut'),
           handleGetRoutesWithFixedArgs(5000, tokenMint, 'ExactOut'),
+          handleGetRoutesWithFixedArgs(3000, tokenMint, 'ExactOut'),
           handleGetRoutesWithFixedArgs(1000, tokenMint, 'ExactOut'),
         ])
         const bestRoutesSwaps = swaps
