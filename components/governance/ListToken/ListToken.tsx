@@ -351,18 +351,29 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
 
   const handleLiquidityCheck = useCallback(
     async (tokenMint: PublicKey, isLST: boolean) => {
+      if (isLST) {
+        const targetAmount = 250000
+        setProposedProposedTargetAmount(targetAmount)
+        setPreset(presets.asset_250)
+        setPriceImpact(0.9)
+        return targetAmount
+      }
       try {
         const swaps = await Promise.all([
+          handleGetRoutesWithFixedArgs(5000000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(250000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(100000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(20000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(10000, tokenMint, 'ExactIn'),
+          handleGetRoutesWithFixedArgs(3000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(5000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(1000, tokenMint, 'ExactIn'),
+          handleGetRoutesWithFixedArgs(5000000, tokenMint, 'ExactOut'),
           handleGetRoutesWithFixedArgs(250000, tokenMint, 'ExactOut'),
           handleGetRoutesWithFixedArgs(100000, tokenMint, 'ExactOut'),
           handleGetRoutesWithFixedArgs(20000, tokenMint, 'ExactOut'),
           handleGetRoutesWithFixedArgs(10000, tokenMint, 'ExactOut'),
+          handleGetRoutesWithFixedArgs(3000, tokenMint, 'ExactOut'),
           handleGetRoutesWithFixedArgs(5000, tokenMint, 'ExactOut'),
           handleGetRoutesWithFixedArgs(1000, tokenMint, 'ExactOut'),
         ])
@@ -404,14 +415,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
             : 0
 
         setProposedProposedTargetAmount(targetAmount)
-        if (isLST) {
-          const suggestedPreset =
-            Object.values(presets).find(
-              (x) => x.preset_target_amount <= targetAmount,
-            ) || presets.UNTRUSTED
-
-          setPreset(suggestedPreset)
-        }
         setPriceImpact(midTierCheck ? midTierCheck.priceImpactPct * 100 : 100)
         handleGetPoolParams(targetAmount, tokenMint)
         return targetAmount
