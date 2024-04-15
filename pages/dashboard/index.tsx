@@ -1077,7 +1077,7 @@ const BankDisclosure = ({
               value={`${formattedBankValues.loanOriginationFeeRate} bps`}
             />
             <KeyValuePair
-              label="Collected fees native"
+              label="Collected fees"
               value={`${formattedBankValues.collectedFeesNative} ($${formattedBankValues.collectedFeesNativePrice})`}
             />
             <KeyValuePair label="Dust" value={formattedBankValues.dust} />
@@ -1104,6 +1104,17 @@ const BankDisclosure = ({
             <KeyValuePair
               label="Liquidation fee"
               value={`${formattedBankValues.liquidationFee}%`}
+            />
+            <KeyValuePair
+              label="Platform liquidation fee"
+              value={`${formattedBankValues.platformLiquidationFee}%`}
+            />
+            <KeyValuePair
+              label="Collected liquidation fees"
+              value={`${toUiDecimals(
+                bank.collectedLiquidationFees,
+                formattedBankValues.mintDecimals,
+              )}% ($${formattedBankValues.collectedFeesNativePrice})`}
             />
             <KeyValuePair
               label="Scaled Init Asset/Liab Weight"
