@@ -49,7 +49,9 @@ const TokenDetailsTable = () => {
       const initAssetWeight = bank.scaledInitAssetWeight(bank.price)
       const initLiabWeight = bank.scaledInitLiabWeight(bank.price)
       const isInsured = mintInfo?.groupInsuranceFund ? t('yes') : t('no')
-      const liquidationFee = bank.liquidationFee.toNumber() * 100
+      const liquidationFee =
+        bank.liquidationFee.toNumber() * 100 +
+        bank.platformLiquidationFee.toNumber() * 100
       const loanOriginationFee = 100 * bank.loanOriginationFeeRate.toNumber()
       const [oracleProvider, oracleLinkPath] = getOracleProvider(bank)
       const symbol = bank.name
