@@ -127,6 +127,9 @@ const initMangoClient = (
     prioritizationFee: opts.prioritizationFee,
     fallbackOracleConfig: [
       new PublicKey('Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD'), // USDC pyth oracle
+      new PublicKey('AFrYBhb5wKQtxRS9UA9YRS4V3dwFm7SqmS6DHKq6YVgo'), //Bsol
+      new PublicKey('7yyaeuJ1GGtVBLT2z2xub5ZWYKaNhF28mj1RdV4VDFVk'), //jitoSol
+      new PublicKey('E4v1BBgoso9s64TQvmyownAVJbhbEPGyzA3qn4n46qj9'), //mSol
     ],
     multipleConnections: opts.multipleConnections,
     idsSource: 'api',
