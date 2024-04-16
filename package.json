@@ -135,7 +135,8 @@
     "eslint-config-next/eslint-import-resolver-typescript/tsconfig-paths/json5": "1.0.2",
     "@solana/wallet-adapter-solflare": "0.6.27",
     "crypto-js": ">=4.1.1",
-    "@sentry/nextjs": ">=7.77.0"
+    "@sentry/nextjs": ">=7.77.0",
+    "protobufjs": ">=7.2.5"
   },
   "lavamoat": {
     "allowScripts": {
