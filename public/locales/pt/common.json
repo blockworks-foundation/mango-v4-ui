@@ -21,6 +21,7 @@
   "amount-owed": "Quantia Devida",
   "announcements": "Announcements",
   "asked-sign-transaction": "Você será solicitado a assinar uma transação",
+  "asset": "Asset",
   "asset-liability-weight": "Pesos de Ativo/Passivo",
   "asset-liability-weight-desc": "O peso do ativo aplica um desconto ao valor do colateral no cálculo da saúde da sua conta. Quanto menor o peso do ativo, menos o ativo conta como colateral. O peso do passivo faz o oposto (adiciona ao valor do passivo no cálculo da saúde).",
   "asset-weight": "Peso do Ativo",
