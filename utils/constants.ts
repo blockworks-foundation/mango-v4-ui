@@ -172,6 +172,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   mngo: true,
   moutai: true,
   jup: true,
+  meta: true,
   msol: true,
   neon: true,
   nos: true,
