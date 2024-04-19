@@ -113,6 +113,7 @@ type TableData = {
   liabWeight: string
   depositRate: number
   borrowRate: number
+  liquidationPrice: number
 }
 
 const set = mangoStore.getState().set
@@ -140,6 +141,27 @@ const TokenList = () => {
   const formattedTableData = useCallback(
     (banks: BankWithBalance[]) => {
       const formatted = []
+
+      let hasBorrowed = false
+      let totalLiabilities = 0
+      let totalAssets = 0
+      for (const b of banks) {
+        const bank = b.bank
+        const maintAssetWeight = bank.maintAssetWeight.toNumber()
+        const maintLiabWeight = bank.maintLiabWeight.toNumber()
+        const roundedBalance = floorToDecimal(
+          b.balance,
+          bank.mintDecimals,
+        ).toNumber()
+        if (roundedBalance < 0) {
+          hasBorrowed = true
+          totalLiabilities +=
+            b.balance * bank.price.toNumber() * maintLiabWeight
+        } else {
+          totalAssets += b.balance * bank.price.toNumber() * maintAssetWeight
+        }
+      }
+
       for (const b of banks) {
         const bank = b.bank
         const roundedBalance = floorToDecimal(
@@ -179,9 +201,18 @@ const TokenList = () => {
 
         const assetWeight = bank.scaledInitAssetWeight(bank.price).toFixed(2)
         const liabWeight = bank.scaledInitLiabWeight(bank.price).toFixed(2)
+        const maintAssetWeight = bank.maintAssetWeight.toNumber()
 
         const depositRate = bank.getDepositRateUi()
         const borrowRate = bank.getBorrowRateUi()
+        // sum of all weighted liabilities = sum of all weighted assets
+        const liquidationPrice =
+          hasBorrowed && balanceValue > 0 && bank.name != 'USDC'
+            ? (-totalLiabilities -
+                (totalAssets -
+                  b.balance * bank.price.toNumber() * maintAssetWeight)) /
+              (b.balance * maintAssetWeight)
+            : 0
 
         const data = {
           balance,
@@ -197,6 +228,7 @@ const TokenList = () => {
           liabWeight,
           depositRate,
           borrowRate,
+          liquidationPrice,
         }
         formatted.push(data)
       }
@@ -284,6 +316,19 @@ const TokenList = () => {
                 </Th>
                 <Th>
                   <div className="flex justify-end">
+                    <Tooltip content="A negative balance represents a borrow">
+                      <SortableColumnHeader
+                        sortKey="balanceValue"
+                        sort={() => requestSort('balanceValue')}
+                        sortConfig={sortConfig}
+                        title={t('Liquidation Price')}
+                        titleClass="tooltip-underline"
+                      />
+                    </Tooltip>
+                  </div>
+                </Th>
+                <Th>
+                  <div className="flex justify-end">
                     <Tooltip content={t('tooltip-collateral-value')}>
                       <SortableColumnHeader
                         sortKey="collateralValue"
@@ -349,6 +394,7 @@ const TokenList = () => {
                   liabWeight,
                   depositRate,
                   borrowRate,
+                  liquidationPrice,
                 } = data
 
                 const decimals = floorToDecimal(
@@ -366,6 +412,16 @@ const TokenList = () => {
                     <Td className="text-right">
                       <BankAmountWithValue
                         amount={balance}
+                        decimals={decimals}
+                        bank={bank}
+                        stacked
+                        isPrivate
+                        fixDecimals={false}
+                      />
+                    </Td>
+                    <Td className="text-right">
+                      <BankAmountWithValue
+                        amount={liquidationPrice}
                         decimals={decimals}
                         bank={bank}
                         stacked
