@@ -2,7 +2,7 @@
     "account-is-private": "此帐户已开启隐私模式",
     "account-stats": "帐户统计",
     "advanced-options": "高级设定",
-    "advanced-options-desc": "Mango帐户对帐户一次可以持有的币种数量和市场数量有限制。 这是Solana 帐户的特征之一。 使用滑杆为你的新帐户自订币种以市场 位置。",
+    "advanced-options-desc": "Mango帐户对帐户一次可以持有的币种数量和市场数量有限制。 这是Solana 帐户的特征之一。 使用滑杆为你的新帐户自订币种以市场位置。",
     "assets": "资产",
     "assets-liabilities": "资产和债务",
     "collateral": "质押品",
