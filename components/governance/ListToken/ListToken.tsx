@@ -643,7 +643,11 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           Number(proposedPreset.zeroUtilRate),
           Number(proposedPreset.platformLiquidationFee),
           proposedPreset.disableAssetLiquidation,
-          Number(proposedPreset.collateralFeePerDay),
+          Number(
+            isLST
+              ? 0.000027396999939810485
+              : proposedPreset.collateralFeePerDay,
+          ),
         )
         .accounts({
           fallbackOracle: PublicKey.default,
@@ -754,6 +758,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     group,
     connection,
     fee,
+    isLST,
   ])
 
   const closeCreateOpenBookMarketModal = () => {
