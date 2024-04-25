@@ -1113,6 +1113,13 @@ const BankDisclosure = ({
                 formattedBankValues.mintDecimals,
               )}% ($${formattedBankValues.collectedFeesNativePrice})`}
             />
+          <KeyValuePair
+              label="Collected collateral fees"
+              value={`${toUiDecimals(
+                bank.collectedCollateralFees,
+                formattedBankValues.mintDecimals,
+              )}`}
+            />
             <KeyValuePair
               label="Scaled Init Asset/Liab Weight"
               value={`${formattedBankValues.scaledInitAssetWeight} / ${formattedBankValues.scaledInitLiabWeight}`}
