@@ -124,18 +124,15 @@ const Prospective: NextPage = () => {
                         xBorder={valIdx != 0}
                         key={valIdx}
                         className={`!py-3 
-                                        ${
-                                          valIdx === 0
-                                            ? 'sticky left-0 z-10 bg-th-bkg-2'
-                                            : ''
-                                        }
-                                        ${
-                                          valIdx === 0 &&
-                                          bankNames.includes(token[head])
-                                            ? 'bg-lime-200'
-                                            : ''
-                                        }
-                                        `}
+                        ${
+                          valIdx === 0
+                            ? 'sticky left-0 z-10 ' +
+                              (bankNames.includes(token[head])
+                                ? 'bg-lime-200'
+                                : 'bg-th-bkg-2')
+                            : ''
+                        }
+                    `}
                       >
                         <div className="flex">
                           <div className="mr-2 h-full">
