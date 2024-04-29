@@ -7,7 +7,8 @@ export default async function handler(
   const { offset = 0 } = req.query
 
   // Check if the API key is defined or provide a default/fallback value
-  const apiKey = process.env.NEXT_PUBLIC_API_KEY || 'your-default-api-key' // Consider a fallback if environment variable might not be set
+  const apiKey =
+    process.env.NEXT_PUBLIC_BIRDEYE_API_KEY || 'your-default-api-key' // Consider a fallback if environment variable might not be set
   const options = {
     method: 'GET',
     headers: {
@@ -22,6 +23,7 @@ export default async function handler(
       options,
     )
     const tokenListResponse = await response.json()
+
     const tokenList = tokenListResponse['data']['tokens']
     const filteredTokens = []
 
