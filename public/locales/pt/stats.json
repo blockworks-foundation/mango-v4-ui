@@ -1,7 +1,7 @@
 {
     "base-liquidation-fee": "Taxa Base de Liquidação",
     "closest-to-liquidation": "Mais Próximo da Liquidação",
-    "collateral-funding-fee": "Collateral Funding Fee (APR)",
+    "collateral-funding-fee": "Collateral Funding Fee",
     "daily": "Diário",
     "hourly": "Por Hora",
     "largest-perp-positions": "Maior",
