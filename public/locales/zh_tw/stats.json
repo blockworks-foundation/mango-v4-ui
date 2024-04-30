@@ -1,7 +1,7 @@
 {
     "base-liquidation-fee": "基本清算費用",
     "closest-to-liquidation": "最接近清算的持倉",
-    "collateral-funding-fee": "Collateral Funding Fee",
+    "collateral-funding-fee": "Collateral Funding Fee (Per Day)",
     "daily": "日",
     "hourly": "小時",
     "largest-perp-positions": "最大持倉",
