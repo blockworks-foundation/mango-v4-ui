@@ -1,3 +1,4 @@
+import { NEXT_PUBLIC_BIRDEYE_API_KEY } from 'apis/birdeye/helpers'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
 export default async function handler(
@@ -7,8 +8,7 @@ export default async function handler(
   const { offset = 0 } = req.query
 
   // Check if the API key is defined or provide a default/fallback value
-  const apiKey =
-    process.env.NEXT_PUBLIC_BIRDEYE_API_KEY || 'your-default-api-key' // Consider a fallback if environment variable might not be set
+  const apiKey = NEXT_PUBLIC_BIRDEYE_API_KEY // Consider a fallback if environment variable might not be set
   const options = {
     method: 'GET',
     headers: {
