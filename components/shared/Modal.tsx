@@ -33,7 +33,7 @@ function Modal({
   }, [isOpen])
 
   const handleClose = () => {
-    if (disableOutsideClose) return
+    if (disableOutsideClose && !fullScreen) return
     onClose()
   }
 
@@ -59,10 +59,10 @@ function Modal({
             themeData.fonts.display.variable
           } ${
             themeData.fonts.mono.variable
-          } thin-scroll w-full overflow-auto bg-th-bkg-1 font-body ${
+          } h-full w-full bg-th-bkg-1 font-body ${
             fullScreen
-              ? 'h-full'
-              : 'max-h-[calc(100vh-5%)] p-4 sm:max-w-md sm:rounded-lg sm:border sm:border-th-bkg-3 sm:p-6'
+              ? ''
+              : 'p-4 sm:h-auto sm:max-w-md sm:rounded-lg sm:border sm:border-th-bkg-3 sm:p-6'
           } relative ${panelClassNames}`}
         >
           <div>{children}</div>
