@@ -55,7 +55,7 @@ const TokenDetailsTable = () => {
       const loanOriginationFee = 100 * bank.loanOriginationFeeRate.toNumber()
       const [oracleProvider, oracleLinkPath] = getOracleProvider(bank)
       const symbol = bank.name
-      const collateralFeeRate = bank.collateralFeePerDay * 365 * 100
+      const collateralFeeRate = bank.collateralFeePerDay * 100
 
       const data = {
         bank,
@@ -410,11 +410,10 @@ export const CollateralFundingFeeTooltip = () => {
         margin against riskier collateral.
       </p>
       <p className="mb-2">
-        The collateral funding fee is a dynamic formula that uses a fixed Annual
-        Percentage Rate (displayed below). This rate is then multiplied by the
-        ratio of your USDC liabilities (the amount you&apos;ve borrowed) against
-        your weighted deposits (the value of your position adjusted by a factor
-        between 0 and 1).
+        The collateral funding fee is a dynamic formula that uses a fixed rate.
+        This rate is then multiplied by the ratio of your USDC liabilities (the
+        amount you&apos;ve borrowed) against your weighted deposits (the value
+        of your position adjusted by a factor between 0 and 1).
       </p>
       <p className="mb-2">
         A key aspect of this fee is its dynamism; it scales with your

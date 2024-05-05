@@ -94,7 +94,7 @@ const TokenParams = ({ bank }: { bank: Bank }) => {
             </p>
           </Tooltip>
           <p className="font-mono text-th-fgd-2">
-            {(bank.collateralFeePerDay * 365 * 100).toFixed(2)}%
+            {(bank.collateralFeePerDay * 100).toFixed(4)}%
           </p>
         </div>
         {mintInfo ? (
