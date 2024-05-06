@@ -213,7 +213,11 @@ const TokenDetailsTable = () => {
                     onClick={() => goToTokenPage(symbol.split(' ')[0], router)}
                   >
                     <Td>
-                      <TableTokenName bank={bank} symbol={symbol} />
+                      <TableTokenName
+                        bank={bank}
+                        symbol={symbol}
+                        showLeverage
+                      />
                     </Td>
                     <Td>
                       <div className="flex justify-end space-x-1.5 text-right font-mono">
@@ -275,7 +279,11 @@ const TokenDetailsTable = () => {
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <TableTokenName bank={bank} symbol={bank.name} />
+                        <TableTokenName
+                          bank={bank}
+                          symbol={bank.name}
+                          showLeverage
+                        />
                         <ChevronDownIcon
                           className={`${
                             open ? 'rotate-180' : 'rotate-0'
