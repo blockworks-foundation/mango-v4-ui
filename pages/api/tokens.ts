@@ -22,8 +22,8 @@ export default async function handler(
       `https://public-api.birdeye.so/defi/tokenlist?sort_by=v24hUSD&sort_type=desc&offset=${offset}&limit=50`,
       options,
     )
-    const tokenListResponse = await response.json()
 
+    const tokenListResponse = await response.json()
     const tokenList = tokenListResponse['data']['tokens']
     const filteredTokens = []
 
@@ -35,7 +35,7 @@ export default async function handler(
         const nowInSeconds = Math.floor(now.getTime() / 1000)
         const pastDate = new Date()
         pastDate.setDate(pastDate.getDate() - 4)
-        pastDate.setMonth(pastDate.getMonth() - 1)
+        pastDate.setMonth(pastDate.getMonth() - 1.5)
         const pastDateInSeconds = Math.floor(pastDate.getTime() / 1000)
 
         // Fetch history for the token
@@ -44,7 +44,6 @@ export default async function handler(
           options,
         )
         const historyData = await historyResponse.json()
-
         if (historyData['data']['items']?.length >= 35) {
           const detailResponse = await fetch(
             `https://public-api.birdeye.so/defi/token_overview?address=${address}`,
@@ -61,7 +60,6 @@ export default async function handler(
         }
       }
     }
-
     // Return the filtered list of tokens
     res.status(200).json(filteredTokens)
   } catch (error) {
