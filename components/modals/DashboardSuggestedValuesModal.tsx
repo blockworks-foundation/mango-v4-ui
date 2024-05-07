@@ -188,7 +188,7 @@ const DashboardSuggestedValues = ({
           null,
           getNullOrVal(fieldsToChange.tokenConditionalSwapTakerFeeRate),
           getNullOrVal(fieldsToChange.tokenConditionalSwapMakerFeeRate),
-          getNullOrVal(fieldsToChange.flashLoanSwapFeeRate),
+          null,
           //do not edit of interest curve scaling
           null,
           getNullOrVal(fieldsToChange.interestTargetUtilization),
@@ -206,7 +206,7 @@ const DashboardSuggestedValues = ({
           fieldsToChange.disableAssetLiquidation === undefined
             ? null
             : fieldsToChange.disableAssetLiquidation,
-          getNullOrVal(fieldsToChange.collateralFeePerDay),
+          getNullOrVal(0.000904109589041),
           null,
         )
         .accounts({
@@ -328,7 +328,11 @@ const DashboardSuggestedValues = ({
   )
 
   return (
-    <Modal panelClassNames="!max-w-[800px]" isOpen={isOpen} onClose={onClose}>
+    <Modal
+      panelClassNames="!max-w-[800px] !max-h-[700px] overflow-auto"
+      isOpen={isOpen}
+      onClose={onClose}
+    >
       <h3 className="mb-6">
         <span>
           {bank.name} - Suggested tier: {PRESETS[suggestedTierKey].preset_name}{' '}
