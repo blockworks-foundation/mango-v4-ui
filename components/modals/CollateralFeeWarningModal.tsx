@@ -80,7 +80,7 @@ const CollateralFeeWarningModal = ({ isOpen }: WarningProps) => {
                 </Td>
                 <Td>
                   <div className="flex flex-col items-end">
-                    <p>
+                    <p className="text-right">
                       <FormatNumericValue value={dailyFee} />
                       <span className="font-body"> {bank.name}</span>
                     </p>
