@@ -328,11 +328,7 @@ const DashboardSuggestedValues = ({
   )
 
   return (
-    <Modal
-      panelClassNames="!max-w-[800px] !max-h-[700px] overflow-auto"
-      isOpen={isOpen}
-      onClose={onClose}
-    >
+    <Modal panelClassNames="!max-w-[800px]" isOpen={isOpen} onClose={onClose}>
       <h3 className="mb-6">
         <span>
           {bank.name} - Suggested tier: {PRESETS[suggestedTierKey].preset_name}{' '}
