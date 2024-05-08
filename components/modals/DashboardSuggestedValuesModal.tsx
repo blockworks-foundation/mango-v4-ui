@@ -188,7 +188,7 @@ const DashboardSuggestedValues = ({
           null,
           getNullOrVal(fieldsToChange.tokenConditionalSwapTakerFeeRate),
           getNullOrVal(fieldsToChange.tokenConditionalSwapMakerFeeRate),
-          null,
+          getNullOrVal(fieldsToChange.flashLoanSwapFeeRate),
           //do not edit of interest curve scaling
           null,
           getNullOrVal(fieldsToChange.interestTargetUtilization),
@@ -206,7 +206,7 @@ const DashboardSuggestedValues = ({
           fieldsToChange.disableAssetLiquidation === undefined
             ? null
             : fieldsToChange.disableAssetLiquidation,
-          getNullOrVal(0.000904109589041),
+          getNullOrVal(fieldsToChange.collateralFeePerDay),
           null,
         )
         .accounts({
