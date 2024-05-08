@@ -1,5 +1,6 @@
 import { Bank, PerpMarket } from '@blockworks-foundation/mango-v4'
 import { LinkButton } from '@components/shared/Button'
+import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import SheenLoader from '@components/shared/SheenLoader'
 import {
@@ -14,6 +15,8 @@ import {
 import TokenLogo from '@components/shared/TokenLogo'
 import MarketLogos from '@components/trade/MarketLogos'
 import { Disclosure, Transition } from '@headlessui/react'
+import { NoSymbolIcon } from '@heroicons/react/20/solid'
+import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import useMangoAccount from 'hooks/useMangoAccount'
@@ -62,6 +65,7 @@ export const fetchMarginFunding = async (
 const FundingTable = () => {
   const { t } = useTranslation(['common', 'account'])
   const { mangoAccountAddress } = useMangoAccount()
+  const { connected } = useWallet()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
 
@@ -136,7 +140,8 @@ const FundingTable = () => {
     sortConfig,
   } = useSortableData(tableData)
 
-  return (
+  return mangoAccountAddress &&
+    (sortedTableData?.length || isLoading || isFetchingNextPage) ? (
     <>
       {showTableView ? (
         <Table>
@@ -324,6 +329,17 @@ const FundingTable = () => {
         </LinkButton>
       ) : null}
     </>
+  ) : mangoAccountAddress || connected ? (
+    <div className="flex flex-1 flex-col items-center justify-center">
+      <div className="flex flex-col items-center p-8">
+        <NoSymbolIcon className="mb-2 h-6 w-6 text-th-fgd-4" />
+        <p>{t('account:no-funding')}</p>
+      </div>
+    </div>
+  ) : (
+    <div className="flex flex-1 flex-col items-center justify-center p-8">
+      <ConnectEmptyState text={t('account:connect-funding')} />
+    </div>
   )
 }
 
