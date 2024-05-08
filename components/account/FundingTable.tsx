@@ -199,9 +199,11 @@ const FundingTable = () => {
                     <div className="flex items-center justify-end">
                       {marketOrBank ? (
                         marketOrBank instanceof PerpMarket ? (
-                          <MarketLogos market={marketOrBank} />
+                          <MarketLogos market={marketOrBank} size="small" />
                         ) : (
-                          <TokenLogo bank={marketOrBank} />
+                          <div className="mr-1.5">
+                            <TokenLogo bank={marketOrBank} size={16} />
+                          </div>
                         )
                       ) : null}
                       <p className="font-body">{asset}</p>
@@ -261,7 +263,9 @@ const FundingTable = () => {
                           marketOrBank instanceof PerpMarket ? (
                             <MarketLogos market={marketOrBank} size="small" />
                           ) : (
-                            <TokenLogo bank={marketOrBank} size={16} />
+                            <div className="mr-1.5">
+                              <TokenLogo bank={marketOrBank} size={16} />
+                            </div>
                           )
                         ) : null}
                         <p className="text-right">{asset}</p>
