@@ -2,6 +2,7 @@ import { COLLATERAL_FEE_KEY } from 'utils/constants'
 import useBanksWithBalances from './useBanksWithBalances'
 import useLocalStorageState from './useLocalStorageState'
 import { useMemo } from 'react'
+import useMangoAccount from './useMangoAccount'
 
 const useCollateralFeePopupConditions = () => {
   const [wasModalOpen, setWasModalOpen] = useLocalStorageState(
@@ -9,7 +10,7 @@ const useCollateralFeePopupConditions = () => {
     false,
   )
   const banks = useBanksWithBalances('balance')
-  //check if there is at least 100$ active margin position and bank has collateral fee active
+
   const marginPositionBalanceWithBanks = banks.filter(
     (x) => x.balance < 0 && Math.abs(x.balance) * x.bank.uiPrice >= 100,
   )
@@ -29,6 +30,7 @@ const useCollateralFeePopupConditions = () => {
           ? Number(bank.maintAssetWeight)
           : Number(bank.maintLiabWeight)
       const value = Math.abs(balance) * bank.uiPrice * weight
+      console.log(bank)
 
       if (balance > 0) {
         totalWeightedAssets += value
