@@ -30,7 +30,6 @@ const useCollateralFeePopupConditions = () => {
           ? Number(bank.maintAssetWeight)
           : Number(bank.maintLiabWeight)
       const value = Math.abs(balance) * bank.uiPrice * weight
-      console.log(bank)
 
       if (balance > 0) {
         totalWeightedAssets += value
