@@ -21,7 +21,7 @@
   "amount-owed": "欠款",
   "announcements": "通知",
   "asked-sign-transaction": "你會被要求簽署交易",
-  "asset": "Asset",
+  "asset": "資產",
   "asset-liability-weight": "資產/債務權重",
   "asset-liability-weight-desc": "資產權重在賬戶健康計算中對質押品價值進行扣減。資產權重越低，資產對質押品的影響越小。債務權重恰恰相反（在健康計算中增加債務價值）。",
   "asset-weight": "資產權重",

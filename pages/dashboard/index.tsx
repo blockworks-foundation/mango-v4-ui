@@ -64,14 +64,27 @@ const getSuggestedAndCurrentTier = (
   bank: Bank,
   midPriceImp: MidPriceImpact[],
 ) => {
-  const currentTier = Object.values(LISTING_PRESETS).find((x) => {
-    return x.initLiabWeight.toFixed(1) === '1.8'
-      ? x.initLiabWeight.toFixed(1) ===
-          bank?.initLiabWeight.toNumber().toFixed(1) &&
-          x.reduceOnly === bank.reduceOnly
-      : x.initLiabWeight.toFixed(1) ===
-          bank?.initLiabWeight.toNumber().toFixed(1)
+  const epsilon = 1e-8
+  let currentTier = Object.values(LISTING_PRESETS).find((x) => {
+    if (bank?.name == 'USDC' || bank?.name == 'USDT') return true
+    if (bank?.depositWeightScaleStartQuote != 20000000000) {
+      if (
+        x.depositWeightScaleStartQuote === bank?.depositWeightScaleStartQuote
+      ) {
+        return true
+      }
+    } else {
+      return (
+        Math.abs(
+          x.loanOriginationFeeRate - bank?.loanOriginationFeeRate.toNumber(),
+        ) < epsilon
+      )
+    }
   })
+
+  if (currentTier == undefined) {
+    currentTier = LISTING_PRESETS['asset_5000']
+  }
 
   const filteredResp = midPriceImp
     .filter((x) => x.avg_price_impact_percent < 1)
@@ -1390,6 +1403,19 @@ export const DashboardNavbar = () => {
             } cursor-pointer border-r border-th-bkg-3 px-6 py-4`}
           >
             Prospective
+          </h4>
+        </Link>
+      </div>
+      <div>
+        <Link href={'/dashboard/marketing'} shallow={true}>
+          <h4
+            className={`${
+              asPath.includes('/dashboard/marketing')
+                ? 'bg-th-bkg-2 text-th-active'
+                : ''
+            } cursor-pointer border-r border-th-bkg-3 px-6 py-4`}
+          >
+            Marketing
           </h4>
         </Link>
       </div>

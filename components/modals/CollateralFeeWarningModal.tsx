@@ -58,7 +58,7 @@ const CollateralFeeWarningModal = ({ isOpen, onClose }: WarningProps) => {
         <thead>
           <TrHead>
             <Th className="text-left">{t('collateral')}</Th>
-            <Th className="text-right">{t('funding-rate')} (APR)</Th>
+            <Th className="text-right">{t('funding-rate')} Per Day</Th>
             <Th>
               <div className="flex justify-end">{t('daily-fee')}</div>
             </Th>
@@ -75,15 +75,12 @@ const CollateralFeeWarningModal = ({ isOpen, onClose }: WarningProps) => {
                 </Td>
                 <Td>
                   <p className="text-right">
-                    {(ltvRatio * bank.collateralFeePerDay * 365 * 100).toFixed(
-                      2,
-                    )}
-                    %
+                    {(ltvRatio * bank.collateralFeePerDay * 100).toFixed(4)}%
                   </p>
                 </Td>
                 <Td>
                   <div className="flex flex-col items-end">
-                    <p>
+                    <p className="text-right">
                       <FormatNumericValue value={dailyFee} />
                     </p>
                     <span className="font-mono text-th-fgd-4">

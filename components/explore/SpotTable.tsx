@@ -282,6 +282,7 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
                             <TableTokenName
                               bank={baseBank}
                               symbol={tokenName}
+                              showLeverage
                             />
                           </div>
                         </Td>
