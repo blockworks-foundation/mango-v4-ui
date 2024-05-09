@@ -48,12 +48,16 @@ const useCollateralFeePopupConditions = () => {
     !!collateralFeeBanks.length &&
     !wasModalOpen
 
+  const isCharged =
+    !!marginPositionBalanceWithBanks.length && !!collateralFeeBanks.length
+
   return {
     showCollateralFeeWarning,
     setWasModalOpen,
     marginPositionBalanceWithBanks,
     collateralFeeBanks,
     ltvRatio,
+    isCharged,
   }
 }
 

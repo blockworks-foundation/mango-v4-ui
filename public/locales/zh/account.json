@@ -46,6 +46,7 @@
     "token-slots-manage": "你在此可以管理帐户币位:",
     "token-slots-nearly-full": "你剩下一个币位",
     "token-slots-warning-desc": "Mango帐户可以持有的币种数量是有限的。当你完全提取币种或完全偿还借贷时，币位将再次可用。",
+    "tooltip-collateral-fees-charged": "Collateral funding fees are being charged",
     "tooltip-collateral-value": "该币种为你提供用于交易与借贷的资本金额。",
     "tooltip-connect-to-follow": "连接钱包以关注帐户",
     "tooltip-follow-account": "在你帐户页可以关注此帐户",

@@ -11,9 +11,10 @@ import FormatNumericValue from '@components/shared/FormatNumericValue'
 
 type WarningProps = {
   isOpen: boolean
+  onClose?: () => void
 }
 
-const CollateralFeeWarningModal = ({ isOpen }: WarningProps) => {
+const CollateralFeeWarningModal = ({ isOpen, onClose }: WarningProps) => {
   const { t } = useTranslation(['account'])
   const { setWasModalOpen, collateralFeeBanks, ltvRatio } =
     useCollateralFeePopupConditions()
@@ -31,13 +32,15 @@ const CollateralFeeWarningModal = ({ isOpen }: WarningProps) => {
     return Math.round(timeUntilChargeInHours * 100) / 100
   }, [lastCharge, collateralFeeInterval])
 
+  const handleClose = () => {
+    setWasModalOpen(true)
+    if (onClose) {
+      onClose()
+    }
+  }
+
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={() => setWasModalOpen(true)}
-      disableOutsideClose
-      hideClose
-    >
+    <Modal isOpen={isOpen} onClose={handleClose} disableOutsideClose hideClose>
       <h2 className="mb-2 text-center">
         {t('collateral-funding-modal-heading', {
           remaining_hours: hoursTillNextCharge,
@@ -79,7 +82,6 @@ const CollateralFeeWarningModal = ({ isOpen }: WarningProps) => {
                   <div className="flex flex-col items-end">
                     <p className="text-right">
                       <FormatNumericValue value={dailyFee} />
-                      <span className="font-body"> {bank.name}</span>
                     </p>
                     <span className="font-mono text-th-fgd-4">
                       $<FormatNumericValue value={dailyFee * bank.uiPrice} />
@@ -94,7 +96,7 @@ const CollateralFeeWarningModal = ({ isOpen }: WarningProps) => {
       <Button
         className="mt-6 w-full"
         onClick={() => {
-          setWasModalOpen(true)
+          handleClose()
         }}
       >
         {t('okay-got-it')}
