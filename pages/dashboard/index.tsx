@@ -1087,8 +1087,16 @@ const BankDisclosure = ({
               value={`${formattedBankValues.loanOriginationFeeRate} bps`}
             />
             <KeyValuePair
+              label="Collateral fee per day"
+              value={`${formattedBankValues.collateralFeePerDay} %`}
+            />
+            <KeyValuePair
               label="Collected fees"
               value={`${formattedBankValues.collectedFeesNative} ($${formattedBankValues.collectedFeesNativePrice})`}
+            />
+            <KeyValuePair
+              label="Collected collateral fees"
+              value={`${formattedBankValues.collectedCollateralFeesNative} ($${formattedBankValues.collectedCollateralFeesNativePrice})`}
             />
             <KeyValuePair label="Dust" value={formattedBankValues.dust} />
             <KeyValuePair
