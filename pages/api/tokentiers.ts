@@ -2,7 +2,10 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { MangoClient } from '@blockworks-foundation/mango-v4'
 import { AnchorProvider, Wallet } from '@coral-xyz/anchor'
 import { Connection, PublicKey, Keypair } from '@solana/web3.js'
-import { LISTING_PRESETS } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
+import {
+  LISTING_PRESETS,
+  getMidPriceImpacts,
+} from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 
 interface TokenDetails {
   reduceOnly?: number
@@ -73,11 +76,16 @@ export default async function handler(
       .sort((a, b) => a.name.localeCompare(b.name))
 
     const priceImpacts = group?.pis || []
+    const midPriceImpacts = getMidPriceImpacts(
+      priceImpacts.length ? priceImpacts : [],
+    )
+    console.log(midPriceImpacts)
+
     const tokenThresholds: {
       [symbol: string]: { below1Percent: number; below2Percent: number }
     } = {}
 
-    for (const impact of priceImpacts) {
+    for (const impact of midPriceImpacts) {
       if (!tokenThresholds[impact.symbol]) {
         tokenThresholds[impact.symbol] = { below1Percent: 0, below2Percent: 0 }
       }
