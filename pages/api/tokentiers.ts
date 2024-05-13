@@ -42,7 +42,7 @@ async function buildClient(): Promise<MangoClient> {
   const clientKeypair = new Keypair()
   const options = AnchorProvider.defaultOptions()
 
-  const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL
+  const rpcUrl = process.env.NEXT_PUBLIC_ENDPOINT
   if (!rpcUrl) {
     throw new Error('MANGO_RPC_URL environment variable is not set')
   }
