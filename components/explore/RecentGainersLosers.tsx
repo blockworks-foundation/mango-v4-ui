@@ -97,7 +97,9 @@ const RecentGainersLosers = () => {
       return [[], []]
     const tradeableAssets = []
     const filterReduceOnlyBanks = banksWithMarketData.filter(
-      (b) => b.bank.reduceOnly === TOKEN_REDUCE_ONLY_OPTIONS.DISABLED,
+      (b) =>
+        b.bank.reduceOnly === TOKEN_REDUCE_ONLY_OPTIONS.DISABLED ||
+        b.bank.reduceOnly === TOKEN_REDUCE_ONLY_OPTIONS.NO_BORROWS,
     )
     for (const token of filterReduceOnlyBanks) {
       if (token.market?.quoteTokenIndex === 0) {
