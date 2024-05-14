@@ -183,5 +183,10 @@ export default function useListedMarketsWithMarketData() {
 
   const isLoading = loadingMarketsData || loadingBirdeyeSpotDailyPrices
 
-  return { perpMarketsWithData, serumMarketsWithData, openbookMarketsWithData, isLoading }
+  return {
+    perpMarketsWithData,
+    serumMarketsWithData,
+    openbookMarketsWithData,
+    isLoading,
+  }
 }

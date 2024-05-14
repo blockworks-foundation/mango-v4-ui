@@ -20,7 +20,9 @@ const GovernancePageWrapper = ({
   const resetVoter = GovernanceStore((s) => s.resetVoter)
   const realm = GovernanceStore((s) => s.realm)
   const connection = mangoStore((s) => s.connection)
-  const isMainnet = !connection.rpcEndpoint.includes('devnet') && !connection.rpcEndpoint.includes('testnet')
+  const isMainnet =
+    !connection.rpcEndpoint.includes('devnet') &&
+    !connection.rpcEndpoint.includes('testnet')
 
   useEffect(() => {
     if (!isMainnet) return

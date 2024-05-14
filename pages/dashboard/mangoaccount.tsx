@@ -271,7 +271,7 @@ const MangoAccountDashboard: NextPage = () => {
                 )
               })}
 
-            <h3 className="mt-4">OpenbookV2 Active Positions</h3>
+              <h3 className="mt-4">OpenbookV2 Active Positions</h3>
               {mangoAccount.openbookV2Active().map((openbook) => {
                 const market = group.getOpenbookV2MarketByMarketIndex(
                   openbook.marketIndex,
