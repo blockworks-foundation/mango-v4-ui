@@ -91,7 +91,7 @@ import { OrderTypes } from 'utils/tradeForm'
 import { usePlausible } from 'next-plausible'
 import { OpenOrdersAccount } from '@openbook-dex/openbook-v2'
 
-const GROUP = new PublicKey('7SDejCUPsF3g59GgMsmvxw8dJkkJbT3exoH4RZirwnkM')
+const GROUP = new PublicKey('CKU8J1mgtdcJJhBvXrH6xRx1MmcrRWDv8WQdNxPKW3gk')
 
 const ENDPOINTS = [
   {

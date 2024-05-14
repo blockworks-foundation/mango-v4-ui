@@ -195,6 +195,14 @@ const MangoAccountDashboard: NextPage = () => {
                 label="Active Serum OO Count"
                 value={mangoAccount.serum3Active().length}
               />
+              <KeyValuePair
+                label="OpenbookV2 OO Count"
+                value={mangoAccount.openbookV2.length}
+              />
+              <KeyValuePair
+                label="Active OpenbookV2 OO Count"
+                value={mangoAccount.openbookV2Active().length}
+              />
 
               <h3 className="mt-4">Token Active Positions</h3>
               {mangoAccount.tokensActive().map((token) => {
@@ -258,6 +266,43 @@ const MangoAccountDashboard: NextPage = () => {
                     <KeyValuePair
                       label="Open Orders"
                       value={serum.openOrders.toBase58()}
+                    />
+                  </div>
+                )
+              })}
+
+            <h3 className="mt-4">OpenbookV2 Active Positions</h3>
+              {mangoAccount.openbookV2Active().map((openbook) => {
+                const market = group.getOpenbookV2MarketByMarketIndex(
+                  openbook.marketIndex,
+                )
+                const extMarket = group.getOpenbookV2ExternalMarket(
+                  market.openbookMarketExternal,
+                )
+                return (
+                  <div key={openbook.marketIndex} className="mt-6">
+                    <KeyValuePair
+                      label="Openbook Market"
+                      value={
+                        <ExplorerLink address={market.publicKey.toString()} />
+                      }
+                    />
+                    <KeyValuePair
+                      label="Serum External Market"
+                      value={
+                        <ExplorerLink
+                          address={market.openbookMarketExternal.toString()}
+                        />
+                      }
+                    />
+                    <KeyValuePair label="Name" value={market.name} />
+                    <KeyValuePair
+                      label="Market Index"
+                      value={openbook.marketIndex}
+                    />
+                    <KeyValuePair
+                      label="Open Orders"
+                      value={openbook.openOrders.toBase58()}
                     />
                   </div>
                 )
