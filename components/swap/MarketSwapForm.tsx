@@ -83,6 +83,7 @@ const MarketSwapForm = ({
     swapMode,
     wallet: publicKey?.toBase58(),
     mangoAccount,
+    mangoAccountSwap: true,
     enabled: () =>
       !!(
         inputBank?.mint &&
@@ -100,6 +101,7 @@ const MarketSwapForm = ({
     swapMode,
     wallet: publicKey?.toBase58(),
     mangoAccount,
+    mangoAccountSwap: true,
     mode: 'JUPITER_DIRECT',
     enabled: () =>
       !!(

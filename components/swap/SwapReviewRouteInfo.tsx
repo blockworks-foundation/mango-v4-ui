@@ -429,6 +429,7 @@ const SwapReviewRouteInfo = ({
       )
         return
       setSubmitting(true)
+      console.log(selectedRoute)
       const [ixs, alts] =
         // selectedRoute.routerName === 'Mango'
         //   ? await prepareMangoRouterInstructions(
@@ -438,16 +439,19 @@ const SwapReviewRouteInfo = ({
         //       mangoAccount.owner,
         //     )
         // :
-        await fetchJupiterTransaction(
-          connection,
-          selectedRoute,
-          wallet.publicKey,
-          slippage,
-          inputBank.mint,
-          outputBank.mint,
-        )
+        selectedRoute.instructions
+          ? [selectedRoute.instructions, []]
+          : await fetchJupiterTransaction(
+              connection,
+              selectedRoute,
+              wallet.publicKey,
+              slippage,
+              inputBank.mint,
+              outputBank.mint,
+            )
 
       try {
+        console.log(ixs, '@@@@')
         const { signature: tx, slot } = await client.marginTrade({
           group,
           mangoAccount,
