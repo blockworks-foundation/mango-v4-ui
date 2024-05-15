@@ -145,7 +145,7 @@ const initMangoClient = (
       new PublicKey('E4v1BBgoso9s64TQvmyownAVJbhbEPGyzA3qn4n46qj9'), //mSol
     ],
     multipleConnections: opts.multipleConnections,
-    idsSource: 'api',
+    idsSource: 'get-program-accounts',
     prependedGlobalAdditionalInstructions:
       opts.prependedGlobalAdditionalInstructions,
     postSendTxCallback: (txCallbackOptions: TxCallbackOptions) => {

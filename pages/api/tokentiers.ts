@@ -68,7 +68,7 @@ export default async function handler(
   try {
     const client = await buildClient()
     const group = await client.getGroup(
-      new PublicKey('7SDejCUPsF3g59GgMsmvxw8dJkkJbT3exoH4RZirwnkM'),
+      new PublicKey('7s3eedfgJmqdsnxu5oqKiUwAU1BqWaX2iYmhCZyye6RY'),
     )
 
     const banks = Array.from(group.banksMapByTokenIndex.values())
