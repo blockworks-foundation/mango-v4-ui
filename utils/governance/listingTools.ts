@@ -43,7 +43,7 @@ export const getOracle = async ({
         baseSymbol,
         quoteSymbol,
         connection,
-        noLock: targetAmount === 0 || targetAmount === 1000,
+        noLock: targetAmount === 0,
       })
       oraclePk = switchBoardOracle
     }
@@ -361,12 +361,21 @@ export const getFormattedBankValues = (group: Group, bank: Bank) => {
     loanOriginationFeeRate: (
       10000 * bank.loanOriginationFeeRate.toNumber()
     ).toFixed(2),
+    collateralFeePerDay: (100 * bank.collateralFeePerDay).toFixed(2),
     collectedFeesNative: toUiDecimals(
       bank.collectedFeesNative.toNumber(),
       bank.mintDecimals,
     ).toFixed(2),
     collectedFeesNativePrice: (
       toUiDecimals(bank.collectedFeesNative.toNumber(), bank.mintDecimals) *
+      bank.uiPrice
+    ).toFixed(2),
+    collectedCollateralFeesNative: toUiDecimals(
+      bank.collectedCollateralFees.toNumber(),
+      bank.mintDecimals,
+    ).toFixed(2),
+    collectedCollateralFeesNativePrice: (
+      toUiDecimals(bank.collectedCollateralFees.toNumber(), bank.mintDecimals) *
       bank.uiPrice
     ).toFixed(2),
     dust: toUiDecimals(bank.dust, bank.mintDecimals),

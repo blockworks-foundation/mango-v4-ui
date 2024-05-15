@@ -51,8 +51,6 @@ import CreateSwitchboardOracleModal from '@components/modals/CreateSwitchboardOr
 import {
   LISTING_PRESETS,
   calculateMarketTradingParams,
-  getSwitchBoardPresets,
-  getPythPresets,
   LISTING_PRESET,
   getPresetWithAdjustedDepositLimit,
   LISTING_PRESETS_KEY,
@@ -176,12 +174,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const [raydiumPoolAddress, setRaydiumPoolAddress] = useState('')
   const [oracleModalOpen, setOracleModalOpen] = useState(false)
   const [isSolPool, setIsSolPool] = useState(false)
-  const [isPyth, setIsPyth] = useState(false)
-  const presets = useMemo(() => {
-    return !isPyth
-      ? getSwitchBoardPresets(LISTING_PRESETS)
-      : getPythPresets(LISTING_PRESETS)
-  }, [isPyth])
+  const presets = LISTING_PRESETS
   const [proposedPresetTargetAmount, setProposedProposedTargetAmount] =
     useState(0)
   const [preset, setPreset] = useState<LISTING_PRESET>(presets.UNTRUSTED)
@@ -213,7 +206,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     const handleOracleUpdate = async () => {
       if (currentTokenInfo) {
         setLoadingListingParams(true)
-        const { oraclePk, isPyth } = await getOracle({
+        const { oraclePk } = await getOracle({
           baseSymbol: currentTokenInfo.symbol,
           quoteSymbol: 'usd',
           connection,
@@ -224,7 +217,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           oraclePk: oraclePk || '',
         }))
         setLoadingListingParams(false)
-        setIsPyth(isPyth)
       }
     }
     handleOracleUpdate()
@@ -279,7 +271,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       isLST: boolean,
     ) => {
       setLoadingListingParams(true)
-      const [{ oraclePk, isPyth }, marketPk] = await Promise.all([
+      const [{ oraclePk }, marketPk] = await Promise.all([
         getOracle({
           baseSymbol: tokenInfo.symbol,
           quoteSymbol: 'usd',
@@ -326,7 +318,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         fastListing: false,
       })
       setLoadingListingParams(false)
-      setIsPyth(isPyth)
     },
     [connection, mint, proposals, group, client.programId, advForm, quoteBank],
   )
@@ -360,19 +351,30 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
 
   const handleLiquidityCheck = useCallback(
     async (tokenMint: PublicKey, isLST: boolean) => {
+      if (isLST) {
+        const targetAmount = 250000
+        setProposedProposedTargetAmount(targetAmount)
+        setPreset(presets.asset_250)
+        setPriceImpact(0.9)
+        return targetAmount
+      }
       try {
         const swaps = await Promise.all([
+          handleGetRoutesWithFixedArgs(5000000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(250000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(100000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(20000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(10000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(5000, tokenMint, 'ExactIn'),
+          handleGetRoutesWithFixedArgs(3000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(1000, tokenMint, 'ExactIn'),
+          handleGetRoutesWithFixedArgs(5000000, tokenMint, 'ExactOut'),
           handleGetRoutesWithFixedArgs(250000, tokenMint, 'ExactOut'),
           handleGetRoutesWithFixedArgs(100000, tokenMint, 'ExactOut'),
           handleGetRoutesWithFixedArgs(20000, tokenMint, 'ExactOut'),
           handleGetRoutesWithFixedArgs(10000, tokenMint, 'ExactOut'),
           handleGetRoutesWithFixedArgs(5000, tokenMint, 'ExactOut'),
+          handleGetRoutesWithFixedArgs(3000, tokenMint, 'ExactOut'),
           handleGetRoutesWithFixedArgs(1000, tokenMint, 'ExactOut'),
         ])
         const bestRoutesSwaps = swaps
@@ -413,14 +415,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
             : 0
 
         setProposedProposedTargetAmount(targetAmount)
-        if (isLST) {
-          const suggestedPreset =
-            Object.values(presets).find(
-              (x) => x.preset_target_amount <= targetAmount,
-            ) || presets.UNTRUSTED
-
-          setPreset(suggestedPreset)
-        }
         setPriceImpact(midTierCheck ? midTierCheck.priceImpactPct * 100 : 100)
         handleGetPoolParams(targetAmount, tokenMint)
         return targetAmount
@@ -649,7 +643,11 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           Number(proposedPreset.zeroUtilRate),
           Number(proposedPreset.platformLiquidationFee),
           proposedPreset.disableAssetLiquidation,
-          Number(proposedPreset.collateralFeePerDay),
+          Number(
+            isLST
+              ? 0.000027396999939810485
+              : proposedPreset.collateralFeePerDay,
+          ),
         )
         .accounts({
           fallbackOracle: PublicKey.default,
@@ -760,6 +758,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     group,
     connection,
     fee,
+    isLST,
   ])
 
   const closeCreateOpenBookMarketModal = () => {
@@ -921,13 +920,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                                       LISTING_PRESETS[
                                         name as LISTING_PRESETS_KEY
                                       ].preset_key
-                                    }}${
-                                      LISTING_PRESETS[
-                                        name as LISTING_PRESETS_KEY
-                                      ].oracle === 0
-                                        ? ' - PYTH only'
-                                        : ''
-                                    }`}
+                                    }}`}
                                     {LISTING_PRESETS[
                                       name as LISTING_PRESETS_KEY
                                     ].preset_target_amount ===

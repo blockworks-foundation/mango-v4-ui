@@ -58,7 +58,7 @@ const RateCurveChart = ({ bank }: { bank: Bank | undefined }) => {
   const rateCurveChartData = useMemo(() => {
     if (!bank) return []
     const defaults = [
-      { util: 0, rate: 0 },
+      { util: 0, rate: bank.loanFeeRate.toNumber() * 100 },
       {
         util: bank.util0.toNumber() * 100,
         rate:

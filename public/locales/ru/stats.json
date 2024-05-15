@@ -1,6 +1,7 @@
 {
     "base-liquidation-fee": "Base Liquidation Fee",
     "closest-to-liquidation": "Closest to Liquidation",
+    "collateral-funding-fee": "Collateral Funding Fee (Per Day)",
     "daily": "Daily",
     "hourly": "Hourly",
     "largest-perp-positions": "Largest",

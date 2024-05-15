@@ -209,7 +209,11 @@ const TokenOverviewTable = () => {
                     }
                   >
                     <Td>
-                      <TableTokenName bank={bank} symbol={symbol} />
+                      <TableTokenName
+                        bank={bank}
+                        symbol={symbol}
+                        showLeverage
+                      />
                     </Td>
                     <Td>
                       <div className="flex flex-col text-right">
@@ -300,7 +304,11 @@ const TokenOverviewTable = () => {
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <TableTokenName bank={bank} symbol={symbol} />
+                        <TableTokenName
+                          bank={bank}
+                          symbol={symbol}
+                          showLeverage
+                        />
                         <ChevronDownIcon
                           className={`${
                             open ? 'rotate-180' : 'rotate-0'

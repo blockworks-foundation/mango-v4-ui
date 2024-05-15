@@ -23,9 +23,10 @@
   "dependencies": {
     "@blockworks-foundation/mango-feeds": "0.1.7",
     "@blockworks-foundation/mango-mints-redemption": "^0.0.10",
+
     "@blockworks-foundation/mango-v4": "git+https://github.com/blockworks-foundation/mango-v4.git#dev",
-    "@blockworks-foundation/mango-v4-settings": "0.14.19",
-    "@blockworks-foundation/mangolana": "0.0.15",
+    "@blockworks-foundation/mango-v4-settings": "0.14.22",
+    "@blockworks-foundation/mangolana": "0.0.16",
     "@headlessui/react": "1.6.6",
     "@heroicons/react": "2.0.18",
     "@metaplex-foundation/js": "0.19.4",
@@ -136,7 +137,8 @@
     "@solana/wallet-adapter-solflare": "0.6.27",
     "crypto-js": ">=4.1.1",
     "@sentry/nextjs": ">=7.77.0",
-    "@openbook-dex/openbook-v2": "0.1.2"
+    "@openbook-dex/openbook-v2": "0.1.2",
+    "protobufjs": ">=7.2.5"
   },
   "lavamoat": {
     "allowScripts": {

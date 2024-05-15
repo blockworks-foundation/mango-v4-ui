@@ -539,10 +539,10 @@ const MarketSelectDropdown = () => {
 
 export default MarketSelectDropdown
 
-const LeverageBadge = ({ leverage }: { leverage: number }) => {
+export const LeverageBadge = ({ leverage }: { leverage: number }) => {
   return (
-    <div className="rounded border border-th-fgd-4 px-1 py-0.5 text-xxs leading-none text-th-fgd-4">
-      <span>{leverage < 1 ? leverage.toFixed(1) : leverage.toFixed()}x</span>
+    <div className="rounded bg-th-bkg-3 px-1 py-0.5 font-mono text-xxs leading-none text-th-fgd-2">
+      <span>{leverage < 2 ? leverage.toFixed(1) : leverage.toFixed()}x</span>
     </div>
   )
 }

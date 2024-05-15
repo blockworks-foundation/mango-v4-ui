@@ -5,15 +5,13 @@ import { DashboardNavbar } from '.'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
 import { PublicKey } from '@solana/web3.js'
 import { formatNumericValue } from 'utils/numbers'
-import { OracleProvider, toUiDecimals } from '@blockworks-foundation/mango-v4'
+import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import { useMemo, useState } from 'react'
 import Select from '@components/forms/Select'
 import Input from '@components/forms/Input'
 import {
   LISTING_PRESETS,
   getMidPriceImpacts,
-  getPythPresets,
-  getSwitchBoardPresets,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 
 export async function getStaticProps({ locale }: { locale: string }) {
@@ -130,12 +128,7 @@ const RiskDashboard: NextPage = () => {
     .filter((x) => x.avg_price_impact_percent < 1)
     .reduce(
       (acc, val, index, pisFiltred) => {
-        const bank = group?.banksMapByName.get(apiNameToBankName(val.symbol))
-        const firstBank = bank ? bank[0] : undefined
-        const avaPreests =
-          firstBank?.oracleProvider === OracleProvider.Pyth
-            ? getPythPresets(LISTING_PRESETS)
-            : getSwitchBoardPresets(LISTING_PRESETS)
+        const avaPreests = LISTING_PRESETS
         if (!acc[val.symbol]) {
           acc[val.symbol] =
             Object.values(avaPreests).find(

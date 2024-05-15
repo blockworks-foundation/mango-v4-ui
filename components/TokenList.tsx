@@ -2,6 +2,7 @@ import { Bank } from '@blockworks-foundation/mango-v4'
 import { Disclosure, Popover, Transition } from '@headlessui/react'
 import {
   ChevronDownIcon,
+  CurrencyDollarIcon,
   EllipsisHorizontalIcon,
   XMarkIcon,
 } from '@heroicons/react/20/solid'
@@ -51,6 +52,10 @@ import SheenLoader from './shared/SheenLoader'
 import useAccountInterest from 'hooks/useAccountInterest'
 import { handleGoToTradePage } from 'utils/markets'
 import TableRatesDisplay from './shared/TableRatesDisplay'
+import useCollateralFeePopupConditions from 'hooks/useCollateralFeePositions'
+import { LinkButton } from './shared/Button'
+import CollateralFeeWarningModal from './modals/CollateralFeeWarningModal'
+import InlineNotification from './shared/InlineNotification'
 
 export const handleOpenCloseBorrowModal = (borrowBank: Bank) => {
   const group = mangoStore.getState().group
@@ -118,8 +123,9 @@ type TableData = {
 const set = mangoStore.getState().set
 
 const TokenList = () => {
-  const { t } = useTranslation(['common', 'token', 'trade'])
+  const { t } = useTranslation(['common', 'account', 'token', 'trade'])
   const [showCloseBorrowModal, setCloseBorrowModal] = useState(false)
+  const [showCollateralFeeModal, setShowCollateralFeeModal] = useState(false)
   const [closeBorrowBank, setCloseBorrowBank] = useState<Bank | undefined>()
   const [showZeroBalances, setShowZeroBalances] = useLocalStorageState(
     SHOW_ZERO_BALANCES_KEY,
@@ -131,6 +137,7 @@ const TokenList = () => {
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
   const banks = useBanksWithBalances('balance')
+  const { isCharged, collateralFeeBanks } = useCollateralFeePopupConditions()
 
   const {
     data: totalInterestData,
@@ -361,7 +368,33 @@ const TokenList = () => {
                 return (
                   <TrBody key={symbol}>
                     <Td>
-                      <TableTokenName bank={bank} symbol={symbol} />
+                      <div className="flex items-center">
+                        <TableTokenName bank={bank} symbol={symbol} />
+                        {isCharged &&
+                        collateralFeeBanks.find(
+                          (b) => b.bank.name === bank.name,
+                        ) ? (
+                          <Tooltip
+                            content={
+                              <>
+                                <span>
+                                  {t('account:tooltip-collateral-fees-charged')}
+                                </span>
+                                <LinkButton
+                                  className="mt-2"
+                                  onClick={() =>
+                                    setShowCollateralFeeModal(true)
+                                  }
+                                >
+                                  {t('view-fees')}
+                                </LinkButton>
+                              </>
+                            }
+                          >
+                            <CurrencyDollarIcon className="ml-2 h-4 w-4 cursor-help text-th-down" />
+                          </Tooltip>
+                        ) : null}
+                      </div>
                     </Td>
                     <Td className="text-right">
                       <BankAmountWithValue
@@ -453,7 +486,13 @@ const TokenList = () => {
       ) : (
         <div className="border-b border-th-bkg-3">
           {tableData.map((data) => {
-            return <MobileTokenListItem key={data.bank.name} data={data} />
+            return (
+              <MobileTokenListItem
+                key={data.bank.name}
+                data={data}
+                setShowCollateralFeeModal={setShowCollateralFeeModal}
+              />
+            )
           })}
         </div>
       )}
@@ -464,15 +503,28 @@ const TokenList = () => {
           onClose={closeBorrowModal}
         />
       ) : null}
+      {showCollateralFeeModal ? (
+        <CollateralFeeWarningModal
+          isOpen={showCollateralFeeModal}
+          onClose={() => setShowCollateralFeeModal(false)}
+        />
+      ) : null}
     </ContentBox>
   )
 }
 
 export default TokenList
 
-const MobileTokenListItem = ({ data }: { data: TableData }) => {
+const MobileTokenListItem = ({
+  data,
+  setShowCollateralFeeModal,
+}: {
+  data: TableData
+  setShowCollateralFeeModal: (show: boolean) => void
+}) => {
   const { t } = useTranslation(['common', 'token'])
   const { mangoAccount } = useMangoAccount()
+  const { isCharged, collateralFeeBanks } = useCollateralFeePopupConditions()
   const {
     bank,
     balance,
@@ -530,6 +582,26 @@ const MobileTokenListItem = ({ data }: { data: TableData }) => {
           >
             <Disclosure.Panel>
               <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 py-4">
+                {isCharged &&
+                collateralFeeBanks.find((b) => b.bank.name === bank.name) ? (
+                  <div className="col-span-2">
+                    <InlineNotification
+                      desc={
+                        <>
+                          <span>
+                            {t('account:tooltip-collateral-fees-charged')}
+                          </span>
+                          <LinkButton
+                            onClick={() => setShowCollateralFeeModal(true)}
+                          >
+                            {t('view-fees')}
+                          </LinkButton>
+                        </>
+                      }
+                      type="info"
+                    />
+                  </div>
+                ) : null}
                 <div className="col-span-1">
                   <Tooltip content={t('tooltip-collateral-value')}>
                     <p className="tooltip-underline text-xs text-th-fgd-3">

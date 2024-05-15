@@ -260,7 +260,7 @@ const UserSetupModal = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} fullScreen disableOutsideClose>
-      <div className="grid h-screen overflow-auto bg-th-bkg-1 text-left lg:grid-cols-2">
+      <div className="grid h-screen overflow-hidden bg-th-bkg-1 text-left lg:grid-cols-2">
         <ColorBlur
           width="66%"
           height="300px"
