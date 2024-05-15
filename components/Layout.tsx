@@ -15,6 +15,7 @@ import TopBar from './TopBar'
 import useLocalStorageState from '../hooks/useLocalStorageState'
 import {
   ACCEPT_TERMS_KEY,
+  NON_RESTRICTED_JURISDICTION_KEY,
   SECONDS,
   SIDEBAR_COLLAPSE_KEY,
   SLOTS_WARNING_KEY,
@@ -31,6 +32,7 @@ import { useTheme } from 'next-themes'
 import PromoBanner from './rewards/PromoBanner'
 import { useRouter } from 'next/router'
 import StatusBar from './StatusBar'
+import WarningBanner from './shared/WarningBanner'
 import useMangoAccountAccounts from 'hooks/useMangoAccountAccounts'
 import TokenSlotsWarningModal, {
   WARNING_LEVEL,
@@ -38,6 +40,8 @@ import TokenSlotsWarningModal, {
 import useMangoAccount from 'hooks/useMangoAccount'
 import useUnownedAccount from 'hooks/useUnownedAccount'
 import NewListingBanner from './NewListingBanner'
+import useIpAddress from 'hooks/useIpAddress'
+import RestrictedCountryModal from './modals/RestrictedCountryModal'
 
 export const sideBarAnimationDuration = 300
 const termsLastUpdated = 1679441610978
@@ -144,20 +148,14 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
         <div className="fixed z-20 hidden h-screen md:block">
           <button
-            className="absolute right-0 top-1/2 z-20 hidden h-8 w-3 -translate-y-1/2 rounded-none rounded-l bg-th-bkg-3 hover:bg-th-bkg-4 focus:outline-none focus-visible:bg-th-bkg-4 lg:flex lg:items-center lg:justify-center"
+            className="absolute bottom-20 right-0 z-20 hidden h-8 w-3 rounded-none rounded-l bg-th-bkg-3 hover:bg-th-bkg-4 focus:outline-none focus-visible:bg-th-bkg-4 lg:flex lg:items-center lg:justify-center"
             onClick={handleToggleSidebar}
           >
             <ChevronRightIcon
               className={`h-4 w-4 shrink-0 ${!isCollapsed ? 'rotate-180' : ''}`}
             />
           </button>
-          <div
-            className={`hide-scroll h-full ${
-              !isCollapsed ? 'overflow-y-auto' : ''
-            }`}
-          >
-            <SideNav collapsed={isCollapsed} />
-          </div>
+          <SideNav collapsed={isCollapsed} />
         </div>
         <div
           className={`w-full transition-all duration-${sideBarAnimationDuration} ease-in-out ${
@@ -165,13 +163,17 @@ const Layout = ({ children }: { children: ReactNode }) => {
           }`}
         >
           <TopBar />
+          {asPath !== '/rewards' ? <PromoBanner /> : null}
           <NewListingBanner />
-          {/* {asPath !== '/rewards' ? <PromoBanner /> : null} */}
-          {children}
+          <div className="pb-12 md:pb-[27px]">
+            {children}
+            <WarningBanner />
+          </div>
           <StatusBar collapsed={isCollapsed} />
         </div>
         <DeployRefreshManager />
         <TermsOfUse />
+        <RestrictedCountryCheck />
         {showSlotsNearlyFullWarning ? (
           <TokenSlotsWarningModal
             isOpen={showSlotsNearlyFullWarning}
@@ -214,6 +216,29 @@ const TermsOfUse = () => {
       ) : null}
     </>
   )
+}
+
+// this will only show if the ip api doesn't return the country
+const RestrictedCountryCheck = () => {
+  const { ipCountry, loadingIpCountry } = useIpAddress()
+  const groupLoaded = mangoStore((s) => s.groupLoaded)
+  const [confirmedCountry, setConfirmedCountry] = useLocalStorageState(
+    NON_RESTRICTED_JURISDICTION_KEY,
+    false,
+  )
+
+  const showModal = useMemo(() => {
+    return !confirmedCountry && !ipCountry && !loadingIpCountry && groupLoaded
+  }, [confirmedCountry, ipCountry, loadingIpCountry, groupLoaded])
+
+  return showModal ? (
+    <RestrictedCountryModal
+      isOpen={showModal}
+      onClose={() => {
+        setConfirmedCountry(true)
+      }}
+    />
+  ) : null
 }
 
 function DeployRefreshManager(): JSX.Element | null {

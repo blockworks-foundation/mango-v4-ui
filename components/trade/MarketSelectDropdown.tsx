@@ -37,7 +37,19 @@ import { useSortableData } from 'hooks/useSortableData'
 import { SortableColumnHeader } from '@components/shared/TableElements'
 import { useViewport } from 'hooks/useViewport'
 import { useRouter } from 'next/router'
-import { AnyMap } from 'immer/dist/internal'
+import { TOKEN_REDUCE_ONLY_OPTIONS } from 'utils/constants'
+import { isBankVisibleForUser } from 'utils/bank'
+import Decimal from 'decimal.js'
+import useMangoAccount from 'hooks/useMangoAccount'
+
+type Currencies = {
+  [key: string]: string
+}
+
+export const CURRENCY_SYMBOLS: Currencies = {
+  'wBTC (Portal)': '₿',
+  SOL: '◎',
+}
 
 const MARKET_LINK_CLASSES =
   'grid grid-cols-3 sm:grid-cols-4 flex items-center w-full py-2 px-4 rounded-r-md focus:outline-none focus-visible:text-th-active md:hover:cursor-pointer md:hover:bg-th-bkg-3 md:hover:text-th-fgd-1'
@@ -45,13 +57,14 @@ const MARKET_LINK_CLASSES =
 const MARKET_LINK_DISABLED_CLASSES =
   'flex w-full items-center justify-between py-2 px-4 md:hover:cursor-not-allowed'
 
+export const DEFAULT_SORT_KEY: AllowedKeys = 'notionalQuoteVolume'
+
 const MarketSelectDropdown = () => {
   const { t } = useTranslation(['common', 'trade'])
   const { selectedMarket } = useSelectedMarket()
   const [spotOrPerp, setSpotOrPerp] = useState(
     selectedMarket instanceof PerpMarket ? 'perp' : 'spot',
   )
-  const defaultSortByKey: AllowedKeys = 'quote_volume_24h'
   const [search, setSearch] = useState('')
   const [isOpen, setIsOpen] = useState(false)
   const { group } = useMangoGroup()
@@ -65,6 +78,7 @@ const MarketSelectDropdown = () => {
   const { isDesktop } = useViewport()
   const focusRef = useRef<HTMLInputElement>(null)
   const { query } = useRouter()
+  const { mangoAccount } = useMangoAccount()
 
   // switch to spot tab on spot markets
   useEffect(() => {
@@ -77,7 +91,7 @@ const MarketSelectDropdown = () => {
 
   const unsortedPerpMarketsToShow = useMemo(() => {
     if (!perpMarketsWithData.length) return []
-    return sortPerpMarkets(perpMarketsWithData, defaultSortByKey)
+    return sortPerpMarkets(perpMarketsWithData, DEFAULT_SORT_KEY)
   }, [perpMarketsWithData])
 
   const spotQuoteTokens: string[] = useMemo(() => {
@@ -124,11 +138,11 @@ const MarketSelectDropdown = () => {
       })
       return search
         ? startSearch(filteredMarkets, search)
-        : sortSpotMarkets(filteredMarkets, defaultSortByKey)
+        : sortSpotMarkets(filteredMarkets, DEFAULT_SORT_KEY)
     } else {
       return search
-        ? startSearch(allSpotMarketsWithData, search)
-        : sortSpotMarkets(allSpotMarketsWithData, defaultSortByKey)
+        ? startSearch(serumMarketsWithData, search)
+        : sortSpotMarkets(serumMarketsWithData, DEFAULT_SORT_KEY)
     }
   }, [group, search, serumMarketsWithData, spotBaseFilter])
 
@@ -147,6 +161,26 @@ const MarketSelectDropdown = () => {
     requestSort: requestSpotSort,
     sortConfig: spotSortConfig,
   } = useSortableData(unsortedSpotMarketsToShow)
+
+  const filteredSerumMarkets = spotMarketsToShow.filter((x) => {
+    const baseBank = group?.getFirstBankByTokenIndex(x.baseTokenIndex)
+    if (baseBank?.reduceOnly === TOKEN_REDUCE_ONLY_OPTIONS.ENABLED) {
+      if (!mangoAccount) {
+        return false
+      }
+      const borrowedAmount = mangoAccount
+        ? new Decimal(mangoAccount.getTokenBorrowsUi(baseBank))
+            .toDecimalPlaces(baseBank.mintDecimals, Decimal.ROUND_UP)
+            .toNumber()
+        : 0
+      const balance = mangoAccount
+        ? mangoAccount.getTokenBalanceUi(baseBank)
+        : 0
+      return isBankVisibleForUser(baseBank, borrowedAmount, balance)
+    } else {
+      return true
+    }
+  })
 
   useEffect(() => {
     if (focusRef?.current && spotOrPerp === 'spot' && isDesktop && isOpen) {
@@ -170,7 +204,7 @@ const MarketSelectDropdown = () => {
               {selectedMarket ? (
                 <MarketLogos market={selectedMarket} />
               ) : (
-                <Loading className="mr-2 h-5 w-5 flex-shrink-0" />
+                <Loading className="mr-2 h-5 w-5 shrink-0" />
               )}
               <div className="whitespace-nowrap text-left text-xl font-bold text-th-fgd-1 md:text-base">
                 {selectedMarket?.name || (
@@ -188,8 +222,8 @@ const MarketSelectDropdown = () => {
             </div>
             <ChevronDownIcon
               className={`${
-                open ? 'rotate-180' : 'rotate-360'
-              } ml-2 mt-0.5 h-6 w-6 flex-shrink-0 text-th-fgd-2`}
+                open ? 'rotate-180' : 'rotate-0'
+              } ml-2 mt-0.5 h-6 w-6 shrink-0 text-th-fgd-2`}
             />
           </Popover.Button>
           <Popover.Panel className="absolute -left-4 top-12 z-40 w-screen border-y border-th-bkg-3 bg-th-bkg-2 md:w-[580px] md:border-r">
@@ -384,9 +418,9 @@ const MarketSelectDropdown = () => {
                     </p>
                     <p className="col-span-1 hidden sm:flex sm:justify-end">
                       <SortableColumnHeader
-                        sortKey="marketData.quote_volume_24h"
+                        sortKey="marketData.notionalQuoteVolume"
                         sort={() =>
-                          requestSpotSort('marketData.quote_volume_24h')
+                          requestSpotSort('marketData.notionalQuoteVolume')
                         }
                         sortConfig={spotSortConfig}
                         title={t('daily-volume')}
@@ -459,10 +493,12 @@ const MarketSelectDropdown = () => {
                                         getDecimalCount(market.tickSize),
                                       )
                                     : price.toExponential(3)}
-                                  {quoteBank?.name !== 'USDC' ? (
+                                  {quoteBank?.name &&
+                                  quoteBank.name !== 'USDC' ? (
                                     <span className="font-body text-th-fgd-3">
                                       {' '}
-                                      {quoteBank?.name}
+                                      {CURRENCY_SYMBOLS[quoteBank.name] ||
+                                        quoteBank.name}
                                     </span>
                                   ) : null}
                                 </span>
@@ -480,10 +516,12 @@ const MarketSelectDropdown = () => {
                                 <span className="font-mono text-xs text-th-fgd-2">
                                   {quoteBank?.name === 'USDC' ? '$' : ''}
                                   {volume ? numberCompacter.format(volume) : 0}
-                                  {quoteBank?.name !== 'USDC' ? (
+                                  {quoteBank?.name &&
+                                  quoteBank.name !== 'USDC' ? (
                                     <span className="font-body text-th-fgd-3">
                                       {' '}
-                                      {quoteBank?.name}
+                                      {CURRENCY_SYMBOLS[quoteBank.name] ||
+                                        quoteBank.name}
                                     </span>
                                   ) : null}
                                 </span>

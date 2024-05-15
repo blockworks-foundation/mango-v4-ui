@@ -92,8 +92,8 @@ export default function ConnectWalletButton({
                   className={`flex h-16 w-10 items-center justify-center rounded-none border-l border-th-bkg-4 bg-th-bkg-3 text-th-fgd-3 hover:brightness-[1.1] focus:outline-none focus-visible:bg-th-bkg-4`}
                 >
                   <ChevronDownIcon
-                    className={`h-6 w-6 flex-shrink-0 ${
-                      open ? 'rotate-180' : 'rotate-360'
+                    className={`h-6 w-6 shrink-0 ${
+                      open ? 'rotate-180' : 'rotate-0'
                     }`}
                   />
                 </Popover.Button>
@@ -137,7 +137,7 @@ export default function ConnectWalletButton({
           onClick={handleShowSetup}
         >
           <div className="relative z-10 flex items-center justify-center">
-            <WalletIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+            <WalletIcon className="mr-2 h-5 w-5 shrink-0" />
             {t('connect')}
           </div>
         </button>

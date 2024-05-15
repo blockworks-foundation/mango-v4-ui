@@ -23,6 +23,8 @@ import {
   HealthType,
   PerpMarket,
   Serum3Market,
+  TransactionErrors,
+  parseTxForKnownErrors,
 } from '@blockworks-foundation/mango-v4'
 import Decimal from 'decimal.js'
 import { notify } from 'utils/notifications'
@@ -50,6 +52,9 @@ import { fetchJupiterTransaction } from '@components/swap/SwapReviewRouteInfo'
 import MaxMarketTradeAmount from './MaxMarketTradeAmount'
 import useMangoAccount from 'hooks/useMangoAccount'
 import InlineNotification from '@components/shared/InlineNotification'
+import { debounce } from 'lodash'
+import { isTokenInsured } from '@components/DepositForm'
+import UninsuredNotification from '@components/shared/UninsuredNotification'
 
 const set = mangoStore.getState().set
 
@@ -82,9 +87,7 @@ export default function SpotMarketOrderSwapForm() {
     selectedMarket,
     serumOrPerpMarket,
   } = useSelectedMarket()
-  const { amount: tokenMax, amountWithBorrow } = useTokenMax(
-    savedCheckboxSettings.margin,
-  )
+  const { amount: tokenMax, amountWithBorrow } = useTokenMax()
 
   const [inputBank, outputBank] = useMemo(() => {
     const group = mangoStore.getState().group
@@ -112,8 +115,13 @@ export default function SpotMarketOrderSwapForm() {
     }
   }, [selectedMarket, side])
 
+  const isInsured = useMemo(() => {
+    const group = mangoStore.getState().group
+    return isTokenInsured(outputBank, group)
+  }, [outputBank])
+
   const handleBaseSizeChange = useCallback(
-    (e: NumberFormatValues, info: SourceInfo) => {
+    debounce((e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
       set((s) => {
         s.tradeForm.baseSize = e.value
@@ -125,12 +133,12 @@ export default function SpotMarketOrderSwapForm() {
           s.tradeForm.quoteSize = ''
         }
       })
-    },
+    }, 500),
     [oraclePrice],
   )
 
   const handleQuoteSizeChange = useCallback(
-    (e: NumberFormatValues, info: SourceInfo) => {
+    debounce((e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
       set((s) => {
         s.tradeForm.quoteSize = e.value
@@ -140,7 +148,7 @@ export default function SpotMarketOrderSwapForm() {
           s.tradeForm.baseSize = ''
         }
       })
-    },
+    }, 500),
     [oraclePrice],
   )
 
@@ -299,10 +307,32 @@ export default function SpotMarketOrderSwapForm() {
       console.error('onSwap error: ', e)
       sentry.captureException(e)
       if (isMangoError(e)) {
+        const slippageExceeded = await parseTxForKnownErrors(
+          connection,
+          e?.txid,
+        )
+        if (
+          slippageExceeded ===
+          TransactionErrors.JupiterSlippageToleranceExceeded
+        ) {
+          notify({
+            title: t('swap:error-slippage-exceeded'),
+            description: t('swap:error-slippage-exceeded-desc'),
+            txid: e?.txid,
+            type: 'error',
+          })
+        } else {
+          notify({
+            title: 'Transaction failed',
+            description: e.message,
+            txid: e?.txid,
+            type: 'error',
+          })
+        }
+      } else {
         notify({
           title: 'Transaction failed',
-          description: e.message,
-          txid: e?.txid,
+          description: `${e} - please try again`,
           type: 'error',
         })
       }
@@ -604,6 +634,11 @@ export default function SpotMarketOrderSwapForm() {
                 type="error"
                 desc={t('trade:error-no-route')}
               />
+            </div>
+          ) : null}
+          {!isInsured ? (
+            <div className="mb-4">
+              <UninsuredNotification name={outputBank?.name} />
             </div>
           ) : null}
           <div className="space-y-2">

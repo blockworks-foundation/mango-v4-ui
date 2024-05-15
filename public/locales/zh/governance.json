@@ -65,7 +65,7 @@
     "open-book-market-id": "Openbook市场ID",
     "openbook-market": "Openbook市场",
     "openbook-market-external": "外在Openbook市场",
-    "list-for-swap-only": "List for swap only",
+    "list-for-swap-only": "限换币上架",
     "openbook-market-not-found": "找不到Openbook市场",
     "openbook-program": "Openbook程序",
     "oracle": "预言机",
@@ -110,5 +110,6 @@
     "create-oracle": "创建预言机",
     "tier": "层级",
     "on-boarding-description-1": "若你想使用委托币种，请前往投票视图并选择右上角的钱包。",
-    "create-bigger-market": "Create market with bigger event que - cost ~7.5 SOL"
+    "create-bigger-market": "创建具有更大事件队列 - 价格 ~7.5 SOL",
+    "fast-listing": "迅速上架"
 }

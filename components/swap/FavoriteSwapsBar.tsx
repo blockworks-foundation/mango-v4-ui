@@ -35,7 +35,7 @@ const FavoriteSwapsBar = () => {
       leaveFrom="opacity-100 h-8"
       leaveTo="opacity-0 h-0"
     >
-      <StarIcon className="h-4 w-4 flex-shrink-0 text-th-fgd-4" />
+      <StarIcon className="h-4 w-4 shrink-0 text-th-fgd-4" />
       {favoriteSwaps.map((pair: string) => {
         const inputToken = pair.split('/')[0]
         const outputToken = pair.split('/')[1]

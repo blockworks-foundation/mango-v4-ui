@@ -1,17 +1,10 @@
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
+import OracleProvider from '@components/shared/OracleProvider'
 import Tooltip from '@components/shared/Tooltip'
-import { ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid'
-import { getOracleProvider } from 'hooks/useOracleProvider'
 import { useTranslation } from 'next-i18next'
-import { useMemo } from 'react'
 
 const PerpMarketParams = ({ market }: { market: PerpMarket }) => {
   const { t } = useTranslation(['common', 'stats', 'token', 'trade'])
-
-  const [oracleProvider, oracleLinkPath] = useMemo(() => {
-    if (!market) return ['Unavaliable', '']
-    return getOracleProvider(market)
-  }, [market])
 
   const {
     name,
@@ -158,15 +151,7 @@ const PerpMarketParams = ({ market }: { market: PerpMarket }) => {
         </div>
         <div className="flex justify-between border-t border-th-bkg-3 py-4">
           <p>{t('token:oracle')}</p>
-          <a
-            className="flex items-center"
-            href={oracleLinkPath}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <span className="mr-1.5">{oracleProvider}</span>
-            <ArrowTopRightOnSquareIcon className="h-4 w-4" />
-          </a>
+          {market ? <OracleProvider /> : <p>Unavailable</p>}
         </div>
         <div className="flex justify-between border-t border-th-bkg-3 py-4">
           <Tooltip content={t('token:tooltip-oracle-confidence')}>

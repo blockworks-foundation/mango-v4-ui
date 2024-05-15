@@ -288,7 +288,7 @@ const TradeAdvancedPage = () => {
         <MobileTradeAdvancedPage />
       ) : (
         <TradeHotKeys>
-          <div className="pb-[27px]">
+          <div>
             <FavoriteMarketsBar />
             <ResponsiveGridLayout
               layouts={layouts}

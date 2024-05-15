@@ -3,19 +3,15 @@ import mangoStore from '@store/mangoStore'
 import ContentBox from '@components/shared/ContentBox'
 import MarketLogos from '@components/trade/MarketLogos'
 import { Table, Td, Th, TrBody, TrHead } from '@components/shared/TableElements'
-import {
-  ArrowTopRightOnSquareIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
-} from '@heroicons/react/20/solid'
+import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
 import Tooltip from '@components/shared/Tooltip'
 import { Disclosure, Transition } from '@headlessui/react'
-import { getOracleProvider } from 'hooks/useOracleProvider'
 import { NextRouter, useRouter } from 'next/router'
 import { LinkButton } from '@components/shared/Button'
 import SoonBadge from '@components/shared/SoonBadge'
 import { useViewport } from 'hooks/useViewport'
 import { breakpoints } from 'utils/theme'
+import OracleProvider from '@components/shared/OracleProvider'
 
 export const goToPerpMarketDetails = (
   market: string | undefined,
@@ -89,7 +85,6 @@ const PerpMarketDetailsTable = () => {
                 publicKey,
               } = market
 
-              const [oracleProvider, oracleLinkPath] = getOracleProvider(market)
               const isComingSoon = market.oracleLastUpdatedSlot == 0
 
               return (
@@ -144,21 +139,9 @@ const PerpMarketDetailsTable = () => {
                     </p>
                   </Td>
                   <Td>
-                    {oracleLinkPath ? (
-                      <a
-                        className="flex items-center justify-end"
-                        href={oracleLinkPath}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <span className="mr-1.5 font-body">
-                          {oracleProvider}
-                        </span>
-                        <ArrowTopRightOnSquareIcon className="h-4 w-4" />
-                      </a>
-                    ) : (
-                      <p className="text-right font-body">{oracleProvider}</p>
-                    )}
+                    <div className="flex justify-end">
+                      <OracleProvider />
+                    </div>
                   </Td>
                   <Td>
                     <div className="flex justify-end">
@@ -186,7 +169,6 @@ const PerpMarketDetailsTable = () => {
               maxFunding,
               publicKey,
             } = market
-            const [oracleProvider, oracleLinkPath] = getOracleProvider(market)
             const isComingSoon = market.oracleLastUpdatedSlot == 0
             return (
               <Disclosure key={publicKey.toString()}>
@@ -207,8 +189,8 @@ const PerpMarketDetailsTable = () => {
                         </div>
                         <ChevronDownIcon
                           className={`${
-                            open ? 'rotate-180' : 'rotate-360'
-                          } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                            open ? 'rotate-180' : 'rotate-0'
+                          } h-6 w-6 shrink-0 text-th-fgd-3`}
                         />
                       </div>
                     </Disclosure.Button>
@@ -218,7 +200,7 @@ const PerpMarketDetailsTable = () => {
                       enterTo="opacity-100"
                     >
                       <Disclosure.Panel>
-                        <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pb-4 pt-4">
+                        <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 py-4">
                           <div className="col-span-1">
                             <p className="text-xs text-th-fgd-3">
                               {t('trade:min-order-size')}
@@ -287,23 +269,7 @@ const PerpMarketDetailsTable = () => {
                           </div>
                           <div className="col-span-1">
                             <p className="text-xs">{t('trade:oracle')}</p>
-                            {oracleLinkPath ? (
-                              <a
-                                className="flex items-center"
-                                href={oracleLinkPath}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                <span className="mr-1.5 font-body">
-                                  {oracleProvider}
-                                </span>
-                                <ArrowTopRightOnSquareIcon className="h-4 w-4" />
-                              </a>
-                            ) : (
-                              <p className="text-right font-body">
-                                {oracleProvider}
-                              </p>
-                            )}
+                            <OracleProvider />
                           </div>
                           <div className="col-span-1">
                             <Tooltip

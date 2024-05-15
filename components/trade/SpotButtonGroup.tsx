@@ -20,10 +20,11 @@ const SpotButtonGroup = ({
   isTriggerOrder: boolean
 }) => {
   const { side } = mangoStore((s) => s.tradeForm)
+
   const { selectedMarket } = useSelectedMarket()
   const { mangoAccount } = useMangoAccount()
   const [sizePercentage, setSizePercentage] = useState('')
-  const standardOrderMax = useSpotMarketMax(
+  const { max: standardOrderMax } = useSpotMarketMax(
     mangoAccount,
     selectedMarket,
     side,

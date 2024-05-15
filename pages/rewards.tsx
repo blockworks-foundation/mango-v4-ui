@@ -1,3 +1,4 @@
+import NotWhitelistedPage from '@components/rewards/NotWhitelistedPage'
 import RewardsPage from '@components/rewards/RewardsPage'
 import mangoStore from '@store/mangoStore'
 import { useIsWhiteListed } from 'hooks/useIsWhiteListed'
@@ -44,7 +45,7 @@ const Rewards: NextPage = () => {
       <div
         className={`pb-20 md:pb-0 ${themeData.fonts.rewards.variable} font-sans`}
       >
-        {isWhiteListed ? <RewardsPage /> : null}
+        {isWhiteListed ? <RewardsPage /> : <NotWhitelistedPage />}
       </div>
     </>
   )

@@ -26,6 +26,7 @@ import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { SwapFormTokenListType } from './SwapFormTokenList'
 import SwapFormSubmitButton from './SwapFormSubmitButton'
+import { debounce } from 'lodash'
 
 dayjs.extend(relativeTime)
 
@@ -69,6 +70,7 @@ const MarketSwapForm = ({
   const { mangoAccount } = useMangoAccount()
   const quoteAmount =
     swapMode === 'ExactIn' ? amountInFormValue : amountOutFormValue
+
   const {
     bestRoute,
     isFetching: fetchingRoute,
@@ -81,6 +83,24 @@ const MarketSwapForm = ({
     swapMode,
     wallet: publicKey?.toBase58(),
     mangoAccount,
+    enabled: () =>
+      !!(
+        inputBank?.mint &&
+        outputBank?.mint &&
+        quoteAmount &&
+        !isDraggingSlider
+      ),
+  })
+
+  const { bestRoute: bestDirectRoute } = useQuoteRoutes({
+    inputMint: inputBank?.mint.toString(),
+    outputMint: outputBank?.mint.toString(),
+    amount: quoteAmount,
+    slippage,
+    swapMode,
+    wallet: publicKey?.toBase58(),
+    mangoAccount,
+    mode: 'JUPITER_DIRECT',
     enabled: () =>
       !!(
         inputBank?.mint &&
@@ -133,7 +153,7 @@ const MarketSwapForm = ({
   )
 
   const handleAmountInChange = useCallback(
-    (e: NumberFormatValues, info: SourceInfo) => {
+    debounce((e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
       setAmountInFormValue(e.value)
       set((s) => {
@@ -144,12 +164,12 @@ const MarketSwapForm = ({
           s.swap.swapMode = 'ExactIn'
         })
       }
-    },
+    }, 500),
     [outputBank, set, setAmountInFormValue, swapMode],
   )
 
   const handleAmountOutChange = useCallback(
-    (e: NumberFormatValues, info: SourceInfo) => {
+    debounce((e: NumberFormatValues, info: SourceInfo) => {
       if (info.source !== 'event') return
       setAmountOutFormValue(e.value)
       set((s) => {
@@ -160,7 +180,7 @@ const MarketSwapForm = ({
           s.swap.swapMode = 'ExactOut'
         })
       }
-    },
+    }, 500),
     [set, setAmountOutFormValue, swapMode],
   )
 
@@ -291,7 +311,13 @@ const MarketSwapForm = ({
         onClose={() => setShowConfirm(false)}
         onSuccess={onSuccess}
         refetchRoute={refetchRoute}
-        routes={bestRoute ? [bestRoute] : undefined}
+        routes={
+          bestRoute
+            ? ([bestRoute, bestDirectRoute].filter(
+                (x) => x && !x.error,
+              ) as JupiterV6RouteInfo[])
+            : undefined
+        }
         selectedRoute={selectedRoute}
         setSelectedRoute={setSelectedRoute}
         show={showConfirm}

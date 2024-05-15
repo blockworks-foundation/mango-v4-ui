@@ -2,17 +2,20 @@ import { useTranslation } from 'react-i18next'
 import Tps, { StatusDot } from './Tps'
 import DiscordIcon from './icons/DiscordIcon'
 import { TwitterIcon } from './icons/TwitterIcon'
-import { DocumentTextIcon } from '@heroicons/react/20/solid'
+import { DocumentTextIcon, MapIcon } from '@heroicons/react/20/solid'
 import { useEffect, useMemo, useState } from 'react'
 import { IDL } from '@blockworks-foundation/mango-v4'
 import RpcPing from './RpcPing'
 import Tooltip from './shared/Tooltip'
-import { useRouter } from 'next/router'
 import useOffchainServicesHealth from 'hooks/useOffchainServicesHealth'
 import mangoStore from '@store/mangoStore'
 import { Connection } from '@solana/web3.js'
 import { sumBy } from 'lodash'
 import useInterval from './shared/useInterval'
+import { LinkButton } from './shared/Button'
+import { useRouter } from 'next/router'
+import { startAccountTour } from 'utils/tours'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 const DEFAULT_LATEST_COMMIT = { sha: '', url: '' }
 export const tpsAlertThreshold = 1300
@@ -93,8 +96,10 @@ const getOverallStatus = (
 
 const StatusBar = ({ collapsed }: { collapsed: boolean }) => {
   const { t } = useTranslation('common')
-  const [latestCommit, setLatestCommit] = useState(DEFAULT_LATEST_COMMIT)
+  const { mangoAccountAddress } = useMangoAccount()
+  const accountPageTab = mangoStore((s) => s.accountPageTab)
   const router = useRouter()
+  const [latestCommit, setLatestCommit] = useState(DEFAULT_LATEST_COMMIT)
   const { offchainHealth, isLoading: loadingOffchainHealth } =
     useOffchainServicesHealth()
   const connection = mangoStore((s) => s.connection)
@@ -210,7 +215,18 @@ const StatusBar = ({ collapsed }: { collapsed: boolean }) => {
         ) : null}
       </div>
       <div className="col-span-1 flex items-center justify-end space-x-4 text-xs">
-        {router.asPath.includes('/trade') ? (
+        {router?.asPath === '/' &&
+        !router?.query?.view &&
+        accountPageTab === 'overview' ? (
+          <LinkButton
+            className="flex items-center text-th-fgd-3  md:hover:text-th-fgd-2"
+            onClick={() => startAccountTour(mangoAccountAddress)}
+          >
+            <MapIcon className="mr-1 h-3 w-3" />
+            <span className="font-normal">UI Tour</span>
+          </LinkButton>
+        ) : null}
+        {/* {router.asPath.includes('/trade') ? (
           <a
             className="flex items-center text-th-fgd-3 focus:outline-none md:hover:text-th-fgd-2"
             href="https://www.tradingview.com/"
@@ -219,7 +235,7 @@ const StatusBar = ({ collapsed }: { collapsed: boolean }) => {
           >
             <span>Powered by TradingView</span>
           </a>
-        ) : null}
+        ) : null} */}
         <a
           className="flex items-center text-th-fgd-3 focus:outline-none md:hover:text-th-fgd-2"
           href="https://docs.mango.markets"

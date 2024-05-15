@@ -16,11 +16,7 @@ const MaxMarketSwapAmount = ({
   const { t } = useTranslation('common')
   const { price: oraclePrice, serumOrPerpMarket } = useSelectedMarket()
   const mangoAccountLoading = mangoStore((s) => s.mangoAccount.initialLoad)
-  const {
-    amount: tokenMax,
-    amountWithBorrow,
-    decimals,
-  } = useTokenMax(useMargin)
+  const { amount: tokenMax, amountWithBorrow, decimals } = useTokenMax()
 
   const tickDecimals = useMemo(() => {
     if (!serumOrPerpMarket) return decimals

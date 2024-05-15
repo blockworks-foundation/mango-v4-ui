@@ -19,6 +19,8 @@ import useLocalStorageState from 'hooks/useLocalStorageState'
 import { useTranslation } from 'next-i18next'
 import useSolBalance from 'hooks/useSolBalance'
 import { EXPLORERS } from '@components/settings/PreferredExplorerSettings'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 const setMangoStore = mangoStore.getState().set
 
@@ -176,7 +178,7 @@ const TransactionNotification = ({
         : type === 'error'
         ? 30000
         : type === 'info'
-        ? 4000
+        ? 8000
         : 10000
 
     const id = setTimeout(() => {
@@ -247,7 +249,7 @@ const TransactionNotification = ({
         }`}
       >
         <div className={`relative flex w-full items-center p-3.5 sm:w-96`}>
-          <div className={`mr-1 flex-shrink-0`}>
+          <div className={`mr-1 shrink-0`}>
             {type === 'success' ? (
               <CheckCircleIcon className={`h-6 w-6 text-th-success`} />
             ) : null}
@@ -264,10 +266,14 @@ const TransactionNotification = ({
           <div className={`ml-2 flex-1`}>
             <p className={`text-th-fgd-1`}>{parsedTitle || title}</p>
             {parsedDescription ? (
-              <p
-                className={`mb-0 mt-0.5 break-all text-sm leading-tight text-th-fgd-4`}
-              >
-                {parsedDescription}
+              <p className={`mb-0 mt-0.5 text-sm leading-tight text-th-fgd-4`}>
+                <ReactMarkdown
+                  components={{ a: LinkRenderer }}
+                  className="markdown"
+                  remarkPlugins={[remarkGfm]}
+                >
+                  {parsedDescription}
+                </ReactMarkdown>
               </p>
             ) : null}
             {txid ? (
@@ -282,11 +288,11 @@ const TransactionNotification = ({
                     ? txid
                     : `${txid.slice(0, 14)}...${txid.slice(txid.length - 14)}`}
                 </div>
-                <ArrowTopRightOnSquareIcon className="mb-0.5 ml-1 h-5 w-5 flex-shrink-0" />
+                <ArrowTopRightOnSquareIcon className="mb-0.5 ml-1 h-5 w-5 shrink-0" />
               </a>
             ) : null}
           </div>
-          <div className={`absolute right-2 top-2 flex-shrink-0`}>
+          <div className={`absolute right-2 top-2 shrink-0`}>
             <button
               onClick={hideNotification}
               className={`text-th-fgd-4 focus:outline-none md:hover:text-th-fgd-3`}
@@ -314,3 +320,14 @@ const TransactionNotification = ({
 }
 
 export default TransactionNotificationList
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function LinkRenderer(props: any) {
+  return (
+    // eslint-disable-next-line react/prop-types
+    <a href={props.href} target="_blank" rel="noreferrer">
+      {/* eslint-disable-next-line react/prop-types */}
+      {props.children}
+    </a>
+  )
+}

@@ -13,6 +13,7 @@ import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import MarketLogos from './MarketLogos'
 import PerpSideBadge from './PerpSideBadge'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
+import { MAX_PERP_SLIPPAGE } from 'utils/constants'
 
 export const handleCloseAll = async (
   setSubmitting?: (s: boolean) => void,
@@ -34,11 +35,10 @@ export const handleCloseAll = async (
     setSubmitting(true)
   }
   try {
-    const maxSlippage = 0.025
     const { signature: tx } = await client.perpCloseAll(
       group,
       mangoAccount,
-      maxSlippage,
+      MAX_PERP_SLIPPAGE,
     )
     actions.fetchOpenOrders()
     notify({
@@ -72,50 +72,8 @@ const CloseAllPositionsModal: FunctionComponent<ModalProps> = ({
 }) => {
   const { t } = useTranslation(['common', 'trade'])
   const [submitting, setSubmitting] = useState(false)
-  const openPerpPositions = useOpenPerpPositions()
+  const { openPerpPositions } = useOpenPerpPositions()
   const { group } = useMangoGroup()
-
-  // const handleCloseAll = useCallback(async () => {
-  //   const client = mangoStore.getState().client
-  //   const mangoAccount = mangoStore.getState().mangoAccount.current
-  //   const actions = mangoStore.getState().actions
-
-  //   if (!group || !mangoAccount) {
-  //     notify({
-  //       title: 'Something went wrong. Try again later',
-  //       type: 'error',
-  //     })
-  //     return
-  //   }
-  //   setSubmitting(true)
-  //   try {
-  //     const maxSlippage = 0.025
-  //     const { signature: tx } = await client.perpCloseAll(
-  //       group,
-  //       mangoAccount,
-  //       maxSlippage,
-  //     )
-  //     actions.fetchOpenOrders()
-  //     notify({
-  //       type: 'success',
-  //       title: 'Transaction successful',
-  //       txid: tx,
-  //     })
-  //   } catch (e) {
-  //     if (isMangoError(e)) {
-  //       notify({
-  //         title: 'There was an issue.',
-  //         description: e.message,
-  //         txid: e?.txid,
-  //         type: 'error',
-  //       })
-  //     }
-  //     console.error('Place trade error:', e)
-  //   } finally {
-  //     setSubmitting(false)
-  //     onClose()
-  //   }
-  // }, [group, onClose])
 
   if (!group) return null
 

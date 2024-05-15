@@ -18,11 +18,7 @@ const PercentageSelectButtons = ({
   values?: string[]
 }) => {
   const [sizePercentage, setSizePercentage] = useState('')
-  const {
-    amount: tokenMax,
-    amountWithBorrow,
-    decimals,
-  } = useTokenMax(useMargin)
+  const { amount: tokenMax, amountWithBorrow, decimals } = useTokenMax()
 
   const maxAmount = useMemo(() => {
     if (!tokenMax && !amountWithBorrow) return new Decimal(0)

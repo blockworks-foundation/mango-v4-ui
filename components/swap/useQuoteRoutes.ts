@@ -9,7 +9,7 @@ import { useMemo } from 'react'
 import { JUPITER_V6_QUOTE_API_MAINNET } from 'utils/constants'
 import { MangoAccount } from '@blockworks-foundation/mango-v4'
 
-type SwapModes = 'ALL' | 'JUPITER' | 'MANGO'
+type SwapModes = 'ALL' | 'JUPITER' | 'MANGO' | 'JUPITER_DIRECT'
 
 type useQuoteRoutesPropTypes = {
   inputMint: string | undefined
@@ -29,23 +29,33 @@ const fetchJupiterRoute = async (
   amount = 0,
   slippage = 50,
   swapMode = 'ExactIn',
-  feeBps = 1,
   onlyDirectRoutes = true,
   maxAccounts = 64,
 ) => {
   if (!inputMint || !outputMint) return
   try {
     {
-      const paramsString = new URLSearchParams({
+      const paramObj: {
+        inputMint: string
+        outputMint: string
+        amount: string
+        slippageBps: string
+        swapMode: string
+        onlyDirectRoutes: string
+        maxAccounts?: string
+      } = {
         inputMint: inputMint.toString(),
         outputMint: outputMint.toString(),
         amount: amount.toString(),
         slippageBps: Math.ceil(slippage * 100).toString(),
-        platformFeeBps: feeBps.toString(),
-        maxAccounts: maxAccounts.toString(),
         swapMode,
         onlyDirectRoutes: `${onlyDirectRoutes}`,
-      }).toString()
+      }
+      //exact out is not supporting max account
+      if (swapMode === 'ExactIn') {
+        paramObj.maxAccounts = maxAccounts.toString()
+      }
+      const paramsString = new URLSearchParams(paramObj).toString()
       const response = await fetch(
         `${JUPITER_V6_QUOTE_API_MAINNET}/quote?${paramsString}`,
       )
@@ -122,7 +132,6 @@ export const handleGetRoutes = async (
   amount = 0,
   slippage = 50,
   swapMode = 'ExactIn',
-  feeBps = 1,
   wallet: string | undefined,
   mangoAccount: MangoAccount | undefined,
   mode: SwapModes = 'ALL',
@@ -137,12 +146,10 @@ export const handleGetRoutes = async (
     } else {
       // TODO: replace with client method
       const totalSlots =
-        mangoAccount.tokensActive().length +
+        2 * mangoAccount.tokensActive().length +
         mangoAccount.serum3Active().length +
-        mangoAccount.tokenConditionalSwapsActive().length +
-        mangoAccount.perpActive().length +
-        mangoAccount.perpOrdersActive().length
-      maxAccounts = 56 - 2 * totalSlots
+        2 * mangoAccount.perpActive().length
+      maxAccounts = 54 - totalSlots
     }
 
     const routes = []
@@ -161,15 +168,18 @@ export const handleGetRoutes = async (
     //   routes.push(mangoRoute)
     // }
 
-    if (mode === 'ALL' || mode === 'JUPITER') {
+    if (mode === 'ALL' || mode === 'JUPITER' || mode === 'JUPITER_DIRECT') {
       const jupiterRoute = await fetchJupiterRoute(
         inputMint,
         outputMint,
         amount,
         slippage,
         swapMode,
-        feeBps,
-        jupiterOnlyDirectRoutes,
+        jupiterOnlyDirectRoutes
+          ? jupiterOnlyDirectRoutes
+          : mode === 'JUPITER_DIRECT'
+          ? true
+          : false,
         maxAccounts,
       )
       routes.push(jupiterRoute)
@@ -224,7 +234,16 @@ const useQuoteRoutes = ({
   }, [amount, decimals])
 
   const res = useQuery<{ bestRoute: JupiterV6RouteInfo | null }, Error>(
-    ['swap-routes', inputMint, outputMint, amount, slippage, swapMode, wallet],
+    [
+      'swap-routes',
+      inputMint,
+      outputMint,
+      amount,
+      slippage,
+      swapMode,
+      wallet,
+      mode,
+    ],
     async () =>
       handleGetRoutes(
         inputMint,
@@ -232,7 +251,6 @@ const useQuoteRoutes = ({
         nativeAmount.toNumber(),
         slippage,
         swapMode,
-        1,
         wallet,
         mangoAccount,
         mode,

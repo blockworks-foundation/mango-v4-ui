@@ -19,7 +19,7 @@ import HealthImpactTokenChange from '@components/HealthImpactTokenChange'
 import SolBalanceWarnings from '@components/shared/SolBalanceWarnings'
 import useMangoAccount from 'hooks/useMangoAccount'
 import {
-  ACCOUNT_ACTION_MODAL_INNER_HEIGHT,
+  BORROW_REPAY_MODAL_INNER_HEIGHT,
   INPUT_TOKEN_DEFAULT,
 } from 'utils/constants'
 import ConnectEmptyState from './shared/ConnectEmptyState'
@@ -66,16 +66,21 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
     return amount
   }, [bank, mangoAccount])
 
-  const hasWalletBalanceToRepay = useMemo(() => {
-    if (!bank || !inputAmount) return true
-    if (!walletTokens?.length) return false
+  const walletBalance = useMemo(() => {
+    if (!bank || !walletTokens?.length) return 0
     const hasBorrowToken = walletTokens.find(
       (token) => token.mint.toString() === bank.mint.toString(),
     )
-    if (hasBorrowToken) {
-      return hasBorrowToken.uiAmount >= parseFloat(inputAmount)
-    } else return false
-  }, [bank, inputAmount, walletTokens])
+
+    return hasBorrowToken?.uiAmount || 0
+  }, [bank, walletTokens])
+
+  const max = useMemo(() => {
+    if (!walletBalance) return new Decimal(0)
+    return walletBalance >= borrowAmount.toNumber()
+      ? borrowAmount
+      : new Decimal(walletBalance)
+  }, [borrowAmount, walletBalance])
 
   useEffect(() => {
     if (token && !borrowAmount.eq(0)) {
@@ -85,26 +90,23 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
 
   const setMax = useCallback(() => {
     if (!bank) return
-    const amount = new Decimal(borrowAmount).toDecimalPlaces(
-      bank.mintDecimals,
-      Decimal.ROUND_UP,
-    )
+    const amount = max.toDecimalPlaces(bank.mintDecimals, Decimal.ROUND_UP)
     setInputAmount(amount.toFixed())
     setSizePercentage('100')
-  }, [bank, borrowAmount])
+  }, [bank, max])
 
   const handleSizePercentage = useCallback(
     (percentage: string) => {
       if (!bank) return
       setSizePercentage(percentage)
-      const amount = new Decimal(borrowAmount)
+      const amount = max
         .mul(percentage)
         .div(100)
         .toDecimalPlaces(bank.mintDecimals, Decimal.ROUND_UP)
 
       setInputAmount(amount.toFixed())
     },
-    [bank, borrowAmount],
+    [bank, max],
   )
 
   const handleSelectToken = (token: string) => {
@@ -158,7 +160,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
         })
       }
     },
-    [bank, publicKey?.toBase58(), sizePercentage],
+    [bank, borrowAmount, publicKey, onSuccess, sizePercentage],
   )
 
   useEffect(() => {
@@ -167,7 +169,9 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
     }
   }, [token, banks, selectedToken])
 
-  const outstandingAmount = borrowAmount.toNumber() - parseFloat(inputAmount)
+  const outstandingAmount = inputAmount
+    ? borrowAmount.toNumber() - parseFloat(inputAmount)
+    : borrowAmount.toNumber()
   const isDeposit = parseFloat(inputAmount) > borrowAmount.toNumber()
 
   return banks.length ? (
@@ -195,7 +199,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
       <FadeInFadeOut show={!showTokenList}>
         <div
           className="flex flex-col justify-between"
-          style={{ height: ACCOUNT_ACTION_MODAL_INNER_HEIGHT }}
+          style={{ height: BORROW_REPAY_MODAL_INNER_HEIGHT }}
         >
           <div>
             <SolBalanceWarnings
@@ -211,9 +215,9 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
                   <MaxAmountButton
                     className="mb-2"
                     decimals={bank.mintDecimals}
-                    label={t('amount-owed')}
+                    label={t('max')}
                     onClick={setMax}
-                    value={borrowAmount}
+                    value={max}
                   />
                 ) : null}
               </div>
@@ -279,7 +283,7 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
                 ) : null}
                 <div className="flex justify-between">
                   <div className="flex items-center">
-                    <p>{t('outstanding-balance')}</p>
+                    <p>{t('outstanding-borrow')}</p>
                   </div>
                   <p className="font-mono text-th-fgd-2">
                     {outstandingAmount > 0
@@ -294,7 +298,8 @@ function RepayForm({ onSuccess, token }: RepayFormProps) {
             ) : null}
           </div>
           <div>
-            {!hasWalletBalanceToRepay ? (
+            {(borrowAmount.toNumber() && max.eq(0)) ||
+            (inputAmount && new Decimal(inputAmount).gt(max)) ? (
               <div className="pb-3">
                 <InlineNotification
                   desc={t('error-repay-insufficient-funds', {

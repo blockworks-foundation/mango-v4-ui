@@ -9,7 +9,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import NumberFormat from 'react-number-format'
 import mangoStore from '@store/mangoStore'
 import {
-  ACCOUNT_ACTION_MODAL_INNER_HEIGHT,
+  DEPOSIT_WITHDRAW_MODAL_INNER_HEIGHT,
   INPUT_TOKEN_DEFAULT,
 } from './../utils/constants'
 import { notify } from './../utils/notifications'
@@ -39,6 +39,10 @@ import SecondaryConnectButton from './shared/SecondaryConnectButton'
 import useTokenPositionsFull from 'hooks/useAccountPositionsFull'
 import AccountSlotsFullNotification from './shared/AccountSlotsFullNotification'
 import { handleInputChange } from 'utils/account'
+import { Bank, Group } from '@blockworks-foundation/mango-v4'
+import UninsuredNotification from './shared/UninsuredNotification'
+import { toUiDecimals } from '@blockworks-foundation/mango-v4'
+import TokenMaxAmountWarnings from './shared/TokenMaxAmountWarnings'
 
 interface DepositFormProps {
   onSuccess: () => void
@@ -48,26 +52,54 @@ interface DepositFormProps {
 export const walletBalanceForToken = (
   walletTokens: TokenAccount[],
   token: string,
-): { maxAmount: number; maxDecimals: number } => {
+  ignoreLimits?: boolean,
+): {
+  maxAmount: number
+  maxDecimals: number
+  walletBalance: number
+  vaultLimit: number | null
+} => {
   const group = mangoStore.getState().group
   const bank = group?.banksMapByName.get(token)?.[0]
-
+  const depositLimitLeft = bank?.getRemainingDepositLimit()
   let walletToken
+  let depositLimitLeftUi
+  let limit = null
   if (bank) {
     const tokenMint = bank?.mint
     walletToken = tokenMint
       ? walletTokens.find((t) => t.mint.toString() === tokenMint.toString())
       : null
+    if (depositLimitLeft && !ignoreLimits) {
+      depositLimitLeftUi = toUiDecimals(depositLimitLeft, bank.mintDecimals)
+      limit = toUiDecimals(depositLimitLeft, bank.mintDecimals)
+    }
   }
 
   return {
-    maxAmount: walletToken ? walletToken.uiAmount : 0,
+    maxAmount: walletToken
+      ? depositLimitLeftUi !== undefined
+        ? Math.min(walletToken.uiAmount, depositLimitLeftUi)
+        : walletToken.uiAmount
+      : 0,
+    walletBalance: walletToken ? walletToken.uiAmount : 0,
     maxDecimals: bank?.mintDecimals || 6,
+    vaultLimit: limit,
   }
 }
 
+export const isTokenInsured = (
+  bank: Bank | undefined,
+  group: Group | undefined,
+) => {
+  if (!bank || !group) return true
+  const mintInfo = group.mintInfosMapByMint.get(bank.mint.toString())
+  const isInsured = mintInfo?.groupInsuranceFund
+  return isInsured
+}
+
 function DepositForm({ onSuccess, token }: DepositFormProps) {
-  const { t } = useTranslation(['common', 'account'])
+  const { t } = useTranslation(['common', 'account', 'swap'])
   const [inputAmount, setInputAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [selectedToken, setSelectedToken] = useState(
@@ -83,6 +115,11 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
     const group = mangoStore.getState().group
     return group?.banksMapByName.get(selectedToken)?.[0]
   }, [selectedToken])
+
+  const isInsured = useMemo(() => {
+    const group = mangoStore.getState().group
+    return isTokenInsured(bank, group)
+  }, [bank])
 
   const tokenPositionsFull = useTokenPositionsFull([bank])
 
@@ -161,12 +198,15 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
         type: 'error',
       })
     }
-  }, [bank, publicKey, inputAmount])
+  }, [bank, publicKey, inputAmount, onSuccess])
 
   const showInsufficientBalance =
     tokenMax.maxAmount < Number(inputAmount) ||
     (selectedToken === 'SOL' && maxSolDeposit <= 0)
 
+  const depositLimitAffectingMaxAmounts =
+    tokenMax.vaultLimit !== null &&
+    tokenMax.maxAmount !== tokenMax.walletBalance
   return (
     <>
       <EnterBottomExitBottom
@@ -185,7 +225,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
             <p className="text-xs">{t('deposit-rate')}</p>
           </div>
           <div className="w-1/2 text-right">
-            <p className="whitespace-nowrap text-xs">{t('wallet-balance')}</p>
+            <p className="whitespace-nowrap text-xs">{t('max')}</p>
           </div>
         </div>
         <ActionTokenList
@@ -198,7 +238,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
       <FadeInFadeOut show={!showTokenList}>
         <div
           className="flex flex-col justify-between"
-          style={{ height: ACCOUNT_ACTION_MODAL_INNER_HEIGHT }}
+          style={{ height: DEPOSIT_WITHDRAW_MODAL_INNER_HEIGHT }}
         >
           <div>
             <SolBalanceWarnings
@@ -207,13 +247,18 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
               setAmount={setInputAmount}
               selectedToken={selectedToken}
             />
+            <TokenMaxAmountWarnings
+              limitNearlyReached={depositLimitAffectingMaxAmounts}
+              bank={bank}
+              className="mb-4"
+            />
             <div className="grid grid-cols-2">
               <div className="col-span-2 flex justify-between">
                 <Label text={`${t('deposit')} ${t('token')}`} />
                 <div className="mb-2 flex items-center space-x-2">
                   <MaxAmountButton
                     decimals={tokenMax.maxDecimals}
-                    label={t('wallet-balance')}
+                    label={t('max')}
                     onClick={setMax}
                     value={tokenMax.maxAmount}
                   />
@@ -296,6 +341,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
                 </div>
               </div>
             ) : null}
+            {!isInsured ? <UninsuredNotification name={bank?.name} /> : null}
           </div>
           {connected ? (
             <Button
@@ -308,7 +354,7 @@ function DepositForm({ onSuccess, token }: DepositFormProps) {
                 <Loading className="mr-2 h-5 w-5" />
               ) : showInsufficientBalance ? (
                 <div className="flex items-center">
-                  <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+                  <ExclamationCircleIcon className="mr-2 h-5 w-5 shrink-0" />
                   {t('swap:insufficient-balance', {
                     symbol: selectedToken,
                   })}

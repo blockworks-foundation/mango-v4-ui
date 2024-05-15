@@ -7,8 +7,8 @@ import {
   ConfirmOptions,
   Connection,
   Keypair,
+  LAMPORTS_PER_SOL,
   PublicKey,
-  RecentPrioritizationFees,
   TransactionInstruction,
 } from '@solana/web3.js'
 import { OpenOrders, Order } from '@project-serum/serum/lib/market'
@@ -43,7 +43,7 @@ import {
   INPUT_TOKEN_DEFAULT,
   LAST_ACCOUNT_KEY,
   MANGO_DATA_API_URL,
-  MAX_PRIORITY_FEE_KEYS,
+  MANGO_MAINNET_GROUP,
   OUTPUT_TOKEN_DEFAULT,
   PAGINATION_PAGE_LENGTH,
   RPC_PROVIDER_KEY,
@@ -60,10 +60,8 @@ import {
   SpotTradeHistory,
   SwapHistoryItem,
   TradeForm,
-  TokenStatsItem,
   NFT,
   TourSettings,
-  MangoTokenStatsItem,
   ThemeData,
   PositionStat,
   OrderbookTooltip,
@@ -82,16 +80,13 @@ import {
   IOrderLineAdapter,
 } from '@public/charting_library/charting_library'
 import { nftThemeMeta } from 'utils/theme'
-import maxBy from 'lodash/maxBy'
-import mapValues from 'lodash/mapValues'
-import groupBy from 'lodash/groupBy'
-import sampleSize from 'lodash/sampleSize'
-import { fetchTokenStatsData, processTokenStatsData } from 'apis/mngo'
 import { OrderTypes } from 'utils/tradeForm'
 import { usePlausible } from 'next-plausible'
 import { OpenOrdersAccount } from '@openbook-dex/openbook-v2'
 
 const GROUP = new PublicKey('CKU8J1mgtdcJJhBvXrH6xRx1MmcrRWDv8WQdNxPKW3gk')
+import { collectTxConfirmationData } from 'utils/transactionConfirmationData'
+import { TxCallbackOptions } from '@blockworks-foundation/mango-v4/dist/types/src/client'
 
 const ENDPOINTS = [
   {
@@ -140,9 +135,14 @@ const initMangoClient = (
   // console.log('programId', MANGO_V4_ID[CLUSTER].toString())
   return MangoClient.connect(provider, CLUSTER, MANGO_V4_ID[CLUSTER], {
     prioritizationFee: opts.prioritizationFee,
+    fallbackOracleConfig: [
+      new PublicKey('Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD'), // USDC pyth oracle
+    ],
+    multipleConnections: opts.multipleConnections,
+    idsSource: 'api',
     prependedGlobalAdditionalInstructions:
       opts.prependedGlobalAdditionalInstructions,
-    postSendTxCallback: ({ txid }: { txid: string }) => {
+    postSendTxCallback: (txCallbackOptions: TxCallbackOptions) => {
       if (telemetry) {
         telemetry('postSendTx', {
           props: { fee: opts.prioritizationFee },
@@ -153,8 +153,14 @@ const initMangoClient = (
         title: 'Transaction sent',
         description: 'Waiting for confirmation',
         type: 'confirm',
-        txid: txid,
+        txid: txCallbackOptions.txid,
       })
+
+      collectTxConfirmationData(
+        provider.connection.rpcEndpoint,
+        opts.prioritizationFee,
+        txCallbackOptions,
+      )
     },
   })
 }
@@ -183,7 +189,16 @@ export const DEFAULT_TRADE_FORM: TradeForm = {
   reduceOnly: false,
 }
 
+export type AccountPageTab =
+  | 'overview'
+  | 'balances'
+  | 'trade:positions'
+  | 'trade:orders'
+  | 'trade:unsettled'
+  | 'history'
+
 export type MangoStore = {
+  accountPageTab: AccountPageTab
   activityFeed: {
     feed: Array<ActivityFeed>
     loading: boolean
@@ -273,12 +288,6 @@ export type MangoStore = {
   }
   set: (x: (x: MangoStore) => void) => void
   themeData: ThemeData
-  tokenStats: {
-    initialLoad: boolean
-    loading: boolean
-    data: TokenStatsItem[] | null
-    mangoStats: MangoTokenStatsItem[]
-  }
   tradeForm: TradeForm
   tradingView: {
     orderLines: Map<string | BN, IOrderLineAdapter>
@@ -317,7 +326,6 @@ export type MangoStore = {
       offset?: number,
       limit?: number,
     ) => Promise<void>
-    fetchTokenStats: () => void
     fetchTourSettings: (walletPk: string) => void
     fetchWalletTokens: (walletPk: PublicKey) => Promise<void>
     connectMangoClientWithWallet: (wallet: WalletAdapter) => Promise<void>
@@ -326,8 +334,9 @@ export type MangoStore = {
     setPrependedGlobalAdditionalInstructions: (
       instructions: TransactionInstruction[],
     ) => void
-    estimatePriorityFee: (
+    updateFee: (
       feeMultiplier: number,
+      fee: number,
       telemetry: ReturnType<typeof usePlausible> | null,
     ) => Promise<void>
   }
@@ -378,6 +387,7 @@ const mangoStore = create<MangoStore>()(
     )
 
     return {
+      accountPageTab: 'overview',
       activityFeed: {
         feed: [],
         loading: true,
@@ -468,12 +478,6 @@ const mangoStore = create<MangoStore>()(
         triggerPrice: '',
       },
       themeData: nftThemeMeta.default,
-      tokenStats: {
-        initialLoad: false,
-        loading: true,
-        data: [],
-        mangoStats: [],
-      },
       tradeForm: DEFAULT_TRADE_FORM,
       tradingView: {
         orderLines: new Map(),
@@ -554,7 +558,7 @@ const mangoStore = create<MangoStore>()(
           try {
             const set = get().set
             const client = get().client
-            const group = await client.getGroup(GROUP)
+            const group = await client.getGroup(MANGO_MAINNET_GROUP)
             let selectedMarketName = get().selectedMarket.name
 
             if (!selectedMarketName) {
@@ -680,19 +684,20 @@ const mangoStore = create<MangoStore>()(
             if (!group) throw new Error('Group not loaded')
             if (!client) throw new Error('Client not loaded')
 
-            const mangoAccounts = await client
-              .getMangoAccountsForOwner(group, ownerPk)
-              .catch((e) => console.log('-=-=-=-', e))
-            // const [ownerMangoAccounts] = await Promise.all([
-            // client.getMangoAccountsForDelegate(group, ownerPk),
-            // ])
-            // console.log('222222222 ownerMangoAccounts: ', group, mangoAccounts)
+            const [ownerMangoAccounts, delegateAccounts] = await Promise.all([
+              client.getMangoAccountsForOwner(group, ownerPk),
+              client.getMangoAccountsForDelegate(group, ownerPk),
+            ])
 
-            // const mangoAccounts = [...ownerMangoAccounts].filter(
-            //   (acc) => !acc.name.includes('Leverage Stake'),
-            // )
-            // console.log('=====mangoAccounts', mangoAccounts)
-
+            const mangoAccounts = [
+              ...ownerMangoAccounts,
+              ...delegateAccounts,
+            ].filter((acc) => !acc.name.includes('Leverage Stake'))
+            const selectedAccountIsNotInAccountsList = mangoAccounts.find(
+              (x) =>
+                x.publicKey.toBase58() ===
+                selectedMangoAccount?.publicKey.toBase58(),
+            )
             if (!mangoAccounts?.length) {
               set((state) => {
                 state.mangoAccounts = []
@@ -988,36 +993,6 @@ const mangoStore = create<MangoStore>()(
             }
           }, timeout)
         },
-        fetchTokenStats: async () => {
-          const set = get().set
-          const group = get().group
-          if (!group) return
-
-          set((state) => {
-            state.tokenStats.loading = true
-          })
-
-          try {
-            const rawData = await fetchTokenStatsData(group)
-            const [data, mangoStats] = processTokenStatsData(rawData, group)
-
-            set((state) => {
-              state.tokenStats.data = data
-              state.tokenStats.mangoStats = mangoStats
-              state.tokenStats.initialLoad = true
-              state.tokenStats.loading = false
-            })
-          } catch (error) {
-            set((state) => {
-              state.tokenStats.loading = false
-            })
-            console.log('Failed to fetch token stats data', error)
-            notify({
-              title: 'Failed to fetch token stats data',
-              type: 'error',
-            })
-          }
-        },
         fetchWalletTokens: async (walletPk: PublicKey) => {
           const set = get().set
           const connection = get().connection
@@ -1149,6 +1124,7 @@ const mangoStore = create<MangoStore>()(
                 connection,
                 10000,
               )) as SerumEvent[]
+
               loadedFills = serumFills.filter((f) => !f?.eventFlags?.maker)
             } else if (perpMarket) {
               const perpFills = (await perpMarket.loadFills(
@@ -1192,53 +1168,19 @@ const mangoStore = create<MangoStore>()(
             state.client = newClient
           })
         },
-        estimatePriorityFee: async (feeMultiplier, telemetry) => {
+        updateFee: async (feeMultiplier, fee, telemetry) => {
           const set = get().set
-          const group = mangoStore.getState().group
           const client = mangoStore.getState().client
-
-          const mangoAccount = get().mangoAccount.current
           const currentFee = get().priorityFee
           const currentTelemetry = get().telemetry
-          if (!mangoAccount || !group || !client) return
-
-          const altResponse = await connection.getAddressLookupTable(
-            group.addressLookupTables[0],
-          )
-          const altKeys = altResponse.value?.state.addresses
-          if (!altKeys) return
-
-          const addresses = sampleSize(altKeys, MAX_PRIORITY_FEE_KEYS)
-
-          const fees = await connection.getRecentPrioritizationFees({
-            lockedWritableAccounts: addresses,
-          })
-
-          if (fees.length < 1) return
-
-          // get max priority fee per slot (and sort by slot from old to new)
-          const maxFeeBySlot = mapValues(groupBy(fees, 'slot'), (items) =>
-            maxBy(items, 'prioritizationFee'),
-          )
-          const maximumFees = Object.values(maxFeeBySlot).sort(
-            (a, b) => a!.slot - b!.slot,
-          ) as RecentPrioritizationFees[]
-
-          // get median of last 20 fees
-          const recentFees = maximumFees.slice(
-            Math.max(maximumFees.length - 20, 0),
-          )
-          const mid = Math.floor(recentFees.length / 2)
-          const medianFee =
-            recentFees.length % 2 !== 0
-              ? recentFees[mid].prioritizationFee
-              : (recentFees[mid - 1].prioritizationFee +
-                  recentFees[mid].prioritizationFee) /
-                2
-          const feeEstimate = Math.ceil(medianFee * feeMultiplier)
-
           const provider = client.program.provider as AnchorProvider
           provider.opts.skipPreflight = true
+
+          //limit fee estimate to prevent error
+          const feeEstimate = Math.min(
+            Math.ceil(fee * feeMultiplier),
+            LAMPORTS_PER_SOL * 0.01,
+          )
 
           if (currentFee !== feeEstimate || !currentTelemetry) {
             const newClient = initMangoClient(

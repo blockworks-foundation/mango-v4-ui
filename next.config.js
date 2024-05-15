@@ -6,11 +6,19 @@ const { withSentryConfig } = require('@sentry/nextjs')
 const nextConfig = {
   i18n,
   images: {
-    domains: [
-      'raw.githubusercontent.com',
-      'arweave.net',
-      'www.dual.finance',
-      'shdw-drive.genesysgo.net',
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'raw.githubusercontent.com/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'arweave.net/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.ctfassets.net/**',
+      },
     ],
   },
   reactStrictMode: true,

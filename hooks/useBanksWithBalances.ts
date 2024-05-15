@@ -6,6 +6,7 @@ import { useMemo } from 'react'
 import useMangoAccount from './useMangoAccount'
 import useMangoGroup from './useMangoGroup'
 import Decimal from 'decimal.js'
+import { isBankVisibleForUser } from 'utils/bank'
 
 export interface BankWithBalance {
   balance: number
@@ -23,6 +24,7 @@ export default function useBanksWithBalances(
     | 'maxBorrow'
     | 'maxWithdraw'
     | 'walletBalance',
+  showReduceOnlyTokens = false,
 ) {
   const { group } = useMangoGroup()
   const { mangoAccount } = useMangoAccount()
@@ -36,35 +38,44 @@ export default function useBanksWithBalances(
           key,
           value,
         }),
-      ).map((b) => {
-        const bank = b.value[0]
-        const balance = mangoAccount ? mangoAccount.getTokenBalanceUi(bank) : 0
+      )
+        .map((b) => {
+          const bank = b.value[0]
+          const balance = mangoAccount
+            ? mangoAccount.getTokenBalanceUi(bank)
+            : 0
 
-        const maxBorrow = mangoAccount
-          ? getMaxWithdrawForBank(group, bank, mangoAccount, true).toNumber()
-          : 0
-        let maxWithdraw = mangoAccount
-          ? getMaxWithdrawForBank(group, bank, mangoAccount).toNumber()
-          : 0
-        if (maxWithdraw < balance) {
-          maxWithdraw = maxWithdraw * 0.998
-        }
-        const borrowedAmount = mangoAccount
-          ? new Decimal(mangoAccount.getTokenBorrowsUi(bank))
-              .toDecimalPlaces(bank.mintDecimals, Decimal.ROUND_UP)
-              .toNumber()
-          : 0
-        const walletBalance =
-          walletBalanceForToken(walletTokens, bank.name)?.maxAmount || 0
-        return {
-          bank,
-          balance,
-          borrowedAmount,
-          maxBorrow,
-          maxWithdraw,
-          walletBalance,
-        }
-      })
+          const maxBorrow = mangoAccount
+            ? getMaxWithdrawForBank(group, bank, mangoAccount, true).toNumber()
+            : 0
+          let maxWithdraw = mangoAccount
+            ? getMaxWithdrawForBank(group, bank, mangoAccount).toNumber()
+            : 0
+          if (maxWithdraw < balance) {
+            maxWithdraw = maxWithdraw * 0.998
+          }
+          const borrowedAmount = mangoAccount
+            ? new Decimal(mangoAccount.getTokenBorrowsUi(bank))
+                .toDecimalPlaces(bank.mintDecimals, Decimal.ROUND_UP)
+                .toNumber()
+            : 0
+          const walletBalance =
+            walletBalanceForToken(walletTokens, bank.name)?.maxAmount || 0
+
+          return {
+            bank,
+            balance,
+            borrowedAmount,
+            maxBorrow,
+            maxWithdraw,
+            walletBalance,
+          }
+        })
+        .filter((x) =>
+          !showReduceOnlyTokens
+            ? isBankVisibleForUser(x.bank, x.borrowedAmount, x.balance)
+            : true,
+        )
 
       const sortedBanks = banksWithBalances.sort((a, b) => {
         if (sortByKey) {

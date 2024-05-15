@@ -1,4 +1,4 @@
-import { PublicKey } from '@metaplex-foundation/js'
+import { PublicKey } from '@solana/web3.js'
 
 export const LAST_ACCOUNT_KEY = 'mangoAccount-0.4'
 
@@ -23,7 +23,7 @@ export const SHOW_ZERO_BALANCES_KEY = 'show-zero-balances-0.2'
 
 export const SIDEBAR_COLLAPSE_KEY = 'sidebar-0.1'
 
-export const ONBOARDING_TOUR_KEY = 'showOnboardingTour-0.1'
+export const UI_TOURS_KEY = 'uiToursCompleted-0.1'
 
 export const PREFERRED_EXPLORER_KEY = 'preferredExplorer-0.1'
 
@@ -81,7 +81,16 @@ export const SEND_TELEMETRY_KEY = 'sendTelemetry-0.1'
 
 export const SLOTS_WARNING_KEY = 'tokenSlotsWarning-0.1'
 
-export const NEW_LISTING_BANNER_KEY = 'new-listing-banner-0.2'
+export const NEW_LISTING_BANNER_KEY = 'new-listing-banner-0.3'
+
+export const NON_RESTRICTED_JURISDICTION_KEY = 'non-restricted-jurisdiction-0.1'
+
+export const FILTER_ORDERS_FOR_MARKET_KEY = 'filterOrdersForMarket-0.1'
+export const FILTER_HISTORY_FOR_MARKET_KEY = 'filterHistoryForMarket-0.1'
+
+export const SHOW_ANNOUNCEMENTS_KEY = 'showAnnouncements-0.1'
+
+export const TOKEN_WATCHLIST_KEY = 'watchlist-0.1'
 
 // Unused
 export const PROFILE_CATEGORIES = [
@@ -108,9 +117,9 @@ export const MIN_SOL_BALANCE = 0.001
 
 export const MAX_PRIORITY_FEE_KEYS = 128
 
-export const ACCOUNT_ACTION_MODAL_HEIGHT = '498px'
+export const BORROW_REPAY_MODAL_INNER_HEIGHT = '436px'
 
-export const ACCOUNT_ACTION_MODAL_INNER_HEIGHT = '436px'
+export const DEPOSIT_WITHDRAW_MODAL_INNER_HEIGHT = '536px'
 
 export const TRADE_VOLUME_ALERT_KEY = 'tradeVolumeAlert-0.1'
 
@@ -137,6 +146,7 @@ export const AUCTION_HOUSE_ID = new PublicKey(
 )
 export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   all: true,
+  blze: true,
   bonk: true,
   btc: true,
   chai: true,
@@ -144,10 +154,13 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   crown: true,
   dai: true,
   dual: true,
+  elon: true,
   eth: true,
   ethpo: true,
   'eth (portal)': true,
   eurc: true,
+  gecko: true,
+  gofx: true,
   guac: true,
   hnt: true,
   jitosol: true,
@@ -155,7 +168,10 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   jto: true,
   kin: true,
   ldo: true,
+  mnde: true,
   mngo: true,
+  moutai: true,
+  jup: true,
   msol: true,
   neon: true,
   nos: true,
@@ -167,20 +183,22 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   samo: true,
   slcl: true,
   sol: true,
+  step: true,
   stsol: true,
   tbtc: true,
   usdc: true,
   usdh: true,
   usdt: true,
+  w: true,
   wbtcpo: true,
   'wbtc (portal)': true,
+  wen: true,
+  $wif: true,
+  wif: true,
+  zeus: true,
 }
 
 export const DEFAULT_FAVORITE_MKTS = ['BTC-PERP']
-
-export const JUPITER_REFERRAL_PK = new PublicKey(
-  'EV4qhLE2yPKdUPdQ74EWJUn21xT3eGQxG3DRR1g9NNFc',
-)
 
 export const WHITE_LIST_API = 'https://api.mngo.cloud/whitelist/v1/'
 export const DAILY_SECONDS = 86400
@@ -202,3 +220,9 @@ export enum TOKEN_REDUCE_ONLY_OPTIONS {
 }
 
 export const PRIVATE_MODE_STRING = '****'
+
+export const MANGO_MAINNET_GROUP = new PublicKey(
+  '78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX',
+)
+
+export const MAX_PERP_SLIPPAGE = 0.025

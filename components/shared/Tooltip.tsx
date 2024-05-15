@@ -11,6 +11,7 @@ type TooltipProps = {
   delay?: number
   show?: boolean
   maxWidth?: string
+  wrapperClassName?: string
 }
 
 const Tooltip = ({
@@ -21,6 +22,7 @@ const Tooltip = ({
   delay = 0,
   show = true,
   maxWidth = '20rem',
+  wrapperClassName,
 }: TooltipProps) => {
   const themeData = mangoStore((s) => s.themeData)
   if (show) {
@@ -43,7 +45,9 @@ const Tooltip = ({
           ) : null
         }
       >
-        <div className="outline-none focus:outline-none">{children}</div>
+        <div className={`outline-none focus:outline-none ${wrapperClassName}`}>
+          {children}
+        </div>
       </Tippy>
     )
   } else {

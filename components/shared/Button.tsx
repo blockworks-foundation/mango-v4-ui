@@ -83,7 +83,7 @@ export const IconButton = forwardRef<
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`flex flex-shrink-0 ${
+      className={`flex shrink-0 ${
         size === 'large'
           ? 'h-12 w-12'
           : size === 'small'

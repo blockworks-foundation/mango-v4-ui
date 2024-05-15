@@ -19,6 +19,7 @@
   "all": "All",
   "amount": "Amount",
   "amount-owed": "Amount Owed",
+  "announcements": "Announcements",
   "asked-sign-transaction": "You'll be asked to sign a transaction",
   "asset-liability-weight": "Asset/Liability Weights",
   "asset-liability-weight-desc": "Asset weight applies a haircut to the value of the collateral in your account health calculation. The lower the asset weight, the less the asset counts towards collateral. Liability weight does the opposite (adds to the value of the liability in your health calculation).",
@@ -48,6 +49,9 @@
   "close-borrow": "Close {{token}} Borrow",
   "collateral-value": "Collateral Value",
   "confirm": "Confirm",
+  "confirm-jurisdiction": "Confirm Jurisdiction",
+  "confirm-jurisdiction-desc": "It's against our Terms of Service to use Mango if you're a resident, citizen or are located in any of the following jurisdictions.",
+  "confirm-non-restricted-jurisdiction": "I confirm I am not a resident, citizen or are located in a prohibited jurisdiction",
   "connect": "Connect",
   "connect-balances": "Connect to view your balances",
   "connect-helper": "Connect to get started",
@@ -86,7 +90,7 @@
   "enable-notifications": "Enable Notifications",
   "equity": "Equity",
   "error-borrow-exceeds-limit": "Maximum borrow for the current period is {{remaining}}. New period starts {{resetTime}}",
-  "error-repay-insufficient-funds": "Not enough {{token}} in your wallet to repay this amount",
+  "error-repay-insufficient-funds": "Not enough {{token}} in your wallet",
   "error-token-positions-full": "You've used all of your token account slots. Close unused slots to add this token to your account or open a new account.",
   "explore": "Explore",
   "explorer": "Explorer",
@@ -138,7 +142,7 @@
   "open-account": "Open New Account",
   "operational": "Operational",
   "optional": "Optional",
-  "outstanding-balance": "Outstanding Balance",
+  "outstanding-borrow": "Outstanding Borrow",
   "overview": "Overview",
   "perp": "Perp",
   "perp-markets": "Perp Markets",
@@ -213,6 +217,8 @@
   "wallet-address": "Wallet Address",
   "wallet-balance": "Wallet Balance",
   "wallet-disconnected": "Disconnected from wallet",
+  "warning-deposits-almost-full": "{{token}} deposits are almost at capacity. {{remaining}} {{token}} available",
+  "warning-deposits-full": "{{token}} deposits are at capacity",
   "withdraw": "Withdraw",
   "withdraw-amount": "Withdraw Amount",
   "list-market-token": "List Market/Token",
@@ -220,6 +226,7 @@
   "yes": "Yes",
   "you": "You",
   "using-ledger": "Using Ledger",
-  "sign-to-in-app-notifications": "Sign to in app notifications"
+  "sign-to-in-app-notifications": "Sign to in app notifications",
+  "max-deposit": "Maximum Deposit"
  }
  

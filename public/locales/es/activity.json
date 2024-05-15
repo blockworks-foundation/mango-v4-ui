@@ -24,6 +24,7 @@
     "liquidations": "Liquidations",
     "liquidation-details": "Liquidation Details",
     "liquidator": "Liquidator",
+    "loan_origination_fee":" Loan Origination Fee",
     "net-price": "Net Price",
     "net-price-desc": "The trade price inclusive of fees",
     "no-activity": "No account activity",

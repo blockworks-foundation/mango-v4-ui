@@ -293,7 +293,7 @@ const AccountSettings = () => {
             className="mt-3 flex items-center"
             onClick={() => setShowAccountSizeModal(true)}
           >
-            <SquaresPlusIcon className="mr-1.5 h-4 w-4 flex-shrink-0" />
+            <SquaresPlusIcon className="mr-1.5 h-4 w-4 shrink-0" />
             <span className="whitespace-nowrap">
               {t('settings:increase-account-slots')}
             </span>
@@ -323,8 +323,8 @@ const AccountSettings = () => {
                   </div>
                   <ChevronDownIcon
                     className={`${
-                      open ? 'rotate-180' : 'rotate-360'
-                    } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                      open ? 'rotate-180' : 'rotate-0'
+                    } h-6 w-6 shrink-0 text-th-fgd-3`}
                   />
                 </div>
               </Disclosure.Button>
@@ -432,8 +432,8 @@ const AccountSettings = () => {
                   </div>
                   <ChevronDownIcon
                     className={`${
-                      open ? 'rotate-180' : 'rotate-360'
-                    } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                      open ? 'rotate-180' : 'rotate-0'
+                    } h-6 w-6 shrink-0 text-th-fgd-3`}
                   />
                 </div>
               </Disclosure.Button>
@@ -506,8 +506,8 @@ const AccountSettings = () => {
                   </div>
                   <ChevronDownIcon
                     className={`${
-                      open ? 'rotate-180' : 'rotate-360'
-                    } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                      open ? 'rotate-180' : 'rotate-0'
+                    } h-6 w-6 shrink-0 text-th-fgd-3`}
                   />
                 </div>
               </Disclosure.Button>
@@ -582,8 +582,8 @@ const AccountSettings = () => {
                   </div>
                   <ChevronDownIcon
                     className={`${
-                      open ? 'rotate-180' : 'rotate-360'
-                    } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                      open ? 'rotate-180' : 'rotate-0'
+                    } h-6 w-6 shrink-0 text-th-fgd-3`}
                   />
                 </div>
               </Disclosure.Button>
@@ -623,8 +623,8 @@ const AccountSettings = () => {
                   </p>
                   <ChevronDownIcon
                     className={`${
-                      open ? 'rotate-180' : 'rotate-360'
-                    } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                      open ? 'rotate-180' : 'rotate-0'
+                    } h-6 w-6 shrink-0 text-th-fgd-3`}
                   />
                 </div>
               </Disclosure.Button>

@@ -186,7 +186,7 @@ const ProposalCard = ({
               href={`https://dao.mango.markets/dao/MNGO/proposal/${proposal.pubkey.toBase58()}`}
             >
               <span className="mr-2">{proposal.account.name}</span>
-              <ArrowTopRightOnSquareIcon className="mb-1 inline-block h-4 w-4 flex-shrink-0" />
+              <ArrowTopRightOnSquareIcon className="mb-1 inline-block h-4 w-4 shrink-0" />
             </a>
           </h2>
           <p className="mb-2 break-all md:mb-0">{description}</p>

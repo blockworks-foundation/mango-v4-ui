@@ -11,7 +11,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import NumberFormat from 'react-number-format'
 import mangoStore from '@store/mangoStore'
 import {
-  ACCOUNT_ACTION_MODAL_INNER_HEIGHT,
+  BORROW_REPAY_MODAL_INNER_HEIGHT,
   INPUT_TOKEN_DEFAULT,
   TOKEN_REDUCE_ONLY_OPTIONS,
 } from './../utils/constants'
@@ -121,8 +121,10 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
     const group = mangoStore.getState().group
     const mangoAccount = mangoStore.getState().mangoAccount.current
     const actions = mangoStore.getState().actions
+
     if (!mangoAccount || !group || !publicKey) return
     setSubmitting(true)
+
     try {
       const { signature: tx, slot } = await client.tokenWithdraw(
         group,
@@ -192,7 +194,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
       <FadeInFadeOut show={!showTokenList}>
         <div
           className="flex flex-col justify-between"
-          style={{ height: ACCOUNT_ACTION_MODAL_INNER_HEIGHT }}
+          style={{ height: BORROW_REPAY_MODAL_INNER_HEIGHT }}
         >
           <div>
             {initHealth <= 0 ? (
@@ -343,7 +345,7 @@ function BorrowForm({ onSuccess, token }: BorrowFormProps) {
                 <Loading className="mr-2 h-5 w-5" />
               ) : showInsufficientBalance ? (
                 <div className="flex items-center">
-                  <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+                  <ExclamationCircleIcon className="mr-2 h-5 w-5 shrink-0" />
                   {t('swap:insufficient-collateral')}
                 </div>
               ) : isBorrow || !inputAmount ? (

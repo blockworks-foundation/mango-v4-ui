@@ -202,7 +202,7 @@ const MobileCategoryHeading = ({
   return (
     <div className="mb-2 flex items-center md:hidden">
       <IconButton
-        className="flex-shrink-0 text-th-fgd-3"
+        className="shrink-0 text-th-fgd-3"
         hideBg
         size="medium"
         onClick={() => setActiveTab(null)}

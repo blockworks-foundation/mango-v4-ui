@@ -93,7 +93,7 @@ const SellNftModal = ({ isOpen, onClose }: ModalProps) => {
                 >
                   <ImgWithLoader
                     alt={n.name}
-                    className="h-16 w-16 flex-shrink-0 rounded-full"
+                    className="h-16 w-16 shrink-0 rounded-full"
                     src={n.image}
                   />
                 </button>

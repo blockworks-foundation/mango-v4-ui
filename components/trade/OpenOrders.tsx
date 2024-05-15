@@ -46,7 +46,7 @@ import useFilledOrders from 'hooks/useFilledOrders'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import Link from 'next/link'
-import { ChangeEvent, useCallback, useState } from 'react'
+import { ChangeEvent, Fragment, useCallback, useState } from 'react'
 import { isMangoError } from 'types'
 import { notify } from 'utils/notifications'
 import { getDecimalCount } from 'utils/numbers'
@@ -59,6 +59,7 @@ import { BN } from '@project-serum/anchor'
 import { ExtendedMarketAccount, isOpenbookV2OpenOrder } from 'types/openbook'
 import { OpenOrdersAccount } from '@openbook-dex/openbook-v2'
 import BigNumber from 'bignumber.js'
+import NukeIcon from '@components/icons/NukeIcon'
 
 type TableData = {
   expiryTimestamp: number | undefined
@@ -103,6 +104,7 @@ const OpenOrders = ({
   const { t } = useTranslation(['common', 'trade'])
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
   const [cancelId, setCancelId] = useState<string>('')
+  const [cancelAllMarket, setCancelAllMarket] = useState<string | number>('')
   const [modifyOrderId, setModifyOrderId] = useState<string | undefined>(
     undefined,
   )
@@ -157,6 +159,45 @@ const OpenOrders = ({
       // } finally {
       //   setCancelId('')
       // }
+    }, [])
+  const handleCancelAllForSpotMarket = useCallback(
+    async (o: Order) => {
+      const client = mangoStore.getState().client
+      const group = mangoStore.getState().group
+      const mangoAccount = mangoStore.getState().mangoAccount.current
+      if (!group || !mangoAccount) return
+      const marketPk = findSerum3MarketPkInOpenOrders(o)
+      if (!marketPk) return
+      const market = group.getSerum3MarketByExternalMarket(
+        new PublicKey(marketPk),
+      )
+      setCancelAllMarket(market.name)
+      try {
+        const { signature: tx } = await client.serum3CancelAllOrders(
+          group,
+          mangoAccount,
+          market.serumMarketExternal,
+        )
+        const actions = mangoStore.getState().actions
+        await actions.fetchOpenOrders(true)
+        notify({
+          type: 'success',
+          title: 'Transaction successful',
+          txid: tx,
+        })
+      } catch (e) {
+        console.error('Error canceling', e)
+        if (isMangoError(e)) {
+          notify({
+            title: t('trade:cancel-order-error'),
+            description: e.message,
+            txid: e.txid,
+            type: 'error',
+          })
+        }
+      } finally {
+        setCancelAllMarket('')
+      }
     },
     [t],
   )
@@ -275,7 +316,7 @@ const OpenOrders = ({
         cancelEditOrderForm()
       }
     },
-    [t, modifiedOrderSize, modifiedOrderPrice],
+    [modifiedOrderSize, modifiedOrderPrice],
   )
 
   const handleCancelPerpOrder = useCallback(
@@ -316,10 +357,45 @@ const OpenOrders = ({
     [t],
   )
 
-  const showEditOrderForm = (
-    order: Order | PerpOrder | OpenOrdersAccount,
-    tickSize: number,
-  ) => {
+  const handleCancelAllPerpOrders = useCallback(
+    async (o: PerpOrder) => {
+      const client = mangoStore.getState().client
+      const group = mangoStore.getState().group
+      const mangoAccount = mangoStore.getState().mangoAccount.current
+      const actions = mangoStore.getState().actions
+      if (!group || !mangoAccount) return
+      setCancelAllMarket(o.perpMarketIndex)
+      try {
+        const { signature: tx } = await client.perpCancelAllOrders(
+          group,
+          mangoAccount,
+          o.perpMarketIndex,
+          100,
+        )
+        await actions.fetchOpenOrders(true)
+        notify({
+          type: 'success',
+          title: 'Transaction successful',
+          txid: tx,
+        })
+      } catch (e) {
+        console.error('Error canceling', e)
+        if (isMangoError(e)) {
+          notify({
+            title: t('trade:cancel-order-error'),
+            description: e.message,
+            txid: e.txid,
+            type: 'error',
+          })
+        }
+      } finally {
+        setCancelAllMarket('')
+      }
+    },
+    [t],
+  )
+    
+  const showEditOrderForm = (order: Order | PerpOrder | OpenOrdersAccount, tickSize: number) => {
     if (isOpenbookV2OpenOrder(order)) return
     setModifyOrderId(order.orderId.toString())
     setModifiedOrderSize(order.size.toString())
@@ -454,13 +530,20 @@ const OpenOrders = ({
       })
 
     return formatted
-  }, [filterForCurrentMarket, openOrders])
+  }, [filledOrders, filterForCurrentMarket, openOrders, selectedMarket])
 
   const {
     items: tableData,
     requestSort,
     sortConfig,
   } = useSortableData(formattedTableData())
+
+  const ordersByMarket: { [key: string]: number } = {}
+  // count the number of orders for each market
+  tableData.forEach((data) => {
+    const { market } = data
+    ordersByMarket[market.name] = (ordersByMarket[market.name] || 0) + 1
+  })
 
   return mangoAccountAddress && tableData.length ? (
     showTableView ? (
@@ -516,12 +599,12 @@ const OpenOrders = ({
               </div>
             </Th>
             {!isUnownedAccount ? (
-              <Th className="w-[14.28%] text-right" />
+              <Th className="w-[16.67%] text-right" />
             ) : null}
           </TrHead>
         </thead>
         <tbody>
-          {tableData.map((data) => {
+          {tableData.map((data, index) => {
             const {
               expiryTimestamp,
               filledQuantity,
@@ -535,23 +618,33 @@ const OpenOrders = ({
               tickSize,
               value,
             } = data
+
+            const isFirstOrderForMarket =
+              ordersByMarket[market.name] > 1 &&
+              index ===
+                tableData.findIndex((item) => item.market.name === market.name)
+
+            const loadingCancel =
+              cancelAllMarket === market.name ||
+              (order instanceof PerpOrder &&
+                cancelAllMarket === order.perpMarketIndex)
             return (
               <TrBody
                 key={`${side}${size}${price}${orderId.toString()}`}
                 className="my-1 p-2"
               >
-                <Td className="w-[14.28%]">
+                <Td className="w-[16.67%]">
                   <TableMarketName market={market} side={side} />
                 </Td>
                 {modifyOrderId !== orderId.toString() ? (
                   <>
-                    <Td className="w-[14.28%] text-right font-mono">
+                    <Td className="w-[16.67%] text-right font-mono">
                       <FormatNumericValue
                         value={size}
                         decimals={getDecimalCount(minOrderSize)}
                       />
                     </Td>
-                    <Td className="w-[14.28%] whitespace-nowrap text-right font-mono">
+                    <Td className="w-[16.67%] whitespace-nowrap text-right font-mono">
                       <FormatNumericValue
                         value={price}
                         decimals={getDecimalCount(tickSize)}
@@ -560,9 +653,9 @@ const OpenOrders = ({
                   </>
                 ) : (
                   <>
-                    <Td className="w-[14.28%]">
+                    <Td className="w-[16.67%]">
                       <input
-                        className="h-8 w-full rounded-l-none rounded-r-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono text-sm hover:border-th-fgd-3 focus:border-th-fgd-3 focus:outline-none"
+                        className="h-8 w-full rounded-none border-x-0 border-b-2 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono text-sm hover:border-th-fgd-3 focus:border-th-fgd-3 focus:outline-none"
                         type="text"
                         value={modifiedOrderSize}
                         onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -570,10 +663,10 @@ const OpenOrders = ({
                         }
                       />
                     </Td>
-                    <Td className="w-[14.28%]">
+                    <Td className="w-[16.67%]">
                       <input
                         autoFocus
-                        className="h-8 w-full rounded-l-none rounded-r-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono text-sm hover:border-th-fgd-3 focus:border-th-fgd-3 focus:outline-none"
+                        className="h-8 w-full rounded-none border-x-0 border-b-2 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono text-sm hover:border-th-fgd-3 focus:border-th-fgd-3 focus:outline-none"
                         type="text"
                         value={modifiedOrderPrice}
                         onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -583,9 +676,9 @@ const OpenOrders = ({
                     </Td>
                   </>
                 )}
-                <Td className="w-[14.28%] text-right font-mono">
+                <Td className="w-[16.67%] text-right font-mono">
                   {fetchingFilledOrders ? (
-                    <div className="items flex justify-end">
+                    <div className="flex justify-end">
                       <SheenLoader className="flex justify-end">
                         <div className="h-4 w-8 bg-th-bkg-2" />
                       </SheenLoader>
@@ -597,7 +690,7 @@ const OpenOrders = ({
                     />
                   )}
                 </Td>
-                <Td className="w-[14.28%] text-right font-mono">
+                <Td className="w-[16.67%] text-right font-mono">
                   <FormatNumericValue value={value} isUsd />
                   {expiryTimestamp ? (
                     <div className="h-min text-xxs leading-tight text-th-fgd-4">{`Expires ${new Date(
@@ -606,58 +699,87 @@ const OpenOrders = ({
                   ) : null}
                 </Td>
                 {!isUnownedAccount ? (
-                  <Td className="w-[14.28%]">
-                    <div className="flex justify-end space-x-2">
-                      {modifyOrderId !== orderId.toString() ? (
-                        <>
-                          <IconButton
-                            onClick={() => showEditOrderForm(order, tickSize)}
-                            size="small"
-                          >
-                            <PencilIcon className="h-4 w-4" />
-                          </IconButton>
-                          <Tooltip content={t('cancel')}>
-                            <IconButton
-                              disabled={cancelId === orderId.toString()}
-                              onClick={() =>
-                                order instanceof PerpOrder
-                                  ? handleCancelPerpOrder(order)
-                                  : 'orderId' in order
-                                  ? handleCancelSerumOrder(order)
-                                  : handleCancelOpenbookV2Order(order)
-                              }
-                              size="small"
-                            >
-                              {cancelId === orderId.toString() ? (
-                                <Loading className="h-4 w-4" />
+                  <>
+                    <Td className="w-[16.67%]">
+                      <div className="flex w-full justify-end">
+                        <div className="flex justify-start space-x-2">
+                          {modifyOrderId !== orderId.toString() ? (
+                            <>
+                              <IconButton
+                                onClick={() =>
+                                  showEditOrderForm(order, tickSize)
+                                }
+                                size="small"
+                              >
+                                <PencilIcon className="h-4 w-4" />
+                              </IconButton>
+                              <Tooltip content={t('cancel')}>
+                                <IconButton
+                                  disabled={cancelId === orderId.toString()}
+                                  onClick={() =>
+                                    order instanceof PerpOrder
+                                      ? handleCancelPerpOrder(order)
+                                      : handleCancelSerumOrder(order)
+                                  }
+                                  size="small"
+                                >
+                                  {cancelId === orderId.toString() ||
+                                  loadingCancel ? (
+                                    <Loading className="h-4 w-4" />
+                                  ) : (
+                                    <TrashIcon className="h-4 w-4" />
+                                  )}
+                                </IconButton>
+                              </Tooltip>
+                              {isFirstOrderForMarket ? (
+                                <Tooltip
+                                  content={t('trade:cancel-all-orders', {
+                                    market: market.name,
+                                  })}
+                                >
+                                  <IconButton
+                                    disabled={loadingCancel}
+                                    onClick={() =>
+                                      order instanceof PerpOrder
+                                        ? handleCancelPerpOrder(order)
+                                        : 'orderId' in order
+                                        ? handleCancelSerumOrder(order)
+                                        : handleCancelOpenbookV2Order(order)
+                                    }
+                                    size="small"
+                                  >
+                                    <NukeIcon className="h-4 w-4" />
+                                  </IconButton>
+                                </Tooltip>
                               ) : (
-                                <TrashIcon className="h-4 w-4" />
+                                <div className="h-8 w-8" />
                               )}
-                            </IconButton>
-                          </Tooltip>
-                        </>
-                      ) : (
-                        <>
-                          <IconButton
-                            onClick={() => modifyOrder(order)}
-                            size="small"
-                          >
-                            {loadingModifyOrder ? (
-                              <Loading className="h-4 w-4" />
-                            ) : (
-                              <CheckIcon className="h-4 w-4" />
-                            )}
-                          </IconButton>
-                          <IconButton
-                            onClick={cancelEditOrderForm}
-                            size="small"
-                          >
-                            <XMarkIcon className="h-4 w-4" />
-                          </IconButton>
-                        </>
-                      )}
-                    </div>
-                  </Td>
+                            </>
+                          ) : (
+                            <>
+                              <IconButton
+                                onClick={() => modifyOrder(order)}
+                                size="small"
+                              >
+                                {loadingModifyOrder ? (
+                                  <Loading className="h-4 w-4" />
+                                ) : (
+                                  <CheckIcon className="h-4 w-4" />
+                                )}
+                              </IconButton>
+                              <IconButton
+                                onClick={cancelEditOrderForm}
+                                size="small"
+                              >
+                                <XMarkIcon className="h-4 w-4" />
+                              </IconButton>
+                              <div className="h-8 w-8" />
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </Td>
+                  </>
                 ) : null}
               </TrBody>
             )
@@ -666,7 +788,7 @@ const OpenOrders = ({
       </Table>
     ) : (
       <div>
-        {tableData.map((data) => {
+        {tableData.map((data, index) => {
           const {
             expiryTimestamp,
             market,
@@ -690,6 +812,14 @@ const OpenOrders = ({
               externalMarket.quoteTokenIndex,
             )
           }
+          const isFirstOrderForMarket =
+            ordersByMarket[market.name] > 1 &&
+            index ===
+              tableData.findIndex((item) => item.market.name === market.name)
+          const loadingCancel =
+            cancelAllMarket === market.name ||
+            (order instanceof PerpOrder &&
+              cancelAllMarket === order.perpMarketIndex)
           return (
             <div
               className="flex items-center justify-between border-b border-th-bkg-3 p-4"
@@ -763,7 +893,7 @@ const OpenOrders = ({
                       <div>
                         <p className="text-xs">{t('trade:size')}</p>
                         <Input
-                          className="w-full rounded-l-none rounded-r-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-fgd-3 focus:outline-none"
+                          className="w-full rounded-none border-x-0 border-b-2 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-fgd-3 focus:outline-none"
                           type="text"
                           value={modifiedOrderSize}
                           onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -775,7 +905,7 @@ const OpenOrders = ({
                         <p className="text-xs">{t('price')}</p>
                         <Input
                           autoFocus
-                          className="w-full rounded-l-none rounded-r-none border-b-2 border-l-0 border-r-0 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-fgd-3 focus:outline-none"
+                          className="w-full rounded-none border-x-0 border-b-2 border-t-0 border-th-bkg-4 bg-transparent px-0 text-right font-mono hover:border-th-fgd-3 focus:border-th-fgd-3 focus:outline-none"
                           type="text"
                           value={modifiedOrderPrice}
                           onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -809,12 +939,31 @@ const OpenOrders = ({
                           }
                           size="small"
                         >
-                          {cancelId === orderId.toString() ? (
+                          {cancelId === orderId.toString() || loadingCancel ? (
                             <Loading className="h-4 w-4" />
                           ) : (
                             <TrashIcon className="h-4 w-4" />
                           )}
                         </IconButton>
+                        {isFirstOrderForMarket ? (
+                          <Tooltip
+                            content={t('trade:cancel-all-orders', {
+                              market: market.name,
+                            })}
+                          >
+                            <IconButton
+                              disabled={loadingCancel}
+                              onClick={() =>
+                                order instanceof PerpOrder
+                                  ? handleCancelAllPerpOrders(order)
+                                  : handleCancelAllForSpotMarket(order)
+                              }
+                              size="small"
+                            >
+                              <NukeIcon className="h-4 w-4" />
+                            </IconButton>
+                          </Tooltip>
+                        ) : null}
                       </>
                     ) : (
                       <>

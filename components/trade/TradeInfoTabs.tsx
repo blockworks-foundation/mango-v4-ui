@@ -12,6 +12,10 @@ import TradeHistory from './TradeHistory'
 import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
 import ManualRefresh from '@components/shared/ManualRefresh'
 import AccountOrders from '@components/account/AccountOrders'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import { FILTER_HISTORY_FOR_MARKET_KEY } from 'utils/constants'
+import Switch from '@components/forms/Switch'
+import { useTranslation } from 'react-i18next'
 
 const TradeInfoTabs = () => {
   const [selectedTab, setSelectedTab] = useState('balances')
@@ -19,7 +23,7 @@ const TradeInfoTabs = () => {
   const selectedMarketName = mangoStore((s) => s.selectedMarket.current?.name)
   const unsettledSpotBalances = useUnsettledSpotBalances()
   const unsettledPerpPositions = useUnsettledPerpPositions()
-  const openPerpPositions = useOpenPerpPositions()
+  const { openPerpPositions } = useOpenPerpPositions()
   const { isMobile, isTablet, width } = useViewport()
   const fillTabWidth = width ? width < breakpoints['2xl'] : false
 
@@ -57,8 +61,8 @@ const TradeInfoTabs = () => {
   ])
 
   return (
-    <div className="hide-scroll h-full overflow-y-scroll">
-      <div className="hide-scroll flex items-center overflow-x-auto border-b border-th-bkg-3">
+    <div className="h-full">
+      <div className="hide-scroll flex w-full items-center overflow-x-auto border-b border-th-bkg-3 lg:fixed lg:top-0 lg:z-10">
         <div className="w-full md:w-auto md:border-r md:border-th-bkg-3 lg:w-full">
           <TabButtons
             activeValue={selectedTab}
@@ -74,7 +78,9 @@ const TradeInfoTabs = () => {
           size={isTablet ? 'large' : 'small'}
         />
       </div>
-      <TabContent selectedTab={selectedTab} />
+      <div className="thin-scroll overflow-y-auto md:h-[calc(100%-48px)] lg:relative lg:top-12">
+        <TabContent selectedTab={selectedTab} />
+      </div>
     </div>
   )
 }
@@ -82,24 +88,38 @@ const TradeInfoTabs = () => {
 export default TradeInfoTabs
 
 const TabContent = ({ selectedTab }: { selectedTab: string }) => {
-  const unsettledSpotBalances = useUnsettledSpotBalances()
-  const unsettledPerpPositions = useUnsettledPerpPositions()
+  const { t } = useTranslation('trade')
+  const [filterHistoryForCurrentMarket, setFilterHistoryForCurrentMarket] =
+    useLocalStorageState(FILTER_HISTORY_FOR_MARKET_KEY, false)
   switch (selectedTab) {
     case 'balances':
       return <SwapTradeBalances />
     case 'trade:orders':
       return <AccountOrders />
     case 'trade:unsettled':
-      return (
-        <UnsettledTrades
-          unsettledSpotBalances={unsettledSpotBalances}
-          unsettledPerpPositions={unsettledPerpPositions}
-        />
-      )
+      return <UnsettledTrades />
     case 'trade:positions':
       return <PerpPositions />
     case 'trade-history':
-      return <TradeHistory />
+      return (
+        <>
+          <div className="border-b border-th-bkg-3">
+            <div className="flex justify-end px-4 py-3 md:px-6">
+              <Switch
+                checked={filterHistoryForCurrentMarket}
+                onChange={() =>
+                  setFilterHistoryForCurrentMarket(
+                    !filterHistoryForCurrentMarket,
+                  )
+                }
+              >
+                {t('filter-current-market')}
+              </Switch>
+            </div>
+          </div>
+          <TradeHistory filterForMarket={filterHistoryForCurrentMarket} />
+        </>
+      )
     default:
       return <SwapTradeBalances />
   }

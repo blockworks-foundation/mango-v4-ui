@@ -40,7 +40,7 @@ const MangoDateRangePicker = ({
             />
           </div>
           <div className="flex h-12 items-center justify-center">
-            <ChevronRightIcon className="mx-1 h-5 w-5 flex-shrink-0 text-th-fgd-3" />
+            <ChevronRightIcon className="mx-1 h-5 w-5 shrink-0 text-th-fgd-3" />
           </div>
           <div className="w-full">
             <Label text={t('date-to')} />

@@ -59,6 +59,7 @@ type IGovernanceStore = {
   ) => void
   resetVoter: () => void
   updateProposals: (proposalPk: PublicKey) => void
+  refetchProposals: () => Promise<Record<string, ProgramAccount<Proposal>>>
   fetchDelegatedAccounts: (
     wallet: PublicKey,
     connectionContext: ConnectionContext,
@@ -220,6 +221,24 @@ const GovernanceStore = create<IGovernanceStore>((set, get) => ({
       state.proposals = proposalsObj
       state.loadingRealm = false
     })
+  },
+  refetchProposals: async () => {
+    const set = get().set
+    const connectionContext = get().connectionContext!
+    set((state) => {
+      state.loadingProposals = true
+    })
+    const proposals = await getAllProposals(
+      connectionContext.current,
+      MANGO_GOVERNANCE_PROGRAM,
+      MANGO_REALM_PK,
+    )
+    const proposalsObj = accountsToPubkeyMap(proposals.flatMap((p) => p))
+    set((state) => {
+      state.loadingProposals = false
+      state.proposals = proposalsObj
+    })
+    return accountsToPubkeyMap(proposals.flatMap((p) => p))
   },
   updateProposals: async (proposalPk: PublicKey) => {
     const state = get()

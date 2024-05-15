@@ -1,4 +1,3 @@
-import { HealthType } from '@blockworks-foundation/mango-v4'
 import {
   ArrowUpTrayIcon,
   ExclamationCircleIcon,
@@ -11,7 +10,7 @@ import NumberFormat from 'react-number-format'
 
 import mangoStore from '@store/mangoStore'
 import {
-  ACCOUNT_ACTION_MODAL_INNER_HEIGHT,
+  DEPOSIT_WITHDRAW_MODAL_INNER_HEIGHT,
   INPUT_TOKEN_DEFAULT,
 } from './../utils/constants'
 import { notify } from './../utils/notifications'
@@ -19,7 +18,6 @@ import ActionTokenList from './account/ActionTokenList'
 import ButtonGroup from './forms/ButtonGroup'
 import Label from './forms/Label'
 import Button from './shared/Button'
-import InlineNotification from './shared/InlineNotification'
 import Loading from './shared/Loading'
 import { EnterBottomExitBottom, FadeInFadeOut } from './shared/Transitions'
 import { withValueLimit } from './swap/MarketSwapForm'
@@ -39,6 +37,8 @@ import { ACCOUNT_ACTIONS_NUMBER_FORMAT_CLASSES, BackButton } from './BorrowForm'
 import TokenLogo from './shared/TokenLogo'
 import SecondaryConnectButton from './shared/SecondaryConnectButton'
 import { handleInputChange } from 'utils/account'
+import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
+import { HealthType } from '@blockworks-foundation/mango-v4'
 
 interface WithdrawFormProps {
   onSuccess: () => void
@@ -58,6 +58,7 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
   const { mangoAccount } = useMangoAccount()
   const { connected } = useWallet()
   const banks = useBanksWithBalances('maxWithdraw')
+  const unsettledPerpPositions = useUnsettledPerpPositions()
 
   const bank = useMemo(() => {
     const group = mangoStore.getState().group
@@ -157,15 +158,36 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
     setShowTokenList(false)
   }, [])
 
-  const initHealth = useMemo(() => {
-    return group && mangoAccount
-      ? mangoAccount.getHealthRatioUi(group, HealthType.init)
-      : 100
-  }, [mangoAccount])
-
   const showInsufficientBalance = inputAmount
     ? tokenMax.lt(new Decimal(inputAmount))
     : false
+
+  const maintProjectedHealth = useMemo(() => {
+    const uiAmount = Number(inputAmount)
+    const mangoAccount = mangoStore.getState().mangoAccount.current
+    const group = mangoStore.getState().group
+    if (!group || !mangoAccount || !bank) return 0
+
+    const mintPk = bank.mint
+    const uiTokenAmount = uiAmount * -1
+    const projectedHealth =
+      mangoAccount.simHealthRatioWithTokenPositionUiChanges(
+        group,
+        [{ mintPk, uiTokenAmount }],
+        HealthType.maint,
+      )
+
+    return projectedHealth! > 100
+      ? 100
+      : projectedHealth! < 0
+      ? 0
+      : Math.trunc(projectedHealth!)
+  }, [tokenMax, bank, inputAmount, sizePercentage])
+
+  const showMaxWithdrawUnSettledPerpsExist =
+    unsettledPerpPositions &&
+    unsettledPerpPositions.length > 0 &&
+    maintProjectedHealth == 0
 
   return (
     <>
@@ -194,17 +216,9 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
       <FadeInFadeOut show={!showTokenList}>
         <div
           className="flex flex-col justify-between"
-          style={{ height: ACCOUNT_ACTION_MODAL_INNER_HEIGHT }}
+          style={{ height: DEPOSIT_WITHDRAW_MODAL_INNER_HEIGHT }}
         >
           <div>
-            {initHealth <= 0 ? (
-              <div className="mb-4">
-                <InlineNotification
-                  type="error"
-                  desc="You have no available collateral to withdraw."
-                />
-              </div>
-            ) : null}
             {bank ? <TokenVaultWarnings bank={bank} type="withdraw" /> : null}
             <div className="grid grid-cols-2">
               <div className="col-span-2 flex justify-between">
@@ -284,17 +298,24 @@ function WithdrawForm({ onSuccess, token }: WithdrawFormProps) {
               size="large"
               disabled={
                 connected &&
-                (!inputAmount || showInsufficientBalance || initHealth <= 0)
+                (!inputAmount ||
+                  showInsufficientBalance ||
+                  showMaxWithdrawUnSettledPerpsExist)
               }
             >
               {submitting ? (
                 <Loading className="mr-2 h-5 w-5" />
               ) : showInsufficientBalance ? (
                 <div className="flex items-center">
-                  <ExclamationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0" />
+                  <ExclamationCircleIcon className="mr-2 h-5 w-5 shrink-0" />
                   {t('swap:insufficient-balance', {
                     symbol: selectedToken,
                   })}
+                </div>
+              ) : showMaxWithdrawUnSettledPerpsExist ? (
+                <div className="flex items-center">
+                  <ExclamationCircleIcon className="mr-2 h-5 w-5 shrink-0" />
+                  {t('trade:unsettled-perps')}
                 </div>
               ) : (
                 <div className="flex items-center">

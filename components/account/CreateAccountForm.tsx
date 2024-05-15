@@ -1,7 +1,7 @@
 import { ChangeEvent, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'next-i18next'
 import mangoStore from '@store/mangoStore'
-import { createSolanaMessage, notify } from '../../utils/notifications'
+import { createLedgerMessage, notify } from '../../utils/notifications'
 import Button, { IconButton, LinkButton } from '../shared/Button'
 import BounceLoader from '../shared/BounceLoader'
 import Input from '../forms/Input'
@@ -88,11 +88,11 @@ const CreateAccountForm = ({
       )
       if (tx) {
         if (signToNotifications) {
-          createSolanaMessage(walletContext, setCookie)
+          createLedgerMessage(walletContext, setCookie, connection)
         }
         const pk = walletContext.wallet.adapter.publicKey
 
-        await waitForSlot(connection, slot)
+        await waitForSlot(connection, slot!)
         const mangoAccounts = await client.getMangoAccountsForOwner(group, pk!)
         const reloadedMangoAccounts = await Promise.all(
           mangoAccounts.map((ma) => ma.reloadSerum3OpenOrders(client)),
@@ -101,14 +101,12 @@ const CreateAccountForm = ({
           (acc) => acc.accountNum === newAccountNum,
         )
         const filteredMangoAccounts = reloadedMangoAccounts?.length
-          ? reloadedMangoAccounts.filter(
-              (acc) => !acc.name.includes('Leverage Stake'),
-            )
+          ? reloadedMangoAccounts
           : []
         if (newAccount) {
           set((s) => {
             s.mangoAccount.current = newAccount
-            s.mangoAccount.lastSlot = slot
+            s.mangoAccount.lastSlot = slot!
             s.mangoAccounts = filteredMangoAccounts
           })
         }
@@ -138,7 +136,16 @@ const CreateAccountForm = ({
         type: 'error',
       })
     }
-  }, [signToNotifications, slots])
+  }, [
+    customClose,
+    name,
+    setCookie,
+    signToNotifications,
+    slots,
+    t,
+    telemetry,
+    walletContext,
+  ])
 
   return loading ? (
     <div className="flex h-full flex-1 flex-col items-center justify-center">

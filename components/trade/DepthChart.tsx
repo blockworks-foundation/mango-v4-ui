@@ -316,11 +316,11 @@ const DepthChart = () => {
         </div>
       </div>
       <div
-        className={`${
+        className={
           increaseHeight ? 'h-[570px]' : isTablet ? 'h-[538px]' : 'h-[482px]'
-        }`}
+        }
       >
-        <ResponsiveContainer width="100" height="100%">
+        <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={chartData}
             layout="vertical"

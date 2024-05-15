@@ -232,7 +232,7 @@ const SwapHistoryTable = () => {
                   <Td>
                     <div className="flex items-center">
                       {inBank ? (
-                        <div className="mr-2.5 flex flex-shrink-0 items-center">
+                        <div className="mr-2.5 flex shrink-0 items-center">
                           <TokenLogo bank={inBank} />
                         </div>
                       ) : null}
@@ -250,7 +250,7 @@ const SwapHistoryTable = () => {
                   <Td>
                     <div className="flex items-center">
                       {outBank ? (
-                        <div className="mr-2.5 flex flex-shrink-0 items-center">
+                        <div className="mr-2.5 flex shrink-0 items-center">
                           <TokenLogo bank={outBank} />
                         </div>
                       ) : null}
@@ -379,8 +379,8 @@ const SwapHistoryTable = () => {
                           </div>
                           <ChevronDownIcon
                             className={`${
-                              open ? 'rotate-180' : 'rotate-360'
-                            } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                              open ? 'rotate-180' : 'rotate-0'
+                            } h-6 w-6 shrink-0 text-th-fgd-3`}
                           />
                         </div>
                       </div>

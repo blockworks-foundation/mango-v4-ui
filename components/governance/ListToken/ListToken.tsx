@@ -1,19 +1,25 @@
 import Input from '@components/forms/Input'
 import Label from '@components/forms/Label'
 import Button, { IconButton } from '@components/shared/Button'
-import { ChangeEvent, useCallback, useMemo, useState } from 'react'
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import mangoStore, { CLUSTER } from '@store/mangoStore'
 import { Token } from 'types/jupiter'
 import { handleGetRoutes } from '@components/swap/useQuoteRoutes'
+import { JUPITER_PRICE_API_MAINNET, USDC_MINT } from 'utils/constants'
 import {
-  JUPITER_PRICE_API_MAINNET,
-  JUPITER_REFERRAL_PK,
-  USDC_MINT,
-} from 'utils/constants'
-import { PublicKey, SYSVAR_RENT_PUBKEY, Transaction } from '@solana/web3.js'
+  Connection,
+  PublicKey,
+  SYSVAR_RENT_PUBKEY,
+  Transaction,
+} from '@solana/web3.js'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { OPENBOOK_PROGRAM_ID, toNative } from '@blockworks-foundation/mango-v4'
 import {
+  OPENBOOK_PROGRAM_ID,
+  toNative,
+  toUiDecimals,
+} from '@blockworks-foundation/mango-v4'
+import {
+  MANGO_DAO_FAST_LISTING_GOVERNANCE,
   MANGO_DAO_FAST_LISTING_WALLET,
   MANGO_DAO_WALLET,
   MANGO_DAO_WALLET_GOVERNANCE,
@@ -49,10 +55,50 @@ import {
   getPythPresets,
   LISTING_PRESET,
   getPresetWithAdjustedDepositLimit,
+  LISTING_PRESETS_KEY,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 import Checkbox from '@components/forms/Checkbox'
-import { ReferralProvider } from '@jup-ag/referral-sdk'
 import { BN } from '@coral-xyz/anchor'
+import Select from '@components/forms/Select'
+import { WRAPPED_SOL_MINT } from '@metaplex-foundation/js'
+import { struct, u8, publicKey, u64, option } from '@raydium-io/raydium-sdk'
+
+const feeFields = [u64('denominator'), u64('numerator')]
+const StakePoolLayout = struct([
+  u8('accountType'),
+  publicKey('manager'),
+  publicKey('staker'),
+  publicKey('stakeDepositAuthority'),
+  u8('stakeWithdrawBumpSeed'),
+  publicKey('validatorList'),
+  publicKey('reserveStake'),
+  publicKey('poolMint'),
+  publicKey('managerFeeAccount'),
+  publicKey('tokenProgramId'),
+  u64('totalLamports'),
+  u64('poolTokenSupply'),
+  u64('lastUpdateEpoch'),
+  struct(
+    [u64('unixTimestamp'), u64('epoch'), publicKey('custodian')],
+    'lockup',
+  ),
+  struct(feeFields, 'epochFee'),
+  option(struct(feeFields), 'nextEpochFee'),
+  option(publicKey(), 'preferredDepositValidatorVoteAddress'),
+  option(publicKey(), 'preferredWithdrawValidatorVoteAddress'),
+  struct(feeFields, 'stakeDepositFee'),
+  struct(feeFields, 'stakeWithdrawalFee'),
+  option(struct(feeFields), 'nextStakeWithdrawalFee'),
+  u8('stakeReferralFee'),
+  option(publicKey(), 'solDepositAuthority'),
+  struct(feeFields, 'solDepositFee'),
+  u8('solReferralFee'),
+  option(publicKey(), 'solWithdrawAuthority'),
+  struct(feeFields, 'solWithdrawalFee'),
+  option(struct(feeFields), 'nextSolWithdrawalFee'),
+  u64('lastEpochPoolTokenSupply'),
+  u64('lastEpochTotalLamports'),
+])
 
 type FormErrors = Partial<Record<keyof TokenListForm, string>>
 
@@ -70,6 +116,7 @@ type TokenListForm = {
   proposalTitle: string
   proposalDescription: string
   listForSwapOnly: boolean
+  fastListing: boolean
 }
 
 const defaultTokenListFormValues: TokenListForm = {
@@ -86,6 +133,7 @@ const defaultTokenListFormValues: TokenListForm = {
   proposalTitle: '',
   proposalDescription: '',
   listForSwapOnly: false,
+  fastListing: false,
 }
 
 const TWENTY_K_USDC_BASE = '20000000000'
@@ -104,6 +152,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const fee = mangoStore((s) => s.priorityFee)
   const loadingVoter = GovernanceStore((s) => s.loadingVoter)
   const proposals = GovernanceStore((s) => s.proposals)
+  const refetchProposals = GovernanceStore((s) => s.refetchProposals)
   const getCurrentVotingPower = GovernanceStore((s) => s.getCurrentVotingPower)
   const connectionContext = GovernanceStore((s) => s.connectionContext)
   const { t } = useTranslation(['governance'])
@@ -111,6 +160,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const [advForm, setAdvForm] = useState<TokenListForm>({
     ...defaultTokenListFormValues,
   })
+
   const [loadingListingParams, setLoadingListingParams] = useState(false)
   const [formErrors, setFormErrors] = useState<FormErrors>({})
   const [priceImpact, setPriceImpact] = useState<number>(0)
@@ -125,6 +175,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const [orcaPoolAddress, setOrcaPoolAddress] = useState('')
   const [raydiumPoolAddress, setRaydiumPoolAddress] = useState('')
   const [oracleModalOpen, setOracleModalOpen] = useState(false)
+  const [isSolPool, setIsSolPool] = useState(false)
   const [isPyth, setIsPyth] = useState(false)
   const presets = useMemo(() => {
     return !isPyth
@@ -133,18 +184,53 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   }, [isPyth])
   const [proposedPresetTargetAmount, setProposedProposedTargetAmount] =
     useState(0)
+  const [preset, setPreset] = useState<LISTING_PRESET>(presets.UNTRUSTED)
+  const [isLST, setIsLST] = useState(false)
+  const [lstStakePoolAddress, setLstStakePoolAddress] = useState('')
+  const QUOTE_MINT = isLST ? WRAPPED_SOL_MINT.toBase58() : USDC_MINT
 
-  const preset: LISTING_PRESET =
-    Object.values(presets).find(
-      (x) => x.preset_target_amount === proposedPresetTargetAmount,
-    ) || presets.UNTRUSTED
   const proposedPreset = getPresetWithAdjustedDepositLimit(
     preset,
     baseTokenPrice,
     currentTokenInfo?.decimals || 0,
   )
 
-  const quoteBank = group?.getFirstBankByMint(new PublicKey(USDC_MINT))
+  const suggestedPreset =
+    Object.values(presets).find(
+      (x) => x.preset_target_amount <= proposedPresetTargetAmount,
+    ) || presets.UNTRUSTED
+
+  useEffect(() => {
+    if (advForm.fastListing) {
+      setAdvForm((prevState) => ({
+        ...prevState,
+        fastListing: false,
+      }))
+    }
+  }, [preset])
+
+  useEffect(() => {
+    const handleOracleUpdate = async () => {
+      if (currentTokenInfo) {
+        setLoadingListingParams(true)
+        const { oraclePk, isPyth } = await getOracle({
+          baseSymbol: currentTokenInfo.symbol,
+          quoteSymbol: 'usd',
+          connection,
+          targetAmount: proposedPreset.preset_target_amount,
+        })
+        setAdvForm((prevState) => ({
+          ...prevState,
+          oraclePk: oraclePk || '',
+        }))
+        setLoadingListingParams(false)
+        setIsPyth(isPyth)
+      }
+    }
+    handleOracleUpdate()
+  }, [proposedPreset.preset_name])
+
+  const quoteBank = group?.getFirstBankByMint(new PublicKey(QUOTE_MINT))
   const minVoterWeight = useMemo(
     () =>
       governances
@@ -186,7 +272,12 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   }
 
   const getListingParams = useCallback(
-    async (tokenInfo: Token, targetAmount: number) => {
+    async (
+      tokenInfo: Token,
+      quoteMint: string,
+      targetAmount: number,
+      isLST: boolean,
+    ) => {
       setLoadingListingParams(true)
       const [{ oraclePk, isPyth }, marketPk] = await Promise.all([
         getOracle({
@@ -197,11 +288,12 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         }),
         getBestMarket({
           baseMint: mint,
-          quoteMint: USDC_MINT,
+          quoteMint: quoteMint,
           cluster: CLUSTER,
           connection,
         }),
       ])
+
       const index = proposals ? Object.values(proposals).length : 0
 
       const bankNum = 0
@@ -222,20 +314,21 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         name: tokenInfo.symbol,
         tokenIndex: index,
         openBookProgram: OPENBOOK_PROGRAM_ID[CLUSTER].toBase58(),
-        marketName: `${tokenInfo.symbol}/USDC`,
+        marketName: `${tokenInfo.symbol}/${isLST ? 'SOL' : 'USDC'}`,
         baseBankPk: baseBank.toBase58(),
         quoteBankPk: group!
-          .getFirstBankByMint(new PublicKey(USDC_MINT))
+          .getFirstBankByMint(new PublicKey(quoteMint))
           .publicKey.toBase58(),
         marketIndex: index,
         openBookMarketExternalPk: marketPk?.toBase58() || '',
         proposalTitle: `List ${tokenInfo.symbol} on Mango-v4`,
         listForSwapOnly: false,
+        fastListing: false,
       })
       setLoadingListingParams(false)
       setIsPyth(isPyth)
     },
-    [advForm, client.programId, connection, group, mint, proposals],
+    [connection, mint, proposals, group, client.programId, advForm, quoteBank],
   )
 
   const handleGetRoutesWithFixedArgs = useCallback(
@@ -246,7 +339,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       onlyDirect = false,
     ) => {
       const SLIPPAGE_BPS = 50
-      const FEE = 0
       const walletForCheck = wallet.publicKey
         ? wallet.publicKey?.toBase58()
         : emptyPk
@@ -257,7 +349,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         toNative(amount, 6).toNumber(),
         SLIPPAGE_BPS,
         mode,
-        FEE,
         walletForCheck,
         undefined, // mangoAccount
         'JUPITER',
@@ -268,13 +359,8 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   )
 
   const handleLiquidityCheck = useCallback(
-    async (tokenMint: PublicKey) => {
+    async (tokenMint: PublicKey, isLST: boolean) => {
       try {
-        const targetAmounts = [
-          ...new Set([
-            ...Object.values(presets).map((x) => x.preset_target_amount),
-          ]),
-        ]
         const swaps = await Promise.all([
           handleGetRoutesWithFixedArgs(250000, tokenMint, 'ExactIn'),
           handleGetRoutesWithFixedArgs(100000, tokenMint, 'ExactIn'),
@@ -298,13 +384,16 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
             if (val.swapMode === 'ExactIn') {
               const exactOutRoute = bestRoutesSwaps.find(
                 (x) =>
-                  x.outAmount === val.outAmount && x.swapMode === 'ExactOut',
+                  x.outAmount === val.inAmount && x.swapMode === 'ExactOut',
               )
+
               acc.push({
-                amount: val.outAmount.toString(),
+                amount: val.inAmount.toString(),
                 priceImpactPct: exactOutRoute?.priceImpactPct
-                  ? (val.priceImpactPct + exactOutRoute.priceImpactPct) / 2
-                  : val.priceImpactPct,
+                  ? (Number(val.priceImpactPct) +
+                      Number(exactOutRoute.priceImpactPct)) /
+                    2
+                  : Number(val.priceImpactPct),
               })
             }
             return acc
@@ -319,8 +408,19 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           (x) => x?.priceImpactPct && x?.priceImpactPct * 100 < 1,
         )
         const targetAmount =
-          indexForTargetAmount > -1 ? targetAmounts[indexForTargetAmount] : 0
+          indexForTargetAmount > -1
+            ? toUiDecimals(new BN(averageSwaps[indexForTargetAmount].amount), 6)
+            : 0
+
         setProposedProposedTargetAmount(targetAmount)
+        if (isLST) {
+          const suggestedPreset =
+            Object.values(presets).find(
+              (x) => x.preset_target_amount <= targetAmount,
+            ) || presets.UNTRUSTED
+
+          setPreset(suggestedPreset)
+        }
         setPriceImpact(midTierCheck ? midTierCheck.priceImpactPct * 100 : 100)
         handleGetPoolParams(targetAmount, tokenMint)
         return targetAmount
@@ -357,6 +457,35 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       (x) => x.label?.toLowerCase().includes('raydium'),
     )
 
+    if (!orcaPool?.ammKey && !raydiumPool?.ammKey) {
+      try {
+        const dex = await fetch(
+          `https://api.dexscreener.com/latest/dex/search?q=${tokenMint.toBase58()}`,
+        )
+        const resp = await dex.json()
+
+        if (!resp?.pairs?.length) {
+          return
+        }
+        const bestSolPool = resp.pairs.find(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (x: any) =>
+            x.quoteToken.address === WRAPPED_SOL_MINT.toBase58() ||
+            x.baseToken.address === WRAPPED_SOL_MINT.toBase58(),
+        )
+
+        if (bestSolPool?.dexId.includes('raydium')) {
+          setRaydiumPoolAddress(bestSolPool.pairAddress)
+        }
+        if (bestSolPool?.dexId.includes('orca')) {
+          setOrcaPoolAddress(bestSolPool.pairAddress)
+        }
+        setIsSolPool(true)
+        return
+      } catch (e) {
+        console.log(e)
+      }
+    }
     setOrcaPoolAddress(orcaPool?.ammKey || '')
     setRaydiumPoolAddress(raydiumPool?.ammKey || '')
   }
@@ -379,8 +508,19 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     setBaseTokenPrice(priceInfo.data[mint]?.price || 0)
     setCurrentTokenInfo(tokenInfo)
     if (tokenInfo) {
-      const targetAmount = await handleLiquidityCheck(new PublicKey(mint))
-      getListingParams(tokenInfo, targetAmount)
+      const lstPool = await getLstStakePool(connection, mint)
+      const targetAmount = await handleLiquidityCheck(
+        new PublicKey(mint),
+        !!lstPool,
+      )
+      getListingParams(
+        tokenInfo,
+        lstPool ? WRAPPED_SOL_MINT.toBase58() : USDC_MINT,
+        lstPool ? targetAmount : 0,
+        !!lstPool,
+      )
+      setIsLST(!!lstPool)
+      setLstStakePoolAddress(lstPool)
     }
   }, [getListingParams, handleLiquidityCheck, jupiterTokens, mint, t])
 
@@ -393,6 +533,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     setRaydiumPoolAddress('')
     setProposedProposedTargetAmount(0)
     setBaseTokenPrice(0)
+    setIsLST(false)
   }
 
   const isFormValid = useCallback(
@@ -455,17 +596,24 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       })
       return
     }
+    const newProposals = await refetchProposals()
+
+    const index = proposals ? Object.values(newProposals).length : 0
+
     const mint = new PublicKey(advForm.mintPk)
     const proposalTx = []
 
-    if (Object.keys(proposedPreset).length) {
+    if (Object.keys(proposedPreset).length && !advForm.fastListing) {
       const registerTokenIx = await client!.program.methods
         .tokenRegister(
-          Number(advForm.tokenIndex),
+          Number(index),
           advForm.name,
           {
             confFilter: Number(proposedPreset.oracleConfFilter),
-            maxStalenessSlots: proposedPreset.maxStalenessSlots,
+            maxStalenessSlots:
+              proposedPreset.maxStalenessSlots === -1
+                ? null
+                : proposedPreset.maxStalenessSlots,
           },
           {
             adjustmentFactor: Number(proposedPreset.adjustmentFactor),
@@ -498,8 +646,13 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
           Number(proposedPreset.interestTargetUtilization),
           proposedPreset.groupInsuranceFund,
           new BN(proposedPreset.depositLimit.toString()),
+          Number(proposedPreset.zeroUtilRate),
+          Number(proposedPreset.platformLiquidationFee),
+          proposedPreset.disableAssetLiquidation,
+          Number(proposedPreset.collateralFeePerDay),
         )
         .accounts({
+          fallbackOracle: PublicKey.default,
           admin: MANGO_DAO_WALLET,
           group: group!.publicKey,
           mint: mint,
@@ -511,8 +664,9 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       proposalTx.push(registerTokenIx)
     } else {
       const trustlessIx = await client!.program.methods
-        .tokenRegisterTrustless(Number(advForm.tokenIndex), advForm.name)
+        .tokenRegisterTrustless(Number(index), advForm.name)
         .accounts({
+          fallbackOracle: PublicKey.default,
           mint: mint,
           payer: MANGO_DAO_FAST_LISTING_WALLET,
           rent: SYSVAR_RENT_PUBKEY,
@@ -528,34 +682,25 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     if (!advForm.listForSwapOnly) {
       const registerMarketix = await client!.program.methods
         .serum3RegisterMarket(
-          Number(advForm.marketIndex),
+          Number(index),
           advForm.marketName,
           proposedPreset.oraclePriceBand,
         )
         .accounts({
           group: group!.publicKey,
-          admin: MANGO_DAO_WALLET,
+          admin: advForm.fastListing
+            ? MANGO_DAO_FAST_LISTING_WALLET
+            : MANGO_DAO_WALLET,
           serumProgram: new PublicKey(advForm.openBookProgram),
           serumMarketExternal: new PublicKey(advForm.openBookMarketExternalPk),
           baseBank: new PublicKey(advForm.baseBankPk),
           quoteBank: new PublicKey(advForm.quoteBankPk),
-          payer: MANGO_DAO_WALLET,
+          payer: advForm.fastListing
+            ? MANGO_DAO_FAST_LISTING_WALLET
+            : MANGO_DAO_WALLET,
         })
         .instruction()
       proposalTx.push(registerMarketix)
-    }
-    const rp = new ReferralProvider(connection)
-
-    const tx = await rp.initializeReferralTokenAccount({
-      payerPubKey: MANGO_DAO_WALLET,
-      referralAccountPubKey: JUPITER_REFERRAL_PK,
-      mint: mint,
-    })
-    const isExistingAccount =
-      (await connection.getBalance(tx.referralTokenAccountPubKey)) > 1
-
-    if (!isExistingAccount) {
-      proposalTx.push(...tx.tx.instructions)
     }
 
     const walletSigner = wallet as never
@@ -569,12 +714,15 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
       if (!simulation.value.err) {
         const proposalAddress = await createProposal(
           connection,
+          client,
           walletSigner,
-          MANGO_DAO_WALLET_GOVERNANCE,
+          advForm.fastListing
+            ? MANGO_DAO_FAST_LISTING_GOVERNANCE
+            : MANGO_DAO_WALLET_GOVERNANCE,
           voter.tokenOwnerRecord!,
           advForm.proposalTitle,
           advForm.proposalDescription,
-          advForm.tokenIndex,
+          index,
           proposalTx,
           vsrClient,
           fee,
@@ -603,25 +751,32 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     voter.voteWeight,
     voter.tokenOwnerRecord,
     minVoterWeight,
+    refetchProposals,
+    proposals,
     proposedPreset,
-    connection,
     t,
     mintVoterWeightNumber,
     client,
     group,
+    connection,
     fee,
   ])
 
   const closeCreateOpenBookMarketModal = () => {
     setCreateOpenbookMarket(false)
     if (currentTokenInfo && proposedPresetTargetAmount) {
-      getListingParams(currentTokenInfo, proposedPresetTargetAmount)
+      getListingParams(
+        currentTokenInfo,
+        QUOTE_MINT,
+        isLST ? proposedPresetTargetAmount : 0,
+        isLST,
+      )
     }
   }
-  const closeCreateOracleModal = () => {
+  const closeCreateOracleModal = (oraclePk?: PublicKey) => {
     setOracleModalOpen(false)
-    if (currentTokenInfo && proposedPresetTargetAmount) {
-      getListingParams(currentTokenInfo, proposedPresetTargetAmount)
+    if (oraclePk) {
+      handleSetAdvForm('oraclePk', oraclePk.toBase58())
     }
   }
 
@@ -689,10 +844,12 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                   <p>{t('symbol')}</p>
                   <p className="text-th-fgd-2">{currentTokenInfo?.symbol}</p>
                 </div>
-                <div className="mb-2 flex items-center justify-between">
-                  <p>{t('tier')}</p>
-                  <p className="text-th-fgd-2">{proposedPreset.preset_name}</p>
-                </div>
+                {isLST && (
+                  <div className="mb-2 flex items-center justify-between">
+                    <p>LST detected</p>
+                    <p className="text-th-fgd-2">Quote token SOL</p>
+                  </div>
+                )}
                 <div className="flex items-center justify-between">
                   <p>{t('mint')}</p>
                   <p className="flex items-center">
@@ -731,13 +888,57 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                           {t('adv-fields')}
                           <ChevronDownIcon
                             className={`h-5 w-5 text-th-fgd-3 ${
-                              open ? 'rotate-180' : 'rotate-360'
+                              open ? 'rotate-180' : 'rotate-0'
                             }`}
                           />
                         </div>
                       </Disclosure.Button>
                       <Disclosure.Panel>
                         <div className="space-y-4 rounded-md rounded-t-none bg-th-bkg-2 p-4">
+                          <div className="mb-2 flex items-center justify-between">
+                            <p>
+                              {t('tier')} (suggested:{' '}
+                              {suggestedPreset.preset_name})
+                            </p>
+                            <Select
+                              value={proposedPreset.preset_name}
+                              onChange={(val) => {
+                                setPreset(
+                                  LISTING_PRESETS[val as LISTING_PRESETS_KEY]!,
+                                )
+                              }}
+                              className="w-[200px]"
+                            >
+                              {Object.keys(LISTING_PRESETS).map((name) => (
+                                <Select.Option key={name} value={name}>
+                                  <div className="flex w-full items-center justify-between">
+                                    {
+                                      LISTING_PRESETS[
+                                        name as LISTING_PRESETS_KEY
+                                      ].preset_name
+                                    }{' '}
+                                    {`{${
+                                      LISTING_PRESETS[
+                                        name as LISTING_PRESETS_KEY
+                                      ].preset_key
+                                    }}${
+                                      LISTING_PRESETS[
+                                        name as LISTING_PRESETS_KEY
+                                      ].oracle === 0
+                                        ? ' - PYTH only'
+                                        : ''
+                                    }`}
+                                    {LISTING_PRESETS[
+                                      name as LISTING_PRESETS_KEY
+                                    ].preset_target_amount ===
+                                    proposedPresetTargetAmount
+                                      ? ' - suggested'
+                                      : ''}
+                                  </div>
+                                </Select.Option>
+                              ))}
+                            </Select>
+                          </div>
                           <div>
                             <Label text={t('oracle')} />
                             <Input
@@ -760,6 +961,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                           <div>
                             <Label text={t('token-index')} />
                             <Input
+                              disabled={true}
                               hasError={formErrors.tokenIndex !== undefined}
                               type="number"
                               value={advForm.tokenIndex.toString()}
@@ -825,6 +1027,22 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                               </div>
                             )}
                           </div>
+                          {proposedPreset.preset_key === 'UNTRUSTED' && (
+                            <div>
+                              <Label text={t('fast-listing')} />
+                              <Checkbox
+                                checked={advForm.fastListing}
+                                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                  handleSetAdvForm(
+                                    'fastListing',
+                                    e.target.checked,
+                                  )
+                                }
+                              >
+                                <></>
+                              </Checkbox>
+                            </div>
+                          )}
                           <div>
                             <Label text={t('base-bank')} />
                             <Input
@@ -991,7 +1209,9 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                     ) : null}
                   </li>
                 ) : null}
-                {!advForm.oraclePk && !loadingListingParams ? (
+                {!advForm.oraclePk &&
+                !loadingListingParams &&
+                proposedPreset.oracle !== 0 ? (
                   <li
                     className={`my-4 pl-2 ${
                       !advForm.openBookMarketExternalPk &&
@@ -1022,6 +1242,10 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                       openbookMarketPk={advForm.openBookMarketExternalPk}
                       isOpen={oracleModalOpen}
                       onClose={closeCreateOracleModal}
+                      isSolPool={isSolPool}
+                      stakePoolAddress={lstStakePoolAddress}
+                      tokenDecimals={currentTokenInfo.decimals}
+                      tokenPrice={baseTokenPrice}
                     ></CreateSwitchboardOracleModal>
                   </li>
                 ) : null}
@@ -1067,3 +1291,51 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
 }
 
 export default ListToken
+
+const getLstStakePool = async (connection: Connection, mint: string) => {
+  try {
+    let poolAddress = ''
+    const resp = await connection.getAddressLookupTable(
+      new PublicKey('EhWxBHdmQ3yDmPzhJbKtGMM9oaZD42emt71kSieghy5'),
+    )
+    const addresses = [
+      'CgntPoLka5pD5fesJYhGmUCF8KU1QS1ZmZiuAuMZr2az',
+      '7ge2xKsZXmqPxa3YmXxXmzCp9Hc2ezrTxh6PECaxCwrL',
+      'GUAMR8ciiaijraJeLDEDrFVaueLm9YzWWY9R7CBPL9rA',
+      'Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb',
+      'CtMyWsrUtAwXWiGr9WjHT5fC3p3fgV8cyGpLTo2LJzG1',
+      '2qyEeSAWKfU18AFthrF7JA8z8ZCi1yt76Tqs917vwQTV',
+      'DqhH94PjkZsjAqEze2BEkWhFQJ6EyU6MdtMphMgnXqeK',
+      'F8h46pYkaqPJNP2MRkUUUtRkf8efCkpoqehn9g1bTTm7',
+      '5oc4nmbNTda9fx8Tw57ShLD132aqDK65vuHH4RU1K4LZ',
+      'stk9ApL5HeVAwPLr3TLhDXdZS8ptVu7zp6ov8HFDuMi',
+      ...(resp.value?.state.addresses || []).map((x) => x.toBase58()),
+    ]
+    //remove duplicates
+    const possibleStakePoolsAddresses = [...new Set(addresses)].map(
+      (x) => new PublicKey(x),
+    )
+    const accounts = await connection.getMultipleAccountsInfo(
+      possibleStakePoolsAddresses,
+    )
+    for (const idx in accounts) {
+      try {
+        const acc = accounts[idx]
+        const stakeAddressPk = possibleStakePoolsAddresses[idx]
+        if (acc?.data) {
+          const decoded = StakePoolLayout.decode(acc?.data)
+          if (decoded.poolMint.toBase58() === mint && stakeAddressPk) {
+            poolAddress = stakeAddressPk?.toBase58()
+            break
+          }
+        }
+        // eslint-disable-next-line no-empty
+      } catch (e) {}
+    }
+
+    return poolAddress
+  } catch (e) {
+    console.log(e)
+    return ''
+  }
+}

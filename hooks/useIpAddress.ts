@@ -2,7 +2,7 @@ import { CLUSTER } from '@store/mangoStore'
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 
-const SANCTIONED_COUNTRIES = [
+export const SANCTIONED_COUNTRIES = [
   ['AG', 'Antigua and Barbuda'],
   ['DZ', 'Algeria'],
   ['BD', 'Bangladesh'],
@@ -14,6 +14,7 @@ const SANCTIONED_COUNTRIES = [
   ['CU', 'Cuba'],
   ['CD', 'Democratic Republic of Congo'],
   ['EC', 'Ecuador'],
+  ['GB', 'United Kingdom'],
   ['IR', 'Iran'],
   ['IQ', 'Iraq'],
   ['LR', 'Liberia'],
@@ -35,22 +36,37 @@ const SANCTIONED_COUNTRY_CODES = SANCTIONED_COUNTRIES.map(
   (country) => country[0],
 )
 
-const SPOT_ALLOWED = ['GB']
+const PERP_ALLOWED: string[] = []
+const SPOT_ALLOWED: string[] = []
+const SWAP_ALLOWED: string[] = []
+const BORROW_LEND_ALLOWED: string[] = []
+const SHOW_WARNING: string[] = ['GB']
 
 const fetchIpGeolocation = async () => {
-  const response = await fetch(`https://country-code.mangomarkets.workers.dev`)
-  const parsedResponse = await response.json()
-  const ipCountryCode = parsedResponse ? parsedResponse?.country : ''
+  try {
+    const response = await fetch(
+      `https://country-code.mangomarkets.workers.dev`,
+    )
+    const parsedResponse = await response.json()
+    const ipCountryCode = parsedResponse ? parsedResponse?.country : ''
 
-  return ipCountryCode
+    return ipCountryCode
+  } catch (e) {
+    console.log('failed to fetch ip country', e)
+    return ''
+  }
 }
 
 export default function useIpAddress() {
   const [ipAllowed, setIpAllowed] = useState(true)
   const [spotAllowed, setSpotAllowed] = useState(true)
+  const [perpAllowed, setPerpAllowed] = useState(true)
+  const [swapAllowed, setSwapAllowed] = useState(true)
+  const [borrowLendAllowed, setBorrowLendAllowed] = useState(true)
+  const [showWarning, setShowWarning] = useState(false)
   const [ipCountry, setIpCountry] = useState('')
 
-  const ipCountryCode = useQuery<string, Error>(
+  const { data: ipCountryCode, isInitialLoading } = useQuery<string, Error>(
     ['ip-address'],
     () => fetchIpGeolocation(),
     {
@@ -62,16 +78,38 @@ export default function useIpAddress() {
   )
 
   useEffect(() => {
-    if (ipCountryCode.data) {
-      setIpCountry(ipCountryCode.data)
-      setIpAllowed(!SANCTIONED_COUNTRY_CODES.includes(ipCountryCode.data))
-      setSpotAllowed(SPOT_ALLOWED.includes(ipCountryCode.data))
+    if (ipCountryCode) {
+      setIpCountry(ipCountryCode)
+      setIpAllowed(!SANCTIONED_COUNTRY_CODES.includes(ipCountryCode))
+      setSpotAllowed(SPOT_ALLOWED.includes(ipCountryCode))
+      setPerpAllowed(PERP_ALLOWED.includes(ipCountryCode))
+      setSwapAllowed(SWAP_ALLOWED.includes(ipCountryCode))
+      setBorrowLendAllowed(BORROW_LEND_ALLOWED.includes(ipCountryCode))
+      setShowWarning(SHOW_WARNING.includes(ipCountryCode))
     }
   }, [ipCountryCode])
 
-  if (CLUSTER === 'mainnet-beta') {
-    return { ipAllowed, spotAllowed, ipCountry }
+  if (CLUSTER === 'mainnet-beta' && !process.env.NEXT_PUBLIC_DISABLE_GEOBLOCK) {
+    return {
+      ipAllowed,
+      spotAllowed,
+      perpAllowed,
+      swapAllowed,
+      borrowLendAllowed,
+      showWarning,
+      ipCountry,
+      loadingIpCountry: isInitialLoading,
+    }
   } else {
-    return { ipAllowed: true, spotAllowed: true, ipCountry }
+    return {
+      ipAllowed: true,
+      spotAllowed: true,
+      perpAllowed: true,
+      swapAllowed: true,
+      borrowLendAllowed: true,
+      showWarning: true,
+      ipCountry,
+      loadingIpCountry: isInitialLoading,
+    }
   }
 }

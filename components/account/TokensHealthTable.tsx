@@ -106,7 +106,7 @@ const TokensHealthTable = ({
                 >
                   <Td>
                     <div className="flex items-center">
-                      <div className="mr-2.5 flex flex-shrink-0 items-center">
+                      <div className="mr-2.5 flex shrink-0 items-center">
                         <TokenLogo bank={bank} />
                       </div>
                       <p className="font-body">{asset}</p>
@@ -250,8 +250,8 @@ const TokensHealthTable = ({
                         </div>
                         <ChevronDownIcon
                           className={`${
-                            open ? 'rotate-180' : 'rotate-360'
-                          } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                            open ? 'rotate-180' : 'rotate-0'
+                          } h-6 w-6 shrink-0 text-th-fgd-3`}
                         />
                       </div>
                     </Disclosure.Button>

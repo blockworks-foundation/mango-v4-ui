@@ -237,8 +237,8 @@ const PerpPositionsStatsTable = ({
                   </div>
                   <ChevronDownIcon
                     className={`${
-                      open ? 'rotate-180' : 'rotate-360'
-                    } ml-3 h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                      open ? 'rotate-180' : 'rotate-0'
+                    } ml-3 h-6 w-6 shrink-0 text-th-fgd-3`}
                   />
                 </Disclosure.Button>
                 <Transition

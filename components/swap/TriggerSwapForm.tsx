@@ -105,7 +105,7 @@ const TriggerSwapForm = ({
 }: TriggerSwapFormProps) => {
   const { t } = useTranslation(['common', 'swap', 'trade'])
   const { mangoAccountAddress } = useMangoAccount()
-  const { ipAllowed, ipCountry } = useIpAddress()
+  const { ipAllowed, ipCountry, swapAllowed } = useIpAddress()
   const [orderType, setOrderType] = useState(ORDER_TYPES[0])
   const [submitting, setSubmitting] = useState(false)
   const [swapFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
@@ -729,7 +729,7 @@ const TriggerSwapForm = ({
           <InlineNotification desc={orderDescription} type="info" />
         </div>
       ) : null}
-      {ipAllowed ? (
+      {ipAllowed || swapAllowed ? (
         <Button
           onClick={onClick}
           className="mb-4 mt-6 flex w-full items-center justify-center text-base"

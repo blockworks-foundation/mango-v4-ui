@@ -23,10 +23,15 @@ import { MANGO_MINT } from 'utils/constants'
 import { MANGO_GOVERNANCE_PROGRAM, MANGO_REALM_PK } from '../constants'
 import { VsrClient } from '../voteStakeRegistryClient'
 import { updateVoterWeightRecord } from './updateVoteWeightRecord'
-import { createComputeBudgetIx } from '@blockworks-foundation/mango-v4'
+import {
+  createComputeBudgetIx,
+  MangoClient,
+} from '@blockworks-foundation/mango-v4'
+import { sendTxAndConfirm } from '../tools'
 
 export const createProposal = async (
   connection: Connection,
+  mangoClient: MangoClient,
   wallet: WalletSigner,
   governance: PublicKey,
   tokenOwnerRecord: ProgramAccount<TokenOwnerRecord>,
@@ -34,14 +39,17 @@ export const createProposal = async (
   descriptionLink: string,
   proposalIndex: number,
   proposalInstructions: TransactionInstruction[],
-  client: VsrClient,
+  client: VsrClient | null,
   fee: number,
+  mint?: PublicKey,
+  realm?: PublicKey,
 ) => {
   const instructions: TransactionInstruction[] = []
   const walletPk = wallet.publicKey!
   const governanceAuthority = walletPk
   const signatory = walletPk
   const payer = walletPk
+  let vsrVoterWeightPk: PublicKey | undefined = undefined
 
   // Changed this because it is misbehaving on my local validator setup.
   const programVersion = await getGovernanceProgramVersion(
@@ -54,30 +62,33 @@ export const createProposal = async (
   const options = ['Approve']
   const useDenyOption = true
 
-  const { updateVoterWeightRecordIx, voterWeightPk } =
-    await updateVoterWeightRecord(
-      client,
-      tokenOwnerRecord.account.governingTokenOwner,
-    )
-  instructions.push(updateVoterWeightRecordIx)
+  if (client) {
+    const { updateVoterWeightRecordIx, voterWeightPk } =
+      await updateVoterWeightRecord(
+        client,
+        tokenOwnerRecord.account.governingTokenOwner,
+      )
+    vsrVoterWeightPk = voterWeightPk
+    instructions.push(updateVoterWeightRecordIx)
+  }
 
   const proposalAddress = await withCreateProposal(
     instructions,
     MANGO_GOVERNANCE_PROGRAM,
     programVersion,
-    MANGO_REALM_PK,
+    realm || MANGO_REALM_PK,
     governance,
     tokenOwnerRecord.pubkey,
     name,
     descriptionLink,
-    new PublicKey(MANGO_MINT),
+    mint || new PublicKey(MANGO_MINT),
     governanceAuthority,
     proposalIndex,
     voteType,
     options,
     useDenyOption,
     payer,
-    voterWeightPk,
+    vsrVoterWeightPk,
   )
 
   await withAddSignatory(
@@ -120,7 +131,7 @@ export const createProposal = async (
     insertInstructions, // SingOff proposal needs to be executed after inserting instructions hence we add it to insertInstructions
     MANGO_GOVERNANCE_PROGRAM,
     programVersion,
-    MANGO_REALM_PK,
+    realm || MANGO_REALM_PK,
     governance,
     proposalAddress,
     signatory,
@@ -131,7 +142,8 @@ export const createProposal = async (
   const txChunks = chunk([...instructions, ...insertInstructions], 2)
 
   const transactions: Transaction[] = []
-  const latestBlockhash = await connection.getLatestBlockhash('confirmed')
+  const latestBlockhash = await connection.getLatestBlockhash('processed')
+
   for (const chunk of txChunks) {
     const tx = new Transaction()
     tx.add(createComputeBudgetIx(fee))
@@ -141,19 +153,14 @@ export const createProposal = async (
     tx.feePayer = payer
     transactions.push(tx)
   }
-
   const signedTransactions = await wallet.signAllTransactions(transactions)
   for (const tx of signedTransactions) {
-    const rawTransaction = tx.serialize()
-    const address = await connection.sendRawTransaction(rawTransaction, {
-      skipPreflight: true,
-    })
-
-    await connection.confirmTransaction({
-      blockhash: latestBlockhash.blockhash,
-      lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
-      signature: address,
-    })
+    await sendTxAndConfirm(
+      mangoClient.opts.multipleConnections,
+      connection,
+      tx,
+      latestBlockhash,
+    )
   }
   return proposalAddress
 }

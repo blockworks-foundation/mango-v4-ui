@@ -131,7 +131,7 @@ const Leaderboards = ({
           <div className="flex w-full items-center justify-between rounded-lg border border-th-active p-3 md:rounded-xl md:p-4">
             <div className="flex items-center space-x-3">
               <div
-                className={`relative flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full ${
+                className={`relative flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
                   accountPointsAndRank.rank < 4 ? '' : 'bg-th-bkg-3'
                 } md:mr-2`}
               >
@@ -224,7 +224,7 @@ const LeaderboardCard = ({
     >
       <div className="flex items-center space-x-3">
         <div
-          className={`relative flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full ${
+          className={`relative flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
             rank < 4 ? '' : 'bg-th-bkg-3'
           } md:mr-2`}
         >

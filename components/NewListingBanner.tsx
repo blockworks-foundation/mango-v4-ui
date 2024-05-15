@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NEW_LISTING_BANNER_KEY } from 'utils/constants'
+import TokenLogo from './shared/TokenLogo'
 
 const NewListingBanner = () => {
   const { t } = useTranslation('common')
@@ -24,6 +25,7 @@ const NewListingBanner = () => {
         return b.registrationTime.toNumber() - a.registrationTime.toNumber()
       })[0]
       const latest = group.getFirstBankByMint(latestInfo.mint)
+
       return latest
     } else return
   }, [group])
@@ -39,38 +41,48 @@ const NewListingBanner = () => {
 
   const showForNewListing = latestListing && latestListing.uiPrice
 
+  // change this to false when token launches
+  const isPreLaunch = false
+
   return (!hasSeenNewListingBanner && showForNewListing) ||
     (showForNewListing && hasSeenNewListingBanner !== latestListing?.name) ? (
-    <div className="flex items-center justify-between bg-gradient-to-r from-yellow-400 via-orange-400 to-red-500 px-4 py-1">
+    <div className="flex items-center justify-between border-b border-th-bkg-3 bg-gradient-to-r from-th-bkg-1 via-th-bkg-2 to-th-bkg-1 px-4 py-2">
       <div className="h-5 w-5" />
-      <div className="mx-4 flex flex-wrap items-center justify-center font-bold text-black">
+      <div className="mx-4 flex flex-wrap items-center justify-center text-th-fgd-1">
+        <TokenLogo bank={latestListing} size={16} />
         <span className="mx-1.5">
-          {t('new-token-live', { tokenName: latestListing.name })}
+          {!isPreLaunch
+            ? t('new-token-live', { tokenName: latestListing.name })
+            : `Pre-launch W is live.`}
         </span>
         <div>
           {newMarketName ? (
             <>
               <Link
-                className="text-black underline md:hover:text-black md:hover:no-underline"
+                className="font-bold text-th-fgd-1"
                 href={`/trade?name=${newMarketName}`}
                 shallow
               >
-                {`${t('trade')} ${latestListing.name}`}
+                {!isPreLaunch
+                  ? `${t('trade')} ${latestListing.name}`
+                  : 'Place Your Bids'}
               </Link>{' '}
-              <span className="text-[rgba(0,0,0,0.4)]">|</span>{' '}
+              {!isPreLaunch ? <span className="text-th-fgd-4">|</span> : null}{' '}
             </>
           ) : null}
-          <Link
-            className="text-black underline md:hover:text-black md:hover:no-underline"
-            href={`/swap?in=USDC&out=${latestListing.name}`}
-            shallow
-          >
-            {`${t('swap')} ${latestListing.name}`}
-          </Link>
+          {!isPreLaunch ? (
+            <Link
+              className="font-bold text-th-fgd-1"
+              href={`/swap?in=USDC&out=${latestListing.name}`}
+              shallow
+            >
+              {`${t('swap')} ${latestListing.name}`}
+            </Link>
+          ) : null}
         </div>
       </div>
       <button
-        className="text-black focus:outline-none"
+        className="text-th-fgd-3 focus:outline-none"
         onClick={() => setHasSeenNewListingBanner(latestListing.name)}
       >
         <XMarkIcon className="h-5 w-5" />

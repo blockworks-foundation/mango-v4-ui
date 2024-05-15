@@ -240,7 +240,7 @@ const HealthContributions = ({ hideView }: { hideView: () => void }) => {
     <>
       <div className="hide-scroll flex h-14 items-center space-x-4 overflow-x-auto border-b border-th-bkg-3">
         <button
-          className="flex h-14 w-14 flex-shrink-0 items-center justify-center border-r border-th-bkg-3 focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2"
+          className="flex h-14 w-14 shrink-0 items-center justify-center border-r border-th-bkg-3 focus-visible:bg-th-bkg-3 md:hover:bg-th-bkg-2"
           onClick={hideView}
         >
           <ArrowLeftIcon className="h-5 w-5" />

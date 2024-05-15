@@ -70,7 +70,7 @@ const ChatForm = ({
         ref={callbackRef}
       />
       <button className="mx-2 bg-transparent" type="submit">
-        <PaperAirplaneIcon className="h-5 w-5 flex-shrink-0 rotate-90" />
+        <PaperAirplaneIcon className="h-5 w-5 shrink-0 rotate-90" />
       </button>
     </form>
   )

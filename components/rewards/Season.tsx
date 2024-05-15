@@ -176,7 +176,7 @@ const Season = ({
       <div className="banner-wrapper relative mx-auto mb-6 flex flex-col items-center justify-center border-b border-th-bkg-3 p-8 lg:mb-8 lg:px-10 lg:py-12">
         <div className="absolute left-0 top-0 mt-3 h-[64px] w-[200%] animate-[moveRightLeft_240s_linear_infinite] bg-[url('/images/rewards/mints-banner-bg-1.png')] bg-contain bg-center bg-repeat-x opacity-30" />
         <div className="absolute bottom-0 right-0 mb-3 h-[64px] w-[200%] animate-[moveLeftRight_300s_linear_infinite] bg-[url('/images/rewards/mints-banner-bg-2.png')] bg-contain bg-center bg-repeat-x opacity-30" />
-        <div className="relative">
+        <div className="relative z-10">
           <div className="flex items-center justify-center pb-6">
             <div className="flex items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-red-400 px-4 py-1">
               <div className="flex items-center font-rewards text-lg text-black">
@@ -405,7 +405,7 @@ const Season = ({
                       >
                         <div className="flex items-center space-x-2 font-mono">
                           <div
-                            className={`relative flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full ${
+                            className={`relative flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
                               rank < 4 ? '' : 'bg-th-bkg-3'
                             }`}
                           >

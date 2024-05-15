@@ -35,7 +35,7 @@ const ListMarketOrTokenPage = () => {
             <h1 className="mb-4 flex items-center">{t('new-listing')}</h1>
             <ul className="mb-6">
               <li className="mb-2 flex items-center text-base">
-                <InformationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0 text-th-fgd-4" />
+                <InformationCircleIcon className="mr-2 h-5 w-5 shrink-0 text-th-fgd-4" />
                 <span>
                   {t('before-listing-1')}{' '}
                   <a
@@ -48,11 +48,11 @@ const ListMarketOrTokenPage = () => {
                 </span>
               </li>
               <li className="mb-2 flex items-center text-base">
-                <InformationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0 text-th-fgd-4" />
+                <InformationCircleIcon className="mr-2 h-5 w-5 shrink-0 text-th-fgd-4" />
                 {t('before-listing-3')}
               </li>
               <li className="mb-2 flex items-center text-base">
-                <InformationCircleIcon className="mr-2 h-5 w-5 flex-shrink-0 text-th-fgd-4" />
+                <InformationCircleIcon className="mr-2 h-5 w-5 shrink-0 text-th-fgd-4" />
                 {t('before-listing-4')}
               </li>
             </ul>

@@ -6,7 +6,7 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import { useMemo, useState } from 'react'
 import { numberCompacter } from 'utils/numbers'
-import MarketSelectDropdown from './MarketSelectDropdown'
+import MarketSelectDropdown, { CURRENCY_SYMBOLS } from './MarketSelectDropdown'
 import PerpFundingRate from './PerpFundingRate'
 import SheenLoader from '@components/shared/SheenLoader'
 import PerpMarketDetailsModal from '@components/modals/PerpMarketDetailsModal'
@@ -25,7 +25,7 @@ const AdvancedMarketHeader = ({
   setShowChart?: (x: boolean) => void
 }) => {
   const { t } = useTranslation(['common', 'trade'])
-  const { serumOrPerpMarket, selectedMarket } = useSelectedMarket()
+  const { serumOrPerpMarket, selectedMarket, quoteBank } = useSelectedMarket()
   const selectedMarketName = mangoStore((s) => s.selectedMarket.name)
   const [showMarketDetails, setShowMarketDetails] = useState(false)
   const { data: marketsData, isLoading, isFetching } = useMarketsData()
@@ -121,19 +121,16 @@ const AdvancedMarketHeader = ({
                   <SheenLoader className="mt-0.5">
                     <div className="h-3.5 w-12 bg-th-bkg-2" />
                   </SheenLoader>
-                ) : volume ? (
-                  <span className="font-mono">
-                    {numberCompacter.format(volume)}{' '}
-                    <span className="font-body text-th-fgd-3">
-                      {selectedMarketName?.split('/')[1]}
-                    </span>
-                  </span>
                 ) : (
                   <span className="font-mono">
-                    0{' '}
-                    <span className="font-body text-th-fgd-3">
-                      {selectedMarketName?.split('/')[1]}
-                    </span>
+                    {quoteBank?.name === 'USDC' ? '$' : ''}
+                    {volume ? numberCompacter.format(volume) : 0}
+                    {quoteBank?.name && quoteBank.name !== 'USDC' ? (
+                      <span className="font-body text-th-fgd-3">
+                        {' '}
+                        {CURRENCY_SYMBOLS[quoteBank.name] || quoteBank.name}
+                      </span>
+                    ) : null}
                   </span>
                 )}
               </div>
@@ -145,7 +142,7 @@ const AdvancedMarketHeader = ({
               className="ml-4 flex items-center whitespace-nowrap text-th-fgd-3"
               onClick={() => setShowMarketDetails(true)}
             >
-              <InformationCircleIcon className="h-5 w-5 flex-shrink-0 md:mr-1.5 md:h-4 md:w-4" />
+              <InformationCircleIcon className="h-5 w-5 shrink-0 md:mr-1.5 md:h-4 md:w-4" />
               <span className="hidden text-xs md:inline">
                 {t('trade:market-details', { market: '' })}
               </span>

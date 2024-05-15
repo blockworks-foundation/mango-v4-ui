@@ -6,6 +6,7 @@ import { floorToDecimal } from '../../utils/numbers'
 import useMangoAccount from '../../hooks/useMangoAccount'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { PublicKey } from '@solana/web3.js'
+import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 
 export const getMaxBorrowForBank = (
   group: Group,
@@ -35,6 +36,7 @@ const getMaxSourceForSwap = (
       inputMint,
       outputMint,
     )
+
     return rawMaxUiAmountWithBorrow
   } catch (e) {
     console.log(`failed to get max source`, e)
@@ -56,6 +58,7 @@ export const getMaxWithdrawForBank = (
     : bank.initAssetWeight.toNumber() === 0
     ? Decimal.min(accountBalance, vaultBalance)
     : Decimal.min(accountBalance, vaultBalance, maxBorrow)
+
   return Decimal.max(0, maxWithdraw)
 }
 
@@ -64,36 +67,28 @@ export const getTokenInMax = (
   inputMint: PublicKey,
   outputMint: PublicKey,
   group: Group,
-  useMargin: boolean,
 ) => {
   const inputBank = group.getFirstBankByMint(inputMint)
   const outputBank = group.getFirstBankByMint(outputMint)
 
   if (!group || !inputBank || !mangoAccount || !outputBank) {
-    return {
-      amount: new Decimal(0.0),
-      decimals: 6,
-      amountWithBorrow: new Decimal(0.0),
-    }
+    return tokenMaxFallback
   }
 
   const inputReduceOnly = inputBank.areBorrowsReduceOnly()
   const outputReduceOnly = outputBank.areDepositsReduceOnly()
 
+  const maxSwapFeeRate = Math.max(
+    inputBank.flashLoanSwapFeeRate,
+    outputBank.flashLoanSwapFeeRate,
+  )
   const inputTokenBalance = new Decimal(
-    mangoAccount.getTokenBalanceUi(inputBank),
+    mangoAccount.getTokenBalanceUi(inputBank) / (1 + maxSwapFeeRate),
   )
 
   const outputTokenBalance = new Decimal(
     mangoAccount.getTokenBalanceUi(outputBank),
   )
-
-  const maxAmountWithoutMargin =
-    (inputTokenBalance.gt(0) && !outputReduceOnly) ||
-    (outputReduceOnly && outputTokenBalance.lt(0))
-      ? inputTokenBalance
-      : new Decimal(0)
-
   const rawMaxUiAmountWithBorrow = getMaxSourceForSwap(
     group,
     mangoAccount,
@@ -101,12 +96,16 @@ export const getTokenInMax = (
     outputBank.mint,
   )
 
-  const maxUiAmountWithBorrow =
-    outputReduceOnly && (outputTokenBalance.gt(0) || outputTokenBalance.eq(0))
-      ? new Decimal(0)
-      : rawMaxUiAmountWithBorrow > 0
-      ? floorToDecimal(rawMaxUiAmountWithBorrow, inputBank.mintDecimals)
-      : new Decimal(0)
+  let spotMax = new Decimal(0)
+  let leverageMax = new Decimal(0)
+
+  if (!outputReduceOnly || (outputReduceOnly && outputTokenBalance.lt(0))) {
+    spotMax = inputTokenBalance
+    leverageMax = floorToDecimal(
+      rawMaxUiAmountWithBorrow,
+      inputBank.mintDecimals,
+    )
+  }
 
   const inputBankVaultBalance = floorToDecimal(
     group
@@ -115,26 +114,36 @@ export const getTokenInMax = (
     inputBank.mintDecimals,
   )
 
-  const maxAmount = useMargin
-    ? Decimal.min(
-        maxAmountWithoutMargin,
-        inputBankVaultBalance,
-        maxUiAmountWithBorrow,
-      )
-    : Decimal.min(
-        maxAmountWithoutMargin,
-        inputBankVaultBalance,
-        maxUiAmountWithBorrow,
-      )
+  const maxAmount = Decimal.min(spotMax, leverageMax, inputBankVaultBalance)
 
   const maxAmountWithBorrow = inputReduceOnly
-    ? Decimal.min(maxAmountWithoutMargin, inputBankVaultBalance)
-    : Decimal.min(maxUiAmountWithBorrow, inputBankVaultBalance)
+    ? Decimal.min(spotMax, leverageMax, inputBankVaultBalance)
+    : Decimal.min(leverageMax, inputBankVaultBalance)
+
+  const notionalValueOfOutputTokenLimitLeft =
+    outputBank.getRemainingDepositLimit() !== null
+      ? toUiDecimals(
+          outputBank.getRemainingDepositLimit()!,
+          outputBank.mintDecimals,
+        ) * outputBank.uiPrice
+      : null
 
   return {
     amount: maxAmount,
     amountWithBorrow: maxAmountWithBorrow,
     decimals: inputBank.mintDecimals,
+    amountIsLimited:
+      !!notionalValueOfOutputTokenLimitLeft &&
+      approxeq(
+        notionalValueOfOutputTokenLimitLeft,
+        inputBank.uiPrice * maxAmount.toNumber(),
+      ),
+    amountWithBorrowIsLimited:
+      !!notionalValueOfOutputTokenLimitLeft &&
+      approxeq(
+        notionalValueOfOutputTokenLimitLeft,
+        inputBank.uiPrice * maxAmountWithBorrow.toNumber(),
+      ),
   }
 }
 
@@ -142,9 +151,11 @@ export interface TokenMaxResults {
   amount: Decimal
   amountWithBorrow: Decimal
   decimals: number
+  amountIsLimited: boolean
+  amountWithBorrowIsLimited: boolean
 }
 
-export const useTokenMax = (useMargin = true): TokenMaxResults => {
+export const useTokenMax = (): TokenMaxResults => {
   const { mangoAccount } = useMangoAccount()
   const { group } = useMangoGroup()
   const inputBank = mangoStore((s) => s.swap.inputBank)
@@ -158,18 +169,13 @@ export const useTokenMax = (useMargin = true): TokenMaxResults => {
           inputBank.mint,
           outputBank.mint,
           group,
-          useMargin,
         )
       }
     } catch (e) {
       console.warn('Error in useTokenMax:  ', e)
     }
-    return {
-      amount: new Decimal(0),
-      amountWithBorrow: new Decimal(0),
-      decimals: 6,
-    }
-  }, [mangoAccount, group, useMargin, inputBank, outputBank])
+    return tokenMaxFallback
+  }, [mangoAccount, group, inputBank, outputBank])
 
   return tokenInMax
 }
@@ -179,11 +185,7 @@ export const useAbsInputPosition = (): TokenMaxResults => {
   const { inputBank } = mangoStore((s) => s.swap)
 
   if (!mangoAccount || !inputBank) {
-    return {
-      amount: new Decimal(0),
-      amountWithBorrow: new Decimal(0),
-      decimals: 6,
-    }
+    return tokenMaxFallback
   }
 
   const amount = new Decimal(
@@ -193,5 +195,18 @@ export const useAbsInputPosition = (): TokenMaxResults => {
     decimals: inputBank.mintDecimals,
     amount: amount,
     amountWithBorrow: amount,
+    amountIsLimited: false,
+    amountWithBorrowIsLimited: false,
   }
 }
+
+const tokenMaxFallback = {
+  amount: new Decimal(0),
+  amountWithBorrow: new Decimal(0),
+  decimals: 6,
+  amountIsLimited: false,
+  amountWithBorrowIsLimited: false,
+}
+
+const approxeq = (v1: number, v2: number, epsilon = 0.5) =>
+  Math.abs(v1 - v2) <= epsilon

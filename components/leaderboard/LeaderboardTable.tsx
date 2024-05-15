@@ -66,14 +66,14 @@ const LeaderboardRow = ({
         <ToggleFollowButton accountPk={mango_account} />
       </div>
       <a
-        className="flex w-full items-center justify-between rounded-md rounded-l-none border border-l-0 border-th-bkg-3 px-3 py-3 md:px-4 md:hover:bg-th-bkg-2"
+        className="flex w-full items-center justify-between rounded-md rounded-l-none border border-l-0 border-th-bkg-3 p-3 md:px-4 md:hover:bg-th-bkg-2"
         href={`/?address=${mango_account}`}
         rel="noopener noreferrer"
         target="_blank"
       >
         <div className="flex w-full items-center space-x-3">
           <div
-            className={`relative flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full ${
+            className={`relative flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
               rank < 4 ? '' : 'bg-th-bkg-3'
             }`}
           >
@@ -94,12 +94,13 @@ const LeaderboardRow = ({
           <div className="flex w-full flex-col items-start sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="capitalize text-th-fgd-2 md:text-base">
-                {profile_name ||
-                  wallet_pk.slice(0, 4) + '...' + wallet_pk.slice(-4)}
+                {profile_name || wallet_pk
+                  ? wallet_pk?.slice(0, 4) + '...' + wallet_pk?.slice(-4)
+                  : 'Unknown'}
               </p>
               <p className="text-xs text-th-fgd-4">
                 Acc:{' '}
-                {mango_account.slice(0, 4) + '...' + mango_account.slice(-4)}
+                {mango_account?.slice(0, 4) + '...' + mango_account?.slice(-4)}
               </p>
             </div>
             <span className="mr-3 mt-1 text-right font-mono sm:mt-0 md:text-base">

@@ -70,12 +70,11 @@ const MangoAccountDashboard: NextPage = () => {
   }, [mangoAccount, loadOpenOrders])
 
   return (
-    <div className="grid grid-cols-12">
-      <div className="col-span-12 lg:col-span-8 lg:col-start-3">
-        <div className="p-8 pb-20 md:pb-16 lg:p-10">
-          <h1>Dashboard</h1>
-          <DashboardNavbar />
-          <div className="">
+    <>
+      <DashboardNavbar />
+      <div className="grid grid-cols-12">
+        <div className="col-span-12 lg:col-span-8 lg:col-start-3">
+          <div className="mx-4 mt-4 lg:mx-0">
             <div className="mt-4 flex space-x-2">
               <Input
                 type="text"
@@ -103,7 +102,7 @@ const MangoAccountDashboard: NextPage = () => {
             </div>
           </div>
           {group && mangoAccount ? (
-            <div className="mt-4">
+            <div className="mx-4 mt-4 lg:mx-0">
               <h2 className="mb-6">Mango Account</h2>
 
               <KeyValuePair
@@ -472,7 +471,7 @@ const MangoAccountDashboard: NextPage = () => {
           )}
         </div>
       </div>
-    </div>
+    </>
   )
 }
 
@@ -484,7 +483,7 @@ const KeyValuePair = ({
   value: number | ReactNode | string
 }) => {
   return (
-    <div className="flex justify-between border-t border-th-bkg-3 py-4 xl:py-1.5">
+    <div className="flex  justify-between border-t border-th-bkg-3 py-4 md:hover:bg-th-bkg-2 xl:py-1.5">
       <span className="mr-4 whitespace-nowrap text-th-fgd-3">{label}</span>
       {value}
     </div>

@@ -62,6 +62,9 @@ import {
   RefetchOptions,
   RefetchQueryFilters,
 } from '@tanstack/react-query'
+import { isTokenInsured } from '@components/DepositForm'
+import UninsuredNotification from '@components/shared/UninsuredNotification'
+import { sendTxAndConfirm } from 'utils/governance/tools'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
@@ -179,24 +182,7 @@ export const fetchJupiterWalletSwapTransaction = async (
   selectedRoute: JupiterV6RouteInfo,
   userPublicKey: PublicKey,
   slippage: number,
-  inputMint: PublicKey,
-  outputMint: PublicKey,
 ): Promise<VersionedTransaction> => {
-  // TODO: replace by something that belongs to the DAO
-  // https://referral.jup.ag/
-  // EV4qhLE2yPKdUPdQ74EWJUn21xT3eGQxG3DRR1g9NNFc belongs to 8SSLjXBEVk9nesbhi9UMCA32uijbVBUqWoKPPQPTekzt
-  // for now
-  const feeMint = selectedRoute.swapMode === 'ExactIn' ? outputMint : inputMint
-  const feeAccountPdas = await PublicKey.findProgramAddressSync(
-    [
-      Buffer.from('referral_ata'),
-      new PublicKey('EV4qhLE2yPKdUPdQ74EWJUn21xT3eGQxG3DRR1g9NNFc').toBuffer(),
-      feeMint.toBuffer(),
-    ],
-    new PublicKey('REFER4ZgmyYx9c6He5XfaTMiGfdLwRnkV4RPp9t9iF3'),
-  )
-  const feeAccount = feeAccountPdas[0]
-
   // docs https://station.jup.ag/api-v6/post-swap
   const transactions = await (
     await fetch(`${JUPITER_V6_QUOTE_API_MAINNET}/swap`, {
@@ -210,22 +196,11 @@ export const fetchJupiterWalletSwapTransaction = async (
         // user public key to be used for the swap
         userPublicKey,
         slippageBps: Math.ceil(slippage * 100),
-        // docs
-        // https://station.jup.ag/docs/additional-topics/referral-program
-        // https://github.com/TeamRaccoons/referral
-        // https://github.com/TeamRaccoons/referral/blob/main/packages/sdk/src/referral.ts
-        ...(feeMint.toBase58() ===
-        'HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3'
-          ? {}
-          : { platformFeeBps: 1, feeAccount }),
-
-        // limits
       }),
     })
   ).json()
 
   const { swapTransaction } = transactions
-
   const parsedSwapTransaction = VersionedTransaction.deserialize(
     Buffer.from(swapTransaction, 'base64'),
   )
@@ -241,22 +216,6 @@ export const fetchJupiterTransaction = async (
   inputMint: PublicKey,
   outputMint: PublicKey,
 ): Promise<[TransactionInstruction[], AddressLookupTableAccount[]]> => {
-  // TODO: replace by something that belongs to the DAO
-  // https://referral.jup.ag/
-  // EV4qhLE2yPKdUPdQ74EWJUn21xT3eGQxG3DRR1g9NNFc belongs to 8SSLjXBEVk9nesbhi9UMCA32uijbVBUqWoKPPQPTekzt
-  // for now
-
-  const feeMint = selectedRoute.swapMode === 'ExactIn' ? outputMint : inputMint
-  const feeAccountPdas = await PublicKey.findProgramAddressSync(
-    [
-      Buffer.from('referral_ata'),
-      new PublicKey('EV4qhLE2yPKdUPdQ74EWJUn21xT3eGQxG3DRR1g9NNFc').toBuffer(),
-      feeMint.toBuffer(),
-    ],
-    new PublicKey('REFER4ZgmyYx9c6He5XfaTMiGfdLwRnkV4RPp9t9iF3'),
-  )
-  const feeAccount = feeAccountPdas[0]
-
   // docs https://station.jup.ag/api-v6/post-swap
   const transactions = await (
     await fetch(`${JUPITER_V6_QUOTE_API_MAINNET}/swap`, {
@@ -271,13 +230,6 @@ export const fetchJupiterTransaction = async (
         userPublicKey,
         slippageBps: Math.ceil(slippage * 100),
         wrapAndUnwrapSol: false,
-        // docs
-        // https://station.jup.ag/docs/additional-topics/referral-program
-        // https://github.com/TeamRaccoons/referral
-        // https://github.com/TeamRaccoons/referral/blob/main/packages/sdk/src/referral.ts
-        ...([''].includes(feeMint.toBase58())
-          ? {}
-          : { platformFeeBps: 1, feeAccount }),
       }),
     })
   ).json()
@@ -332,7 +284,7 @@ const SwapReviewRouteInfo = ({
   setSelectedRoute,
   show,
 }: JupiterRouteInfoProps) => {
-  const { t } = useTranslation(['common', 'swap', 'trade'])
+  const { t } = useTranslation(['common', 'account', 'swap', 'trade'])
   const slippage = mangoStore((s) => s.swap.slippage)
   const wallet = useWallet()
   const [showRoutesModal, setShowRoutesModal] = useState<boolean>(false)
@@ -411,6 +363,7 @@ const SwapReviewRouteInfo = ({
   const onWalletSwap = useCallback(async () => {
     if (!selectedRoute || !inputBank || !outputBank || !wallet.publicKey) return
     const actions = mangoStore.getState().actions
+    const client = mangoStore.getState().client
     const set = mangoStore.getState().set
     const connection = mangoStore.getState().connection
     setSubmitting(true)
@@ -419,20 +372,16 @@ const SwapReviewRouteInfo = ({
         selectedRoute,
         wallet.publicKey,
         slippage,
-        inputBank.mint,
-        outputBank.mint,
       )
-
+      const latestBlockhash = await connection.getLatestBlockhash()
       const sign = wallet.signTransaction!
       const signed = await sign(vtx)
-      const rawTransaction = signed.serialize()
-
-      const txid = await connection.sendRawTransaction(rawTransaction, {
-        skipPreflight: true,
-        maxRetries: 2,
-      })
-
-      await connection.confirmTransaction(txid)
+      const txid = await sendTxAndConfirm(
+        client.opts.multipleConnections,
+        connection,
+        signed,
+        latestBlockhash,
+      )
       set((s) => {
         s.swap.amountIn = ''
         s.swap.amountOut = ''
@@ -460,6 +409,7 @@ const SwapReviewRouteInfo = ({
 
   const onSwap = useCallback(async () => {
     if (!selectedRoute) return
+    let directRouteFallbackUsed = false
     try {
       const client = mangoStore.getState().client
       const group = mangoStore.getState().group
@@ -554,6 +504,33 @@ const SwapReviewRouteInfo = ({
               type: 'error',
             })
           }
+        } else {
+          const stringError = `${e}`
+          if (
+            stringError.toLowerCase().includes('max accounts') &&
+            routes?.length &&
+            routes.length > 1
+          ) {
+            directRouteFallbackUsed = true
+            setSelectedRoute(
+              routes.filter(
+                (x) =>
+                  JSON.stringify(x.routePlan) !==
+                  JSON.stringify(selectedRoute.routePlan),
+              )[0],
+            )
+            notify({
+              title: 'Transaction failed',
+              description: `${stringError} - please review route and click swap again`,
+              type: 'error',
+            })
+          } else {
+            notify({
+              title: 'Transaction failed',
+              description: `${stringError} - please try again`,
+              type: 'error',
+            })
+          }
         }
       } finally {
         setSubmitting(false)
@@ -561,18 +538,20 @@ const SwapReviewRouteInfo = ({
     } catch (e) {
       console.error('Swap error:', e)
     } finally {
-      onClose()
+      if (!directRouteFallbackUsed) {
+        onClose()
+      }
     }
   }, [
-    amountIn,
-    inputBank,
-    outputBank,
-    onClose,
-    onSuccess,
     selectedRoute,
-    slippage,
-    soundSettings,
     wallet.publicKey,
+    slippage,
+    amountIn,
+    soundSettings,
+    onSuccess,
+    t,
+    routes,
+    onClose,
   ])
 
   const onClick = isWalletSwap ? onWalletSwap : onSwap
@@ -605,7 +584,16 @@ const SwapReviewRouteInfo = ({
       outputBank,
       outputTokenInfo.decimals,
     )
-  }, [selectedRoute])
+  }, [inputBank, outputBank, outputTokenInfo, selectedRoute])
+
+  const flashLoanFee = useMemo(() => {
+    if (!inputBank || !outputBank) return 0
+    const rate = Math.max(
+      inputBank.flashLoanSwapFeeRate,
+      outputBank.flashLoanSwapFeeRate,
+    )
+    return amountIn.mul(rate).toNumber()
+  }, [amountIn, inputBank, outputBank])
 
   const coinGeckoPriceDifference = useMemo(() => {
     return amountOut?.toNumber()
@@ -620,6 +608,11 @@ const SwapReviewRouteInfo = ({
           .mul(100)
       : new Decimal(0)
   }, [coingeckoPrices, amountIn, amountOut])
+
+  const isInsured = useMemo(() => {
+    const group = mangoStore.getState().group
+    return isTokenInsured(outputBank, group)
+  }, [outputBank])
 
   return routes?.length &&
     selectedRoute &&
@@ -638,16 +631,16 @@ const SwapReviewRouteInfo = ({
     >
       <div className="thin-scroll flex h-full flex-col justify-between overflow-y-auto">
         <div>
-          <div className="flex items-center justify-between px-4 pt-4">
+          <div className="relative w-full px-4 pt-4">
             <IconButton
-              className="text-th-fgd-2"
+              className="absolute text-th-fgd-2"
               onClick={onClose}
               size="small"
               ref={focusRef}
             >
               <ArrowLeftIcon className="h-5 w-5" />
             </IconButton>
-            <div className="relative h-8 w-8">
+            <div className="absolute right-4 h-8 w-8">
               <CircularProgress
                 size={32}
                 indicatorWidth={1}
@@ -656,7 +649,7 @@ const SwapReviewRouteInfo = ({
               />
               {refetchRoute ? (
                 <IconButton
-                  className="absolute bottom-0 left-0 right-0 top-0 text-th-fgd-2"
+                  className="absolute inset-0 text-th-fgd-2"
                   hideBg
                   onClick={() => refetchRoute()}
                   size="small"
@@ -671,7 +664,7 @@ const SwapReviewRouteInfo = ({
               ) : null}
             </div>
           </div>
-          <div className="flex justify-center bg-th-bkg-1 px-6 pt-2">
+          <div className="flex justify-center bg-th-bkg-1 px-6 pt-4">
             <div className="mb-3 flex w-full flex-col items-center border-b border-th-bkg-3 pb-4">
               <div className="relative mb-2 w-[72px]">
                 <TokenLogo bank={inputBank} size={40} />
@@ -821,6 +814,23 @@ const SwapReviewRouteInfo = ({
                   : `${(selectedRoute?.priceImpactPct * 100).toFixed(2)}%`}
               </p>
             </div>
+            {!isWalletSwap ? (
+              <div className="flex justify-between">
+                {/* <Tooltip content={t('swap:tooltip-flash-loan-fee')}> */}
+                <p>{t('swap:flash-loan-fee')}</p>
+                {/* </Tooltip> */}
+                <p className="text-right font-mono text-sm text-th-fgd-2">
+                  ≈
+                  <FormatNumericValue
+                    value={flashLoanFee}
+                    decimals={inputBank?.mintDecimals}
+                  />{' '}
+                  <span className="font-body text-th-fgd-3">
+                    {inputBank?.name}
+                  </span>
+                </p>
+              </div>
+            ) : null}
             <div className="flex justify-between">
               <Tooltip
                 content={
@@ -837,7 +847,7 @@ const SwapReviewRouteInfo = ({
                 <p className="tooltip-underline">Jupiter Fees</p>
               </Tooltip>
               <p className="text-right font-mono text-sm text-th-fgd-2">
-                ≈{' '}
+                ≈
                 <FormatNumericValue
                   value={jupiterFees}
                   decimals={outputTokenInfo.decimals}
@@ -861,7 +871,7 @@ const SwapReviewRouteInfo = ({
                 </span>
               </p>
             </div> */}
-            {borrowAmount ? (
+            {borrowAmount && inputBank ? (
               <>
                 <div className="flex justify-between">
                   <Tooltip
@@ -872,7 +882,7 @@ const SwapReviewRouteInfo = ({
                             borrowAmount: formatNumericValue(borrowAmount),
                             token: inputTokenInfo?.symbol,
                             rate: formatNumericValue(
-                              inputBank!.getBorrowRateUi(),
+                              inputBank.getBorrowRateUi(),
                               2,
                             ),
                           })
@@ -880,7 +890,7 @@ const SwapReviewRouteInfo = ({
                             borrowAmount: formatNumericValue(borrowAmount),
                             token: inputTokenInfo?.symbol,
                             rate: formatNumericValue(
-                              inputBank!.getBorrowRateUi(),
+                              inputBank.getBorrowRateUi(),
                               2,
                             ),
                           })
@@ -900,7 +910,7 @@ const SwapReviewRouteInfo = ({
                   <Tooltip
                     content={t('loan-origination-fee-tooltip', {
                       fee: `${(
-                        inputBank!.loanOriginationFeeRate.toNumber() * 100
+                        inputBank.loanOriginationFeeRate.toNumber() * 100
                       ).toFixed(3)}%`,
                     })}
                     delay={100}
@@ -913,18 +923,23 @@ const SwapReviewRouteInfo = ({
                     <FormatNumericValue
                       value={
                         borrowAmount *
-                        inputBank!.loanOriginationFeeRate.toNumber()
+                        inputBank.loanOriginationFeeRate.toNumber()
                       }
-                      decimals={inputBank!.mintDecimals}
+                      decimals={inputBank.mintDecimals}
                     />{' '}
                     <span className="font-body text-th-fgd-3">
-                      {inputBank!.name}
+                      {inputBank.name}
                     </span>
                   </p>
                 </div>
               </>
             ) : null}
           </div>
+          {!isInsured ? (
+            <div className="mt-4 px-6">
+              <UninsuredNotification name={outputBank?.name} />
+            </div>
+          ) : null}
         </div>
         <div className="p-6">
           <div className="mb-4 flex items-center justify-center">
@@ -955,7 +970,7 @@ const SwapReviewRouteInfo = ({
                     <p>{t('swap:route-info')}</p>
                     <ChevronDownIcon
                       className={`${
-                        open ? 'rotate-180' : 'rotate-360'
+                        open ? 'rotate-180' : 'rotate-0'
                       } h-5 w-5 text-th-fgd-3`}
                     />
                   </Disclosure.Button>

@@ -1,0 +1,14 @@
+{
+  "advanced-order": "Tipo de Ordem Avançado",
+  "advanced-order-details": "Tipos de ordens avançadas na janela do gráfico só podem ser canceladas. Se novas condições forem necessárias, cancele esta ordem e use o formulário de ordem de negociação.",
+  "cancel-order": "Cancelar Ordem",
+  "cancel-order-details": "Cancelar sua ordem de {{orderSide}} {{orderSize}} {{marketName}} a {{orderPrice}}",
+  "modify-order": "Modificar Ordem",
+  "modify-order-details": "Edite sua ordem de {{marketName}} de {{orderSide}} {{orderSize}} a {{currentOrderPrice}} para {{orderSide}} {{orderSize}} a {{updatedOrderPrice}}",
+  "order-details": " ({{orderType}} {{orderSide}}) se o preço for {{triggerCondition}} {{triggerPrice}}",
+  "outside-range": "Preço da Ordem Fora do Intervalo",
+  "slippage-accept": "Use o formulário de ordem de negociação se desejar aceitar a derrapagem potencial.",
+  "slippage-warning": "{{updatedOrderPrice}} está mais de 5% {{aboveBelow}} do preço de mercado atual de {{selectedMarketPrice}}. Executar esta negociação pode incorrer em derrapagem significativa.",
+  "toggle-order-line": "Alternar visibilidade da linha de ordem",
+  "toggle-trade-executions": "Mostrar execuções de negociações. Limitado às suas últimas 250 negociações em todos os mercados."
+}

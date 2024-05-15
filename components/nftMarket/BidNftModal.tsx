@@ -100,7 +100,7 @@ const BidNftModal = ({ isOpen, onClose, listing }: ListingModalProps) => {
             {listing.asset?.json?.image ? (
               <ImgWithLoader
                 alt={listing.asset?.name || 'Unknown'}
-                className="mb-3 h-40 w-40 flex-shrink-0 rounded-md"
+                className="mb-3 h-40 w-40 shrink-0 rounded-md"
                 src={listing.asset.json.image}
               />
             ) : null}

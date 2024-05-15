@@ -106,9 +106,10 @@
     "yes-votes": "Yes Votes",
     "your-votes": "Your Votes:",
     "create-switch-oracle": "Create switchboard oracle for",
-    "estimated-oracle-cost": "Estimated cost with funding oracle for ~12 months",
+    "estimated-oracle-cost": "Estimated cost with funding oracle for ~3 months",
     "create-oracle": "Create oracle",
     "tier": "Tier",
     "on-boarding-description-1": "If you want to use delegated tokens go to vote view and select wallet in top right corner.",
-    "create-bigger-market": "Create market with bigger event que - cost ~7.5 SOL"
+    "create-bigger-market": "Create market with bigger event que - cost ~7.5 SOL",
+    "fast-listing": "Fast listing"
 }

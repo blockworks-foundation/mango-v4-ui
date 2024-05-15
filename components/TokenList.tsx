@@ -28,7 +28,6 @@ import DepositWithdrawModal from './modals/DepositWithdrawModal'
 import BorrowRepayModal from './modals/BorrowRepayModal'
 import { WRAPPED_SOL_MINT } from '@project-serum/serum/lib/token-instructions'
 import {
-  MANGO_DATA_API_URL,
   SHOW_ZERO_BALANCES_KEY,
   TOKEN_REDUCE_ONLY_OPTIONS,
   USDC_MINT,
@@ -48,9 +47,10 @@ import { useSortableData } from 'hooks/useSortableData'
 import TableTokenName from './shared/TableTokenName'
 import CloseBorrowModal from './modals/CloseBorrowModal'
 import { floorToDecimal } from 'utils/numbers'
-import { useQuery } from '@tanstack/react-query'
-import { TotalInterestDataItem } from 'types'
 import SheenLoader from './shared/SheenLoader'
+import useAccountInterest from 'hooks/useAccountInterest'
+import { handleGoToTradePage } from 'utils/markets'
+import TableRatesDisplay from './shared/TableRatesDisplay'
 
 export const handleOpenCloseBorrowModal = (borrowBank: Bank) => {
   const group = mangoStore.getState().group
@@ -100,30 +100,6 @@ export const handleCloseBorrowModal = () => {
   })
 }
 
-export const fetchInterestData = async (mangoAccountPk: string) => {
-  try {
-    const response = await fetch(
-      `${MANGO_DATA_API_URL}/stats/interest-account-total?mango-account=${mangoAccountPk}`,
-    )
-    const parsedResponse: Omit<TotalInterestDataItem, 'symbol'>[] | null =
-      await response.json()
-    if (parsedResponse) {
-      const entries: [string, Omit<TotalInterestDataItem, 'symbol'>][] =
-        Object.entries(parsedResponse).sort((a, b) => b[0].localeCompare(a[0]))
-
-      const stats: TotalInterestDataItem[] = entries
-        .map(([key, value]) => {
-          return { ...value, symbol: key }
-        })
-        .filter((x) => x)
-      return stats
-    } else return []
-  } catch (e) {
-    console.log('Failed to fetch account funding', e)
-    return []
-  }
-}
-
 type TableData = {
   bank: Bank
   balance: number
@@ -159,17 +135,7 @@ const TokenList = () => {
   const {
     data: totalInterestData,
     isInitialLoading: loadingTotalInterestData,
-  } = useQuery(
-    ['account-interest-data', mangoAccountAddress],
-    () => fetchInterestData(mangoAccountAddress),
-    {
-      cacheTime: 1000 * 60 * 10,
-      staleTime: 1000 * 60,
-      retry: 3,
-      refetchOnWindowFocus: false,
-      enabled: !!mangoAccountAddress,
-    },
-  )
+  } = useAccountInterest()
 
   const formattedTableData = useCallback(
     (banks: BankWithBalance[]) => {
@@ -459,25 +425,10 @@ const TokenList = () => {
                     </Td>
                     <Td>
                       <div className="flex justify-end space-x-1.5">
-                        <Tooltip content={t('deposit-rate')}>
-                          <p className="cursor-help text-th-up">
-                            <FormatNumericValue
-                              value={depositRate}
-                              decimals={2}
-                            />
-                            %
-                          </p>
-                        </Tooltip>
-                        <span className="text-th-fgd-4">|</span>
-                        <Tooltip content={t('borrow-rate')}>
-                          <p className="cursor-help text-th-down">
-                            <FormatNumericValue
-                              value={borrowRate}
-                              decimals={2}
-                            />
-                            %
-                          </p>
-                        </Tooltip>
+                        <TableRatesDisplay
+                          borrowRate={borrowRate}
+                          depositRate={depositRate}
+                        />
                       </div>
                     </Td>
                     <Td>
@@ -566,8 +517,8 @@ const MobileTokenListItem = ({ data }: { data: TableData }) => {
                 </div>
                 <ChevronDownIcon
                   className={`${
-                    open ? 'rotate-180' : 'rotate-360'
-                  } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                    open ? 'rotate-180' : 'rotate-0'
+                  } h-6 w-6 shrink-0 text-th-fgd-3`}
                 />
               </div>
             </div>
@@ -636,15 +587,12 @@ const MobileTokenListItem = ({ data }: { data: TableData }) => {
                 </div>
                 <div className="col-span-1">
                   <p className="text-xs text-th-fgd-3">{t('rates')}</p>
-                  <p className="space-x-2 font-mono">
-                    <span className="text-th-up">
-                      <FormatNumericValue value={depositRate} decimals={2} />%
-                    </span>
-                    <span className="font-normal text-th-fgd-4">|</span>
-                    <span className="text-th-down">
-                      <FormatNumericValue value={borrowRate} decimals={2} />%
-                    </span>
-                  </p>
+                  <div className="flex space-x-1.5 font-mono">
+                    <TableRatesDisplay
+                      borrowRate={borrowRate}
+                      depositRate={depositRate}
+                    />
+                  </div>
                 </div>
                 <div className="col-span-1">
                   <ActionsMenu bank={bank} />
@@ -678,11 +626,12 @@ export const ActionsMenu = ({
   const { isUnownedAccount } = useUnownedAccount()
   const { isDesktop } = useViewport()
 
-  const spotMarket = useMemo(() => {
-    return spotMarkets.find((m) => {
-      const base = m.name.split('/')[0]
-      return base.toUpperCase() === bank.name.toUpperCase()
-    })
+  const hasSpotMarket = useMemo(() => {
+    const markets = spotMarkets.filter(
+      (m) => m.baseTokenIndex === bank?.tokenIndex,
+    )
+    if (markets?.length) return true
+    return false
   }, [spotMarkets])
 
   const handleShowActionModals = useCallback(
@@ -741,10 +690,6 @@ export const ActionsMenu = ({
     router.push('/swap', undefined, { shallow: true })
   }, [bank, router, set])
 
-  const handleTrade = useCallback(() => {
-    router.push(`/trade?name=${spotMarket?.name}`, undefined, { shallow: true })
-  }, [spotMarket, router])
-
   return (
     <>
       {isUnownedAccount ? null : (
@@ -787,7 +732,7 @@ export const ActionsMenu = ({
                 >
                   {!showText && isDesktop ? (
                     <div className="flex items-center justify-center border-b border-th-bkg-3 pb-2">
-                      <div className="mr-2 flex flex-shrink-0 items-center">
+                      <div className="mr-2 flex shrink-0 items-center">
                         <TokenLogo bank={bank} size={20} />
                       </div>
                       <p className="font-body">
@@ -832,8 +777,12 @@ export const ActionsMenu = ({
                   <ActionsLinkButton onClick={handleSwap}>
                     {t('swap')}
                   </ActionsLinkButton>
-                  {spotMarket ? (
-                    <ActionsLinkButton onClick={handleTrade}>
+                  {hasSpotMarket ? (
+                    <ActionsLinkButton
+                      onClick={() =>
+                        handleGoToTradePage(bank, spotMarkets, router)
+                      }
+                    >
                       {t('trade')}
                     </ActionsLinkButton>
                   ) : null}

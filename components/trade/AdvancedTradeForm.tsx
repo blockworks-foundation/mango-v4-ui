@@ -1,4 +1,5 @@
 import {
+  HealthType,
   OracleProvider,
   PerpMarket,
   PerpOrderSide,
@@ -43,6 +44,7 @@ import TabUnderline from '@components/shared/TabUnderline'
 import PerpSlider, { usePerpMarketMax } from './PerpSlider'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import {
+  MAX_PERP_SLIPPAGE,
   SIZE_INPUT_UI_KEY,
   SOUND_SETTINGS_KEY,
   TRADE_CHECKBOXES_KEY,
@@ -64,7 +66,7 @@ import useMangoAccount from 'hooks/useMangoAccount'
 import MaxSizeButton from './MaxSizeButton'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 import { Howl } from 'howler'
-import { isMangoError } from 'types'
+import { OrderbookL2, isMangoError } from 'types'
 import InlineNotification from '@components/shared/InlineNotification'
 import SpotMarketOrderSwapForm from './SpotMarketOrderSwapForm'
 import useRemainingBorrowsInPeriod from 'hooks/useRemainingBorrowsInPeriod'
@@ -82,6 +84,10 @@ import CreateAccountModal from '@components/modals/CreateAccountModal'
 import TradeformSubmitButton from './TradeformSubmitButton'
 import BigNumber from 'bignumber.js'
 import { isOpenbookV2ExternalMarket } from 'types/openbook'
+import useIpAddress from 'hooks/useIpAddress'
+import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
+import { isTokenInsured } from '@components/DepositForm'
+import UninsuredNotification from '@components/shared/UninsuredNotification'
 
 dayjs.extend(relativeTime)
 
@@ -96,7 +102,7 @@ export const INPUT_SUFFIX_CLASSNAMES =
   'absolute right-[1px] top-1/2 flex h-[calc(100%-2px)] -translate-y-1/2 items-center rounded-r-md bg-th-input-bkg px-2 text-xs font-normal text-th-fgd-4'
 
 export const INPUT_PREFIX_CLASSNAMES =
-  'absolute left-2 top-1/2 h-5 w-5 flex-shrink-0 -translate-y-1/2'
+  'absolute left-2 top-1/2 h-5 w-5 shrink-0 -translate-y-1/2'
 
 export const DEFAULT_CHECKBOX_SETTINGS = {
   ioc: false,
@@ -114,7 +120,14 @@ type TradeForm = {
 type FormErrors = Partial<Record<keyof TradeForm, string>>
 
 const AdvancedTradeForm = () => {
-  const { t } = useTranslation(['common', 'settings', 'swap', 'trade'])
+  const { t } = useTranslation([
+    'common',
+    'account',
+    'settings',
+    'swap',
+    'trade',
+  ])
+  const { poolIsPerpReadyForRefresh } = useOpenPerpPositions()
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const { usedSerum3, totalSerum3, usedPerps, totalPerps } =
     useMangoAccountAccounts()
@@ -126,6 +139,7 @@ const AdvancedTradeForm = () => {
   const [tradeFormSizeUi] = useLocalStorageState(SIZE_INPUT_UI_KEY, 'slider')
   const [savedCheckboxSettings, setSavedCheckboxSettings] =
     useLocalStorageState(TRADE_CHECKBOXES_KEY, DEFAULT_CHECKBOX_SETTINGS)
+  const { ipAllowed, perpAllowed, spotAllowed, ipCountry } = useIpAddress()
   const [soundSettings] = useLocalStorageState(
     SOUND_SETTINGS_KEY,
     INITIAL_SOUND_SETTINGS,
@@ -143,12 +157,13 @@ const AdvancedTradeForm = () => {
   } = useSelectedMarket()
   const { remainingBorrowsInPeriod, timeToNextPeriod } =
     useRemainingBorrowsInPeriod()
-  const spotMax = useSpotMarketMax(
+  const { max: spotMax } = useSpotMarketMax(
     mangoAccount,
     selectedMarket,
     tradeForm.side,
     savedCheckboxSettings.margin,
   )
+
   const perpMax = usePerpMarketMax(mangoAccount, selectedMarket, tradeForm.side)
 
   const baseBank = useMemo(() => {
@@ -158,6 +173,15 @@ const AdvancedTradeForm = () => {
     const bank = group.getFirstBankByTokenIndex(selectedMarket.baseTokenIndex)
     return bank
   }, [selectedMarket])
+
+  const isInsured = useMemo(() => {
+    if (selectedMarket instanceof Serum3Market) {
+      const group = mangoStore.getState().group
+      return isTokenInsured(baseBank, group)
+    } else {
+      return selectedMarket ? selectedMarket.groupInsuranceFund : true
+    }
+  }, [baseBank, selectedMarket])
 
   // check for available account token slots
   const tokenPositionsFull = useTokenPositionsFull([baseBank, quoteBank])
@@ -421,6 +445,48 @@ const AdvancedTradeForm = () => {
     }
   }, [tradeForm.baseSize, marketAddress])
 
+  const isSanctioned = useMemo(() => {
+    return !(
+      ipAllowed ||
+      (selectedMarket instanceof PerpMarket && perpAllowed) ||
+      (selectedMarket instanceof Serum3Market && spotAllowed)
+    )
+  }, [selectedMarket, ipAllowed, perpAllowed, spotAllowed])
+
+  const hasPosition = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!mangoAccount || !selectedMarket || !group) return false
+    if (selectedMarket instanceof PerpMarket) {
+      const basePosition = mangoAccount
+        .getPerpPosition(selectedMarket.perpMarketIndex)
+        ?.getBasePositionUi(selectedMarket)
+      return basePosition !== undefined && basePosition !== 0
+    } else if (selectedMarket instanceof Serum3Market) {
+      const baseBank = group.getFirstBankByTokenIndex(
+        selectedMarket.baseTokenIndex,
+      )
+      const tokenPosition = mangoAccount.getTokenBalanceUi(baseBank)
+      return tradeForm.side === 'sell' && tokenPosition !== 0
+    }
+  }, [selectedMarket, ipCountry, mangoAccount, tradeForm])
+
+  const isForceReduceOnly = useMemo(() => {
+    if (!selectedMarket) return false
+    return selectedMarket.reduceOnly || !!(isSanctioned && hasPosition)
+  }, [selectedMarket, isSanctioned, hasPosition])
+
+  useEffect(() => {
+    if (isSanctioned) {
+      set((state) => {
+        state.tradeForm.reduceOnly = true
+      })
+      setSavedCheckboxSettings({
+        ...savedCheckboxSettings,
+        margin: false,
+      })
+    }
+  }, [isSanctioned])
+
   /*
    * Updates the limit price on page load
    */
@@ -601,6 +667,42 @@ const AdvancedTradeForm = () => {
       tickDecimals,
     ],
   )
+  const calcOrderPrice = useCallback(
+    (price: number, orderbook: OrderbookL2) => {
+      let orderPrice = price
+      if (tradeForm.tradeType === 'Market') {
+        try {
+          if (tradeForm.side === 'sell') {
+            const marketPrice = Math.max(
+              oraclePrice,
+              orderbook?.bids?.[0]?.[0] || 0,
+            )
+            orderPrice = marketPrice * (1 - MAX_PERP_SLIPPAGE)
+          } else {
+            const marketPrice = Math.min(
+              oraclePrice,
+              orderbook?.asks?.[0]?.[0] || Infinity,
+            )
+            orderPrice = marketPrice * (1 + MAX_PERP_SLIPPAGE)
+          }
+        } catch (e) {
+          //simple fallback if something go wrong
+          const maxSlippage = 0.025
+          orderPrice =
+            price *
+            (tradeForm.side === 'buy' ? 1 + maxSlippage : 1 - maxSlippage)
+        }
+        notify({
+          type: 'info',
+          title: t('trade:max-slippage-price-notification', {
+            price: `$${orderPrice.toFixed(tickDecimals)}`,
+          }),
+        })
+      }
+      return orderPrice
+    },
+    [oraclePrice, t, tickDecimals, tradeForm.side, tradeForm.tradeType],
+  )
 
   const handleStandardOrder = useCallback(async () => {
     const { client } = mangoStore.getState()
@@ -609,6 +711,7 @@ const AdvancedTradeForm = () => {
     const { tradeForm } = mangoStore.getState()
     const { actions } = mangoStore.getState()
     const selectedMarket = mangoStore.getState().selectedMarket.current
+    const orderbook = mangoStore.getState().selectedMarket.orderbook
 
     if (!group || !mangoAccount) return
     setPlacingOrder(true)
@@ -616,7 +719,6 @@ const AdvancedTradeForm = () => {
       const baseSize = Number(tradeForm.baseSize)
       let price = Number(tradeForm.price)
       if (tradeForm.tradeType === 'Market') {
-        const orderbook = mangoStore.getState().selectedMarket.orderbook
         price = calculateLimitPriceForMarketOrder(
           orderbook,
           baseSize,
@@ -670,13 +772,7 @@ const AdvancedTradeForm = () => {
             ? PerpOrderType.postOnly
             : PerpOrderType.limit
 
-        let orderPrice = price
-        if (tradeForm.tradeType === 'Market') {
-          const maxSlippage = 0.025
-          orderPrice =
-            price *
-            (tradeForm.side === 'buy' ? 1 + maxSlippage : 1 - maxSlippage)
-        }
+        const orderPrice = calcOrderPrice(price, orderbook)
 
         const { signature: tx } = await client.perpPlaceOrder(
           group,
@@ -692,7 +788,18 @@ const AdvancedTradeForm = () => {
           undefined,
           undefined,
         )
-        actions.fetchOpenOrders(true)
+        await poolIsPerpReadyForRefresh(
+          () => {
+            actions.fetchOpenOrders(true)
+          },
+          () => {
+            notify({
+              type: 'error',
+              title:
+                'Timeout during perp refresh, please refresh data manually',
+            })
+          },
+        )
         set((s) => {
           s.successAnimation.trade = true
         })
@@ -764,7 +871,7 @@ const AdvancedTradeForm = () => {
     } finally {
       setPlacingOrder(false)
     }
-  }, [isFormValid, soundSettings])
+  }, [isFormValid, oraclePrice, soundSettings, tickDecimals])
 
   const handleTriggerOrder = useCallback(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
@@ -859,16 +966,57 @@ const AdvancedTradeForm = () => {
       : orderTypesArray
   }, [baseBank, mangoAccountAddress, minOrderDecimals, selectedMarket])
 
+  const initHealth = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!group || !mangoAccount) return 100
+    return mangoAccount.getHealthRatioUi(group, HealthType.init)
+  }, [mangoAccount])
+
   const tooMuchSize = useMemo(() => {
-    const { baseSize, quoteSize, side } = tradeForm
+    const { baseSize, quoteSize, side, tradeType } = tradeForm
     if (!baseSize || !quoteSize) return false
+
+    // when init health <= 0 users may not be able to close positions via limit orders. we don't want to disable the place order button in this scenario. however we still ues this const to disable the button to restrict users from entering unwanted margin positions.
+    if (initHealth <= 0 && tradeType === 'Limit' && mangoAccount) {
+      if (selectedMarket instanceof Serum3Market && baseBank && quoteBank) {
+        const balance =
+          side === 'buy'
+            ? mangoAccount?.getTokenBalanceUi(quoteBank)
+            : mangoAccount?.getTokenBalanceUi(baseBank)
+        if (balance) return false
+      }
+      if (selectedMarket instanceof PerpMarket) {
+        const basePosition = mangoAccount
+          .getPerpPosition(selectedMarket.perpMarketIndex)
+          ?.getBasePositionUi(selectedMarket)
+        if (basePosition !== 0 && basePosition !== undefined) {
+          if (basePosition > 0 && side === 'sell') {
+            return false
+          }
+          if (basePosition < 0 && side === 'buy') {
+            return false
+          }
+        }
+      }
+    }
+
+    // check the values in the trade form are not greater than the allowed account max
     const size = side === 'buy' ? new Decimal(quoteSize) : new Decimal(baseSize)
     const decimalMax =
       selectedMarket instanceof Serum3Market
         ? new Decimal(spotMax)
         : new Decimal(perpMax)
     return size.gt(decimalMax)
-  }, [perpMax, selectedMarket, spotMax, tradeForm])
+  }, [
+    baseBank,
+    initHealth,
+    mangoAccount,
+    perpMax,
+    quoteBank,
+    selectedMarket,
+    spotMax,
+    tradeForm,
+  ])
 
   const disabled =
     !serumOrPerpMarket ||
@@ -1049,7 +1197,7 @@ const AdvancedTradeForm = () => {
                     decimalScale={tickDecimals}
                     name="quote"
                     id="quote"
-                    className="-mt-[1px] flex w-full items-center rounded-md rounded-t-none border border-th-input-border bg-th-input-bkg p-2 pl-9 font-mono text-sm font-bold text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover md:hover:focus:border-th-fgd-4 lg:text-base"
+                    className="mt-[-1px] flex w-full items-center rounded-md rounded-t-none border border-th-input-border bg-th-input-bkg p-2 pl-9 font-mono text-sm font-bold text-th-fgd-1 focus:border-th-fgd-4 focus:outline-none md:hover:border-th-input-border-hover md:hover:focus:border-th-fgd-4 lg:text-base"
                     placeholder="0.00"
                     value={tradeForm.quoteSize}
                     onValueChange={handleQuoteSizeChange}
@@ -1146,6 +1294,7 @@ const AdvancedTradeForm = () => {
                   >
                     <Checkbox
                       checked={savedCheckboxSettings.margin}
+                      disabled={isSanctioned}
                       onChange={handleSetMargin}
                     >
                       {t('trade:margin')}
@@ -1164,10 +1313,13 @@ const AdvancedTradeForm = () => {
                   >
                     <div className="flex items-center text-xs text-th-fgd-3">
                       <Checkbox
-                        checked={tradeForm.reduceOnly}
+                        checked={
+                          tradeForm.reduceOnly || isForceReduceOnly === true
+                        }
                         onChange={(e) =>
                           handleReduceOnlyChange(e.target.checked)
                         }
+                        disabled={isForceReduceOnly}
                       >
                         {t('trade:reduce-only')}
                       </Checkbox>
@@ -1178,7 +1330,9 @@ const AdvancedTradeForm = () => {
             </div>
             <div className="mb-4 mt-6 flex px-3 md:px-4">
               <TradeformSubmitButton
-                disabled={false}
+                disabled={disabled}
+                isForceReduceOnly={isForceReduceOnly}
+                isSanctioned={isSanctioned}
                 placingOrder={placingOrder}
                 setShowCreateAccountModal={setShowCreateAccountModal}
                 setShowDepositModal={setShowDepositModal}
@@ -1188,12 +1342,38 @@ const AdvancedTradeForm = () => {
               />
             </div>
           </form>
+          {initHealth <= 0 ? (
+            <div className="mb-4 px-4">
+              <InlineNotification
+                type="warning"
+                desc={
+                  tradeForm.tradeType === 'Limit'
+                    ? t('trade:warning-init-health-limit')
+                    : t('trade:warning-init-health')
+                }
+              />
+            </div>
+          ) : null}
           {tradeForm.tradeType === 'Market' &&
           selectedMarket instanceof PerpMarket ? (
             <div className="mb-4 px-4">
               <InlineNotification
                 type="warning"
                 desc={t('trade:price-expect')}
+              />
+            </div>
+          ) : null}
+          {!isInsured &&
+          ((selectedMarket instanceof Serum3Market &&
+            tradeForm.side === 'buy') ||
+            selectedMarket instanceof PerpMarket) ? (
+            <div className="mb-4 px-4">
+              <UninsuredNotification
+                name={
+                  selectedMarket instanceof Serum3Market
+                    ? baseBank?.name
+                    : selectedMarket.name
+                }
               />
             </div>
           ) : null}
@@ -1232,6 +1412,14 @@ const AdvancedTradeForm = () => {
                     dayjs().add(timeToNextPeriod, 'second'),
                   ),
                 })}
+              />
+            </div>
+          ) : null}
+          {isSanctioned && hasPosition ? (
+            <div className="mb-4 px-4">
+              <InlineNotification
+                type="error"
+                desc={t('trade:error-sanctioned-reduce-only')}
               />
             </div>
           ) : null}

@@ -3,6 +3,17 @@ import { PublicKey } from '@solana/web3.js'
 export const MANGO_REALM_PK = new PublicKey(
   'DPiH3H3c7t47BMxqTxLsuPQpEC6Kne8GA9VXbxpnZxFE',
 )
+
+export const MANGO_SECURITY_REALM_PK = new PublicKey(
+  'AQbsV8b3Yv3UHUmd62hw9vFmNTHgBTdiLfaWzwmVfXB2',
+)
+export const MANGO_SECURITY_COUNCIL_MINT = new PublicKey(
+  'HCZ4rgExnFkACvdbtnuMKFRn5ZELuQYyLKWyPuwRaCGS',
+)
+
+export const MANGO_SECURITY_COUNCIL_WALLET = new PublicKey(
+  'B89yKk4eaQqxSFnDQStTpmCqSdxofqk2RaaacCPVxuvD',
+)
 export const MANGO_GOVERNANCE_PROGRAM = new PublicKey(
   'GqTPL6qRf5aUuqscLh8Rg2HTxPUXfhhAXDptTLhp1t2J',
 )
@@ -19,6 +30,9 @@ export const MANGO_MINT = new PublicKey(
 
 export const MANGO_DAO_WALLET_GOVERNANCE = new PublicKey(
   '7zGXUAeUkY9pEGfApsY26amibvqsf2dmty1cbtxHdfaQ',
+)
+export const MANGO_DAO_SECURITY_WALLET_GOVERNANCE = new PublicKey(
+  'GChgcmMjyPH7B3sHY6ZoHGxXJhW2u5TkwQLxeDoU5JeF',
 )
 
 export const MANGO_DAO_FAST_LISTING_GOVERNANCE = new PublicKey(

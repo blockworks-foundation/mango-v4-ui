@@ -26,7 +26,7 @@ const RewardsTierCard = ({
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center">
-          <div className="mr-4 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-th-bkg-1">
+          <div className="mr-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-th-bkg-1">
             {icon}
           </div>
           <div>

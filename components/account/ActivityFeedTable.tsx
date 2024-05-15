@@ -73,22 +73,26 @@ export const getFee = (activity: any, mangoAccountAddress: string) => {
     const { borrow_fee, symbol } = activity.activity_details
     fee = { value: formatFee(borrow_fee), symbol }
   }
+  if (activity_type == 'loan_origination_fee') {
+    const { fee: settleFee, symbol } = activity.activity_details
+    fee = { value: formatFee(settleFee), symbol }
+  }
   if (activity_type === 'liquidate_token_with_token') {
-    const { side, liab_amount, liab_price, asset_amount, asset_price } =
+    const { side, liab_transfer, liab_price, asset_transfer, asset_price } =
       activity.activity_details
     if (side === 'liqee') {
       fee = {
         value: formatCurrencyValue(
-          Math.abs(liab_amount * liab_price) -
-            Math.abs(asset_amount * asset_price),
+          Math.abs(liab_transfer * liab_price) -
+            Math.abs(asset_transfer * asset_price),
         ),
         symbol: '',
       }
     } else {
       fee = {
         value: formatCurrencyValue(
-          Math.abs(asset_amount * asset_price) -
-            Math.abs(liab_amount * liab_price),
+          Math.abs(asset_transfer * asset_price) -
+            Math.abs(liab_transfer * liab_price),
         ),
         symbol: '',
       }
@@ -123,20 +127,20 @@ export const getCreditAndDebit = (
   let credit = { value: '0', symbol: '' }
   let debit = { value: '0', symbol: '' }
   if (activity_type === 'liquidate_token_with_token') {
-    const { side, liab_amount, liab_symbol, asset_amount, asset_symbol } =
+    const { side, liab_transfer, liab_symbol, asset_transfer, asset_symbol } =
       activity.activity_details
     if (side === 'liqee') {
-      credit = { value: formatNumericValue(liab_amount), symbol: liab_symbol }
+      credit = { value: formatNumericValue(liab_transfer), symbol: liab_symbol }
       debit = {
-        value: formatNumericValue(asset_amount),
+        value: formatNumericValue(asset_transfer),
         symbol: asset_symbol,
       }
     } else {
       credit = {
-        value: formatNumericValue(asset_amount),
+        value: formatNumericValue(asset_transfer),
         symbol: asset_symbol,
       }
-      debit = { value: formatNumericValue(liab_amount), symbol: liab_symbol }
+      debit = { value: formatNumericValue(liab_transfer), symbol: liab_symbol }
     }
   }
   if (activity_type === 'liquidate_perp_base_position_or_positive_pnl') {
@@ -233,8 +237,8 @@ export const getValue = (activity: any, mangoAccountAddress: string) => {
   const { activity_type } = activity
   let value = 0
   if (activity_type === 'liquidate_token_with_token') {
-    const { asset_amount, asset_price } = activity.activity_details
-    value = Math.abs(asset_amount * asset_price)
+    const { asset_transfer, asset_price } = activity.activity_details
+    value = Math.abs(asset_transfer * asset_price)
   }
   if (activity_type === 'liquidate_perp_base_position_or_positive_pnl') {
     const { base_transfer, price, quote_transfer, side } =
@@ -255,7 +259,7 @@ export const getValue = (activity: any, mangoAccountAddress: string) => {
   }
   if (activity_type === 'deposit' || activity_type === 'withdraw') {
     const { usd_equivalent } = activity.activity_details
-    value = activity_type === 'withdraw' ? usd_equivalent * -1 : usd_equivalent
+    value = activity_type === 'withdraw' ? usd_equivalent : usd_equivalent * -1
   }
   if (activity_type === 'swap') {
     const { swap_out_amount, swap_out_price_usd } = activity.activity_details
@@ -274,7 +278,11 @@ export const getValue = (activity: any, mangoAccountAddress: string) => {
     const { price, size } = activity.activity_details
     value = price * size
   }
-  return value
+  if (activity_type === 'loan_origination_fee') {
+    const { price, fee } = activity.activity_details
+    value = price * fee
+  }
+  return -value
 }
 
 const ActivityFeedTable = () => {
@@ -361,7 +369,7 @@ const ActivityFeedTable = () => {
                           <div className="flex items-center justify-end">
                             <ChevronDownIcon
                               className={`h-6 w-6 text-th-fgd-3 ${
-                                open ? 'rotate-180' : 'rotate-360'
+                                open ? 'rotate-180' : 'rotate-0'
                               }`}
                             />
                           </div>
@@ -616,8 +624,8 @@ const MobileActivityFeedItem = ({
                     </div>
                     <ChevronDownIcon
                       className={`${
-                        open ? 'rotate-180' : 'rotate-360'
-                      } h-6 w-6 flex-shrink-0 text-th-fgd-3`}
+                        open ? 'rotate-180' : 'rotate-0'
+                      } h-6 w-6 shrink-0 text-th-fgd-3`}
                     />
                   </div>
                 </div>
@@ -628,7 +636,7 @@ const MobileActivityFeedItem = ({
                 enterTo="opacity-100"
               >
                 <Disclosure.Panel>
-                  <div className="border-t border-th-bkg-3 px-4 py-4">
+                  <div className="border-t border-th-bkg-3 p-4">
                     {isLiquidationActivityFeedItem(activity) ? (
                       <LiquidationActivityDetails activity={activity} />
                     ) : isPerpTradeActivityFeedItem(activity) ? (

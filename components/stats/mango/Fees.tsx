@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { MangoTokenStatsItem } from 'types'
 import { formatYAxis } from 'utils/formatting'
 import { groupPerpByHourlyInterval } from './Volume'
+import { useTokenStats } from 'hooks/useTokenStats'
 
 interface GroupedTokenDataItem extends MangoTokenStatsItem {
   intervalStartMillis: number
@@ -42,8 +43,8 @@ const groupTokenByHourlyInterval = (
 
 const Fees = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
-  const mangoStats = mangoStore((s) => s.tokenStats.mangoStats)
-  const loadingStats = mangoStore((s) => s.tokenStats.loading)
+  const { data: tokenStats, isLoading } = useTokenStats()
+  const mangoStats = tokenStats?.mangoStats
   const loadingPerpStats = mangoStore((s) => s.perpStats.loading)
   const [feesDaysToShow, setFeesDaysToShow] = useState('30')
   const [showCumulativeFees, setShowCumulativeFees] = useState(true)
@@ -52,7 +53,7 @@ const Fees = () => {
   const { feeValues: perpFeeChartData } = usePerpStatsChartData()
 
   const tokenFeesChartData = useMemo(() => {
-    if (!mangoStats.length) return []
+    if (!mangoStats?.length) return []
     if (showCumulativeFees) {
       return mangoStats
     } else {
@@ -94,15 +95,15 @@ const Fees = () => {
       }
       transformedData.unshift(perpFeeChartData[0])
 
-      if (feesDaysToShow === '30') {
+      if (feesPerpDaysToShow === '30') {
         feeChartData = groupPerpByHourlyInterval(transformedData, 24)
-      } else if (feesDaysToShow === '7') {
+      } else if (feesPerpDaysToShow === '7') {
         feeChartData = groupPerpByHourlyInterval(transformedData, 4)
       } else feeChartData = transformedData
     }
 
     return feeChartData
-  }, [feesDaysToShow, perpFeeChartData, showCumulativePerpFees])
+  }, [feesPerpDaysToShow, perpFeeChartData, showCumulativePerpFees])
 
   return (
     <>
@@ -115,7 +116,7 @@ const Fees = () => {
             setDaysToShow={setFeesDaysToShow}
             heightClass="h-64"
             loaderHeightClass="h-[350px]"
-            loading={loadingStats}
+            loading={isLoading}
             prefix="$"
             tickFormat={(x) => `$${formatYAxis(x)}`}
             title={t('token:token-fees-collected')}

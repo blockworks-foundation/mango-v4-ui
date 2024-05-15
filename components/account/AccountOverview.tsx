@@ -15,6 +15,7 @@ import ConnectEmptyState from '@components/shared/ConnectEmptyState'
 import CreateAccountModal from '@components/modals/CreateAccountModal'
 import { FaceSmileIcon } from '@heroicons/react/20/solid'
 import Button from '@components/shared/Button'
+import Announcements from './Announcements'
 
 const EMPTY_STATE_WRAPPER_CLASSES =
   'flex h-[180px] flex-col justify-center pb-4 md:h-full'
@@ -71,9 +72,12 @@ const AccountOverview = () => {
     <>
       <div className="grid grid-cols-12 border-b border-th-bkg-3">
         <div className="col-span-12 border-b border-th-bkg-3 md:col-span-8 md:border-b-0 md:border-r">
-          <div className="flex h-full w-full flex-col justify-between">
+          <div
+            className="flex h-full w-full flex-col justify-between"
+            id="account-chart"
+          >
             {mangoAccount || (connected && initialLoad) ? (
-              <div className="overflow-x-hidden px-4 py-4 md:px-6">
+              <div className="overflow-x-hidden p-4 md:px-6">
                 <DetailedAreaOrBarChart
                   changeAsPercent
                   data={chartData}
@@ -113,6 +117,7 @@ const AccountOverview = () => {
           <AccountHeroStats accountValue={accountValue} />
         </div>
       </div>
+      <Announcements />
       <Explore />
       {showCreateAccountModal ? (
         <CreateAccountModal

@@ -17,6 +17,7 @@ import { MARKET_STATE_LAYOUT_V2 } from '@project-serum/serum'
 import { notify } from 'utils/notifications'
 import InlineNotification from '@components/shared/InlineNotification'
 import Switch from '@components/forms/Switch'
+import { sendTxAndConfirm } from 'utils/governance/tools'
 
 type CreateObMarketForm = {
   programId: string
@@ -70,7 +71,7 @@ const CreateOpenbookMarketModal = ({
   const connection = mangoStore((s) => s.connection)
   const fee = mangoStore((s) => s.priorityFee)
   const { connect, signAllTransactions, connected, publicKey } = useWallet()
-
+  const client = mangoStore((s) => s.client)
   const [form, setForm] = useState({ ...defaultFormValues })
   const [formErrors, setFormErrors] = useState<FormErrors>({})
   const [creating, setCreating] = useState(false)
@@ -84,7 +85,6 @@ const CreateOpenbookMarketModal = ({
     if (!publicKey || !signAllTransactions) {
       return
     }
-    let sig = ''
     setCreating(true)
     try {
       const ixObj = await makeCreateOpenBookMarketInstructionSimple({
@@ -106,7 +106,7 @@ const CreateOpenbookMarketModal = ({
 
       const txChunks = ixObj.innerTransactions
       const transactions: Transaction[] = []
-      const latestBlockhash = await connection.getLatestBlockhash('confirmed')
+      const latestBlockhash = await connection.getLatestBlockhash('processed')
       for (const chunk of txChunks) {
         const tx = new Transaction()
         tx.add(createComputeBudgetIx(fee))
@@ -120,15 +120,12 @@ const CreateOpenbookMarketModal = ({
       const signedTransactions = await signAllTransactions(transactions)
 
       for (const tx of signedTransactions) {
-        const rawTransaction = tx.serialize()
-        sig = await connection.sendRawTransaction(rawTransaction, {
-          skipPreflight: true,
-        })
-        await connection.confirmTransaction({
-          blockhash: latestBlockhash.blockhash,
-          lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
-          signature: sig,
-        })
+        await sendTxAndConfirm(
+          client.opts.multipleConnections,
+          connection,
+          tx,
+          latestBlockhash,
+        )
       }
       onClose()
       notify({
@@ -140,7 +137,6 @@ const CreateOpenbookMarketModal = ({
       notify({
         title: t('error-creating-market'),
         description: `${e}`,
-        txid: sig,
         type: 'error',
       })
     }
@@ -153,10 +149,7 @@ const CreateOpenbookMarketModal = ({
       baseMint: baseMint || '',
       quoteMint: quoteMint || '',
       minimumOrderSize: tradingParams.minOrderSize.toString(),
-      minimumPriceTickSize:
-        tradingParams.priceIncrement <= 1e-9
-          ? '1e-8'
-          : tradingParams.priceIncrement.toString(),
+      minimumPriceTickSize: tradingParams.priceIncrement.toString(),
       xlMarket: false,
     })
   }, [

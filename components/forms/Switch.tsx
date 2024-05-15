@@ -30,7 +30,7 @@ const Switch: FunctionComponent<SwitchProps> = ({
           checked ? 'bg-th-success' : 'bg-th-bkg-4'
         } relative inline-flex ${
           small ? 'h-4 w-8' : 'h-5 w-10'
-        } flex-shrink-0 cursor-pointer rounded-full 
+        } shrink-0 cursor-pointer rounded-full 
         border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-th-fgd-4 ${
           disabled ? 'opacity-60' : ''
         }`}

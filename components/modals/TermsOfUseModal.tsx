@@ -20,7 +20,7 @@ const TermsOfUseModal = ({ isOpen, onClose }: ModalProps) => {
             target="_blank"
           >
             {t('terms-of-use')}
-            <ArrowTopRightOnSquareIcon className="ml-1 h-4 w-4 flex-shrink-0" />
+            <ArrowTopRightOnSquareIcon className="ml-1 h-4 w-4 shrink-0" />
           </a>
           <span className="mx-1">and</span>
           <a
@@ -30,7 +30,7 @@ const TermsOfUseModal = ({ isOpen, onClose }: ModalProps) => {
             target="_blank"
           >
             {t('risks')}
-            <ArrowTopRightOnSquareIcon className="ml-1 h-4 w-4 flex-shrink-0" />
+            <ArrowTopRightOnSquareIcon className="ml-1 h-4 w-4 shrink-0" />
           </a>
         </p>
         <Button className="w-full" onClick={onClose} size="large">

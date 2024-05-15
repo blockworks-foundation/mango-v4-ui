@@ -97,7 +97,7 @@ const SharePositionModal = ({
             <div className="w-1/2 text-left">
               <div className="px-8">
                 <img
-                  className="mb-8 h-7 w-auto flex-shrink-0"
+                  className="mb-8 h-7 w-auto shrink-0"
                   src="/logos/logo-with-text.svg"
                   alt="Mango"
                 />

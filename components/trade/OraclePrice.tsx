@@ -15,7 +15,8 @@ import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import useOracleProvider from 'hooks/useOracleProvider'
-import { ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid'
+import { CURRENCY_SYMBOLS } from './MarketSelectDropdown'
+import OracleProvider from '@components/shared/OracleProvider'
 
 const OraclePrice = () => {
   const {
@@ -32,7 +33,7 @@ const OraclePrice = () => {
   const [oracleLastUpdatedSlot, setOracleLastUpdatedSlot] = useState(0)
   const [highestSlot, setHighestSlot] = useState(0)
   const [isStale, setIsStale] = useState(false)
-  const { oracleProvider, oracleLinkPath } = useOracleProvider()
+  const { oracleProvider } = useOracleProvider()
 
   const { t } = useTranslation(['common', 'trade'])
 
@@ -125,21 +126,9 @@ const OraclePrice = () => {
           content={
             !isStub ? (
               <>
-                <div className="flex">
+                <div className="flex text-sm">
                   <span className="mr-1">{t('trade:price-provided-by')}</span>
-                  {oracleLinkPath ? (
-                    <a
-                      href={oracleLinkPath}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center"
-                    >
-                      <span className="mr-1">{oracleProvider}</span>
-                      <ArrowTopRightOnSquareIcon className="h-4 w-4" />
-                    </a>
-                  ) : (
-                    <span className="text-th-fgd-2">{oracleProvider}</span>
-                  )}
+                  <OracleProvider />
                 </div>
                 <div className="mt-2">
                   {t('trade:last-updated')}{' '}
@@ -178,10 +167,11 @@ const OraclePrice = () => {
           {price ? (
             <>
               {quoteBank?.name === 'USDC' ? '$' : ''}
-              {formatNumericValue(price, oracleDecimals)}{' '}
-              {quoteBank?.name !== 'USDC' ? (
+              {formatNumericValue(price, oracleDecimals)}
+              {quoteBank?.name && quoteBank.name !== 'USDC' ? (
                 <span className="font-body text-th-fgd-3">
-                  {quoteBank?.name}
+                  {' '}
+                  {CURRENCY_SYMBOLS[quoteBank.name] || quoteBank.name}
                 </span>
               ) : null}
             </>

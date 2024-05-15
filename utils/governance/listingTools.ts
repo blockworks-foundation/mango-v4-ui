@@ -232,9 +232,6 @@ export const getBestMarket = async ({
     if (!markets.length) {
       return undefined
     }
-    if (markets.length === 1) {
-      return markets[0].publicKey
-    }
     const marketsDataJsons = await Promise.all([
       ...markets.map((x) =>
         fetch(`/openSerumApi/market/${x.publicKey.toBase58()}`),
@@ -243,9 +240,26 @@ export const getBestMarket = async ({
     const marketsData = await Promise.all([
       ...marketsDataJsons.map((x) => x.json()),
     ])
-    const bestMarket = marketsData.sort((a, b) => b.volume24h - a.volume24h)
-    return bestMarket.length
-      ? new PublicKey(bestMarket[0].id)
+    let sortedMarkets = marketsData
+      .filter((x) => Object.keys(x).length)
+      .sort((a, b) => b.volume24h - a.volume24h)
+
+    let firstBestMarket = sortedMarkets.length ? sortedMarkets[0] : undefined
+    if (firstBestMarket?.volume24h === 0 || !sortedMarkets.length) {
+      notify({
+        title: 'Openbook market had 0 volume in last 24h check it carefully',
+        description: ``,
+        type: 'error',
+      })
+    }
+    sortedMarkets = sortedMarkets.sort(
+      (a, b) => b.quoteDepositsTotal - a.quoteDepositsTotal,
+    )
+
+    firstBestMarket = sortedMarkets.length ? sortedMarkets[0] : undefined
+
+    return sortedMarkets.length && firstBestMarket?.id
+      ? new PublicKey(firstBestMarket.id)
       : markets[0].publicKey
   } catch (e) {
     notify({
@@ -316,6 +330,10 @@ export const formatSuggestedValues = (
     depositLimit: suggestedParams.depositLimit,
     flashLoanSwapFeeRate: suggestedParams.flashLoanSwapFeeRate,
     reduceOnly: suggestedParams.reduceOnly,
+    zeroUtilRate: (100 * suggestedParams.zeroUtilRate).toFixed(),
+    platformLiquidationFee: (
+      suggestedParams.platformLiquidationFee * 100
+    ).toFixed(2),
   }
 }
 
@@ -351,7 +369,7 @@ export const getFormattedBankValues = (group: Group, bank: Bank) => {
       toUiDecimals(bank.collectedFeesNative.toNumber(), bank.mintDecimals) *
       bank.uiPrice
     ).toFixed(2),
-    dust: bank.dust.toNumber(),
+    dust: toUiDecimals(bank.dust, bank.mintDecimals),
     deposits: toUiDecimals(
       bank.indexedDeposits.mul(bank.depositIndex).toNumber(),
       bank.mintDecimals,
@@ -426,6 +444,10 @@ export const getFormattedBankValues = (group: Group, bank: Bank) => {
     reduceOnly: bank.reduceOnly,
     groupInsuranceFund: !!group?.mintInfosMapByMint.get(bank.mint.toString())
       ?.groupInsuranceFund,
+    zeroUtilRate: (100 * bank.zeroUtilRate.toNumber()).toFixed(),
+    platformLiquidationFee: (
+      bank.platformLiquidationFee.toNumber() * 100
+    ).toFixed(2),
   }
 }
 
@@ -443,10 +465,9 @@ export type MidPriceImpact = Omit<
   'side' | 'min_price_impact_percent' | 'max_price_impact_percent'
 >
 
-export const getPriceImpacts = async () => {
-  const resp = await fetch(
-    'https://api.mngo.cloud/data/v4/risk/listed-tokens-one-week-price-impacts',
-  )
-  const jsonReps = (await resp.json()) as PriceImpact[]
-  return jsonReps
+export const getApiTokenName = (bankName: string) => {
+  if (bankName === 'ETH (Portal)') {
+    return 'ETH'
+  }
+  return bankName
 }

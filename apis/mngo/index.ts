@@ -1,11 +1,14 @@
-import { Group, I64_MAX_BN } from '@blockworks-foundation/mango-v4'
+import { Group } from '@blockworks-foundation/mango-v4'
+import { PublicKey } from '@solana/web3.js'
 import { MangoTokenStatsItem, TokenStatsItem } from 'types'
 import { MANGO_DATA_API_URL } from 'utils/constants'
 
-export const fetchTokenStatsData = async (group: Group) => {
-  const response = await fetch(
-    `${MANGO_DATA_API_URL}/token-historical-stats?mango-group=${group?.publicKey.toString()}`,
-  )
+export const fetchTokenStatsData = async (group: Group, mint?: PublicKey) => {
+  let url = `${MANGO_DATA_API_URL}/token-historical-stats?mango-group=${group?.publicKey.toString()}`
+  if (mint) {
+    url = `${url}&mint=${mint.toBase58()}`
+  }
+  const response = await fetch(url)
   if (!response.ok) {
     throw new Error('Network response was not ok')
   }
@@ -52,7 +55,7 @@ export const processTokenStatsData = (
     const previous = filtered.reduce((max, cur) =>
       max.date_hour > cur.date_hour ? max : cur,
     )
-    let tokenStatsItem: TokenStatsItem = {
+    const tokenStatsItem: TokenStatsItem = {
       borrow_apr: previous.borrow_apr,
       borrow_rate: bank.getBorrowRateUi() / 100,
       collected_fees: previous.collected_fees,

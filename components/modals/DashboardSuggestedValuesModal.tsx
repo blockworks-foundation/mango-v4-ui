@@ -1,4 +1,4 @@
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useState } from 'react'
 import { ModalProps } from '../../types/modal'
 import Modal from '../shared/Modal'
 import mangoStore from '@store/mangoStore'
@@ -6,13 +6,13 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import GovernanceStore from '@store/governanceStore'
 import {
   formatSuggestedValues,
+  getApiTokenName,
   getFormattedBankValues,
 } from 'utils/governance/listingTools'
 import {
   Bank,
   Group,
   OracleProvider,
-  PriceImpact,
   toUiDecimals,
 } from '@blockworks-foundation/mango-v4'
 import { AccountMeta, Transaction } from '@solana/web3.js'
@@ -24,33 +24,41 @@ import {
 import { createProposal } from 'utils/governance/instructions/createProposal'
 import { notify } from 'utils/notifications'
 import Button from '@components/shared/Button'
-import { compareObjectsAndGetDifferentKeys } from 'utils/governance/tools'
+import {
+  compareObjectsAndGetDifferentKeys,
+  tryGetPubKey,
+} from 'utils/governance/tools'
 import { Disclosure } from '@headlessui/react'
 import {
   LISTING_PRESET,
   LISTING_PRESETS,
   LISTING_PRESETS_KEY,
   MidPriceImpact,
-  getMidPriceImpacts,
   getPresetWithAdjustedDepositLimit,
   getPresetWithAdjustedNetBorrows,
-  getProposedKey,
   getPythPresets,
   getSwitchBoardPresets,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 import Select from '@components/forms/Select'
 import Loading from '@components/shared/Loading'
+import Label from '@components/forms/Label'
+import Input from '@components/forms/Input'
+import Switch from '@components/forms/Switch'
 
 const DashboardSuggestedValues = ({
   isOpen,
   onClose,
   bank,
   group,
-  priceImpacts,
+  suggestedTierKey,
+  currentTier,
+  midPriceImp,
 }: ModalProps & {
   bank: Bank
   group: Group
-  priceImpacts: PriceImpact[]
+  suggestedTierKey: LISTING_PRESETS_KEY
+  currentTier: LISTING_PRESET | undefined
+  midPriceImp: MidPriceImpact[]
 }) => {
   const client = mangoStore((s) => s.client)
   //do not deconstruct wallet is used for anchor to sign
@@ -60,54 +68,20 @@ const DashboardSuggestedValues = ({
   const voter = GovernanceStore((s) => s.voter)
   const vsrClient = GovernanceStore((s) => s.vsrClient)
   const proposals = GovernanceStore((s) => s.proposals)
+  const [oracle, setOracle] = useState('')
+  const [forcePythOracle, setForcePythOracle] = useState(false)
   const PRESETS =
-    bank?.oracleProvider === OracleProvider.Pyth
+    bank?.oracleProvider === OracleProvider.Pyth || forcePythOracle
       ? getPythPresets(LISTING_PRESETS)
       : getSwitchBoardPresets(LISTING_PRESETS)
 
   const [proposedTier, setProposedTier] =
-    useState<LISTING_PRESETS_KEY>('liab_1')
-  const [suggestedTier, setSuggestedTier] =
-    useState<LISTING_PRESETS_KEY>('liab_1')
+    useState<LISTING_PRESETS_KEY>(suggestedTierKey)
   const [proposing, setProposing] = useState(false)
 
-  const getApiTokenName = (bankName: string) => {
-    if (bankName === 'ETH (Portal)') {
-      return 'ETH'
-    }
-    return bankName
-  }
-
-  const priceImpactsFiltered = useMemo(
-    () =>
-      getMidPriceImpacts(priceImpacts).filter(
-        (x) => x.symbol === getApiTokenName(bank.name),
-      ),
-    [priceImpacts, bank.name],
-  )
-
-  const getSuggestedTierForListedTokens = useCallback(async () => {
-    const filteredResp = priceImpactsFiltered
-      .filter((x) => x.avg_price_impact_percent < 1)
-      .reduce((acc: { [key: string]: MidPriceImpact }, val: MidPriceImpact) => {
-        if (
-          !acc[val.symbol] ||
-          val.target_amount > acc[val.symbol].target_amount
-        ) {
-          acc[val.symbol] = val
-        }
-        return acc
-      }, {})
-    const priceImpact = filteredResp[getApiTokenName(bank.name)]
-
-    const suggestedTier = getProposedKey(
-      priceImpact?.target_amount,
-      bank.oracleProvider === OracleProvider.Pyth,
-    )
-
-    setProposedTier(suggestedTier)
-    setSuggestedTier(suggestedTier)
-  }, [bank.name, bank.oracleProvider, priceImpactsFiltered])
+  useEffect(() => {
+    setForcePythOracle(bank?.oracleProvider === OracleProvider.Pyth)
+  }, [bank.oracleProvider])
 
   const proposeNewSuggestedValues = useCallback(
     async (
@@ -120,11 +94,14 @@ const DashboardSuggestedValues = ({
       const preset = getPresetWithAdjustedDepositLimit(
         getPresetWithAdjustedNetBorrows(
           PRESETS[tokenTier],
-          bank.nativeDeposits().mul(bank.price).toNumber(),
+          bank.uiDeposits(),
+          bank.uiPrice,
+          toUiDecimals(PRESETS[tokenTier].netBorrowLimitPerWindowQuote, 6),
         ),
         bank.uiPrice,
         bank.mintDecimals,
       )
+      console.log(preset)
 
       const fieldsToChange = invalidFieldsKeys.reduce(
         (obj, key) => ({ ...obj, [key]: preset[key as keyof typeof preset] }),
@@ -136,7 +113,8 @@ const DashboardSuggestedValues = ({
           ? null
           : fieldsToChange.oracleConfFilter
       const maxStalenessSlots =
-        fieldsToChange.maxStalenessSlots === undefined
+        (fieldsToChange.maxStalenessSlots as number | string) === '' ||
+        fieldsToChange.maxStalenessSlots === -1
           ? null
           : fieldsToChange.maxStalenessSlots
 
@@ -151,13 +129,13 @@ const DashboardSuggestedValues = ({
         rate1: getNullOrVal(fieldsToChange.rate1),
         maxRate: getNullOrVal(fieldsToChange.maxRate),
       }
+
       const isThereNeedOfSendingRateConfigs = Object.values(rateConfigs).filter(
         (x) => x !== null,
       ).length
-      console.log(fieldsToChange)
       const ix = await client!.program.methods
         .tokenEdit(
-          null,
+          oracle ? tryGetPubKey(oracle) : null,
           isThereNeedOfSendingOracleConfig
             ? {
                 confFilter:
@@ -166,7 +144,11 @@ const DashboardSuggestedValues = ({
                     : fieldsToChange.oracleConfFilter,
                 maxStalenessSlots:
                   fieldsToChange.maxStalenessSlots === undefined
-                    ? bank.oracleConfig.maxStalenessSlots.toNumber()
+                    ? bank.oracleConfig.maxStalenessSlots.toNumber() === -1
+                      ? null
+                      : bank.oracleConfig.maxStalenessSlots.toNumber()
+                    : fieldsToChange.maxStalenessSlots === -1
+                    ? null
                     : fieldsToChange.maxStalenessSlots,
               }
             : null,
@@ -176,29 +158,13 @@ const DashboardSuggestedValues = ({
           isThereNeedOfSendingRateConfigs
             ? {
                 adjustmentFactor:
-                  fieldsToChange.adjustmentFactor === undefined
-                    ? bank.adjustmentFactor.toNumber()
-                    : fieldsToChange.adjustmentFactor,
-                util0:
-                  fieldsToChange.util0 === undefined
-                    ? bank.util0.toNumber()
-                    : fieldsToChange.util0,
-                rate0:
-                  fieldsToChange.rate0 === undefined
-                    ? bank.rate0.toNumber()
-                    : fieldsToChange.rate0,
-                util1:
-                  fieldsToChange.util1 === undefined
-                    ? bank.util1.toNumber()
-                    : fieldsToChange.util1,
-                rate1:
-                  fieldsToChange.rate1 === undefined
-                    ? bank.rate1.toNumber()
-                    : fieldsToChange.rate1,
-                maxRate:
-                  fieldsToChange.maxRate === undefined
-                    ? bank.maxRate.toNumber()
-                    : fieldsToChange.maxRate,
+                  fieldsToChange.adjustmentFactor ||
+                  bank.adjustmentFactor.toNumber(),
+                util0: fieldsToChange.util0 || bank.util0.toNumber(),
+                rate0: fieldsToChange.rate0 || bank.rate0.toNumber(),
+                util1: fieldsToChange.util1 || bank.util1.toNumber(),
+                rate1: fieldsToChange.rate1 || bank.rate1.toNumber(),
+                maxRate: fieldsToChange.maxRate || bank.maxRate.toNumber(),
               }
             : null,
           getNullOrVal(fieldsToChange.loanFeeRate),
@@ -222,13 +188,14 @@ const DashboardSuggestedValues = ({
           getNullOrVal(fieldsToChange.depositWeightScaleStartQuote),
           false,
           false,
-          bank.reduceOnly ? 0 : null,
+          getNullOrVal(fieldsToChange.reduceOnly),
           null,
           null,
           getNullOrVal(fieldsToChange.tokenConditionalSwapTakerFeeRate),
           getNullOrVal(fieldsToChange.tokenConditionalSwapMakerFeeRate),
-          getNullOrVal(fieldsToChange.loanFeeRate),
-          getNullOrVal(fieldsToChange.interestCurveScaling),
+          getNullOrVal(fieldsToChange.flashLoanSwapFeeRate),
+          //do not edit of interest curve scaling
+          null,
           getNullOrVal(fieldsToChange.interestTargetUtilization),
           null,
           null,
@@ -236,12 +203,20 @@ const DashboardSuggestedValues = ({
           null,
           false,
           false,
-          getNullOrVal(fieldsToChange.depositLimit)
+          getNullOrVal(fieldsToChange.depositLimit) !== null
             ? new BN(fieldsToChange.depositLimit!.toString())
             : null,
+          getNullOrVal(fieldsToChange.zeroUtilRate),
+          getNullOrVal(fieldsToChange.platformLiquidationFee),
+          fieldsToChange.disableAssetLiquidation === undefined
+            ? null
+            : fieldsToChange.disableAssetLiquidation,
+          getNullOrVal(fieldsToChange.collateralFeePerDay),
+          null,
         )
         .accounts({
           group: group!.publicKey,
+          fallbackOracle: bank.fallbackOracle,
           oracle: bank.oracle,
           admin: MANGO_DAO_WALLET,
           mintInfo: mintInfo.publicKey,
@@ -268,6 +243,7 @@ const DashboardSuggestedValues = ({
           const index = proposals ? Object.values(proposals).length : 0
           const proposalAddress = await createProposal(
             connection,
+            client,
             walletSigner,
             MANGO_DAO_WALLET_GOVERNANCE,
             voter.tokenOwnerRecord!,
@@ -300,16 +276,13 @@ const DashboardSuggestedValues = ({
       connection,
       fee,
       group,
+      oracle,
       proposals,
       voter.tokenOwnerRecord,
       vsrClient,
       wallet,
     ],
   )
-
-  useEffect(() => {
-    getSuggestedTierForListedTokens()
-  }, [getSuggestedTierForListedTokens])
 
   const mintInfo = group.mintInfosMapByMint.get(bank.mint.toString())
 
@@ -318,7 +291,13 @@ const DashboardSuggestedValues = ({
   const suggestedValues = getPresetWithAdjustedDepositLimit(
     getPresetWithAdjustedNetBorrows(
       PRESETS[proposedTier as LISTING_PRESETS_KEY] as LISTING_PRESET,
-      bank.nativeDeposits().mul(bank.price).toNumber(),
+      bank.uiDeposits(),
+      bank.uiPrice,
+      toUiDecimals(
+        PRESETS[proposedTier as LISTING_PRESETS_KEY]
+          .netBorrowLimitPerWindowQuote,
+        6,
+      ),
     ),
     bank.uiPrice,
     bank.mintDecimals,
@@ -336,7 +315,10 @@ const DashboardSuggestedValues = ({
         suggestedFormattedPreset,
       ).filter(
         (x: string) =>
-          suggestedFormattedPreset[x as keyof SuggestedFormattedPreset],
+          suggestedFormattedPreset[x as keyof SuggestedFormattedPreset] !==
+            undefined &&
+          suggestedFormattedPreset[x as keyof SuggestedFormattedPreset] !==
+            null,
       )
     : []
 
@@ -351,15 +333,21 @@ const DashboardSuggestedValues = ({
   )
 
   return (
-    <Modal
-      panelClassNames={' !max-w-[800px]'}
-      isOpen={isOpen}
-      onClose={onClose}
-    >
+    <Modal panelClassNames="!max-w-[800px]" isOpen={isOpen} onClose={onClose}>
       <h3 className="mb-6">
         <span>
-          {bank.name} - Suggested tier: {PRESETS[suggestedTier].preset_name}
+          {bank.name} - Suggested tier: {PRESETS[suggestedTierKey].preset_name}{' '}
+          Current tier: ~ {currentTier?.preset_name}
         </span>
+        <div className="py-4">
+          <p className="mb-2">
+            I want to use pyth oracle (will show presets available for pyth)
+          </p>
+          <Switch
+            checked={forcePythOracle}
+            onChange={(checked) => setForcePythOracle(checked)}
+          />
+        </div>
         <Select
           value={PRESETS[proposedTier].preset_name}
           onChange={(tier: LISTING_PRESETS_KEY) => setProposedTier(tier)}
@@ -369,13 +357,29 @@ const DashboardSuggestedValues = ({
             <Select.Option key={name} value={name}>
               <div className="flex w-full items-center justify-between">
                 {PRESETS[name as LISTING_PRESETS_KEY].preset_name}{' '}
-                {name === suggestedTier ? '- suggested' : ''}
+                {`{${PRESETS[name as LISTING_PRESETS_KEY].preset_key}}`}
+                {name === suggestedTierKey ? ' - suggested' : ''}
               </div>
             </Select.Option>
           ))}
         </Select>
       </h3>
-      <div className="flex max-h-[600px] w-full flex-col overflow-auto">
+      <div className="flex w-full flex-col">
+        <div className="p-4">
+          <div className="mb-2">
+            <Label text="Oracle pk (Leave empty if no change)" />
+            <Input
+              type="text"
+              value={oracle}
+              onChange={(e) => {
+                setOracle(e.target.value)
+              }}
+            />
+            {oracle !== '' && !tryGetPubKey(oracle) && (
+              <div className="text-th-error">Invalid publickey</div>
+            )}
+          </div>
+        </div>
         <Disclosure.Panel>
           <KeyValuePair
             label="Loan Fee Rate"
@@ -510,7 +514,7 @@ const DashboardSuggestedValues = ({
           />
           <KeyValuePair
             label="Net borrows in window / Net borrow limit per window quote"
-            value={`$${formattedBankValues.minVaultToDepositsRatio} / $${formattedBankValues.netBorrowLimitPerWindowQuote}`}
+            value={`$${formattedBankValues.netBorrowsInWindow} / $${formattedBankValues.netBorrowLimitPerWindowQuote}`}
             proposedValue={
               (suggestedFields.minVaultToDepositsRatio ||
                 suggestedFields.netBorrowLimitPerWindowQuote) &&
@@ -596,19 +600,8 @@ const DashboardSuggestedValues = ({
             }
           />
           <KeyValuePair
-            label="Interest Curve Scaling"
-            value={`${formattedBankValues.interestCurveScaling}`}
-            proposedValue={
-              suggestedFields.interestCurveScaling !== undefined &&
-              `${suggestedFields.interestCurveScaling}`
-            }
-          />
-          <KeyValuePair
             label="Deposit Limit"
-            value={`${toUiDecimals(
-              new BN(formattedBankValues.depositLimit.toString()),
-              bank.mintDecimals,
-            )}`}
+            value={`${formattedBankValues.depositLimit}`}
             proposedValue={
               suggestedFields.depositLimit !== undefined &&
               `${toUiDecimals(
@@ -633,20 +626,38 @@ const DashboardSuggestedValues = ({
               `${suggestedFields.reduceOnly}`
             }
           />
+          <KeyValuePair
+            label="Zero Util Rate"
+            value={`${formattedBankValues.zeroUtilRate} bps`}
+            proposedValue={
+              suggestedFields.zeroUtilRate &&
+              `${suggestedFields.zeroUtilRate} bps`
+            }
+          />
+          <KeyValuePair
+            label="Liquidation Fee"
+            value={`${formattedBankValues.platformLiquidationFee} bps`}
+            proposedValue={
+              suggestedFields.platformLiquidationFee &&
+              `${suggestedFields.platformLiquidationFee} bps`
+            }
+          />
           <div>
             <h3 className="mb-4 pl-6">Price impacts</h3>
-            {priceImpactsFiltered.map((x) => (
-              <div className="flex pl-6" key={x.target_amount}>
-                <p className="mr-4 w-[150px] space-x-4">
-                  <span>Amount:</span>
-                  <span>${x.target_amount}</span>
-                </p>
-                <p className="space-x-4">
-                  <span>Price impact:</span>{' '}
-                  <span>{x.avg_price_impact_percent.toFixed(3)}%</span>
-                </p>
-              </div>
-            ))}
+            {midPriceImp
+              .filter((x) => x.symbol === getApiTokenName(bank.name))
+              .map((x) => (
+                <div className="flex pl-6" key={x.target_amount}>
+                  <p className="mr-4 w-[150px] space-x-4">
+                    <span>Amount:</span>
+                    <span>${x.target_amount}</span>
+                  </p>
+                  <p className="space-x-4">
+                    <span>Price impact:</span>{' '}
+                    <span>{x.avg_price_impact_percent.toFixed(3)}%</span>
+                  </p>
+                </div>
+              ))}
           </div>
         </Disclosure.Panel>
 
