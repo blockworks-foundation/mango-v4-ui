@@ -116,7 +116,7 @@ const options = {
   ...AnchorProvider.defaultOptions(),
   preflightCommitment: 'confirmed',
 } as ConfirmOptions
-export const CLUSTER: 'mainnet-beta' | 'testnet' | 'devnet' = 'devnet'
+export const CLUSTER: 'mainnet-beta' | 'devnet' = 'devnet'
 const ENDPOINT = ENDPOINTS.find((e) => e.name === CLUSTER) || ENDPOINTS[0]
 export const emptyWallet = new EmptyWallet(Keypair.generate())
 

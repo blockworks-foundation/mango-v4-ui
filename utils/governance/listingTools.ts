@@ -216,7 +216,7 @@ export const getBestMarket = async ({
 }: {
   baseMint: string
   quoteMint: string
-  cluster: 'devnet' | 'testnet' | 'mainnet-beta'
+  cluster: 'devnet' | 'mainnet-beta'
   connection: Connection
 }) => {
   try {
