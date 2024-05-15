@@ -6,9 +6,12 @@ import {
   LISTING_PRESETS,
   getMidPriceImpacts,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
+import { toUiDecimalsForQuote } from '@blockworks-foundation/mango-v4'
 
 interface TokenDetails {
   reduceOnly?: number
+  deposits?: number
+  depositWeightScaleStartQuote?: string
   maxBelow1Percent: { amount: number; preset: string }
   maxBelow2Percent: { amount: number; preset: string }
   initAssetWeight?: string
@@ -23,6 +26,9 @@ interface TokenDetails {
 interface CurrentTier {
   name: string
   reduceOnly?: number
+  deposits?: number
+  depositWeightScaleStartQuote?: string
+  fullness?: number
   maxBelow1PercentAmount?: number
   maxBelow1PercentPreset?: string
   maxBelow2PercentAmount?: number
@@ -79,7 +85,6 @@ export default async function handler(
     const midPriceImpacts = getMidPriceImpacts(
       priceImpacts.length ? priceImpacts : [],
     )
-    console.log(midPriceImpacts)
 
     const tokenThresholds: {
       [symbol: string]: { below1Percent: number; below2Percent: number }
@@ -140,19 +145,17 @@ export default async function handler(
       }
     }
 
+    // Current Tiers Calculation
     await Promise.all(
       banks.map(async (bank) => {
         const currentTier = Object.values(LISTING_PRESETS).find((x) => {
+          if (bank?.initAssetWeight.toNumber() === 0) {
+            return x.initAssetWeight === bank?.initAssetWeight.toNumber()
+          }
           if (bank?.platformLiquidationFee.toNumber() === 0) {
             return (
               x.platformLiquidationFee.toFixed(2) ===
               bank?.platformLiquidationFee.toNumber().toFixed(2)
-            )
-          }
-          if (bank?.initAssetWeight.toNumber() === 0) {
-            return (
-              x.maintLiabWeight.toFixed(2) ===
-              bank?.maintLiabWeight.toNumber().toFixed(2)
             )
           }
           if (bank?.depositWeightScaleStartQuote !== 20000000000) {
@@ -177,6 +180,9 @@ export default async function handler(
           newRankings[bankName].reduceOnly = bank?.reduceOnly
           newRankings[bankName].currentTier = currentTier?.preset_name || 'S'
           newRankings[bankName].mint = bank?.mint.toString()
+          newRankings[bankName].deposits = bank?.uiDeposits() * bank?.uiPrice
+          newRankings[bankName].depositWeightScaleStartQuote =
+            toUiDecimalsForQuote(bank.depositWeightScaleStartQuote).toString()
           newRankings[bankName].initAssetWeight = bank?.initAssetWeight
             .toNumber()
             .toFixed(2)
@@ -194,10 +200,20 @@ export default async function handler(
       }),
     )
 
-    const currentTiers: CurrentTiersResponse = Object.entries(newRankings).map(
-      ([name, details]) => ({
+    const currentTiers: CurrentTiersResponse = Object.entries(newRankings)
+      .filter(
+        ([, details]) => details.reduceOnly == 0 || details.reduceOnly == 2,
+      ) // only for non-short etc.
+      .map(([name, details]) => ({
         name,
         reduceOnly: details.reduceOnly,
+        deposits: details.deposits,
+        depositWeightScaleStartQuote:
+          details.depositWeightScaleStartQuote?.toString(),
+        fullness:
+          details.deposits && details.depositWeightScaleStartQuote
+            ? details.deposits / Number(details.depositWeightScaleStartQuote)
+            : undefined,
         maxBelow1PercentAmount: details.maxBelow1Percent.amount,
         maxBelow1PercentPreset: details.maxBelow1Percent.preset,
         maxBelow2PercentAmount: details.maxBelow2Percent.amount,
@@ -209,8 +225,7 @@ export default async function handler(
         mint: details.mint,
         currentTier: details.currentTier,
         collateralFeesPerDay: details.collateralFeesPerDay,
-      }),
-    )
+      }))
 
     res.status(200).json(currentTiers)
   } catch (error: unknown) {

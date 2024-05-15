@@ -95,7 +95,7 @@ const Marketing: NextPage = () => {
                       <Td className={`sticky left-0 z-10 !py-3`}>
                         {formatCurrencyValue(
                           toUiDecimalsForQuote(
-                            bank.borrowWeightScaleStartQuote,
+                            bank.depositWeightScaleStartQuote,
                           ),
                         )}
                       </Td>

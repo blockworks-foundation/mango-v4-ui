@@ -1394,6 +1394,19 @@ export const DashboardNavbar = () => {
         </Link>
       </div>
       <div>
+        <Link href={'/dashboard/rerank'} shallow={true}>
+          <h4
+            className={`${
+              asPath.includes('/dashboard/rerank')
+                ? 'bg-th-bkg-2 text-th-active'
+                : ''
+            } cursor-pointer border-r border-th-bkg-3 px-6 py-4`}
+          >
+            Rerank
+          </h4>
+        </Link>
+      </div>
+      <div>
         <Link href={'/dashboard/marketing'} shallow={true}>
           <h4
             className={`${
