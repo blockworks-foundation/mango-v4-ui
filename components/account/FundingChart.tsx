@@ -1,14 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
-import useMangoAccount from 'hooks/useMangoAccount'
 import { useEffect, useMemo, useState } from 'react'
-import {
-  HourlyFundingChartData,
-  HourlyFundingData,
-  HourlyFundingStatsData,
-} from 'types'
-import { DAILY_MILLISECONDS, MANGO_DATA_API_URL } from 'utils/constants'
+import { HourlyFundingChartData } from 'types'
+import { DAILY_MILLISECONDS } from 'utils/constants'
 import { formatCurrencyValue } from 'utils/numbers'
 import { TooltipProps } from 'recharts/types/component/Tooltip'
 import {
@@ -32,6 +26,7 @@ import ContentBox from '@components/shared/ContentBox'
 import SheenLoader from '@components/shared/SheenLoader'
 import useThemeWrapper from 'hooks/useThemeWrapper'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
+import useAccountHourlyFunding from 'hooks/useAccountHourlyFunding'
 
 type TempDataType = {
   [time: string]: {
@@ -41,55 +36,15 @@ type TempDataType = {
   }
 }
 
-const fetchHourlyFunding = async (mangoAccountPk: string) => {
-  try {
-    const data = await fetch(
-      `${MANGO_DATA_API_URL}/stats/funding-account-hourly?mango-account=${mangoAccountPk}`,
-    )
-    const res = await data.json()
-    if (res) {
-      const entries: HourlyFundingData[] = Object.entries(res)
-
-      const stats: HourlyFundingStatsData[] = entries.map(([key, value]) => {
-        const marketEntries = Object.entries(value)
-        const marketFunding = marketEntries.map(([key, value]) => {
-          return {
-            long_funding: value.long_funding * -1,
-            short_funding: value.short_funding * -1,
-            time: key,
-          }
-        })
-        return { marketFunding, market: key }
-      })
-
-      return stats
-    }
-  } catch (e) {
-    console.log('Failed to fetch account funding history', e)
-  }
-}
-
 const FundingChart = () => {
   const { t } = useTranslation('common')
-  const { mangoAccountAddress } = useMangoAccount()
   const [daysToShow, setDaysToShow] = useState('30')
   const { theme } = useThemeWrapper()
   const {
     data: fundingData,
-    isLoading: loadingFunding,
-    isFetching: fetchingFunding,
+    loading: loadingFunding,
     refetch,
-  } = useQuery(
-    ['hourly-funding', mangoAccountAddress],
-    () => fetchHourlyFunding(mangoAccountAddress),
-    {
-      cacheTime: 1000 * 60 * 10,
-      staleTime: 1000 * 60,
-      retry: 3,
-      refetchOnWindowFocus: false,
-      enabled: !!mangoAccountAddress,
-    },
-  )
+  } = useAccountHourlyFunding()
 
   useEffect(() => {
     refetch()
@@ -219,7 +174,7 @@ const FundingChart = () => {
   return (
     <FadeInFadeOut show={true}>
       <ContentBox hideBorder hidePadding>
-        {loadingFunding || fetchingFunding ? (
+        {loadingFunding ? (
           <SheenLoader className="flex flex-1">
             <div className={`h-[350px] w-full rounded-lg bg-th-bkg-2`} />
           </SheenLoader>

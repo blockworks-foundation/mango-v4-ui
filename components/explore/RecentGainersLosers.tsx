@@ -24,6 +24,7 @@ import SheenLoader from '@components/shared/SheenLoader'
 import mangoStore from '@store/mangoStore'
 import { goToPerpMarketDetails } from '@components/stats/perps/PerpMarketDetailsTable'
 import MarketLogos from '@components/trade/MarketLogos'
+import { TOKEN_REDUCE_ONLY_OPTIONS } from 'utils/constants'
 dayjs.extend(relativeTime)
 
 export type BankWithMarketData = {
@@ -95,7 +96,10 @@ const RecentGainersLosers = () => {
     if (!banksWithMarketData.length || !perpMarketsWithData || !group)
       return [[], []]
     const tradeableAssets = []
-    for (const token of banksWithMarketData) {
+    const filterReduceOnlyBanks = banksWithMarketData.filter(
+      (b) => b.bank.reduceOnly !== TOKEN_REDUCE_ONLY_OPTIONS.ENABLED,
+    )
+    for (const token of filterReduceOnlyBanks) {
       if (token.market?.quoteTokenIndex === 0) {
         let change = token.market?.rollingChange || 0
         if (change === Infinity) {

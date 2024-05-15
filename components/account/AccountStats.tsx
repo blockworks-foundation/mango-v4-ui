@@ -116,7 +116,7 @@ const AccountStats = ({ hideView }: { hideView: () => void }) => {
           />
         </div>
         <div className="col-span-2 border-b border-th-bkg-3 md:col-span-1">
-          <div className="border-b border-th-bkg-3 px-4 py-4 md:px-6 lg:py-6">
+          <div className="border-b border-th-bkg-3 p-4 md:px-6 lg:py-6">
             <Tooltip
               content={t('account:tooltip-total-funding')}
               maxWidth="20rem"
@@ -147,7 +147,7 @@ const AccountStats = ({ hideView }: { hideView: () => void }) => {
           </div>
         </div>
         <div className="col-span-2 border-b border-th-bkg-3 md:col-span-1">
-          <div className="border-b border-th-bkg-3 px-4 py-4 md:px-6 lg:py-6">
+          <div className="border-b border-th-bkg-3 p-4 md:px-6 lg:py-6">
             <p className="tooltip-underline text-base leading-tight">
               {t('account:lifetime-volume')}
             </p>

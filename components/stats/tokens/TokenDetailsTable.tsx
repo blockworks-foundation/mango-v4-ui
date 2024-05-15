@@ -27,7 +27,13 @@ import CollateralWeightDisplay from '@components/shared/CollateralWeightDisplay'
 import OracleProvider from '@components/shared/OracleProvider'
 
 const TokenDetailsTable = () => {
-  const { t } = useTranslation(['common', 'activity', 'token', 'trade'])
+  const { t } = useTranslation([
+    'common',
+    'activity',
+    'stats',
+    'token',
+    'trade',
+  ])
   const { group } = useMangoGroup()
   const { width } = useViewport()
   const showTableView = width ? width > breakpoints.md : false
@@ -43,10 +49,13 @@ const TokenDetailsTable = () => {
       const initAssetWeight = bank.scaledInitAssetWeight(bank.price)
       const initLiabWeight = bank.scaledInitLiabWeight(bank.price)
       const isInsured = mintInfo?.groupInsuranceFund ? t('yes') : t('no')
-      const liquidationFee = bank.liquidationFee.toNumber() * 100
+      const liquidationFee =
+        bank.liquidationFee.toNumber() * 100 +
+        bank.platformLiquidationFee.toNumber() * 100
       const loanOriginationFee = 100 * bank.loanOriginationFeeRate.toNumber()
       const [oracleProvider, oracleLinkPath] = getOracleProvider(bank)
       const symbol = bank.name
+      const collateralFeeRate = bank.collateralFeePerDay * 100
 
       const data = {
         bank,
@@ -59,13 +68,14 @@ const TokenDetailsTable = () => {
         oracleLinkPath,
         oracleProvider,
         symbol,
+        collateralFeeRate,
       }
       formatted.push(data)
     }
     return formatted.sort(
       (a, b) => b.deposits * b.bank.uiPrice - a.deposits * a.bank.uiPrice,
     )
-  }, [banks, group])
+  }, [banks, group, t])
 
   const {
     items: tableData,
@@ -96,6 +106,7 @@ const TokenDetailsTable = () => {
                         sort={() => requestSort('initAssetWeight')}
                         sortConfig={sortConfig}
                         title={t('asset-liability-weight')}
+                        titleClass="tooltip-underline"
                       />
                     </Tooltip>
                   </div>
@@ -108,6 +119,7 @@ const TokenDetailsTable = () => {
                         sort={() => requestSort('loanOriginationFee')}
                         sortConfig={sortConfig}
                         title={t('borrow-fee')}
+                        titleClass="tooltip-underline"
                       />
                     </Tooltip>
                   </div>
@@ -124,6 +136,20 @@ const TokenDetailsTable = () => {
                         sort={() => requestSort('liquidationFee')}
                         sortConfig={sortConfig}
                         title={t('activity:liquidation-fee')}
+                        titleClass="tooltip-underline"
+                      />
+                    </Tooltip>
+                  </div>
+                </Th>
+                <Th>
+                  <div className="flex justify-end">
+                    <Tooltip content={<CollateralFundingFeeTooltip />}>
+                      <SortableColumnHeader
+                        sortKey="collateralFeeRate"
+                        sort={() => requestSort('collateralFeeRate')}
+                        sortConfig={sortConfig}
+                        title={t('stats:collateral-funding-fee')}
+                        titleClass="tooltip-underline"
                       />
                     </Tooltip>
                   </div>
@@ -150,6 +176,7 @@ const TokenDetailsTable = () => {
                         sort={() => requestSort('isInsured')}
                         sortConfig={sortConfig}
                         title={t('trade:insured', { token: '' })}
+                        titleClass="tooltip-underline"
                       />
                     </Tooltip>
                   </div>
@@ -176,6 +203,7 @@ const TokenDetailsTable = () => {
                   liquidationFee,
                   loanOriginationFee,
                   symbol,
+                  collateralFeeRate,
                 } = data
 
                 return (
@@ -185,7 +213,11 @@ const TokenDetailsTable = () => {
                     onClick={() => goToTokenPage(symbol.split(' ')[0], router)}
                   >
                     <Td>
-                      <TableTokenName bank={bank} symbol={symbol} />
+                      <TableTokenName
+                        bank={bank}
+                        symbol={symbol}
+                        showLeverage
+                      />
                     </Td>
                     <Td>
                       <div className="flex justify-end space-x-1.5 text-right font-mono">
@@ -201,6 +233,11 @@ const TokenDetailsTable = () => {
                     </Td>
                     <Td>
                       <p className="text-right">{liquidationFee.toFixed(2)}%</p>
+                    </Td>
+                    <Td>
+                      <p className="text-right">
+                        {collateralFeeRate.toFixed(2)}%
+                      </p>
                     </Td>
                     <Td>
                       <p className="text-right">{isInsured}</p>
@@ -223,9 +260,15 @@ const TokenDetailsTable = () => {
         </div>
       ) : (
         <div className="border-b border-th-bkg-3">
-          {banks.map((b, i) => {
-            const bank = b.bank
-            const mintInfo = group.mintInfosMapByMint.get(bank.mint.toString())
+          {tableData.map((data, i) => {
+            const {
+              bank,
+              initLiabWeight,
+              isInsured,
+              liquidationFee,
+              loanOriginationFee,
+              collateralFeeRate,
+            } = data
             return (
               <Disclosure key={bank.name}>
                 {({ open }) => (
@@ -236,7 +279,11 @@ const TokenDetailsTable = () => {
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <TableTokenName bank={bank} symbol={bank.name} />
+                        <TableTokenName
+                          bank={bank}
+                          symbol={bank.name}
+                          showLeverage
+                        />
                         <ChevronDownIcon
                           className={`${
                             open ? 'rotate-180' : 'rotate-0'
@@ -263,12 +310,7 @@ const TokenDetailsTable = () => {
                             <div className="flex space-x-1.5 text-right font-mono text-th-fgd-1">
                               <CollateralWeightDisplay bank={bank} />
                               <span className="text-th-fgd-4">|</span>
-                              <span>
-                                {bank
-                                  .scaledInitLiabWeight(bank.price)
-                                  .toFixed(2)}
-                                x
-                              </span>
+                              <span>{initLiabWeight.toFixed(2)}x</span>
                             </div>
                           </div>
                           <div className="col-span-1">
@@ -281,10 +323,7 @@ const TokenDetailsTable = () => {
                               </p>
                             </Tooltip>
                             <p className="font-mono text-th-fgd-1">
-                              {(
-                                100 * bank.loanOriginationFeeRate.toNumber()
-                              ).toFixed(2)}
-                              %
+                              {loanOriginationFee.toFixed(2)}%
                             </p>
                           </div>
                           <div className="col-span-1">
@@ -299,10 +338,20 @@ const TokenDetailsTable = () => {
                               </p>
                             </Tooltip>
                             <p className="font-mono text-th-fgd-1">
-                              {(bank.liquidationFee.toNumber() * 100).toFixed(
-                                2,
-                              )}
-                              %
+                              {liquidationFee.toFixed(2)}%
+                            </p>
+                          </div>
+                          <div className="col-span-1">
+                            <Tooltip
+                              content={<CollateralFundingFeeTooltip />}
+                              placement="top-start"
+                            >
+                              <p className="tooltip-underline text-xs">
+                                {t('stats:collateral-funding-fee')}
+                              </p>
+                            </Tooltip>
+                            <p className="font-mono text-th-fgd-1">
+                              {collateralFeeRate.toFixed(2)}%
                             </p>
                           </div>
                           <div className="col-span-1">
@@ -332,11 +381,7 @@ const TokenDetailsTable = () => {
                                 {t('trade:insured', { token: '' })}
                               </span>
                             </Tooltip>
-                            <p className="font-mono text-th-fgd-1">
-                              {mintInfo?.groupInsuranceFund
-                                ? t('yes')
-                                : t('no')}
-                            </p>
+                            <p className="text-th-fgd-1">{isInsured}</p>
                           </div>
                           <div className="col-span-1">
                             <LinkButton
@@ -364,3 +409,35 @@ const TokenDetailsTable = () => {
 }
 
 export default TokenDetailsTable
+
+export const CollateralFundingFeeTooltip = () => {
+  return (
+    <>
+      <p className="mb-2">
+        This is charged on some assets once every 24h as insurance for taking on
+        margin against riskier collateral.
+      </p>
+      <p className="mb-2">
+        The collateral funding fee is a dynamic formula that uses a fixed rate.
+        This rate is then multiplied by the ratio of your USDC liabilities (the
+        amount you&apos;ve borrowed) against your weighted deposits (the value
+        of your position adjusted by a factor between 0 and 1).
+      </p>
+      <p className="mb-2">
+        A key aspect of this fee is its dynamism; it scales with your
+        position&apos;s proximity to liquidation. Positions closer to
+        liquidation are subjected to a higher fee, reflecting increased risk,
+        while positions further from liquidation incur a lower fee.
+        Consequently, the more leverage you take on the more collateral fees
+        you&apos;ll pay.
+      </p>
+      <a
+        href="https://docs.mango.markets/mango-markets/fees"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        More Info
+      </a>
+    </>
+  )
+}

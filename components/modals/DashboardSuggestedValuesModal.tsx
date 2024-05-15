@@ -36,8 +36,6 @@ import {
   MidPriceImpact,
   getPresetWithAdjustedDepositLimit,
   getPresetWithAdjustedNetBorrows,
-  getPythPresets,
-  getSwitchBoardPresets,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 import Select from '@components/forms/Select'
 import Loading from '@components/shared/Loading'
@@ -70,10 +68,7 @@ const DashboardSuggestedValues = ({
   const proposals = GovernanceStore((s) => s.proposals)
   const [oracle, setOracle] = useState('')
   const [forcePythOracle, setForcePythOracle] = useState(false)
-  const PRESETS =
-    bank?.oracleProvider === OracleProvider.Pyth || forcePythOracle
-      ? getPythPresets(LISTING_PRESETS)
-      : getSwitchBoardPresets(LISTING_PRESETS)
+  const PRESETS = LISTING_PRESETS
 
   const [proposedTier, setProposedTier] =
     useState<LISTING_PRESETS_KEY>(suggestedTierKey)

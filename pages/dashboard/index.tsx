@@ -65,14 +65,27 @@ const getSuggestedAndCurrentTier = (
   bank: Bank,
   midPriceImp: MidPriceImpact[],
 ) => {
-  const currentTier = Object.values(LISTING_PRESETS).find((x) => {
-    return x.initLiabWeight.toFixed(1) === '1.8'
-      ? x.initLiabWeight.toFixed(1) ===
-          bank?.initLiabWeight.toNumber().toFixed(1) &&
-          x.reduceOnly === bank.reduceOnly
-      : x.initLiabWeight.toFixed(1) ===
-          bank?.initLiabWeight.toNumber().toFixed(1)
+  const epsilon = 1e-8
+  let currentTier = Object.values(LISTING_PRESETS).find((x) => {
+    if (bank?.name == 'USDC' || bank?.name == 'USDT') return true
+    if (bank?.depositWeightScaleStartQuote != 20000000000) {
+      if (
+        x.depositWeightScaleStartQuote === bank?.depositWeightScaleStartQuote
+      ) {
+        return true
+      }
+    } else {
+      return (
+        Math.abs(
+          x.loanOriginationFeeRate - bank?.loanOriginationFeeRate.toNumber(),
+        ) < epsilon
+      )
+    }
   })
+
+  if (currentTier == undefined) {
+    currentTier = LISTING_PRESETS['asset_5000']
+  }
 
   const filteredResp = midPriceImp
     .filter((x) => x.avg_price_impact_percent < 1)
@@ -87,10 +100,7 @@ const getSuggestedAndCurrentTier = (
     }, {})
   const priceImpact = filteredResp[getApiTokenName(bank.name)]
 
-  const suggestedTierKey = getProposedKey(
-    priceImpact?.target_amount,
-    bank.oracleProvider === OracleProvider.Pyth,
-  )
+  const suggestedTierKey = getProposedKey(priceImpact?.target_amount)
 
   return {
     suggestedTierKey,
@@ -1128,7 +1138,7 @@ const BankDisclosure = ({
               value={
                 bank.oracleProvider == OracleProvider.Switchboard ? (
                   <a
-                    href={`https://app.switchboard.xyz/solana/mainnet-beta/feed/${bank.oracle.toString()}`}
+                    href={`https://app.switchboard.xyz/solana/mainnet/feed/${bank.oracle.toString()}`}
                     className={`flex items-center break-all text-th-fgd-2 hover:text-th-fgd-3`}
                     target="_blank"
                     rel="noreferrer"
@@ -1193,8 +1203,16 @@ const BankDisclosure = ({
               value={`${formattedBankValues.loanOriginationFeeRate} bps`}
             />
             <KeyValuePair
-              label="Collected fees native"
+              label="Collateral fee per day"
+              value={`${formattedBankValues.collateralFeePerDay} %`}
+            />
+            <KeyValuePair
+              label="Collected fees"
               value={`${formattedBankValues.collectedFeesNative} ($${formattedBankValues.collectedFeesNativePrice})`}
+            />
+            <KeyValuePair
+              label="Collected collateral fees"
+              value={`${formattedBankValues.collectedCollateralFeesNative} ($${formattedBankValues.collectedCollateralFeesNativePrice})`}
             />
             <KeyValuePair label="Dust" value={formattedBankValues.dust} />
             <KeyValuePair
@@ -1220,6 +1238,17 @@ const BankDisclosure = ({
             <KeyValuePair
               label="Liquidation fee"
               value={`${formattedBankValues.liquidationFee}%`}
+            />
+            <KeyValuePair
+              label="Platform liquidation fee"
+              value={`${formattedBankValues.platformLiquidationFee}%`}
+            />
+            <KeyValuePair
+              label="Collected liquidation fees"
+              value={`${toUiDecimals(
+                bank.collectedLiquidationFees,
+                formattedBankValues.mintDecimals,
+              )}% ($${formattedBankValues.collectedFeesNativePrice})`}
             />
             <KeyValuePair
               label="Scaled Init Asset/Liab Weight"
@@ -1485,6 +1514,32 @@ export const DashboardNavbar = () => {
             } cursor-pointer border-r border-th-bkg-3 px-6 py-4`}
           >
             Slippage
+          </h4>
+        </Link>
+      </div>
+      <div>
+        <Link href={'/dashboard/prospective'} shallow={true}>
+          <h4
+            className={`${
+              asPath.includes('/dashboard/prospective')
+                ? 'bg-th-bkg-2 text-th-active'
+                : ''
+            } cursor-pointer border-r border-th-bkg-3 px-6 py-4`}
+          >
+            Prospective
+          </h4>
+        </Link>
+      </div>
+      <div>
+        <Link href={'/dashboard/marketing'} shallow={true}>
+          <h4
+            className={`${
+              asPath.includes('/dashboard/marketing')
+                ? 'bg-th-bkg-2 text-th-active'
+                : ''
+            } cursor-pointer border-r border-th-bkg-3 px-6 py-4`}
+          >
+            Marketing
           </h4>
         </Link>
       </div>
