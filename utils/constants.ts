@@ -234,7 +234,7 @@ export enum TOKEN_REDUCE_ONLY_OPTIONS {
 export const PRIVATE_MODE_STRING = '****'
 
 export const MANGO_MAINNET_GROUP = new PublicKey(
-  '78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX',
+  '7SDejCUPsF3g59GgMsmvxw8dJkkJbT3exoH4RZirwnkM',
 )
 
 export const MAX_PERP_SLIPPAGE = 0.025
