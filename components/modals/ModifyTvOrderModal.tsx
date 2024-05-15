@@ -107,7 +107,7 @@ const ModifyTvOrderModal = ({
 
           if (o instanceof OpenbookOrder) {
             console.error('not implemented!')
-            return;
+            return
           }
 
           const market = group.getSerum3MarketByExternalMarket(

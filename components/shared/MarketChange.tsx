@@ -1,7 +1,11 @@
 import { MinusSmallIcon } from '@heroicons/react/20/solid'
 import { DownTriangle, UpTriangle } from './DirectionTriangles'
 import FormatNumericValue from './FormatNumericValue'
-import { OpenbookV2Market, PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
+import {
+  OpenbookV2Market,
+  PerpMarket,
+  Serum3Market,
+} from '@blockworks-foundation/mango-v4'
 import { useMemo } from 'react'
 import SheenLoader from './SheenLoader'
 import useListedMarketsWithMarketData from 'hooks/useListedMarketsWithMarketData'
@@ -26,11 +30,15 @@ const MarketChange = ({
       return perpMarket?.rollingChange ? perpMarket.rollingChange : 0
     } else if (market instanceof Serum3Market) {
       const spotMarket = spotMarketsWithData.find(
-        (m) => m.name.toLowerCase() === market.name.toLowerCase() && !m.isOpenbookV2,
+        (m) =>
+          m.name.toLowerCase() === market.name.toLowerCase() && !m.isOpenbookV2,
       )
       return spotMarket?.rollingChange ? spotMarket.rollingChange : 0
     } else {
-      const spotMarket = spotMarketsWithData.find((m) => m.name.toLowerCase() === market.name.toLowerCase() && m.isOpenbookV2)
+      const spotMarket = spotMarketsWithData.find(
+        (m) =>
+          m.name.toLowerCase() === market.name.toLowerCase() && m.isOpenbookV2,
+      )
       return spotMarket?.rollingChange ? spotMarket.rollingChange : 0
     }
   }, [perpMarketsWithData, spotMarketsWithData])

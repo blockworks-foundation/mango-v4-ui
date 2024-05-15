@@ -192,7 +192,10 @@ const TradeHotKeys = ({ children }: { children: ReactNode }) => {
           custom === HOTKEY_TEMPLATES.CLOSE_LONG ||
           custom === HOTKEY_TEMPLATES.CLOSE_SHORT
         ) {
-          if (selectedMarket instanceof Serum3Market || selectedMarket instanceof OpenbookV2Market) {
+          if (
+            selectedMarket instanceof Serum3Market ||
+            selectedMarket instanceof OpenbookV2Market
+          ) {
             const baseBank = group.getFirstBankByTokenIndex(
               selectedMarket.baseTokenIndex,
             )

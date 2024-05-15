@@ -90,9 +90,9 @@ const TradingViewChart = () => {
   const { theme } = useThemeWrapper()
   const { isMobile } = useViewport()
   const [chartReady, setChartReady] = useState(false)
-  const [orderToModify, setOrderToModify] = useState<Order | PerpOrder | OpenbookOrder | null>(
-    null,
-  )
+  const [orderToModify, setOrderToModify] = useState<
+    Order | PerpOrder | OpenbookOrder | null
+  >(null)
   const [modifiedPrice, setModifiedPrice] = useState('')
   const [showOrderLinesLocalStorage, toggleShowOrderLinesLocalStorage] =
     useLocalStorageState(SHOW_ORDER_LINES_KEY, true)
@@ -242,7 +242,7 @@ const TradingViewChart = () => {
       if (!marketPk) return
       if (o instanceof OpenbookOrder) {
         console.error('not implemented!')
-        return;
+        return
       }
       const market = group.getSerum3MarketByExternalMarket(
         new PublicKey(marketPk),

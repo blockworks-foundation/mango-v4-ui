@@ -11,7 +11,10 @@ import {
   PublicKey,
   TransactionInstruction,
 } from '@solana/web3.js'
-import { OpenOrders, Order as SerumOrder } from '@project-serum/serum/lib/market'
+import {
+  OpenOrders,
+  Order as SerumOrder,
+} from '@project-serum/serum/lib/market'
 import { Orderbook } from '@project-serum/serum'
 import { Wallet as WalletAdapter } from '@solana/wallet-adapter-react'
 import {
@@ -864,7 +867,9 @@ const mangoStore = create<MangoStore>()(
                 mangoAccount.openbookV2OosMapByMarketIndex.values(),
               ).forEach((order) => {
                 const marketPk = order.market.toString()
-                openOrders[marketPk] = order.openOrders.map((oo) => new OpenbookOrder(oo))
+                openOrders[marketPk] = order.openOrders.map(
+                  (oo) => new OpenbookOrder(oo),
+                )
               })
             }
 

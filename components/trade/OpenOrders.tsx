@@ -128,7 +128,7 @@ const OpenOrders = ({
 
       if (o instanceof OpenbookOrder) {
         console.error('not implemented!')
-        return;
+        return
       }
 
       if (!marketPk) return
@@ -178,7 +178,7 @@ const OpenOrders = ({
 
       if (o instanceof OpenbookOrder) {
         console.error('not implemented!')
-        return;
+        return
       }
 
       const market = group.getSerum3MarketByExternalMarket(
@@ -248,7 +248,7 @@ const OpenOrders = ({
           )
         } else if (o instanceof OpenbookOrder) {
           console.error('not implemented!')
-          return;
+          return
         } else {
           const marketPk = findSpotMarketPkInOpenOrders(o)
           if (!marketPk) return
@@ -367,8 +367,11 @@ const OpenOrders = ({
     },
     [t],
   )
-    
-  const showEditOrderForm = (order: Order | PerpOrder | OpenbookOrder, tickSize: number) => {
+
+  const showEditOrderForm = (
+    order: Order | PerpOrder | OpenbookOrder,
+    tickSize: number,
+  ) => {
     if (isOpenbookV2OpenOrder(order)) return
     setModifyOrderId(order.orderId.toString())
     setModifiedOrderSize(order.size.toString())

@@ -183,7 +183,7 @@ const Orderbook = () => {
     const market = getMarket()
     if (!group || !market) return
 
-    const orderbookFeedEnabled = false;
+    const orderbookFeedEnabled = false
     if (orderbookFeedEnabled) {
       if (!orderbookFeed.current) {
         orderbookFeed.current = new OrderbookFeed(

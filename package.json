@@ -23,7 +23,6 @@
   "dependencies": {
     "@blockworks-foundation/mango-feeds": "0.1.7",
     "@blockworks-foundation/mango-mints-redemption": "^0.0.10",
-
     "@blockworks-foundation/mango-v4": "git+https://github.com/blockworks-foundation/mango-v4.git#dev",
     "@blockworks-foundation/mango-v4-settings": "0.14.22",
     "@blockworks-foundation/mangolana": "0.0.16",

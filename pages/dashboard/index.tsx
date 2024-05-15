@@ -691,120 +691,120 @@ const Dashboard: NextPage = () => {
               )}
             </div>
             <h3 className="mb-3 mt-6 text-base text-th-fgd-3">
-                  OpenbookV2 Markets
-                </h3>
-                <div className="border-b border-th-bkg-3">
-                  {Array.from(
-                    group.openbookV2MarketsMapByExternal.values(),
-                  ).map((market) => {
-                    const externalMarket: MarketAccount =
-                      group.getOpenbookV2ExternalMarket(
-                        market.openbookMarketExternal,
-                      )
-                    console.log(externalMarket)
-                    return (
-                      <Disclosure key={market.marketIndex}>
-                        {({ open }) => (
-                          <>
-                            <Disclosure.Button
-                              aria-label="panel"
-                              className={`flex w-full items-center justify-between border-t border-th-bkg-3 p-4 md:hover:bg-th-bkg-2 ${
-                                open ? 'bg-th-bkg-2' : ''
-                              }`}
-                            >
-                              <div className="flex items-center">
-                                <MarketLogos market={market} />
-                                <p className="text-th-fgd-2">{market.name}</p>
-                              </div>
-                              <ChevronDownIcon
-                                className={`${
-                                  open ? 'rotate-180' : 'rotate-360'
-                                } h-5 w-5 text-th-fgd-3`}
-                              />
-                            </Disclosure.Button>
-                            <Disclosure.Panel>
-                              <KeyValuePair
-                                label="Public Key"
-                                value={
-                                  <ExplorerLink
-                                    address={market.publicKey.toString()}
-                                    anchorData
-                                  />
-                                }
-                              />
-                              <KeyValuePair
-                                label="Openbook V2 Market External Public Key"
-                                value={
-                                  <ExplorerLink
-                                    address={market.openbookMarketExternal.toString()}
-                                  />
-                                }
-                              />
-                              <KeyValuePair
-                                label="Base Mint"
-                                value={
-                                  <ExplorerLink
-                                    address={externalMarket.baseMint.toString()}
-                                  />
-                                }
-                              />
-                              <KeyValuePair
-                                label="Quote Mint"
-                                value={
-                                  <ExplorerLink
-                                    address={externalMarket.quoteMint.toString()}
-                                  />
-                                }
-                              />
-                              <KeyValuePair
-                                label="Base Token Index"
-                                value={market.baseTokenIndex}
-                              />
-                              <KeyValuePair
-                                label="Quote Token Index"
-                                value={market.quoteTokenIndex}
-                              />
-                              <KeyValuePair
-                                label="Base Lot Size"
-                                value={externalMarket.baseLotSize.toString()}
-                              />
-                              <KeyValuePair
-                                label="Quote Lot Size"
-                                value={externalMarket.quoteLotSize.toString()}
-                              />
-                              <KeyValuePair
-                                label="Max Bid Leverage"
-                                value={`${market
-                                  .maxBidLeverage(group)
-                                  .toFixed(1)}x`}
-                              />
-                              <KeyValuePair
-                                label="Max Ask Leverage"
-                                value={`${market
-                                  .maxAskLeverage(group)
-                                  .toFixed(1)}x`}
-                              />
-                              <KeyValuePair
-                                label="Reduce Only"
-                                value={market.reduceOnly ? 'True' : 'False'}
-                              />
-                              <KeyValuePair
-                                label="Force Close"
-                                value={market.forceClose ? 'True' : 'False'}
-                              />
-                              <KeyValuePair
-                                label="Maker/Taker Fees"
-                                value={`${market.getFeeRates(
-                                  false,
-                                )}/${market.getFeeRates(true)}`}
-                              />
-                            </Disclosure.Panel>
-                          </>
-                        )}
-                      </Disclosure>
+              OpenbookV2 Markets
+            </h3>
+            <div className="border-b border-th-bkg-3">
+              {Array.from(group.openbookV2MarketsMapByExternal.values()).map(
+                (market) => {
+                  const externalMarket: MarketAccount =
+                    group.getOpenbookV2ExternalMarket(
+                      market.openbookMarketExternal,
                     )
-                  })}
-                </div>
+                  console.log(externalMarket)
+                  return (
+                    <Disclosure key={market.marketIndex}>
+                      {({ open }) => (
+                        <>
+                          <Disclosure.Button
+                            aria-label="panel"
+                            className={`flex w-full items-center justify-between border-t border-th-bkg-3 p-4 md:hover:bg-th-bkg-2 ${
+                              open ? 'bg-th-bkg-2' : ''
+                            }`}
+                          >
+                            <div className="flex items-center">
+                              <MarketLogos market={market} />
+                              <p className="text-th-fgd-2">{market.name}</p>
+                            </div>
+                            <ChevronDownIcon
+                              className={`${
+                                open ? 'rotate-180' : 'rotate-360'
+                              } h-5 w-5 text-th-fgd-3`}
+                            />
+                          </Disclosure.Button>
+                          <Disclosure.Panel>
+                            <KeyValuePair
+                              label="Public Key"
+                              value={
+                                <ExplorerLink
+                                  address={market.publicKey.toString()}
+                                  anchorData
+                                />
+                              }
+                            />
+                            <KeyValuePair
+                              label="Openbook V2 Market External Public Key"
+                              value={
+                                <ExplorerLink
+                                  address={market.openbookMarketExternal.toString()}
+                                />
+                              }
+                            />
+                            <KeyValuePair
+                              label="Base Mint"
+                              value={
+                                <ExplorerLink
+                                  address={externalMarket.baseMint.toString()}
+                                />
+                              }
+                            />
+                            <KeyValuePair
+                              label="Quote Mint"
+                              value={
+                                <ExplorerLink
+                                  address={externalMarket.quoteMint.toString()}
+                                />
+                              }
+                            />
+                            <KeyValuePair
+                              label="Base Token Index"
+                              value={market.baseTokenIndex}
+                            />
+                            <KeyValuePair
+                              label="Quote Token Index"
+                              value={market.quoteTokenIndex}
+                            />
+                            <KeyValuePair
+                              label="Base Lot Size"
+                              value={externalMarket.baseLotSize.toString()}
+                            />
+                            <KeyValuePair
+                              label="Quote Lot Size"
+                              value={externalMarket.quoteLotSize.toString()}
+                            />
+                            <KeyValuePair
+                              label="Max Bid Leverage"
+                              value={`${market
+                                .maxBidLeverage(group)
+                                .toFixed(1)}x`}
+                            />
+                            <KeyValuePair
+                              label="Max Ask Leverage"
+                              value={`${market
+                                .maxAskLeverage(group)
+                                .toFixed(1)}x`}
+                            />
+                            <KeyValuePair
+                              label="Reduce Only"
+                              value={market.reduceOnly ? 'True' : 'False'}
+                            />
+                            <KeyValuePair
+                              label="Force Close"
+                              value={market.forceClose ? 'True' : 'False'}
+                            />
+                            <KeyValuePair
+                              label="Maker/Taker Fees"
+                              value={`${market.getFeeRates(
+                                false,
+                              )}/${market.getFeeRates(true)}`}
+                            />
+                          </Disclosure.Panel>
+                        </>
+                      )}
+                    </Disclosure>
+                  )
+                },
+              )}
+            </div>
           </div>
         ) : (
           'Loading'

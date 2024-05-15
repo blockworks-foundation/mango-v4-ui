@@ -2,7 +2,11 @@ import { MarketData, MarketsDataItem } from 'types'
 import useMarketsData from './useMarketsData'
 import { useMemo } from 'react'
 import mangoStore from '@store/mangoStore'
-import { OpenbookV2Market, PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
+import {
+  OpenbookV2Market,
+  PerpMarket,
+  Serum3Market,
+} from '@blockworks-foundation/mango-v4'
 import { useBirdeye24hrPrices } from './useBirdeye24hrPrices'
 
 type ApiData = {
@@ -50,7 +54,12 @@ export default function useListedMarketsWithMarketData() {
     const prices: { [key: string]: number } = {}
     const group = mangoStore.getState().group
     serumMarkets.forEach((market) => {
-      if (!group || !market || market instanceof PerpMarket || market instanceof OpenbookV2Market) {
+      if (
+        !group ||
+        !market ||
+        market instanceof PerpMarket ||
+        market instanceof OpenbookV2Market
+      ) {
         prices[market.name] = 0
         return
       }
@@ -64,7 +73,12 @@ export default function useListedMarketsWithMarketData() {
     })
 
     openbookMarkets.forEach((market) => {
-      if (!group || !market || market instanceof PerpMarket || market instanceof Serum3Market) {
+      if (
+        !group ||
+        !market ||
+        market instanceof PerpMarket ||
+        market instanceof Serum3Market
+      ) {
         prices[market.name] = 0
         return
       }
@@ -86,8 +100,12 @@ export default function useListedMarketsWithMarketData() {
   const spotMarketsWithData = useMemo(() => {
     if (!serumMarkets || !serumMarkets.length) return []
     const group = mangoStore.getState().group
-    const openbookMarketsWithData = openbookMarkets.map((m) => { return { ...m, isOpenbookV2: true }}) as SpotMarketWithMarketData[]
-    const serumMarketsWithData = serumMarkets.map((m) => { return { ...m, isOpenbookV2: false }}) as SpotMarketWithMarketData[]
+    const openbookMarketsWithData = openbookMarkets.map((m) => {
+      return { ...m, isOpenbookV2: true }
+    }) as SpotMarketWithMarketData[]
+    const serumMarketsWithData = serumMarkets.map((m) => {
+      return { ...m, isOpenbookV2: false }
+    }) as SpotMarketWithMarketData[]
     const allSpotMarkets: SpotMarketWithMarketData[] =
       serumMarketsWithData.concat(openbookMarketsWithData)
     if (spotData && birdeyeSpotDailyPrices?.length) {
@@ -134,7 +152,13 @@ export default function useListedMarketsWithMarketData() {
       }
     }
     return [...allSpotMarkets].sort((a, b) => a.name.localeCompare(b.name))
-  }, [currentPrices, birdeyeSpotDailyPrices, spotData, serumMarkets, openbookMarkets])
+  }, [
+    currentPrices,
+    birdeyeSpotDailyPrices,
+    spotData,
+    serumMarkets,
+    openbookMarkets,
+  ])
 
   const perpMarketsWithData = useMemo(() => {
     if (!perpMarkets || !perpMarkets.length) return []

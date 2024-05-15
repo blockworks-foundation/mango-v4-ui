@@ -21,11 +21,17 @@ import {
 import MarketLogos from './MarketLogos'
 import SoonBadge from '@components/shared/SoonBadge'
 import TabButtons from '@components/shared/TabButtons'
-import { OpenbookV2Market, PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
+import {
+  OpenbookV2Market,
+  PerpMarket,
+  Serum3Market,
+} from '@blockworks-foundation/mango-v4'
 import Loading from '@components/shared/Loading'
 import MarketChange from '@components/shared/MarketChange'
 import SheenLoader from '@components/shared/SheenLoader'
-import useListedMarketsWithMarketData, { SpotMarketWithMarketData } from 'hooks/useListedMarketsWithMarketData'
+import useListedMarketsWithMarketData, {
+  SpotMarketWithMarketData,
+} from 'hooks/useListedMarketsWithMarketData'
 import {
   AllowedKeys,
   sortPerpMarkets,
@@ -66,11 +72,8 @@ const MarketSelectDropdown = () => {
   const [isOpen, setIsOpen] = useState(false)
   const { group } = useMangoGroup()
   const [spotBaseFilter, setSpotBaseFilter] = useState('All')
-  const {
-    perpMarketsWithData,
-    spotMarketsWithData,
-    isLoading,
-  } = useListedMarketsWithMarketData()
+  const { perpMarketsWithData, spotMarketsWithData, isLoading } =
+    useListedMarketsWithMarketData()
   const { isDesktop } = useViewport()
   const focusRef = useRef<HTMLInputElement>(null)
   const { query } = useRouter()
@@ -105,11 +108,7 @@ const MarketSelectDropdown = () => {
   }, [group, spotMarketsWithData])
 
   const unsortedSpotMarketsToShow = useMemo(() => {
-    if (
-      !spotMarketsWithData.length ||
-      !group
-    )
-      return []
+    if (!spotMarketsWithData.length || !group) return []
 
     const renamedSpotMarketsWithData = spotMarketsWithData.map((m) => {
       if (m.isOpenbookV2) {
@@ -405,7 +404,9 @@ const MarketSelectDropdown = () => {
                         m.quoteTokenIndex,
                       )
                       const market = !m.isOpenbookV2
-                        ? group?.getSerum3ExternalMarket((m as Serum3Market).serumMarketExternal)
+                        ? group?.getSerum3ExternalMarket(
+                            (m as Serum3Market).serumMarketExternal,
+                          )
                         : group?.getOpenbookV2ExternalMarket(
                             (m as OpenbookV2Market).openbookMarketExternal,
                           )
@@ -419,7 +420,9 @@ const MarketSelectDropdown = () => {
                       if (baseBank && market && quoteBank) {
                         price = floorToDecimal(
                           baseBank.uiPrice / quoteBank.uiPrice,
-                          market instanceof Market ? getDecimalCount(market.tickSize) : market.quoteDecimals,
+                          market instanceof Market
+                            ? getDecimalCount(market.tickSize)
+                            : market.quoteDecimals,
                         ).toNumber()
                       }
 
@@ -453,7 +456,9 @@ const MarketSelectDropdown = () => {
                               ) : null}
                             </div>
                             <div className="col-span-1 flex justify-end">
-                              {price && market instanceof Market && market?.tickSize ? (
+                              {price &&
+                              market instanceof Market &&
+                              market?.tickSize ? (
                                 <span className="font-mono text-xs text-th-fgd-2">
                                   {quoteBank?.name === 'USDC' ? '$' : ''}
                                   {countLeadingZeros(price) <= 4
@@ -472,7 +477,9 @@ const MarketSelectDropdown = () => {
                                   ) : null}
                                 </span>
                               ) : null}
-                              {price && !(market instanceof Market) && market?.quoteLotSize ? (
+                              {price &&
+                              !(market instanceof Market) &&
+                              market?.quoteLotSize ? (
                                 <span className="font-mono text-xs text-th-fgd-2">
                                   {quoteBank?.name === 'USDC' ? '$' : ''}
                                   {countLeadingZeros(price) <= 4
