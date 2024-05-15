@@ -17,7 +17,6 @@ import useMangoAccount from 'hooks/useMangoAccount'
 dayjs.extend(relativeTime)
 
 const PromoBanner = () => {
-  return null
   const [showBanner, setShowBanner] = useLocalStorageState(
     MANGO_MINTS_BANNER_KEY,
     {},

@@ -38,7 +38,7 @@ import {
 import { Order } from '@project-serum/serum/lib/market'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
-import mangoStore from '@store/mangoStore'
+import mangoStore, { OpenbookOrder } from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import useUnownedAccount from 'hooks/useUnownedAccount'
@@ -46,7 +46,7 @@ import useFilledOrders from 'hooks/useFilledOrders'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import Link from 'next/link'
-import { ChangeEvent, Fragment, useCallback, useState } from 'react'
+import { ChangeEvent, useCallback, useState } from 'react'
 import { isMangoError } from 'types'
 import { notify } from 'utils/notifications'
 import { getDecimalCount } from 'utils/numbers'
@@ -57,7 +57,6 @@ import TableMarketName from './TableMarketName'
 import { useSortableData } from 'hooks/useSortableData'
 import { BN } from '@project-serum/anchor'
 import { ExtendedMarketAccount, isOpenbookV2OpenOrder } from 'types/openbook'
-import { OpenOrdersAccount } from '@openbook-dex/openbook-v2'
 import BigNumber from 'bignumber.js'
 import NukeIcon from '@components/icons/NukeIcon'
 
@@ -67,7 +66,7 @@ type TableData = {
   market: Serum3Market | PerpMarket | OpenbookV2Market
   marketName: string
   minOrderSize: number
-  order: Order | PerpOrder | OpenOrdersAccount
+  order: Order | PerpOrder | OpenbookOrder
   orderId: BN
   price: number
   side: string
@@ -76,8 +75,8 @@ type TableData = {
   value: number
 }
 
-export const findSerum3MarketPkInOpenOrders = (
-  o: Order,
+export const findSpotMarketPkInOpenOrders = (
+  o: Order | OpenbookOrder,
 ): string | undefined => {
   const openOrders = mangoStore.getState().mangoAccount.openOrders
   let foundedMarketPk: string | undefined = undefined
@@ -119,54 +118,19 @@ const OpenOrders = ({
   const { selectedMarket } = useSelectedMarket()
   const { filledOrders, fetchingFilledOrders } = useFilledOrders()
 
-  const handleCancelOpenbookV2Order = useCallback(
-    async (_o: OpenOrdersAccount) => {
-      // const client = mangoStore.getState().client
-      // const group = mangoStore.getState().group
-      // const mangoAccount = mangoStore.getState().mangoAccount.current
-      // const actions = mangoStore.getState().actions
-      // if (!group || !mangoAccount) return
-      // const marketPk = findSerum3MarketPkInOpenOrders(o)
-      // if (!marketPk) return
-      // const market = group.getOpenbookV2MarketByExternalMarket(
-      //   new PublicKey(marketPk),
-      // )
-      // setCancelId(o.orderId.toString())
-      // try {
-      //   const { signature: tx } = await client.openbookV2CancelOrder(
-      //     group,
-      //     mangoAccount,
-      //     market!.openbookMarketExternal,
-      //     o.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
-      //     o.orderId,
-      //   )
-      //   actions.fetchOpenOrders()
-      //   notify({
-      //     type: 'success',
-      //     title: 'Transaction successful',
-      //     txid: tx,
-      //   })
-      // } catch (e) {
-      //   console.error('Error canceling', e)
-      //   if (isMangoError(e)) {
-      //     notify({
-      //       title: t('trade:cancel-order-error'),
-      //       description: e.message,
-      //       txid: e.txid,
-      //       type: 'error',
-      //     })
-      //   }
-      // } finally {
-      //   setCancelId('')
-      // }
-    }, [])
   const handleCancelAllForSpotMarket = useCallback(
-    async (o: Order) => {
+    async (o: Order | OpenbookOrder) => {
       const client = mangoStore.getState().client
       const group = mangoStore.getState().group
       const mangoAccount = mangoStore.getState().mangoAccount.current
       if (!group || !mangoAccount) return
-      const marketPk = findSerum3MarketPkInOpenOrders(o)
+      const marketPk = findSpotMarketPkInOpenOrders(o)
+
+      if (o instanceof OpenbookOrder) {
+        console.error('not implemented!')
+        return;
+      }
+
       if (!marketPk) return
       const market = group.getSerum3MarketByExternalMarket(
         new PublicKey(marketPk),
@@ -202,15 +166,21 @@ const OpenOrders = ({
     [t],
   )
 
-  const handleCancelSerumOrder = useCallback(
-    async (o: Order) => {
+  const handleCancelSpotOrder = useCallback(
+    async (o: Order | OpenbookOrder) => {
       const client = mangoStore.getState().client
       const group = mangoStore.getState().group
       const mangoAccount = mangoStore.getState().mangoAccount.current
       const actions = mangoStore.getState().actions
       if (!group || !mangoAccount) return
-      const marketPk = findSerum3MarketPkInOpenOrders(o)
+      const marketPk = findSpotMarketPkInOpenOrders(o)
       if (!marketPk) return
+
+      if (o instanceof OpenbookOrder) {
+        console.error('not implemented!')
+        return;
+      }
+
       const market = group.getSerum3MarketByExternalMarket(
         new PublicKey(marketPk),
       )
@@ -249,12 +219,12 @@ const OpenOrders = ({
   )
 
   const modifyOrder = useCallback(
-    async (o: PerpOrder | Order | OpenOrdersAccount) => {
+    async (o: PerpOrder | Order | OpenbookOrder) => {
       const client = mangoStore.getState().client
       const group = mangoStore.getState().group
       const mangoAccount = mangoStore.getState().mangoAccount.current
       const actions = mangoStore.getState().actions
-      if (isOpenbookV2OpenOrder(o)) return
+
       const baseSize = modifiedOrderSize ? Number(modifiedOrderSize) : o.size
       const price = modifiedOrderPrice ? Number(modifiedOrderPrice) : o.price
       if (!group || !mangoAccount) return
@@ -276,8 +246,11 @@ const OpenOrders = ({
             undefined,
             undefined,
           )
+        } else if (o instanceof OpenbookOrder) {
+          console.error('not implemented!')
+          return;
         } else {
-          const marketPk = findSerum3MarketPkInOpenOrders(o)
+          const marketPk = findSpotMarketPkInOpenOrders(o)
           if (!marketPk) return
           const market = group.getSerum3MarketByExternalMarket(
             new PublicKey(marketPk),
@@ -395,7 +368,7 @@ const OpenOrders = ({
     [t],
   )
     
-  const showEditOrderForm = (order: Order | PerpOrder | OpenOrdersAccount, tickSize: number) => {
+  const showEditOrderForm = (order: Order | PerpOrder | OpenbookOrder, tickSize: number) => {
     if (isOpenbookV2OpenOrder(order)) return
     setModifyOrderId(order.orderId.toString())
     setModifiedOrderSize(order.size.toString())
@@ -719,7 +692,7 @@ const OpenOrders = ({
                                   onClick={() =>
                                     order instanceof PerpOrder
                                       ? handleCancelPerpOrder(order)
-                                      : handleCancelSerumOrder(order)
+                                      : handleCancelSpotOrder(order)
                                   }
                                   size="small"
                                 >
@@ -742,9 +715,7 @@ const OpenOrders = ({
                                     onClick={() =>
                                       order instanceof PerpOrder
                                         ? handleCancelPerpOrder(order)
-                                        : 'orderId' in order
-                                        ? handleCancelSerumOrder(order)
-                                        : handleCancelOpenbookV2Order(order)
+                                        : handleCancelSpotOrder(order)
                                     }
                                     size="small"
                                   >
@@ -933,9 +904,7 @@ const OpenOrders = ({
                           onClick={() =>
                             order instanceof PerpOrder
                               ? handleCancelPerpOrder(order)
-                              : 'orderId' in order
-                              ? handleCancelSerumOrder(order)
-                              : handleCancelOpenbookV2Order(order)
+                              : handleCancelSpotOrder(order)
                           }
                           size="small"
                         >

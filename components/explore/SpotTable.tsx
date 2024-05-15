@@ -28,7 +28,7 @@ import { useRouter } from 'next/router'
 import Decimal from 'decimal.js'
 import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 import { BankWithMarketData } from './Spot'
-import { SerumMarketWithMarketData } from 'hooks/useListedMarketsWithMarketData'
+import { SpotMarketWithMarketData } from 'hooks/useListedMarketsWithMarketData'
 import Tooltip from '@components/shared/Tooltip'
 import TableTokenName from '@components/shared/TableTokenName'
 import { LinkButton } from '@components/shared/Button'
@@ -47,7 +47,7 @@ type TableData = {
   change: number
   depositRate: number
   tokenName: string
-  market: SerumMarketWithMarketData | undefined
+  market: SpotMarketWithMarketData | undefined
   price: number
   priceHistory: {
     price: number

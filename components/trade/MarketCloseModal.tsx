@@ -79,7 +79,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
         .then(({ context, value: info }) => {
           if (!info) return
           const decodedBook = decodeBook(client, perpMarket, info, 'bids')
-          setBids(decodeBookL2(decodedBook))
+          setBids(decodeBookL2(decodedBook, perpMarket, perpMarket))
           lastSeenBidsSlot = context.slot
         })
       bidSubscriptionId = connection.onAccountChange(
@@ -87,7 +87,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
         (info, context) => {
           if (context.slot > lastSeenBidsSlot) {
             const decodedBook = decodeBook(client, perpMarket, info, 'bids')
-            setBids(decodeBookL2(decodedBook))
+            setBids(decodeBookL2(decodedBook, perpMarket, perpMarket))
           }
         },
         'processed',
@@ -101,7 +101,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
         .then(({ context, value: info }) => {
           if (!info) return
           const decodedBook = decodeBook(client, perpMarket, info, 'asks')
-          setAsks(decodeBookL2(decodedBook))
+          setAsks(decodeBookL2(decodedBook, perpMarket, perpMarket))
           lastSeenAsksSlot = context.slot
         })
       askSubscriptionId = connection.onAccountChange(
@@ -109,7 +109,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
         (info, context) => {
           if (context.slot > lastSeenAsksSlot) {
             const decodedBook = decodeBook(client, perpMarket, info, 'asks')
-            setAsks(decodeBookL2(decodedBook))
+            setAsks(decodeBookL2(decodedBook, perpMarket, perpMarket))
           }
         },
         'processed',

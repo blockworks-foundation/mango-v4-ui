@@ -60,7 +60,6 @@ const RewardsComponent = dynamic(() => import('./RewardsComponents'), {
 })
 
 const ClaimPage = () => {
-  return null
   const [isClaiming, setIsClaiming] = useState(false)
   const [showTweetModal, setShowTweetModal] = useState(false)
   const [hasSeenTweetModal, setHasSeenTweetModal] = useState(false)

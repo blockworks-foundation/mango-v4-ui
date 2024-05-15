@@ -183,7 +183,8 @@ const Orderbook = () => {
     const market = getMarket()
     if (!group || !market) return
 
-    if (false) {
+    const orderbookFeedEnabled = false;
+    if (orderbookFeedEnabled) {
       if (!orderbookFeed.current) {
         orderbookFeed.current = new OrderbookFeed(
           `wss://api.mngo.cloud/orderbook/v1/`,

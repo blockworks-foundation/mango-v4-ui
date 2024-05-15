@@ -2,7 +2,7 @@ import Change from '@components/shared/Change'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import TokenLogo from '@components/shared/TokenLogo'
 import useListedMarketsWithMarketData, {
-  SerumMarketWithMarketData,
+  SpotMarketWithMarketData,
 } from 'hooks/useListedMarketsWithMarketData'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useRouter } from 'next/router'
@@ -28,7 +28,7 @@ dayjs.extend(relativeTime)
 
 export type BankWithMarketData = {
   bank: Bank
-  market: SerumMarketWithMarketData | undefined
+  market: SpotMarketWithMarketData | undefined
 }
 
 const CALLOUT_TILES_WRAPPER_CLASSES =
@@ -40,16 +40,16 @@ const RecentGainersLosers = () => {
   const { group } = useMangoGroup()
   const { banks } = useBanks()
   const {
-    serumMarketsWithData,
+    spotMarketsWithData,
     perpMarketsWithData,
     isLoading: loadingSerumMarkets,
   } = useListedMarketsWithMarketData()
   const groupLoaded = mangoStore((s) => s.groupLoaded)
 
   const banksWithMarketData = useMemo(() => {
-    if (!banks.length || !group || !serumMarketsWithData.length) return []
+    if (!banks.length || !group || !spotMarketsWithData.length) return []
     const banksWithMarketData = []
-    const usdcQuoteMarkets = serumMarketsWithData.filter(
+    const usdcQuoteMarkets = spotMarketsWithData.filter(
       (market) => market.quoteTokenIndex === 0,
     )
     for (const bank of banks) {
@@ -63,7 +63,7 @@ const RecentGainersLosers = () => {
       }
     }
     return banksWithMarketData
-  }, [banks, group, serumMarketsWithData])
+  }, [banks, group, spotMarketsWithData])
 
   const newlyListedMintInfo = useMemo(() => {
     if (!group) return []

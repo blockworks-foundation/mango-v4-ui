@@ -275,9 +275,6 @@ const MangoAccountDashboard: NextPage = () => {
                 const market = group.getOpenbookV2MarketByMarketIndex(
                   openbook.marketIndex,
                 )
-                const extMarket = group.getOpenbookV2ExternalMarket(
-                  market.openbookMarketExternal,
-                )
                 return (
                   <div key={openbook.marketIndex} className="mt-6">
                     <KeyValuePair

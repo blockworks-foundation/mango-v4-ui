@@ -1,5 +1,6 @@
 import {
   Group,
+  OpenbookV2Market,
   PerpMarket,
   Serum3Market,
 } from '@blockworks-foundation/mango-v4'
@@ -96,7 +97,7 @@ export const parseApiTradeHistory = (
 
 export const formatTradeHistory = (
   group: Group,
-  selectedMarket: Serum3Market | PerpMarket,
+  selectedMarket: Serum3Market | PerpMarket | OpenbookV2Market,
   mangoAccountAddress: string,
   tradeHistory: Array<CombinedTradeHistoryTypes>,
 ) => {
@@ -122,6 +123,7 @@ export const formatTradeHistory = (
         market = group.getPerpMarketByMarketIndex(trade.market_index)
       }
     }
+    // todo case for openbook?
 
     return {
       ...trade,

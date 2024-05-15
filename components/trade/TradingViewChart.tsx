@@ -16,7 +16,7 @@ import {
   IExecutionLineAdapter,
   Direction,
 } from '@public/charting_library'
-import mangoStore from '@store/mangoStore'
+import mangoStore, { OpenbookOrder } from '@store/mangoStore'
 import { useViewport } from 'hooks/useViewport'
 import { SHOW_ORDER_LINES_KEY, TV_USER_ID_KEY } from 'utils/constants'
 import { COLORS } from 'styles/colors'
@@ -45,7 +45,7 @@ import { formatPrice } from 'apis/birdeye/helpers'
 import useTradeHistory from 'hooks/useTradeHistory'
 import dayjs from 'dayjs'
 import ModifyTvOrderModal from '@components/modals/ModifyTvOrderModal'
-import { findSerum3MarketPkInOpenOrders } from './OpenOrders'
+import { findSpotMarketPkInOpenOrders } from './OpenOrders'
 import { Transition } from '@headlessui/react'
 import useThemeWrapper from 'hooks/useThemeWrapper'
 import { handleCancelTriggerOrder } from '@components/swap/SwapTriggerOrders'
@@ -90,7 +90,7 @@ const TradingViewChart = () => {
   const { theme } = useThemeWrapper()
   const { isMobile } = useViewport()
   const [chartReady, setChartReady] = useState(false)
-  const [orderToModify, setOrderToModify] = useState<Order | PerpOrder | null>(
+  const [orderToModify, setOrderToModify] = useState<Order | PerpOrder | OpenbookOrder | null>(
     null,
   )
   const [modifiedPrice, setModifiedPrice] = useState('')
@@ -209,26 +209,41 @@ const TradingViewChart = () => {
       tickSizeDecimals = getDecimalCount(selectedMarket.tickSize)
     } else {
       const group = mangoStore.getState().group
-      const market = group?.getSerum3ExternalMarket(
-        selectedMarket.serumMarketExternal,
-      )
-      if (market) {
-        minOrderDecimals = getDecimalCount(market.minOrderSize)
-        tickSizeDecimals = getDecimalCount(market.tickSize)
+
+      if (selectedMarket instanceof Serum3Market) {
+        const market = group?.getSerum3ExternalMarket(
+          selectedMarket.serumMarketExternal,
+        )
+        if (market) {
+          minOrderDecimals = getDecimalCount(market.minOrderSize)
+          tickSizeDecimals = getDecimalCount(market.tickSize)
+        }
+      } else {
+        const market = group?.getOpenbookV2ExternalMarket(
+          selectedMarket.openbookMarketExternal,
+        )
+        if (market) {
+          minOrderDecimals = market.baseDecimals
+          tickSizeDecimals = market.quoteDecimals
+        }
       }
     }
     return [minOrderDecimals, tickSizeDecimals]
   }, [])
 
   const cancelSpotOrder = useCallback(
-    async (o: Order) => {
+    async (o: Order | OpenbookOrder) => {
       const client = mangoStore.getState().client
       const group = mangoStore.getState().group
       const mangoAccount = mangoStore.getState().mangoAccount.current
       const actions = mangoStore.getState().actions
       if (!group || !mangoAccount) return
-      const marketPk = findSerum3MarketPkInOpenOrders(o)
+      const marketPk = findSpotMarketPkInOpenOrders(o)
       if (!marketPk) return
+      if (o instanceof OpenbookOrder) {
+        console.error('not implemented!')
+        return;
+      }
       const market = group.getSerum3MarketByExternalMarket(
         new PublicKey(marketPk),
       )
@@ -258,7 +273,7 @@ const TradingViewChart = () => {
         })
       }
     },
-    [t, findSerum3MarketPkInOpenOrders],
+    [t, findSpotMarketPkInOpenOrders],
   )
 
   const cancelPerpOrder = useCallback(
@@ -296,7 +311,7 @@ const TradingViewChart = () => {
   )
 
   const drawLine = useCallback(
-    (order: Order | PerpOrder) => {
+    (order: Order | PerpOrder | OpenbookOrder) => {
       const side =
         typeof order.side === 'string'
           ? t(order.side)
@@ -516,7 +531,7 @@ const TradingViewChart = () => {
 
   const drawLinesForMarket = useCallback(
     (
-      openOrders: Record<string, Order[] | PerpOrder[]>,
+      openOrders: Record<string, Order[] | PerpOrder[] | OpenbookOrder[]>,
       triggerOrders: TokenConditionalSwap[],
     ) => {
       const set = mangoStore.getState().set

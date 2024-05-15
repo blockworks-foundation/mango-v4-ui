@@ -48,6 +48,7 @@ import {
 } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import PlausibleProvider from 'next-plausible'
+import { ExtendedMarketAccount } from 'types/openbook'
 
 // init react-query
 const queryClient = new QueryClient()
@@ -210,7 +211,12 @@ const PageTitle = () => {
       )
       const market = group.getOpenbookV2ExternalMarket(
         selectedMarket.openbookMarketExternal,
-      )
+      ) as ExtendedMarketAccount
+
+      market.tickSize = 0.01
+      market.minOrderSize = 0.01
+      market.publicKey = selectedMarket.openbookMarketExternal
+
       const price = baseBank.uiPrice / quoteBank.uiPrice
       return [market, price]
     }

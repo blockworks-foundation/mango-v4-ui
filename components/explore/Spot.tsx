@@ -1,5 +1,5 @@
 import useListedMarketsWithMarketData, {
-  SerumMarketWithMarketData,
+  SpotMarketWithMarketData,
 } from 'hooks/useListedMarketsWithMarketData'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { ChangeEvent, useMemo, useState } from 'react'
@@ -24,7 +24,7 @@ import { TOKEN_WATCHLIST_KEY } from 'utils/constants'
 
 export type BankWithMarketData = {
   bank: Bank
-  market: SerumMarketWithMarketData | undefined
+  market: SpotMarketWithMarketData | undefined
 }
 
 const generateSearchTerm = (item: BankWithMarketData, searchValue: string) => {
@@ -99,16 +99,16 @@ const Spot = () => {
   const { group } = useMangoGroup()
   const { banks } = useBanks()
   const { isDesktop } = useViewport()
-  const { serumMarketsWithData, isLoading: loadingMarketsData } =
+  const { spotMarketsWithData, isLoading: loadingMarketsData } =
     useListedMarketsWithMarketData()
   const [sortByKey, setSortByKey] = useState<AllowedKeys>('quote_volume_24h')
   const [search, setSearch] = useState('')
   const [showTableView, setShowTableView] = useState(true)
 
   const banksWithMarketData = useMemo(() => {
-    if (!banks.length || !group || !serumMarketsWithData.length) return []
+    if (!banks.length || !group || !spotMarketsWithData.length) return []
     const banksWithMarketData = []
-    const usdcQuoteMarkets = serumMarketsWithData.filter(
+    const usdcQuoteMarkets = spotMarketsWithData.filter(
       (market) => market.quoteTokenIndex === 0,
     )
     for (const bank of banks) {
@@ -122,7 +122,7 @@ const Spot = () => {
       }
     }
     return banksWithMarketData
-  }, [banks, group, serumMarketsWithData])
+  }, [banks, group, spotMarketsWithData])
 
   const sortedTokensToShow = useMemo(() => {
     if (!banksWithMarketData.length) return []

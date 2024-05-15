@@ -11,7 +11,7 @@ import {
   PublicKey,
   TransactionInstruction,
 } from '@solana/web3.js'
-import { OpenOrders, Order } from '@project-serum/serum/lib/market'
+import { OpenOrders, Order as SerumOrder } from '@project-serum/serum/lib/market'
 import { Orderbook } from '@project-serum/serum'
 import { Wallet as WalletAdapter } from '@solana/wallet-adapter-react'
 import {
@@ -82,7 +82,7 @@ import {
 import { nftThemeMeta } from 'utils/theme'
 import { OrderTypes } from 'utils/tradeForm'
 import { usePlausible } from 'next-plausible'
-import { OpenOrdersAccount } from '@openbook-dex/openbook-v2'
+import { OpenOrdersAccount, OpenOrder } from '@openbook-dex/openbook-v2'
 
 const GROUP = new PublicKey('CKU8J1mgtdcJJhBvXrH6xRx1MmcrRWDv8WQdNxPKW3gk')
 import { collectTxConfirmationData } from 'utils/transactionConfirmationData'
@@ -188,6 +188,28 @@ export const DEFAULT_TRADE_FORM: TradeForm = {
   ioc: false,
   reduceOnly: false,
 }
+export class OpenbookOrder {
+  price: number
+  side: 'buy' | 'sell'
+  size: number
+  orderId: BN
+
+  constructor(order: OpenOrder) {
+    // todo conversion to ui units
+    this.price = order.lockedPrice.toNumber()
+
+    // even numbers are bids
+    if (order.sideAndTree % 2 == 0) {
+      this.side = 'buy'
+    } else {
+      this.side = 'sell'
+    }
+
+    // todo this probably needs to take in a bookside to find out the size :(
+    this.size = 1
+    this.orderId = order.id
+  }
+}
 
 export type AccountPageTab =
   | 'overview'
@@ -215,7 +237,7 @@ export type MangoStore = {
     initialLoad: boolean
     lastSlot: number
     openOrderAccounts: OpenOrders[]
-    openOrders: Record<string, Order[] | PerpOrder[] | OpenOrdersAccount[]>
+    openOrders: Record<string, SerumOrder[] | PerpOrder[] | OpenbookOrder[]>
     perpPositions: PerpPosition[]
     spotBalances: SpotBalances
     swapHistory: {
@@ -261,7 +283,7 @@ export type MangoStore = {
   }
   serumMarkets: Serum3Market[]
   openbookMarkets: OpenbookV2Market[]
-  serumOrders: Order[] | undefined
+  serumOrders: SerumOrder[] | undefined
   settings: {
     loading: boolean
     tours: TourSettings
@@ -347,6 +369,7 @@ const mangoStore = create<MangoStore>()(
     let rpcUrl = ENDPOINT.url
     let swapMargin = true
 
+    // @ts-ignore
     if (typeof window !== 'undefined' && CLUSTER === 'mainnet-beta') {
       const urlFromLocalStorage = localStorage.getItem(RPC_PROVIDER_KEY)
       const swapMarginFromLocalStorage = localStorage.getItem(SWAP_MARGIN_KEY)
@@ -706,12 +729,6 @@ const mangoStore = create<MangoStore>()(
               return
             }
 
-            const selectedAccountIsNotInAccountsList = mangoAccounts.find(
-              (x) =>
-                x.publicKey.toBase58() ===
-                selectedMangoAccount?.publicKey.toBase58(),
-            )
-
             let newSelectedMangoAccount = selectedMangoAccount
             if (!selectedMangoAccount || !selectedAccountIsNotInAccountsList) {
               const lastAccount = localStorage.getItem(LAST_ACCOUNT_KEY)
@@ -788,7 +805,7 @@ const mangoStore = create<MangoStore>()(
           try {
             const openOrders: Record<
               string,
-              Order[] | PerpOrder[] | OpenOrdersAccount[]
+              SerumOrder[] | PerpOrder[] | OpenbookOrder[]
             > = {}
             let serumOpenOrderAccounts: OpenOrders[] = []
 
@@ -840,15 +857,11 @@ const mangoStore = create<MangoStore>()(
 
             if (mangoAccount.openbookV2Active()?.length) {
               await mangoAccount.reloadOpenbookV2OpenOrders(client)
-              console.log(
-                'mangoAccount.openbookV2OosMapByMarketIndex.values()',
-                mangoAccount.openbookV2OosMapByMarketIndex.values(),
-              )
               Array.from(
                 mangoAccount.openbookV2OosMapByMarketIndex.values(),
               ).forEach((order) => {
                 const marketPk = order.market.toString()
-                openOrders[marketPk] = [order]
+                openOrders[marketPk] = order.openOrders.map((oo) => new OpenbookOrder(oo))
               })
             }
 

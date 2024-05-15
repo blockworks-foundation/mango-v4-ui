@@ -175,7 +175,10 @@ const AdvancedTradeForm = () => {
   }, [selectedMarket])
 
   const isInsured = useMemo(() => {
-    if (selectedMarket instanceof Serum3Market) {
+    if (
+      selectedMarket instanceof Serum3Market ||
+      selectedMarket instanceof OpenbookV2Market
+    ) {
       const group = mangoStore.getState().group
       return isTokenInsured(baseBank, group)
     } else {
@@ -576,7 +579,6 @@ const AdvancedTradeForm = () => {
 
   const isFormValid = useCallback(
     (form: TradeForm) => {
-      return true
       const { baseSize, price, orderType, side } = form
       const invalidFields: FormErrors = {}
       setFormErrors({})
@@ -1337,7 +1339,7 @@ const AdvancedTradeForm = () => {
                 setShowCreateAccountModal={setShowCreateAccountModal}
                 setShowDepositModal={setShowDepositModal}
                 sideNames={sideNames}
-                tooMuchSize={false}
+                tooMuchSize={tooMuchSize}
                 useMargin={savedCheckboxSettings.margin}
               />
             </div>

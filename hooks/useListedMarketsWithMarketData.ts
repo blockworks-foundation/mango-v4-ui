@@ -2,7 +2,7 @@ import { MarketData, MarketsDataItem } from 'types'
 import useMarketsData from './useMarketsData'
 import { useMemo } from 'react'
 import mangoStore from '@store/mangoStore'
-import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
+import { OpenbookV2Market, PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
 import { useBirdeye24hrPrices } from './useBirdeye24hrPrices'
 
 type ApiData = {
@@ -14,13 +14,12 @@ type MarketRollingChange = {
   priceHistory: Array<{ price: number; time: number }>
 }
 
-export type SerumMarketWithMarketData = Serum3Market &
-  ApiData &
-  MarketRollingChange
+type IsOpenbookV2 = { isOpenbookV2: boolean }
 
-export type OpenbookMarketWithMarketData = Serum3Market &
+export type SpotMarketWithMarketData = (Serum3Market | OpenbookV2Market) &
   ApiData &
-  MarketRollingChange
+  MarketRollingChange &
+  IsOpenbookV2
 
 export type PerpMarketWithMarketData = PerpMarket &
   ApiData &
@@ -50,8 +49,22 @@ export default function useListedMarketsWithMarketData() {
   const currentPrices = useMemo(() => {
     const prices: { [key: string]: number } = {}
     const group = mangoStore.getState().group
-    serumMarkets.concat(openbookMarkets).forEach((market) => {
-      if (!group || !market || market instanceof PerpMarket) {
+    serumMarkets.forEach((market) => {
+      if (!group || !market || market instanceof PerpMarket || market instanceof OpenbookV2Market) {
+        prices[market.name] = 0
+        return
+      }
+      const baseBank = group.getFirstBankByTokenIndex(market.baseTokenIndex)
+      const quoteBank = group.getFirstBankByTokenIndex(market.quoteTokenIndex)
+      if (!baseBank || !quoteBank) {
+        prices[market.name] = 0
+        return
+      }
+      prices[market.name] = baseBank.uiPrice / quoteBank.uiPrice
+    })
+
+    openbookMarkets.forEach((market) => {
+      if (!group || !market || market instanceof PerpMarket || market instanceof Serum3Market) {
         prices[market.name] = 0
         return
       }
@@ -70,11 +83,13 @@ export default function useListedMarketsWithMarketData() {
     return prices
   }, [serumMarkets, perpMarkets])
 
-  const serumMarketsWithData = useMemo(() => {
+  const spotMarketsWithData = useMemo(() => {
     if (!serumMarkets || !serumMarkets.length) return []
     const group = mangoStore.getState().group
-    const allSpotMarkets: SerumMarketWithMarketData[] =
-      serumMarkets as SerumMarketWithMarketData[]
+    const openbookMarketsWithData = openbookMarkets.map((m) => { return { ...m, isOpenbookV2: true }}) as SpotMarketWithMarketData[]
+    const serumMarketsWithData = serumMarkets.map((m) => { return { ...m, isOpenbookV2: false }}) as SpotMarketWithMarketData[]
+    const allSpotMarkets: SpotMarketWithMarketData[] =
+      serumMarketsWithData.concat(openbookMarketsWithData)
     if (spotData && birdeyeSpotDailyPrices?.length) {
       for (const market of allSpotMarkets) {
         const spotEntries = Object.entries(spotData).find(
@@ -119,49 +134,7 @@ export default function useListedMarketsWithMarketData() {
       }
     }
     return [...allSpotMarkets].sort((a, b) => a.name.localeCompare(b.name))
-  }, [currentPrices, birdeyeSpotDailyPrices, spotData, serumMarkets])
-
-  const openbookMarketsWithData = useMemo(() => {
-    if (!openbookMarkets || !openbookMarkets.length) return []
-    const allSpotMarkets: OpenbookMarketWithMarketData[] =
-      openbookMarkets as OpenbookMarketWithMarketData[]
-    if (spotData && birdeyeSpotDailyPrices?.length) {
-      for (const market of allSpotMarkets) {
-        const spotEntries = Object.entries(spotData).find(
-          (e) => e[0].toLowerCase() === market.name.toLowerCase(),
-        )
-        const birdeyePrices = birdeyeSpotDailyPrices.find(
-          (prices) => prices.marketIndex === market.marketIndex,
-        )
-        const priceHistory = []
-        let pastPrice = 0
-        if (birdeyePrices?.base?.length && birdeyePrices?.quote?.length) {
-          pastPrice =
-            birdeyePrices.base[0]?.value / birdeyePrices.quote[0]?.value
-          for (let i = 0; i < birdeyePrices.base.length; i++) {
-            const base = birdeyePrices.base[i]
-            const quote = birdeyePrices.quote[i]
-            if (base.unixTime === quote?.unixTime && quote?.value) {
-              const price = base.value / quote.value
-              const time = base.unixTime
-              priceHistory.push({ price, time })
-            }
-          }
-        }
-
-        // calculate price change
-        const currentPrice = currentPrices[market.name]
-        const change = currentPrice
-          ? ((currentPrice - pastPrice) / pastPrice) * 100
-          : 0
-
-        market.rollingChange = change
-        market.priceHistory = priceHistory
-        market.marketData = spotEntries ? spotEntries[1][0] : undefined
-      }
-    }
-    return [...allSpotMarkets].sort((a, b) => a.name.localeCompare(b.name))
-  }, [currentPrices, birdeyeSpotDailyPrices, spotData, openbookMarkets])
+  }, [currentPrices, birdeyeSpotDailyPrices, spotData, serumMarkets, openbookMarkets])
 
   const perpMarketsWithData = useMemo(() => {
     if (!perpMarkets || !perpMarkets.length) return []
@@ -194,8 +167,7 @@ export default function useListedMarketsWithMarketData() {
 
   return {
     perpMarketsWithData,
-    serumMarketsWithData,
-    openbookMarketsWithData,
+    spotMarketsWithData,
     isLoading,
   }
 }

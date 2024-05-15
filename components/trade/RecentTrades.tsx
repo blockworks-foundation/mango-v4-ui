@@ -24,6 +24,7 @@ import { useQuery } from '@tanstack/react-query'
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { EmptyObject, isPerpFillEvent, PerpTradeHistory } from 'types'
 import { Market } from '@project-serum/serum'
+import { ExtendedMarketAccount } from 'types/openbook'
 
 const volumeAlertSound = new Howl({
   src: ['/sounds/trade-buy.mp3'],
@@ -33,7 +34,7 @@ const volumeAlertSound = new Howl({
 type Test = { buys: number; sells: number }
 
 const formatPrice = (
-  market: Market | PerpMarket | undefined,
+  market: Market | PerpMarket | ExtendedMarketAccount | undefined,
   price: number | string,
 ) => {
   return market?.tickSize
@@ -42,7 +43,7 @@ const formatPrice = (
 }
 
 const formatSize = (
-  market: Market | PerpMarket | undefined,
+  market: Market | PerpMarket | ExtendedMarketAccount | undefined,
   size: number | string,
 ) => {
   return market?.minOrderSize

@@ -21,11 +21,11 @@ import {
 import MarketLogos from './MarketLogos'
 import SoonBadge from '@components/shared/SoonBadge'
 import TabButtons from '@components/shared/TabButtons'
-import { PerpMarket } from '@blockworks-foundation/mango-v4'
+import { OpenbookV2Market, PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
 import Loading from '@components/shared/Loading'
 import MarketChange from '@components/shared/MarketChange'
 import SheenLoader from '@components/shared/SheenLoader'
-import useListedMarketsWithMarketData from 'hooks/useListedMarketsWithMarketData'
+import useListedMarketsWithMarketData, { SpotMarketWithMarketData } from 'hooks/useListedMarketsWithMarketData'
 import {
   AllowedKeys,
   sortPerpMarkets,
@@ -37,10 +37,7 @@ import { useSortableData } from 'hooks/useSortableData'
 import { SortableColumnHeader } from '@components/shared/TableElements'
 import { useViewport } from 'hooks/useViewport'
 import { useRouter } from 'next/router'
-import { TOKEN_REDUCE_ONLY_OPTIONS } from 'utils/constants'
-import { isBankVisibleForUser } from 'utils/bank'
-import Decimal from 'decimal.js'
-import useMangoAccount from 'hooks/useMangoAccount'
+import { Market } from '@project-serum/serum'
 
 type Currencies = {
   [key: string]: string
@@ -71,14 +68,12 @@ const MarketSelectDropdown = () => {
   const [spotBaseFilter, setSpotBaseFilter] = useState('All')
   const {
     perpMarketsWithData,
-    serumMarketsWithData,
-    openbookMarketsWithData,
+    spotMarketsWithData,
     isLoading,
   } = useListedMarketsWithMarketData()
   const { isDesktop } = useViewport()
   const focusRef = useRef<HTMLInputElement>(null)
   const { query } = useRouter()
-  const { mangoAccount } = useMangoAccount()
 
   // switch to spot tab on spot markets
   useEffect(() => {
@@ -96,8 +91,8 @@ const MarketSelectDropdown = () => {
 
   const spotQuoteTokens: string[] = useMemo(() => {
     const quoteTokens: string[] = ['All']
-    if (serumMarketsWithData.length && group) {
-      serumMarketsWithData.map((m) => {
+    if (spotMarketsWithData.length && group) {
+      spotMarketsWithData.map((m) => {
         const quoteBank = group.getFirstBankByTokenIndex(m.quoteTokenIndex)
         const quote = quoteBank.name
         if (!quoteTokens.includes(quote)) {
@@ -106,32 +101,26 @@ const MarketSelectDropdown = () => {
       })
     }
 
-    if (openbookMarketsWithData.length && group) {
-      openbookMarketsWithData.map((m) => {
-        const quoteBank = group.getFirstBankByTokenIndex(m.quoteTokenIndex)
-        const quote = quoteBank.name
-        if (!quoteTokens.includes(quote)) {
-          quoteTokens.push(quote)
-        }
-      })
-    }
     return quoteTokens.sort((a, b) => a.localeCompare(b))
-  }, [group, serumMarketsWithData, openbookMarketsWithData])
+  }, [group, spotMarketsWithData])
 
   const unsortedSpotMarketsToShow = useMemo(() => {
     if (
-      !serumMarketsWithData.length ||
-      !openbookMarketsWithData.length ||
+      !spotMarketsWithData.length ||
       !group
     )
       return []
-    const allSpotMarketsWithData = serumMarketsWithData.concat(
-      openbookMarketsWithData.map((m) => {
-        return { ...m, name: m.name + '-V2' }
-      }),
-    )
+
+    const renamedSpotMarketsWithData = spotMarketsWithData.map((m) => {
+      if (m.isOpenbookV2) {
+        return { ...m, name: m.name + '-V2' } as SpotMarketWithMarketData
+      }
+
+      return m
+    })
+
     if (spotBaseFilter !== 'All') {
-      const filteredMarkets = allSpotMarketsWithData.filter((m: any) => {
+      const filteredMarkets = renamedSpotMarketsWithData.filter((m) => {
         const quoteBank = group.getFirstBankByTokenIndex(m.quoteTokenIndex)
         const quote = quoteBank.name
         return quote === spotBaseFilter
@@ -141,10 +130,10 @@ const MarketSelectDropdown = () => {
         : sortSpotMarkets(filteredMarkets, DEFAULT_SORT_KEY)
     } else {
       return search
-        ? startSearch(serumMarketsWithData, search)
-        : sortSpotMarkets(serumMarketsWithData, DEFAULT_SORT_KEY)
+        ? startSearch(renamedSpotMarketsWithData, search)
+        : sortSpotMarkets(renamedSpotMarketsWithData, DEFAULT_SORT_KEY)
     }
-  }, [group, search, serumMarketsWithData, spotBaseFilter])
+  }, [group, search, spotMarketsWithData, spotBaseFilter])
 
   const handleUpdateSearch = (e: ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value)
@@ -161,26 +150,6 @@ const MarketSelectDropdown = () => {
     requestSort: requestSpotSort,
     sortConfig: spotSortConfig,
   } = useSortableData(unsortedSpotMarketsToShow)
-
-  const filteredSerumMarkets = spotMarketsToShow.filter((x) => {
-    const baseBank = group?.getFirstBankByTokenIndex(x.baseTokenIndex)
-    if (baseBank?.reduceOnly === TOKEN_REDUCE_ONLY_OPTIONS.ENABLED) {
-      if (!mangoAccount) {
-        return false
-      }
-      const borrowedAmount = mangoAccount
-        ? new Decimal(mangoAccount.getTokenBorrowsUi(baseBank))
-            .toDecimalPlaces(baseBank.mintDecimals, Decimal.ROUND_UP)
-            .toNumber()
-        : 0
-      const balance = mangoAccount
-        ? mangoAccount.getTokenBalanceUi(baseBank)
-        : 0
-      return isBankVisibleForUser(baseBank, borrowedAmount, balance)
-    } else {
-      return true
-    }
-  })
 
   useEffect(() => {
     if (focusRef?.current && spotOrPerp === 'spot' && isDesktop && isOpen) {
@@ -435,10 +404,10 @@ const MarketSelectDropdown = () => {
                       const quoteBank = group?.getFirstBankByTokenIndex(
                         m.quoteTokenIndex,
                       )
-                      const market = m.serumMarketExternal
-                        ? group?.getSerum3ExternalMarket(m.serumMarketExternal)
+                      const market = !m.isOpenbookV2
+                        ? group?.getSerum3ExternalMarket((m as Serum3Market).serumMarketExternal)
                         : group?.getOpenbookV2ExternalMarket(
-                            m.openbookMarketExternal,
+                            (m as OpenbookV2Market).openbookMarketExternal,
                           )
                       let leverage
                       if (group && m.maxBidLeverage) {
@@ -450,7 +419,7 @@ const MarketSelectDropdown = () => {
                       if (baseBank && market && quoteBank) {
                         price = floorToDecimal(
                           baseBank.uiPrice / quoteBank.uiPrice,
-                          getDecimalCount(market.tickSize),
+                          market instanceof Market ? getDecimalCount(market.tickSize) : market.quoteDecimals,
                         ).toNumber()
                       }
 
@@ -484,13 +453,32 @@ const MarketSelectDropdown = () => {
                               ) : null}
                             </div>
                             <div className="col-span-1 flex justify-end">
-                              {price && market?.tickSize ? (
+                              {price && market instanceof Market && market?.tickSize ? (
                                 <span className="font-mono text-xs text-th-fgd-2">
                                   {quoteBank?.name === 'USDC' ? '$' : ''}
                                   {countLeadingZeros(price) <= 4
                                     ? formatNumericValue(
                                         price,
                                         getDecimalCount(market.tickSize),
+                                      )
+                                    : price.toExponential(3)}
+                                  {quoteBank?.name &&
+                                  quoteBank.name !== 'USDC' ? (
+                                    <span className="font-body text-th-fgd-3">
+                                      {' '}
+                                      {CURRENCY_SYMBOLS[quoteBank.name] ||
+                                        quoteBank.name}
+                                    </span>
+                                  ) : null}
+                                </span>
+                              ) : null}
+                              {price && !(market instanceof Market) && market?.quoteLotSize ? (
+                                <span className="font-mono text-xs text-th-fgd-2">
+                                  {quoteBank?.name === 'USDC' ? '$' : ''}
+                                  {countLeadingZeros(price) <= 4
+                                    ? formatNumericValue(
+                                        price,
+                                        market.quoteDecimals,
                                       )
                                     : price.toExponential(3)}
                                   {quoteBank?.name &&
