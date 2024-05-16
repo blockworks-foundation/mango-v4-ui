@@ -58,7 +58,7 @@ const getProgramAccounts = async (
     _getProgramAccounts(connection, quoteMint, baseMint),
   ])
 
-  return response.filter((r) => r.length > 0)[0] || []
+  return response.filter((r) => r.length > 0).flatMap((x) => x)
 }
 
 export const findRaydiumPoolInfo = async (
@@ -271,11 +271,11 @@ export const getSwapTransaction = async (
   )
 
   const tokenInAta = getAssociatedTokenAddressSync(
-    new PublicKey(bestRoute.inputMint),
+    new PublicKey(directionIn ? bestRoute.outputMint : bestRoute.inputMint),
     wallet,
   )
   const tokenOutAta = getAssociatedTokenAddressSync(
-    new PublicKey(bestRoute.outputMint),
+    new PublicKey(directionIn ? bestRoute.inputMint : bestRoute.outputMint),
     wallet,
   )
   const swapTransaction = Liquidity.makeSwapInstruction({
@@ -289,7 +289,7 @@ export const getSwapTransaction = async (
     },
     amountIn: bestRoute.amountIn.raw,
     amountOut: bestRoute.minAmountOut.raw.sub(bestRoute.fee?.raw ?? new BN(0)),
-    fixedSide: 'in',
+    fixedSide: !directionIn ? 'in' : 'out',
   })
 
   const instructions =
