@@ -242,7 +242,7 @@ export const handleGetRoutes = async (
         routes.push(jupiterRoute)
       }
     }
-    console.log(routes)
+
     const results = await Promise.allSettled(routes)
     const responses = results
       .filter((x) => x.status === 'fulfilled' && x.value?.bestRoute !== null)
