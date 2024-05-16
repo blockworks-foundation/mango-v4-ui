@@ -10,6 +10,7 @@ import { JUPITER_V6_QUOTE_API_MAINNET } from 'utils/constants'
 import { MangoAccount, toUiDecimals } from '@blockworks-foundation/mango-v4'
 import { findRaydiumPoolInfo, getSwapTransaction } from 'utils/swap/raydium'
 import mangoStore from '@store/mangoStore'
+import { fetchJupiterTransaction } from './SwapReviewRouteInfo'
 
 type SwapModes = 'ALL' | 'JUPITER' | 'MANGO' | 'JUPITER_DIRECT' | 'RAYDIUM'
 
@@ -34,6 +35,8 @@ const fetchJupiterRoute = async (
   swapMode = 'ExactIn',
   onlyDirectRoutes = true,
   maxAccounts = 64,
+  connection: Connection,
+  wallet: string,
 ) => {
   if (!inputMint || !outputMint) return
   try {
@@ -63,8 +66,20 @@ const fetchJupiterRoute = async (
         `${JUPITER_V6_QUOTE_API_MAINNET}/quote?${paramsString}`,
       )
       const res: JupiterV6RouteInfo = await response.json()
+      const [ixes] = await fetchJupiterTransaction(
+        connection,
+        res,
+        new PublicKey(wallet),
+        slippage,
+        new PublicKey(inputMint),
+        new PublicKey(outputMint),
+      )
       return {
-        bestRoute: res,
+        bestRoute:
+          [...ixes.flatMap((x) => x.keys.flatMap((k) => k.pubkey))].length <=
+          maxAccounts
+            ? res
+            : undefined,
       }
     }
   } catch (e) {
@@ -171,7 +186,7 @@ export const handleGetRoutes = async (
   wallet: string | undefined,
   mangoAccount: MangoAccount | undefined,
   mode: SwapModes = 'ALL',
-  connection: Connection | null,
+  connection: Connection,
   inputTokenDecimals: number | null,
   mangoAccountSwap: boolean,
 ) => {
@@ -220,10 +235,14 @@ export const handleGetRoutes = async (
         swapMode,
         mode === 'JUPITER_DIRECT' ? true : false,
         maxAccounts,
+        connection,
+        wallet,
       )
-      routes.push(jupiterRoute)
+      if (jupiterRoute) {
+        routes.push(jupiterRoute)
+      }
     }
-
+    console.log(routes)
     const results = await Promise.allSettled(routes)
     const responses = results
       .filter((x) => x.status === 'fulfilled' && x.value?.bestRoute !== null)
