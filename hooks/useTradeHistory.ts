@@ -199,8 +199,10 @@ export default function useTradeHistory() {
       return mangoAccount.publicKey
     } else {
       try {
-        return mangoAccount.getSerum3OoAccount(selectedMarket.marketIndex)
-          .address
+        return selectedMarket instanceof Serum3Market
+          ? mangoAccount.getSerum3OoAccount(selectedMarket.marketIndex).address
+          : mangoAccount.getOpenbookV2Account(selectedMarket.marketIndex)!
+              .openOrders
       } catch {
         console.warn(
           'Unable to find OO account for mkt index',

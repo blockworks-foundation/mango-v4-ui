@@ -980,7 +980,12 @@ const AdvancedTradeForm = () => {
 
     // when init health <= 0 users may not be able to close positions via limit orders. we don't want to disable the place order button in this scenario. however we still ues this const to disable the button to restrict users from entering unwanted margin positions.
     if (initHealth <= 0 && tradeType === 'Limit' && mangoAccount) {
-      if (selectedMarket instanceof Serum3Market && baseBank && quoteBank) {
+      if (
+        (selectedMarket instanceof Serum3Market ||
+          selectedMarket instanceof OpenbookV2Market) &&
+        baseBank &&
+        quoteBank
+      ) {
         const balance =
           side === 'buy'
             ? mangoAccount?.getTokenBalanceUi(quoteBank)
@@ -1005,7 +1010,8 @@ const AdvancedTradeForm = () => {
     // check the values in the trade form are not greater than the allowed account max
     const size = side === 'buy' ? new Decimal(quoteSize) : new Decimal(baseSize)
     const decimalMax =
-      selectedMarket instanceof Serum3Market
+      selectedMarket instanceof Serum3Market ||
+      selectedMarket instanceof OpenbookV2Market
         ? new Decimal(spotMax)
         : new Decimal(perpMax)
     return size.gt(decimalMax)
@@ -1020,6 +1026,7 @@ const AdvancedTradeForm = () => {
     tradeForm,
   ])
 
+  console.log('spotMax', spotMax)
   const disabled =
     !serumOrPerpMarket ||
     !isMarketEnabled ||
