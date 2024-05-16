@@ -315,7 +315,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                   collapsed={false}
                   icon={<PerpIcon className="h-4 w-4" />}
                   title={t('perp')}
-                  pagePath="/trade?name=SOL-PERP"
+                  pagePath="/trade?name=BTC-PERP"
                   hideIconBg
                 />
                 <MenuItem

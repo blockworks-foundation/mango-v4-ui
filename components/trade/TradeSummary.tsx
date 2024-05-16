@@ -2,6 +2,7 @@ import {
   Bank,
   HealthType,
   MangoAccount,
+  OpenbookV2Market,
   PerpMarket,
   Serum3Market,
 } from '@blockworks-foundation/mango-v4'
@@ -47,7 +48,8 @@ const TradeSummary = ({
       !openPerpPositions?.length ||
       !selectedMarket ||
       !orderbook ||
-      selectedMarket instanceof Serum3Market
+      selectedMarket instanceof Serum3Market ||
+      selectedMarket instanceof OpenbookV2Market
     )
       return
 

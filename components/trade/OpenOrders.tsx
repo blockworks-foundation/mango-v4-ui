@@ -1,4 +1,8 @@
-import { Bank, U64_MAX_BN } from '@blockworks-foundation/mango-v4'
+import {
+  Bank,
+  OpenbookV2Market,
+  U64_MAX_BN,
+} from '@blockworks-foundation/mango-v4'
 import {
   PerpMarket,
   PerpOrder,
@@ -34,7 +38,7 @@ import {
 import { Order } from '@project-serum/serum/lib/market'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
-import mangoStore from '@store/mangoStore'
+import mangoStore, { OpenbookOrder } from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import useUnownedAccount from 'hooks/useUnownedAccount'
@@ -42,7 +46,7 @@ import useFilledOrders from 'hooks/useFilledOrders'
 import { useViewport } from 'hooks/useViewport'
 import { useTranslation } from 'next-i18next'
 import Link from 'next/link'
-import { ChangeEvent, Fragment, useCallback, useState } from 'react'
+import { ChangeEvent, useCallback, useState } from 'react'
 import { isMangoError } from 'types'
 import { notify } from 'utils/notifications'
 import { getDecimalCount } from 'utils/numbers'
@@ -52,15 +56,17 @@ import PerpSideBadge from './PerpSideBadge'
 import TableMarketName from './TableMarketName'
 import { useSortableData } from 'hooks/useSortableData'
 import { BN } from '@project-serum/anchor'
+import { ExtendedMarketAccount, isOpenbookV2OpenOrder } from 'types/openbook'
+import BigNumber from 'bignumber.js'
 import NukeIcon from '@components/icons/NukeIcon'
 
 type TableData = {
   expiryTimestamp: number | undefined
   filledQuantity: number
-  market: Serum3Market | PerpMarket
+  market: Serum3Market | PerpMarket | OpenbookV2Market
   marketName: string
   minOrderSize: number
-  order: Order | PerpOrder
+  order: Order | PerpOrder | OpenbookOrder
   orderId: BN
   price: number
   side: string
@@ -69,13 +75,14 @@ type TableData = {
   value: number
 }
 
-export const findSerum3MarketPkInOpenOrders = (
-  o: Order,
+export const findSpotMarketPkInOpenOrders = (
+  o: Order | OpenbookOrder,
 ): string | undefined => {
   const openOrders = mangoStore.getState().mangoAccount.openOrders
   let foundedMarketPk: string | undefined = undefined
   for (const [marketPk, orders] of Object.entries(openOrders)) {
     for (const order of orders) {
+      if (!('orderId' in order)) continue
       if (order.orderId.eq(o.orderId)) {
         foundedMarketPk = marketPk
         break
@@ -112,12 +119,18 @@ const OpenOrders = ({
   const { filledOrders, fetchingFilledOrders } = useFilledOrders()
 
   const handleCancelAllForSpotMarket = useCallback(
-    async (o: Order) => {
+    async (o: Order | OpenbookOrder) => {
       const client = mangoStore.getState().client
       const group = mangoStore.getState().group
       const mangoAccount = mangoStore.getState().mangoAccount.current
       if (!group || !mangoAccount) return
-      const marketPk = findSerum3MarketPkInOpenOrders(o)
+      const marketPk = findSpotMarketPkInOpenOrders(o)
+
+      if (o instanceof OpenbookOrder) {
+        console.error('not implemented!')
+        return
+      }
+
       if (!marketPk) return
       const market = group.getSerum3MarketByExternalMarket(
         new PublicKey(marketPk),
@@ -153,15 +166,21 @@ const OpenOrders = ({
     [t],
   )
 
-  const handleCancelSerumOrder = useCallback(
-    async (o: Order) => {
+  const handleCancelSpotOrder = useCallback(
+    async (o: Order | OpenbookOrder) => {
       const client = mangoStore.getState().client
       const group = mangoStore.getState().group
       const mangoAccount = mangoStore.getState().mangoAccount.current
       const actions = mangoStore.getState().actions
       if (!group || !mangoAccount) return
-      const marketPk = findSerum3MarketPkInOpenOrders(o)
+      const marketPk = findSpotMarketPkInOpenOrders(o)
       if (!marketPk) return
+
+      if (o instanceof OpenbookOrder) {
+        console.error('not implemented!')
+        return
+      }
+
       const market = group.getSerum3MarketByExternalMarket(
         new PublicKey(marketPk),
       )
@@ -200,11 +219,12 @@ const OpenOrders = ({
   )
 
   const modifyOrder = useCallback(
-    async (o: PerpOrder | Order) => {
+    async (o: PerpOrder | Order | OpenbookOrder) => {
       const client = mangoStore.getState().client
       const group = mangoStore.getState().group
       const mangoAccount = mangoStore.getState().mangoAccount.current
       const actions = mangoStore.getState().actions
+
       const baseSize = modifiedOrderSize ? Number(modifiedOrderSize) : o.size
       const price = modifiedOrderPrice ? Number(modifiedOrderPrice) : o.price
       if (!group || !mangoAccount) return
@@ -226,8 +246,11 @@ const OpenOrders = ({
             undefined,
             undefined,
           )
+        } else if (o instanceof OpenbookOrder) {
+          console.error('not implemented!')
+          return
         } else {
-          const marketPk = findSerum3MarketPkInOpenOrders(o)
+          const marketPk = findSpotMarketPkInOpenOrders(o)
           if (!marketPk) return
           const market = group.getSerum3MarketByExternalMarket(
             new PublicKey(marketPk),
@@ -345,7 +368,11 @@ const OpenOrders = ({
     [t],
   )
 
-  const showEditOrderForm = (order: Order | PerpOrder, tickSize: number) => {
+  const showEditOrderForm = (
+    order: Order | PerpOrder | OpenbookOrder,
+    tickSize: number,
+  ) => {
+    if (isOpenbookV2OpenOrder(order)) return
     setModifyOrderId(order.orderId.toString())
     setModifiedOrderSize(order.size.toString())
     setModifiedOrderPrice(order.price.toFixed(getDecimalCount(tickSize)))
@@ -374,14 +401,23 @@ const OpenOrders = ({
         } else return orders
       })
       .map(([marketPk, orders]) => {
+        console.log('orders', orders)
         for (const order of orders) {
-          let market: PerpMarket | Serum3Market
+          let market: PerpMarket | Serum3Market | OpenbookV2Market
           let tickSize: number
           let minOrderSize: number
           let expiryTimestamp: number | undefined
           let value: number
           let filledQuantity = 0
+          let side = 'bid'
+          let size
+          let price
+          let orderId: BN
           if (order instanceof PerpOrder) {
+            size = order.size
+            price = order.price
+            orderId = order.orderId
+            side = 'bid' in order.side ? 'long' : 'short'
             market = group.getPerpMarketByMarketIndex(order.perpMarketIndex)
             tickSize = market.tickSize
             minOrderSize = market.minOrderSize
@@ -403,7 +439,36 @@ const OpenOrders = ({
               )
               filledQuantity = filledOrder ? filledOrder.quantity : 0
             }
+          } else if (isOpenbookV2OpenOrder(order)) {
+            side = 'buy'
+            size = 0.01
+            price = 1
+            orderId = new BN(1)
+            market = group.openbookV2MarketsMapByExternal.get(marketPk)!
+            const openbookMarket = group.getOpenbookV2ExternalMarket(
+              market.openbookMarketExternal,
+            ) as ExtendedMarketAccount
+            const quoteBank = group.getFirstBankByTokenIndex(
+              market.quoteTokenIndex,
+            )
+
+            tickSize = new BigNumber(10)
+              .pow(openbookMarket.baseDecimals - openbookMarket.quoteDecimals)
+              .times(new BigNumber(openbookMarket.quoteLotSize.toString()))
+              .div(new BigNumber(openbookMarket.baseLotSize.toString()))
+              .toNumber()
+
+            minOrderSize = 0.01
+            value = size * price * quoteBank.uiPrice
+            const filledOrder = filledOrders?.fills?.find(
+              (f) => orderId.toString() === f.order_id,
+            )
+            filledQuantity = filledOrder ? filledOrder.quantity : 0
           } else {
+            side = order.side
+            size = order.size
+            price = order.price
+            orderId = order.orderId
             market = group.getSerum3MarketByExternalMarket(
               new PublicKey(marketPk),
             )
@@ -415,23 +480,13 @@ const OpenOrders = ({
             )
             tickSize = serumMarket.tickSize
             minOrderSize = serumMarket.minOrderSize
-            value = order.size * order.price * quoteBank.uiPrice
+            value = size * price * quoteBank.uiPrice
             const filledOrder = filledOrders?.fills?.find(
-              (f) => order.orderId.toString() === f.order_id,
+              (f) => orderId.toString() === f.order_id,
             )
             filledQuantity = filledOrder ? filledOrder.quantity : 0
           }
-          const side =
-            order instanceof PerpOrder
-              ? 'bid' in order.side
-                ? 'long'
-                : 'short'
-              : order.side
-          const price = order.price
-          const size = order.size
-          const orderId = order.orderId
           const marketName = market.name
-
           const data = {
             expiryTimestamp,
             filledQuantity,
@@ -640,7 +695,7 @@ const OpenOrders = ({
                                   onClick={() =>
                                     order instanceof PerpOrder
                                       ? handleCancelPerpOrder(order)
-                                      : handleCancelSerumOrder(order)
+                                      : handleCancelSpotOrder(order)
                                   }
                                   size="small"
                                 >
@@ -662,8 +717,8 @@ const OpenOrders = ({
                                     disabled={loadingCancel}
                                     onClick={() =>
                                       order instanceof PerpOrder
-                                        ? handleCancelAllPerpOrders(order)
-                                        : handleCancelAllForSpotMarket(order)
+                                        ? handleCancelPerpOrder(order)
+                                        : handleCancelSpotOrder(order)
                                     }
                                     size="small"
                                   >
@@ -852,7 +907,7 @@ const OpenOrders = ({
                           onClick={() =>
                             order instanceof PerpOrder
                               ? handleCancelPerpOrder(order)
-                              : handleCancelSerumOrder(order)
+                              : handleCancelSpotOrder(order)
                           }
                           size="small"
                         >

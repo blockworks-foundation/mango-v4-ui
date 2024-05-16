@@ -39,7 +39,7 @@ import { useRouter } from 'next/router'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import Head from 'next/head'
 import useMangoGroup from 'hooks/useMangoGroup'
-import { PerpMarket } from '@blockworks-foundation/mango-v4'
+import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
 import { getDecimalCount } from 'utils/numbers'
 import {
   AUTO_CONNECT_WALLET,
@@ -48,6 +48,7 @@ import {
 } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import PlausibleProvider from 'next-plausible'
+import { ExtendedMarketAccount } from 'types/openbook'
 
 // init react-query
 const queryClient = new QueryClient()
@@ -189,7 +190,7 @@ const PageTitle = () => {
     if (!selectedMarket || !group) return []
     if (selectedMarket instanceof PerpMarket) {
       return [selectedMarket, selectedMarket.uiPrice]
-    } else {
+    } else if (selectedMarket instanceof Serum3Market) {
       const baseBank = group.getFirstBankByTokenIndex(
         selectedMarket.baseTokenIndex,
       )
@@ -199,6 +200,23 @@ const PageTitle = () => {
       const market = group.getSerum3ExternalMarket(
         selectedMarket.serumMarketExternal,
       )
+      const price = baseBank.uiPrice / quoteBank.uiPrice
+      return [market, price]
+    } else {
+      const baseBank = group.getFirstBankByTokenIndex(
+        selectedMarket.baseTokenIndex,
+      )
+      const quoteBank = group.getFirstBankByTokenIndex(
+        selectedMarket.quoteTokenIndex,
+      )
+      const market = group.getOpenbookV2ExternalMarket(
+        selectedMarket.openbookMarketExternal,
+      ) as ExtendedMarketAccount
+
+      market.tickSize = 0.01
+      market.minOrderSize = 0.01
+      market.publicKey = selectedMarket.openbookMarketExternal
+
       const price = baseBank.uiPrice / quoteBank.uiPrice
       return [market, price]
     }

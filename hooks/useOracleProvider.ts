@@ -1,5 +1,6 @@
 import {
   Bank,
+  OpenbookV2Market,
   OracleProvider,
   PerpMarket,
   Serum3Market,
@@ -10,7 +11,7 @@ import { formatTokenSymbol } from 'utils/tokens'
 import useSelectedMarket from './useSelectedMarket'
 
 export const getOracleProvider = (
-  marketOrBank: PerpMarket | Serum3Market | Bank,
+  marketOrBank: PerpMarket | Serum3Market | OpenbookV2Market | Bank,
 ) => {
   let marketOrBase: PerpMarket | Bank
   let name: string

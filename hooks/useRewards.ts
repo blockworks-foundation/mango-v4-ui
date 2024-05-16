@@ -81,6 +81,7 @@ export const useIsAllClaimed = (
   prevSeason: number | undefined,
   walletPk: PublicKey | null,
 ) => {
+  return {}
   const [isAllClaimed, setIsAllCliamed] = useState(true)
   const [showClaim, setShowClaim] = useState(true)
   const [loading, setLoading] = useState(true)

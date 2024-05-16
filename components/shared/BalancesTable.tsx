@@ -1,4 +1,4 @@
-import { Serum3Market } from '@blockworks-foundation/mango-v4'
+import { OpenbookV2Market, Serum3Market } from '@blockworks-foundation/mango-v4'
 import { ChevronDownIcon, NoSymbolIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
 import useMangoAccount from 'hooks/useMangoAccount'
@@ -367,6 +367,12 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
         )
         minOrderDecimals = getDecimalCount(market.minOrderSize)
         tickDecimals = getDecimalCount(market.tickSize)
+      } else if (selectedMarket instanceof OpenbookV2Market) {
+        const market = group.getOpenbookV2ExternalMarket(
+          selectedMarket.openbookMarketExternal,
+        )
+        minOrderDecimals = market.baseDecimals
+        tickDecimals = market.quoteDecimals
       } else {
         minOrderDecimals = getDecimalCount(selectedMarket.minOrderSize)
         tickDecimals = getDecimalCount(selectedMarket.tickSize)

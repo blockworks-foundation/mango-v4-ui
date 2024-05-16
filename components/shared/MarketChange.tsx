@@ -1,7 +1,11 @@
 import { MinusSmallIcon } from '@heroicons/react/20/solid'
 import { DownTriangle, UpTriangle } from './DirectionTriangles'
 import FormatNumericValue from './FormatNumericValue'
-import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
+import {
+  OpenbookV2Market,
+  PerpMarket,
+  Serum3Market,
+} from '@blockworks-foundation/mango-v4'
 import { useMemo } from 'react'
 import SheenLoader from './SheenLoader'
 import useListedMarketsWithMarketData from 'hooks/useListedMarketsWithMarketData'
@@ -10,27 +14,34 @@ const MarketChange = ({
   market,
   size,
 }: {
-  market: PerpMarket | Serum3Market | undefined
+  market: PerpMarket | Serum3Market | OpenbookV2Market | undefined
   size?: 'small'
 }) => {
-  const { perpMarketsWithData, serumMarketsWithData, isLoading } =
+  const { perpMarketsWithData, spotMarketsWithData, isLoading } =
     useListedMarketsWithMarketData()
 
   const change = useMemo(() => {
-    if (!market || !perpMarketsWithData || !serumMarketsWithData) return 0
+    if (!market || !perpMarketsWithData || !spotMarketsWithData) return 0
     const isPerp = market instanceof PerpMarket
     if (isPerp) {
       const perpMarket = perpMarketsWithData.find(
         (m) => m.name.toLowerCase() === market.name.toLowerCase(),
       )
       return perpMarket?.rollingChange ? perpMarket.rollingChange : 0
+    } else if (market instanceof Serum3Market) {
+      const spotMarket = spotMarketsWithData.find(
+        (m) =>
+          m.name.toLowerCase() === market.name.toLowerCase() && !m.isOpenbookV2,
+      )
+      return spotMarket?.rollingChange ? spotMarket.rollingChange : 0
     } else {
-      const spotMarket = serumMarketsWithData.find(
-        (m) => m.name.toLowerCase() === market.name.toLowerCase(),
+      const spotMarket = spotMarketsWithData.find(
+        (m) =>
+          m.name.toLowerCase() === market.name.toLowerCase() && m.isOpenbookV2,
       )
       return spotMarket?.rollingChange ? spotMarket.rollingChange : 0
     }
-  }, [perpMarketsWithData, serumMarketsWithData])
+  }, [perpMarketsWithData, spotMarketsWithData])
 
   return isLoading ? (
     <SheenLoader className="mt-0.5">

@@ -13,12 +13,12 @@ import {
   Serum3SelfTradeBehavior,
   Serum3Side,
 } from '@blockworks-foundation/mango-v4'
-import mangoStore from '@store/mangoStore'
+import mangoStore, { OpenbookOrder } from '@store/mangoStore'
 import { PublicKey } from '@solana/web3.js'
 import { notify } from 'utils/notifications'
 import { isMangoError } from 'types'
 import Button, { LinkButton } from '@components/shared/Button'
-import { findSerum3MarketPkInOpenOrders } from '@components/trade/OpenOrders'
+import { findSpotMarketPkInOpenOrders } from '@components/trade/OpenOrders'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import {
   floorToDecimal,
@@ -36,7 +36,7 @@ import SideBadge from '@components/shared/SideBadge'
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
 
 interface ModifyModalProps {
-  order: Order | PerpOrder
+  order: Order | PerpOrder | OpenbookOrder
   price: string
 }
 
@@ -74,7 +74,7 @@ const ModifyTvOrderModal = ({
   }, [serumOrPerpMarket])
 
   const modifyOrder = useCallback(
-    async (o: PerpOrder | Order) => {
+    async (o: PerpOrder | Order | OpenbookOrder) => {
       const client = mangoStore.getState().client
       const group = mangoStore.getState().group
       const mangoAccount = mangoStore.getState().mangoAccount.current
@@ -102,8 +102,14 @@ const ModifyTvOrderModal = ({
             undefined,
           )
         } else {
-          const marketPk = findSerum3MarketPkInOpenOrders(o)
+          const marketPk = findSpotMarketPkInOpenOrders(o)
           if (!marketPk) return
+
+          if (o instanceof OpenbookOrder) {
+            console.error('not implemented!')
+            return
+          }
+
           const market = group.getSerum3MarketByExternalMarket(
             new PublicKey(marketPk),
           )
@@ -140,7 +146,7 @@ const ModifyTvOrderModal = ({
       }
     },
     [
-      findSerum3MarketPkInOpenOrders,
+      findSpotMarketPkInOpenOrders,
       modifiedOrderPrice,
       modifiedOrderSize,
       tickDecimals,

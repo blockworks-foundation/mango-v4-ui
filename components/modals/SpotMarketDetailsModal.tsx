@@ -2,7 +2,7 @@ import { ModalProps } from '../../types/modal'
 import Modal from '../shared/Modal'
 import { useTranslation } from 'next-i18next'
 import useSelectedMarket from 'hooks/useSelectedMarket'
-import { Serum3Market } from '@blockworks-foundation/mango-v4'
+import { OpenbookV2Market, Serum3Market } from '@blockworks-foundation/mango-v4'
 import Button from '@components/shared/Button'
 import { ExclamationTriangleIcon } from '@heroicons/react/20/solid'
 import { useMemo } from 'react'
@@ -11,7 +11,7 @@ import OracleProvider from '@components/shared/OracleProvider'
 import mangoStore from '@store/mangoStore'
 
 interface SpotMarketDetailsModalProps {
-  market: Serum3Market | undefined
+  market: Serum3Market | OpenbookV2Market | undefined
 }
 
 type ModalCombinedProps = SpotMarketDetailsModalProps & ModalProps

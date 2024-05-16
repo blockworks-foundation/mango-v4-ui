@@ -21,11 +21,17 @@ import {
 import MarketLogos from './MarketLogos'
 import SoonBadge from '@components/shared/SoonBadge'
 import TabButtons from '@components/shared/TabButtons'
-import { PerpMarket } from '@blockworks-foundation/mango-v4'
+import {
+  OpenbookV2Market,
+  PerpMarket,
+  Serum3Market,
+} from '@blockworks-foundation/mango-v4'
 import Loading from '@components/shared/Loading'
 import MarketChange from '@components/shared/MarketChange'
 import SheenLoader from '@components/shared/SheenLoader'
-import useListedMarketsWithMarketData from 'hooks/useListedMarketsWithMarketData'
+import useListedMarketsWithMarketData, {
+  SpotMarketWithMarketData,
+} from 'hooks/useListedMarketsWithMarketData'
 import {
   AllowedKeys,
   sortPerpMarkets,
@@ -37,10 +43,7 @@ import { useSortableData } from 'hooks/useSortableData'
 import { SortableColumnHeader } from '@components/shared/TableElements'
 import { useViewport } from 'hooks/useViewport'
 import { useRouter } from 'next/router'
-import { TOKEN_REDUCE_ONLY_OPTIONS } from 'utils/constants'
-import { isBankVisibleForUser } from 'utils/bank'
-import Decimal from 'decimal.js'
-import useMangoAccount from 'hooks/useMangoAccount'
+import { Market } from '@project-serum/serum'
 
 type Currencies = {
   [key: string]: string
@@ -69,12 +72,11 @@ const MarketSelectDropdown = () => {
   const [isOpen, setIsOpen] = useState(false)
   const { group } = useMangoGroup()
   const [spotBaseFilter, setSpotBaseFilter] = useState('All')
-  const { perpMarketsWithData, serumMarketsWithData, isLoading } =
+  const { perpMarketsWithData, spotMarketsWithData, isLoading } =
     useListedMarketsWithMarketData()
   const { isDesktop } = useViewport()
   const focusRef = useRef<HTMLInputElement>(null)
   const { query } = useRouter()
-  const { mangoAccount } = useMangoAccount()
 
   // switch to spot tab on spot markets
   useEffect(() => {
@@ -91,24 +93,33 @@ const MarketSelectDropdown = () => {
   }, [perpMarketsWithData])
 
   const spotQuoteTokens: string[] = useMemo(() => {
-    if (serumMarketsWithData.length && group) {
-      const quoteTokens: string[] = ['All']
-      serumMarketsWithData.map((m) => {
+    const quoteTokens: string[] = ['All']
+    if (spotMarketsWithData.length && group) {
+      spotMarketsWithData.map((m) => {
         const quoteBank = group.getFirstBankByTokenIndex(m.quoteTokenIndex)
         const quote = quoteBank.name
         if (!quoteTokens.includes(quote)) {
           quoteTokens.push(quote)
         }
       })
-      return quoteTokens.sort((a, b) => a.localeCompare(b))
     }
-    return ['All']
-  }, [group, serumMarketsWithData])
 
-  const unsortedSerumMarketsToShow = useMemo(() => {
-    if (!serumMarketsWithData.length || !group) return []
+    return quoteTokens.sort((a, b) => a.localeCompare(b))
+  }, [group, spotMarketsWithData])
+
+  const unsortedSpotMarketsToShow = useMemo(() => {
+    if (!spotMarketsWithData.length || !group) return []
+
+    const renamedSpotMarketsWithData = spotMarketsWithData.map((m) => {
+      if (m.isOpenbookV2) {
+        return { ...m, name: m.name + '-V2' } as SpotMarketWithMarketData
+      }
+
+      return m
+    })
+
     if (spotBaseFilter !== 'All') {
-      const filteredMarkets = serumMarketsWithData.filter((m) => {
+      const filteredMarkets = renamedSpotMarketsWithData.filter((m) => {
         const quoteBank = group.getFirstBankByTokenIndex(m.quoteTokenIndex)
         const quote = quoteBank.name
         return quote === spotBaseFilter
@@ -118,10 +129,10 @@ const MarketSelectDropdown = () => {
         : sortSpotMarkets(filteredMarkets, DEFAULT_SORT_KEY)
     } else {
       return search
-        ? startSearch(serumMarketsWithData, search)
-        : sortSpotMarkets(serumMarketsWithData, DEFAULT_SORT_KEY)
+        ? startSearch(renamedSpotMarketsWithData, search)
+        : sortSpotMarkets(renamedSpotMarketsWithData, DEFAULT_SORT_KEY)
     }
-  }, [group, search, serumMarketsWithData, spotBaseFilter])
+  }, [group, search, spotMarketsWithData, spotBaseFilter])
 
   const handleUpdateSearch = (e: ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value)
@@ -134,30 +145,10 @@ const MarketSelectDropdown = () => {
   } = useSortableData(unsortedPerpMarketsToShow)
 
   const {
-    items: serumMarketsToShow,
-    requestSort: requestSerumSort,
-    sortConfig: serumSortConfig,
-  } = useSortableData(unsortedSerumMarketsToShow)
-
-  const filteredSerumMarkets = serumMarketsToShow.filter((x) => {
-    const baseBank = group?.getFirstBankByTokenIndex(x.baseTokenIndex)
-    if (baseBank?.reduceOnly === TOKEN_REDUCE_ONLY_OPTIONS.ENABLED) {
-      if (!mangoAccount) {
-        return false
-      }
-      const borrowedAmount = mangoAccount
-        ? new Decimal(mangoAccount.getTokenBorrowsUi(baseBank))
-            .toDecimalPlaces(baseBank.mintDecimals, Decimal.ROUND_UP)
-            .toNumber()
-        : 0
-      const balance = mangoAccount
-        ? mangoAccount.getTokenBalanceUi(baseBank)
-        : 0
-      return isBankVisibleForUser(baseBank, borrowedAmount, balance)
-    } else {
-      return true
-    }
-  })
+    items: spotMarketsToShow,
+    requestSort: requestSpotSort,
+    sortConfig: spotSortConfig,
+  } = useSortableData(unsortedSpotMarketsToShow)
 
   useEffect(() => {
     if (focusRef?.current && spotOrPerp === 'spot' && isDesktop && isOpen) {
@@ -372,24 +363,24 @@ const MarketSelectDropdown = () => {
                     <p className="col-span-1 flex">
                       <SortableColumnHeader
                         sortKey="name"
-                        sort={() => requestSerumSort('name')}
-                        sortConfig={serumSortConfig}
+                        sort={() => requestSpotSort('name')}
+                        sortConfig={spotSortConfig}
                         title={t('market')}
                       />
                     </p>
                     <p className="col-span-1 flex justify-end">
                       <SortableColumnHeader
                         sortKey="marketData.last_price"
-                        sort={() => requestSerumSort('marketData.last_price')}
-                        sortConfig={serumSortConfig}
+                        sort={() => requestSpotSort('marketData.last_price')}
+                        sortConfig={spotSortConfig}
                         title={t('price')}
                       />
                     </p>
                     <p className="col-span-1 flex justify-end">
                       <SortableColumnHeader
                         sortKey="rollingChange"
-                        sort={() => requestSerumSort('rollingChange')}
-                        sortConfig={serumSortConfig}
+                        sort={() => requestSpotSort('rollingChange')}
+                        sortConfig={spotSortConfig}
                         title={t('rolling-change')}
                       />
                     </p>
@@ -397,33 +388,41 @@ const MarketSelectDropdown = () => {
                       <SortableColumnHeader
                         sortKey="marketData.notionalQuoteVolume"
                         sort={() =>
-                          requestSerumSort('marketData.notionalQuoteVolume')
+                          requestSpotSort('marketData.notionalQuoteVolume')
                         }
-                        sortConfig={serumSortConfig}
+                        sortConfig={spotSortConfig}
                         title={t('daily-volume')}
                       />
                     </p>
                   </div>
-                  {filteredSerumMarkets.length ? (
-                    filteredSerumMarkets.map((m) => {
+                  {spotMarketsToShow.length ? (
+                    spotMarketsToShow.map((m) => {
                       const baseBank = group?.getFirstBankByTokenIndex(
                         m.baseTokenIndex,
                       )
                       const quoteBank = group?.getFirstBankByTokenIndex(
                         m.quoteTokenIndex,
                       )
-                      const market = group?.getSerum3ExternalMarket(
-                        m.serumMarketExternal,
-                      )
+                      const market = !m.isOpenbookV2
+                        ? group?.getSerum3ExternalMarket(
+                            (m as Serum3Market).serumMarketExternal,
+                          )
+                        : group?.getOpenbookV2ExternalMarket(
+                            (m as OpenbookV2Market).openbookMarketExternal,
+                          )
                       let leverage
-                      if (group) {
+                      if (group && m.maxBidLeverage) {
                         leverage = m.maxBidLeverage(group)
+                      } else {
+                        leverage = 0
                       }
                       let price
                       if (baseBank && market && quoteBank) {
                         price = floorToDecimal(
                           baseBank.uiPrice / quoteBank.uiPrice,
-                          getDecimalCount(market.tickSize),
+                          market instanceof Market
+                            ? getDecimalCount(market.tickSize)
+                            : market.quoteDecimals,
                         ).toNumber()
                       }
 
@@ -457,13 +456,36 @@ const MarketSelectDropdown = () => {
                               ) : null}
                             </div>
                             <div className="col-span-1 flex justify-end">
-                              {price && market?.tickSize ? (
+                              {price &&
+                              market instanceof Market &&
+                              market?.tickSize ? (
                                 <span className="font-mono text-xs text-th-fgd-2">
                                   {quoteBank?.name === 'USDC' ? '$' : ''}
                                   {countLeadingZeros(price) <= 4
                                     ? formatNumericValue(
                                         price,
                                         getDecimalCount(market.tickSize),
+                                      )
+                                    : price.toExponential(3)}
+                                  {quoteBank?.name &&
+                                  quoteBank.name !== 'USDC' ? (
+                                    <span className="font-body text-th-fgd-3">
+                                      {' '}
+                                      {CURRENCY_SYMBOLS[quoteBank.name] ||
+                                        quoteBank.name}
+                                    </span>
+                                  ) : null}
+                                </span>
+                              ) : null}
+                              {price &&
+                              !(market instanceof Market) &&
+                              market?.quoteLotSize ? (
+                                <span className="font-mono text-xs text-th-fgd-2">
+                                  {quoteBank?.name === 'USDC' ? '$' : ''}
+                                  {countLeadingZeros(price) <= 4
+                                    ? formatNumericValue(
+                                        price,
+                                        market.quoteDecimals,
                                       )
                                     : price.toExponential(3)}
                                   {quoteBank?.name &&

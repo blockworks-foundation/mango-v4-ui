@@ -1,6 +1,7 @@
 import {
   Group,
   MangoAccount,
+  OpenbookV2Market,
   PerpMarket,
   PerpOrderSide,
   PerpOrderType,
@@ -120,7 +121,8 @@ const calcPerpMax = (
     !mangoAccount ||
     !group ||
     !selectedMarket ||
-    selectedMarket instanceof Serum3Market
+    selectedMarket instanceof Serum3Market ||
+    selectedMarket instanceof OpenbookV2Market
   )
     return 0
   try {
@@ -190,7 +192,10 @@ const TradeHotKeys = ({ children }: { children: ReactNode }) => {
           custom === HOTKEY_TEMPLATES.CLOSE_LONG ||
           custom === HOTKEY_TEMPLATES.CLOSE_SHORT
         ) {
-          if (selectedMarket instanceof Serum3Market) {
+          if (
+            selectedMarket instanceof Serum3Market ||
+            selectedMarket instanceof OpenbookV2Market
+          ) {
             const baseBank = group.getFirstBankByTokenIndex(
               selectedMarket.baseTokenIndex,
             )

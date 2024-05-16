@@ -11,7 +11,10 @@ import {
   PublicKey,
   TransactionInstruction,
 } from '@solana/web3.js'
-import { OpenOrders, Order } from '@project-serum/serum/lib/market'
+import {
+  OpenOrders,
+  Order as SerumOrder,
+} from '@project-serum/serum/lib/market'
 import { Orderbook } from '@project-serum/serum'
 import { Wallet as WalletAdapter } from '@solana/wallet-adapter-react'
 import {
@@ -68,7 +71,7 @@ import {
   SwapTypes,
 } from 'types'
 import spotBalancesUpdater from './spotBalancesUpdater'
-import { PerpMarket } from '@blockworks-foundation/mango-v4'
+import { PerpMarket, OpenbookV2Market } from '@blockworks-foundation/mango-v4/'
 import perpPositionsUpdater from './perpPositionsUpdater'
 import {
   DEFAULT_PRIORITY_FEE,
@@ -82,6 +85,9 @@ import {
 import { nftThemeMeta } from 'utils/theme'
 import { OrderTypes } from 'utils/tradeForm'
 import { usePlausible } from 'next-plausible'
+import { OpenOrdersAccount, OpenOrder } from '@openbook-dex/openbook-v2'
+
+const GROUP = new PublicKey('CKU8J1mgtdcJJhBvXrH6xRx1MmcrRWDv8WQdNxPKW3gk')
 import { collectTxConfirmationData } from 'utils/transactionConfirmationData'
 import { TxCallbackOptions } from '@blockworks-foundation/mango-v4/dist/types/src/client'
 
@@ -93,10 +99,15 @@ const ENDPOINTS = [
     custom: false,
   },
   {
+    name: 'testnet',
+    url: 'https://api.testnet.solana.com',
+    websocket: 'https://api.testnet.solana.com',
+    custom: false,
+  },
+  {
     name: 'devnet',
-    url: 'https://realms-develope-935c.devnet.rpcpool.com/67f608dc-a353-4191-9c34-293a5061b536',
-    websocket:
-      'https://realms-develope-935c.devnet.rpcpool.com/67f608dc-a353-4191-9c34-293a5061b536',
+    url: 'https://mango.devnet.rpcpool.com',
+    websocket: 'https://mango.devnet.rpcpool.com',
     custom: false,
   },
 ]
@@ -105,7 +116,7 @@ const options = {
   ...AnchorProvider.defaultOptions(),
   preflightCommitment: 'confirmed',
 } as ConfirmOptions
-export const CLUSTER: 'mainnet-beta' | 'devnet' = 'mainnet-beta'
+export const CLUSTER: 'mainnet-beta' | 'devnet' = 'devnet'
 const ENDPOINT = ENDPOINTS.find((e) => e.name === CLUSTER) || ENDPOINTS[0]
 export const emptyWallet = new EmptyWallet(Keypair.generate())
 
@@ -123,6 +134,8 @@ const initMangoClient = (
   //for analytics use
   telemetry: ReturnType<typeof usePlausible> | null,
 ): MangoClient => {
+  // console.log('cluster', CLUSTER)
+  // console.log('programId', MANGO_V4_ID[CLUSTER].toString())
   return MangoClient.connect(provider, CLUSTER, MANGO_V4_ID[CLUSTER], {
     prioritizationFee: opts.prioritizationFee,
     fallbackOracleConfig: [
@@ -132,7 +145,7 @@ const initMangoClient = (
       new PublicKey('E4v1BBgoso9s64TQvmyownAVJbhbEPGyzA3qn4n46qj9'), //mSol
     ],
     multipleConnections: opts.multipleConnections,
-    idsSource: 'api',
+    idsSource: 'get-program-accounts',
     prependedGlobalAdditionalInstructions:
       opts.prependedGlobalAdditionalInstructions,
     postSendTxCallback: (txCallbackOptions: TxCallbackOptions) => {
@@ -181,6 +194,28 @@ export const DEFAULT_TRADE_FORM: TradeForm = {
   ioc: false,
   reduceOnly: false,
 }
+export class OpenbookOrder {
+  price: number
+  side: 'buy' | 'sell'
+  size: number
+  orderId: BN
+
+  constructor(order: OpenOrder) {
+    // todo conversion to ui units
+    this.price = order.lockedPrice.toNumber()
+
+    // even numbers are bids
+    if (order.sideAndTree % 2 == 0) {
+      this.side = 'buy'
+    } else {
+      this.side = 'sell'
+    }
+
+    // todo this probably needs to take in a bookside to find out the size :(
+    this.size = 1
+    this.orderId = order.id
+  }
+}
 
 export type AccountPageTab =
   | 'overview'
@@ -208,7 +243,7 @@ export type MangoStore = {
     initialLoad: boolean
     lastSlot: number
     openOrderAccounts: OpenOrders[]
-    openOrders: Record<string, Order[] | PerpOrder[]>
+    openOrders: Record<string, SerumOrder[] | PerpOrder[] | OpenbookOrder[]>
     perpPositions: PerpPosition[]
     spotBalances: SpotBalances
     swapHistory: {
@@ -241,7 +276,7 @@ export type MangoStore = {
   priorityFee: number
   selectedMarket: {
     name: string | undefined
-    current: Serum3Market | PerpMarket | undefined
+    current: Serum3Market | PerpMarket | OpenbookV2Market | undefined
     fills: (ParsedFillEvent | SerumEvent)[]
     bidsAccount: BookSide | Orderbook | undefined
     asksAccount: BookSide | Orderbook | undefined
@@ -253,7 +288,8 @@ export type MangoStore = {
     }
   }
   serumMarkets: Serum3Market[]
-  serumOrders: Order[] | undefined
+  openbookMarkets: OpenbookV2Market[]
+  serumOrders: SerumOrder[] | undefined
   settings: {
     loading: boolean
     tours: TourSettings
@@ -339,6 +375,7 @@ const mangoStore = create<MangoStore>()(
     let rpcUrl = ENDPOINT.url
     let swapMargin = true
 
+    // @ts-ignore
     if (typeof window !== 'undefined' && CLUSTER === 'mainnet-beta') {
       const urlFromLocalStorage = localStorage.getItem(RPC_PROVIDER_KEY)
       const swapMarginFromLocalStorage = localStorage.getItem(SWAP_MARGIN_KEY)
@@ -421,7 +458,7 @@ const mangoStore = create<MangoStore>()(
       priorityFee: DEFAULT_PRIORITY_FEE,
       prependedGlobalAdditionalInstructions: [],
       selectedMarket: {
-        name: 'SOL-PERP',
+        name: 'BTC-PERP',
         current: undefined,
         fills: [],
         bidsAccount: undefined,
@@ -437,6 +474,7 @@ const mangoStore = create<MangoStore>()(
         markPrice: 0,
       },
       serumMarkets: [],
+      openbookMarkets: [],
       serumOrders: undefined,
       set: (fn) => _set(produce(fn)),
       settings: {
@@ -573,6 +611,10 @@ const mangoStore = create<MangoStore>()(
               return m
             })
 
+            const openbookMarkets = Array.from(
+              group.openbookV2MarketsMapByExternal.values(),
+            )
+
             const perpMarkets = Array.from(group.perpMarketsMapByName.values())
               .filter(
                 (p) =>
@@ -581,26 +623,36 @@ const mangoStore = create<MangoStore>()(
               )
               .sort((a, b) => a.name.localeCompare(b.name))
 
-            const selectedMarket =
-              serumMarkets.find((m) => m.name === selectedMarketName) ||
-              perpMarkets.find((m) => m.name === selectedMarketName) ||
+            let selectedMarket: Serum3Market | OpenbookV2Market | PerpMarket =
               serumMarkets[0]
+            if (selectedMarketName.includes('V2')) {
+              selectedMarket =
+                openbookMarkets.find(
+                  (m) => selectedMarketName?.includes(m.name),
+                ) || openbookMarkets[0]
+            } else {
+              selectedMarket =
+                serumMarkets.find((m) => m.name === selectedMarketName) ||
+                perpMarkets.find((m) => m.name === selectedMarketName) ||
+                serumMarkets[0]
+            }
 
             set((state) => {
               state.group = group
               state.groupLoaded = true
               state.serumMarkets = serumMarkets
+              state.openbookMarkets = openbookMarkets
               state.perpMarkets = perpMarkets
               state.selectedMarket.current = selectedMarket
-              if (!state.swap.inputBank && !state.swap.outputBank) {
+              if (!state.swap.inputBank || !state.swap.outputBank) {
                 state.swap.inputBank = inputBank
                 state.swap.outputBank = outputBank
               } else {
                 state.swap.inputBank = group.getFirstBankByMint(
-                  state.swap.inputBank!.mint,
+                  state.swap.inputBank.mint,
                 )
                 state.swap.outputBank = group.getFirstBankByMint(
-                  state.swap.outputBank!.mint,
+                  state.swap.outputBank.mint,
                 )
               }
             })
@@ -757,7 +809,10 @@ const mangoStore = create<MangoStore>()(
           if (!mangoAccount || !group) return
 
           try {
-            const openOrders: Record<string, Order[] | PerpOrder[]> = {}
+            const openOrders: Record<
+              string,
+              SerumOrder[] | PerpOrder[] | OpenbookOrder[]
+            > = {}
             let serumOpenOrderAccounts: OpenOrders[] = []
 
             const activeSerumMarketIndices = [
@@ -805,6 +860,18 @@ const mangoStore = create<MangoStore>()(
                 openOrders[market.publicKey.toString()] = orders
               }),
             )
+
+            if (mangoAccount.openbookV2Active()?.length) {
+              await mangoAccount.reloadOpenbookV2OpenOrders(client)
+              Array.from(
+                mangoAccount.openbookV2OosMapByMarketIndex.values(),
+              ).forEach((order) => {
+                const marketPk = order.market.toString()
+                openOrders[marketPk] = order.openOrders.map(
+                  (oo) => new OpenbookOrder(oo),
+                )
+              })
+            }
 
             set((s) => {
               s.mangoAccount.openOrders = openOrders
@@ -1022,7 +1089,7 @@ const mangoStore = create<MangoStore>()(
             {
               prioritizationFee: get().priorityFee,
               prependedGlobalAdditionalInstructions: instructions,
-              multipleConnections: client.multipleConnections,
+              multipleConnections: [],
             },
             null,
           )
@@ -1068,7 +1135,7 @@ const mangoStore = create<MangoStore>()(
               serumMarket = group.getSerum3ExternalMarket(
                 selectedMarket.serumMarketExternal,
               )
-            } else {
+            } else if (selectedMarket instanceof PerpMarket) {
               perpMarket = selectedMarket
             }
 
@@ -1113,7 +1180,7 @@ const mangoStore = create<MangoStore>()(
               prependedGlobalAdditionalInstructions:
                 get().prependedGlobalAdditionalInstructions,
               prioritizationFee: DEFAULT_PRIORITY_FEE,
-              multipleConnections: client.multipleConnections,
+              multipleConnections: [],
             },
             null,
           )
@@ -1143,7 +1210,7 @@ const mangoStore = create<MangoStore>()(
                 prioritizationFee: feeEstimate,
                 prependedGlobalAdditionalInstructions:
                   get().prependedGlobalAdditionalInstructions,
-                multipleConnections: client.multipleConnections,
+                multipleConnections: [],
               },
               telemetry,
             )

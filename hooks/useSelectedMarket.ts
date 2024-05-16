@@ -1,10 +1,16 @@
-import { Serum3Market } from '@blockworks-foundation/mango-v4'
+import {
+  PerpMarket,
+  Serum3Market,
+  OpenbookV2Market,
+} from '@blockworks-foundation/mango-v4'
 import mangoStore from '@store/mangoStore'
 import { useMemo } from 'react'
 import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 import useJupiterMints from './useJupiterMints'
 import useMangoGroup from './useMangoGroup'
 import { CUSTOM_TOKEN_ICONS } from 'utils/constants'
+import BigNumber from 'bignumber.js'
+import { ExtendedMarketAccount } from 'types/openbook'
 
 export default function useSelectedMarket() {
   const { group } = useMangoGroup()
@@ -32,8 +38,29 @@ export default function useSelectedMarket() {
         baseBank.uiPrice / quoteBank.uiPrice,
         getDecimalCount(market.tickSize),
       ).toNumber()
-    } else if (selectedMarket) {
+    } else if (selectedMarket instanceof PerpMarket) {
       return selectedMarket._uiPrice
+    } else if (selectedMarket instanceof OpenbookV2Market) {
+      // TODO-OB2
+      const baseBank = group.getFirstBankByTokenIndex(
+        selectedMarket.baseTokenIndex,
+      )
+      const quoteBank = group.getFirstBankByTokenIndex(
+        selectedMarket.quoteTokenIndex,
+      )
+      const market = group.getOpenbookV2ExternalMarket(
+        selectedMarket.openbookMarketExternal,
+      )
+      const tickSize = new BigNumber(10)
+        .pow(market.baseDecimals - market.quoteDecimals)
+        .times(new BigNumber(market.quoteLotSize.toString()))
+        .div(new BigNumber(market.baseLotSize.toString()))
+        .toNumber()
+      return floorToDecimal(
+        baseBank.uiPrice / quoteBank.uiPrice,
+        getDecimalCount(tickSize),
+      ).toNumber()
+      // return 2
     } else return 0
   }, [selectedMarket, group])
 
@@ -43,6 +70,14 @@ export default function useSelectedMarket() {
 
     if (selectedMarket instanceof Serum3Market) {
       return group?.getSerum3ExternalMarket(selectedMarket.serumMarketExternal)
+    } else if (selectedMarket instanceof OpenbookV2Market) {
+      const mkt = group?.getOpenbookV2ExternalMarket(
+        selectedMarket.openbookMarketExternal,
+      ) as ExtendedMarketAccount
+      mkt.tickSize = 0.01
+      mkt.minOrderSize = 0.01
+      mkt.publicKey = selectedMarket.openbookMarketExternal
+      return mkt
     } else {
       return selectedMarket
     }
@@ -76,9 +111,9 @@ export default function useSelectedMarket() {
     const group = mangoStore.getState().group
     if (!group || !selectedMarket) return
     const tokenIdx =
-      selectedMarket instanceof Serum3Market
-        ? selectedMarket.quoteTokenIndex
-        : selectedMarket?.settleTokenIndex
+      selectedMarket instanceof PerpMarket
+        ? selectedMarket?.settleTokenIndex
+        : selectedMarket.quoteTokenIndex
     return group?.getFirstBankByTokenIndex(tokenIdx)
   }, [selectedMarket])
 

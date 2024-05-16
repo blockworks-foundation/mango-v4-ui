@@ -1,7 +1,7 @@
 import { Bank, Serum3Market } from '@blockworks-foundation/mango-v4'
 import {
   PerpMarketWithMarketData,
-  SerumMarketWithMarketData,
+  SpotMarketWithMarketData,
 } from 'hooks/useListedMarketsWithMarketData'
 import { NextRouter } from 'next/router'
 
@@ -13,11 +13,11 @@ export type AllowedKeys =
   | 'change_1h'
 
 export const sortSpotMarkets = (
-  spotMarkets: SerumMarketWithMarketData[],
+  spotMarkets: SpotMarketWithMarketData[],
   sortByKey: AllowedKeys,
 ) => {
   return spotMarkets.sort(
-    (a: SerumMarketWithMarketData, b: SerumMarketWithMarketData) => {
+    (a: SpotMarketWithMarketData, b: SpotMarketWithMarketData) => {
       const aValue: number | undefined = a?.marketData?.[sortByKey]
       const bValue: number | undefined = b?.marketData?.[sortByKey]
 
@@ -63,7 +63,7 @@ export const sortPerpMarkets = (
 }
 
 const generateSearchTerm = (
-  item: SerumMarketWithMarketData,
+  item: SpotMarketWithMarketData,
   searchValue: string,
 ) => {
   const normalizedSearchValue = searchValue.toLowerCase()
@@ -83,7 +83,7 @@ const generateSearchTerm = (
 }
 
 export const startSearch = (
-  items: SerumMarketWithMarketData[],
+  items: SpotMarketWithMarketData[],
   searchValue: string,
 ) => {
   return items

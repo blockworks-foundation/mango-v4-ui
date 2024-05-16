@@ -210,7 +210,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   zeus: true,
 }
 
-export const DEFAULT_FAVORITE_MKTS = ['SOL-PERP', 'ETH-PERP', 'BTC-PERP']
+export const DEFAULT_FAVORITE_MKTS = ['BTC-PERP']
 
 export const WHITE_LIST_API = 'https://api.mngo.cloud/whitelist/v1/'
 export const DAILY_SECONDS = 86400
@@ -234,7 +234,7 @@ export enum TOKEN_REDUCE_ONLY_OPTIONS {
 export const PRIVATE_MODE_STRING = '****'
 
 export const MANGO_MAINNET_GROUP = new PublicKey(
-  '78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX',
+  '7s3eedfgJmqdsnxu5oqKiUwAU1BqWaX2iYmhCZyye6RY',
 )
 
 export const MAX_PERP_SLIPPAGE = 0.025

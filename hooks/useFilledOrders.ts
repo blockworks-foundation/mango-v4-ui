@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { fetchFilledOrders } from 'utils/account'
 import useMangoAccount from './useMangoAccount'
 import { useMemo } from 'react'
+import { isOpenbookV2OpenOrder } from 'types/openbook'
 
 export default function useFilledOrders() {
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
@@ -17,7 +18,13 @@ export default function useFilledOrders() {
     const spotIds = Object.values(openOrders)
       .flat()
       .filter((o) => !(o instanceof PerpOrder))
-      .map((s) => s.orderId.toString())
+      .map((s) => {
+        if (isOpenbookV2OpenOrder(s)) {
+          return ''
+        } else {
+          return s.orderId.toString()
+        }
+      })
     const ids = spotIds.concat(perpIds)
     return ids
   }, [mangoAccount, openOrders])

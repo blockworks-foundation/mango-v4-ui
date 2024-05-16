@@ -2,43 +2,85 @@ import {
   BookSide,
   BookSideType,
   MangoClient,
+  OpenbookV2Market,
   PerpMarket,
+  Serum3Market,
 } from '@blockworks-foundation/mango-v4'
 import { Market, Orderbook as SpotOrderBook } from '@project-serum/serum'
-import { AccountInfo } from '@solana/web3.js'
-import mangoStore from '@store/mangoStore'
+import { AccountInfo, Keypair } from '@solana/web3.js'
+import mangoStore, { emptyWallet } from '@store/mangoStore'
 import Big from 'big.js'
 import { cumOrderbookSide } from 'types'
 import { getDecimalCount } from './numbers'
+import {
+  ExtendedMarketAccount,
+  isOpenbookV2ExternalMarket,
+  isOpenbookV2Market,
+} from 'types/openbook'
+import { BookSideAccount, OpenBookV2Client } from '@openbook-dex/openbook-v2'
+import { AnchorProvider } from '@coral-xyz/anchor'
 
 export const getMarket = () => {
   const group = mangoStore.getState().group
   const selectedMarket = mangoStore.getState().selectedMarket.current
   if (!group || !selectedMarket) return
-  return selectedMarket instanceof PerpMarket
-    ? selectedMarket
-    : group?.getSerum3ExternalMarket(selectedMarket.serumMarketExternal)
+  if (selectedMarket instanceof PerpMarket) {
+    return selectedMarket
+  } else if (selectedMarket instanceof Serum3Market) {
+    return group?.getSerum3ExternalMarket(selectedMarket.serumMarketExternal)
+  } else {
+    const mkt = group?.getOpenbookV2ExternalMarket(
+      selectedMarket.openbookMarketExternal,
+    ) as ExtendedMarketAccount
+    mkt.tickSize = 0.01
+    mkt.minOrderSize = 0.01
+    mkt.publicKey = selectedMarket.openbookMarketExternal
+    return mkt
+  }
 }
 
-export const decodeBookL2 = (book: SpotOrderBook | BookSide): number[][] => {
+export const decodeBookL2 = (
+  book: SpotOrderBook | BookSide | BookSideAccount,
+  market: Serum3Market | PerpMarket | OpenbookV2Market | undefined,
+  externalMarket: PerpMarket | Market | ExtendedMarketAccount,
+): number[][] => {
   const depth = 300
+  console.log('in decoding book l2', market, externalMarket)
+
   if (book instanceof SpotOrderBook) {
     return book.getL2(depth).map(([price, size]) => [price, size])
   } else if (book instanceof BookSide) {
     return book.getL2Ui(depth)
+  } else if (
+    isOpenbookV2Market(market) &&
+    isOpenbookV2ExternalMarket(externalMarket)
+  ) {
+    const client = mangoStore.getState().client
+    return market.getL2(client, externalMarket, book)
   }
   return []
 }
 
 export function decodeBook(
   client: MangoClient,
-  market: Market | PerpMarket,
+  market: Market | PerpMarket | ExtendedMarketAccount,
   accInfo: AccountInfo<Buffer>,
   side: 'bids' | 'asks',
 ): SpotOrderBook | BookSide {
   if (market instanceof Market) {
     const book = SpotOrderBook.decode(market, accInfo.data)
     return book
+  } else if (isOpenbookV2ExternalMarket(market)) {
+    const openbookClient = new OpenBookV2Client(
+      new AnchorProvider(client.program.provider.connection, emptyWallet, {
+        commitment: client.program.provider.connection.commitment,
+      }),
+    )
+    const decodedAcc = openbookClient.program.coder.accounts.decode(
+      'bookSide',
+      accInfo.data,
+    )
+    return decodedAcc
   } else {
     const decodedAcc = client.program.coder.accounts.decode(
       'bookSide',
@@ -126,7 +168,7 @@ export const getCumulativeOrderbookSide = (
 
 export const groupBy = (
   ordersArray: number[][] | undefined,
-  market: PerpMarket | Market,
+  market: PerpMarket | Market | ExtendedMarketAccount,
   grouping: number,
   isBids: boolean,
 ) => {
@@ -178,7 +220,7 @@ export const formatOrderbookData = (
   rawBids: number[][] | undefined,
   rawAsks: number[][] | undefined,
   depth: 12 | 30,
-  market: PerpMarket | Market,
+  market: PerpMarket | Market | ExtendedMarketAccount,
   grouping: number,
   usersOpenOrderPrices: number[],
 ) => {

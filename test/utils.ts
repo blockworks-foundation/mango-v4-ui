@@ -27,5 +27,5 @@ export const getGroupForClient = async (
 }
 
 export const MAINNET_MANGO_GROUP = new PublicKey(
-  '78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX',
+  '7s3eedfgJmqdsnxu5oqKiUwAU1BqWaX2iYmhCZyye6RY',
 )

@@ -2,7 +2,11 @@ import { MarketData, MarketsDataItem } from 'types'
 import useMarketsData from './useMarketsData'
 import { useMemo } from 'react'
 import mangoStore from '@store/mangoStore'
-import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
+import {
+  OpenbookV2Market,
+  PerpMarket,
+  Serum3Market,
+} from '@blockworks-foundation/mango-v4'
 import { useBirdeye24hrPrices } from './useBirdeye24hrPrices'
 
 type ApiData = {
@@ -14,9 +18,12 @@ type MarketRollingChange = {
   priceHistory: Array<{ price: number; time: number }>
 }
 
-export type SerumMarketWithMarketData = Serum3Market &
+type IsOpenbookV2 = { isOpenbookV2: boolean }
+
+export type SpotMarketWithMarketData = (Serum3Market | OpenbookV2Market) &
   ApiData &
-  MarketRollingChange
+  MarketRollingChange &
+  IsOpenbookV2
 
 export type PerpMarketWithMarketData = PerpMarket &
   ApiData &
@@ -30,6 +37,7 @@ export default function useListedMarketsWithMarketData() {
     isInitialLoading: loadingBirdeyeSpotDailyPrices,
   } = useBirdeye24hrPrices()
   const serumMarkets = mangoStore((s) => s.serumMarkets)
+  const openbookMarkets = mangoStore((s) => s.openbookMarkets)
   const perpMarkets = mangoStore((s) => s.perpMarkets)
 
   const perpData: MarketData = useMemo(() => {
@@ -46,7 +54,31 @@ export default function useListedMarketsWithMarketData() {
     const prices: { [key: string]: number } = {}
     const group = mangoStore.getState().group
     serumMarkets.forEach((market) => {
-      if (!group || !market || market instanceof PerpMarket) {
+      if (
+        !group ||
+        !market ||
+        market instanceof PerpMarket ||
+        market instanceof OpenbookV2Market
+      ) {
+        prices[market.name] = 0
+        return
+      }
+      const baseBank = group.getFirstBankByTokenIndex(market.baseTokenIndex)
+      const quoteBank = group.getFirstBankByTokenIndex(market.quoteTokenIndex)
+      if (!baseBank || !quoteBank) {
+        prices[market.name] = 0
+        return
+      }
+      prices[market.name] = baseBank.uiPrice / quoteBank.uiPrice
+    })
+
+    openbookMarkets.forEach((market) => {
+      if (
+        !group ||
+        !market ||
+        market instanceof PerpMarket ||
+        market instanceof Serum3Market
+      ) {
         prices[market.name] = 0
         return
       }
@@ -65,11 +97,17 @@ export default function useListedMarketsWithMarketData() {
     return prices
   }, [serumMarkets, perpMarkets])
 
-  const serumMarketsWithData = useMemo(() => {
+  const spotMarketsWithData = useMemo(() => {
     if (!serumMarkets || !serumMarkets.length) return []
     const group = mangoStore.getState().group
-    const allSpotMarkets: SerumMarketWithMarketData[] =
-      serumMarkets as SerumMarketWithMarketData[]
+    const openbookMarketsWithData = openbookMarkets.map((m) => {
+      return { ...m, isOpenbookV2: true }
+    }) as SpotMarketWithMarketData[]
+    const serumMarketsWithData = serumMarkets.map((m) => {
+      return { ...m, isOpenbookV2: false }
+    }) as SpotMarketWithMarketData[]
+    const allSpotMarkets: SpotMarketWithMarketData[] =
+      serumMarketsWithData.concat(openbookMarketsWithData)
     if (spotData && birdeyeSpotDailyPrices?.length) {
       for (const market of allSpotMarkets) {
         const spotEntries = Object.entries(spotData).find(
@@ -114,7 +152,13 @@ export default function useListedMarketsWithMarketData() {
       }
     }
     return [...allSpotMarkets].sort((a, b) => a.name.localeCompare(b.name))
-  }, [currentPrices, birdeyeSpotDailyPrices, spotData, serumMarkets])
+  }, [
+    currentPrices,
+    birdeyeSpotDailyPrices,
+    spotData,
+    serumMarkets,
+    openbookMarkets,
+  ])
 
   const perpMarketsWithData = useMemo(() => {
     if (!perpMarkets || !perpMarkets.length) return []
@@ -145,5 +189,9 @@ export default function useListedMarketsWithMarketData() {
 
   const isLoading = loadingMarketsData || loadingBirdeyeSpotDailyPrices
 
-  return { perpMarketsWithData, serumMarketsWithData, isLoading }
+  return {
+    perpMarketsWithData,
+    spotMarketsWithData,
+    isLoading,
+  }
 }

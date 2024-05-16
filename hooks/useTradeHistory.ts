@@ -1,5 +1,6 @@
 import {
   Group,
+  OpenbookV2Market,
   PerpMarket,
   Serum3Market,
 } from '@blockworks-foundation/mango-v4'
@@ -96,7 +97,7 @@ export const parseApiTradeHistory = (
 
 export const formatTradeHistory = (
   group: Group,
-  selectedMarket: Serum3Market | PerpMarket,
+  selectedMarket: Serum3Market | PerpMarket | OpenbookV2Market,
   mangoAccountAddress: string,
   tradeHistory: Array<CombinedTradeHistoryTypes>,
 ) => {
@@ -122,6 +123,7 @@ export const formatTradeHistory = (
         market = group.getPerpMarketByMarketIndex(trade.market_index)
       }
     }
+    // todo case for openbook?
 
     return {
       ...trade,
@@ -197,8 +199,10 @@ export default function useTradeHistory() {
       return mangoAccount.publicKey
     } else {
       try {
-        return mangoAccount.getSerum3OoAccount(selectedMarket.marketIndex)
-          .address
+        return selectedMarket instanceof Serum3Market
+          ? mangoAccount.getSerum3OoAccount(selectedMarket.marketIndex).address
+          : mangoAccount.getOpenbookV2Account(selectedMarket.marketIndex)!
+              .openOrders
       } catch {
         console.warn(
           'Unable to find OO account for mkt index',

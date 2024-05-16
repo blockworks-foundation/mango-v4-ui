@@ -8,6 +8,8 @@ import {
   Serum3OrderType,
   Serum3SelfTradeBehavior,
   Serum3Side,
+  OpenbookV2Market,
+  OpenbookV2Side,
 } from '@blockworks-foundation/mango-v4'
 import Checkbox from '@components/forms/Checkbox'
 import Tooltip from '@components/shared/Tooltip'
@@ -80,6 +82,8 @@ import AccountSlotsFullNotification from '@components/shared/AccountSlotsFullNot
 import DepositWithdrawModal from '@components/modals/DepositWithdrawModal'
 import CreateAccountModal from '@components/modals/CreateAccountModal'
 import TradeformSubmitButton from './TradeformSubmitButton'
+import BigNumber from 'bignumber.js'
+import { isOpenbookV2ExternalMarket } from 'types/openbook'
 import useIpAddress from 'hooks/useIpAddress'
 import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
 import { isTokenInsured } from '@components/DepositForm'
@@ -171,7 +175,10 @@ const AdvancedTradeForm = () => {
   }, [selectedMarket])
 
   const isInsured = useMemo(() => {
-    if (selectedMarket instanceof Serum3Market) {
+    if (
+      selectedMarket instanceof Serum3Market ||
+      selectedMarket instanceof OpenbookV2Market
+    ) {
       const group = mangoStore.getState().group
       return isTokenInsured(baseBank, group)
     } else {
@@ -193,11 +200,14 @@ const AdvancedTradeForm = () => {
 
   // check for available perp account slots if perp market
   const perpSlotsFull = useMemo(() => {
-    if (!selectedMarket || selectedMarket instanceof Serum3Market) return false
-    const hasSlot = usedPerps.find(
-      (market) => market.marketIndex === selectedMarket.perpMarketIndex,
-    )
-    return usedPerps.length >= totalPerps.length && !hasSlot
+    if (selectedMarket instanceof PerpMarket) {
+      const hasSlot = usedPerps.find(
+        (market) => market.marketIndex === selectedMarket.perpMarketIndex,
+      )
+      return usedPerps.length >= totalPerps.length && !hasSlot
+    } else {
+      return false
+    }
   }, [usedPerps, totalPerps, selectedMarket])
 
   const setTradeType = useCallback(
@@ -394,7 +404,16 @@ const AdvancedTradeForm = () => {
 
   const tickDecimals = useMemo(() => {
     if (!serumOrPerpMarket) return 1
-    const tickSize = serumOrPerpMarket.tickSize
+    let tickSize
+    if (isOpenbookV2ExternalMarket(serumOrPerpMarket)) {
+      tickSize = new BigNumber(10)
+        .pow(serumOrPerpMarket.baseDecimals - serumOrPerpMarket.quoteDecimals)
+        .times(new BigNumber(serumOrPerpMarket.quoteLotSize.toString()))
+        .div(new BigNumber(serumOrPerpMarket.baseLotSize.toString()))
+        .toNumber()
+    } else {
+      tickSize = serumOrPerpMarket.tickSize
+    }
     const tickDecimals = getDecimalCount(tickSize)
     return tickDecimals
   }, [serumOrPerpMarket])
@@ -794,6 +813,52 @@ const AdvancedTradeForm = () => {
           title: 'Transaction successful',
           txid: tx,
         })
+      } else if (selectedMarket instanceof OpenbookV2Market) {
+        const spotOrderType = tradeForm.ioc
+          ? Serum3OrderType.immediateOrCancel
+          : tradeForm.postOnly && tradeForm.tradeType !== 'Market'
+          ? Serum3OrderType.postOnly
+          : Serum3OrderType.limit
+        console.log(
+          'mangoAccount.openbookV2.length',
+          mangoAccount.openbookV2.length,
+        )
+        if (mangoAccount.openbookV2.length === 0) {
+          await client.accountExpandV3(
+            group,
+            mangoAccount,
+            mangoAccount.tokens.length,
+            mangoAccount.serum3.length,
+            mangoAccount.perps.length,
+            mangoAccount.perpOpenOrders.length,
+            mangoAccount.tokenConditionalSwaps.length,
+            1,
+          )
+        }
+        const { signature: tx } = await client.openbookV2PlaceOrder(
+          group,
+          mangoAccount,
+          selectedMarket.openbookMarketExternal,
+          tradeForm.side === 'buy' ? OpenbookV2Side.bid : OpenbookV2Side.ask,
+          price,
+          baseSize,
+          Serum3SelfTradeBehavior.decrementTake,
+          spotOrderType,
+          Date.now(),
+          10,
+        )
+        actions.fetchOpenOrders(true)
+        set((s) => {
+          s.successAnimation.trade = true
+        })
+        if (soundSettings['swap-success']) {
+          successSound.play()
+        }
+        notify({
+          type: 'success',
+          title: 'Transaction successful',
+          txid: tx,
+        })
       }
     } catch (e) {
       console.error('Place trade error:', e)
@@ -915,7 +980,12 @@ const AdvancedTradeForm = () => {
 
     // when init health <= 0 users may not be able to close positions via limit orders. we don't want to disable the place order button in this scenario. however we still ues this const to disable the button to restrict users from entering unwanted margin positions.
     if (initHealth <= 0 && tradeType === 'Limit' && mangoAccount) {
-      if (selectedMarket instanceof Serum3Market && baseBank && quoteBank) {
+      if (
+        (selectedMarket instanceof Serum3Market ||
+          selectedMarket instanceof OpenbookV2Market) &&
+        baseBank &&
+        quoteBank
+      ) {
         const balance =
           side === 'buy'
             ? mangoAccount?.getTokenBalanceUi(quoteBank)
@@ -940,7 +1010,8 @@ const AdvancedTradeForm = () => {
     // check the values in the trade form are not greater than the allowed account max
     const size = side === 'buy' ? new Decimal(quoteSize) : new Decimal(baseSize)
     const decimalMax =
-      selectedMarket instanceof Serum3Market
+      selectedMarket instanceof Serum3Market ||
+      selectedMarket instanceof OpenbookV2Market
         ? new Decimal(spotMax)
         : new Decimal(perpMax)
     return size.gt(decimalMax)
@@ -955,6 +1026,7 @@ const AdvancedTradeForm = () => {
     tradeForm,
   ])
 
+  console.log('spotMax', spotMax)
   const disabled =
     !serumOrPerpMarket ||
     !isMarketEnabled ||
