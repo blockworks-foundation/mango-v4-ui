@@ -42,7 +42,7 @@ const NewListingBanner = () => {
   const showForNewListing = latestListing && latestListing.uiPrice
 
   // change this to false when token launches
-  const isPreLaunch = true
+  const isPreLaunch = false
 
   return (!hasSeenNewListingBanner && showForNewListing) ||
     (showForNewListing && hasSeenNewListingBanner !== latestListing?.name) ? (
