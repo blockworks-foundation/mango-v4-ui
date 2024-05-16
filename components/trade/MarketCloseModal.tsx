@@ -192,9 +192,15 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
         undefined,
         undefined,
       )
+
       await poolIsPerpReadyForRefresh(
         () => {
           actions.fetchOpenOrders(true)
+          notify({
+            type: 'success',
+            title: 'Transaction successful',
+            txid: tx,
+          })
         },
         () => {
           notify({
@@ -206,11 +212,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
       if (soundSettings['swap-success']) {
         successSound.play()
       }
-      notify({
-        type: 'success',
-        title: 'Transaction successful',
-        txid: tx,
-      })
+
       set((s) => {
         s.successAnimation.trade = true
       })

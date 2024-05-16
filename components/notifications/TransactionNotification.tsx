@@ -266,9 +266,7 @@ const TransactionNotification = ({
           <div className={`ml-2 flex-1`}>
             <p className={`text-th-fgd-1`}>{parsedTitle || title}</p>
             {parsedDescription ? (
-              <p
-                className={`mb-0 mt-0.5 break-all text-sm leading-tight text-th-fgd-4`}
-              >
+              <p className={`mb-0 mt-0.5 text-sm leading-tight text-th-fgd-4`}>
                 <ReactMarkdown
                   components={{ a: LinkRenderer }}
                   className="markdown"

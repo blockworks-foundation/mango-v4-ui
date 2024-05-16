@@ -106,6 +106,7 @@ function loadNft(
   return Promise.race([
     metaplex
       .nfts()
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       .load({ metadata: nft })
       .catch((e) => {

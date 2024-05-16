@@ -149,7 +149,15 @@ const PerpPositions = () => {
                       </Tooltip>
                     </div>
                   </Th>
-                  <Th className="text-right">{t('funding')}</Th>
+                  <Th>
+                    <div className="flex justify-end">
+                      <Tooltip content={t('trade:tooltip-lifetime-funding')}>
+                        <span className="tooltip-underline">
+                          {t('funding')}
+                        </span>
+                      </Tooltip>
+                    </div>
+                  </Th>
                   <Th className="text-right">{t('trade:unrealized-pnl')}</Th>
                   <Th className="text-right">ROE</Th>
                   {!isUnownedAccount ? (
@@ -530,7 +538,7 @@ const PerpPositions = () => {
                         enterTo="opacity-100"
                       >
                         <Disclosure.Panel>
-                          <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 pb-4 pt-4">
+                          <div className="mx-4 grid grid-cols-2 gap-4 border-t border-th-bkg-3 py-4">
                             <div className="col-span-1">
                               <p className="text-xs text-th-fgd-3">
                                 {t('trade:size')}
@@ -627,9 +635,13 @@ const PerpPositions = () => {
                               </p>
                             </div>
                             <div className="col-span-1">
-                              <p className="text-xs text-th-fgd-3">
-                                {t('funding')}
-                              </p>
+                              <Tooltip
+                                content={t('trade:tooltip-lifetime-funding')}
+                              >
+                                <p className="tooltip-underline text-xs text-th-fgd-3">
+                                  {t('funding')}
+                                </p>
+                              </Tooltip>
                               <p
                                 className={`font-mono ${
                                   positionFunding >= 0
@@ -729,7 +741,7 @@ const PerpPositions = () => {
             {openPerpPositions.length > 0 ? (
               <div className="flex items-center justify-end space-x-3 border-t border-th-bkg-3 px-4 py-2">
                 <span>
-                  <span className="text-md font-body text-xs text-th-fgd-3">
+                  <span className="font-body text-xs text-th-fgd-3">
                     Total Unrealized PnL:{' '}
                   </span>
                   <span
@@ -748,9 +760,7 @@ const PerpPositions = () => {
                   </span>
                 </span>
                 <span>
-                  <span className="text-md font-body text-xs text-th-fgd-3">
-                    ROE:{' '}
-                  </span>
+                  <span className="font-body text-xs text-th-fgd-3">ROE: </span>
                   <span
                     className={`font-mono ${
                       totalPnlStats.roe >= 0 ? 'text-th-up' : 'text-th-down'

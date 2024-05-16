@@ -18,6 +18,9 @@ import EmptyState from '@components/nftMarket/EmptyState'
 import { Bank } from '@blockworks-foundation/mango-v4'
 import useBanks from 'hooks/useBanks'
 import SheenLoader from '@components/shared/SheenLoader'
+import { useViewport } from 'hooks/useViewport'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import { TOKEN_WATCHLIST_KEY } from 'utils/constants'
 
 export type BankWithMarketData = {
   bank: Bank
@@ -50,30 +53,32 @@ const startSearch = (items: BankWithMarketData[], searchValue: string) => {
     .map((item) => item.token)
 }
 
-const sortTokens = (tokens: BankWithMarketData[], sortByKey: AllowedKeys) => {
+const sortTokens = (
+  tokens: BankWithMarketData[],
+  sortByKey: AllowedKeys,
+  watchlist: number[],
+) => {
   return tokens.sort((a: BankWithMarketData, b: BankWithMarketData) => {
+    const aInWatchlist = watchlist.includes(a.bank.tokenIndex)
+    const bInWatchlist = watchlist.includes(b.bank.tokenIndex)
+
+    // Prioritize tokens in the watchlist
+    if (aInWatchlist && !bInWatchlist) {
+      return -1 // a should come before b
+    } else if (!aInWatchlist && bInWatchlist) {
+      return 1 // b should come before a
+    }
+
     let aValue: number | undefined
     let bValue: number | undefined
     if (sortByKey === 'change_24h') {
-      const aPrice = a?.bank?.uiPrice || 0
-      const bPrice = b?.bank?.uiPrice || 0
-      const aPastPrice = a.market?.marketData?.price_24h
-      const bPastPrice = b.market?.marketData?.price_24h
-      const aVolume = a.market?.marketData?.quote_volume_24h || 0
-      const bVolume = b.market?.marketData?.quote_volume_24h || 0
-      aValue =
-        aVolume > 0 && aPastPrice
-          ? ((aPrice - aPastPrice) / aPastPrice) * 100
-          : undefined
-      bValue =
-        bVolume > 0 && bPastPrice
-          ? ((bPrice - bPastPrice) / bPastPrice) * 100
-          : undefined
+      aValue = a?.market?.rollingChange
+      bValue = b?.market?.rollingChange
     } else {
       aValue = a?.market?.marketData?.[sortByKey]
       bValue = b?.market?.marketData?.[sortByKey]
     }
-    // Handle marketData[sortByKey] is undefined
+    // handle marketData[sortByKey] is undefined
     if (typeof aValue === 'undefined' && typeof bValue === 'undefined') {
       return 0 // Consider them equal
     }
@@ -89,9 +94,11 @@ const sortTokens = (tokens: BankWithMarketData[], sortByKey: AllowedKeys) => {
 }
 
 const Spot = () => {
+  const [watchlist] = useLocalStorageState(TOKEN_WATCHLIST_KEY, [])
   const { t } = useTranslation(['common', 'explore', 'trade'])
   const { group } = useMangoGroup()
   const { banks } = useBanks()
+  const { isDesktop } = useViewport()
   const { serumMarketsWithData, isLoading: loadingMarketsData } =
     useListedMarketsWithMarketData()
   const [sortByKey, setSortByKey] = useState<AllowedKeys>('quote_volume_24h')
@@ -121,8 +128,8 @@ const Spot = () => {
     if (!banksWithMarketData.length) return []
     return search
       ? startSearch(banksWithMarketData, search)
-      : sortTokens(banksWithMarketData, sortByKey)
-  }, [search, banksWithMarketData, sortByKey, showTableView])
+      : sortTokens(banksWithMarketData, sortByKey, watchlist)
+  }, [search, banksWithMarketData, sortByKey, watchlist])
 
   const handleUpdateSearch = (e: ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value)
@@ -131,8 +138,8 @@ const Spot = () => {
   return (
     <div className="lg:-mt-10">
       <div className="flex flex-col px-4 md:px-6 lg:flex-row lg:items-center lg:justify-end 2xl:px-12">
-        <div className="flex w-full flex-col lg:w-auto lg:flex-row lg:space-x-3">
-          <div className="relative mb-3 w-full lg:mb-0 lg:w-40">
+        <div className="flex w-full flex-col md:w-auto md:flex-row md:space-x-3">
+          <div className="relative mb-3 w-full md:mb-0 lg:w-40">
             <Input
               heightClass="h-10 pl-8"
               type="text"
@@ -142,14 +149,16 @@ const Spot = () => {
             <MagnifyingGlassIcon className="absolute left-2 top-3 h-4 w-4" />
           </div>
           <div className="flex space-x-3">
-            <div className="w-full lg:w-48">
-              <ButtonGroup
-                activeValue={sortByKey}
-                onChange={(v) => setSortByKey(v)}
-                names={[t('trade:24h-volume'), t('rolling-change')]}
-                values={['quote_volume_24h', 'change_24h']}
-              />
-            </div>
+            {!showTableView || !isDesktop ? (
+              <div className="w-full md:w-48">
+                <ButtonGroup
+                  activeValue={sortByKey}
+                  onChange={(v) => setSortByKey(v)}
+                  names={[t('trade:24h-volume'), t('rolling-change')]}
+                  values={['quote_volume_24h', 'change_24h']}
+                />
+              </div>
+            ) : null}
             <div className="flex">
               <button
                 className={`flex w-10 items-center justify-center rounded-l-md border border-th-bkg-3 focus:outline-none md:hover:bg-th-bkg-3 ${

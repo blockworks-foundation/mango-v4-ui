@@ -16,6 +16,8 @@ import { COLORS } from 'styles/colors'
 import useThemeWrapper from 'hooks/useThemeWrapper'
 import TokenReduceOnlyDesc from '@components/shared/TokenReduceOnlyDesc'
 import CollateralWeightDisplay from '@components/shared/CollateralWeightDisplay'
+import WatchlistButton from './WatchlistButton'
+import TableRatesDisplay from '@components/shared/TableRatesDisplay'
 
 const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
   const { t } = useTranslation(['common', 'explore', 'trade'])
@@ -74,21 +76,24 @@ const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
                   ) : null}
                 </div>
               </div>
-              {chartData.length ? (
-                <div className="h-10 w-20">
-                  <SimpleAreaChart
-                    color={
-                      chartData[0].price <= bank.uiPrice
-                        ? COLORS.UP[theme]
-                        : COLORS.DOWN[theme]
-                    }
-                    data={chartData}
-                    name={bank.name}
-                    xKey="time"
-                    yKey="price"
-                  />
-                </div>
-              ) : null}
+              <div className="flex items-center space-x-3">
+                {chartData.length ? (
+                  <div className="h-10 w-20">
+                    <SimpleAreaChart
+                      color={
+                        chartData[0].price <= bank.uiPrice
+                          ? COLORS.UP[theme]
+                          : COLORS.DOWN[theme]
+                      }
+                      data={chartData}
+                      name={bank.name}
+                      xKey="time"
+                      yKey="price"
+                    />
+                  </div>
+                ) : null}
+                <WatchlistButton tokenIndex={bank.tokenIndex} />
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -140,13 +145,10 @@ const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
                   <p className="tooltip-underline mb-1">{t('rates')}</p>
                 </Tooltip>
                 <div className="flex space-x-1.5 font-mono">
-                  <p className="text-th-up">
-                    <FormatNumericValue value={depositRate} decimals={2} />%
-                  </p>
-                  <span className="text-th-fgd-4">|</span>
-                  <p className="text-th-down">
-                    <FormatNumericValue value={borrowRate} decimals={2} />%
-                  </p>
+                  <TableRatesDisplay
+                    borrowRate={borrowRate}
+                    depositRate={depositRate}
+                  />
                 </div>
               </div>
               <Button

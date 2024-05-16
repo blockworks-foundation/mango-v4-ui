@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import TabButtons from '../shared/TabButtons'
 import TokenList from '../TokenList'
 import UnsettledTrades from '@components/trade/UnsettledTrades'
@@ -13,16 +13,23 @@ import ManualRefresh from '@components/shared/ManualRefresh'
 import useMangoAccount from 'hooks/useMangoAccount'
 import AccountOverview from './AccountOverview'
 import AccountOrders from './AccountOrders'
+import { useRouter } from 'next/router'
 
-const AccountTabs = () => {
-  const activeTab = mangoStore((s) => s.accountPageTab)
-  const set = mangoStore.getState().set
+const AccountTabs = ({ view }: { view: AccountPageTab }) => {
+  const [activeTab, setActiveTab] = useState<AccountPageTab>(view)
+  const set = mangoStore((s) => s.set)
   const { mangoAccount } = useMangoAccount()
   const { isMobile, isTablet } = useViewport()
+  const router = useRouter()
+  const { pathname, query } = router
   const unsettledSpotBalances = useUnsettledSpotBalances()
   const unsettledPerpPositions = useUnsettledPerpPositions()
   const { openPerpPositions } = useOpenPerpPositions()
   const openOrders = mangoStore((s) => s.mangoAccount.openOrders)
+
+  useEffect(() => {
+    setActiveTab(view)
+  }, [view])
 
   const tabsWithCount: [AccountPageTab, number][] = useMemo(() => {
     const unsettledTradeCount =
@@ -53,17 +60,23 @@ const AccountTabs = () => {
     openOrders,
   ])
 
+  const handleTabChange = (tab: AccountPageTab) => {
+    set((state) => {
+      state.accountPageTab = tab
+    })
+    setActiveTab(tab)
+    if (query?.view) {
+      router.replace(pathname, undefined, { shallow: true })
+    }
+  }
+
   return (
     <>
       <div className="hide-scroll flex items-center justify-between overflow-x-auto border-b border-th-bkg-3">
         <div className="w-full md:w-auto" id="account-tabs">
           <TabButtons
             activeValue={activeTab}
-            onChange={(v: AccountPageTab) =>
-              set((state) => {
-                state.accountPageTab = v
-              })
-            }
+            onChange={(v: AccountPageTab) => handleTabChange(v)}
             values={tabsWithCount}
             showBorders
             fillWidth={isMobile || isTablet}

@@ -78,8 +78,12 @@ export const getTokenInMax = (
   const inputReduceOnly = inputBank.areBorrowsReduceOnly()
   const outputReduceOnly = outputBank.areDepositsReduceOnly()
 
+  const maxSwapFeeRate = Math.max(
+    inputBank.flashLoanSwapFeeRate,
+    outputBank.flashLoanSwapFeeRate,
+  )
   const inputTokenBalance = new Decimal(
-    mangoAccount.getTokenBalanceUi(inputBank),
+    mangoAccount.getTokenBalanceUi(inputBank) / (1 + maxSwapFeeRate),
   )
 
   const outputTokenBalance = new Decimal(

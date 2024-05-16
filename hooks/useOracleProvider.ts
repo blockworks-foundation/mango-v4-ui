@@ -41,7 +41,7 @@ export const getOracleProvider = (
     case OracleProvider.Switchboard:
       return [
         'Switchboard',
-        `https://app.switchboard.xyz/solana/mainnet-beta/feed/${marketOrBase.oracle.toString()}`,
+        `https://app.switchboard.xyz/solana/mainnet/feed/${marketOrBase.oracle.toString()}`,
       ]
     case OracleProvider.Stub:
       return ['Stub', '']

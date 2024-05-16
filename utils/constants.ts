@@ -1,4 +1,4 @@
-import { PublicKey } from '@metaplex-foundation/js'
+import { PublicKey } from '@solana/web3.js'
 
 export const LAST_ACCOUNT_KEY = 'mangoAccount-0.4'
 
@@ -90,6 +90,8 @@ export const FILTER_HISTORY_FOR_MARKET_KEY = 'filterHistoryForMarket-0.1'
 
 export const SHOW_ANNOUNCEMENTS_KEY = 'showAnnouncements-0.1'
 
+export const TOKEN_WATCHLIST_KEY = 'watchlist-0.1'
+
 // Unused
 export const PROFILE_CATEGORIES = [
   'borrower',
@@ -145,12 +147,14 @@ export const AUCTION_HOUSE_ID = new PublicKey(
 export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   all: true,
   blze: true,
+  bome: true,
   bonk: true,
   btc: true,
   chai: true,
   corn: true,
   crown: true,
   dai: true,
+  drift: true,
   dual: true,
   elon: true,
   eth: true,
@@ -158,40 +162,52 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   'eth (portal)': true,
   eurc: true,
   gecko: true,
+  gme: true,
   gofx: true,
   guac: true,
   hnt: true,
+  inf: true,
   jitosol: true,
   jlp: true,
+  jsol: true,
   jto: true,
+  jup: true,
   kin: true,
+  kmno: true,
   ldo: true,
+  mew: true,
   mnde: true,
   mngo: true,
   moutai: true,
-  jup: true,
+  meta: true,
   msol: true,
   neon: true,
   nos: true,
   orca: true,
+  popcat: true,
+  pups: true,
   pyth: true,
   ray: true,
   render: true,
   rlb: true,
   samo: true,
   slcl: true,
+  slerf: true,
   sol: true,
   step: true,
   stsol: true,
   tbtc: true,
+  tnsr: true,
   usdc: true,
   usdh: true,
   usdt: true,
+  w: true,
   wbtcpo: true,
   'wbtc (portal)': true,
   wen: true,
   $wif: true,
   wif: true,
+  zeus: true,
 }
 
 export const DEFAULT_FAVORITE_MKTS = ['SOL-PERP', 'ETH-PERP', 'BTC-PERP']
@@ -222,3 +238,5 @@ export const MANGO_MAINNET_GROUP = new PublicKey(
 )
 
 export const MAX_PERP_SLIPPAGE = 0.025
+
+export const COLLATERAL_FEE_KEY = 'collateral_fee_modal_v1'

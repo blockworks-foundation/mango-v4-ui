@@ -36,8 +36,6 @@ import {
   MidPriceImpact,
   getPresetWithAdjustedDepositLimit,
   getPresetWithAdjustedNetBorrows,
-  getPythPresets,
-  getSwitchBoardPresets,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 import Select from '@components/forms/Select'
 import Loading from '@components/shared/Loading'
@@ -70,10 +68,7 @@ const DashboardSuggestedValues = ({
   const proposals = GovernanceStore((s) => s.proposals)
   const [oracle, setOracle] = useState('')
   const [forcePythOracle, setForcePythOracle] = useState(false)
-  const PRESETS =
-    bank?.oracleProvider === OracleProvider.Pyth || forcePythOracle
-      ? getPythPresets(LISTING_PRESETS)
-      : getSwitchBoardPresets(LISTING_PRESETS)
+  const PRESETS = LISTING_PRESETS
 
   const [proposedTier, setProposedTier] =
     useState<LISTING_PRESETS_KEY>(suggestedTierKey)
@@ -208,6 +203,11 @@ const DashboardSuggestedValues = ({
             : null,
           getNullOrVal(fieldsToChange.zeroUtilRate),
           getNullOrVal(fieldsToChange.platformLiquidationFee),
+          fieldsToChange.disableAssetLiquidation === undefined
+            ? null
+            : fieldsToChange.disableAssetLiquidation,
+          getNullOrVal(fieldsToChange.collateralFeePerDay),
+          null,
         )
         .accounts({
           group: group!.publicKey,
@@ -328,11 +328,7 @@ const DashboardSuggestedValues = ({
   )
 
   return (
-    <Modal
-      panelClassNames={' !max-w-[800px]'}
-      isOpen={isOpen}
-      onClose={onClose}
-    >
+    <Modal panelClassNames="!max-w-[800px]" isOpen={isOpen} onClose={onClose}>
       <h3 className="mb-6">
         <span>
           {bank.name} - Suggested tier: {PRESETS[suggestedTierKey].preset_name}{' '}
@@ -363,7 +359,7 @@ const DashboardSuggestedValues = ({
           ))}
         </Select>
       </h3>
-      <div className="flex max-h-[600px] w-full flex-col overflow-auto">
+      <div className="flex w-full flex-col">
         <div className="p-4">
           <div className="mb-2">
             <Label text="Oracle pk (Leave empty if no change)" />

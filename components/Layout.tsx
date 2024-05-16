@@ -42,6 +42,8 @@ import useUnownedAccount from 'hooks/useUnownedAccount'
 import NewListingBanner from './NewListingBanner'
 import useIpAddress from 'hooks/useIpAddress'
 import RestrictedCountryModal from './modals/RestrictedCountryModal'
+import useCollateralFeePositions from 'hooks/useCollateralFeePositions'
+import CollateralFeeWarningModal from './modals/CollateralFeeWarningModal'
 
 export const sideBarAnimationDuration = 300
 const termsLastUpdated = 1679441610978
@@ -49,6 +51,7 @@ const termsLastUpdated = 1679441610978
 const Layout = ({ children }: { children: ReactNode }) => {
   const themeData = mangoStore((s) => s.themeData)
   const { theme } = useTheme()
+  const { showCollateralFeeWarning } = useCollateralFeePositions()
   const [isCollapsed, setIsCollapsed] = useLocalStorageState(
     SIDEBAR_COLLAPSE_KEY,
     false,
@@ -148,20 +151,14 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
         <div className="fixed z-20 hidden h-screen md:block">
           <button
-            className="absolute right-0 top-1/2 z-20 hidden h-8 w-3 -translate-y-1/2 rounded-none rounded-l bg-th-bkg-3 hover:bg-th-bkg-4 focus:outline-none focus-visible:bg-th-bkg-4 lg:flex lg:items-center lg:justify-center"
+            className="absolute bottom-20 right-0 z-20 hidden h-8 w-3 rounded-none rounded-l bg-th-bkg-3 hover:bg-th-bkg-4 focus:outline-none focus-visible:bg-th-bkg-4 lg:flex lg:items-center lg:justify-center"
             onClick={handleToggleSidebar}
           >
             <ChevronRightIcon
               className={`h-4 w-4 shrink-0 ${!isCollapsed ? 'rotate-180' : ''}`}
             />
           </button>
-          <div
-            className={`hide-scroll h-full ${
-              !isCollapsed ? 'overflow-y-auto' : ''
-            }`}
-          >
-            <SideNav collapsed={isCollapsed} />
-          </div>
+          <SideNav collapsed={isCollapsed} />
         </div>
         <div
           className={`w-full transition-all duration-${sideBarAnimationDuration} ease-in-out ${
@@ -193,6 +190,9 @@ const Layout = ({ children }: { children: ReactNode }) => {
             onClose={() => setHasSeenSlotsWarning(WARNING_LEVEL.FULL)}
             warningLevel={WARNING_LEVEL.FULL}
           />
+        ) : null}
+        {showCollateralFeeWarning ? (
+          <CollateralFeeWarningModal isOpen={showCollateralFeeWarning} />
         ) : null}
       </div>
     </main>

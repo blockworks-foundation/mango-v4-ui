@@ -3,7 +3,7 @@ import DepositWithdrawModal from '@components/modals/DepositWithdrawModal'
 import Button, { LinkButton } from '@components/shared/Button'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import Modal from '@components/shared/Modal'
-import Tooltip from '@components/shared/Tooltip'
+import TableRatesDisplay from '@components/shared/TableRatesDisplay'
 import UnsettledTrades from '@components/trade/UnsettledTrades'
 import { ArrowDownTrayIcon, ArrowUpTrayIcon } from '@heroicons/react/20/solid'
 import mangoStore from '@store/mangoStore'
@@ -148,18 +148,11 @@ const ActionPanel = ({ bank }: { bank: Bank }) => {
           </div>
           <div className="flex justify-between border-t border-th-bkg-4 py-3">
             <p>{t('rates')}</p>
-            <div className="flex justify-end space-x-1.5">
-              <Tooltip content={t('deposit-rate')}>
-                <p className="cursor-help font-mono text-th-up">
-                  <FormatNumericValue value={depositRate} decimals={2} />%
-                </p>
-              </Tooltip>
-              <span className="text-th-fgd-4">|</span>
-              <Tooltip content={t('borrow-rate')}>
-                <p className="cursor-help font-mono text-th-down">
-                  <FormatNumericValue value={borrowRate} decimals={2} />%
-                </p>
-              </Tooltip>
+            <div className="flex justify-end space-x-1.5 font-mono">
+              <TableRatesDisplay
+                borrowRate={borrowRate}
+                depositRate={depositRate}
+              />
             </div>
           </div>
         </div>

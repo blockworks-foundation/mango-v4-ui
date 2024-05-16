@@ -15,13 +15,25 @@ import {
   ArchiveBoxArrowDownIcon,
   ExclamationTriangleIcon,
   DocumentTextIcon,
+  Squares2X2Icon,
+  BookOpenIcon,
+  QueueListIcon,
+  LockClosedIcon,
+  ChartPieIcon,
 } from '@heroicons/react/20/solid'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
-import React, { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
+import React, {
+  Fragment,
+  ReactNode,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { Disclosure, Popover, Transition } from '@headlessui/react'
 import MangoAccountSummary from './account/MangoAccountSummary'
-import Tooltip from './shared/Tooltip'
 import { HealthType } from '@blockworks-foundation/mango-v4'
 import { useWallet } from '@solana/wallet-adapter-react'
 import mangoStore from '@store/mangoStore'
@@ -48,6 +60,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
   const { connected, publicKey } = useWallet()
   const { theme } = useTheme()
   const group = mangoStore.getState().group
+  const activeAccountTab = mangoStore((s) => s.accountPageTab)
   const themeData = mangoStore((s) => s.themeData)
   const nfts = mangoStore((s) => s.wallet.nfts.data)
   const { mangoAccount } = useMangoAccount()
@@ -144,7 +157,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
     <>
       <div
         className={`transition-all duration-${sideBarAnimationDuration} ${
-          collapsed ? 'w-[64px]' : 'w-[200px]'
+          collapsed ? 'w-[64px]' : 'hide-scroll w-[200px] overflow-y-auto'
         } border-r border-th-bkg-3 bg-th-bkg-1 bg-contain`}
         // style={
         //   collapsed
@@ -194,13 +207,92 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               </div>
             </Link>
             <div className="flex flex-col items-start">
-              <MenuItem
+              {/* <MenuItem
                 active={pathname === '/'}
                 collapsed={collapsed}
                 icon={<CurrencyDollarIcon className="h-5 w-5" />}
                 title={t('account')}
                 pagePath="/"
-              />
+              /> */}
+              <ExpandableMenuItem
+                active={pathname === '/'}
+                collapsed={collapsed}
+                icon={<ChartPieIcon className="h-5 w-5" />}
+                title={t('account')}
+              >
+                <MenuItem
+                  active={
+                    pathname === '/' &&
+                    ((!!query?.view && query.view.includes('overview')) ||
+                      (activeAccountTab === 'overview' && !query?.view))
+                  }
+                  collapsed={false}
+                  icon={<Squares2X2Icon className="h-4 w-4" />}
+                  title={t('overview')}
+                  pagePath="/?view=overview"
+                  hideIconBg
+                />
+                <MenuItem
+                  active={
+                    pathname === '/' &&
+                    ((!!query?.view && query.view.includes('balances')) ||
+                      (activeAccountTab === 'balances' && !query?.view))
+                  }
+                  collapsed={false}
+                  icon={<CurrencyDollarIcon className="h-4 w-4" />}
+                  title={t('balances')}
+                  pagePath="/?view=balances"
+                  hideIconBg
+                />
+                <MenuItem
+                  active={
+                    pathname === '/' &&
+                    ((!!query?.view && query.view.includes('positions')) ||
+                      (activeAccountTab === 'trade:positions' && !query?.view))
+                  }
+                  collapsed={false}
+                  icon={<PerpIcon className="h-4 w-4" />}
+                  title={t('trade:positions')}
+                  pagePath="/?view=positions"
+                  hideIconBg
+                />
+                <MenuItem
+                  active={
+                    pathname === '/' &&
+                    ((!!query?.view && query.view.includes('orders')) ||
+                      (activeAccountTab === 'trade:orders' && !query?.view))
+                  }
+                  collapsed={false}
+                  icon={<QueueListIcon className="h-4 w-4" />}
+                  title={t('trade:orders')}
+                  pagePath="/?view=orders"
+                  hideIconBg
+                />
+                <MenuItem
+                  active={
+                    pathname === '/' &&
+                    ((!!query?.view && query.view.includes('unsettled')) ||
+                      (activeAccountTab === 'trade:unsettled' && !query?.view))
+                  }
+                  collapsed={false}
+                  icon={<LockClosedIcon className="h-4 w-4" />}
+                  title={t('trade:unsettled')}
+                  pagePath="/?view=unsettled"
+                  hideIconBg
+                />
+                <MenuItem
+                  active={
+                    pathname === '/' &&
+                    ((!!query?.view && query.view.includes('history')) ||
+                      (activeAccountTab === 'history' && !query?.view))
+                  }
+                  collapsed={false}
+                  icon={<BookOpenIcon className="h-4 w-4" />}
+                  title={t('history')}
+                  pagePath="/?view=history"
+                  hideIconBg
+                />
+              </ExpandableMenuItem>
               <MenuItem
                 active={pathname === '/swap'}
                 collapsed={collapsed}
@@ -221,11 +313,10 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                       !query?.name)
                   }
                   collapsed={false}
-                  icon={<PerpIcon className="h-5 w-5" />}
+                  icon={<PerpIcon className="h-4 w-4" />}
                   title={t('perp')}
                   pagePath="/trade?name=SOL-PERP"
                   hideIconBg
-                  showTooltip={false}
                 />
                 <MenuItem
                   active={
@@ -234,11 +325,10 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                     !query.name.includes('PERP')
                   }
                   collapsed={false}
-                  icon={<CoinIcon className="h-5 w-5" />}
+                  icon={<CoinIcon className="h-4 w-4" />}
                   title={t('spot')}
                   pagePath="/trade?name=SOL/USDC"
                   hideIconBg
-                  showTooltip={false}
                 />
               </ExpandableMenuItem>
               <MenuItem
@@ -279,47 +369,42 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 <MenuItem
                   active={pathname === '/search'}
                   collapsed={false}
-                  icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+                  icon={<MagnifyingGlassIcon className="h-4 w-4" />}
                   title={t('search:search-accounts')}
                   pagePath="/search"
                   hideIconBg
-                  showTooltip={false}
                 />
                 <MenuItem
                   active={pathname === '/governance/list'}
                   collapsed={false}
-                  icon={<PlusCircleIcon className="h-5 w-5" />}
+                  icon={<PlusCircleIcon className="h-4 w-4" />}
                   title={t('common:list-market-token')}
                   pagePath="/governance/list"
                   hideIconBg
-                  showTooltip={false}
                 />
                 <MenuItem
                   active={pathname === '/governance/vote'}
                   collapsed={false}
-                  icon={<ArchiveBoxArrowDownIcon className="h-5 w-5" />}
+                  icon={<ArchiveBoxArrowDownIcon className="h-4 w-4" />}
                   title={t('common:vote')}
                   pagePath="/governance/vote"
                   hideIconBg
-                  showTooltip={false}
                 />
                 <MenuItem
                   collapsed={false}
-                  icon={<DocumentTextIcon className="h-5 w-5" />}
+                  icon={<DocumentTextIcon className="h-4 w-4" />}
                   title={t('documentation')}
                   pagePath="https://docs.mango.markets"
                   hideIconBg
                   isExternal
-                  showTooltip={false}
                 />
                 <MenuItem
                   collapsed={false}
-                  icon={<BuildingLibraryIcon className="h-5 w-5" />}
+                  icon={<BuildingLibraryIcon className="h-4 w-4" />}
                   title={t('governance')}
                   pagePath="https://dao.mango.markets"
                   hideIconBg
                   isExternal
-                  showTooltip={false}
                 />
                 {/* <MenuItem
                 collapsed={false}
@@ -328,25 +413,22 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 pagePath="https://forms.gle/JgV4w7SJ2kPH89mq7"
                 hideIconBg
                 isExternal
-                showTooltip={false}
               /> */}
                 <MenuItem
                   collapsed={false}
-                  icon={<NewspaperIcon className="h-5 w-5" />}
+                  icon={<NewspaperIcon className="h-4 w-4" />}
                   title={t('terms-of-use')}
                   pagePath="https://docs.mango.markets/legal"
                   hideIconBg
                   isExternal
-                  showTooltip={false}
                 />
                 <MenuItem
                   collapsed={false}
-                  icon={<ExclamationTriangleIcon className="h-5 w-5" />}
+                  icon={<ExclamationTriangleIcon className="h-4 w-4" />}
                   title={t('risks')}
                   pagePath="https://docs.mango.markets/mango-markets/risks"
                   hideIconBg
                   isExternal
-                  showTooltip={false}
                 />
               </ExpandableMenuItem>
             </div>
@@ -365,7 +447,6 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
                 />
               }
               panelTitle={mangoAccount?.name ? mangoAccount.name : t('account')}
-              showTooltip={false}
               title={
                 <div className="w-24 text-left">
                   <p className="mb-0.5 whitespace-nowrap text-xs">
@@ -405,7 +486,6 @@ const MenuItem = ({
   pagePath,
   hideIconBg,
   isExternal,
-  showTooltip = true,
 }: {
   active?: boolean
   collapsed: boolean
@@ -415,61 +495,59 @@ const MenuItem = ({
   pagePath: string
   hideIconBg?: boolean
   isExternal?: boolean
-  showTooltip?: boolean
 }) => {
   const { theme } = useTheme()
   return (
-    <Tooltip content={title} placement="right" show={collapsed && showTooltip}>
-      <Link
-        href={pagePath}
-        onClick={onClick ? onClick : undefined}
-        shallow={true}
-        className={`flex cursor-pointer pl-4 focus:outline-none focus-visible:text-th-active md:hover:text-th-active ${
-          active
-            ? 'text-th-active'
-            : theme === 'Light'
-            ? 'text-th-fgd-3'
-            : 'text-th-fgd-2'
-        } ${hideIconBg ? 'py-1' : 'py-1.5 xl:py-2'}`}
-        target={isExternal ? '_blank' : ''}
-        rel={isExternal ? 'noopener noreferrer' : ''}
-      >
-        <div className="flex w-full items-center">
-          <div className="flex items-center">
-            {icon ? (
-              <div
-                className={
-                  hideIconBg
-                    ? ''
-                    : `flex h-8 w-8 items-center justify-center rounded-full ${
-                        theme === 'Light' ? 'bg-th-bkg-2' : 'bg-th-bkg-3'
-                      }`
-                }
-              >
-                {icon}
-              </div>
-            ) : null}
-            <Transition
-              show={!collapsed}
-              as={Fragment}
-              enter={`transition-all ease-in duration-${sideBarAnimationDuration}`}
-              enterFrom="opacity-50"
-              enterTo="opacity-100"
-              leave={`transition-all ease-out duration-${sideBarAnimationDuration}`}
-              leaveFrom="opacity-100"
-              leaveTo="opacity-0"
+    <Link
+      href={pagePath}
+      onClick={onClick ? onClick : undefined}
+      shallow={true}
+      className={`flex cursor-pointer pl-4 focus:outline-none focus-visible:text-th-active md:hover:text-th-active ${
+        active
+          ? 'text-th-active'
+          : theme === 'Light'
+          ? 'text-th-fgd-3'
+          : 'text-th-fgd-2'
+      } ${hideIconBg ? 'py-1' : 'py-1.5 xl:py-2'}`}
+      target={isExternal ? '_blank' : ''}
+      rel={isExternal ? 'noopener noreferrer' : ''}
+      title={title}
+    >
+      <div className="flex w-full items-center">
+        <div className="flex items-center">
+          {icon ? (
+            <div
+              className={
+                hideIconBg
+                  ? ''
+                  : `flex h-8 w-8 items-center justify-center rounded-full ${
+                      theme === 'Light' ? 'bg-th-bkg-2' : 'bg-th-bkg-3'
+                    }`
+              }
             >
-              <span className="ml-3 whitespace-nowrap 2xl:text-base">
-                {title}
-              </span>
-            </Transition>
-          </div>
-          {isExternal ? (
-            <ArrowTopRightOnSquareIcon className="ml-2 h-3 w-3" />
+              {icon}
+            </div>
           ) : null}
+          <Transition
+            show={!collapsed}
+            as={Fragment}
+            enter={`transition-all ease-in duration-${sideBarAnimationDuration}`}
+            enterFrom="opacity-50"
+            enterTo="opacity-100"
+            leave={`transition-all ease-out duration-${sideBarAnimationDuration}`}
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <span className="ml-3 whitespace-nowrap 2xl:text-base">
+              {title}
+            </span>
+          </Transition>
         </div>
-      </Link>
-    </Tooltip>
+        {isExternal ? (
+          <ArrowTopRightOnSquareIcon className="ml-2 h-3 w-3" />
+        ) : null}
+      </div>
+    </Link>
   )
 }
 
@@ -481,7 +559,6 @@ export const ExpandableMenuItem = ({
   hideIconBg,
   icon,
   panelTitle,
-  showTooltip = true,
   title,
 }: {
   active?: boolean
@@ -491,75 +568,135 @@ export const ExpandableMenuItem = ({
   hideIconBg?: boolean
   icon: ReactNode
   panelTitle?: string
-  showTooltip?: boolean
   title: string | ReactNode
 }) => {
   const { theme } = useTheme()
   const themeData = mangoStore((s) => s.themeData)
+
+  const [isOverButton, setIsOverButton] = useState(false)
+  const [isOverList, setIsOverList] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
+  const [isTouchInput, setIsTouchInput] = useState(false)
+  const [hasClicked, setHasClicked] = useState(false)
+  const button = useRef<HTMLButtonElement>(null)
+
+  useLayoutEffect(() => {
+    if (
+      isOpen &&
+      !isOverButton &&
+      !isOverList &&
+      !isTouchInput &&
+      button?.current
+    ) {
+      button.current.click()
+      setIsOpen(false)
+    } else if (
+      !isOpen &&
+      (isOverButton || isOverList) &&
+      !isTouchInput &&
+      button?.current
+    ) {
+      button.current.click()
+      setIsOpen(true)
+    }
+  }, [isOverButton, isOverList])
+
+  useEffect(() => {
+    setIsTouchInput(false)
+    setHasClicked(false)
+  }, [hasClicked])
+
+  // hack for weird bug where isOverList is true when it shouldn't be (only in account nav => click link in menu then overview tab and quickly hover account main menu icon)
+  useEffect(() => {
+    if (isOverButton && isOverList) {
+      setIsOverList(false)
+    }
+  }, [isOverButton, isOverList])
 
   return collapsed ? (
     <Popover className={`relative z-30 ${alignBottom ? '' : 'py-2 pl-4'}`}>
-      {({ open, close }) => (
-        <>
-          <Tooltip
-            content={title}
-            placement="right"
-            show={showTooltip && !open}
-          >
-            <Popover.Button
-              className={`${
-                active
-                  ? 'text-th-active'
-                  : theme === 'Light'
-                  ? 'text-th-fgd-3'
-                  : 'text-th-fgd-2'
-              } ${
-                alignBottom
-                  ? 'focus-visible:bg-th-bkg-3'
-                  : 'focus-visible:text-th-active'
-              } md:hover:text-th-active`}
-              onClick={() => setIsOpen(!isOpen)}
-            >
-              <div
-                className={` ${
-                  hideIconBg
-                    ? ''
-                    : `flex h-8 w-8 items-center justify-center rounded-full ${
-                        theme === 'Light' ? 'bg-th-bkg-2' : 'bg-th-bkg-3'
-                      }`
-                } ${
-                  alignBottom
-                    ? 'flex h-[64px] w-[64px] items-center justify-center hover:bg-th-bkg-2'
-                    : ''
-                }`}
-              >
-                {icon}
-              </div>
-            </Popover.Button>
-          </Tooltip>
-          <Popover.Panel
-            className={`absolute left-[64px] z-20 w-56 rounded-md rounded-l-none bg-th-bkg-1 focus:outline-none ${
-              alignBottom
-                ? 'bottom-0 rounded-b-none border-b-0 p-0'
-                : 'top-1/2 -translate-y-1/2'
+      <Popover.Button
+        className={`${
+          active
+            ? 'text-th-active'
+            : theme === 'Light'
+            ? 'text-th-fgd-3'
+            : 'text-th-fgd-2'
+        } ${
+          alignBottom
+            ? 'focus-visible:bg-th-bkg-3'
+            : 'w-[48px] focus-visible:text-th-active'
+        } md:hover:text-th-active`}
+        ref={button}
+        onTouchStart={() => {
+          setIsTouchInput(true)
+        }}
+        onMouseEnter={() => {
+          setIsOverButton(true)
+        }}
+        onMouseLeave={() => {
+          setIsOverButton(false)
+        }}
+        onClick={() => {
+          setHasClicked(true)
+          setIsOpen(!isOpen)
+        }}
+        onKeyDown={() => {
+          setIsOpen(!isOpen)
+        }}
+        title={`${title}`}
+      >
+        <div
+          className={` ${
+            hideIconBg
+              ? ''
+              : `flex h-8 w-8 items-center justify-center rounded-full ${
+                  theme === 'Light' ? 'bg-th-bkg-2' : 'bg-th-bkg-3'
+                }`
+          } ${
+            alignBottom
+              ? 'flex h-[64px] w-[64px] items-center justify-center hover:bg-th-bkg-2'
+              : ''
+          }`}
+        >
+          {icon}
+        </div>
+      </Popover.Button>
+      <Transition
+        show={isOpen}
+        as={Fragment}
+        enter="transition ease-out duration-200"
+        enterFrom="opacity-0"
+        enterTo="opacity-100"
+        leave="transition ease-in duration-200"
+        leaveFrom="opacity-100"
+        leaveTo="opacity-0"
+      >
+        <Popover.Panel
+          className={`absolute left-[64px] z-20 w-56 rounded-md rounded-l-none bg-th-bkg-1 focus:outline-none ${
+            alignBottom ? 'bottom-0 rounded-b-none border-b-0 p-0' : 'top-0'
+          }`}
+          onMouseEnter={() => {
+            setIsOverList(true)
+          }}
+          onMouseLeave={() => {
+            setIsOverList(false)
+          }}
+        >
+          <div
+            className={`rounded-md rounded-l-none bg-th-bkg-2 ${
+              alignBottom ? 'pb-2 pt-4' : 'py-2'
             }`}
           >
-            <div
-              className={`rounded-md rounded-l-none bg-th-bkg-2 ${
-                alignBottom ? 'pb-2 pt-4' : 'py-2'
-              }`}
-            >
-              <div className="flex items-center justify-between pl-4 pr-2">
-                {panelTitle ? (
-                  <h3 className="text-sm font-bold">{panelTitle}</h3>
-                ) : null}
-              </div>
-              <div onClick={() => close()}>{children}</div>
+            <div className="flex items-center justify-between pl-4 pr-2">
+              {panelTitle ? (
+                <h3 className="text-sm font-bold">{panelTitle}</h3>
+              ) : null}
             </div>
-          </Popover.Panel>
-        </>
-      )}
+            <div onClick={() => setIsOpen(false)}>{children}</div>
+          </div>
+        </Popover.Panel>
+      </Transition>
     </Popover>
   ) : (
     <Disclosure>

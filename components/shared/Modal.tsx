@@ -33,7 +33,7 @@ function Modal({
   }, [isOpen])
 
   const handleClose = () => {
-    if (disableOutsideClose) return
+    if (disableOutsideClose && !fullScreen) return
     onClose()
   }
 
@@ -50,7 +50,7 @@ function Modal({
         aria-hidden="true"
       />
       <div
-        className={`fixed inset-0 flex items-center sm:justify-center ${
+        className={`fixed inset-0 flex  items-center sm:justify-center ${
           fullScreen ? '' : 'sm:px-4'
         }`}
       >
@@ -62,7 +62,7 @@ function Modal({
           } h-full w-full bg-th-bkg-1 font-body ${
             fullScreen
               ? ''
-              : 'p-4 sm:h-auto sm:max-w-md sm:rounded-lg sm:border sm:border-th-bkg-3 sm:p-6'
+              : 'thin-scroll max-h-[calc(100vh-48px)] overflow-y-auto p-4 sm:h-auto sm:max-w-md sm:rounded-lg sm:border sm:border-th-bkg-3 sm:p-6'
           } relative ${panelClassNames}`}
         >
           <div>{children}</div>
