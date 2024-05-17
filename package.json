@@ -23,9 +23,9 @@
   "dependencies": {
     "@blockworks-foundation/mango-feeds": "0.1.7",
     "@blockworks-foundation/mango-mints-redemption": "^0.0.10",
-    "@blockworks-foundation/mango-v4": "0.24.0",
+    "@blockworks-foundation/mango-v4": "0.25.0",
     "@blockworks-foundation/mango-v4-settings": "0.14.22",
-    "@blockworks-foundation/mangolana": "0.0.16",
+    "@blockworks-foundation/mangolana": "0.0.17",
     "@headlessui/react": "1.6.6",
     "@heroicons/react": "2.0.18",
     "@metaplex-foundation/js": "0.19.4",
@@ -136,7 +136,9 @@
     "@solana/wallet-adapter-solflare": "0.6.27",
     "crypto-js": ">=4.1.1",
     "@sentry/nextjs": ">=7.77.0",
-    "protobufjs": ">=7.2.5"
+    "protobufjs": ">=7.2.5",
+    "@blockworks-foundation/mango-v4-settings": "0.14.22",
+    "@blockworks-foundation/mangolana": "0.0.16"
   },
   "lavamoat": {
     "allowScripts": {
@@ -149,8 +151,8 @@
       "@solana/wallet-adapter-wallets>@solana/wallet-adapter-trezor>@trezor/connect-web>@trezor/connect>@trezor/utxo-lib>tiny-secp256k1": true,
       "@solana/wallet-adapter-wallets>@solana/wallet-adapter-trezor>@trezor/connect-web>@trezor/connect>@trezor/utxo-lib>blake-hash": true,
       "@solana/wallet-adapter-wallets>@solana/wallet-adapter-trezor>@trezor/connect-web>@trezor/connect>@trezor/transport>usb": true,
-      "@metaplex-foundation/js>@bundlr-network/client>arbundles>secp256k1": true,
-      "@metaplex-foundation/js>@bundlr-network/client>arbundles>keccak": true,
+      "@metaplex-foundation/js>@bundlr-network/client>arbundles>secp256k1": false,
+      "@metaplex-foundation/js>@bundlr-network/client>arbundles>keccak": false,
       "@switchboard-xyz/solana.js>@switchboard-xyz/common>protobufjs": true,
       "@solana/web3.js>bigint-buffer": false,
       "@solana/web3.js>rpc-websockets>bufferutil": true,

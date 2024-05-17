@@ -53,7 +53,7 @@ const NewListingBanner = () => {
         <span className="mx-1.5">
           {!isPreLaunch
             ? t('new-token-live', { tokenName: latestListing.name })
-            : `Pre-launch W is live.`}
+            : `Pre-launch DRIFT is live.`}
         </span>
         <div>
           {newMarketName ? (
