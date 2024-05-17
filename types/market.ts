@@ -10,11 +10,13 @@ import Mango4, {
 } from '@blockworks-foundation/mango-v4'
 import { AnchorProvider } from '@coral-xyz/anchor'
 import Openbook2, {
+  Market as Openbook2Market,
+  BookSide as Openbook2BookSide,
   MarketAccount,
   OpenBookV2Client,
   SideUtils,
 } from '@openbook-dex/openbook-v2'
-import Serum3 from '@project-serum/serum'
+import Serum3, { Orderbook as Serum3Orderbook } from '@project-serum/serum'
 import { Order as Serum3Order } from '@project-serum/serum/lib/market'
 import { Keypair, PublicKey } from '@solana/web3.js'
 import { OpenbookOrder } from '@store/mangoStore'
@@ -72,7 +74,7 @@ export function wrapMarketInAdapter(
     const fullMarket = group.getOpenbookV2ExternalMarket(
       market.openbookMarketExternal,
     )
-    const wrappedMarket = new Openbook2.Market(
+    const wrappedMarket = new Openbook2Market(
       openbookClient,
       market.publicKey,
       fullMarket,
@@ -186,13 +188,13 @@ export class Mango4PerpMarketAdaper implements MarketAdapter {
 // BookSideAdapters
 
 export class Serum3BookSideAdaper implements BookSideAdapter {
-  bookSide: Serum3.Orderbook
+  bookSide: Serum3Orderbook
 
   constructor(
     public market: Serum3MarketAdapter,
     data: Buffer,
   ) {
-    this.bookSide = Serum3.Orderbook.decode(market.market, data)
+    this.bookSide = Serum3Orderbook.decode(market.market, data)
   }
 
   getL2(depth: number): [number, number][] {
@@ -219,9 +221,9 @@ export class Openbook2BookSideAdapter implements BookSideAdapter {
     side: 'bid' | 'ask',
     data: Buffer,
   ) {
-    const bookAccount = Openbook2.BookSide.decodeAccountfromBuffer(data)
+    const bookAccount = Openbook2BookSide.decodeAccountfromBuffer(data)
     const sideTyped = side === 'bid' ? SideUtils.Bid : SideUtils.Ask
-    this.bookSide = new Openbook2.BookSide(
+    this.bookSide = new Openbook2BookSide(
       market.market,
       PublicKey.default,
       bookAccount,
