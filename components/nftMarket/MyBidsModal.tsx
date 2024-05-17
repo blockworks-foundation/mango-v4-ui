@@ -17,6 +17,7 @@ import { useState } from 'react'
 import Loading from '@components/shared/Loading'
 import EmptyState from './EmptyState'
 import { notify } from 'utils/notifications'
+import { BN } from '@coral-xyz/anchor'
 
 const MyBidsModal = ({ isOpen, onClose }: ModalProps) => {
   const { publicKey } = useWallet()
@@ -81,8 +82,11 @@ const MyBidsModal = ({ isOpen, onClose }: ModalProps) => {
                     <p className="text-xs">
                       {x.asset?.json?.collection?.family || 'Unknown'}
                     </p>
+                    {toUiDecimals(
+                      new BN(x.price.basisPoints.toString()),
+                      MANGO_MINT_DECIMALS,
+                    )}{' '}
                     <span className="font-display text-th-fgd-2">
-                      {toUiDecimals(x.price.basisPoints, MANGO_MINT_DECIMALS)}{' '}
                       <span className="font-body">MNGO</span>
                     </span>
                   </div>

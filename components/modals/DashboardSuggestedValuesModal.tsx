@@ -16,7 +16,7 @@ import {
   toUiDecimals,
 } from '@blockworks-foundation/mango-v4'
 import { AccountMeta, Transaction } from '@solana/web3.js'
-import { BN } from '@project-serum/anchor'
+import { BN } from '@coral-xyz/anchor'
 import {
   MANGO_DAO_WALLET,
   MANGO_DAO_WALLET_GOVERNANCE,

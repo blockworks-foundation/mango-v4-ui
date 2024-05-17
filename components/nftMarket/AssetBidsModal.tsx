@@ -16,6 +16,7 @@ import NftMarketButton from './NftMarketButton'
 import Loading from '@components/shared/Loading'
 import { useState } from 'react'
 import { notify } from 'utils/notifications'
+import { BN } from '@coral-xyz/anchor'
 
 const AssetBidsModal = ({
   isOpen,
@@ -79,7 +80,10 @@ const AssetBidsModal = ({
                     )}
                   </p>
                   <span className="font-display text-th-fgd-2">
-                    {toUiDecimals(x.price.basisPoints, MANGO_MINT_DECIMALS)}{' '}
+                    {toUiDecimals(
+                      new BN(x.price.basisPoints.toString()),
+                      MANGO_MINT_DECIMALS,
+                    )}{' '}
                     MNGO
                   </span>
                 </div>

@@ -22,7 +22,7 @@ import {
 import { Disclosure } from '@headlessui/react'
 import MarketLogos from '@components/trade/MarketLogos'
 import Button from '@components/shared/Button'
-import BN from 'bn.js'
+import { BN } from '@coral-xyz/anchor'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import {
