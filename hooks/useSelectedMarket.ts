@@ -10,7 +10,7 @@ import useJupiterMints from './useJupiterMints'
 import useMangoGroup from './useMangoGroup'
 import { CUSTOM_TOKEN_ICONS } from 'utils/constants'
 import BigNumber from 'bignumber.js'
-import { ExtendedMarketAccount } from 'types/openbook'
+import { ExtendedMarketAccount } from 'types/market'
 
 export default function useSelectedMarket() {
   const { group } = useMangoGroup()

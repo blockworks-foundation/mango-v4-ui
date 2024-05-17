@@ -11,7 +11,7 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
-import { ExtendedMarketAccount } from 'types/openbook'
+import { ExtendedMarketAccount } from 'types/market'
 import { floorToDecimal, getDecimalCount } from 'utils/numbers'
 
 export async function getStaticProps({ locale }: { locale: string }) {

@@ -24,7 +24,7 @@ import { useQuery } from '@tanstack/react-query'
 import { PerpMarket } from '@blockworks-foundation/mango-v4'
 import { EmptyObject, isPerpFillEvent, PerpTradeHistory } from 'types'
 import { Market } from '@project-serum/serum'
-import { ExtendedMarketAccount } from 'types/openbook'
+import { ExtendedMarketAccount } from 'types/market'
 
 const volumeAlertSound = new Howl({
   src: ['/sounds/trade-buy.mp3'],

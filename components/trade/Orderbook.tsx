@@ -39,10 +39,7 @@ import { useViewport } from 'hooks/useViewport'
 import TokenLogo from '@components/shared/TokenLogo'
 import MarketLogos from './MarketLogos'
 import { OrderTypes } from 'utils/tradeForm'
-import {
-  ExtendedMarketAccount,
-  isOpenbookV2ExternalMarket,
-} from 'types/openbook'
+import { ExtendedMarketAccount, isOpenbookV2ExternalMarket } from 'types/market'
 
 const sizeCompacter = Intl.NumberFormat('en', {
   maximumFractionDigits: 6,

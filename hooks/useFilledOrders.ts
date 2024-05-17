@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { fetchFilledOrders } from 'utils/account'
 import useMangoAccount from './useMangoAccount'
 import { useMemo } from 'react'
-import { isOpenbookV2OpenOrder } from 'types/openbook'
+import { isOpenbookV2OpenOrder } from 'types/market'
 
 export default function useFilledOrders() {
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()

@@ -90,6 +90,7 @@ import { OpenOrdersAccount, OpenOrder } from '@openbook-dex/openbook-v2'
 const GROUP = new PublicKey('CKU8J1mgtdcJJhBvXrH6xRx1MmcrRWDv8WQdNxPKW3gk')
 import { collectTxConfirmationData } from 'utils/transactionConfirmationData'
 import { TxCallbackOptions } from '@blockworks-foundation/mango-v4/dist/types/src/client'
+import { MarketAdapter, wrapMarketInAdapter } from 'types/market'
 
 const ENDPOINTS = [
   {
@@ -276,6 +277,7 @@ export type MangoStore = {
   priorityFee: number
   selectedMarket: {
     name: string | undefined
+    adapter: MarketAdapter | undefined
     current: Serum3Market | PerpMarket | OpenbookV2Market | undefined
     fills: (ParsedFillEvent | SerumEvent)[]
     bidsAccount: BookSide | Orderbook | undefined
@@ -460,6 +462,7 @@ const mangoStore = create<MangoStore>()(
       selectedMarket: {
         name: 'BTC-PERP',
         current: undefined,
+        adapter: undefined,
         fills: [],
         bidsAccount: undefined,
         asksAccount: undefined,
@@ -637,6 +640,8 @@ const mangoStore = create<MangoStore>()(
                 serumMarkets[0]
             }
 
+            const adapter = wrapMarketInAdapter(client, group, selectedMarket)
+
             set((state) => {
               state.group = group
               state.groupLoaded = true
@@ -644,6 +649,7 @@ const mangoStore = create<MangoStore>()(
               state.openbookMarkets = openbookMarkets
               state.perpMarkets = perpMarkets
               state.selectedMarket.current = selectedMarket
+              state.selectedMarket.adapter = adapter
               if (!state.swap.inputBank || !state.swap.outputBank) {
                 state.swap.inputBank = inputBank
                 state.swap.outputBank = outputBank

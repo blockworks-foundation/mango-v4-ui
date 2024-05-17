@@ -56,7 +56,7 @@ import PerpSideBadge from './PerpSideBadge'
 import TableMarketName from './TableMarketName'
 import { useSortableData } from 'hooks/useSortableData'
 import { BN } from '@coral-xyz/anchor'
-import { ExtendedMarketAccount, isOpenbookV2OpenOrder } from 'types/openbook'
+import { ExtendedMarketAccount, isOpenbookV2OpenOrder } from 'types/market'
 import BigNumber from 'bignumber.js'
 import NukeIcon from '@components/icons/NukeIcon'
 

@@ -48,7 +48,7 @@ import {
 } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import PlausibleProvider from 'next-plausible'
-import { ExtendedMarketAccount } from 'types/openbook'
+import { ExtendedMarketAccount } from 'types/market'
 
 // init react-query
 const queryClient = new QueryClient()

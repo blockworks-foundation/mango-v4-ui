@@ -16,7 +16,7 @@ import {
   ExtendedMarketAccount,
   isOpenbookV2ExternalMarket,
   isOpenbookV2Market,
-} from 'types/openbook'
+} from 'types/market'
 import { BookSideAccount, OpenBookV2Client } from '@openbook-dex/openbook-v2'
 import { AnchorProvider } from '@coral-xyz/anchor'
 
