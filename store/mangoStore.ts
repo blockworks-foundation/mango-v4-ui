@@ -90,7 +90,11 @@ import { OpenOrdersAccount, OpenOrder } from '@openbook-dex/openbook-v2'
 const GROUP = new PublicKey('CKU8J1mgtdcJJhBvXrH6xRx1MmcrRWDv8WQdNxPKW3gk')
 import { collectTxConfirmationData } from 'utils/transactionConfirmationData'
 import { TxCallbackOptions } from '@blockworks-foundation/mango-v4/dist/types/src/client'
-import { MarketAdapter, wrapMarketInAdapter } from 'types/market'
+import {
+  BookSideAdapter,
+  MarketAdapter,
+  wrapMarketInAdapter,
+} from 'types/market'
 
 const ENDPOINTS = [
   {
@@ -281,7 +285,9 @@ export type MangoStore = {
     current: Serum3Market | PerpMarket | OpenbookV2Market | undefined
     fills: (ParsedFillEvent | SerumEvent)[]
     bidsAccount: BookSide | Orderbook | undefined
+    bids: BookSideAdapter | undefined
     asksAccount: BookSide | Orderbook | undefined
+    asks: BookSideAdapter | undefined
     orderbook: OrderbookL2
     markPrice: number
     lastSeenSlot: {
@@ -466,6 +472,8 @@ const mangoStore = create<MangoStore>()(
         fills: [],
         bidsAccount: undefined,
         asksAccount: undefined,
+        bids: undefined,
+        asks: undefined,
         lastSeenSlot: {
           bids: 0,
           asks: 0,

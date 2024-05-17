@@ -1,4 +1,3 @@
-import { PublicKey } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Market } from '@project-serum/serum'
@@ -26,20 +25,14 @@ import useSelectedMarket from 'hooks/useSelectedMarket'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import { OrderbookFeed } from '@blockworks-foundation/mango-feeds'
 // import { breakpoints } from 'utils/theme'
-import {
-  decodeBook,
-  decodeBookL2,
-  formatOrderbookData,
-  getMarket,
-  updatePerpMarketOnGroup,
-} from 'utils/orderbook'
+import { formatOrderbookData } from 'utils/orderbook'
 import { OrderbookData, OrderbookL2 } from 'types'
 import isEqual from 'lodash/isEqual'
 import { useViewport } from 'hooks/useViewport'
 import TokenLogo from '@components/shared/TokenLogo'
 import MarketLogos from './MarketLogos'
 import { OrderTypes } from 'utils/tradeForm'
-import { ExtendedMarketAccount, isOpenbookV2ExternalMarket } from 'types/market'
+import { ExtendedMarketAccount } from 'types/market'
 
 const sizeCompacter = Intl.NumberFormat('en', {
   maximumFractionDigits: 6,
@@ -50,7 +43,7 @@ const SHOW_EXPONENTIAL_THRESHOLD = 0.00001
 
 const Orderbook = () => {
   const { t } = useTranslation(['common', 'trade'])
-  const { serumOrPerpMarket: market, selectedMarket } = useSelectedMarket()
+  const { serumOrPerpMarket: market, marketAdapter } = useSelectedMarket()
   const connection = mangoStore((s) => s.connection)
 
   const [tickSize, setTickSize] = useState(0)
@@ -69,22 +62,10 @@ const Orderbook = () => {
 
   const [baseBank, quoteBank] = useMemo(() => {
     const { group } = mangoStore.getState()
-    if (!market || !group) return [undefined, undefined]
-    if (market instanceof PerpMarket) {
-      const quote = group.getFirstBankByTokenIndex(market.settleTokenIndex)
-      return [undefined, quote]
-    } else if (isOpenbookV2ExternalMarket(market)) {
-      const base = group.getFirstBankByMint(market.baseMint)
-      const quote = group.getFirstBankByMint(market.quoteMint)
-      return [base, quote]
-    } else {
-      const base = group.getFirstBankByMint((market as Market).baseMintAddress)
-      const quote = group.getFirstBankByMint(
-        (market as Market).quoteMintAddress,
-      )
-      return [base, quote]
-    }
-  }, [market])
+    if (!marketAdapter || !group) return [undefined, undefined]
+    const { base, quote } = marketAdapter.getBanks(group)
+    return [base, quote]
+  }, [marketAdapter])
 
   const depth = useMemo(() => {
     return isDesktop ? 30 : 12
@@ -120,30 +101,16 @@ const Orderbook = () => {
     if (orderbookElRef?.current) {
       verticallyCenterOrderbook()
     }
-  }, [orderbookElRef, market])
+  }, [orderbookElRef, marketAdapter, verticallyCenterOrderbook])
 
   const orderbookFeed = useRef<OrderbookFeed | null>(null)
 
   useEffect(() => {
-    if (market && market.tickSize !== tickSize) {
-      setTickSize(market.tickSize)
-      setGrouping(market.tickSize)
+    if (marketAdapter && marketAdapter.tickSize !== tickSize) {
+      setTickSize(marketAdapter.tickSize)
+      setGrouping(marketAdapter.tickSize)
     }
-  }, [market, tickSize])
-
-  const bidAccountAddress = useMemo(() => {
-    if (!market) return ''
-    const bidsPk =
-      market instanceof Market ? market['_decoded'].bids : market.bids
-    return bidsPk?.toString() || ''
-  }, [market])
-
-  const askAccountAddress = useMemo(() => {
-    if (!market) return ''
-    const asksPk =
-      market instanceof Market ? market['_decoded'].asks : market.asks
-    return asksPk?.toString() || ''
-  }, [market])
+  }, [marketAdapter, tickSize])
 
   useEffect(
     () =>
@@ -175,10 +142,9 @@ const Orderbook = () => {
   // subscribe to the bids and asks orderbook accounts
   useEffect(() => {
     const set = mangoStore.getState().set
-    const client = mangoStore.getState().client
+    // const client = mangoStore.getState().client
     const group = mangoStore.getState().group
-    const market = getMarket()
-    if (!group || !market) return
+    if (!group || !marketAdapter) return
 
     const orderbookFeedEnabled = false
     if (orderbookFeedEnabled) {
@@ -198,7 +164,7 @@ const Orderbook = () => {
         console.log('[OrderbookFeed] connected')
         hasConnected = true
         orderbookFeed.current.subscribe({
-          marketId: market.publicKey.toBase58(),
+          marketId: marketAdapter.publicKey.toBase58(),
         })
       })
 
@@ -282,7 +248,7 @@ const Orderbook = () => {
       orderbookFeed.current.onL2Checkpoint((checkpoint) => {
         if (
           !useOrderbookFeed ||
-          checkpoint.market !== market.publicKey.toBase58()
+          checkpoint.market !== marketAdapter.publicKey.toBase58()
         )
           return
         set((state) => {
@@ -298,125 +264,114 @@ const Orderbook = () => {
       return () => {
         if (!orderbookFeed.current) return
         console.log(
-          `[OrderbookFeed] unsubscribe ${market.publicKey.toBase58()}`,
+          `[OrderbookFeed] unsubscribe ${marketAdapter.publicKey.toBase58()}`,
         )
-        orderbookFeed.current.unsubscribe(market.publicKey.toBase58())
+        orderbookFeed.current.unsubscribe(marketAdapter.publicKey.toBase58())
       }
     } else {
-      console.log(`[OrderbookRPC] subscribe ${market.publicKey.toBase58()}`)
+      console.log(
+        `[OrderbookRPC] subscribe ${marketAdapter.publicKey.toBase58()}`,
+      )
 
       let bidSubscriptionId: number | undefined = undefined
       let askSubscriptionId: number | undefined = undefined
-      const bidsPk = bidAccountAddress ? new PublicKey(bidAccountAddress) : null
-      if (bidsPk) {
-        connection
-          .getAccountInfoAndContext(bidsPk)
-          .then(({ context, value: info }) => {
-            try {
-              if (!info || !market) return
-              const decodedBook = decodeBook(client, market, info, 'bids')
-              const decodedBookL2 = decodeBookL2(
-                decodedBook,
-                selectedMarket,
-                market,
-              ).sort((a, b) => b[0] - a[0])
-              console.log('decodingL2:', decodedBookL2)
+      const { bids, asks } = marketAdapter.getBookPks()
+      connection
+        .getAccountInfoAndContext(bids)
+        .then(({ context, value: info }) => {
+          try {
+            if (!info || !marketAdapter) return
+            const decodedBook = marketAdapter.decodeBook('bid', info.data)
+            const decodedBookL2 = decodedBook
+              .getL2(300)
+              .sort(([a], [b]) => b - a)
+            console.log('decodingL2:', decodedBookL2)
 
+            set((state) => {
+              state.selectedMarket.lastSeenSlot.bids = context.slot
+              state.selectedMarket.bids = decodedBook
+              state.selectedMarket.orderbook.bids = decodedBookL2
+            })
+          } catch (e) {
+            console.error(e)
+            return
+          }
+        })
+
+      bidSubscriptionId = connection.onAccountChange(
+        bids,
+        (info, context) => {
+          const lastSeenSlot =
+            mangoStore.getState().selectedMarket.lastSeenSlot.bids
+          if (context.slot > lastSeenSlot) {
+            try {
+              if (!marketAdapter) return
+              const decodedBook = marketAdapter.decodeBook('bid', info.data)
+              const decodedBookL2 = decodedBook
+                .getL2(300)
+                .sort(([a], [b]) => b - a)
               set((state) => {
-                state.selectedMarket.lastSeenSlot.bids = context.slot
-                state.selectedMarket.bidsAccount = decodedBook
+                state.selectedMarket.bids = decodedBook
                 state.selectedMarket.orderbook.bids = decodedBookL2
+                state.selectedMarket.lastSeenSlot.bids = context.slot
               })
             } catch (e) {
-              console.error(e)
+              console.log(e)
               return
             }
-          })
-        bidSubscriptionId = connection.onAccountChange(
-          bidsPk,
-          (info, context) => {
-            const lastSeenSlot =
-              mangoStore.getState().selectedMarket.lastSeenSlot.bids
-            if (context.slot > lastSeenSlot) {
-              try {
-                if (!market) return
-                const decodedBook = decodeBook(client, market, info, 'bids')
-                if (decodedBook instanceof BookSide) {
-                  updatePerpMarketOnGroup(decodedBook, 'bids')
-                }
-                set((state) => {
-                  state.selectedMarket.bidsAccount = decodedBook
-                  state.selectedMarket.orderbook.bids = decodeBookL2(
-                    decodedBook,
-                    selectedMarket,
-                    market,
-                  ).sort((a, b) => b[0] - a[0])
-                  state.selectedMarket.lastSeenSlot.bids = context.slot
-                })
-              } catch (e) {
-                console.log(e)
-                return
-              }
-            }
-          },
-          'processed',
-        )
-      }
+          }
+        },
+        'processed',
+      )
 
-      const asksPk = askAccountAddress ? new PublicKey(askAccountAddress) : null
-      if (asksPk) {
-        connection
-          .getAccountInfoAndContext(asksPk)
-          .then(({ context, value: info }) => {
+      connection
+        .getAccountInfoAndContext(asks)
+        .then(({ context, value: info }) => {
+          try {
+            if (!info || !marketAdapter) return
+            const decodedBook = marketAdapter.decodeBook('ask', info.data)
+            const decodedBookL2 = decodedBook
+              .getL2(300)
+              .sort(([a], [b]) => b - a)
+            set((state) => {
+              state.selectedMarket.asks = decodedBook
+              state.selectedMarket.orderbook.asks = decodedBookL2
+              state.selectedMarket.lastSeenSlot.asks = context.slot
+            })
+          } catch (e) {
+            console.log(e)
+            return
+          }
+        })
+      askSubscriptionId = connection.onAccountChange(
+        asks,
+        (info, context) => {
+          const lastSeenSlot =
+            mangoStore.getState().selectedMarket.lastSeenSlot.asks
+          if (context.slot > lastSeenSlot) {
             try {
-              if (!info || !market) return
-              const decodedBook = decodeBook(client, market, info, 'asks')
+              if (!marketAdapter) return
+              const decodedBook = marketAdapter.decodeBook('ask', info.data)
+              const decodedBookL2 = decodedBook
+                .getL2(300)
+                .sort(([a], [b]) => b - a)
               set((state) => {
-                state.selectedMarket.asksAccount = decodedBook
-                state.selectedMarket.orderbook.asks = decodeBookL2(
-                  decodedBook,
-                  selectedMarket,
-                  market,
-                ).sort((a, b) => a[0] - b[0])
+                state.selectedMarket.asks = decodedBook
+                state.selectedMarket.orderbook.asks = decodedBookL2
                 state.selectedMarket.lastSeenSlot.asks = context.slot
               })
             } catch (e) {
               console.log(e)
               return
             }
-          })
-        askSubscriptionId = connection.onAccountChange(
-          asksPk,
-          (info, context) => {
-            const lastSeenSlot =
-              mangoStore.getState().selectedMarket.lastSeenSlot.asks
-            if (context.slot > lastSeenSlot) {
-              try {
-                if (!market) return
-                const decodedBook = decodeBook(client, market!, info, 'asks')
-                if (decodedBook instanceof BookSide) {
-                  updatePerpMarketOnGroup(decodedBook, 'asks')
-                }
-                set((state) => {
-                  state.selectedMarket.asksAccount = decodedBook
-                  state.selectedMarket.orderbook.asks = decodeBookL2(
-                    decodedBook,
-                    selectedMarket,
-                    market,
-                  ).sort((a, b) => a[0] - b[0])
-                  state.selectedMarket.lastSeenSlot.asks = context.slot
-                })
-              } catch (e) {
-                console.log(e)
-                return
-              }
-            }
-          },
-          'processed',
-        )
-      }
+          }
+        },
+        'processed',
+      )
       return () => {
-        console.log(`[OrderbookRPC] unsubscribe ${market.publicKey.toBase58()}`)
+        console.log(
+          `[OrderbookRPC] unsubscribe ${marketAdapter.publicKey.toBase58()}`,
+        )
         if (typeof bidSubscriptionId !== 'undefined') {
           connection.removeAccountChangeListener(bidSubscriptionId)
         }
@@ -425,16 +380,17 @@ const Orderbook = () => {
         }
       }
     }
-  }, [bidAccountAddress, askAccountAddress, connection, useOrderbookFeed])
+  }, [marketAdapter, connection, useOrderbookFeed])
 
-  useEffect(() => {
-    const market = getMarket()
-    if (!orderbookFeed.current || !market) return
-    console.log(`[OrderbookFeed] subscribe ${market.publicKey.toBase58()}`)
-    orderbookFeed.current.subscribe({
-      marketId: market.publicKey.toBase58(),
-    })
-  }, [bidAccountAddress])
+  // TODO: renenable feed
+  // useEffect(() => {
+  //   const market = getMarket()
+  //   if (!orderbookFeed.current || !market) return
+  //   console.log(`[OrderbookFeed] subscribe ${market.publicKey.toBase58()}`)
+  //   orderbookFeed.current.subscribe({
+  //     marketId: market.publicKey.toBase58(),
+  //   })
+  // }, [bidAccountAddress])
 
   const onGroupSizeChange = useCallback(
     (groupSize: number) => {
@@ -848,10 +804,12 @@ function usersOpenOrderPrices(
     bids2 instanceof BookSide &&
     asks2 instanceof BookSide
   ) {
+    // perp market
     usersOpenOrderPrices = [...bids2.items(), ...asks2.items()]
       .filter((order) => order.owner.equals(mangoAccount.publicKey))
       .map((order) => order.price)
   } else {
+    // serum3 market
     usersOpenOrderPrices =
       marketPk && openOrders[marketPk]?.length
         ? openOrders[marketPk]?.map((order) => order.price)

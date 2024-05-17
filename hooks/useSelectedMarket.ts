@@ -14,6 +14,7 @@ import { ExtendedMarketAccount } from 'types/market'
 
 export default function useSelectedMarket() {
   const { group } = useMangoGroup()
+  const marketAdapter = mangoStore((s) => s.selectedMarket.adapter)
   const selectedMarket = mangoStore((s) => s.selectedMarket.current)
   const { mangoTokens } = useJupiterMints()
 
@@ -148,5 +149,6 @@ export default function useSelectedMarket() {
     baseLogoURI,
     quoteLogoURI,
     marketAddress,
+    marketAdapter,
   }
 }
