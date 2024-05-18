@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { PublicKey } from '@solana/web3.js'
+import { Connection, PublicKey } from '@solana/web3.js'
 import { useQuery } from '@tanstack/react-query'
 import Decimal from 'decimal.js'
 import { JupiterV6RouteInfo } from 'types/jupiter'
@@ -7,9 +7,12 @@ import { JupiterV6RouteInfo } from 'types/jupiter'
 import useJupiterSwapData from './useJupiterSwapData'
 import { useMemo } from 'react'
 import { JUPITER_V6_QUOTE_API_MAINNET } from 'utils/constants'
-import { MangoAccount } from '@blockworks-foundation/mango-v4'
+import { MangoAccount, toUiDecimals } from '@blockworks-foundation/mango-v4'
+import { findRaydiumPoolInfo, getSwapTransaction } from 'utils/swap/raydium'
+import mangoStore from '@store/mangoStore'
+import { fetchJupiterTransaction } from './SwapReviewRouteInfo'
 
-type SwapModes = 'ALL' | 'JUPITER' | 'MANGO' | 'JUPITER_DIRECT'
+type SwapModes = 'ALL' | 'JUPITER' | 'MANGO' | 'JUPITER_DIRECT' | 'RAYDIUM'
 
 type useQuoteRoutesPropTypes = {
   inputMint: string | undefined
@@ -20,6 +23,7 @@ type useQuoteRoutesPropTypes = {
   wallet: string | undefined
   mangoAccount: MangoAccount | undefined
   mode?: SwapModes
+  mangoAccountSwap: boolean
   enabled?: () => boolean
 }
 
@@ -31,6 +35,8 @@ const fetchJupiterRoute = async (
   swapMode = 'ExactIn',
   onlyDirectRoutes = true,
   maxAccounts = 64,
+  connection: Connection,
+  wallet: string,
 ) => {
   if (!inputMint || !outputMint) return
   try {
@@ -60,12 +66,57 @@ const fetchJupiterRoute = async (
         `${JUPITER_V6_QUOTE_API_MAINNET}/quote?${paramsString}`,
       )
       const res: JupiterV6RouteInfo = await response.json()
+      const [ixes] = await fetchJupiterTransaction(
+        connection,
+        res,
+        new PublicKey(wallet),
+        slippage,
+        new PublicKey(inputMint),
+        new PublicKey(outputMint),
+      )
       return {
-        bestRoute: res,
+        bestRoute:
+          [...ixes.flatMap((x) => x.keys.flatMap((k) => k.pubkey))].length <=
+          maxAccounts
+            ? res
+            : undefined,
       }
     }
   } catch (e) {
     console.log('error fetching jupiter route', e)
+  }
+}
+
+const fetchRaydiumRoute = async (
+  inputMint: string | undefined,
+  outputMint: string | undefined,
+  amount = 0,
+  slippage = 50,
+  connection: Connection,
+  wallet: string,
+  mangoAccountSwap: boolean,
+) => {
+  if (!inputMint || !outputMint) return
+  try {
+    const poolKeys = await findRaydiumPoolInfo(
+      connection,
+      outputMint,
+      inputMint,
+    )
+
+    if (poolKeys) {
+      return await getSwapTransaction(
+        connection,
+        outputMint,
+        amount,
+        poolKeys!,
+        slippage,
+        new PublicKey(wallet),
+        mangoAccountSwap,
+      )
+    }
+  } catch (e) {
+    console.log('error fetching raydium route', e)
   }
 }
 
@@ -135,7 +186,9 @@ export const handleGetRoutes = async (
   wallet: string | undefined,
   mangoAccount: MangoAccount | undefined,
   mode: SwapModes = 'ALL',
-  jupiterOnlyDirectRoutes = false,
+  connection: Connection,
+  inputTokenDecimals: number | null,
+  mangoAccountSwap: boolean,
 ) => {
   try {
     wallet ||= PublicKey.default.toBase58()
@@ -154,35 +207,41 @@ export const handleGetRoutes = async (
 
     const routes = []
 
-    // FIXME: Disable for now, mango router needs to use ALTs
-    // if (mode === 'ALL' || mode === 'MANGO') {
-    //   const mangoRoute = fetchMangoRoutes(
-    //     inputMint,
-    //     outputMint,
-    //     amount,
-    //     slippage,
-    //     swapMode,
-    //     feeBps,
-    //     wallet,
-    //   )
-    //   routes.push(mangoRoute)
-    // }
+    if (
+      connection &&
+      inputTokenDecimals &&
+      swapMode === 'ExactIn' &&
+      (mode === 'ALL' || mode === 'RAYDIUM')
+    ) {
+      const raydiumRoute = fetchRaydiumRoute(
+        inputMint,
+        outputMint,
+        toUiDecimals(amount, inputTokenDecimals),
+        slippage,
+        connection,
+        wallet,
+        mangoAccountSwap,
+      )
+      if (raydiumRoute) {
+        routes.push(raydiumRoute)
+      }
+    }
 
     if (mode === 'ALL' || mode === 'JUPITER' || mode === 'JUPITER_DIRECT') {
-      const jupiterRoute = await fetchJupiterRoute(
+      const jupiterRoute = fetchJupiterRoute(
         inputMint,
         outputMint,
         amount,
         slippage,
         swapMode,
-        jupiterOnlyDirectRoutes
-          ? jupiterOnlyDirectRoutes
-          : mode === 'JUPITER_DIRECT'
-          ? true
-          : false,
+        mode === 'JUPITER_DIRECT' ? true : false,
         maxAccounts,
+        connection,
+        wallet,
       )
-      routes.push(jupiterRoute)
+      if (jupiterRoute) {
+        routes.push(jupiterRoute)
+      }
     }
 
     const results = await Promise.allSettled(routes)
@@ -199,6 +258,7 @@ export const handleGetRoutes = async (
         ? Number(b.bestRoute.outAmount) - Number(a.bestRoute.outAmount)
         : Number(a.bestRoute.inAmount) - Number(b.bestRoute.inAmount),
     )
+
     return {
       bestRoute: sortedByBiggestOutAmount[0].bestRoute,
     }
@@ -218,8 +278,10 @@ const useQuoteRoutes = ({
   wallet,
   mangoAccount,
   mode = 'ALL',
+  mangoAccountSwap,
   enabled,
 }: useQuoteRoutesPropTypes) => {
+  const connection = mangoStore((s) => s.connection)
   const { inputTokenInfo, outputTokenInfo } = useJupiterSwapData()
   const decimals = useMemo(() => {
     return swapMode === 'ExactIn'
@@ -254,6 +316,9 @@ const useQuoteRoutes = ({
         wallet,
         mangoAccount,
         mode,
+        connection,
+        decimals,
+        mangoAccountSwap,
       ),
     {
       cacheTime: 1000 * 60,

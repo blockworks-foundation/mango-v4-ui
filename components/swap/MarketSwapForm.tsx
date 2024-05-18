@@ -83,6 +83,7 @@ const MarketSwapForm = ({
     swapMode,
     wallet: publicKey?.toBase58(),
     mangoAccount,
+    mangoAccountSwap: true,
     enabled: () =>
       !!(
         inputBank?.mint &&
@@ -100,6 +101,7 @@ const MarketSwapForm = ({
     swapMode,
     wallet: publicKey?.toBase58(),
     mangoAccount,
+    mangoAccountSwap: true,
     mode: 'JUPITER_DIRECT',
     enabled: () =>
       !!(
@@ -231,22 +233,26 @@ const MarketSwapForm = ({
     depending on the swapMode and set those values in state
   */
   useEffect(() => {
-    if (typeof bestRoute !== 'undefined') {
-      setSelectedRoute(bestRoute)
+    if (
+      typeof bestRoute !== 'undefined' ||
+      typeof bestDirectRoute !== 'undefined'
+    ) {
+      const newRoute = bestRoute || bestDirectRoute
+      setSelectedRoute(newRoute)
 
-      if (inputBank && swapMode === 'ExactOut' && bestRoute?.inAmount) {
-        const inAmount = new Decimal(bestRoute.inAmount)
+      if (inputBank && swapMode === 'ExactOut' && newRoute?.inAmount) {
+        const inAmount = new Decimal(newRoute.inAmount)
           .div(10 ** inputBank.mintDecimals)
           .toString()
         setAmountInFormValue(inAmount)
-      } else if (outputBank && swapMode === 'ExactIn' && bestRoute?.outAmount) {
-        const outAmount = new Decimal(bestRoute.outAmount)
+      } else if (outputBank && swapMode === 'ExactIn' && newRoute?.outAmount) {
+        const outAmount = new Decimal(newRoute.outAmount)
           .div(10 ** outputBank.mintDecimals)
           .toString()
         setAmountOutFormValue(outAmount)
       }
     }
-  }, [bestRoute, swapMode, inputBank, outputBank])
+  }, [bestRoute, bestDirectRoute, swapMode, inputBank, outputBank])
 
   const handleSwitchTokens = useCallback(() => {
     if (amountInAsDecimal?.gt(0) && amountOutAsDecimal.gte(0)) {
@@ -312,7 +318,7 @@ const MarketSwapForm = ({
         onSuccess={onSuccess}
         refetchRoute={refetchRoute}
         routes={
-          bestRoute
+          bestRoute || bestDirectRoute
             ? ([bestRoute, bestDirectRoute].filter(
                 (x) => x && !x.error,
               ) as JupiterV6RouteInfo[])
