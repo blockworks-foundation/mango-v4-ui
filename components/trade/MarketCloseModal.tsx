@@ -21,10 +21,10 @@ import { MAX_PERP_SLIPPAGE, SOUND_SETTINGS_KEY } from 'utils/constants'
 import { INITIAL_SOUND_SETTINGS } from '@components/settings/SoundSettings'
 import { Howl } from 'howler'
 import { isMangoError } from 'types'
-import { decodeBook, decodeBookL2 } from 'utils/orderbook'
 import InlineNotification from '@components/shared/InlineNotification'
 import { getDecimalCount } from 'utils/numbers'
 import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
+import { wrapMarketInAdapter } from 'types/market'
 
 interface MarketCloseModalProps {
   onClose: () => void
@@ -68,6 +68,7 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
     const client = mangoStore.getState().client
     if (!group || !perpMarket) return
 
+    const adapter = wrapMarketInAdapter(client, group, perpMarket)
     let bidSubscriptionId: number | undefined = undefined
     let askSubscriptionId: number | undefined = undefined
     let lastSeenBidsSlot: number
@@ -78,16 +79,19 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
         .getAccountInfoAndContext(bidsPk)
         .then(({ context, value: info }) => {
           if (!info) return
-          const decodedBook = decodeBook(client, perpMarket, info, 'bids')
-          setBids(decodeBookL2(decodedBook, perpMarket, perpMarket))
+          const bookSide = adapter.decodeBook('bid', info.data)
+          const bookSideL2 = bookSide.getL2(300)
+          setBids(bookSideL2)
           lastSeenBidsSlot = context.slot
         })
       bidSubscriptionId = connection.onAccountChange(
         bidsPk,
         (info, context) => {
           if (context.slot > lastSeenBidsSlot) {
-            const decodedBook = decodeBook(client, perpMarket, info, 'bids')
-            setBids(decodeBookL2(decodedBook, perpMarket, perpMarket))
+            const bookSide = adapter.decodeBook('bid', info.data)
+            const bookSideL2 = bookSide.getL2(300)
+            setBids(bookSideL2)
+            lastSeenBidsSlot = context.slot
           }
         },
         'processed',
@@ -100,16 +104,19 @@ const MarketCloseModal: FunctionComponent<MarketCloseModalProps> = ({
         .getAccountInfoAndContext(asksPk)
         .then(({ context, value: info }) => {
           if (!info) return
-          const decodedBook = decodeBook(client, perpMarket, info, 'asks')
-          setAsks(decodeBookL2(decodedBook, perpMarket, perpMarket))
+          const bookSide = adapter.decodeBook('ask', info.data)
+          const bookSideL2 = bookSide.getL2(300)
+          setAsks(bookSideL2)
           lastSeenAsksSlot = context.slot
         })
       askSubscriptionId = connection.onAccountChange(
         asksPk,
         (info, context) => {
           if (context.slot > lastSeenAsksSlot) {
-            const decodedBook = decodeBook(client, perpMarket, info, 'asks')
-            setAsks(decodeBookL2(decodedBook, perpMarket, perpMarket))
+            const bookSide = adapter.decodeBook('ask', info.data)
+            const bookSideL2 = bookSide.getL2(300)
+            setAsks(bookSideL2)
+            lastSeenAsksSlot = context.slot
           }
         },
         'processed',

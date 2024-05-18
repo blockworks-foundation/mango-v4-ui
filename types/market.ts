@@ -291,12 +291,6 @@ export function isOpenbookV2ExternalMarket(
   return typeof obj === 'object' && obj !== null && 'openOrdersAdmin' in obj
 }
 
-export function isOpenbookV2Market(obj: unknown): obj is OpenbookV2Market {
-  return (
-    typeof obj === 'object' && obj !== null && 'openbookMarketExternal' in obj
-  )
-}
-
 export function isOpenbookV2OpenOrder(
   obj: unknown,
 ): obj is Openbook2.OpenOrdersAccount {
