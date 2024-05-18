@@ -658,6 +658,10 @@ const mangoStore = create<MangoStore>()(
             const group = get().group
             const client = get().client
             const selectedMangoAccount = get().mangoAccount.current
+            const hasLevCloseInUrl = window.location.href.includes(
+              'lev-stake-sol-inspect',
+            )
+
             if (!group) throw new Error('Group not loaded')
             if (!client) throw new Error('Client not loaded')
 
@@ -669,7 +673,9 @@ const mangoStore = create<MangoStore>()(
             const mangoAccounts = [
               ...ownerMangoAccounts,
               ...delegateAccounts,
-            ].filter((acc) => !acc.name.includes('Leverage Stake'))
+            ].filter(
+              (acc) => hasLevCloseInUrl || !acc.name.includes('Leverage Stake'),
+            )
             const selectedAccountIsNotInAccountsList = mangoAccounts.find(
               (x) =>
                 x.publicKey.toBase58() ===
