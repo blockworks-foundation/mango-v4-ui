@@ -210,6 +210,7 @@ export const handleGetRoutes = async (
     if (
       connection &&
       inputTokenDecimals &&
+      swapMode === 'ExactIn' &&
       (mode === 'ALL' || mode === 'RAYDIUM')
     ) {
       const raydiumRoute = fetchRaydiumRoute(
