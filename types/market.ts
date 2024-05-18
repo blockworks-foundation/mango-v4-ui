@@ -1,12 +1,13 @@
 import Mango4, {
   Bank,
-  BookSide,
+  BookSide as Mango4BookSide,
   Group,
   MangoClient,
   OpenbookV2Market,
   PerpMarket,
   PerpOrder,
   Serum3Market,
+  BookSideType,
 } from '@blockworks-foundation/mango-v4'
 import { AnchorProvider } from '@coral-xyz/anchor'
 import Openbook2, {
@@ -55,7 +56,7 @@ export function wrapMarketInAdapter(
   market: Serum3Market | OpenbookV2Market | PerpMarket,
 ): MarketAdapter {
   if (market instanceof PerpMarket) {
-    return new Mango4PerpMarketAdaper(market)
+    return new Mango4PerpMarketAdaper(client, market)
   }
   if (market instanceof Serum3Market) {
     const fullMarket = group.getSerum3ExternalMarket(market.serumMarketExternal)
@@ -158,7 +159,10 @@ export class Mango4PerpMarketAdaper implements MarketAdapter {
   minOrderSize: number
   publicKey: PublicKey
 
-  constructor(public market: PerpMarket) {
+  constructor(
+    public client: MangoClient,
+    public market: PerpMarket,
+  ) {
     this.tickSize = market.tickSize
     this.minOrderSize = market.minOrderSize
     this.publicKey = market.publicKey
@@ -246,21 +250,30 @@ export class Openbook2BookSideAdapter implements BookSideAdapter {
 }
 
 export class Mango4PerpBookSideAdaper implements BookSideAdapter {
-  // TODO: fix this on a second run,
-  // need to add an improved book side decoder to the client first
-  // bookSide: Mango4.BookSide;
+  bookSide: Mango4.BookSide
 
   constructor(
     public market: Mango4PerpMarketAdaper,
-    _side: 'bid' | 'ask',
-    _data: Buffer,
+    side: 'bid' | 'ask',
+    data: Buffer,
   ) {
-    // TODO: update bookside
-    //this.market.market._bids =
+    const bookAccount = Mango4BookSide.decodeAccountfromBuffer(data)
+    const sideTyped = side === 'bid' ? BookSideType.bids : BookSideType.asks
+    this.bookSide = new Mango4BookSide(
+      market.client,
+      market.market,
+      sideTyped,
+      bookAccount,
+    )
+    if (side === 'bid') {
+      this.market.market._bids = this.bookSide
+    } else {
+      this.market.market._asks = this.bookSide
+    }
   }
 
-  getL2(_depth: number): [number, number][] {
-    return [[0, 0]]
+  getL2(depth: number): [number, number][] {
+    return this.bookSide.getL2Ui(depth)
   }
   getOpenOrdersPrices(
     _openOrders: Record<string, Serum3Order[] | PerpOrder[] | OpenbookOrder[]>,

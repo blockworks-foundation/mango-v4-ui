@@ -358,14 +358,14 @@
     bn.js "^5.2.1"
     eslint-config-prettier "^9.0.0"
 
-"@blockworks-foundation/mango-v4@git+https://github.com/blockworks-foundation/mango-v4.git#pan/openbook-v2-fixes":
+"@blockworks-foundation/mango-v4@git+https://github.com/blockworks-foundation/mango-v4.git#max/openbook-v2":
   version "0.24.0"
-  resolved "git+https://github.com/blockworks-foundation/mango-v4.git#86068e679b8469f62dcc5145c1e2d638601b3b76"
+  resolved "git+https://github.com/blockworks-foundation/mango-v4.git#9cdded430b1b87325fc443e312272db05dc1c85d"
   dependencies:
     "@blockworks-foundation/mango-v4-settings" "0.14.15"
     "@blockworks-foundation/mangolana" "0.0.15"
     "@coral-xyz/anchor" "^0.29.0"
-    "@openbook-dex/openbook-v2" "git+https://github.com/openbook-dex/openbook-v2#pan/ts-client-anchor-0.29.0"
+    "@openbook-dex/openbook-v2" "git+https://github.com/openbook-dex/openbook-v2"
     "@project-serum/serum" "0.13.65"
     "@pythnetwork/client" "~2.14.0"
     "@solana/spl-token" "0.3.7"
@@ -1902,10 +1902,20 @@
     node-gyp "^7.1.0"
     read-package-json-fast "^2.0.1"
 
-"@openbook-dex/openbook-v2@0.2.7", "@openbook-dex/openbook-v2@git+https://github.com/openbook-dex/openbook-v2#pan/ts-client-anchor-0.29.0":
+"@openbook-dex/openbook-v2@0.2.7", "@openbook-dex/openbook-v2@git+https://github.com/openbook-dex/openbook-v2":
   version "0.2.7"
   resolved "https://registry.yarnpkg.com/@openbook-dex/openbook-v2/-/openbook-v2-0.2.7.tgz#6ff36b97ce77856c7fac6d12fbd7b94f51c2cb9a"
   integrity sha512-1qa/RWDmbnvP1v96MR7GtfIdA9X9G9rG/MFhaB1CK+iuB2NyILhnwNCxUpyUxL3HC34uslwHQ5QwYrUqJ4OwHA==
+  dependencies:
+    "@coral-xyz/anchor" "^0.28.1-beta.2"
+    "@solana/spl-token" "^0.4.0"
+    "@solana/web3.js" "^1.77.3"
+    big.js "^6.2.1"
+
+"@openbook-dex/openbook-v2@0.2.8":
+  version "0.2.8"
+  resolved "https://registry.yarnpkg.com/@openbook-dex/openbook-v2/-/openbook-v2-0.2.8.tgz#77e3a2c5b575b7a379364998ad03ab0c82d5fe9d"
+  integrity sha512-4UFshL95XzwwUSEipHh48+g4EwzG6rEgcFfaH4NBN9nneBW5gRQijHZ86JVFNEML0Dl8iGkmAfxwVxeb+PqZoA==
   dependencies:
     "@coral-xyz/anchor" "^0.28.1-beta.2"
     "@solana/spl-token" "^0.4.0"
