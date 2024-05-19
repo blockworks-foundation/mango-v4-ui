@@ -3,7 +3,7 @@ import { Connection, PublicKey } from '@solana/web3.js'
 import { useQuery } from '@tanstack/react-query'
 import Decimal from 'decimal.js'
 import { JupiterV6RouteInfo } from 'types/jupiter'
-// import { MANGO_ROUTER_API_URL } from 'utils/constants'
+import { MANGO_ROUTER_API_URL } from 'utils/constants'
 import useJupiterSwapData from './useJupiterSwapData'
 import { useMemo } from 'react'
 import { JUPITER_V6_QUOTE_API_MAINNET } from 'utils/constants'
@@ -12,19 +12,40 @@ import { findRaydiumPoolInfo, getSwapTransaction } from 'utils/swap/raydium'
 import mangoStore from '@store/mangoStore'
 import { fetchJupiterTransaction } from './SwapReviewRouteInfo'
 
-type SwapModes = 'ALL' | 'JUPITER' | 'MANGO' | 'JUPITER_DIRECT' | 'RAYDIUM'
+type SwapModes = 'ExactIn' | 'ExactOut'
+
+type MultiRoutingMode = 'ALL' | 'ALL_AND_JUPITER_DIRECT'
+
+type JupiterRoutingMode = 'JUPITER_DIRECT' | 'JUPITER'
+
+type RaydiumRoutingMode = 'RAYDIUM'
+
+type MangoRoutingMode = 'MANGO'
+
+type RoutingMode =
+  | MultiRoutingMode
+  | JupiterRoutingMode
+  | RaydiumRoutingMode
+  | MangoRoutingMode
 
 type useQuoteRoutesPropTypes = {
   inputMint: string | undefined
   outputMint: string | undefined
   amount: string
   slippage: number
-  swapMode: string
+  swapMode: SwapModes
   wallet: string | undefined
   mangoAccount: MangoAccount | undefined
-  mode?: SwapModes
-  mangoAccountSwap: boolean
+  routingMode: RoutingMode
   enabled?: () => boolean
+}
+
+function isMultiRoutingMode(value: RoutingMode): value is MultiRoutingMode {
+  return ['ALL', 'ALL_AND_JUPITER_DIRECT'].includes(value)
+}
+
+function isRaydiumRoutingMode(value: RoutingMode): value is RaydiumRoutingMode {
+  return value === 'RAYDIUM'
 }
 
 const fetchJupiterRoute = async (
@@ -32,59 +53,69 @@ const fetchJupiterRoute = async (
   outputMint: string | undefined,
   amount = 0,
   slippage = 50,
-  swapMode = 'ExactIn',
+  swapMode: SwapModes = 'ExactIn',
   onlyDirectRoutes = true,
   maxAccounts = 64,
   connection: Connection,
   wallet: string,
 ) => {
-  if (!inputMint || !outputMint) return
-  try {
-    {
-      const paramObj: {
-        inputMint: string
-        outputMint: string
-        amount: string
-        slippageBps: string
-        swapMode: string
-        onlyDirectRoutes: string
-        maxAccounts?: string
-      } = {
-        inputMint: inputMint.toString(),
-        outputMint: outputMint.toString(),
-        amount: amount.toString(),
-        slippageBps: Math.ceil(slippage * 100).toString(),
-        swapMode,
-        onlyDirectRoutes: `${onlyDirectRoutes}`,
-      }
-      //exact out is not supporting max account
-      if (swapMode === 'ExactIn') {
-        paramObj.maxAccounts = maxAccounts.toString()
-      }
-      const paramsString = new URLSearchParams(paramObj).toString()
-      const response = await fetch(
-        `${JUPITER_V6_QUOTE_API_MAINNET}/quote?${paramsString}`,
-      )
-      const res: JupiterV6RouteInfo = await response.json()
-      const [ixes] = await fetchJupiterTransaction(
-        connection,
-        res,
-        new PublicKey(wallet),
-        slippage,
-        new PublicKey(inputMint),
-        new PublicKey(outputMint),
-      )
-      return {
-        bestRoute:
-          [...ixes.flatMap((x) => x.keys.flatMap((k) => k.pubkey))].length <=
+  return new Promise<{ bestRoute: JupiterV6RouteInfo }>(
+    // eslint-disable-next-line no-async-promise-executor
+    async (resolve, reject) => {
+      try {
+        if (!inputMint || !outputMint) return
+        const paramObj: {
+          inputMint: string
+          outputMint: string
+          amount: string
+          slippageBps: string
+          swapMode: string
+          onlyDirectRoutes: string
+          maxAccounts?: string
+        } = {
+          inputMint: inputMint.toString(),
+          outputMint: outputMint.toString(),
+          amount: amount.toString(),
+          slippageBps: Math.ceil(slippage * 100).toString(),
+          swapMode,
+          onlyDirectRoutes: `${onlyDirectRoutes}`,
+        }
+        //exact out is not supporting max account
+        if (swapMode === 'ExactIn') {
+          paramObj.maxAccounts = maxAccounts.toString()
+        }
+        const paramsString = new URLSearchParams(paramObj).toString()
+        const response = await fetch(
+          `${JUPITER_V6_QUOTE_API_MAINNET}/quote?${paramsString}`,
+        )
+        const res: JupiterV6RouteInfo = await response.json()
+        if (res.error) {
+          throw res.error
+        }
+        const [ixes] = await fetchJupiterTransaction(
+          connection,
+          res,
+          new PublicKey(wallet),
+          slippage,
+          new PublicKey(inputMint),
+          new PublicKey(outputMint),
+        )
+
+        if (
+          [...ixes.flatMap((x) => x.keys.flatMap((k) => k.pubkey))].length >
           maxAccounts
-            ? res
-            : undefined,
+        ) {
+          throw 'Max accounts exceeded'
+        }
+        resolve({
+          bestRoute: res,
+        })
+      } catch (e) {
+        console.log('jupiter route error:', e)
+        reject(e)
       }
-    }
-  } catch (e) {
-    console.log('error fetching jupiter route', e)
-  }
+    },
+  )
 }
 
 const fetchRaydiumRoute = async (
@@ -94,102 +125,134 @@ const fetchRaydiumRoute = async (
   slippage = 50,
   connection: Connection,
   wallet: string,
-  mangoAccountSwap: boolean,
+  isInWalletSwap: boolean,
 ) => {
-  if (!inputMint || !outputMint) return
-  try {
-    const poolKeys = await findRaydiumPoolInfo(
-      connection,
-      outputMint,
-      inputMint,
-    )
+  return new Promise<{ bestRoute: JupiterV6RouteInfo }>(
+    // eslint-disable-next-line no-async-promise-executor
+    async (resolve, reject) => {
+      try {
+        if (!inputMint || !outputMint) return
 
-    if (poolKeys) {
-      return await getSwapTransaction(
-        connection,
-        outputMint,
-        amount,
-        poolKeys!,
-        slippage,
-        new PublicKey(wallet),
-        mangoAccountSwap,
-      )
-    }
-  } catch (e) {
-    console.log('error fetching raydium route', e)
-  }
+        const poolKeys = await findRaydiumPoolInfo(
+          connection,
+          outputMint,
+          inputMint,
+        )
+
+        if (poolKeys) {
+          const resp = await getSwapTransaction(
+            connection,
+            outputMint,
+            amount,
+            poolKeys!,
+            slippage,
+            new PublicKey(wallet),
+            isInWalletSwap,
+          )
+          resolve(resp as unknown as { bestRoute: JupiterV6RouteInfo })
+        } else {
+          throw 'No route found'
+        }
+      } catch (e) {
+        console.log('raydium route error:', e)
+        reject(e)
+      }
+    },
+  )
 }
 
-// const fetchMangoRoutes = async (
-//   inputMint = 'So11111111111111111111111111111111111111112',
-//   outputMint = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-//   amount = 0,
-//   slippage = 50,
-//   swapMode = 'ExactIn',
-//   feeBps = 0,
-//   wallet = PublicKey.default.toBase58(),
-// ) => {
-//   {
-//     const defaultOtherAmount =
-//       swapMode === 'ExactIn' ? 0 : Number.MAX_SAFE_INTEGER
+const fetchMangoRoute = async (
+  inputMint = 'So11111111111111111111111111111111111111112',
+  outputMint = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+  amount = 0,
+  slippage = 50,
+  swapMode = 'ExactIn',
+) => {
+  return new Promise<{ bestRoute: JupiterV6RouteInfo }>(
+    // eslint-disable-next-line no-async-promise-executor
+    async (resolve, reject) => {
+      try {
+        const paramsString = new URLSearchParams({
+          inputMint: inputMint.toString(),
+          outputMint: outputMint.toString(),
+          amount: amount.toString(),
+          slippageBps: Math.ceil(slippage * 100).toString(),
+          mode: swapMode,
+        }).toString()
 
-//     const paramsString = new URLSearchParams({
-//       inputMint: inputMint.toString(),
-//       outputMint: outputMint.toString(),
-//       amount: amount.toString(),
-//       slippage: ((slippage * 1) / 100).toString(),
-//       feeBps: feeBps.toString(),
-//       mode: swapMode,
-//       wallet: wallet,
-//       otherAmountThreshold: defaultOtherAmount.toString(),
-//     }).toString()
+        const response = await fetch(
+          `${MANGO_ROUTER_API_URL}/quote?${paramsString}`,
+        )
 
-//     const response = await fetch(`${MANGO_ROUTER_API_URL}/swap?${paramsString}`)
+        if (response.status === 500) {
+          throw 'No route found'
+        }
+        const res = await response.json()
+        if (res.outAmount) {
+          resolve({
+            bestRoute: res,
+          })
+        } else {
+          reject('No route found')
+        }
+      } catch (e) {
+        console.log('mango router error:', e)
+        reject(e)
+      }
+    },
+  )
+}
 
-//     const res = await response.json()
-//     const data: RouteInfo[] = res.map((route: any) => ({
-//       ...route,
-//       priceImpactPct: route.priceImpact,
-//       slippageBps: slippage,
-//       marketInfos: route.marketInfos.map((mInfo: any) => ({
-//         ...mInfo,
-//         lpFee: {
-//           ...mInfo.fee,
-//           pct: mInfo.fee.rate,
-//         },
-//       })),
-//       mints: route.mints.map((x: string) => new PublicKey(x)),
-//       instructions: route.instructions.map((ix: any) => ({
-//         ...ix,
-//         programId: new PublicKey(ix.programId),
-//         data: Buffer.from(ix.data, 'base64'),
-//         keys: ix.keys.map((key: any) => ({
-//           ...key,
-//           pubkey: new PublicKey(key.pubkey),
-//         })),
-//       })),
-//       routerName: 'Mango',
-//     }))
-//     return {
-//       routes: data,
-//       bestRoute: (data.length ? data[0] : null) as RouteInfo | null,
-//     }
-//   }
-// }
+export async function handleGetRoutes(
+  inputMint: string | undefined,
+  outputMint: string | undefined,
+  amount: number,
+  slippage: number,
+  swapMode: SwapModes,
+  wallet: string | undefined,
+  mangoAccount: MangoAccount | undefined,
+  routingMode: MultiRoutingMode | RaydiumRoutingMode,
+  connection: Connection,
+  inputTokenDecimals: number,
+): Promise<{ bestRoute: JupiterV6RouteInfo }>
 
-export const handleGetRoutes = async (
+export async function handleGetRoutes(
+  inputMint: string | undefined,
+  outputMint: string | undefined,
+  amount: number,
+  slippage: number,
+  swapMode: SwapModes,
+  wallet: string | undefined,
+  mangoAccount: MangoAccount | undefined,
+  routingMode: JupiterRoutingMode | MangoRoutingMode,
+  connection: Connection,
+): Promise<{ bestRoute: JupiterV6RouteInfo }>
+
+export async function handleGetRoutes(
+  inputMint: string | undefined,
+  outputMint: string | undefined,
+  amount: number,
+  slippage: number,
+  swapMode: 'ExactIn',
+  wallet: string | undefined,
+  mangoAccount: MangoAccount | undefined,
+  routingMode: RaydiumRoutingMode,
+  connection: Connection,
+  inputTokenDecimals: number,
+): Promise<{ bestRoute: JupiterV6RouteInfo }>
+
+export async function handleGetRoutes(
   inputMint: string | undefined,
   outputMint: string | undefined,
   amount = 0,
   slippage = 50,
-  swapMode = 'ExactIn',
+  swapMode: SwapModes,
   wallet: string | undefined,
   mangoAccount: MangoAccount | undefined,
-  mode: SwapModes = 'ALL',
+  routingMode: RoutingMode = 'ALL',
   connection: Connection,
-  inputTokenDecimals: number | null,
-  mangoAccountSwap: boolean,
-) => {
+  inputTokenDecimals?: number,
+) {
   try {
     wallet ||= PublicKey.default.toBase58()
 
@@ -208,47 +271,74 @@ export const handleGetRoutes = async (
     const routes = []
 
     if (
-      connection &&
-      inputTokenDecimals &&
       swapMode === 'ExactIn' &&
-      (mode === 'ALL' || mode === 'RAYDIUM')
+      (isMultiRoutingMode(routingMode) || isRaydiumRoutingMode(routingMode))
     ) {
       const raydiumRoute = fetchRaydiumRoute(
         inputMint,
         outputMint,
-        toUiDecimals(amount, inputTokenDecimals),
+        toUiDecimals(amount, inputTokenDecimals!),
         slippage,
         connection,
         wallet,
-        mangoAccountSwap,
+        !mangoAccount,
       )
-      if (raydiumRoute) {
-        routes.push(raydiumRoute)
-      }
+      routes.push(raydiumRoute)
     }
 
-    if (mode === 'ALL' || mode === 'JUPITER' || mode === 'JUPITER_DIRECT') {
+    if (
+      routingMode === 'ALL_AND_JUPITER_DIRECT' ||
+      routingMode === 'JUPITER_DIRECT'
+    ) {
+      const jupiterDirectRoute = fetchJupiterRoute(
+        inputMint,
+        outputMint,
+        amount,
+        slippage,
+        swapMode,
+        true,
+        maxAccounts,
+        connection,
+        wallet,
+      )
+
+      routes.push(jupiterDirectRoute)
+    }
+
+    if (isMultiRoutingMode(routingMode) || routingMode === 'JUPITER') {
       const jupiterRoute = fetchJupiterRoute(
         inputMint,
         outputMint,
         amount,
         slippage,
         swapMode,
-        mode === 'JUPITER_DIRECT' ? true : false,
+        false,
         maxAccounts,
         connection,
         wallet,
       )
-      if (jupiterRoute) {
-        routes.push(jupiterRoute)
-      }
+      routes.push(jupiterRoute)
+    }
+
+    if (isMultiRoutingMode(routingMode) || routingMode === 'MANGO') {
+      const mangoRoute = fetchMangoRoute(
+        inputMint,
+        outputMint,
+        amount,
+        slippage,
+        swapMode,
+      )
+      routes.push(mangoRoute)
     }
 
     const results = await Promise.allSettled(routes)
+
     const responses = results
       .filter((x) => x.status === 'fulfilled' && x.value?.bestRoute !== null)
       .map((x) => (x as any).value)
-
+    if (!responses.length) {
+      throw 'No route found'
+    }
     const sortedByBiggestOutAmount = (
       responses as {
         bestRoute: JupiterV6RouteInfo
@@ -258,9 +348,10 @@ export const handleGetRoutes = async (
         ? Number(b.bestRoute.outAmount) - Number(a.bestRoute.outAmount)
         : Number(a.bestRoute.inAmount) - Number(b.bestRoute.inAmount),
     )
-
     return {
-      bestRoute: sortedByBiggestOutAmount[0].bestRoute,
+      bestRoute: sortedByBiggestOutAmount.length
+        ? sortedByBiggestOutAmount[0]?.bestRoute
+        : null,
     }
   } catch (e) {
     return {
@@ -277,8 +368,7 @@ const useQuoteRoutes = ({
   swapMode,
   wallet,
   mangoAccount,
-  mode = 'ALL',
-  mangoAccountSwap,
+  routingMode = 'ALL',
   enabled,
 }: useQuoteRoutesPropTypes) => {
   const connection = mangoStore((s) => s.connection)
@@ -297,29 +387,54 @@ const useQuoteRoutes = ({
 
   const res = useQuery<{ bestRoute: JupiterV6RouteInfo | null }, Error>(
     [
-      'swap-routes',
+      [
+        'swap-routes',
+        nativeAmount.toString(),
+        inputMint,
+        outputMint,
+        swapMode,
+        wallet,
+        routingMode,
+      ],
       inputMint,
       outputMint,
       amount,
       slippage,
       swapMode,
       wallet,
-      mode,
+      routingMode,
     ],
-    async () =>
-      handleGetRoutes(
-        inputMint,
-        outputMint,
-        nativeAmount.toNumber(),
-        slippage,
-        swapMode,
-        wallet,
-        mangoAccount,
-        mode,
-        connection,
-        decimals,
-        mangoAccountSwap,
-      ),
+    async () => {
+      if (
+        isMultiRoutingMode(routingMode) ||
+        isRaydiumRoutingMode(routingMode)
+      ) {
+        return handleGetRoutes(
+          inputMint,
+          outputMint,
+          nativeAmount.toNumber(),
+          slippage,
+          swapMode,
+          wallet,
+          mangoAccount,
+          routingMode,
+          connection,
+          decimals,
+        )
+      } else {
+        return handleGetRoutes(
+          inputMint,
+          outputMint,
+          nativeAmount.toNumber(),
+          slippage,
+          swapMode,
+          wallet,
+          mangoAccount,
+          routingMode,
+          connection,
+        )
+      }
+    },
     {
       cacheTime: 1000 * 60,
       staleTime: 1000 * 3,
