@@ -231,8 +231,7 @@ export default function SpotMarketOrderSwapForm() {
       swapMode: 'ExactIn',
       wallet: publicKey?.toBase58(),
       mangoAccount,
-      mangoAccountSwap: true,
-      mode: 'JUPITER',
+      routingMode: 'ALL_AND_JUPITER_DIRECT',
       enabled: () =>
         !!(
           inputBank?.mint &&

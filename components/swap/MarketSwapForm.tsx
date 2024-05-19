@@ -83,26 +83,7 @@ const MarketSwapForm = ({
     swapMode,
     wallet: publicKey?.toBase58(),
     mangoAccount,
-    mangoAccountSwap: true,
-    enabled: () =>
-      !!(
-        inputBank?.mint &&
-        outputBank?.mint &&
-        quoteAmount &&
-        !isDraggingSlider
-      ),
-  })
-
-  const { bestRoute: bestDirectRoute } = useQuoteRoutes({
-    inputMint: inputBank?.mint.toString(),
-    outputMint: outputBank?.mint.toString(),
-    amount: quoteAmount,
-    slippage,
-    swapMode,
-    wallet: publicKey?.toBase58(),
-    mangoAccount,
-    mangoAccountSwap: true,
-    mode: 'JUPITER_DIRECT',
+    routingMode: 'ALL_AND_JUPITER_DIRECT',
     enabled: () =>
       !!(
         inputBank?.mint &&
@@ -233,11 +214,8 @@ const MarketSwapForm = ({
     depending on the swapMode and set those values in state
   */
   useEffect(() => {
-    if (
-      typeof bestRoute !== 'undefined' ||
-      typeof bestDirectRoute !== 'undefined'
-    ) {
-      const newRoute = bestRoute || bestDirectRoute
+    if (typeof bestRoute !== 'undefined') {
+      const newRoute = bestRoute
       setSelectedRoute(newRoute)
 
       if (inputBank && swapMode === 'ExactOut' && newRoute?.inAmount) {
@@ -252,7 +230,7 @@ const MarketSwapForm = ({
         setAmountOutFormValue(outAmount)
       }
     }
-  }, [bestRoute, bestDirectRoute, swapMode, inputBank, outputBank])
+  }, [bestRoute, swapMode, inputBank, outputBank])
 
   const handleSwitchTokens = useCallback(() => {
     if (amountInAsDecimal?.gt(0) && amountOutAsDecimal.gte(0)) {
@@ -318,10 +296,8 @@ const MarketSwapForm = ({
         onSuccess={onSuccess}
         refetchRoute={refetchRoute}
         routes={
-          bestRoute || bestDirectRoute
-            ? ([bestRoute, bestDirectRoute].filter(
-                (x) => x && !x.error,
-              ) as JupiterV6RouteInfo[])
+          bestRoute
+            ? ([bestRoute].filter((x) => x && !x.error) as JupiterV6RouteInfo[])
             : undefined
         }
         selectedRoute={selectedRoute}
