@@ -130,6 +130,10 @@ const initMangoClient = (
       new PublicKey('AFrYBhb5wKQtxRS9UA9YRS4V3dwFm7SqmS6DHKq6YVgo'), //Bsol
       new PublicKey('7yyaeuJ1GGtVBLT2z2xub5ZWYKaNhF28mj1RdV4VDFVk'), //jitoSol
       new PublicKey('E4v1BBgoso9s64TQvmyownAVJbhbEPGyzA3qn4n46qj9'), //mSol
+      new PublicKey('8ihFLu5FimgTQ1Unh4dVyEHUGodJ5gJQCrQf4KUVB9bN'), //bonk
+      new PublicKey('AwpALBTXcaz2t6BayXvQQu7eZ6h7u2UNRCQNmD9ShY7Z'), //blze
+      new PublicKey('6ABgrEZk8urs6kJ1JNdC1sspH5zKXRqxy8sg3ZG2cQps'), //wif
+      new PublicKey('4dusJxxxiYrMTLGYS6cCAyu3gPn2xXLBjS7orMToZHi1'), //mnde
     ],
     multipleConnections: opts.multipleConnections,
     idsSource: 'api',

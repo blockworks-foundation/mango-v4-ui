@@ -111,7 +111,7 @@ const fetchJupiterRoute = async (
           bestRoute: res,
         })
       } catch (e) {
-        console.log('jupiter route error', e)
+        console.log('jupiter route error:', e)
         reject(e)
       }
     },
@@ -154,7 +154,7 @@ const fetchRaydiumRoute = async (
           throw 'No route found'
         }
       } catch (e) {
-        console.log('raydium route error', e)
+        console.log('raydium route error:', e)
         reject(e)
       }
     },
@@ -183,8 +183,9 @@ const fetchMangoRoute = async (
         const response = await fetch(
           `${MANGO_ROUTER_API_URL}/quote?${paramsString}`,
         )
+
         if (response.status === 500) {
-          reject('No route found')
+          throw 'No route found'
         }
         const res = await response.json()
         if (res.outAmount) {
@@ -195,7 +196,7 @@ const fetchMangoRoute = async (
           reject('No route found')
         }
       } catch (e) {
-        console.log('error in mango router', e)
+        console.log('mango router error:', e)
         reject(e)
       }
     },
