@@ -236,7 +236,7 @@ const ReadOnlyMangoAccount = () => {
         if (!readOnlyMangoAccount.group.equals(group.publicKey)) {
           throw 'Mango account not from current group'
         }
-        await readOnlyMangoAccount.reloadSerum3OpenOrders(client)
+        await readOnlyMangoAccount.reloadAllOpenOrders(client)
         set((state) => {
           state.mangoAccount.current = readOnlyMangoAccount
           state.mangoAccount.initialLoad = false
