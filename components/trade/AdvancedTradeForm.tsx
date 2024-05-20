@@ -82,8 +82,6 @@ import AccountSlotsFullNotification from '@components/shared/AccountSlotsFullNot
 import DepositWithdrawModal from '@components/modals/DepositWithdrawModal'
 import CreateAccountModal from '@components/modals/CreateAccountModal'
 import TradeformSubmitButton from './TradeformSubmitButton'
-import BigNumber from 'bignumber.js'
-import { isOpenbookV2ExternalMarket } from 'types/market'
 import useIpAddress from 'hooks/useIpAddress'
 import useOpenPerpPositions from 'hooks/useOpenPerpPositions'
 import { isTokenInsured } from '@components/DepositForm'
@@ -152,7 +150,7 @@ const AdvancedTradeForm = () => {
     quoteBank,
     quoteLogoURI,
     quoteSymbol,
-    serumOrPerpMarket,
+    marketAdapter,
     marketAddress,
   } = useSelectedMarket()
   const { remainingBorrowsInPeriod, timeToNextPeriod } =
@@ -403,27 +401,17 @@ const AdvancedTradeForm = () => {
   )
 
   const tickDecimals = useMemo(() => {
-    if (!serumOrPerpMarket) return 1
-    let tickSize
-    if (isOpenbookV2ExternalMarket(serumOrPerpMarket)) {
-      tickSize = new BigNumber(10)
-        .pow(serumOrPerpMarket.baseDecimals - serumOrPerpMarket.quoteDecimals)
-        .times(new BigNumber(serumOrPerpMarket.quoteLotSize.toString()))
-        .div(new BigNumber(serumOrPerpMarket.baseLotSize.toString()))
-        .toNumber()
-    } else {
-      tickSize = serumOrPerpMarket.tickSize
-    }
-    const tickDecimals = getDecimalCount(tickSize)
+    if (!marketAdapter) return 1
+    const tickDecimals = getDecimalCount(marketAdapter.tickSize)
     return tickDecimals
-  }, [serumOrPerpMarket])
+  }, [marketAdapter])
 
   const [minOrderDecimals, minOrderSize] = useMemo(() => {
-    if (!serumOrPerpMarket) return [1, 0.1]
-    const minOrderSize = serumOrPerpMarket.minOrderSize
+    if (!marketAdapter) return [1, 0.1]
+    const minOrderSize = marketAdapter.minOrderSize
     const minOrderDecimals = getDecimalCount(minOrderSize)
     return [minOrderDecimals, minOrderSize]
-  }, [serumOrPerpMarket])
+  }, [marketAdapter])
 
   const isMarketEnabled = useMemo(() => {
     const { group } = mangoStore.getState()
@@ -1028,7 +1016,7 @@ const AdvancedTradeForm = () => {
 
   console.log('spotMax', spotMax)
   const disabled =
-    !serumOrPerpMarket ||
+    !marketAdapter ||
     !isMarketEnabled ||
     !mangoAccountAddress ||
     !parseFloat(tradeForm.baseSize)

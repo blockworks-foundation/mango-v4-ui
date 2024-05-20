@@ -284,9 +284,3 @@ export class Mango4PerpBookSideAdaper implements BookSideAdapter {
     return
   }
 }
-
-export function isOpenbookV2ExternalMarket(
-  obj: unknown,
-): obj is ExtendedMarketAccount {
-  return typeof obj === 'object' && obj !== null && 'openOrdersAdmin' in obj
-}
