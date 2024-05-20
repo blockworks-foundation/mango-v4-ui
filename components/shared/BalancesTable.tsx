@@ -332,7 +332,7 @@ const BalancesTable = () => {
 export default BalancesTable
 
 const Balance = ({ bank }: { bank: BankWithBalance }) => {
-  const { selectedMarket } = useSelectedMarket()
+  const { marketAdapter, selectedMarket } = useSelectedMarket()
   const { asPath } = useRouter()
   const { isUnownedAccount } = useUnownedAccount()
   const { isDesktop } = useViewport()
@@ -345,7 +345,7 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
       const group = mangoStore.getState().group
       const tradeForm = mangoStore.getState().tradeForm
 
-      if (!group || !selectedMarket) return
+      if (!group || !marketAdapter) return
 
       let price: number
       if (tradeForm.tradeType === 'Market') {
@@ -359,24 +359,9 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
         price = Number(tradeForm.price)
       }
 
-      let minOrderDecimals: number
-      let tickDecimals: number
-      if (selectedMarket instanceof Serum3Market) {
-        const market = group.getSerum3ExternalMarket(
-          selectedMarket.serumMarketExternal,
-        )
-        minOrderDecimals = getDecimalCount(market.minOrderSize)
-        tickDecimals = getDecimalCount(market.tickSize)
-      } else if (selectedMarket instanceof OpenbookV2Market) {
-        const market = group.getOpenbookV2ExternalMarket(
-          selectedMarket.openbookMarketExternal,
-        )
-        minOrderDecimals = market.baseDecimals
-        tickDecimals = market.quoteDecimals
-      } else {
-        minOrderDecimals = getDecimalCount(selectedMarket.minOrderSize)
-        tickDecimals = getDecimalCount(selectedMarket.tickSize)
-      }
+      // TODO: cache on MarketAdapter to save on re-compute
+      const minOrderDecimals = getDecimalCount(marketAdapter.minOrderSize)
+      const tickDecimals = getDecimalCount(marketAdapter.tickSize)
 
       if (type === 'quote') {
         const floorBalance = floorToDecimal(balance, tickDecimals).toNumber()
@@ -398,7 +383,7 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
         })
       }
     },
-    [selectedMarket],
+    [marketAdapter],
   )
 
   const handleSwapFormBalanceClick = useCallback(
@@ -449,7 +434,10 @@ const Balance = ({ bank }: { bank: BankWithBalance }) => {
   const balance = bank.balance
 
   const isBaseOrQuote = useMemo(() => {
-    if (selectedMarket instanceof Serum3Market) {
+    if (
+      selectedMarket instanceof Serum3Market ||
+      selectedMarket instanceof OpenbookV2Market
+    ) {
       if (tokenBank.tokenIndex === selectedMarket.baseTokenIndex) {
         return 'base'
       } else if (tokenBank.tokenIndex === selectedMarket.quoteTokenIndex) {
