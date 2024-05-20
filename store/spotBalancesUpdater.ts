@@ -1,6 +1,9 @@
 import { toUiDecimals } from '@blockworks-foundation/mango-v4'
 import { SpotBalances } from 'types'
 import mangoStore from './mangoStore'
+import { OpenOrders } from '@project-serum/serum'
+import { OpenOrdersAccount } from '@openbook-dex/openbook-v2'
+import { BN } from '@coral-xyz/anchor'
 
 const spotBalancesUpdater = () => {
   const mangoAccount = mangoStore.getState().mangoAccount.current
@@ -18,7 +21,7 @@ const spotBalancesUpdater = () => {
     if (!market) continue
     const openOrdersAccForMkt = openOrdersAccounts.find((oo) =>
       oo.market.equals(market.serumMarketExternal),
-    )
+    ) as OpenOrders | undefined
 
     let baseTokenUnsettled = 0
     let quoteTokenUnsettled = 0
@@ -83,6 +86,64 @@ const spotBalancesUpdater = () => {
     }
     baseBalances.inOrders += baseTokenLockedInOrder
     baseBalances.unsettled += baseTokenUnsettled
+  }
+
+  for (const openbook of mangoAccount.openbookV2Active()) {
+    const market = group.getOpenbookV2MarketByMarketIndex(openbook.marketIndex)
+    if (!market) continue
+
+    const openOrdersAccForMkt = openOrdersAccounts.find((oo) =>
+      oo.market.equals(market.openbookMarketExternal),
+    ) as OpenOrdersAccount | undefined
+
+    if (openOrdersAccForMkt) {
+      const {
+        asksBaseLots,
+        bidsQuoteLots,
+        baseFreeNative,
+        quoteFreeNative,
+        lockedMakerFees,
+      } = openOrdersAccForMkt.position
+
+      const { baseLotSize, baseTokenIndex, quoteLotSize, quoteTokenIndex } =
+        openbook
+
+      const baseLockedNative = new BN(baseLotSize).imul(asksBaseLots)
+      const quoteLockedNative = new BN(quoteLotSize)
+        .imul(bidsQuoteLots)
+        .iadd(lockedMakerFees)
+
+      const baseBank = group.getFirstBankByTokenIndex(baseTokenIndex)
+      const quoteBank = group.getFirstBankByTokenIndex(quoteTokenIndex)
+      const baseMint = baseBank.mint.toString()
+      const quoteMint = quoteBank.mint.toString()
+
+      const baseBalances = (balances[baseMint] ??= {
+        inOrders: 0,
+        unsettled: 0,
+      })
+      baseBalances.inOrders += toUiDecimals(
+        baseLockedNative,
+        baseBank.mintDecimals,
+      )
+      baseBalances.unsettled += toUiDecimals(
+        baseFreeNative,
+        baseBank.mintDecimals,
+      )
+
+      const quoteBalances = (balances[quoteMint] ??= {
+        inOrders: 0,
+        unsettled: 0,
+      })
+      quoteBalances.inOrders += toUiDecimals(
+        quoteLockedNative,
+        quoteBank.mintDecimals,
+      )
+      quoteBalances.unsettled += toUiDecimals(
+        quoteFreeNative,
+        quoteBank.mintDecimals,
+      )
+    }
   }
 
   set((s) => {

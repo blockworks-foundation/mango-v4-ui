@@ -5,11 +5,11 @@ import Mango4, {
   MangoClient,
   OpenbookV2Market,
   PerpMarket,
-  PerpOrder,
   Serum3Market,
   BookSideType,
 } from '@blockworks-foundation/mango-v4'
-import { AnchorProvider } from '@coral-xyz/anchor'
+// import OpenOrders from '@components/trade/OpenOrders'
+import { AnchorProvider, BN } from '@coral-xyz/anchor'
 import Openbook2, {
   Market as Openbook2Market,
   BookSide as Openbook2BookSide,
@@ -17,10 +17,14 @@ import Openbook2, {
   OpenBookV2Client,
   SideUtils,
 } from '@openbook-dex/openbook-v2'
-import Serum3, { Orderbook as Serum3Orderbook } from '@project-serum/serum'
-import { Order as Serum3Order } from '@project-serum/serum/lib/market'
+import Serum3, {
+  Orderbook as Serum3Orderbook,
+  decodeEventQueue,
+} from '@project-serum/serum'
+// import { OpenOrders as Serum3OpenOrders, Order as Serum3Order } from '@project-serum/serum/lib/market'
+import { Event as Serum3Event } from '@project-serum/serum/lib/queue'
 import { Keypair, PublicKey } from '@solana/web3.js'
-import { OpenbookOrder } from '@store/mangoStore'
+// import { OpenbookOrder } from '@store/mangoStore'
 import EmptyWallet from 'utils/wallet'
 
 // Define a new interface that extends MarketAccount and adds the tickSize property
@@ -30,6 +34,8 @@ export interface ExtendedMarketAccount extends MarketAccount {
   publicKey: PublicKey
 }
 
+type Side = 'bid' | 'ask'
+
 export interface MarketAdapter {
   tickSize: number
   minOrderSize: number
@@ -38,17 +44,41 @@ export interface MarketAdapter {
   isPerpMarket(): boolean
   isSpotMarket(): boolean
   getBanks(group: Group): { base?: Bank; quote: Bank }
-  getBookPks(): { bids: PublicKey; asks: PublicKey }
-  decodeBook(side: 'bid' | 'ask', data: Buffer): BookSideAdapter
+  getBookPks(): { bids: PublicKey; asks: PublicKey; events: PublicKey }
+  decodeBook(side: Side, data: Buffer): BookSideAdapter
+  // decodeEvents(data: Buffer): EventsAdapter
+  // decodeOpenOrders(data: Buffer): OpenOrdersAdapter
 }
 
 export interface BookSideAdapter {
   getL2(depth: number): [number, number][]
-  getOpenOrdersPrices(
-    openOrders: Record<string, Serum3Order[] | PerpOrder[] | OpenbookOrder[]>,
-  ): number[]
-  updateOracles(values: number[]): void
+  // getOpenOrders(orderIds: BN[]): Order[]
+  // updateOracles(values: number[]): void
 }
+
+/* future use
+export interface Order {
+  orderId: BN
+  price: number
+  size: number
+  side: Side
+}
+
+export interface EventsAdapter {
+  getUnprocessedFills(ids: BN[]): Fill[]
+}
+
+export interface Fill {
+  orderId: BN
+  baseDelta: number
+  quoteDelta: number
+}
+
+export interface OpenOrdersAdapter {
+  lockedBalance: {[mintPk: string]: number}
+  unsettledBalance: {[mintPk: string]: number}
+}
+*/
 
 export function wrapMarketInAdapter(
   client: MangoClient,
@@ -113,13 +143,35 @@ export class Serum3MarketAdapter {
   }
 
   getBookPks() {
-    return { bids: this.market.bidsAddress, asks: this.market.asksAddress }
+    return {
+      bids: this.market.bidsAddress,
+      asks: this.market.asksAddress,
+      events: this.market.decoded.eventQueue,
+    }
   }
 
-  decodeBook(_side: 'bid' | 'ask', data: Buffer) {
+  decodeBook(_side: Side, data: Buffer) {
     return new Serum3BookSideAdaper(this, data)
   }
 }
+
+export class Serum3BookSideAdaper implements BookSideAdapter {
+  bookSide: Serum3Orderbook
+
+  constructor(
+    public market: Serum3MarketAdapter,
+    data: Buffer,
+  ) {
+    this.bookSide = Serum3Orderbook.decode(market.market, data)
+  }
+
+  getL2(depth: number): [number, number][] {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return this.bookSide.getL2(depth) as any
+  }
+}
+
+// openbook2
 
 export class Openbook2MarketAdaper {
   tickSize: number
@@ -146,13 +198,43 @@ export class Openbook2MarketAdaper {
   }
 
   getBookPks() {
-    return { bids: this.market.account.bids, asks: this.market.account.asks }
+    return {
+      bids: this.market.account.bids,
+      asks: this.market.account.asks,
+      events: this.market.account.eventHeap,
+    }
   }
 
-  decodeBook(side: 'bid' | 'ask', data: Buffer): BookSideAdapter {
+  decodeBook(side: Side, data: Buffer): BookSideAdapter {
     return new Openbook2BookSideAdapter(this, side, data)
   }
 }
+
+export class Openbook2BookSideAdapter implements BookSideAdapter {
+  bookSide: Openbook2.BookSide
+
+  constructor(
+    public market: Openbook2MarketAdaper,
+    side: Side,
+    data: Buffer,
+  ) {
+    const bookAccount = Openbook2BookSide.decodeAccountfromBuffer(data)
+    const sideTyped = side === 'bid' ? SideUtils.Bid : SideUtils.Ask
+    this.bookSide = new Openbook2BookSide(
+      market.market,
+      PublicKey.default,
+      bookAccount,
+      sideTyped,
+    )
+  }
+
+  getL2(depth: number): [number, number][] {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return this.bookSide.getL2(depth) as any
+  }
+}
+
+// mango4perp
 
 export class Mango4PerpMarketAdaper implements MarketAdapter {
   tickSize: number
@@ -181,71 +263,15 @@ export class Mango4PerpMarketAdaper implements MarketAdapter {
   }
 
   getBookPks() {
-    return { bids: this.market.bids, asks: this.market.asks }
+    return {
+      bids: this.market.bids,
+      asks: this.market.asks,
+      events: this.market.eventQueue,
+    }
   }
 
-  decodeBook(side: 'bid' | 'ask', data: Buffer): BookSideAdapter {
+  decodeBook(side: Side, data: Buffer): BookSideAdapter {
     return new Mango4PerpBookSideAdaper(this, side, data)
-  }
-}
-
-// BookSideAdapters
-
-export class Serum3BookSideAdaper implements BookSideAdapter {
-  bookSide: Serum3Orderbook
-
-  constructor(
-    public market: Serum3MarketAdapter,
-    data: Buffer,
-  ) {
-    this.bookSide = Serum3Orderbook.decode(market.market, data)
-  }
-
-  getL2(depth: number): [number, number][] {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return this.bookSide.getL2(depth) as any
-  }
-
-  getOpenOrdersPrices(
-    _openOrders: Record<string, Serum3Order[] | PerpOrder[] | OpenbookOrder[]>,
-  ) {
-    return []
-  }
-
-  updateOracles(_values: number[]) {
-    return
-  }
-}
-
-export class Openbook2BookSideAdapter implements BookSideAdapter {
-  bookSide: Openbook2.BookSide
-
-  constructor(
-    public market: Openbook2MarketAdaper,
-    side: 'bid' | 'ask',
-    data: Buffer,
-  ) {
-    const bookAccount = Openbook2BookSide.decodeAccountfromBuffer(data)
-    const sideTyped = side === 'bid' ? SideUtils.Bid : SideUtils.Ask
-    this.bookSide = new Openbook2BookSide(
-      market.market,
-      PublicKey.default,
-      bookAccount,
-      sideTyped,
-    )
-  }
-
-  getL2(depth: number): [number, number][] {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return this.bookSide.getL2(depth) as any
-  }
-  getOpenOrdersPrices(
-    _openOrders: Record<string, Serum3Order[] | PerpOrder[] | OpenbookOrder[]>,
-  ) {
-    return []
-  }
-  updateOracles(_values: number[]) {
-    return
   }
 }
 
@@ -254,7 +280,7 @@ export class Mango4PerpBookSideAdaper implements BookSideAdapter {
 
   constructor(
     public market: Mango4PerpMarketAdaper,
-    side: 'bid' | 'ask',
+    side: Side,
     data: Buffer,
   ) {
     const bookAccount = Mango4BookSide.decodeAccountfromBuffer(data)
@@ -265,6 +291,8 @@ export class Mango4PerpBookSideAdaper implements BookSideAdapter {
       sideTyped,
       bookAccount,
     )
+    // this is a side-effect that was present in the previous code
+    // should not be required, but safer to leave in until proper testing
     if (side === 'bid') {
       this.market.market._bids = this.bookSide
     } else {
@@ -274,13 +302,5 @@ export class Mango4PerpBookSideAdaper implements BookSideAdapter {
 
   getL2(depth: number): [number, number][] {
     return this.bookSide.getL2Ui(depth)
-  }
-  getOpenOrdersPrices(
-    _openOrders: Record<string, Serum3Order[] | PerpOrder[] | OpenbookOrder[]>,
-  ) {
-    return []
-  }
-  updateOracles(_values: number[]) {
-    return
   }
 }

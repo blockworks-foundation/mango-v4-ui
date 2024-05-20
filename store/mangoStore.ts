@@ -247,7 +247,7 @@ export type MangoStore = {
     current: MangoAccount | undefined
     initialLoad: boolean
     lastSlot: number
-    openOrderAccounts: OpenOrders[]
+    openOrderAccounts: (OpenOrders | OpenOrdersAccount)[]
     openOrders: Record<string, SerumOrder[] | PerpOrder[] | OpenbookOrder[]>
     perpPositions: PerpPosition[]
     spotBalances: SpotBalances
@@ -828,6 +828,7 @@ const mangoStore = create<MangoStore>()(
               SerumOrder[] | PerpOrder[] | OpenbookOrder[]
             > = {}
             let serumOpenOrderAccounts: OpenOrders[] = []
+            let openbookOpenOrderAccounts: OpenOrdersAccount[] = []
 
             const activeSerumMarketIndices = [
               ...new Set(mangoAccount.serum3Active().map((s) => s.marketIndex)),
@@ -885,11 +886,17 @@ const mangoStore = create<MangoStore>()(
                   (o) => new OpenbookOrder(o),
                 )
               })
+              openbookOpenOrderAccounts = Array.from(
+                mangoAccount.openbookV2OosMapByMarketIndex.values(),
+              )
             }
 
             set((s) => {
               s.mangoAccount.openOrders = openOrders
-              s.mangoAccount.openOrderAccounts = serumOpenOrderAccounts
+              s.mangoAccount.openOrderAccounts = [
+                ...serumOpenOrderAccounts,
+                ...openbookOpenOrderAccounts,
+              ]
             })
           } catch (e) {
             console.error('Failed loading open orders ', e)

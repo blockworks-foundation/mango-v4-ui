@@ -3,6 +3,7 @@ import mangoStore from '@store/mangoStore'
 import { useMemo } from 'react'
 import useMangoAccount from './useMangoAccount'
 import useMangoGroup from './useMangoGroup'
+import { OpenOrders } from '@project-serum/serum'
 
 export function useUnsettledSpotBalances() {
   const { group } = useMangoGroup()
@@ -14,11 +15,13 @@ export function useUnsettledSpotBalances() {
     if (!group || !mangoAccount || !openOrdersAccounts) return {}
     const unsettledBalances: Record<string, { base: number; quote: number }> =
       {}
+
+    // TODO: add openbook v2 or use s.mangoAccount.spotBalance
     mangoAccount.serum3Active().forEach((serumMarket) => {
       const market = group.getSerum3MarketByMarketIndex(serumMarket.marketIndex)
       const openOrdersAccForMkt = openOrdersAccounts.find((oo) =>
         oo.market.equals(market.serumMarketExternal),
-      )
+      ) as OpenOrders | undefined
       if (openOrdersAccForMkt) {
         const baseTokenUnsettled = toUiDecimals(
           openOrdersAccForMkt.baseTokenFree.toNumber(),

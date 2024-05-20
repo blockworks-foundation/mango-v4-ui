@@ -16,6 +16,7 @@ import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
 import { getMultipleAccounts } from '@project-serum/anchor/dist/cjs/utils/rpc'
 import { formatCurrencyValue } from 'utils/numbers'
 import TopBarStore from '@store/topBarStore'
+import { OpenOrders } from '@project-serum/serum'
 
 const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
   const { t } = useTranslation(['close-account'])
@@ -84,9 +85,14 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
     if (!mangoAccount?.current) {
       return
     }
+    // TODO: add openbook v2 support
+    // difficult bc. we are not directly storing the addresses
+    // but only parsed account data
     const accountKeys = [
       mangoAccount.current!.publicKey,
-      ...mangoAccount.openOrderAccounts.map((x) => x.address),
+      ...mangoAccount.openOrderAccounts
+        .filter((oo) => oo instanceof OpenOrders)
+        .map((x) => (x as OpenOrders).address),
     ]
     const accounts = await getMultipleAccounts(connection, accountKeys)
     const lamports =
