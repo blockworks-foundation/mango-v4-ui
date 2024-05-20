@@ -56,7 +56,7 @@ import PerpSideBadge from './PerpSideBadge'
 import TableMarketName from './TableMarketName'
 import { useSortableData } from 'hooks/useSortableData'
 import { BN } from '@coral-xyz/anchor'
-import { ExtendedMarketAccount, isOpenbookV2OpenOrder } from 'types/market'
+import { ExtendedMarketAccount } from 'types/market'
 import BigNumber from 'bignumber.js'
 import NukeIcon from '@components/icons/NukeIcon'
 
@@ -372,7 +372,7 @@ const OpenOrders = ({
     order: Order | PerpOrder | OpenbookOrder,
     tickSize: number,
   ) => {
-    if (isOpenbookV2OpenOrder(order)) return
+    if (order instanceof OpenbookOrder) return
     setModifyOrderId(order.orderId.toString())
     setModifiedOrderSize(order.size.toString())
     setModifiedOrderPrice(order.price.toFixed(getDecimalCount(tickSize)))
@@ -401,7 +401,6 @@ const OpenOrders = ({
         } else return orders
       })
       .map(([marketPk, orders]) => {
-        console.log('orders', orders)
         for (const order of orders) {
           let market: PerpMarket | Serum3Market | OpenbookV2Market
           let tickSize: number
@@ -413,6 +412,7 @@ const OpenOrders = ({
           let size
           let price
           let orderId: BN
+
           if (order instanceof PerpOrder) {
             size = order.size
             price = order.price
@@ -439,7 +439,7 @@ const OpenOrders = ({
               )
               filledQuantity = filledOrder ? filledOrder.quantity : 0
             }
-          } else if (isOpenbookV2OpenOrder(order)) {
+          } else if (order instanceof OpenbookOrder) {
             side = 'buy'
             size = 0.01
             price = 1

@@ -1,10 +1,9 @@
 import { PerpOrder } from '@blockworks-foundation/mango-v4'
-import mangoStore from '@store/mangoStore'
+import mangoStore, { OpenbookOrder } from '@store/mangoStore'
 import { useQuery } from '@tanstack/react-query'
 import { fetchFilledOrders } from 'utils/account'
 import useMangoAccount from './useMangoAccount'
 import { useMemo } from 'react'
-import { isOpenbookV2OpenOrder } from 'types/market'
 
 export default function useFilledOrders() {
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
@@ -19,7 +18,7 @@ export default function useFilledOrders() {
       .flat()
       .filter((o) => !(o instanceof PerpOrder))
       .map((s) => {
-        if (isOpenbookV2OpenOrder(s)) {
+        if (s instanceof OpenbookOrder) {
           return ''
         } else {
           return s.orderId.toString()

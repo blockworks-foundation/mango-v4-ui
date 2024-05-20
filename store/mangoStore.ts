@@ -767,7 +767,7 @@ const mangoStore = create<MangoStore>()(
             }
 
             if (newSelectedMangoAccount) {
-              await newSelectedMangoAccount.reloadSerum3OpenOrders(client)
+              await newSelectedMangoAccount.reloadAllOpenOrders(client)
               set((state) => {
                 state.mangoAccount.current = newSelectedMangoAccount
                 state.mangoAccount.initialLoad = false
@@ -776,7 +776,7 @@ const mangoStore = create<MangoStore>()(
             }
 
             await Promise.all(
-              mangoAccounts.map((ma) => ma.reloadSerum3OpenOrders(client)),
+              mangoAccounts.map((ma) => ma.reloadAllOpenOrders(client)),
             )
 
             set((state) => {
@@ -879,10 +879,10 @@ const mangoStore = create<MangoStore>()(
               await mangoAccount.reloadOpenbookV2OpenOrders(client)
               Array.from(
                 mangoAccount.openbookV2OosMapByMarketIndex.values(),
-              ).forEach((order) => {
-                const marketPk = order.market.toString()
-                openOrders[marketPk] = order.openOrders.map(
-                  (oo) => new OpenbookOrder(oo),
+              ).forEach((oo) => {
+                const marketPk = oo.market.toString()
+                openOrders[marketPk] = oo.openOrders.map(
+                  (o) => new OpenbookOrder(o),
                 )
               })
             }

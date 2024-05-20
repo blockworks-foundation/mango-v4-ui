@@ -184,15 +184,13 @@ const HydrateStore = () => {
 
         // don't fetch serum3OpenOrders if the slot is old
         if (context.slot > mangoStore.getState().mangoAccount.lastSlot) {
-          if (newMangoAccount.serum3Active().length > 0) {
-            await newMangoAccount.reloadSerum3OpenOrders(client)
-            // check again that the slot is still the most recent after the reloading open orders
-            if (context.slot > mangoStore.getState().mangoAccount.lastSlot) {
-              set((s) => {
-                s.mangoAccount.current = newMangoAccount
-                s.mangoAccount.lastSlot = context.slot
-              })
-            }
+          await newMangoAccount.reloadAllOpenOrders(client)
+          // check again that the slot is still the most recent after the reloading open orders
+          if (context.slot > mangoStore.getState().mangoAccount.lastSlot) {
+            set((s) => {
+              s.mangoAccount.current = newMangoAccount
+              s.mangoAccount.lastSlot = context.slot
+            })
           }
           actions.fetchOpenOrders()
         }
