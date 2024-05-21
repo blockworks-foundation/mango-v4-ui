@@ -344,6 +344,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         undefined, // mangoAccount
         onlyDirect ? 'JUPITER_DIRECT' : 'JUPITER',
         connection,
+        undefined,
       )
     },
     [wallet.publicKey, connection],

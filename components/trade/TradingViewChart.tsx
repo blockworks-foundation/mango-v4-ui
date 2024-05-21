@@ -49,6 +49,7 @@ import { findSerum3MarketPkInOpenOrders } from './OpenOrders'
 import { Transition } from '@headlessui/react'
 import useThemeWrapper from 'hooks/useThemeWrapper'
 import { handleCancelTriggerOrder } from '@components/swap/SwapTriggerOrders'
+import useAnalytics from 'hooks/useAnalytics'
 
 export interface ChartContainerProps {
   container: ChartingLibraryWidgetOptions['container']
@@ -93,6 +94,8 @@ const TradingViewChart = () => {
   const [orderToModify, setOrderToModify] = useState<Order | PerpOrder | null>(
     null,
   )
+
+  const { sendAnalytics } = useAnalytics()
   const [modifiedPrice, setModifiedPrice] = useState('')
   const [showOrderLinesLocalStorage, toggleShowOrderLinesLocalStorage] =
     useLocalStorageState(SHOW_ORDER_LINES_KEY, true)
@@ -173,6 +176,10 @@ const TradingViewChart = () => {
       }
     }
   }, [chartReady, selectedMarketName, showOrderLinesLocalStorage])
+
+  useEffect(() => {
+    sendAnalytics({ selectedMarketName: selectedMarketName }, 'chart_page')
+  }, [selectedMarketName, sendAnalytics])
 
   useEffect(() => {
     if (showOrderLines !== showOrderLinesLocalStorage) {

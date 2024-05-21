@@ -65,6 +65,7 @@ import {
 import { isTokenInsured } from '@components/DepositForm'
 import UninsuredNotification from '@components/shared/UninsuredNotification'
 import { sendTxAndConfirm } from 'utils/governance/tools'
+import useAnalytics from 'hooks/useAnalytics'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
@@ -302,6 +303,7 @@ const SwapReviewRouteInfo = ({
     INITIAL_SOUND_SETTINGS,
   )
   const focusRef = useRef<HTMLButtonElement>(null)
+  const { sendAnalytics } = useAnalytics()
 
   const [refetchRoutePercentage, setRefetchRoutePercentage] = useState(0)
 
@@ -430,7 +432,7 @@ const SwapReviewRouteInfo = ({
       )
         return
       setSubmitting(true)
-
+      let tx = ''
       const [ixs, alts] =
         // selectedRoute.routerName === 'Mango'
         //   ? await prepareMangoRouterInstructions(
@@ -452,7 +454,15 @@ const SwapReviewRouteInfo = ({
             )
 
       try {
-        const { signature: tx, slot } = await client.marginTrade({
+        sendAnalytics(
+          {
+            inputMintPk: inputBank.mint,
+            amountIn: amountIn.toNumber(),
+            outputMintPk: outputBank.mint,
+          },
+          'swapping',
+        )
+        const { signature, slot } = await client.marginTrade({
           group,
           mangoAccount,
           inputMintPk: inputBank.mint,
@@ -462,6 +472,7 @@ const SwapReviewRouteInfo = ({
           userDefinedAlts: alts,
           flashLoanType: { swap: {} },
         })
+        tx = signature
         set((s) => {
           s.successAnimation.swap = true
           s.swap.amountIn = ''
@@ -470,10 +481,16 @@ const SwapReviewRouteInfo = ({
         if (soundSettings['swap-success']) {
           successSound.play()
         }
+        sendAnalytics(
+          {
+            tx: `${tx}`,
+          },
+          'swapSuccess',
+        )
         notify({
           title: 'Transaction confirmed',
           type: 'success',
-          txid: tx,
+          txid: signature,
           noSound: true,
         })
         actions.fetchGroup()
@@ -483,6 +500,13 @@ const SwapReviewRouteInfo = ({
           onSuccess()
         }
       } catch (e) {
+        sendAnalytics(
+          {
+            e: `${e}`,
+            tx: `${tx}`,
+          },
+          'onSwapError',
+        )
         console.error('onSwap error: ', e)
         sentry.captureException(e)
         if (isMangoError(e)) {
@@ -547,6 +571,7 @@ const SwapReviewRouteInfo = ({
       }
     }
   }, [
+    sendAnalytics,
     selectedRoute,
     wallet.publicKey,
     slippage,

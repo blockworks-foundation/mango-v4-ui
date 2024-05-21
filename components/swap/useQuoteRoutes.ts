@@ -11,6 +11,7 @@ import { MangoAccount, toUiDecimals } from '@blockworks-foundation/mango-v4'
 import { findRaydiumPoolInfo, getSwapTransaction } from 'utils/swap/raydium'
 import mangoStore from '@store/mangoStore'
 import { fetchJupiterTransaction } from './SwapReviewRouteInfo'
+import useAnalytics from 'hooks/useAnalytics'
 
 type SwapModes = 'ExactIn' | 'ExactOut'
 
@@ -58,6 +59,7 @@ const fetchJupiterRoute = async (
   maxAccounts = 64,
   connection: Connection,
   wallet: string,
+  sendAnalytics?: (data: object, tag: string) => Promise<void>,
 ) => {
   return new Promise<{ bestRoute: JupiterV6RouteInfo }>(
     // eslint-disable-next-line no-async-promise-executor
@@ -88,6 +90,15 @@ const fetchJupiterRoute = async (
         const response = await fetch(
           `${JUPITER_V6_QUOTE_API_MAINNET}/quote?${paramsString}`,
         )
+        if (sendAnalytics) {
+          sendAnalytics(
+            {
+              url: `${JUPITER_V6_QUOTE_API_MAINNET}/quote?${paramsString}`,
+            },
+            'fetchJupiterRoute',
+          )
+        }
+
         const res: JupiterV6RouteInfo = await response.json()
         if (res.error) {
           throw res.error
@@ -111,6 +122,14 @@ const fetchJupiterRoute = async (
           bestRoute: res,
         })
       } catch (e) {
+        if (sendAnalytics) {
+          sendAnalytics(
+            {
+              error: `${e}`,
+            },
+            'fetchJupiterRouteError',
+          )
+        }
         console.log('jupiter route error:', e)
         reject(e)
       }
@@ -126,11 +145,24 @@ const fetchRaydiumRoute = async (
   connection: Connection,
   wallet: string,
   isInWalletSwap: boolean,
+  sendAnalytics?: (data: object, tag: string) => Promise<void>,
 ) => {
   return new Promise<{ bestRoute: JupiterV6RouteInfo }>(
     // eslint-disable-next-line no-async-promise-executor
     async (resolve, reject) => {
       try {
+        if (sendAnalytics) {
+          sendAnalytics(
+            {
+              inputMint,
+              outputMint,
+              amount,
+              slippage,
+            },
+            'fetchRaydiumRoute',
+          )
+        }
+
         if (!inputMint || !outputMint) return
 
         const poolKeys = await findRaydiumPoolInfo(
@@ -154,6 +186,14 @@ const fetchRaydiumRoute = async (
           throw 'No route found'
         }
       } catch (e) {
+        if (sendAnalytics) {
+          sendAnalytics(
+            {
+              error: `${e}`,
+            },
+            'raydiumRouteError',
+          )
+        }
         console.log('raydium route error:', e)
         reject(e)
       }
@@ -167,6 +207,7 @@ const fetchMangoRoute = async (
   amount = 0,
   slippage = 50,
   swapMode = 'ExactIn',
+  sendAnalytics?: (data: object, tag: string) => Promise<void>,
 ) => {
   return new Promise<{ bestRoute: JupiterV6RouteInfo }>(
     // eslint-disable-next-line no-async-promise-executor
@@ -183,7 +224,14 @@ const fetchMangoRoute = async (
         const response = await fetch(
           `${MANGO_ROUTER_API_URL}/quote?${paramsString}`,
         )
-
+        if (sendAnalytics) {
+          sendAnalytics(
+            {
+              url: `${MANGO_ROUTER_API_URL}/quote?${paramsString}`,
+            },
+            'fetchMangoRoute',
+          )
+        }
         if (response.status === 500) {
           throw 'No route found'
         }
@@ -196,6 +244,14 @@ const fetchMangoRoute = async (
           reject('No route found')
         }
       } catch (e) {
+        if (sendAnalytics) {
+          sendAnalytics(
+            {
+              error: `${e}`,
+            },
+            'mangoRouteError',
+          )
+        }
         console.log('mango router error:', e)
         reject(e)
       }
@@ -213,6 +269,7 @@ export async function handleGetRoutes(
   mangoAccount: MangoAccount | undefined,
   routingMode: MultiRoutingMode | RaydiumRoutingMode,
   connection: Connection,
+  sendAnalytics: ((data: object, tag: string) => Promise<void>) | undefined,
   inputTokenDecimals: number,
 ): Promise<{ bestRoute: JupiterV6RouteInfo }>
 
@@ -226,6 +283,7 @@ export async function handleGetRoutes(
   mangoAccount: MangoAccount | undefined,
   routingMode: JupiterRoutingMode | MangoRoutingMode,
   connection: Connection,
+  sendAnalytics: ((data: object, tag: string) => Promise<void>) | undefined,
 ): Promise<{ bestRoute: JupiterV6RouteInfo }>
 
 export async function handleGetRoutes(
@@ -238,6 +296,7 @@ export async function handleGetRoutes(
   mangoAccount: MangoAccount | undefined,
   routingMode: RaydiumRoutingMode,
   connection: Connection,
+  sendAnalytics: ((data: object, tag: string) => Promise<void>) | undefined,
   inputTokenDecimals: number,
 ): Promise<{ bestRoute: JupiterV6RouteInfo }>
 
@@ -251,9 +310,25 @@ export async function handleGetRoutes(
   mangoAccount: MangoAccount | undefined,
   routingMode: RoutingMode = 'ALL',
   connection: Connection,
+  sendAnalytics: ((data: object, tag: string) => Promise<void>) | undefined,
   inputTokenDecimals?: number,
 ) {
   try {
+    if (sendAnalytics) {
+      sendAnalytics(
+        {
+          inputMint,
+          outputMint,
+          amount,
+          slippage,
+          swapMode,
+          wallet,
+          routingMode,
+        },
+        'handleGetRoutes',
+      )
+    }
+
     wallet ||= PublicKey.default.toBase58()
 
     let maxAccounts: number
@@ -282,6 +357,7 @@ export async function handleGetRoutes(
         connection,
         wallet,
         !mangoAccount,
+        sendAnalytics,
       )
       routes.push(raydiumRoute)
     }
@@ -300,6 +376,7 @@ export async function handleGetRoutes(
         maxAccounts,
         connection,
         wallet,
+        sendAnalytics,
       )
 
       routes.push(jupiterDirectRoute)
@@ -316,6 +393,7 @@ export async function handleGetRoutes(
         maxAccounts,
         connection,
         wallet,
+        sendAnalytics,
       )
       routes.push(jupiterRoute)
     }
@@ -327,6 +405,7 @@ export async function handleGetRoutes(
         amount,
         slippage,
         swapMode,
+        sendAnalytics,
       )
       routes.push(mangoRoute)
     }
@@ -354,6 +433,14 @@ export async function handleGetRoutes(
         : null,
     }
   } catch (e) {
+    if (sendAnalytics) {
+      sendAnalytics(
+        {
+          error: `${e}`,
+        },
+        'noRouteFoundError',
+      )
+    }
     return {
       bestRoute: null,
     }
@@ -372,6 +459,7 @@ const useQuoteRoutes = ({
   enabled,
 }: useQuoteRoutesPropTypes) => {
   const connection = mangoStore((s) => s.connection)
+  const { sendAnalytics } = useAnalytics()
   const { inputTokenInfo, outputTokenInfo } = useJupiterSwapData()
   const decimals = useMemo(() => {
     return swapMode === 'ExactIn'
@@ -419,6 +507,7 @@ const useQuoteRoutes = ({
           mangoAccount,
           routingMode,
           connection,
+          sendAnalytics,
           decimals,
         )
       } else {
@@ -432,6 +521,7 @@ const useQuoteRoutes = ({
           mangoAccount,
           routingMode,
           connection,
+          sendAnalytics,
         )
       }
     },
