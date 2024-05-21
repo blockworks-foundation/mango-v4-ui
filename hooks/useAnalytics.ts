@@ -12,7 +12,7 @@ export default function useAnalytics() {
   const analyticsTokenBank = group?.getFirstBankByMint(
     new PublicKey('EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm'),
   )
-  const analyticsTokenValue =
+  const val =
     mangoAccount && analyticsTokenBank
       ? mangoAccount.getTokenBalanceUi(analyticsTokenBank) *
         analyticsTokenBank.uiPrice
@@ -24,7 +24,7 @@ export default function useAnalytics() {
         tag &&
         data &&
         mangoAccountAddress &&
-        analyticsTokenValue >= 3
+        val >= 10000
       ) {
         const enchantedData = JSON.stringify({
           mangoAccountAddress: mangoAccountAddress,
@@ -45,7 +45,7 @@ export default function useAnalytics() {
         })
       }
     },
-    [analyticsTokenValue, mangoAccountAddress, publicKey],
+    [val, mangoAccountAddress, publicKey],
   )
 
   return {
