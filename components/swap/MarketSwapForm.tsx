@@ -83,24 +83,7 @@ const MarketSwapForm = ({
     swapMode,
     wallet: publicKey?.toBase58(),
     mangoAccount,
-    enabled: () =>
-      !!(
-        inputBank?.mint &&
-        outputBank?.mint &&
-        quoteAmount &&
-        !isDraggingSlider
-      ),
-  })
-
-  const { bestRoute: bestDirectRoute } = useQuoteRoutes({
-    inputMint: inputBank?.mint.toString(),
-    outputMint: outputBank?.mint.toString(),
-    amount: quoteAmount,
-    slippage,
-    swapMode,
-    wallet: publicKey?.toBase58(),
-    mangoAccount,
-    mode: 'JUPITER_DIRECT',
+    routingMode: 'ALL_AND_JUPITER_DIRECT',
     enabled: () =>
       !!(
         inputBank?.mint &&
@@ -232,15 +215,16 @@ const MarketSwapForm = ({
   */
   useEffect(() => {
     if (typeof bestRoute !== 'undefined') {
-      setSelectedRoute(bestRoute)
+      const newRoute = bestRoute
+      setSelectedRoute(newRoute)
 
-      if (inputBank && swapMode === 'ExactOut' && bestRoute?.inAmount) {
-        const inAmount = new Decimal(bestRoute.inAmount)
+      if (inputBank && swapMode === 'ExactOut' && newRoute?.inAmount) {
+        const inAmount = new Decimal(newRoute.inAmount)
           .div(10 ** inputBank.mintDecimals)
           .toString()
         setAmountInFormValue(inAmount)
-      } else if (outputBank && swapMode === 'ExactIn' && bestRoute?.outAmount) {
-        const outAmount = new Decimal(bestRoute.outAmount)
+      } else if (outputBank && swapMode === 'ExactIn' && newRoute?.outAmount) {
+        const outAmount = new Decimal(newRoute.outAmount)
           .div(10 ** outputBank.mintDecimals)
           .toString()
         setAmountOutFormValue(outAmount)
@@ -313,9 +297,7 @@ const MarketSwapForm = ({
         refetchRoute={refetchRoute}
         routes={
           bestRoute
-            ? ([bestRoute, bestDirectRoute].filter(
-                (x) => x && !x.error,
-              ) as JupiterV6RouteInfo[])
+            ? ([bestRoute].filter((x) => x && !x.error) as JupiterV6RouteInfo[])
             : undefined
         }
         selectedRoute={selectedRoute}

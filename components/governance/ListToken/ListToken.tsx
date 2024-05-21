@@ -342,11 +342,11 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         mode,
         walletForCheck,
         undefined, // mangoAccount
-        'JUPITER',
-        onlyDirect,
+        onlyDirect ? 'JUPITER_DIRECT' : 'JUPITER',
+        connection,
       )
     },
-    [wallet.publicKey],
+    [wallet.publicKey, connection],
   )
 
   const handleLiquidityCheck = useCallback(

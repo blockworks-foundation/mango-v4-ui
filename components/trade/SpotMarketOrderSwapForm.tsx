@@ -231,7 +231,7 @@ export default function SpotMarketOrderSwapForm() {
       swapMode: 'ExactIn',
       wallet: publicKey?.toBase58(),
       mangoAccount,
-      mode: 'JUPITER',
+      routingMode: 'ALL_AND_JUPITER_DIRECT',
       enabled: () =>
         !!(
           inputBank?.mint &&
@@ -260,15 +260,25 @@ export default function SpotMarketOrderSwapForm() {
       return
 
     setPlacingOrder(true)
-
-    const [ixs, alts] = await fetchJupiterTransaction(
-      connection,
-      selectedRoute,
-      publicKey,
-      slippage,
-      inputBank.mint,
-      outputBank.mint,
-    )
+    const [ixs, alts] =
+      // selectedRoute.routerName === 'Mango'
+      //   ? await prepareMangoRouterInstructions(
+      //       selectedRoute,
+      //       inputBank.mint,
+      //       outputBank.mint,
+      //       mangoAccount.owner,
+      //     )
+      // :
+      selectedRoute.instructions
+        ? [selectedRoute.instructions, []]
+        : await fetchJupiterTransaction(
+            connection,
+            selectedRoute,
+            publicKey,
+            slippage,
+            inputBank.mint,
+            outputBank.mint,
+          )
 
     try {
       const { signature: tx, slot } = await client.marginTrade({

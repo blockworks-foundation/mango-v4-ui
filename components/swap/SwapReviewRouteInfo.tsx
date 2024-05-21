@@ -286,6 +286,7 @@ const SwapReviewRouteInfo = ({
 }: JupiterRouteInfoProps) => {
   const { t } = useTranslation(['common', 'account', 'swap', 'trade'])
   const slippage = mangoStore((s) => s.swap.slippage)
+
   const wallet = useWallet()
   const [showRoutesModal, setShowRoutesModal] = useState<boolean>(false)
   const [swapRate, setSwapRate] = useState<boolean>(false)
@@ -429,6 +430,7 @@ const SwapReviewRouteInfo = ({
       )
         return
       setSubmitting(true)
+
       const [ixs, alts] =
         // selectedRoute.routerName === 'Mango'
         //   ? await prepareMangoRouterInstructions(
@@ -438,14 +440,16 @@ const SwapReviewRouteInfo = ({
         //       mangoAccount.owner,
         //     )
         // :
-        await fetchJupiterTransaction(
-          connection,
-          selectedRoute,
-          wallet.publicKey,
-          slippage,
-          inputBank.mint,
-          outputBank.mint,
-        )
+        selectedRoute.instructions
+          ? [selectedRoute.instructions, []]
+          : await fetchJupiterTransaction(
+              connection,
+              selectedRoute,
+              wallet.publicKey,
+              slippage,
+              inputBank.mint,
+              outputBank.mint,
+            )
 
       try {
         const { signature: tx, slot } = await client.marginTrade({
