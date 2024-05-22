@@ -361,7 +361,7 @@ export const getFormattedBankValues = (group: Group, bank: Bank) => {
     loanOriginationFeeRate: (
       10000 * bank.loanOriginationFeeRate.toNumber()
     ).toFixed(2),
-    collateralFeePerDay: (100 * bank.collateralFeePerDay).toFixed(2),
+    collateralFeePerYear: (100 * 365 * bank.collateralFeePerDay).toFixed(2),
     collectedFeesNative: toUiDecimals(
       bank.collectedFeesNative.toNumber(),
       bank.mintDecimals,
