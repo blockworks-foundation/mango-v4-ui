@@ -38,6 +38,7 @@ import useJupiterSwapData from './useJupiterSwapData'
 // import { Transaction } from '@solana/web3.js'
 import {
   JUPITER_V6_QUOTE_API_MAINNET,
+  MANGO_ROUTER_API_URL,
   SOUND_SETTINGS_KEY,
 } from 'utils/constants'
 import useLocalStorageState from 'hooks/useLocalStorageState'
@@ -216,23 +217,29 @@ export const fetchJupiterTransaction = async (
   slippage: number,
   inputMint: PublicKey,
   outputMint: PublicKey,
+  origin?: 'mango' | 'jupiter' | 'raydium',
 ): Promise<[TransactionInstruction[], AddressLookupTableAccount[]]> => {
   // docs https://station.jup.ag/api-v6/post-swap
   const transactions = await (
-    await fetch(`${JUPITER_V6_QUOTE_API_MAINNET}/swap`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    await fetch(
+      `${
+        origin === 'mango' ? MANGO_ROUTER_API_URL : JUPITER_V6_QUOTE_API_MAINNET
+      }/swap`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          // response from /quote api
+          quoteResponse: selectedRoute,
+          // user public key to be used for the swap
+          userPublicKey,
+          slippageBps: Math.ceil(slippage * 100),
+          wrapAndUnwrapSol: false,
+        }),
       },
-      body: JSON.stringify({
-        // response from /quote api
-        quoteResponse: selectedRoute,
-        // user public key to be used for the swap
-        userPublicKey,
-        slippageBps: Math.ceil(slippage * 100),
-        wrapAndUnwrapSol: false,
-      }),
-    })
+    )
   ).json()
 
   const { swapTransaction } = transactions
@@ -451,6 +458,7 @@ const SwapReviewRouteInfo = ({
               slippage,
               inputBank.mint,
               outputBank.mint,
+              selectedRoute.origin,
             )
 
       try {

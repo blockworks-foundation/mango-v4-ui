@@ -269,7 +269,6 @@ export const getSwapTransaction = async (
     slippage,
     directionIn,
   )
-  console.log(bestRoute, '@@@')
 
   const tokenInAta = getAssociatedTokenAddressSync(
     new PublicKey(directionIn ? bestRoute.outputMint : bestRoute.inputMint),

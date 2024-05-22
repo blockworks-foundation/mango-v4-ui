@@ -110,6 +110,7 @@ const fetchJupiterRoute = async (
           slippage,
           new PublicKey(inputMint),
           new PublicKey(outputMint),
+          'jupiter',
         )
 
         if (
@@ -236,9 +237,10 @@ const fetchMangoRoute = async (
           throw 'No route found'
         }
         const res = await response.json()
+
         if (res.outAmount) {
           resolve({
-            bestRoute: res,
+            bestRoute: { ...res, origin: 'mango' },
           })
         } else {
           reject('No route found')
@@ -378,7 +380,6 @@ export async function handleGetRoutes(
         wallet,
         sendAnalytics,
       )
-
       routes.push(jupiterDirectRoute)
     }
 

@@ -124,6 +124,7 @@ export interface JupiterV6RouteInfo {
   timeTaken?: number
   error?: string
   instructions?: TransactionInstruction[]
+  origin?: 'jupiter' | 'mango' | 'raydium'
 }
 
 export interface JupiterV6RoutePlan {

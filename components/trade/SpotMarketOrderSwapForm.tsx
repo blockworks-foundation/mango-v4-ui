@@ -278,6 +278,7 @@ export default function SpotMarketOrderSwapForm() {
             slippage,
             inputBank.mint,
             outputBank.mint,
+            selectedRoute.origin,
           )
 
     try {
