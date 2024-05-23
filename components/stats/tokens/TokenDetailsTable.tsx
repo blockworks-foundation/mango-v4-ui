@@ -25,6 +25,8 @@ import { useSortableData } from 'hooks/useSortableData'
 import TableTokenName from '@components/shared/TableTokenName'
 import CollateralWeightDisplay from '@components/shared/CollateralWeightDisplay'
 import OracleProvider from '@components/shared/OracleProvider'
+import { floorToDecimal } from 'utils/numbers'
+import { LeverageMaxDisplay } from '@components/explore/SpotTable'
 
 const TokenDetailsTable = () => {
   const { t } = useTranslation([
@@ -56,6 +58,9 @@ const TokenDetailsTable = () => {
       const [oracleProvider, oracleLinkPath] = getOracleProvider(bank)
       const symbol = bank.name
       const collateralFeeRate = bank.collateralFeePerDay * 100
+      const weight = bank.scaledInitAssetWeight(bank.price)
+      const leverageFactor = 1 / (1 - weight.toNumber())
+      const leverageMax = floorToDecimal(leverageFactor, 1).toNumber()
 
       const data = {
         bank,
@@ -69,6 +74,7 @@ const TokenDetailsTable = () => {
         oracleProvider,
         symbol,
         collateralFeeRate,
+        leverageMax,
       }
       formatted.push(data)
     }
@@ -109,6 +115,16 @@ const TokenDetailsTable = () => {
                         titleClass="tooltip-underline"
                       />
                     </Tooltip>
+                  </div>
+                </Th>
+                <Th>
+                  <div className="flex justify-end">
+                    <SortableColumnHeader
+                      sortKey="leverageMax"
+                      sort={() => requestSort('leverageMax')}
+                      sortConfig={sortConfig}
+                      title={t('trade:max-leverage')}
+                    />
                   </div>
                 </Th>
                 <Th>
@@ -204,6 +220,7 @@ const TokenDetailsTable = () => {
                   loanOriginationFee,
                   symbol,
                   collateralFeeRate,
+                  leverageMax,
                 } = data
 
                 return (
@@ -224,6 +241,11 @@ const TokenDetailsTable = () => {
                         <CollateralWeightDisplay bank={bank} />
                         <span className="text-th-fgd-4">|</span>
                         <p>{initLiabWeight.toFixed(2)}x</p>
+                      </div>
+                    </Td>
+                    <Td>
+                      <div className="flex flex-col text-right">
+                        <LeverageMaxDisplay leverageMax={leverageMax} />
                       </div>
                     </Td>
                     <Td>
@@ -268,6 +290,7 @@ const TokenDetailsTable = () => {
               liquidationFee,
               loanOriginationFee,
               collateralFeeRate,
+              leverageMax,
             } = data
             return (
               <Disclosure key={bank.name}>
@@ -312,6 +335,12 @@ const TokenDetailsTable = () => {
                               <span className="text-th-fgd-4">|</span>
                               <span>{initLiabWeight.toFixed(2)}x</span>
                             </div>
+                          </div>
+                          <div className="col-span-1">
+                            <p className="text-xs text-th-fgd-3">
+                              {t('trade:max-leverage')}
+                            </p>
+                            <LeverageMaxDisplay leverageMax={leverageMax} />
                           </div>
                           <div className="col-span-1">
                             <Tooltip

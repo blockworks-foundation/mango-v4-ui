@@ -2,7 +2,7 @@ import { Bank } from '@blockworks-foundation/mango-v4'
 import TokenLogo from './TokenLogo'
 import TokenReduceOnlyDesc from './TokenReduceOnlyDesc'
 import { useVaultLimits } from '@components/swap/useVaultLimits'
-import { ExclamationTriangleIcon } from '@heroicons/react/20/solid'
+import { Battery100Icon } from '@heroicons/react/20/solid'
 import Tooltip from './Tooltip'
 import { useTranslation } from 'react-i18next'
 import { floorToDecimal } from 'utils/numbers'
@@ -12,10 +12,12 @@ const TableTokenName = ({
   bank,
   symbol,
   showLeverage,
+  hideReduceDesc,
 }: {
   bank: Bank
   symbol: string
   showLeverage?: boolean
+  hideReduceDesc?: boolean
 }) => {
   const { t } = useTranslation(['common', 'trade'])
   const { vaultFull } = useVaultLimits(bank)
@@ -31,8 +33,8 @@ const TableTokenName = ({
       <div>
         <div className="flex items-center">
           <p className="font-body leading-none text-th-fgd-2">{symbol}</p>
-          {showLeverage && leverageMax > 1 && leverageMax < Infinity ? (
-            <div className="ml-1">
+          {showLeverage && leverageMax < Infinity ? (
+            <div className="ml-1.5">
               <Tooltip content={t('trade:max-leverage')}>
                 <LeverageBadge leverage={leverageMax} />
               </Tooltip>
@@ -40,11 +42,11 @@ const TableTokenName = ({
           ) : null}
           {vaultFull ? (
             <Tooltip content={t('warning-deposits-full', { token: bank.name })}>
-              <ExclamationTriangleIcon className="ml-1 h-4 w-4 text-th-warning" />
+              <Battery100Icon className="ml-1.5 h-5 w-5 text-th-warning" />
             </Tooltip>
           ) : null}
         </div>
-        <TokenReduceOnlyDesc bank={bank} />
+        {hideReduceDesc ? null : <TokenReduceOnlyDesc bank={bank} />}
       </div>
     </div>
   )

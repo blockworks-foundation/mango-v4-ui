@@ -41,6 +41,7 @@ import { TOKEN_REDUCE_ONLY_OPTIONS } from 'utils/constants'
 import { isBankVisibleForUser } from 'utils/bank'
 import Decimal from 'decimal.js'
 import useMangoAccount from 'hooks/useMangoAccount'
+import { GRADIENT_TEXT } from '@components/explore/SpotTable'
 
 type Currencies = {
   [key: string]: string
@@ -526,8 +527,15 @@ export default MarketSelectDropdown
 
 export const LeverageBadge = ({ leverage }: { leverage: number }) => {
   return (
-    <div className="rounded bg-th-bkg-3 px-1 py-0.5 font-mono text-xxs leading-none text-th-fgd-2">
-      <span>{leverage < 2 ? leverage.toFixed(1) : leverage.toFixed()}x</span>
+    <div
+      className={`rounded bg-th-bkg-3 px-1 py-0.5 font-mono text-xs leading-none`}
+    >
+      <span className={leverage >= 5 ? GRADIENT_TEXT : 'text-th-fgd-3'}>
+        {leverage > 1 && leverage < 2
+          ? leverage.toFixed(1)
+          : leverage.toFixed()}
+        x
+      </span>
     </div>
   )
 }

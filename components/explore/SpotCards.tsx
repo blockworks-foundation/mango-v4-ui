@@ -4,11 +4,9 @@ import Change from '@components/shared/Change'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import TokenLogo from '@components/shared/TokenLogo'
 import { goToTokenPage } from '@components/stats/tokens/TokenOverviewTable'
-import Decimal from 'decimal.js'
-import useMangoGroup from 'hooks/useMangoGroup'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'react-i18next'
-import { numberCompacter } from 'utils/numbers'
+import { floorToDecimal, numberCompacter } from 'utils/numbers'
 import { BankWithMarketData } from './Spot'
 import Tooltip from '@components/shared/Tooltip'
 import SimpleAreaChart from '@components/shared/SimpleAreaChart'
@@ -18,10 +16,10 @@ import TokenReduceOnlyDesc from '@components/shared/TokenReduceOnlyDesc'
 import CollateralWeightDisplay from '@components/shared/CollateralWeightDisplay'
 import WatchlistButton from './WatchlistButton'
 import TableRatesDisplay from '@components/shared/TableRatesDisplay'
+import { LeverageMaxDisplay } from './SpotTable'
 
 const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
   const { t } = useTranslation(['common', 'explore', 'trade'])
-  const { group } = useMangoGroup()
   const { theme } = useThemeWrapper()
   const router = useRouter()
   return (
@@ -29,14 +27,6 @@ const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
       {tokens.map((token) => {
         const { bank } = token
 
-        const availableVaultBalance = group
-          ? group.getTokenVaultBalanceByMintUi(bank.mint) -
-            bank.uiDeposits() * bank.minVaultToDepositsRatio
-          : 0
-        const available = Decimal.max(
-          0,
-          availableVaultBalance.toFixed(bank.mintDecimals),
-        ).mul(bank.uiPrice)
         const depositRate = bank.getDepositRateUi()
         const borrowRate = bank.getBorrowRateUi()
         const chartData = token?.market?.priceHistory?.length
@@ -48,6 +38,10 @@ const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
         const volume = token.market?.marketData?.quote_volume_24h || 0
 
         const change = token.market?.rollingChange || 0
+
+        const weight = bank.scaledInitAssetWeight(bank.price)
+        const leverageFactor = 1 / (1 - weight.toNumber())
+        const leverageMax = floorToDecimal(leverageFactor, 1).toNumber()
 
         return (
           <div
@@ -114,15 +108,8 @@ const SpotCards = ({ tokens }: { tokens: BankWithMarketData[] }) => {
                 </p>
               </div>
               <div>
-                <Tooltip
-                  content={t('tooltip-available', { token: bank.name })}
-                  placement="top-start"
-                >
-                  <p className="tooltip-underline mb-1">{t('available')}</p>
-                </Tooltip>
-                <span className="font-mono text-th-fgd-2">
-                  <FormatNumericValue value={available} isUsd />
-                </span>
+                <p className="mb-1">{t('trade:max-leverage')}</p>
+                <LeverageMaxDisplay leverageMax={leverageMax} />
               </div>
               <div>
                 <Tooltip

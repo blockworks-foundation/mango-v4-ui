@@ -1,15 +1,15 @@
 import Change from '@components/shared/Change'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
-import TokenLogo from '@components/shared/TokenLogo'
 import useListedMarketsWithMarketData, {
   SerumMarketWithMarketData,
 } from 'hooks/useListedMarketsWithMarketData'
 import useMangoGroup from 'hooks/useMangoGroup'
 import { useRouter } from 'next/router'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { goToTokenPage } from '@components/stats/tokens/TokenOverviewTable'
 import {
+  ArrowDownTrayIcon,
   BoltIcon,
   ChevronRightIcon,
   FaceFrownIcon,
@@ -25,6 +25,13 @@ import mangoStore from '@store/mangoStore'
 import { goToPerpMarketDetails } from '@components/stats/perps/PerpMarketDetailsTable'
 import MarketLogos from '@components/trade/MarketLogos'
 import { TOKEN_REDUCE_ONLY_OPTIONS } from 'utils/constants'
+import TableTokenName from '@components/shared/TableTokenName'
+import { IconButton } from '@components/shared/Button'
+import DepositWithdrawModal from '@components/modals/DepositWithdrawModal'
+import useMangoAccount from 'hooks/useMangoAccount'
+import { useWallet } from '@solana/wallet-adapter-react'
+import CreateAccountModal from '@components/modals/CreateAccountModal'
+import Tooltip from '@components/shared/Tooltip'
 dayjs.extend(relativeTime)
 
 export type BankWithMarketData = {
@@ -39,6 +46,8 @@ const RecentGainersLosers = () => {
   const { t } = useTranslation(['common', 'explore', 'trade'])
   const router = useRouter()
   const { group } = useMangoGroup()
+  const { mangoAccountAddress } = useMangoAccount()
+  const { connected } = useWallet()
   const { banks } = useBanks()
   const {
     serumMarketsWithData,
@@ -46,6 +55,8 @@ const RecentGainersLosers = () => {
     isLoading: loadingSerumMarkets,
   } = useListedMarketsWithMarketData()
   const groupLoaded = mangoStore((s) => s.groupLoaded)
+  const [showDepositModal, setShowDepositModal] = useState('')
+  const [showCreateAccountModal, setShowCreateAccountModal] = useState(false)
 
   const banksWithMarketData = useMemo(() => {
     if (!banks.length || !group || !serumMarketsWithData.length) return []
@@ -134,6 +145,14 @@ const RecentGainersLosers = () => {
     return [gainers, losers]
   }, [banksWithMarketData, perpMarketsWithData])
 
+  const handleDepositModal = (token: string) => {
+    if (mangoAccountAddress) {
+      setShowDepositModal(token)
+    } else {
+      setShowCreateAccountModal(true)
+    }
+  }
+
   return (
     <>
       <div className="grid grid-cols-12 gap-4 px-4 md:px-6">
@@ -152,37 +171,36 @@ const RecentGainersLosers = () => {
           {groupLoaded ? (
             <div className="border-t border-th-bkg-3">
               {newlyListed.map((token) => {
-                const mintInfo = newlyListedMintInfo.find(
-                  (info) => info.tokenIndex === token.tokenIndex,
-                )
-                let timeSinceListing = ''
-                if (mintInfo) {
-                  timeSinceListing = dayjs().to(
-                    mintInfo.registrationTime.toNumber() * 1000,
-                  )
-                }
                 return (
-                  <div
-                    className="default-transition flex h-16 cursor-pointer items-center justify-between border-b border-th-bkg-3 px-4 md:hover:bg-th-bkg-2"
-                    key={token.tokenIndex}
-                    onClick={() =>
-                      goToTokenPage(token.name.split(' ')[0], router)
-                    }
-                  >
-                    <div className="flex items-center">
-                      <TokenLogo bank={token} showRewardsLogo />
-                      <p className="ml-3 font-body text-th-fgd-2">
-                        {token.name}
-                      </p>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="mr-3">
-                        <span className="text-th-fgd-3">
-                          {timeSinceListing}
-                        </span>
+                  <div className="relative" key={token.tokenIndex}>
+                    <div
+                      className="default-transition flex h-16 cursor-pointer items-center justify-between border-b border-th-bkg-3 px-4 md:hover:bg-th-bkg-2"
+                      onClick={() =>
+                        goToTokenPage(token.name.split(' ')[0], router)
+                      }
+                    >
+                      <div className="flex items-center">
+                        <TableTokenName
+                          bank={token}
+                          symbol={token.name}
+                          showLeverage
+                          hideReduceDesc
+                        />
                       </div>
                       <ChevronRightIcon className="h-5 w-5 text-th-fgd-3" />
                     </div>
+                    {connected ? (
+                      <div className="absolute right-12 top-4">
+                        <Tooltip content={`${t('deposit')} ${token.name}`}>
+                          <IconButton
+                            onClick={() => handleDepositModal(token.name)}
+                            size="small"
+                          >
+                            <ArrowDownTrayIcon className="h-4 w-4" />
+                          </IconButton>
+                        </Tooltip>
+                      </div>
+                    ) : null}
                   </div>
                 )
               })}
@@ -219,18 +237,23 @@ const RecentGainersLosers = () => {
                       }
                       onClick={onClick}
                     >
-                      <div className="flex items-center">
-                        {bank ? (
-                          <div className="mr-3">
-                            <TokenLogo bank={bank} showRewardsLogo />
-                          </div>
-                        ) : (
+                      {bank ? (
+                        <div className="mr-3">
+                          <TableTokenName
+                            bank={bank}
+                            symbol={bank.name}
+                            showLeverage
+                            hideReduceDesc
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex items-center">
                           <MarketLogos market={gainer?.market} size="large" />
-                        )}
-                        <p className="font-body text-th-fgd-2">
-                          {bank?.name || gainer?.market?.name}
-                        </p>
-                      </div>
+                          <p className="font-body text-th-fgd-2">
+                            {gainer?.market?.name}
+                          </p>
+                        </div>
+                      )}
                       <div className="flex items-center">
                         <div className="mr-3 flex flex-col items-end">
                           <span className="font-mono">
@@ -282,16 +305,23 @@ const RecentGainersLosers = () => {
                       }
                       onClick={onClick}
                     >
-                      <div className="flex items-center">
-                        {bank ? (
-                          <TokenLogo bank={bank} showRewardsLogo />
-                        ) : (
-                          <MarketLogos market={loser?.market} />
-                        )}
-                        <p className="ml-3 font-body text-th-fgd-2">
-                          {bank?.name || loser?.market?.name}
-                        </p>
-                      </div>
+                      {bank ? (
+                        <div className="mr-3">
+                          <TableTokenName
+                            bank={bank}
+                            symbol={bank.name}
+                            showLeverage
+                            hideReduceDesc
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex items-center">
+                          <MarketLogos market={loser?.market} size="large" />
+                          <p className="font-body text-th-fgd-2">
+                            {loser?.market?.name}
+                          </p>
+                        </div>
+                      )}
                       <div className="flex items-center">
                         <div className="mr-3 flex flex-col items-end">
                           <span className="font-mono">
@@ -316,6 +346,20 @@ const RecentGainersLosers = () => {
           )}
         </div>
       </div>
+      {showDepositModal ? (
+        <DepositWithdrawModal
+          action="deposit"
+          isOpen={!!showDepositModal}
+          onClose={() => setShowDepositModal('')}
+          token={showDepositModal}
+        />
+      ) : null}
+      {showCreateAccountModal ? (
+        <CreateAccountModal
+          isOpen={showCreateAccountModal}
+          onClose={() => setShowCreateAccountModal(false)}
+        />
+      ) : null}
     </>
   )
 }

@@ -20,7 +20,8 @@ import useBanks from 'hooks/useBanks'
 import SheenLoader from '@components/shared/SheenLoader'
 import { useViewport } from 'hooks/useViewport'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { TOKEN_WATCHLIST_KEY } from 'utils/constants'
+import { TOKEN_REDUCE_ONLY_OPTIONS, TOKEN_WATCHLIST_KEY } from 'utils/constants'
+import { DEFAULT_WATCHLIST } from './WatchlistButton'
 
 export type BankWithMarketData = {
   bank: Bank
@@ -61,14 +62,31 @@ const sortTokens = (
   return tokens.sort((a: BankWithMarketData, b: BankWithMarketData) => {
     const aInWatchlist = watchlist.includes(a.bank.tokenIndex)
     const bInWatchlist = watchlist.includes(b.bank.tokenIndex)
+    const aIsReduce = a.bank.reduceOnly === TOKEN_REDUCE_ONLY_OPTIONS.ENABLED
+    const bIsReduce = b.bank.reduceOnly === TOKEN_REDUCE_ONLY_OPTIONS.ENABLED
+    const aIsNoBorrow =
+      a.bank.reduceOnly === TOKEN_REDUCE_ONLY_OPTIONS.NO_BORROWS
+    const bIsNoBorrow =
+      b.bank.reduceOnly === TOKEN_REDUCE_ONLY_OPTIONS.NO_BORROWS
 
-    // Prioritize tokens in the watchlist
+    // prioritize tokens in the watchlist
     if (aInWatchlist && !bInWatchlist) {
       return -1 // a should come before b
     } else if (!aInWatchlist && bInWatchlist) {
       return 1 // b should come before a
     }
 
+    if (!aIsReduce && bIsReduce) {
+      return -1 // a should come before b
+    } else if (aIsReduce && !bIsReduce) {
+      return 1 // b should come before a
+    }
+
+    if (!aIsNoBorrow && bIsNoBorrow) {
+      return -1 // a should come before b
+    } else if (aIsNoBorrow && !bIsNoBorrow) {
+      return 1 // b should come before a
+    }
     let aValue: number | undefined
     let bValue: number | undefined
     if (sortByKey === 'change_24h') {
@@ -94,7 +112,10 @@ const sortTokens = (
 }
 
 const Spot = () => {
-  const [watchlist] = useLocalStorageState(TOKEN_WATCHLIST_KEY, [])
+  const [watchlist] = useLocalStorageState(
+    TOKEN_WATCHLIST_KEY,
+    DEFAULT_WATCHLIST,
+  )
   const { t } = useTranslation(['common', 'explore', 'trade'])
   const { group } = useMangoGroup()
   const { banks } = useBanks()

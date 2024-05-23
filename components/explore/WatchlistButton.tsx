@@ -3,6 +3,8 @@ import { TOKEN_WATCHLIST_KEY } from 'utils/constants'
 import PinFill from '@components/icons/PinFill'
 import PinOutline from '@components/icons/PinOutline'
 
+export const DEFAULT_WATCHLIST = [4, 0]
+
 const WatchlistButton = ({
   tokenIndex,
   className,
@@ -12,7 +14,7 @@ const WatchlistButton = ({
 }) => {
   const [watchlist, setWatchlist] = useLocalStorageState(
     TOKEN_WATCHLIST_KEY,
-    [],
+    DEFAULT_WATCHLIST,
   )
 
   const toggleWatchlist = (tokenIndex: number) => {

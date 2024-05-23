@@ -10,7 +10,7 @@ import {
   TrHead,
 } from '@components/shared/TableElements'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
-import { numberCompacter } from 'utils/numbers'
+import { floorToDecimal, numberCompacter } from 'utils/numbers'
 import SimpleAreaChart from '@components/shared/SimpleAreaChart'
 import { Disclosure, Transition } from '@headlessui/react'
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
@@ -26,7 +26,6 @@ import TokenLogo from '@components/shared/TokenLogo'
 import { goToTokenPage } from '@components/stats/tokens/TokenOverviewTable'
 import { useRouter } from 'next/router'
 import Decimal from 'decimal.js'
-import BankAmountWithValue from '@components/shared/BankAmountWithValue'
 import { BankWithMarketData } from './Spot'
 import { SerumMarketWithMarketData } from 'hooks/useListedMarketsWithMarketData'
 import Tooltip from '@components/shared/Tooltip'
@@ -38,6 +37,9 @@ import WatchlistButton from './WatchlistButton'
 import useLocalStorageState from 'hooks/useLocalStorageState'
 import { TOKEN_WATCHLIST_KEY } from 'utils/constants'
 import TableRatesDisplay from '@components/shared/TableRatesDisplay'
+
+export const GRADIENT_TEXT =
+  'bg-gradient-to-bl from-yellow-500 to-red-500 bg-clip-text text-transparent'
 
 type TableData = {
   assetWeight: string
@@ -55,6 +57,7 @@ type TableData = {
   }[]
   volume: number
   isUp: boolean
+  leverageMax: number
 }
 
 const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
@@ -91,6 +94,7 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
         let depositRate = 0
         let borrowRate = 0
         let assetWeight = '0'
+        let leverageMax = 0
 
         if (baseBank) {
           availableVaultBalance = group
@@ -107,6 +111,10 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
           assetWeight = baseBank
             .scaledInitAssetWeight(baseBank.price)
             .toFixed(2)
+
+          const weight = baseBank.scaledInitAssetWeight(baseBank.price)
+          const leverageFactor = 1 / (1 - weight.toNumber())
+          leverageMax = floorToDecimal(leverageFactor, 1).toNumber()
         }
 
         const isUp =
@@ -126,6 +134,7 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
           tokenName,
           volume,
           isUp,
+          leverageMax,
         }
         formatted.push(data)
       }
@@ -188,15 +197,12 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
                 </Th>
                 <Th>
                   <div className="flex justify-end">
-                    <Tooltip content={t('tooltip-available', { token: '' })}>
-                      <SortableColumnHeader
-                        sortKey="availableValue"
-                        sort={() => requestSort('availableValue')}
-                        sortConfig={sortConfig}
-                        title={t('available')}
-                        titleClass="tooltip-underline"
-                      />
-                    </Tooltip>
+                    <SortableColumnHeader
+                      sortKey="leverageMax"
+                      sort={() => requestSort('leverageMax')}
+                      sortConfig={sortConfig}
+                      title={t('trade:max-leverage')}
+                    />
                   </div>
                 </Th>
                 <Th>
@@ -246,7 +252,6 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
                 })
                 .map((data) => {
                   const {
-                    available,
                     baseBank,
                     borrowRate,
                     change,
@@ -257,6 +262,7 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
                     tokenName,
                     volume,
                     isUp,
+                    leverageMax,
                   } = data
 
                   if (!baseBank) return null
@@ -272,7 +278,7 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
                         </td>
                       </tr>
                       <TrBody
-                        className="default-transition border-t-0 md:hover:cursor-pointer md:hover:bg-th-bkg-2"
+                        className="default-transition h-16 border-t-0 md:hover:cursor-pointer md:hover:bg-th-bkg-2"
                         onClick={() =>
                           goToTokenPage(tokenName.split(' ')[0], router)
                         }
@@ -352,12 +358,7 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
                         </Td>
                         <Td>
                           <div className="flex flex-col text-right">
-                            <BankAmountWithValue
-                              amount={available}
-                              bank={baseBank}
-                              fixDecimals={false}
-                              stacked
-                            />
+                            <LeverageMaxDisplay leverageMax={leverageMax} />
                           </div>
                         </Td>
                         <Td className="font-mono">
@@ -417,7 +418,6 @@ const MobileSpotItem = ({ data }: { data: TableData }) => {
   const router = useRouter()
 
   const {
-    available,
     baseBank,
     borrowRate,
     change,
@@ -428,6 +428,7 @@ const MobileSpotItem = ({ data }: { data: TableData }) => {
     tokenName,
     volume,
     isUp,
+    leverageMax,
   } = data
 
   return (
@@ -521,12 +522,10 @@ const MobileSpotItem = ({ data }: { data: TableData }) => {
                   </p>
                 </div>
                 <div className="col-span-1">
-                  <p className="text-xs text-th-fgd-3">{t('available')}</p>
-                  <BankAmountWithValue
-                    amount={available}
-                    bank={baseBank}
-                    fixDecimals={false}
-                  />
+                  <p className="text-xs text-th-fgd-3">
+                    {t('trade:max-leverage')}
+                  </p>
+                  <LeverageMaxDisplay leverageMax={leverageMax} />
                 </div>
                 <div className="col-span-1">
                   <p className="text-xs text-th-fgd-3">
@@ -564,5 +563,26 @@ const MobileSpotItem = ({ data }: { data: TableData }) => {
         </>
       )}
     </Disclosure>
+  )
+}
+
+export const LeverageMaxDisplay = ({
+  leverageMax,
+}: {
+  leverageMax: number | undefined
+}) => {
+  return (
+    <span className="font-mono">
+      {leverageMax && leverageMax !== Infinity ? (
+        <span className={`${leverageMax >= 5 ? GRADIENT_TEXT : ''}`}>
+          {leverageMax < 2 && leverageMax > 1
+            ? leverageMax.toFixed(1)
+            : leverageMax.toFixed()}
+          x
+        </span>
+      ) : (
+        '–'
+      )}
+    </span>
   )
 }
