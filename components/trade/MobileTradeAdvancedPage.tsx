@@ -42,8 +42,12 @@ const MobileTradeAdvancedPage = () => {
             showBorders
           />
         </div>
-        <div className="hide-scroll max-h-[578px] overflow-auto">
-          <div className={activeTab === 'trade:book' ? 'visible' : 'hidden'}>
+        <div className="hide-scroll h-[578px] overflow-auto">
+          <div
+            className={`h-full ${
+              activeTab === 'trade:book' ? 'visible' : 'hidden'
+            }`}
+          >
             <Orderbook />
           </div>
           <div

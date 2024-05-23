@@ -35,7 +35,6 @@ import {
 } from 'utils/orderbook'
 import { OrderbookData, OrderbookL2 } from 'types'
 import isEqual from 'lodash/isEqual'
-import { useViewport } from 'hooks/useViewport'
 import TokenLogo from '@components/shared/TokenLogo'
 import MarketLogos from './MarketLogos'
 import { OrderTypes } from 'utils/tradeForm'
@@ -46,6 +45,9 @@ const sizeCompacter = Intl.NumberFormat('en', {
 })
 
 const SHOW_EXPONENTIAL_THRESHOLD = 0.00001
+
+const depth = 30
+const depthArray: number[] = Array(depth).fill(0)
 
 const Orderbook = () => {
   const { t } = useTranslation(['common', 'trade'])
@@ -62,7 +64,6 @@ const Orderbook = () => {
   //     ? localStorage.getItem(USE_ORDERBOOK_FEED_KEY) === 'true'
   //     : true
   // )
-  const { isDesktop } = useViewport()
   const [orderbookData, setOrderbookData] = useState<OrderbookData | null>(null)
   const currentOrderbookData = useRef<OrderbookL2>()
 
@@ -79,13 +80,13 @@ const Orderbook = () => {
     }
   }, [market])
 
-  const depth = useMemo(() => {
-    return isDesktop ? 30 : 12
-  }, [isDesktop])
+  // const depth = useMemo(() => {
+  //   return isDesktop ? 30 : 12
+  // }, [isDesktop])
 
-  const depthArray: number[] = useMemo(() => {
-    return Array(depth).fill(0)
-  }, [depth])
+  // const depthArray: number[] = useMemo(() => {
+  //   return Array(depth).fill(0)
+  // }, [depth])
 
   const verticallyCenterOrderbook = useCallback(() => {
     const element = orderbookElRef.current
