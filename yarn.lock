@@ -358,9 +358,9 @@
     bn.js "^5.2.1"
     eslint-config-prettier "^9.0.0"
 
-"@blockworks-foundation/mango-v4@git+https://github.com/blockworks-foundation/mango-v4.git#max/openbook-v2":
+"@blockworks-foundation/mango-v4@git+https://github.com/blockworks-foundation/mango-v4.git#pan/openbook-v2-fixes":
   version "0.24.0"
-  resolved "git+https://github.com/blockworks-foundation/mango-v4.git#9cdded430b1b87325fc443e312272db05dc1c85d"
+  resolved "git+https://github.com/blockworks-foundation/mango-v4.git#21242001a4bea7ba7c9baea452679bbb1e9f15e2"
   dependencies:
     "@blockworks-foundation/mango-v4-settings" "0.14.15"
     "@blockworks-foundation/mangolana" "0.0.15"
