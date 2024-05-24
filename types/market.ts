@@ -7,9 +7,16 @@ import Mango4, {
   PerpMarket,
   Serum3Market,
   BookSideType,
+  Serum3SelfTradeBehavior,
+  PerpOrderSide,
+  MangoAccount,
+  Serum3Side,
+  OpenbookV2Side,
+  Serum3OrderType,
+  PerpOrderType,
 } from '@blockworks-foundation/mango-v4'
 // import OpenOrders from '@components/trade/OpenOrders'
-import { AnchorProvider, BN } from '@coral-xyz/anchor'
+import { AnchorProvider } from '@coral-xyz/anchor'
 import Openbook2, {
   Market as Openbook2Market,
   BookSide as Openbook2BookSide,
@@ -17,13 +24,11 @@ import Openbook2, {
   OpenBookV2Client,
   SideUtils,
 } from '@openbook-dex/openbook-v2'
-import Serum3, {
-  Orderbook as Serum3Orderbook,
-  decodeEventQueue,
-} from '@project-serum/serum'
+import Serum3, { Orderbook as Serum3Orderbook } from '@project-serum/serum'
 // import { OpenOrders as Serum3OpenOrders, Order as Serum3Order } from '@project-serum/serum/lib/market'
-import { Event as Serum3Event } from '@project-serum/serum/lib/queue'
 import { Keypair, PublicKey } from '@solana/web3.js'
+import { OrderbookL2 } from 'types'
+import { MAX_PERP_SLIPPAGE } from 'utils/constants'
 // import { OpenbookOrder } from '@store/mangoStore'
 import EmptyWallet from 'utils/wallet'
 
@@ -35,6 +40,7 @@ export interface ExtendedMarketAccount extends MarketAccount {
 }
 
 type Side = 'bid' | 'ask'
+type OrderType = 'immediateOrCancel' | 'postOnly' | 'limit'
 
 export interface MarketAdapter {
   tickSize: number
@@ -46,6 +52,16 @@ export interface MarketAdapter {
   getBanks(group: Group): { base?: Bank; quote: Bank }
   getBookPks(): { bids: PublicKey; asks: PublicKey; events: PublicKey }
   decodeBook(side: Side, data: Buffer): BookSideAdapter
+  placeOrder(
+    group: Group,
+    mangoAccount: MangoAccount,
+    client: MangoClient,
+    orderType: OrderType,
+    side: 'buy' | 'sell',
+    price: number,
+    baseSize: number,
+    reduceOnly: boolean,
+  ): Promise<string>
   // decodeEvents(data: Buffer): EventsAdapter
   // decodeOpenOrders(data: Buffer): OpenOrdersAdapter
 }
@@ -153,6 +169,29 @@ export class Serum3MarketAdapter {
   decodeBook(_side: Side, data: Buffer) {
     return new Serum3BookSideAdaper(this, data)
   }
+  async placeOrder(
+    group: Group,
+    mangoAccount: MangoAccount,
+    client: MangoClient,
+    orderType: OrderType,
+    side: 'buy' | 'sell',
+    price: number,
+    baseSize: number,
+  ) {
+    const { signature: tx } = await client.serum3PlaceOrder(
+      group,
+      mangoAccount,
+      this.publicKey,
+      side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
+      price,
+      baseSize,
+      Serum3SelfTradeBehavior.decrementTake,
+      Serum3OrderType[orderType],
+      Date.now(),
+      10,
+    )
+    return tx
+  }
 }
 
 export class Serum3BookSideAdaper implements BookSideAdapter {
@@ -208,6 +247,41 @@ export class Openbook2MarketAdaper {
   decodeBook(side: Side, data: Buffer): BookSideAdapter {
     return new Openbook2BookSideAdapter(this, side, data)
   }
+  async placeOrder(
+    group: Group,
+    mangoAccount: MangoAccount,
+    client: MangoClient,
+    orderType: OrderType,
+    side: 'buy' | 'sell',
+    price: number,
+    baseSize: number,
+  ) {
+    if (mangoAccount.openbookV2.length === 0) {
+      await client.accountExpandV3(
+        group,
+        mangoAccount,
+        mangoAccount.tokens.length,
+        mangoAccount.serum3.length,
+        mangoAccount.perps.length,
+        mangoAccount.perpOpenOrders.length,
+        mangoAccount.tokenConditionalSwaps.length,
+        1,
+      )
+    }
+    const { signature: tx } = await client.openbookV2PlaceOrder(
+      group,
+      mangoAccount,
+      this.publicKey,
+      side === 'buy' ? OpenbookV2Side.bid : OpenbookV2Side.ask,
+      price,
+      baseSize,
+      Serum3SelfTradeBehavior.decrementTake,
+      Serum3OrderType[orderType],
+      Date.now(),
+      10,
+    )
+    return tx
+  }
 }
 
 export class Openbook2BookSideAdapter implements BookSideAdapter {
@@ -240,6 +314,9 @@ export class Mango4PerpMarketAdaper implements MarketAdapter {
   tickSize: number
   minOrderSize: number
   publicKey: PublicKey
+  perpMarketIndex: number
+  reduceOnly: boolean
+  oracleUiPrice: number
 
   constructor(
     public client: MangoClient,
@@ -248,6 +325,9 @@ export class Mango4PerpMarketAdaper implements MarketAdapter {
     this.tickSize = market.tickSize
     this.minOrderSize = market.minOrderSize
     this.publicKey = market.publicKey
+    this.perpMarketIndex = market.perpMarketIndex
+    this.reduceOnly = market.reduceOnly
+    this.oracleUiPrice = market.uiPrice
   }
 
   isPerpMarket() {
@@ -272,6 +352,47 @@ export class Mango4PerpMarketAdaper implements MarketAdapter {
 
   decodeBook(side: Side, data: Buffer): BookSideAdapter {
     return new Mango4PerpBookSideAdaper(this, side, data)
+  }
+  async placeOrder(
+    group: Group,
+    mangoAccount: MangoAccount,
+    client: MangoClient,
+    orderType: OrderType,
+    side: 'buy' | 'sell',
+    price: number,
+    baseSize: number,
+    reduceOnly: boolean,
+  ) {
+    const [asks, bids] = await Promise.all([
+      this.market.loadAsks(client),
+      this.market.loadBids(client),
+    ])
+    const orderPrice = calcPerpOrderPrice(
+      price,
+      {
+        asks: asks.getL2Ui(300),
+        bids: bids.getL2Ui(300),
+      },
+      side,
+      true,
+      this.oracleUiPrice,
+    )
+
+    const { signature: tx } = await client.perpPlaceOrder(
+      group,
+      mangoAccount,
+      this.perpMarketIndex,
+      side === 'buy' ? PerpOrderSide.bid : PerpOrderSide.ask,
+      orderPrice,
+      Math.abs(baseSize),
+      undefined, // maxQuoteQuantity
+      Date.now(),
+      PerpOrderType[orderType],
+      this.reduceOnly || reduceOnly,
+      undefined,
+      undefined,
+    )
+    return tx
   }
 }
 
@@ -303,4 +424,36 @@ export class Mango4PerpBookSideAdaper implements BookSideAdapter {
   getL2(depth: number): [number, number][] {
     return this.bookSide.getL2Ui(depth)
   }
+}
+
+const calcPerpOrderPrice = (
+  price: number,
+  orderbook: OrderbookL2,
+  side: 'buy' | 'sell',
+  isMarketOrder: boolean,
+  oraclePrice: number,
+) => {
+  let orderPrice = price
+  if (isMarketOrder) {
+    try {
+      if (side === 'sell') {
+        const marketPrice = Math.max(
+          oraclePrice,
+          orderbook?.bids?.[0]?.[0] || 0,
+        )
+        orderPrice = marketPrice * (1 - MAX_PERP_SLIPPAGE)
+      } else {
+        const marketPrice = Math.min(
+          oraclePrice,
+          orderbook?.asks?.[0]?.[0] || Infinity,
+        )
+        orderPrice = marketPrice * (1 + MAX_PERP_SLIPPAGE)
+      }
+    } catch (e) {
+      //simple fallback if something go wrong
+      const maxSlippage = 0.025
+      orderPrice = price * (side === 'buy' ? 1 + maxSlippage : 1 - maxSlippage)
+    }
+  }
+  return orderPrice
 }
