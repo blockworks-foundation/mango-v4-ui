@@ -66,6 +66,7 @@ export interface MarketAdapter {
   ): Promise<string>
   reloadOpenOrders(
     storeGetState: ReturnType<typeof mangoStore.getState>,
+    tx: string,
     refetchMangoAccount: boolean,
     poolingFunction?: (
       successCallback: () => void,
@@ -204,6 +205,7 @@ export class Serum3MarketAdapter {
   }
   async reloadOpenOrders(
     storeGetState: ReturnType<typeof mangoStore.getState>,
+    tx: string,
     refetchMangoAccount: boolean,
   ) {
     storeGetState.actions.fetchOpenOrders(refetchMangoAccount)
@@ -300,6 +302,7 @@ export class Openbook2MarketAdaper {
   }
   async reloadOpenOrders(
     storeGetState: ReturnType<typeof mangoStore.getState>,
+    tx: string,
     refetchMangoAccount: boolean,
   ) {
     storeGetState.actions.fetchOpenOrders(refetchMangoAccount)
@@ -419,6 +422,7 @@ export class Mango4PerpMarketAdaper implements MarketAdapter {
   }
   async reloadOpenOrders(
     storeGetState: ReturnType<typeof mangoStore.getState>,
+    tx: string,
     refetchMangoAccount: boolean,
     poolingFunction?: (
       successCallback: () => void,
@@ -429,6 +433,11 @@ export class Mango4PerpMarketAdaper implements MarketAdapter {
       await poolingFunction(
         () => {
           storeGetState.actions.fetchOpenOrders(refetchMangoAccount)
+          notify({
+            type: 'success',
+            title: 'Transaction successful',
+            txid: tx,
+          })
         },
         () => {
           notify({
