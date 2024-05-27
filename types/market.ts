@@ -31,6 +31,8 @@ import { OrderbookL2 } from 'types'
 import { MAX_PERP_SLIPPAGE } from 'utils/constants'
 // import { OpenbookOrder } from '@store/mangoStore'
 import EmptyWallet from 'utils/wallet'
+import mangoStore from '@store/mangoStore'
+import { notify } from 'utils/notifications'
 
 // Define a new interface that extends MarketAccount and adds the tickSize property
 export interface ExtendedMarketAccount extends MarketAccount {
@@ -62,6 +64,14 @@ export interface MarketAdapter {
     baseSize: number,
     reduceOnly: boolean,
   ): Promise<string>
+  reloadOpenOrders(
+    storeGetState: ReturnType<typeof mangoStore.getState>,
+    refetchMangoAccount: boolean,
+    poolingFunction?: (
+      successCallback: () => void,
+      timeoutCallback?: (() => void) | undefined,
+    ) => Promise<'ready' | 'timeout'>,
+  ): Promise<void>
   // decodeEvents(data: Buffer): EventsAdapter
   // decodeOpenOrders(data: Buffer): OpenOrdersAdapter
 }
@@ -192,6 +202,12 @@ export class Serum3MarketAdapter {
     )
     return tx
   }
+  async reloadOpenOrders(
+    storeGetState: ReturnType<typeof mangoStore.getState>,
+    refetchMangoAccount: boolean,
+  ) {
+    storeGetState.actions.fetchOpenOrders(refetchMangoAccount)
+  }
 }
 
 export class Serum3BookSideAdaper implements BookSideAdapter {
@@ -282,6 +298,12 @@ export class Openbook2MarketAdaper {
     )
     return tx
   }
+  async reloadOpenOrders(
+    storeGetState: ReturnType<typeof mangoStore.getState>,
+    refetchMangoAccount: boolean,
+  ) {
+    storeGetState.actions.fetchOpenOrders(refetchMangoAccount)
+  }
 }
 
 export class Openbook2BookSideAdapter implements BookSideAdapter {
@@ -370,6 +392,7 @@ export class Mango4PerpMarketAdaper implements MarketAdapter {
     const orderPrice = calcPerpOrderPrice(
       price,
       {
+        //is this right ?
         asks: asks.getL2Ui(300),
         bids: bids.getL2Ui(300),
       },
@@ -393,6 +416,28 @@ export class Mango4PerpMarketAdaper implements MarketAdapter {
       undefined,
     )
     return tx
+  }
+  async reloadOpenOrders(
+    storeGetState: ReturnType<typeof mangoStore.getState>,
+    refetchMangoAccount: boolean,
+    poolingFunction?: (
+      successCallback: () => void,
+      timeoutCallback?: (() => void) | undefined,
+    ) => Promise<'ready' | 'timeout'>,
+  ) {
+    if (poolingFunction) {
+      await poolingFunction(
+        () => {
+          storeGetState.actions.fetchOpenOrders(refetchMangoAccount)
+        },
+        () => {
+          notify({
+            type: 'error',
+            title: 'Timeout during perp refresh, please refresh data manually',
+          })
+        },
+      )
+    }
   }
 }
 
