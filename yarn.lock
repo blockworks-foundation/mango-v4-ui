@@ -350,6 +350,14 @@
     bn.js "^5.2.1"
     eslint-config-prettier "^9.0.0"
 
+"@blockworks-foundation/mango-v4-settings@0.14.24":
+  version "0.14.24"
+  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4-settings/-/mango-v4-settings-0.14.24.tgz#646b0802fb6222654e247bea7966106af9b7a970"
+  integrity sha512-X3mY2x6XSZTySfB65b5DWuE7v/tffMlFGXQsgv+Zl+cgHdJn77vqdXvQFlR+544xsTjK+kWpWiHTHiSWRzG/4Q==
+  dependencies:
+    bn.js "^5.2.1"
+    eslint-config-prettier "^9.0.0"
+
 "@blockworks-foundation/mango-v4@0.26.0":
   version "0.26.0"
   resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.26.0.tgz#fa7c3aff40acb2bf6a13f51ab7634a6dbd6a8e03"
@@ -2558,7 +2566,7 @@
   dependencies:
     "@solana/wallet-adapter-base" "^0.9.23"
 
-"@solana/wallet-adapter-solflare@0.6.27":
+"@solana/wallet-adapter-solflare@0.6.27", "@solana/wallet-adapter-solflare@^0.6.28":
   version "0.6.27"
   resolved "https://registry.yarnpkg.com/@solana/wallet-adapter-solflare/-/wallet-adapter-solflare-0.6.27.tgz#49ba2dfecca4bee048e65d302216d1b732d7e39e"
   integrity sha512-MBBx9B1pI8ChCT70sgxrmeib1S7G9tRQzfMHqJPdGQ2jGtukY0Puzma2OBsIAsH5Aw9rUUUFZUK+8pzaE+mgAg==
@@ -2569,7 +2577,7 @@
     "@solflare-wallet/sdk" "^1.3.0"
     "@wallet-standard/wallet" "^1.0.1"
 
-"@solana/wallet-adapter-solflare@0.6.28", "@solana/wallet-adapter-solflare@^0.6.28":
+"@solana/wallet-adapter-solflare@0.6.28":
   version "0.6.28"
   resolved "https://registry.yarnpkg.com/@solana/wallet-adapter-solflare/-/wallet-adapter-solflare-0.6.28.tgz#3de42a43220cca361050ebd1755078012a5b0fe2"
   integrity sha512-iiUQtuXp8p4OdruDawsm1dRRnzUCcsu+lKo8OezESskHtbmZw2Ifej0P99AbJbBAcBw7q4GPI6987Vh05Si5rw==

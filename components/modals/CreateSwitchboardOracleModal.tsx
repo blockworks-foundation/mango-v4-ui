@@ -23,6 +23,8 @@ import { LIQUIDITY_STATE_LAYOUT_V4 } from '@raydium-io/raydium-sdk'
 import {
   LISTING_PRESETS,
   LISTING_PRESETS_KEY,
+  tierSwitchboardSettings,
+  tierToSwitchboardJobSwapValue,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 import { sendTxAndConfirm } from 'utils/governance/tools'
 import { WRAPPED_SOL_MINT } from '@metaplex-foundation/js'
@@ -83,81 +85,6 @@ const CreateSwitchboardOracleModal = ({
   const quoteTokenName = 'USD'
   const pythUsdOracle = 'Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD'
   const switchboardUsdDaoOracle = 'FwYfsmj5x8YZXtQBNo2Cz8TE7WRCMFqA6UTffK4xQKMH'
-  const tierToSwapValue: { [key in LISTING_PRESETS_KEY]?: string } = {
-    asset_5000: '500000',
-    asset_250: '25000',
-    asset_100: '10000',
-    asset_20: '2000',
-    asset_10: '1000',
-    liab_5: '500',
-    liab_3: '500',
-    liab_1: '100',
-    UNTRUSTED: '100',
-  }
-
-  const tierSettings: {
-    [key in LISTING_PRESETS_KEY]?: {
-      fundAmount: number
-      batchSize: number
-      minRequiredOracleResults: number
-      minUpdateDelaySeconds: number
-    }
-  } = {
-    asset_5000: {
-      fundAmount: 6.5,
-      minRequiredOracleResults: 2,
-      minUpdateDelaySeconds: 60,
-      batchSize: 5,
-    },
-    asset_250: {
-      fundAmount: 6.5,
-      minRequiredOracleResults: 2,
-      minUpdateDelaySeconds: 60,
-      batchSize: 5,
-    },
-    asset_100: {
-      fundAmount: 6.5,
-      minRequiredOracleResults: 2,
-      minUpdateDelaySeconds: 60,
-      batchSize: 5,
-    },
-    asset_20: {
-      fundAmount: 3.3,
-      minRequiredOracleResults: 1,
-      minUpdateDelaySeconds: 60,
-      batchSize: 2,
-    },
-    asset_10: {
-      fundAmount: 3.3,
-      minRequiredOracleResults: 1,
-      minUpdateDelaySeconds: 60,
-      batchSize: 2,
-    },
-    liab_5: {
-      fundAmount: 3.3,
-      minRequiredOracleResults: 1,
-      minUpdateDelaySeconds: 60,
-      batchSize: 2,
-    },
-    liab_3: {
-      fundAmount: 3.3,
-      minRequiredOracleResults: 1,
-      minUpdateDelaySeconds: 60,
-      batchSize: 2,
-    },
-    liab_1: {
-      fundAmount: 3.3,
-      minRequiredOracleResults: 1,
-      minUpdateDelaySeconds: 60,
-      batchSize: 2,
-    },
-    UNTRUSTED: {
-      fundAmount: 0.34,
-      batchSize: 2,
-      minRequiredOracleResults: 1,
-      minUpdateDelaySeconds: 600,
-    },
-  }
 
   const [creatingOracle, setCreatingOracle] = useState(false)
 
@@ -186,7 +113,7 @@ const CreateSwitchboardOracleModal = ({
 
   const create = useCallback(async () => {
     try {
-      const swapValue = tierToSwapValue[tierKey]
+      const swapValue = tierToSwitchboardJobSwapValue[tierKey]
       setCreatingOracle(true)
       const payer = wallet!.publicKey!
       if (!orcaPoolAddress && !raydiumPoolAddress && !stakePoolAddress) {
@@ -276,7 +203,7 @@ const CreateSwitchboardOracleModal = ({
         }
       }
 
-      const settingFromLib = tierSettings[tierKey]
+      const settingFromLib = tierSwitchboardSettings[tierKey]
 
       if (!settingFromLib) {
         throw wrongTierPassedForCreation
@@ -580,7 +507,7 @@ const CreateSwitchboardOracleModal = ({
     raydiumPoolAddress,
     stakePoolAddress,
     tierKey,
-    tierSettings,
+    tierSwitchboardSettings,
     tokenDecimals,
     tokenPrice,
     wallet,
@@ -594,7 +521,8 @@ const CreateSwitchboardOracleModal = ({
           {LISTING_PRESETS[tierKey].preset_name}
         </p>
         <p>
-          {t('estimated-oracle-cost')} {tierSettings[tierKey]?.fundAmount} SOL
+          {t('estimated-oracle-cost')}{' '}
+          {tierSwitchboardSettings[tierKey]?.fundAmount} SOL
         </p>
         <p>
           This oracle can be used only with this tier or lower, cant be used
