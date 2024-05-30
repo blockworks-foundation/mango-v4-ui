@@ -349,7 +349,8 @@ const AdvancedTradeForm = () => {
         !baseBank ||
         !quoteBank ||
         !tradePrice ||
-        !(selectedMarket instanceof Serum3Market)
+        !(selectedMarket instanceof Serum3Market) ||
+        !(selectedMarket instanceof OpenbookV2Market)
       ) {
         return
       }
@@ -443,7 +444,8 @@ const AdvancedTradeForm = () => {
     return !(
       ipAllowed ||
       (selectedMarket instanceof PerpMarket && perpAllowed) ||
-      (selectedMarket instanceof Serum3Market && spotAllowed)
+      (selectedMarket instanceof Serum3Market && spotAllowed) ||
+      (selectedMarket instanceof OpenbookV2Market && spotAllowed)
     )
   }, [selectedMarket, ipAllowed, perpAllowed, spotAllowed])
 
@@ -455,7 +457,10 @@ const AdvancedTradeForm = () => {
         .getPerpPosition(selectedMarket.perpMarketIndex)
         ?.getBasePositionUi(selectedMarket)
       return basePosition !== undefined && basePosition !== 0
-    } else if (selectedMarket instanceof Serum3Market) {
+    } else if (
+      selectedMarket instanceof Serum3Market ||
+      selectedMarket instanceof OpenbookV2Market
+    ) {
       const baseBank = group.getFirstBankByTokenIndex(
         selectedMarket.baseTokenIndex,
       )
@@ -617,8 +622,14 @@ const AdvancedTradeForm = () => {
           symbol: baseSymbol,
         })
       }
-      if (selectedMarket instanceof Serum3Market && price) {
+      if (
+        (selectedMarket instanceof Serum3Market ||
+          selectedMarket instanceof OpenbookV2Market) &&
+        price
+      ) {
         const numberPrice = parseFloat(price)
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        //@ts-ignore
         const priceBand = selectedMarket.oraclePriceBand
         if (side === 'buy') {
           const priceLimit = (oraclePrice / (100 * (0.98 + priceBand))) * 100
@@ -1365,13 +1376,15 @@ const AdvancedTradeForm = () => {
             </div>
           ) : null}
           {!isInsured &&
-          ((selectedMarket instanceof Serum3Market &&
+          (((selectedMarket instanceof Serum3Market ||
+            selectedMarket instanceof OpenbookV2Market) &&
             tradeForm.side === 'buy') ||
             selectedMarket instanceof PerpMarket) ? (
             <div className="mb-4 px-4">
               <UninsuredNotification
                 name={
-                  selectedMarket instanceof Serum3Market
+                  selectedMarket instanceof Serum3Market ||
+                  selectedMarket instanceof OpenbookV2Market
                     ? baseBank?.name
                     : selectedMarket.name
                 }
@@ -1393,7 +1406,8 @@ const AdvancedTradeForm = () => {
             </div>
           ) : null}
           {tokenPositionsFull &&
-          selectedMarket instanceof Serum3Market &&
+          (selectedMarket instanceof Serum3Market ||
+            selectedMarket instanceof OpenbookV2Market) &&
           mangoAccountAddress ? (
             <div className="mb-4 px-4">
               <AccountSlotsFullNotification
@@ -1471,7 +1485,8 @@ const AdvancedTradeForm = () => {
           isOpen={showDepositModal}
           onClose={() => setShowDepositModal(false)}
           token={
-            selectedMarket instanceof Serum3Market
+            selectedMarket instanceof Serum3Market ||
+            selectedMarket instanceof OpenbookV2Market
               ? tradeForm.side === 'buy'
                 ? quoteBank?.name
                 : baseBank?.name
