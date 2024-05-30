@@ -418,7 +418,10 @@ const AdvancedTradeForm = () => {
     if (!selectedMarket || !group) return false
     if (selectedMarket instanceof PerpMarket) {
       return selectedMarket.oracleLastUpdatedSlot !== 0
-    } else if (selectedMarket instanceof Serum3Market) {
+    } else if (
+      selectedMarket instanceof Serum3Market ||
+      selectedMarket instanceof OpenbookV2Market
+    ) {
       return (
         baseBank?.oracleProvider == OracleProvider.Stub ||
         (baseBank?.oracleLastUpdatedSlot !== 0 &&
@@ -1214,7 +1217,8 @@ const AdvancedTradeForm = () => {
               </div>
             </div>
             <div className="mt-2 flex">
-              {selectedMarket instanceof Serum3Market ? (
+              {selectedMarket instanceof Serum3Market ||
+              selectedMarket instanceof OpenbookV2Market ? (
                 tradeFormSizeUi === 'slider' ? (
                   <SpotSlider
                     minOrderDecimals={minOrderDecimals}
