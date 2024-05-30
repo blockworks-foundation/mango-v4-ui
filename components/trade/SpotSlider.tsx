@@ -25,14 +25,17 @@ export const useSpotMarketMax = (
     let isLimited = false
     const group = mangoStore.getState().group
     if (!mangoAccount || !group || !selectedMarket) return { max: 0, isLimited }
-    if (!(selectedMarket instanceof Serum3Market)) return { max: 0, isLimited }
+    if (selectedMarket instanceof PerpMarket) return { max: 0, isLimited }
     let leverageMax = 0
     let spotMax = 0
     try {
+      const isSerumMarket = selectedMarket instanceof Serum3Market
       const isBuy = side === 'buy'
-      const market = group.getSerum3ExternalMarket(
-        selectedMarket.serumMarketExternal,
-      )
+      const market = isSerumMarket
+        ? group.getSerum3ExternalMarket(selectedMarket.serumMarketExternal)
+        : group.getOpenbookV2ExternalMarket(
+            selectedMarket.openbookMarketExternal,
+          )
       const targetBank = group.getFirstBankByTokenIndex(
         isBuy ? selectedMarket.baseTokenIndex : selectedMarket.quoteTokenIndex,
       )
@@ -42,14 +45,23 @@ export const useSpotMarketMax = (
 
       const targetRemainingDepositLimit = targetBank.getRemainingDepositLimit()
       const balance = mangoAccount.getTokenBalanceUi(sourceBank)
-      const targetLeverageMax = mangoAccount[
-        isBuy ? 'getMaxQuoteForSerum3BidUi' : 'getMaxBaseForSerum3AskUi'
-      ](group, selectedMarket.serumMarketExternal)
+      const targetLeverageMax = isSerumMarket
+        ? mangoAccount[
+            isBuy ? 'getMaxQuoteForSerum3BidUi' : 'getMaxBaseForSerum3AskUi'
+          ](group, selectedMarket.serumMarketExternal)
+        : mangoAccount[
+            isBuy ? 'getMaxQuoteForSerum3BidUi' : 'getMaxBaseForSerum3AskUi'
+          ](group, selectedMarket.openbookMarketExternal)
+
       const unsettled =
         spotBalances[sourceBank?.mint.toString()]?.unsettled || 0
+
       const decimals = getDecimalCount(
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        //@ts-ignore
         isBuy ? market.tickSize : market.minOrderSize,
       )
+
       const roundedBalanceMax = floorToDecimal(
         balance + unsettled,
         decimals,
@@ -81,6 +93,7 @@ export const useSpotMarketMax = (
       } else {
         leverageMax = targetLeverageMax
       }
+
       return { max: useMargin ? leverageMax : Math.max(spotMax, 0), isLimited }
     } catch (e) {
       console.error('Error calculating max size: ', e)
@@ -117,7 +130,7 @@ const SpotSlider = ({
 
   const targetBank =
     selectedMarket &&
-    selectedMarket instanceof Serum3Market &&
+    !(selectedMarket instanceof PerpMarket) &&
     group?.getFirstBankByTokenIndex(
       side === 'buy'
         ? selectedMarket.baseTokenIndex
