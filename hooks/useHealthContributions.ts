@@ -9,15 +9,20 @@ export default function useHealthContributions() {
   const [initContributions, maintContributions] = useMemo(() => {
     const group = mangoStore.getState().group
     if (!mangoAccount || !group) return [[], []]
-    const init = mangoAccount.getHealthContributionPerAssetUi(
-      group,
-      HealthType.init,
-    )
-    const maint = mangoAccount.getHealthContributionPerAssetUi(
-      group,
-      HealthType.maint,
-    )
-    return [init, maint]
+    try {
+      const init = mangoAccount.getHealthContributionPerAssetUi(
+        group,
+        HealthType.init,
+      )
+      const maint = mangoAccount.getHealthContributionPerAssetUi(
+        group,
+        HealthType.maint,
+      )
+      return [init, maint]
+    } catch (e) {
+      console.error('error getting health contributions', e)
+      return [[], []]
+    }
   }, [mangoAccount])
 
   return { initContributions, maintContributions }

@@ -153,6 +153,16 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
     return themeData.sideImagePath
   }, [mangoNfts, theme, themeData])
 
+  const healthRatio = useMemo(() => {
+    try {
+      if (!mangoAccount || !group) return 0
+      return mangoAccount.getHealthRatioUi(group, HealthType.maint)
+    } catch (e) {
+      console.error('error getting health ratio for account', e)
+      return 0
+    }
+  }, [mangoAccount])
+
   return (
     <>
       <div
@@ -438,11 +448,7 @@ const SideNav = ({ collapsed }: { collapsed: boolean }) => {
               collapsed={collapsed}
               icon={
                 <HealthHeart
-                  health={
-                    group && mangoAccount
-                      ? mangoAccount.getHealthRatioUi(group, HealthType.maint)
-                      : 0
-                  }
+                  health={group && mangoAccount ? healthRatio : 0}
                   size={32}
                 />
               }

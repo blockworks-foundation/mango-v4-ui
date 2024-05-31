@@ -121,10 +121,13 @@ const MangoAccountsListModal = ({
                     toUiDecimalsForQuote(Number(acc.getEquity(group!))),
                     2,
                   )
-                  const maintHealth = acc.getHealthRatioUi(
-                    group!,
-                    HealthType.maint,
-                  )
+                  let maintHealth
+                  try {
+                    maintHealth = acc.getHealthRatioUi(group!, HealthType.maint)
+                  } catch (e) {
+                    console.error('error getting maint health for account', e)
+                    maintHealth = 0
+                  }
                   return (
                     <div
                       className="flex h-16 w-full items-center text-th-fgd-1"
