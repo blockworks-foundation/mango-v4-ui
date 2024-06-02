@@ -1293,6 +1293,7 @@ const getLstStakePool = async (connection: Connection, mint: string) => {
       new PublicKey('EhWxBHdmQ3yDmPzhJbKtGMM9oaZD42emt71kSieghy5'),
     )
     const addresses = [
+      'ECRqn7gaNASuvTyC5xfCUjehWZCSowMXstZiM5DNweyB',
       'CgntPoLka5pD5fesJYhGmUCF8KU1QS1ZmZiuAuMZr2az',
       '7ge2xKsZXmqPxa3YmXxXmzCp9Hc2ezrTxh6PECaxCwrL',
       'GUAMR8ciiaijraJeLDEDrFVaueLm9YzWWY9R7CBPL9rA',
@@ -1303,6 +1304,9 @@ const getLstStakePool = async (connection: Connection, mint: string) => {
       'F8h46pYkaqPJNP2MRkUUUtRkf8efCkpoqehn9g1bTTm7',
       '5oc4nmbNTda9fx8Tw57ShLD132aqDK65vuHH4RU1K4LZ',
       'stk9ApL5HeVAwPLr3TLhDXdZS8ptVu7zp6ov8HFDuMi',
+      'edgejNWAqkePLpi5sHRxT9vHi7u3kSHP9cocABPKiWZ',
+      'DfiQgSvpW3Dy4gKfhtdHnWGHwFUrE8exvaxqjtMtAVxk',
+      '8Dv3hNYcEWEaa4qVx9BTN1Wfvtha1z8cWDUXb7KVACVe',
       ...(resp.value?.state.addresses || []).map((x) => x.toBase58()),
     ]
     //remove duplicates
