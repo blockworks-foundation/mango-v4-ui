@@ -441,10 +441,10 @@ const OpenOrders = ({
               filledQuantity = filledOrder ? filledOrder.quantity : 0
             }
           } else if (order instanceof OpenbookOrder) {
-            side = 'buy'
-            size = 0.01
-            price = 1
-            orderId = new BN(1)
+            side = order.side
+            size = order.size
+            price = order.price
+            orderId = order.orderId
             market = group.openbookV2MarketsMapByExternal.get(marketPk)!
             const openbookMarket = group.getOpenbookV2ExternalMarket(
               market.openbookMarketExternal,

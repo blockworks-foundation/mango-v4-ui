@@ -882,7 +882,7 @@ const mangoStore = create<MangoStore>()(
                 mangoAccount.openbookV2OosMapByMarketIndex.values(),
               ).forEach((oo) => {
                 const marketPk = oo.market.toString()
-                openOrders[marketPk] = oo.openOrders.map(
+                openOrders[marketPk] = oo.openOrders.filter(oo => !oo.isFree).map(
                   (o) => new OpenbookOrder(o),
                 )
               })
