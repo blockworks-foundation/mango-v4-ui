@@ -127,22 +127,26 @@ const OpenOrders = ({
       if (!group || !mangoAccount) return
       const marketPk = findSpotMarketPkInOpenOrders(o)
 
-      if (o instanceof OpenbookOrder) {
-        console.error('not implemented!')
-        return
-      }
-
       if (!marketPk) return
-      const market = group.getSerum3MarketByExternalMarket(
-        new PublicKey(marketPk),
-      )
-      setCancelAllMarket(market.name)
+      const market =
+        o instanceof OpenbookOrder
+          ? group.getOpenbookV2MarketByExternalMarket(new PublicKey(marketPk))
+          : group.getSerum3MarketByExternalMarket(new PublicKey(marketPk))
+
+      setCancelAllMarket(market.name as string)
       try {
-        const { signature: tx } = await client.serum3CancelAllOrders(
-          group,
-          mangoAccount,
-          market.serumMarketExternal,
-        )
+        const { signature: tx } =
+          o instanceof OpenbookOrder
+            ? await client.openbookV2CancelAllOrders(
+                group,
+                mangoAccount,
+                (market as unknown as OpenbookV2Market).openbookMarketExternal,
+              )
+            : await client.serum3CancelAllOrders(
+                group,
+                mangoAccount,
+                (market as Serum3Market).serumMarketExternal,
+              )
         const actions = mangoStore.getState().actions
         await actions.fetchOpenOrders(true)
         notify({
