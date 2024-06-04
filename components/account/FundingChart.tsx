@@ -1,8 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import dayjs from 'dayjs'
 import { useEffect, useMemo, useState } from 'react'
-import { HourlyFundingChartData } from 'types'
-import { DAILY_MILLISECONDS } from 'utils/constants'
+import {
+  HourlyFundingChartData,
+  MarginFundingFeed,
+  isCollateralFundingItem,
+  isPerpFundingItem,
+} from 'types'
+import { MANGO_DATA_API_URL } from 'utils/constants'
 import { formatCurrencyValue } from 'utils/numbers'
 import { TooltipProps } from 'recharts/types/component/Tooltip'
 import {
@@ -26,7 +31,8 @@ import ContentBox from '@components/shared/ContentBox'
 import SheenLoader from '@components/shared/SheenLoader'
 import useThemeWrapper from 'hooks/useThemeWrapper'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
-import useAccountHourlyFunding from 'hooks/useAccountHourlyFunding'
+import { useQuery } from '@tanstack/react-query'
+import useMangoAccount from 'hooks/useMangoAccount'
 
 type TempDataType = {
   [time: string]: {
@@ -36,15 +42,42 @@ type TempDataType = {
   }
 }
 
+const fetchFundingData = async (mangoAccountPk: string, period: number) => {
+  try {
+    const response = await fetch(
+      `${MANGO_DATA_API_URL}/stats/margin-funding?mango-account=${mangoAccountPk}&start-date=${dayjs()
+        .subtract(period, 'day')
+        .format('YYYY-MM-DD')}`,
+    )
+    const data = await response.json()
+    if (data?.length) {
+      return data.reverse()
+    } else return []
+  } catch (e) {
+    console.error('Failed to fetch account margin funding', e)
+  }
+}
+
 const FundingChart = () => {
   const { t } = useTranslation('common')
   const [daysToShow, setDaysToShow] = useState('30')
   const { theme } = useThemeWrapper()
+  const { mangoAccountAddress } = useMangoAccount()
   const {
     data: fundingData,
-    loading: loadingFunding,
+    isInitialLoading: loadingFunding,
     refetch,
-  } = useAccountHourlyFunding()
+  } = useQuery(
+    ['funding-chart-data', mangoAccountAddress, daysToShow],
+    () => fetchFundingData(mangoAccountAddress, parseInt(daysToShow)),
+    {
+      cacheTime: 1000 * 60 * 10,
+      staleTime: 1000 * 60,
+      retry: 3,
+      refetchOnWindowFocus: false,
+      enabled: !!mangoAccountAddress,
+    },
+  )
 
   useEffect(() => {
     refetch()
@@ -54,24 +87,32 @@ const FundingChart = () => {
     if (!fundingData || !fundingData.length) return []
     const tempData: TempDataType = {}
     const data: HourlyFundingChartData[] = []
-    fundingData.forEach((item) => {
-      item.marketFunding.forEach((fundingItem) => {
-        const time = fundingItem.time
-        const marketKey = item.market
-        const marketFunding =
-          fundingItem.long_funding + fundingItem.short_funding
-        if (tempData[time]) {
-          tempData[time][marketKey] = marketFunding
-          tempData[time].total += marketFunding
-        } else {
-          tempData[time] = {
-            [marketKey]: marketFunding,
-            time,
-            total: marketFunding,
-          }
-          data.push(tempData[time])
+    fundingData.forEach((item: MarginFundingFeed) => {
+      const time = item.date_time
+      let marketKey = ''
+      let marketFunding = 0
+      if (isPerpFundingItem(item)) {
+        marketKey = item?.activity_details?.perp_market
+        marketFunding =
+          item?.activity_details?.long_funding +
+          item?.activity_details?.short_funding
+      }
+      if (isCollateralFundingItem(item)) {
+        marketKey = item?.activity_details?.symbol
+        marketFunding = item?.activity_details?.fee_value_usd * -1
+      }
+
+      if (tempData[time]) {
+        tempData[time][marketKey] = marketFunding
+        tempData[time].total += marketFunding
+      } else {
+        tempData[time] = {
+          [marketKey]: marketFunding,
+          time,
+          total: marketFunding,
         }
-      })
+        data.push(tempData[time])
+      }
     })
     data.sort((a, b) => (a.time > b.time ? 1 : 0))
     return data
@@ -88,7 +129,7 @@ const FundingChart = () => {
         (p) => p[0] !== 'time' && p[0] !== 'total',
       )
       return (
-        <div className="rounded-md bg-th-bkg-2 p-4">
+        <div className="rounded-md bg-th-bkg-2 p-4 outline-none ring-0">
           <h3 className="mb-3 text-sm">
             {daysToShow === '30'
               ? dayjs(label).format('DD MMM YY')
@@ -120,50 +161,46 @@ const FundingChart = () => {
     return null
   }
 
-  const scaleDataTime = (data: HourlyFundingChartData[]) => {
+  const scaleDataTime = (
+    data: HourlyFundingChartData[],
+    daysToShow: string,
+  ): HourlyFundingChartData[] => {
     const scaledData = data.reduce((a: HourlyFundingChartData[], c) => {
       const found = a.find((item) => {
         const currentDataDate = new Date(c.time)
         const itemDate = new Date(item.time)
+        const includeHours =
+          daysToShow === '7' &&
+          currentDataDate.getHours() - itemDate.getHours() < 6
         return (
+          (includeHours || daysToShow === '30') &&
           itemDate.getDate() === currentDataDate.getDate() &&
           itemDate.getMonth() === currentDataDate.getMonth() &&
           itemDate.getFullYear() === currentDataDate.getFullYear()
         )
       })
+
       if (found) {
-        for (const key in found) {
-          if (key !== 'time') {
-            found[key] = found[key] + c[key]
+        for (const key in c) {
+          if (key !== 'time' && typeof c[key] === 'number') {
+            found[key] = (found[key] || 0) + c[key]
           }
         }
       } else {
         a.push({ ...c })
       }
       return a
-    }, [])
+    }, [] as HourlyFundingChartData[])
+
     return scaledData
   }
 
   const filteredData: HourlyFundingChartData[] = useMemo(() => {
-    if (!chartData.length) return []
-    const start = Number(daysToShow) * DAILY_MILLISECONDS
-    const filtered = chartData.filter((d: HourlyFundingChartData) => {
-      const date = new Date()
-      if (daysToShow === '30') {
-        date.setHours(0, 0, 0, 0)
-      } else {
-        date.setMinutes(0, 0, 0)
-      }
-      const dataTime = new Date(d.time).getTime()
-      const now = date.getTime()
-      const limit = now - start
-      return dataTime >= limit
-    })
-    if (daysToShow === '30') {
-      return scaleDataTime(filtered)
+    if (!chartData?.length) return []
+    if (daysToShow !== '1') {
+      return scaleDataTime(chartData, daysToShow)
     }
-    return filtered
+    return chartData
   }, [chartData, daysToShow])
 
   const totalForTimePeriod = useMemo(() => {
