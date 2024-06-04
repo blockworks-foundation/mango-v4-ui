@@ -383,6 +383,7 @@ const mangoStore = create<MangoStore>()(
     let rpcUrl = ENDPOINT.url
     let swapMargin = true
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     if (typeof window !== 'undefined' && CLUSTER === 'mainnet-beta') {
       const urlFromLocalStorage = localStorage.getItem(RPC_PROVIDER_KEY)
@@ -882,9 +883,9 @@ const mangoStore = create<MangoStore>()(
                 mangoAccount.openbookV2OosMapByMarketIndex.values(),
               ).forEach((oo) => {
                 const marketPk = oo.market.toString()
-                openOrders[marketPk] = oo.openOrders.filter(oo => !oo.isFree).map(
-                  (o) => new OpenbookOrder(o),
-                )
+                openOrders[marketPk] = oo.openOrders
+                  .filter((oo) => !oo.isFree)
+                  .map((o) => new OpenbookOrder(o))
               })
               openbookOpenOrderAccounts = Array.from(
                 mangoAccount.openbookV2OosMapByMarketIndex.values(),
