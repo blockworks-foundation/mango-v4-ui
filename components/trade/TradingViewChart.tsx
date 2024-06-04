@@ -23,6 +23,8 @@ import { COLORS } from 'styles/colors'
 import { useTranslation } from 'next-i18next'
 import { notify } from 'utils/notifications'
 import {
+  OpenbookV2Market,
+  OpenbookV2Side,
   PerpMarket,
   PerpOrder,
   Serum3Market,
@@ -240,21 +242,28 @@ const TradingViewChart = () => {
       if (!group || !mangoAccount) return
       const marketPk = findSpotMarketPkInOpenOrders(o)
       if (!marketPk) return
-      if (o instanceof OpenbookOrder) {
-        console.error('not implemented!')
-        return
-      }
-      const market = group.getSerum3MarketByExternalMarket(
-        new PublicKey(marketPk),
-      )
+
+      const market =
+        o instanceof OpenbookOrder
+          ? group.getOpenbookV2MarketByExternalMarket(new PublicKey(marketPk))
+          : group.getSerum3MarketByExternalMarket(new PublicKey(marketPk))
       try {
-        const tx = await client.serum3CancelOrder(
-          group,
-          mangoAccount,
-          market!.serumMarketExternal,
-          o.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
-          o.orderId,
-        )
+        const tx =
+          o instanceof OpenbookOrder
+            ? await client.openbookV2CancelOrder(
+                group,
+                mangoAccount,
+                (market as OpenbookV2Market).openbookMarketExternal,
+                o.side === 'buy' ? OpenbookV2Side.bid : OpenbookV2Side.ask,
+                o.orderId,
+              )
+            : await client.serum3CancelOrder(
+                group,
+                mangoAccount,
+                (market as Serum3Market).serumMarketExternal,
+                o.side === 'buy' ? Serum3Side.bid : Serum3Side.ask,
+                o.orderId,
+              )
 
         actions.fetchOpenOrders()
         notify({
