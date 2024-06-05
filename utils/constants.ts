@@ -166,6 +166,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   gofx: true,
   guac: true,
   hnt: true,
+  hubsol: true,
   inf: true,
   jitosol: true,
   jlp: true,
@@ -208,7 +209,6 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   $wif: true,
   wif: true,
   zeus: true,
-  hubsol: true,
 }
 
 export const DEFAULT_FAVORITE_MKTS = ['SOL-PERP', 'ETH-PERP', 'BTC-PERP']
