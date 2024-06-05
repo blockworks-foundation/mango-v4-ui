@@ -25,7 +25,7 @@ const MarketLogos = ({
     if (!group || !mangoTokens.length || !market)
       return { baseLogoURI: '', quoteLogoURI: '' }
     let baseLogoURI, quoteLogoURI
-    if (market instanceof Serum3Market) {
+    if (market instanceof Serum3Market || market instanceof OpenbookV2Market) {
       const baseBank = group.getFirstBankByTokenIndex(market.baseTokenIndex)
       const quoteBank = group.getFirstBankByTokenIndex(market.quoteTokenIndex)
       const baseSymbol = baseBank.name.toLowerCase()
@@ -85,7 +85,7 @@ const MarketLogos = ({
           ? 'mr-3 h-6'
           : 'mr-2 h-5'
       } ${
-        market instanceof Serum3Market
+        market instanceof Serum3Market || market instanceof OpenbookV2Market
           ? size === 'xs'
             ? 'w-[23px]'
             : size === 'small'
@@ -113,7 +113,9 @@ const MarketLogos = ({
         />
       </div>
       <div className="absolute right-0 top-0">
-        {logos.quoteLogoURI && market instanceof Serum3Market ? (
+        {logos.quoteLogoURI &&
+        (market instanceof Serum3Market ||
+          market instanceof OpenbookV2Market) ? (
           <Image
             alt=""
             className="shrink-0 opacity-60"

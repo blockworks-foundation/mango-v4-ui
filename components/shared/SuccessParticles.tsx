@@ -1,4 +1,8 @@
-import { PerpMarket, Serum3Market } from '@blockworks-foundation/mango-v4'
+import {
+  OpenbookV2Market,
+  PerpMarket,
+  Serum3Market,
+} from '@blockworks-foundation/mango-v4'
 import { INITIAL_ANIMATION_SETTINGS } from '@components/settings/AnimationSettings'
 import mangoStore from '@store/mangoStore'
 import useJupiterMints from 'hooks/useJupiterMints'
@@ -40,7 +44,10 @@ const SuccessParticles = () => {
     if (showForTrade && tradeType === 'Market') {
       const market = mangoStore.getState().selectedMarket.current
       const side = mangoStore.getState().tradeForm.side
-      if (market instanceof Serum3Market) {
+      if (
+        market instanceof Serum3Market ||
+        market instanceof OpenbookV2Market
+      ) {
         const symbol =
           side === 'buy'
             ? market.name.split('/')[0].toLowerCase()
