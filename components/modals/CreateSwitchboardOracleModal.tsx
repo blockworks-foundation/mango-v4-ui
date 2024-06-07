@@ -11,7 +11,7 @@ import { OracleJob } from '@switchboard-xyz/common'
 import Button from '@components/shared/Button'
 import { MANGO_DAO_WALLET } from 'utils/governance/constants'
 import { USDC_MINT } from 'utils/constants'
-import { PublicKey, Transaction } from '@solana/web3.js'
+import { Connection, PublicKey } from '@solana/web3.js'
 import chunk from 'lodash/chunk'
 import { useTranslation } from 'next-i18next'
 import { notify } from 'utils/notifications'
@@ -26,13 +26,21 @@ import {
   tierSwitchboardSettings,
   tierToSwitchboardJobSwapValue,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
-import { sendTxAndConfirm } from 'utils/governance/tools'
 import { WRAPPED_SOL_MINT } from '@metaplex-foundation/js'
 import {
   createComputeBudgetIx,
   toNative,
 } from '@blockworks-foundation/mango-v4'
 import { LSTExactIn, LSTExactOut } from 'utils/switchboardTemplates/templates'
+import {
+  SequenceType,
+  TransactionInstructionWithSigners,
+} from '@blockworks-foundation/mangolana/lib/globalTypes'
+import {
+  TransactionInstructionWithType,
+  sendSignAndConfirmTransactions,
+} from '@blockworks-foundation/mangolana/lib/transactions'
+import { LITE_RPC_URL } from '@components/settings/RpcSettings'
 
 const poolAddressError = 'no-pool-address-found'
 const wrongTierPassedForCreation = 'Wrong tier passed for creation of oracle'
@@ -220,7 +228,7 @@ const CreateSwitchboardOracleModal = ({
           authority: payer,
           crankDataBuffer: crankAccount.dataBuffer?.publicKey,
           crankPubkey: crankAccount.publicKey,
-          fundAmount: settingFromLib.fundAmount,
+          fundAmount: 0,
           slidingWindow: true,
           disableCrank: false,
           maxPriorityFeeMultiplier: 5,
@@ -414,47 +422,49 @@ const CreateSwitchboardOracleModal = ({
         newAuthority: MANGO_DAO_WALLET,
       })
 
-      const latestBlockhash = await connection.getLatestBlockhash('processed')
-      const instructions = chunk(
-        [...[...txArray1, lockTx, transferAuthIx].flatMap((x) => x.ixns)],
-        1,
-      )
+      const instructions = [
+        ...[...txArray1, lockTx, transferAuthIx].flatMap((x) => x.ixns),
+      ]
       const signers = [
         ...[...txArray1, lockTx, transferAuthIx].flatMap((x) => x.signers),
       ]
 
-      const transactions: Transaction[] = []
-
-      for (const chunkIndex in instructions) {
-        const chunk = instructions[chunkIndex]
-        const tx = new Transaction()
-        const singers = signers.filter((x) =>
-          chunk.find((instruction) =>
-            instruction.keys
-              .filter((key) => key.isSigner)
-              .find((key) => key.pubkey.equals(x.publicKey)),
-          ),
-        )
-
-        tx.add(createComputeBudgetIx(80000))
-        tx.add(...chunk.flatMap((x) => x))
-        tx.lastValidBlockHeight = latestBlockhash.lastValidBlockHeight
-        tx.recentBlockhash = latestBlockhash.blockhash
-        tx.feePayer = payer
-        if (singers.length) {
-          tx.sign(...singers)
-        }
-        transactions.push(tx)
-      }
-      const signedTransactions = await wallet.signAllTransactions!(transactions)
-      for (const tx of signedTransactions) {
-        await sendTxAndConfirm(
-          client.opts.multipleConnections,
-          connection,
-          tx,
-          latestBlockhash,
-        )
-      }
+      const transactionInstructions: TransactionInstructionWithType[] = []
+      chunk(instructions, 1).map((chunkInstructions) =>
+        transactionInstructions.push({
+          instructionsSet: [
+            new TransactionInstructionWithSigners(createComputeBudgetIx(80000)),
+            ...chunkInstructions.map(
+              (inst) =>
+                new TransactionInstructionWithSigners(
+                  inst,
+                  signers.filter((x) =>
+                    chunkInstructions.find((instruction) =>
+                      instruction.keys
+                        .filter((key) => key.isSigner)
+                        .find((key) => key.pubkey.equals(x.publicKey)),
+                    ),
+                  ),
+                ),
+            ),
+          ],
+          sequenceType: SequenceType.Sequential,
+        }),
+      )
+      await sendSignAndConfirmTransactions({
+        connection,
+        wallet,
+        transactionInstructions,
+        backupConnections: client.opts.multipleConnections
+          ? [...client.opts.multipleConnections]
+          : [new Connection(LITE_RPC_URL, 'recent')],
+        config: {
+          maxTxesInBatch: 20,
+          autoRetry: true,
+          logFlowInfo: true,
+          maxRetries: 5,
+        },
+      })
       notify({
         type: 'success',
         title: 'Successfully created oracle',
