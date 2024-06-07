@@ -114,8 +114,9 @@ const fetchJupiterRoute = async (
         )
 
         if (
+          maxAccounts !== 64 &&
           [...ixes.flatMap((x) => x.keys.flatMap((k) => k.pubkey))].length >
-          maxAccounts
+            maxAccounts
         ) {
           throw 'Max accounts exceeded'
         }

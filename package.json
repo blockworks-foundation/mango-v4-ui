@@ -133,7 +133,7 @@
   "resolutions": {
     "@coral-xyz/anchor": "^0.27.0",
     "eslint-config-next/eslint-import-resolver-typescript/tsconfig-paths/json5": "1.0.2",
-    "@solana/wallet-adapter-solflare": "0.6.27",
+    "@solana/wallet-adapter-solflare": "0.6.28",
     "crypto-js": ">=4.1.1",
     "@sentry/nextjs": ">=7.77.0",
     "protobufjs": ">=7.2.5"
@@ -162,7 +162,7 @@
       "tsparticles>tsparticles-engine": true,
       "@sentry/nextjs>@sentry/webpack-plugin>@sentry/cli": true,
       "@blockworks-foundation/mango-mints-redemption>keccak256>keccak": true,
-      "@switchboard-xyz/solana.js>@switchboard-xyz/common>helia>@libp2p/webrtc>node-datachannel": false
+      "@switchboard-xyz/solana.js>@switchboard-xyz/common>helia>@libp2p/webrtc>node-datachannel": true
     }
   }
 }
