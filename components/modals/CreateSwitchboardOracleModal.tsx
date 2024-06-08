@@ -228,7 +228,7 @@ const CreateSwitchboardOracleModal = ({
           authority: payer,
           crankDataBuffer: crankAccount.dataBuffer?.publicKey,
           crankPubkey: crankAccount.publicKey,
-          fundAmount: 0,
+          fundAmount: settingFromLib.fundAmount,
           slidingWindow: true,
           disableCrank: false,
           maxPriorityFeeMultiplier: 5,
