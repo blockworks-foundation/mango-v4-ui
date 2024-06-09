@@ -30,6 +30,7 @@ import { notify } from 'utils/notifications'
 import { usePlausible } from 'next-plausible'
 import { TelemetryEvents } from 'utils/telemetry'
 import { groupBy, mapValues, maxBy, sampleSize } from 'lodash'
+import { tryGetPubKey } from 'utils/governance/tools'
 
 const set = mangoStore.getState().set
 const actions = mangoStore.getState().actions
@@ -228,7 +229,7 @@ const ReadOnlyMangoAccount = () => {
 
     async function loadUnownedMangoAccount() {
       try {
-        if (!ma || !group) return
+        if (!ma || !group || !tryGetPubKey(ma)) return
 
         const client = mangoStore.getState().client
         const pk = new PublicKey(ma)
