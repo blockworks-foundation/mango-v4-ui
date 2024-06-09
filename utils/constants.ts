@@ -179,6 +179,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   mew: true,
   mnde: true,
   mngo: true,
+  mother: true,
   moutai: true,
   meta: true,
   msol: true,
