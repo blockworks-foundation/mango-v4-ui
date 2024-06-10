@@ -156,6 +156,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   dai: true,
   drift: true,
   dual: true,
+  dualsol: true,
   elon: true,
   eth: true,
   ethpo: true,
