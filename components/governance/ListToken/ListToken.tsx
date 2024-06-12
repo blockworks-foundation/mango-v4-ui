@@ -60,6 +60,7 @@ import { BN } from '@coral-xyz/anchor'
 import Select from '@components/forms/Select'
 import { WRAPPED_SOL_MINT } from '@metaplex-foundation/js'
 import { struct, u8, publicKey, u64, option } from '@raydium-io/raydium-sdk'
+import * as toml from '@iarna/toml'
 
 const feeFields = [u64('denominator'), u64('numerator')]
 const StakePoolLayout = struct([
@@ -1289,7 +1290,8 @@ export default ListToken
 const getLstStakePool = async (connection: Connection, mint: string) => {
   try {
     let poolAddress = ''
-    const addresses = [
+    //backup intial list
+    let addresses = [
       'GUAMR8ciiaijraJeLDEDrFVaueLm9YzWWY9R7CBPL9rA',
       'F8h46pYkaqPJNP2MRkUUUtRkf8efCkpoqehn9g1bTTm7',
       '5oc4nmbNTda9fx8Tw57ShLD132aqDK65vuHH4RU1K4LZ',
@@ -1346,10 +1348,30 @@ const getLstStakePool = async (connection: Connection, mint: string) => {
       'pjwKqvtt4ij6VJW4HxNxSaufSrkWHRc6iCTHoC4gFs4',
       '5ocnV1qiCgaQR8Jb8xWnVbApfaygJ8tNoZfgPwsgx9kx',
     ]
+
+    try {
+      const tomlFile = await fetch(
+        `https://raw.githubusercontent.com/${'igneous-labs'}/${'sanctum-lst-list'}/master/sanctum-lst-list.toml`,
+      )
+
+      const tomlText = await tomlFile.text()
+      const tomlData = toml.parse(tomlText) as unknown as {
+        sanctum_lst_list: { pool: { pool: string } }[]
+      }
+      addresses = [
+        ...tomlData.sanctum_lst_list
+          .map((x) => tryGetPubKey(x.pool.pool)?.toBase58())
+          .filter((x) => x),
+      ] as string[]
+    } catch (e) {
+      console.log(e)
+    }
+
     //remove duplicates
     const possibleStakePoolsAddresses = [...new Set(addresses)].map(
       (x) => new PublicKey(x),
     )
+
     const accounts = await connection.getMultipleAccountsInfo(
       possibleStakePoolsAddresses,
     )
