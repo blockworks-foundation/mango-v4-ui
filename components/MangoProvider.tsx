@@ -24,7 +24,10 @@ import {
 import useNetworkSpeed from 'hooks/useNetworkSpeed'
 import { useWallet } from '@solana/wallet-adapter-react'
 import useLocalStorageState from 'hooks/useLocalStorageState'
-import { DEFAULT_PRIORITY_FEE_LEVEL } from './settings/RpcSettings'
+import {
+  DEFAULT_PRIORITY_FEE_LEVEL,
+  LITE_RPC_URL,
+} from './settings/RpcSettings'
 import { useHiddenMangoAccounts } from 'hooks/useHiddenMangoAccounts'
 import { notify } from 'utils/notifications'
 import { usePlausible } from 'next-plausible'
@@ -274,7 +277,7 @@ const handleEstimateFeeWithWs = (
     let lastFee: null | number = null
     let reportedUndefinedFeeCount = 0
 
-    const wsUrl = new URL('wss://api.mngo.cloud/lite-rpc/v1/')
+    const wsUrl = new URL(LITE_RPC_URL.replace('https', 'wss'))
     ws = new WebSocket(wsUrl)
 
     ws.addEventListener('open', () => {
