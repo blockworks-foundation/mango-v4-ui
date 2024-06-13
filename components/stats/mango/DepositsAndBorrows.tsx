@@ -1,16 +1,33 @@
 import { useTranslation } from 'next-i18next'
-import { useState } from 'react'
 import { formatYAxis } from 'utils/formatting'
 import DetailedAreaOrBarChart from '@components/shared/DetailedAreaOrBarChart'
 import NetDepositsChart from './NetDepositsChart'
 import { useTokenStats } from 'hooks/useTokenStats'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import { MANGO_STATS_CHART_SETTINGS_KEY } from 'utils/constants'
+import { DEFAULT_CHART_SETTINGS } from './MangoStats'
 
 const DepositsAndBorrows = () => {
   const { t } = useTranslation(['common', 'token', 'trade'])
-
+  const [chartSettings, setChartSettings] = useLocalStorageState(
+    MANGO_STATS_CHART_SETTINGS_KEY,
+    DEFAULT_CHART_SETTINGS,
+  )
   const { data: tokenStats, isLoading } = useTokenStats()
-  const [borrowDaysToShow, setBorrowDaysToShow] = useState('30')
-  const [depositDaysToShow, setDepositDaysToShow] = useState('30')
+
+  const handleDepositDaysToShow = (days: string) => {
+    setChartSettings({
+      ...chartSettings,
+      depositValue: { ...chartSettings.depositValue, daysToShow: days },
+    })
+  }
+
+  const handleBorrowDaysToShow = (days: string) => {
+    setChartSettings({
+      ...chartSettings,
+      borrowValue: { ...chartSettings.borrowValue, daysToShow: days },
+    })
+  }
 
   return (
     <>
@@ -18,8 +35,8 @@ const DepositsAndBorrows = () => {
         <DetailedAreaOrBarChart
           changeAsPercent
           data={tokenStats?.mangoStats}
-          daysToShow={depositDaysToShow}
-          setDaysToShow={setDepositDaysToShow}
+          daysToShow={chartSettings.depositValue.daysToShow}
+          setDaysToShow={handleDepositDaysToShow}
           loading={isLoading}
           heightClass="h-64"
           loaderHeightClass="h-[350px]"
@@ -34,8 +51,8 @@ const DepositsAndBorrows = () => {
         <DetailedAreaOrBarChart
           changeAsPercent
           data={tokenStats?.mangoStats}
-          daysToShow={borrowDaysToShow}
-          setDaysToShow={setBorrowDaysToShow}
+          daysToShow={chartSettings.borrowValue.daysToShow}
+          setDaysToShow={handleBorrowDaysToShow}
           heightClass="h-64"
           loaderHeightClass="h-[350px]"
           loading={isLoading}

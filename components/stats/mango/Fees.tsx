@@ -2,12 +2,15 @@ import Switch from '@components/forms/Switch'
 import DetailedAreaOrBarChart from '@components/shared/DetailedAreaOrBarChart'
 import mangoStore from '@store/mangoStore'
 import usePerpStatsChartData from 'hooks/usePerpStatsChartData'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { MangoTokenStatsItem } from 'types'
 import { formatYAxis } from 'utils/formatting'
 import { groupPerpByHourlyInterval } from './Volume'
 import { useTokenStats } from 'hooks/useTokenStats'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import { MANGO_STATS_CHART_SETTINGS_KEY } from 'utils/constants'
+import { DEFAULT_CHART_SETTINGS } from './MangoStats'
 
 interface GroupedTokenDataItem extends MangoTokenStatsItem {
   intervalStartMillis: number
@@ -46,15 +49,16 @@ const Fees = () => {
   const { data: tokenStats, isLoading } = useTokenStats()
   const mangoStats = tokenStats?.mangoStats
   const loadingPerpStats = mangoStore((s) => s.perpStats.loading)
-  const [feesDaysToShow, setFeesDaysToShow] = useState('30')
-  const [showCumulativeFees, setShowCumulativeFees] = useState(true)
-  const [feesPerpDaysToShow, setFeesPerpDaysToShow] = useState('30')
-  const [showCumulativePerpFees, setShowCumulativePerpFees] = useState(true)
   const { feeValues: perpFeeChartData } = usePerpStatsChartData()
+  const [chartSettings, setChartSettings] = useLocalStorageState(
+    MANGO_STATS_CHART_SETTINGS_KEY,
+    DEFAULT_CHART_SETTINGS,
+  )
 
   const tokenFeesChartData = useMemo(() => {
     if (!mangoStats?.length) return []
-    if (showCumulativeFees) {
+    const { daysToShow, showCumulative } = chartSettings.tokenFees
+    if (showCumulative) {
       return mangoStats
     } else {
       const transformedData = []
@@ -70,19 +74,20 @@ const Fees = () => {
       }
       transformedData.unshift(mangoStats[0])
 
-      if (feesDaysToShow === '30') {
+      if (daysToShow === '30') {
         return groupTokenByHourlyInterval(transformedData, 24)
-      } else if (feesDaysToShow === '7') {
+      } else if (daysToShow === '7') {
         return groupTokenByHourlyInterval(transformedData, 4)
       } else return transformedData
     }
-  }, [mangoStats, feesDaysToShow, showCumulativeFees])
+  }, [mangoStats, chartSettings])
 
   const perpFeeValues = useMemo(() => {
     if (!perpFeeChartData || !perpFeeChartData.length) return []
+    const { daysToShow, showCumulative } = chartSettings.perpFees
 
     let feeChartData = perpFeeChartData
-    if (!showCumulativePerpFees) {
+    if (!showCumulative) {
       const transformedData = []
       for (let i = 1; i < perpFeeChartData.length; i++) {
         const currentInterval = { ...perpFeeChartData[i] }
@@ -95,15 +100,29 @@ const Fees = () => {
       }
       transformedData.unshift(perpFeeChartData[0])
 
-      if (feesPerpDaysToShow === '30') {
+      if (daysToShow === '30') {
         feeChartData = groupPerpByHourlyInterval(transformedData, 24)
-      } else if (feesPerpDaysToShow === '7') {
+      } else if (daysToShow === '7') {
         feeChartData = groupPerpByHourlyInterval(transformedData, 4)
       } else feeChartData = transformedData
     }
 
     return feeChartData
-  }, [feesPerpDaysToShow, perpFeeChartData, showCumulativePerpFees])
+  }, [chartSettings, perpFeeChartData])
+
+  const handleTokenFeesDaysToShow = (days: string) => {
+    setChartSettings({
+      ...chartSettings,
+      tokenFees: { ...chartSettings.tokenFees, daysToShow: days },
+    })
+  }
+
+  const handlePerpFeesDaysToShow = (days: string) => {
+    setChartSettings({
+      ...chartSettings,
+      perpFees: { ...chartSettings.perpFees, daysToShow: days },
+    })
+  }
 
   return (
     <>
@@ -112,8 +131,8 @@ const Fees = () => {
           <DetailedAreaOrBarChart
             changeAsPercent
             data={tokenFeesChartData}
-            daysToShow={feesDaysToShow}
-            setDaysToShow={setFeesDaysToShow}
+            daysToShow={chartSettings.tokenFees.daysToShow}
+            setDaysToShow={handleTokenFeesDaysToShow}
             heightClass="h-64"
             loaderHeightClass="h-[350px]"
             loading={isLoading}
@@ -123,13 +142,21 @@ const Fees = () => {
             tooltipContent={t('token:tooltip-token-fees-collected')}
             xKey="date"
             yKey={'feesCollected'}
-            chartType={showCumulativeFees ? 'area' : 'bar'}
+            chartType={chartSettings.tokenFees.showCumulative ? 'area' : 'bar'}
           />
         </div>
         <div className="flex justify-end px-4 pb-4 md:px-6">
           <Switch
-            checked={showCumulativeFees}
-            onChange={() => setShowCumulativeFees(!showCumulativeFees)}
+            checked={chartSettings.tokenFees.showCumulative}
+            onChange={() =>
+              setChartSettings({
+                ...chartSettings,
+                tokenFees: {
+                  ...chartSettings.tokenFees,
+                  showCumulative: !chartSettings.tokenFees.showCumulative,
+                },
+              })
+            }
             small
           >
             {t('stats:show-cumulative')}
@@ -141,8 +168,8 @@ const Fees = () => {
           <DetailedAreaOrBarChart
             changeAsPercent
             data={perpFeeValues}
-            daysToShow={feesPerpDaysToShow}
-            setDaysToShow={setFeesPerpDaysToShow}
+            daysToShow={chartSettings.perpFees.daysToShow}
+            setDaysToShow={handlePerpFeesDaysToShow}
             heightClass="h-64"
             loading={loadingPerpStats}
             loaderHeightClass="h-[350px]"
@@ -151,13 +178,21 @@ const Fees = () => {
             title="Perp Fees"
             xKey="date"
             yKey="value"
-            chartType={showCumulativePerpFees ? 'area' : 'bar'}
+            chartType={chartSettings.perpFees.showCumulative ? 'area' : 'bar'}
           />
         </div>
         <div className="flex justify-end px-4 pb-4 md:px-6">
           <Switch
-            checked={showCumulativePerpFees}
-            onChange={() => setShowCumulativePerpFees(!showCumulativePerpFees)}
+            checked={chartSettings.perpFees.showCumulative}
+            onChange={() =>
+              setChartSettings({
+                ...chartSettings,
+                perpFees: {
+                  ...chartSettings.perpFees,
+                  showCumulative: !chartSettings.perpFees.showCumulative,
+                },
+              })
+            }
             small
           >
             {t('stats:show-cumulative')}

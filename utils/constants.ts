@@ -92,6 +92,8 @@ export const SHOW_ANNOUNCEMENTS_KEY = 'showAnnouncements-0.1'
 
 export const TOKEN_WATCHLIST_KEY = 'watchlist-0.1'
 
+export const MANGO_STATS_CHART_SETTINGS_KEY = 'mangoStatsCharts-0.1'
+
 // Unused
 export const PROFILE_CATEGORIES = [
   'borrower',

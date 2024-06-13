@@ -1,10 +1,13 @@
 import { useTranslation } from 'next-i18next'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import mangoStore from '@store/mangoStore'
 import DetailedAreaOrBarChart from '@components/shared/DetailedAreaOrBarChart'
 import { formatYAxis } from 'utils/formatting'
 import Switch from '@components/forms/Switch'
 import usePerpStatsChartData from 'hooks/usePerpStatsChartData'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import { MANGO_STATS_CHART_SETTINGS_KEY } from 'utils/constants'
+import { DEFAULT_CHART_SETTINGS } from './MangoStats'
 
 export interface PerpValueItem {
   date: string
@@ -46,15 +49,18 @@ export const groupPerpByHourlyInterval = (
 const Volume = () => {
   const { t } = useTranslation(['common', 'stats', 'token', 'trade'])
   const loadingPerpStats = mangoStore((s) => s.perpStats.loading)
-  const [perpVolumeDaysToShow, setPerpPerpVolumeDaysToShow] = useState('30')
-  const [showCumulativePerpVolume, setShowCumulativePerpVolume] = useState(true)
   const { volumeValues: perpVolumeChartData } = usePerpStatsChartData()
+  const [chartSettings, setChartSettings] = useLocalStorageState(
+    MANGO_STATS_CHART_SETTINGS_KEY,
+    DEFAULT_CHART_SETTINGS,
+  )
+  const { daysToShow, showCumulative } = chartSettings.perpVolume
 
   const perpVolumeValues = useMemo(() => {
     if (!perpVolumeChartData || !perpVolumeChartData.length) return []
 
     let volumeChartData = perpVolumeChartData
-    if (!showCumulativePerpVolume) {
+    if (!showCumulative) {
       const transformedData = []
       for (let i = 1; i < perpVolumeChartData.length; i++) {
         const currentInterval = { ...perpVolumeChartData[i] }
@@ -67,15 +73,22 @@ const Volume = () => {
       }
       transformedData.unshift(perpVolumeChartData[0])
 
-      if (perpVolumeDaysToShow === '30') {
+      if (daysToShow === '30') {
         volumeChartData = groupPerpByHourlyInterval(transformedData, 24)
-      } else if (perpVolumeDaysToShow === '7') {
+      } else if (daysToShow === '7') {
         volumeChartData = groupPerpByHourlyInterval(transformedData, 4)
       } else volumeChartData = transformedData
     }
 
     return volumeChartData
-  }, [perpVolumeDaysToShow, perpVolumeChartData, showCumulativePerpVolume])
+  }, [daysToShow, perpVolumeChartData, showCumulative])
+
+  const handleDaysToShow = (days: string) => {
+    setChartSettings({
+      ...chartSettings,
+      perpVolume: { ...chartSettings.perpVolume, daysToShow: days },
+    })
+  }
 
   return (
     <>
@@ -84,8 +97,8 @@ const Volume = () => {
           <DetailedAreaOrBarChart
             changeAsPercent
             data={perpVolumeValues}
-            daysToShow={perpVolumeDaysToShow}
-            setDaysToShow={setPerpPerpVolumeDaysToShow}
+            daysToShow={daysToShow}
+            setDaysToShow={handleDaysToShow}
             heightClass="h-64"
             loading={loadingPerpStats}
             loaderHeightClass="h-[350px]"
@@ -94,14 +107,20 @@ const Volume = () => {
             title={t('stats:perp-volume')}
             xKey="date"
             yKey="value"
-            chartType={showCumulativePerpVolume ? 'area' : 'bar'}
+            chartType={showCumulative ? 'area' : 'bar'}
           />
         </div>
         <div className="flex justify-end px-4 pb-4 md:px-6">
           <Switch
-            checked={showCumulativePerpVolume}
+            checked={showCumulative}
             onChange={() =>
-              setShowCumulativePerpVolume(!showCumulativePerpVolume)
+              setChartSettings({
+                ...chartSettings,
+                perpVolume: {
+                  ...chartSettings.perpVolume,
+                  showCumulative: !chartSettings.perpVolume.showCumulative,
+                },
+              })
             }
             small
           >
