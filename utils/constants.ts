@@ -153,6 +153,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   bonk: true,
   btc: true,
   chai: true,
+  compasssol: true,
   corn: true,
   crown: true,
   dai: true,
