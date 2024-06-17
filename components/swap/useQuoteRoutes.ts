@@ -214,6 +214,10 @@ const fetchMangoRoute = async (
   return new Promise<{ bestRoute: JupiterV6RouteInfo }>(
     // eslint-disable-next-line no-async-promise-executor
     async (resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject('Request timed out')
+      }, 5000)
+
       try {
         const paramsString = new URLSearchParams({
           inputMint: inputMint.toString(),
@@ -226,6 +230,7 @@ const fetchMangoRoute = async (
         const response = await fetch(
           `${MANGO_ROUTER_API_URL}/quote?${paramsString}`,
         )
+        clearTimeout(timeout)
         if (sendAnalytics) {
           sendAnalytics(
             {
@@ -234,9 +239,11 @@ const fetchMangoRoute = async (
             'fetchMangoRoute',
           )
         }
+
         if (response.status === 500) {
           throw 'No route found'
         }
+
         const res = await response.json()
 
         if (res.outAmount) {
@@ -247,6 +254,7 @@ const fetchMangoRoute = async (
           reject('No route found')
         }
       } catch (e) {
+        clearTimeout(timeout)
         if (sendAnalytics) {
           sendAnalytics(
             {
