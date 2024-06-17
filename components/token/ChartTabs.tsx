@@ -72,7 +72,6 @@ const ChartTabs = ({ bank }: { bank: Bank }) => {
   const [depositRateDaysToShow, setDepositRateDaysToShow] = useState('30')
   const [borrowRateDaysToShow, setBorrowRateDaysToShow] = useState('30')
   const { data: tokenStats, isLoading } = useTokenStats(bank.mint)
-  console.log(tokenStats)
   const formattedStats = useMemo(() => {
     if (!tokenStats?.data?.length) return []
     return tokenStats.data

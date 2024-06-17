@@ -10,6 +10,7 @@ const BankAmountWithValue = ({
   stacked,
   value,
   isPrivate,
+  textColorClass,
 }: {
   amount: Decimal | number | string
   bank: Bank
@@ -18,9 +19,14 @@ const BankAmountWithValue = ({
   stacked?: boolean
   value?: number
   isPrivate?: boolean
+  textColorClass?: string
 }) => {
   return (
-    <p className={`font-mono text-th-fgd-2 ${stacked ? 'text-right' : ''}`}>
+    <p
+      className={`font-mono ${
+        textColorClass ? textColorClass : 'text-th-fgd-2'
+      } ${stacked ? 'text-right' : ''}`}
+    >
       <>
         <FormatNumericValue
           value={amount}
