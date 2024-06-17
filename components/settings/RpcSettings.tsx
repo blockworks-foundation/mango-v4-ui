@@ -13,7 +13,7 @@ export const TRITON_DEDICATED_URL = process.env.NEXT_PUBLIC_TRITON_TOKEN
   ? `https://mango.rpcpool.com/${process.env.NEXT_PUBLIC_TRITON_TOKEN}`
   : 'https://mango.rpcpool.com/946ef7337da3f5b8d3e4a34e7f88'
 
-export const LITE_RPC_URL = `https://api.mngo.cloud/lite-rpc/v1`
+export const LITE_RPC_URL = `https://api.mngo.cloud/lite-rpc/v1-mangoui-812743`
 
 const RPC_URLS = [
   {
