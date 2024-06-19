@@ -652,6 +652,10 @@ const Dashboard: NextPage = () => {
                               value={externalMarket.minOrderSize}
                             />
                             <KeyValuePair
+                              label="Price Band"
+                              value={market.oraclePriceBand}
+                            />
+                            <KeyValuePair
                               label="Tick Size"
                               value={externalMarket.tickSize}
                             />
