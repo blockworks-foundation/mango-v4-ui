@@ -11,7 +11,11 @@ import {
   TokenPosition,
   toUiDecimalsForQuote,
 } from '@blockworks-foundation/mango-v4'
-import { ExclamationCircleIcon, TrashIcon } from '@heroicons/react/20/solid'
+import {
+  ArrowTopRightOnSquareIcon,
+  ExclamationCircleIcon,
+  TrashIcon,
+} from '@heroicons/react/20/solid'
 import useUnsettledPerpPositions from 'hooks/useUnsettledPerpPositions'
 import { getMultipleAccounts } from '@project-serum/anchor/dist/cjs/utils/rpc'
 import { formatCurrencyValue } from 'utils/numbers'
@@ -125,7 +129,7 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="h-[268px]">
+      <div className="h-[288px]">
         {loading ? (
           <BounceLoader loadingMessage={t('closing-account')} />
         ) : (
@@ -188,6 +192,15 @@ const CloseAccountModal = ({ isOpen, onClose }: ModalProps) => {
                 </>
               )}
             </div>
+            <a
+              className="flex items-center"
+              href="https://mangomarkets.canny.io/feedback"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <span className="mr-2">Let us know why you&apos;re leaving</span>
+              <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+            </a>
             <Button
               className="w-full"
               disabled={isDisabled}
