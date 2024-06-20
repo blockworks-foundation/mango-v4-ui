@@ -25,6 +25,7 @@ import mangoStore from '@store/mangoStore'
 import { ttCommons, ttCommonsExpanded, ttCommonsMono } from 'utils/fonts'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { chunk } from 'lodash'
 
 const NotificationsDrawer = ({
   isOpen,
@@ -49,22 +50,29 @@ const NotificationsDrawer = ({
 
   const markAsSeen = useCallback(
     async (ids: number[]) => {
+      const idsChunk = chunk(ids, 500)
       try {
-        const resp = await fetch(`${NOTIFICATION_API}notifications/seen`, {
-          method: 'POST',
-          headers: headers.headers,
-          body: JSON.stringify({
-            ids: ids,
-            seen: true,
+        const resp = await Promise.all([
+          ...idsChunk.map(async (x) => {
+            const resp = await fetch(`${NOTIFICATION_API}notifications/seen`, {
+              method: 'POST',
+              headers: headers.headers,
+              body: JSON.stringify({
+                ids: x,
+                seen: true,
+              }),
+            })
+            const body = await resp.json()
+            return body
           }),
-        })
-        const body = await resp.json()
-        const error = body.error
-        if (error) {
+        ])
+
+        const error = resp.filter((x) => x.error).map((x) => x.error)
+        if (error[0]) {
           notify({
             type: 'error',
             title: 'Error',
-            description: error,
+            description: error[0],
           })
           return
         }
