@@ -148,6 +148,7 @@ export const AUCTION_HOUSE_ID = new PublicKey(
 )
 export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   all: true,
+  billy: true,
   blze: true,
   bome: true,
   bonk: true,
