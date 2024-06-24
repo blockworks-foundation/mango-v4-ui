@@ -216,6 +216,74 @@ const CreateSwitchboardOracleModal = ({
       if (!settingFromLib) {
         throw wrongTierPassedForCreation
       }
+      console.log(
+        OracleJob.fromObject({
+          tasks: [
+            {
+              conditionalTask: {
+                attempt: [
+                  {
+                    valueTask: {
+                      big: swapValue,
+                    },
+                  },
+                  {
+                    divideTask: {
+                      job: {
+                        tasks: [
+                          {
+                            jupiterSwapTask: {
+                              inTokenAddress: USDC_MINT,
+                              outTokenAddress: baseTokenPk,
+                              baseAmountString: swapValue,
+                            },
+                          },
+                        ],
+                      },
+                    },
+                  },
+                ],
+                onFailure: onFailureTaskDesc,
+              },
+            },
+            {
+              conditionalTask: {
+                attempt: [
+                  {
+                    multiplyTask: {
+                      job: {
+                        tasks: [
+                          {
+                            oracleTask: {
+                              pythAddress: pythUsdOracle,
+                              pythAllowedConfidenceInterval: 10,
+                            },
+                          },
+                        ],
+                      },
+                    },
+                  },
+                ],
+                onFailure: [
+                  {
+                    multiplyTask: {
+                      job: {
+                        tasks: [
+                          {
+                            oracleTask: {
+                              switchboardAddress: switchboardUsdDaoOracle,
+                            },
+                          },
+                        ],
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        }).toJSON(),
+      )
       const [aggregatorAccount, txArray1] =
         await queueAccount.createFeedInstructions(payer, {
           name: `${baseTokenName}/${quoteTokenName}`,

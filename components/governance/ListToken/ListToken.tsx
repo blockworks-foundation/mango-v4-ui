@@ -436,6 +436,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     targetAmount: number,
     tokenMint: PublicKey,
   ) => {
+    setIsSolPool(false)
     const swaps = await handleGetRoutesWithFixedArgs(
       targetAmount ? targetAmount : 100,
       tokenMint,
@@ -530,6 +531,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     setProposedProposedTargetAmount(0)
     setBaseTokenPrice(0)
     setIsLST(false)
+    setIsSolPool(false)
   }
 
   const isFormValid = useCallback(
