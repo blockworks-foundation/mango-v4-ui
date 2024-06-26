@@ -358,7 +358,8 @@ export async function handleGetRoutes(
 
     if (
       swapMode === 'ExactIn' &&
-      (isMultiRoutingMode(routingMode) || isRaydiumRoutingMode(routingMode))
+      (isMultiRoutingMode(routingMode) || isRaydiumRoutingMode(routingMode)) &&
+      mangoAccount
     ) {
       const raydiumRoute = fetchRaydiumRoute(
         inputMint,

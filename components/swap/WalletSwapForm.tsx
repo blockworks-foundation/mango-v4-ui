@@ -69,7 +69,7 @@ const WalletSwapForm = ({ setShowTokenSelect }: WalletSwapFormProps) => {
     swapMode,
     wallet: publicKey?.toBase58(),
     mangoAccount: undefined,
-    routingMode: 'JUPITER',
+    routingMode: 'ALL',
     enabled: () =>
       !!(
         inputBank?.mint &&
