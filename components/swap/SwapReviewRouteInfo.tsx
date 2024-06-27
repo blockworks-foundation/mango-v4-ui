@@ -479,6 +479,7 @@ const SwapReviewRouteInfo = ({
           userDefinedInstructions: ixs,
           userDefinedAlts: alts,
           flashLoanType: { swap: {} },
+          sequenceCheck: false,
         })
         tx = signature
         set((s) => {

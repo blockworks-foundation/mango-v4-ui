@@ -294,6 +294,7 @@ export default function SpotMarketOrderSwapForm() {
         userDefinedInstructions: ixs,
         userDefinedAlts: alts,
         flashLoanType: { swap: {} },
+        sequenceCheck: false,
       })
       set((s) => {
         s.successAnimation.swap = true
