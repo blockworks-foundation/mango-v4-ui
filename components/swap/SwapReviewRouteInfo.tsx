@@ -184,22 +184,29 @@ export const fetchJupiterWalletSwapTransaction = async (
   selectedRoute: JupiterV6RouteInfo,
   userPublicKey: PublicKey,
   slippage: number,
+  origin?: 'mango' | 'jupiter' | 'raydium',
 ): Promise<VersionedTransaction> => {
   // docs https://station.jup.ag/api-v6/post-swap
+
   const transactions = await (
-    await fetch(`${JUPITER_V6_QUOTE_API_MAINNET}/swap`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    await fetch(
+      `${
+        origin === 'mango' ? MANGO_ROUTER_API_URL : JUPITER_V6_QUOTE_API_MAINNET
+      }/swap`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          // response from /quote api
+          quoteResponse: selectedRoute,
+          // user public key to be used for the swap
+          userPublicKey,
+          slippageBps: Math.ceil(slippage * 100),
+        }),
       },
-      body: JSON.stringify({
-        // response from /quote api
-        quoteResponse: selectedRoute,
-        // user public key to be used for the swap
-        userPublicKey,
-        slippageBps: Math.ceil(slippage * 100),
-      }),
-    })
+    )
   ).json()
 
   const { swapTransaction } = transactions
@@ -382,16 +389,22 @@ const SwapReviewRouteInfo = ({
         selectedRoute,
         wallet.publicKey,
         slippage,
+        selectedRoute.origin,
       )
+
       const latestBlockhash = await connection.getLatestBlockhash()
+      vtx.message.recentBlockhash = latestBlockhash.blockhash
       const sign = wallet.signTransaction!
       const signed = await sign(vtx)
-      const txid = await sendTxAndConfirm(
-        client.opts.multipleConnections,
-        connection,
-        signed,
-        latestBlockhash,
-      )
+
+      const elo = await connection.simulateTransaction(signed)
+      console.log(elo)
+      //   const txid = await sendTxAndConfirm(
+      //     client.opts.multipleConnections,
+      //     connection,
+      //     signed,
+      //     latestBlockhash,
+      //   )
       set((s) => {
         s.swap.amountIn = ''
         s.swap.amountOut = ''
