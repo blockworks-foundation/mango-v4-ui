@@ -187,6 +187,18 @@ export const fetchJupiterWalletSwapTransaction = async (
   origin?: 'mango' | 'jupiter' | 'raydium',
 ): Promise<VersionedTransaction> => {
   // docs https://station.jup.ag/api-v6/post-swap
+  const params = {
+    // response from /quote api
+    quoteResponse: selectedRoute,
+    // user public key to be used for the swap
+    userPublicKey,
+    slippageBps: Math.ceil(slippage * 100),
+  }
+  if (origin === 'mango') {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //@ts-ignore
+    params.autoCreateOutAta = true
+  }
 
   const transactions = await (
     await fetch(
@@ -198,13 +210,7 @@ export const fetchJupiterWalletSwapTransaction = async (
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          // response from /quote api
-          quoteResponse: selectedRoute,
-          // user public key to be used for the swap
-          userPublicKey,
-          slippageBps: Math.ceil(slippage * 100),
-        }),
+        body: JSON.stringify(params),
       },
     )
   ).json()
