@@ -1243,6 +1243,10 @@ const BankDisclosure = ({
               value={formattedBankValues.interestCurveScaling}
             />
             <KeyValuePair
+              label="Allow Asset Liquidation"
+              value={formattedBankValues.allowAssetLiquidation.toString()}
+            />
+            <KeyValuePair
               label="Interest Target Utilization"
               value={formattedBankValues.interestTargetUtilization}
             />
