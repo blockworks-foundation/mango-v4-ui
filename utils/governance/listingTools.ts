@@ -451,6 +451,7 @@ export const getFormattedBankValues = (group: Group, bank: Bank) => {
     stablePriceDelayGrowthLimit: bank.stablePriceModel.delayGrowthLimit,
     netBorrowLimitWindowSizeTs: bank.netBorrowLimitWindowSizeTs.toNumber(),
     reduceOnly: bank.reduceOnly,
+    allowAssetLiquidation: bank.allowAssetLiquidation,
     groupInsuranceFund: !!group?.mintInfosMapByMint.get(bank.mint.toString())
       ?.groupInsuranceFund,
     zeroUtilRate: (100 * bank.zeroUtilRate.toNumber()).toFixed(),
