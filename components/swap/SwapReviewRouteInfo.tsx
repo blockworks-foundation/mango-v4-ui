@@ -187,17 +187,23 @@ export const fetchJupiterWalletSwapTransaction = async (
   origin?: 'mango' | 'jupiter' | 'raydium',
 ): Promise<VersionedTransaction> => {
   // docs https://station.jup.ag/api-v6/post-swap
-  const params = {
+  const params: {
+    quoteResponse: JupiterV6RouteInfo
+    userPublicKey: PublicKey
+    slippageBps: number
+    autoCreateOutAta?: boolean
+    wrapAndUnwrapSol?: boolean
+  } = {
     // response from /quote api
     quoteResponse: selectedRoute,
     // user public key to be used for the swap
     userPublicKey,
     slippageBps: Math.ceil(slippage * 100),
   }
+
   if (origin === 'mango') {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //@ts-ignore
     params.autoCreateOutAta = true
+    params.wrapAndUnwrapSol = true
   }
 
   const transactions = await (
@@ -399,18 +405,15 @@ const SwapReviewRouteInfo = ({
       )
 
       const latestBlockhash = await connection.getLatestBlockhash()
-      vtx.message.recentBlockhash = latestBlockhash.blockhash
       const sign = wallet.signTransaction!
       const signed = await sign(vtx)
 
-      const elo = await connection.simulateTransaction(signed)
-      console.log(elo)
-      //   const txid = await sendTxAndConfirm(
-      //     client.opts.multipleConnections,
-      //     connection,
-      //     signed,
-      //     latestBlockhash,
-      //   )
+      const txid = await sendTxAndConfirm(
+        client.opts.multipleConnections,
+        connection,
+        signed,
+        latestBlockhash,
+      )
       set((s) => {
         s.swap.amountIn = ''
         s.swap.amountOut = ''
@@ -498,6 +501,7 @@ const SwapReviewRouteInfo = ({
           userDefinedInstructions: ixs,
           userDefinedAlts: alts,
           flashLoanType: { swap: {} },
+          sequenceCheck: false,
         })
         tx = signature
         set((s) => {

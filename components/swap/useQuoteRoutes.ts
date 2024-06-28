@@ -371,7 +371,7 @@ export async function handleGetRoutes(
         !mangoAccount,
         sendAnalytics,
       )
-      //routes.push(raydiumRoute)
+      routes.push(raydiumRoute)
     }
 
     if (
@@ -390,7 +390,7 @@ export async function handleGetRoutes(
         wallet,
         sendAnalytics,
       )
-      //routes.push(jupiterDirectRoute)
+      routes.push(jupiterDirectRoute)
     }
 
     if (isMultiRoutingMode(routingMode) || routingMode === 'JUPITER') {
@@ -406,7 +406,7 @@ export async function handleGetRoutes(
         wallet,
         sendAnalytics,
       )
-      //routes.push(jupiterRoute)
+      routes.push(jupiterRoute)
     }
 
     if (isMultiRoutingMode(routingMode) || routingMode === 'MANGO') {
