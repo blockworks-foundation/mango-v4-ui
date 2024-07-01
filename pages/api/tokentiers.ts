@@ -55,7 +55,7 @@ async function buildClient(): Promise<MangoClient> {
     clientProvider,
     'mainnet-beta',
     new PublicKey('4MangoMjqJ2firMokCjjGgoK8d4MXcrgL7XJaL3w6fVg'),
-    { idsSource: 'get-program-accounts' },
+    { idsSource: 'api' },
   )
 }
 
