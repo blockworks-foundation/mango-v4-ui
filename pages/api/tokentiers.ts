@@ -83,9 +83,11 @@ export default async function handler(
       console.log('Client build failed')
       throw 'Client build failed'
     }
+    console.log(client)
     const group = await client.getGroup(
       new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX'),
     )
+    console.log(group)
 
     const banks = Array.from(group.banksMapByTokenIndex.values())
       .map((bank) => bank[0])
