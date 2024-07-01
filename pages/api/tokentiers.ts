@@ -1,5 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { MANGO_V4_ID, MangoClient } from '@blockworks-foundation/mango-v4'
+import {
+  Group,
+  MANGO_V4_ID,
+  MangoClient,
+} from '@blockworks-foundation/mango-v4'
 import { AnchorProvider, Wallet } from '@coral-xyz/anchor'
 import { Connection, PublicKey, Keypair } from '@solana/web3.js'
 import {
@@ -76,10 +80,14 @@ export default async function handler(
       throw 'Client build failed'
     }
 
-    const group = await client.getGroup(
+    const groupAccount = await client.program.account.group.fetch(
       new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX'),
     )
-    console.log('1231232134')
+    const group = Group.from(
+      new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX'),
+      groupAccount,
+    )
+    console.log('12312321345')
     const banks = Array.from(group.banksMapByTokenIndex.values())
       .map((bank) => bank[0])
       .sort((a, b) => a.name.localeCompare(b.name))
