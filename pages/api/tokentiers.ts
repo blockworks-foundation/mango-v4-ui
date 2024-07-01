@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { MangoClient } from '@blockworks-foundation/mango-v4'
+import { MANGO_V4_ID, MangoClient } from '@blockworks-foundation/mango-v4'
 import { AnchorProvider, Wallet } from '@coral-xyz/anchor'
 import { Connection, PublicKey, Keypair } from '@solana/web3.js'
 import {
@@ -48,6 +48,7 @@ async function buildClient(): Promise<MangoClient | undefined> {
     const options = AnchorProvider.defaultOptions()
 
     const rpcUrl = process.env.NEXT_PUBLIC_ENDPOINT || TRITON_DEDICATED_URL
+    console.log(rpcUrl, '@@@@@@@')
     if (!rpcUrl) {
       throw new Error('MANGO_RPC_URL environment variable is not set')
     }
@@ -59,10 +60,13 @@ async function buildClient(): Promise<MangoClient | undefined> {
     return MangoClient.connect(
       clientProvider,
       'mainnet-beta',
-      new PublicKey('4MangoMjqJ2firMokCjjGgoK8d4MXcrgL7XJaL3w6fVg'),
+      MANGO_V4_ID['mainnet-beta'],
+      {
+        idsSource: 'api',
+      },
     )
   } catch (e) {
-    console.log(e, '@@@@@@')
+    console.log(e)
   }
 }
 
