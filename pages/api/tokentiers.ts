@@ -222,6 +222,7 @@ export default async function handler(
 
     return res.status(200).json(currentTiers)
   } catch (error: unknown) {
+    console.log(error, '@@@@@@@@')
     let errorMessage = 'An unexpected error occurred'
     if (error instanceof Error) {
       errorMessage = error.message
