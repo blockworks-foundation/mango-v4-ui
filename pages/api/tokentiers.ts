@@ -88,7 +88,7 @@ export default async function handler(
       new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX'),
     )
     console.log(group)
-
+    return res.status(200).json([{ name: '123' }])
     const banks = Array.from(group.banksMapByTokenIndex.values())
       .map((bank) => bank[0])
       .sort((a, b) => a.name.localeCompare(b.name))
@@ -230,7 +230,7 @@ export default async function handler(
       }),
     )
 
-    res.status(200).json(currentTiers)
+    return res.status(200).json(currentTiers)
   } catch (error: unknown) {
     let errorMessage = 'An unexpected error occurred'
     if (error instanceof Error) {
