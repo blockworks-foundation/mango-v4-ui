@@ -36,13 +36,17 @@ interface CurrentTier {
   collateralFeesPerDay?: number
 }
 
+export const TRITON_DEDICATED_URL = process.env.NEXT_PUBLIC_TRITON_TOKEN
+  ? `https://mango.rpcpool.com/${process.env.NEXT_PUBLIC_TRITON_TOKEN}`
+  : 'https://mango.rpcpool.com/946ef7337da3f5b8d3e4a34e7f88'
+
 type CurrentTiersResponse = CurrentTier[]
 
 async function buildClient(): Promise<MangoClient> {
   const clientKeypair = new Keypair()
   const options = AnchorProvider.defaultOptions()
 
-  const rpcUrl = process.env.NEXT_PUBLIC_ENDPOINT
+  const rpcUrl = process.env.NEXT_PUBLIC_ENDPOINT || TRITON_DEDICATED_URL
   if (!rpcUrl) {
     throw new Error('MANGO_RPC_URL environment variable is not set')
   }
