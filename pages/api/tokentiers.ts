@@ -42,24 +42,28 @@ export const TRITON_DEDICATED_URL = process.env.NEXT_PUBLIC_TRITON_TOKEN
 
 type CurrentTiersResponse = CurrentTier[]
 
-async function buildClient(): Promise<MangoClient> {
-  const clientKeypair = new Keypair()
-  const options = AnchorProvider.defaultOptions()
+async function buildClient(): Promise<MangoClient | undefined> {
+  try {
+    const clientKeypair = new Keypair()
+    const options = AnchorProvider.defaultOptions()
 
-  const rpcUrl = process.env.NEXT_PUBLIC_ENDPOINT || TRITON_DEDICATED_URL
-  if (!rpcUrl) {
-    throw new Error('MANGO_RPC_URL environment variable is not set')
+    const rpcUrl = process.env.NEXT_PUBLIC_ENDPOINT || TRITON_DEDICATED_URL
+    if (!rpcUrl) {
+      throw new Error('MANGO_RPC_URL environment variable is not set')
+    }
+
+    const connection = new Connection(rpcUrl, options)
+    const clientWallet = new Wallet(clientKeypair)
+    const clientProvider = new AnchorProvider(connection, clientWallet, options)
+
+    return MangoClient.connect(
+      clientProvider,
+      'mainnet-beta',
+      new PublicKey('4MangoMjqJ2firMokCjjGgoK8d4MXcrgL7XJaL3w6fVg'),
+    )
+  } catch (e) {
+    console.log(e, '@@@@@@')
   }
-
-  const connection = new Connection(rpcUrl, options)
-  const clientWallet = new Wallet(clientKeypair)
-  const clientProvider = new AnchorProvider(connection, clientWallet, options)
-
-  return MangoClient.connect(
-    clientProvider,
-    'mainnet-beta',
-    new PublicKey('4MangoMjqJ2firMokCjjGgoK8d4MXcrgL7XJaL3w6fVg'),
-  )
 }
 
 export default async function handler(
@@ -70,6 +74,11 @@ export default async function handler(
 ) {
   try {
     const client = await buildClient()
+
+    if (!client) {
+      console.log('Client build failed')
+      throw 'Client build failed'
+    }
     const group = await client.getGroup(
       new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX'),
     )
