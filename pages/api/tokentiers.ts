@@ -75,11 +75,11 @@ export default async function handler(
       console.log('Client build failed')
       throw 'Client build failed'
     }
-    console.log('123123213')
+
     const group = await client.getGroup(
       new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX'),
     )
-
+    console.log('1231232134')
     const banks = Array.from(group.banksMapByTokenIndex.values())
       .map((bank) => bank[0])
       .sort((a, b) => a.name.localeCompare(b.name))
@@ -88,7 +88,6 @@ export default async function handler(
     const midPriceImpacts = getMidPriceImpacts(
       priceImpacts.length ? priceImpacts : [],
     )
-    console.log(midPriceImpacts)
 
     const tokenThresholds: {
       [symbol: string]: { below1Percent: number; below2Percent: number }
