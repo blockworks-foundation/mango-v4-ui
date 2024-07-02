@@ -10,6 +10,8 @@ import {
   LISTING_PRESETS,
   getMidPriceImpacts,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
+import { web3 } from '@project-serum/anchor'
+import { CONNECTION_COMMITMENT } from 'utils/constants'
 
 interface TokenDetails {
   reduceOnly?: number
@@ -62,12 +64,27 @@ export default async function handler(
       throw new Error('MANGO_RPC_URL environment variable is not set')
     }
 
-    const connection = new Connection(rpcUrl, options)
+    let connection = new Connection(rpcUrl, options)
     const clientWallet = new Wallet(clientKeypair)
-    const clientProvider = new AnchorProvider(connection, clientWallet, options)
+
+    try {
+      // if connection is using Triton RpcPool then use whirligig
+      // https://docs.triton.one/project-yellowstone/whirligig-websockets
+      if (rpcUrl.includes('rpcpool')) {
+        connection = new web3.Connection(rpcUrl, {
+          wsEndpoint: `${rpcUrl.replace('http', 'ws')}/whirligig/`,
+          commitment: CONNECTION_COMMITMENT,
+        })
+      } else {
+        connection = new web3.Connection(rpcUrl, CONNECTION_COMMITMENT)
+      }
+    } catch {
+      connection = new web3.Connection(rpcUrl, CONNECTION_COMMITMENT)
+    }
+    const provider = new AnchorProvider(connection, clientWallet, options)
 
     const client = await MangoClient.connect(
-      clientProvider,
+      provider,
       'mainnet-beta',
       MANGO_V4_ID['mainnet-beta'],
       {
