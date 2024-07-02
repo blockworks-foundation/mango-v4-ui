@@ -1,17 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import {
-  Group,
-  MANGO_V4_ID,
-  MangoClient,
-} from '@blockworks-foundation/mango-v4'
-import { AnchorProvider, Wallet } from '@coral-xyz/anchor'
+import { MANGO_V4_ID, MangoClient } from '@blockworks-foundation/mango-v4'
 import { Connection, PublicKey, Keypair } from '@solana/web3.js'
 import {
   LISTING_PRESETS,
   getMidPriceImpacts,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
-import { web3 } from '@project-serum/anchor'
-import { CONNECTION_COMMITMENT } from 'utils/constants'
+import { AnchorProvider } from '@coral-xyz/anchor'
+import EmptyWallet from 'utils/wallet'
 
 interface TokenDetails {
   reduceOnly?: number
@@ -48,14 +43,8 @@ export const TRITON_DEDICATED_URL = process.env.NEXT_PUBLIC_TRITON_TOKEN
 
 type CurrentTiersResponse = CurrentTier[]
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<
-    CurrentTiersResponse | { error: string; details: string }
-  >,
-) {
+async function buildClient(): Promise<MangoClient | undefined> {
   try {
-    const clientKeypair = new Keypair()
     const options = AnchorProvider.defaultOptions()
 
     const rpcUrl = process.env.NEXT_PUBLIC_ENDPOINT || TRITON_DEDICATED_URL
@@ -64,47 +53,40 @@ export default async function handler(
       throw new Error('MANGO_RPC_URL environment variable is not set')
     }
 
-    let connection = new Connection(rpcUrl, options)
-    const clientWallet = new Wallet(clientKeypair)
+    const connection = new Connection(rpcUrl, options)
+    const clientWallet = new EmptyWallet(Keypair.generate())
+    const clientProvider = new AnchorProvider(connection, clientWallet, options)
 
-    try {
-      // if connection is using Triton RpcPool then use whirligig
-      // https://docs.triton.one/project-yellowstone/whirligig-websockets
-      if (rpcUrl.includes('rpcpool')) {
-        connection = new web3.Connection(rpcUrl, {
-          wsEndpoint: `${rpcUrl.replace('http', 'ws')}/whirligig/`,
-          commitment: CONNECTION_COMMITMENT,
-        })
-      } else {
-        connection = new web3.Connection(rpcUrl, CONNECTION_COMMITMENT)
-      }
-    } catch {
-      connection = new web3.Connection(rpcUrl, CONNECTION_COMMITMENT)
-    }
-    const provider = new AnchorProvider(connection, clientWallet, options)
-
-    const client = await MangoClient.connect(
-      provider,
+    return MangoClient.connect(
+      clientProvider,
       'mainnet-beta',
       MANGO_V4_ID['mainnet-beta'],
       {
         idsSource: 'api',
       },
     )
+  } catch (e) {
+    console.log(e)
+  }
+}
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<
+    CurrentTiersResponse | { error: string; details: string }
+  >,
+) {
+  try {
+    const client = await buildClient()
 
     if (!client) {
       console.log('Client build failed')
       throw 'Client build failed'
     }
+    const group = await client.getGroup(
+      new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX'),
+    )
 
-    const groupAccount = await client.program.account.group.fetch(
-      new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX'),
-    )
-    const group = Group.from(
-      new PublicKey('78b8f4cGCwmZ9ysPFMWLaLTkkaYnUjwMJYStWe5RTSSX'),
-      groupAccount,
-    )
-    console.log('12312321345')
     const banks = Array.from(group.banksMapByTokenIndex.values())
       .map((bank) => bank[0])
       .sort((a, b) => a.name.localeCompare(b.name))
@@ -113,6 +95,7 @@ export default async function handler(
     const midPriceImpacts = getMidPriceImpacts(
       priceImpacts.length ? priceImpacts : [],
     )
+    console.log(midPriceImpacts)
 
     const tokenThresholds: {
       [symbol: string]: { below1Percent: number; below2Percent: number }
@@ -245,7 +228,7 @@ export default async function handler(
       }),
     )
 
-    return res.status(200).json(currentTiers)
+    res.status(200).json(currentTiers)
   } catch (error: unknown) {
     let errorMessage = 'An unexpected error occurred'
     if (error instanceof Error) {
