@@ -1,11 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { MANGO_V4_ID, MangoClient } from '@blockworks-foundation/mango-v4'
-import { AnchorProvider, Wallet } from '@coral-xyz/anchor'
 import { Connection, PublicKey, Keypair } from '@solana/web3.js'
 import {
   LISTING_PRESETS,
   getMidPriceImpacts,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
+import { AnchorProvider } from '@coral-xyz/anchor'
+import EmptyWallet from 'utils/wallet'
 
 interface TokenDetails {
   reduceOnly?: number
@@ -44,17 +45,16 @@ type CurrentTiersResponse = CurrentTier[]
 
 async function buildClient(): Promise<MangoClient | undefined> {
   try {
-    const clientKeypair = new Keypair()
     const options = AnchorProvider.defaultOptions()
 
     const rpcUrl = process.env.NEXT_PUBLIC_ENDPOINT || TRITON_DEDICATED_URL
-    console.log(rpcUrl, '@@@@@@@')
+
     if (!rpcUrl) {
       throw new Error('MANGO_RPC_URL environment variable is not set')
     }
 
     const connection = new Connection(rpcUrl, options)
-    const clientWallet = new Wallet(clientKeypair)
+    const clientWallet = new EmptyWallet(Keypair.generate())
     const clientProvider = new AnchorProvider(connection, clientWallet, options)
 
     return MangoClient.connect(
