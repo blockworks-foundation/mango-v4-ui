@@ -42,16 +42,10 @@ export const TRITON_DEDICATED_URL = process.env.NEXT_PUBLIC_TRITON_TOKEN
 
 type CurrentTiersResponse = CurrentTier[]
 
-async function buildClient(): Promise<MangoClient | undefined> {
+async function buildClient(rpcUrl: string): Promise<MangoClient | undefined> {
   try {
     const clientKeypair = new Keypair()
     const options = AnchorProvider.defaultOptions()
-
-    const rpcUrl = process.env.NEXT_PUBLIC_ENDPOINT || TRITON_DEDICATED_URL
-    console.log(rpcUrl, '@@@@@@@')
-    if (!rpcUrl) {
-      throw new Error('MANGO_RPC_URL environment variable is not set')
-    }
 
     const connection = new Connection(rpcUrl, options)
     const clientWallet = new Wallet(clientKeypair)
@@ -76,8 +70,14 @@ export default async function handler(
     CurrentTiersResponse | { error: string; details: string }
   >,
 ) {
+  const { body } = req
+  console.log(body)
+  if (!('rpcUrl' in body)) {
+    throw new Error(`${body} should contain rpcUrl!`)
+  }
+
   try {
-    const client = await buildClient()
+    const client = await buildClient(body['rpcUrl'])
 
     if (!client) {
       console.log('Client build failed')
@@ -95,7 +95,6 @@ export default async function handler(
     const midPriceImpacts = getMidPriceImpacts(
       priceImpacts.length ? priceImpacts : [],
     )
-    console.log(midPriceImpacts)
 
     const tokenThresholds: {
       [symbol: string]: { below1Percent: number; below2Percent: number }
