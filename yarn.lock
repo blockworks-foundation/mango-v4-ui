@@ -2984,7 +2984,7 @@
     "@sentry/utils" "7.91.0"
     localforage "^1.8.1"
 
-"@sentry/nextjs@7.106.0":
+"@sentry/nextjs@7.106.0", "@sentry/nextjs@>=7.77.0":
   version "7.106.0"
   resolved "https://registry.yarnpkg.com/@sentry/nextjs/-/nextjs-7.106.0.tgz#56056614691f7315fedb37d7564c1ab0cac75734"
   integrity sha512-Z4XEIr0MMou8Em4OMcXtHnCHY0/sMj4TV32Js8A8oMvWZSmxUMC7vgDkjw6F0ss7p7inMmqoTBscumTIWApobg==
@@ -2997,25 +2997,6 @@
     "@sentry/types" "7.106.0"
     "@sentry/utils" "7.106.0"
     "@sentry/vercel-edge" "7.106.0"
-    "@sentry/webpack-plugin" "1.21.0"
-    chalk "3.0.0"
-    resolve "1.22.8"
-    rollup "2.78.0"
-    stacktrace-parser "^0.1.10"
-
-"@sentry/nextjs@>=7.77.0":
-  version "7.91.0"
-  resolved "https://registry.yarnpkg.com/@sentry/nextjs/-/nextjs-7.91.0.tgz#42eb3af10ff230e8a3fe9f0e50cdbac94b7d290e"
-  integrity sha512-wE83+OTEH4yYnDrhMw9eVEARSfZc6xY5qJb9xyYm5rW3+gVjNQZQaUY+wkM61Xdo0T35BN+7U4T88HbwzGeMqA==
-  dependencies:
-    "@rollup/plugin-commonjs" "24.0.0"
-    "@sentry/core" "7.91.0"
-    "@sentry/integrations" "7.91.0"
-    "@sentry/node" "7.91.0"
-    "@sentry/react" "7.91.0"
-    "@sentry/types" "7.91.0"
-    "@sentry/utils" "7.91.0"
-    "@sentry/vercel-edge" "7.91.0"
     "@sentry/webpack-plugin" "1.21.0"
     chalk "3.0.0"
     resolve "1.22.8"
