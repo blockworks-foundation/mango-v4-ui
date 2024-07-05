@@ -3,6 +3,7 @@ import { BorshInstructionCoder } from '@project-serum/anchor'
 import { Connection } from '@solana/web3.js'
 import { MANGO_DATA_API_URL } from './constants'
 import { TxCallbackOptions } from '@blockworks-foundation/mango-v4/dist/types/src/client'
+import { awaitTransactionSignatureConfirmation } from '@blockworks-foundation/mangolana/lib/transactions'
 
 const coder = new BorshInstructionCoder(IDL)
 
@@ -17,14 +18,14 @@ export function collectTxConfirmationData(
     rpcEndpoint,
     prioritizationFee,
     txCallbackOptions,
-  ).catch((e) =>
-    txConfirmationInner(
+  ).catch(() => {
+    return txConfirmationInner(
       start,
       rpcEndpoint,
       prioritizationFee,
       txCallbackOptions,
-    ),
-  )
+    )
+  })
 }
 
 async function txConfirmationInner(
@@ -35,24 +36,31 @@ async function txConfirmationInner(
 ) {
   const connection = new Connection(rpcEndpoint, 'processed')
   const { txid: signature, txSignatureBlockHash } = txCallbackOptions
-  await connection.confirmTransaction(
-    {
-      signature,
-      blockhash: txSignatureBlockHash.blockhash,
-      lastValidBlockHeight: txSignatureBlockHash.lastValidBlockHeight,
-    },
-    'processed',
-  )
+  try {
+    await awaitTransactionSignatureConfirmation({
+      txid: signature,
+      confirmLevel: 'processed',
+      connection: connection,
+      timeoutStrategy: {
+        block: txSignatureBlockHash,
+      },
+    })
+    // eslint-disable-next-line no-empty
+  } catch (e) {}
+
   const elapsed = new Date().getTime() - startTime
 
-  await connection.confirmTransaction(
-    {
-      signature,
-      blockhash: txSignatureBlockHash.blockhash,
-      lastValidBlockHeight: txSignatureBlockHash.lastValidBlockHeight,
-    },
-    'confirmed',
-  )
+  try {
+    await awaitTransactionSignatureConfirmation({
+      txid: signature,
+      confirmLevel: 'confirmed',
+      connection: connection,
+      timeoutStrategy: {
+        block: txSignatureBlockHash,
+      },
+    })
+    // eslint-disable-next-line no-empty
+  } catch (e) {}
 
   const confirmedTxn = await connection.getTransaction(signature, {
     commitment: 'confirmed',
@@ -65,7 +73,7 @@ async function txConfirmationInner(
     confirmedTxn?.transaction.message.compiledInstructions
   const instructionNames = []
   if (messageInstructions) {
-    for (let ix of messageInstructions) {
+    for (const ix of messageInstructions) {
       const parsedInstruction = coder.decode(Buffer.from(ix.data))
       if (parsedInstruction) {
         instructionNames.push(parsedInstruction.name)
@@ -99,13 +107,11 @@ async function txConfirmationInner(
     fee_lamports: confirmedTxn?.meta?.fee,
   }
 
-  const resp = await fetch(`${MANGO_DATA_API_URL}/transaction-confirmation`, {
+  await fetch(`${MANGO_DATA_API_URL}/transaction-confirmation`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(data),
   })
-  const body = await resp.json()
-  // console.log(body)
 }
