@@ -166,7 +166,10 @@ const createBackupConnections = (
   primaryConnection: Connection,
 ): Connection[] => {
   const liteRpcConnection = new Connection(LITE_RPC_URL)
-  const backupConnections = [liteRpcConnection]
+  const backupConnections = [
+    liteRpcConnection,
+    new Connection('https://idalina-qy4oxi-fast-mainnet.helius-rpc.com/'),
+  ]
   if (primaryConnection.rpcEndpoint !== TRITON_DEDICATED_URL) {
     const conn = new Connection(TRITON_DEDICATED_URL)
     backupConnections.push(conn)
