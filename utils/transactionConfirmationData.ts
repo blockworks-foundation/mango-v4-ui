@@ -70,7 +70,8 @@ async function txConfirmationInner(
   // search message ixs only (as opposed to inner)
   // it's ok to do this since Mango does not CPI into itself and these metrics are for the frontend only
   const messageInstructions =
-    confirmedTxn?.transaction.message.compiledInstructions
+    confirmedTxn?.transaction.message.compiledInstructions ||
+    txCallbackOptions.instructions?.message.compiledInstructions
   const instructionNames = []
   if (messageInstructions) {
     for (const ix of messageInstructions) {
@@ -84,9 +85,16 @@ async function txConfirmationInner(
   const confirmed = confirmedTxn !== null
   const error =
     confirmedTxn?.meta?.err !== null && confirmedTxn?.meta?.err !== undefined
+  const signBlockTime = await connection.getBlockTime(txSignatureBlockHash.slot)
+  let backupBlockTime = null
+
+  if (!confirmedTxn && signBlockTime) {
+    backupBlockTime = new Date(signBlockTime * 1000).toISOString()
+  }
+
   const block_datetime = confirmedTxn?.blockTime
     ? new Date(confirmedTxn.blockTime * 1000).toISOString()
-    : null
+    : backupBlockTime || new Date().toISOString()
 
   const loaded_addresses =
     (confirmedTxn?.meta?.loadedAddresses?.readonly.length ?? 0) +
@@ -99,12 +107,12 @@ async function txConfirmationInner(
     error,
     ui_confirmation_time_ms: elapsed,
     fetch_blockhash_slot: txSignatureBlockHash.slot,
-    processed_slot: confirmedTxn?.slot,
+    processed_slot: confirmedTxn?.slot || txSignatureBlockHash.slot,
     instruction_names: instructionNames.join(','),
     loaded_addresses,
     prioritization_fee,
-    compute_units_consumed: confirmedTxn?.meta?.computeUnitsConsumed,
-    fee_lamports: confirmedTxn?.meta?.fee,
+    compute_units_consumed: confirmedTxn?.meta?.computeUnitsConsumed || 0,
+    fee_lamports: confirmedTxn?.meta?.fee || 0,
   }
 
   await fetch(`${MANGO_DATA_API_URL}/transaction-confirmation`, {
