@@ -6,6 +6,8 @@ const UninsuredNotification = ({ name }: { name: string | undefined }) => {
   const { t } = useTranslation(['common', 'account'])
   return (
     <InlineNotification
+      hideBorder
+      hidePadding
       type="info"
       desc={
         <>
@@ -13,7 +15,7 @@ const UninsuredNotification = ({ name }: { name: string | undefined }) => {
             wrapperClassName="inline"
             content={t('account:tooltip-warning-uninsured', { token: name })}
           >
-            <span className="tooltip-underline">
+            <span className="tooltip-underline text-th-fgd-3">
               {t('account:warning-uninsured', {
                 token: name,
               })}

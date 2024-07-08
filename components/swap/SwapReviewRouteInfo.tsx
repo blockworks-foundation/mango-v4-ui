@@ -67,6 +67,7 @@ import { isTokenInsured } from '@components/DepositForm'
 import UninsuredNotification from '@components/shared/UninsuredNotification'
 import { sendTxAndConfirm } from 'utils/governance/tools'
 import useAnalytics from 'hooks/useAnalytics'
+import Checkbox from '@components/forms/Checkbox'
 
 type JupiterRouteInfoProps = {
   amountIn: Decimal
@@ -320,6 +321,7 @@ const SwapReviewRouteInfo = ({
   const [feeValue] = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [coingeckoPrices, setCoingeckoPrices] = useState(EMPTY_COINGECKO_PRICES)
+  const [acceptPriceImpact, setAcceptPriceImpact] = useState(false)
   const { jupiterTokens } = useJupiterMints()
   const { inputTokenInfo, outputTokenInfo } = useJupiterSwapData()
   const inputBank = mangoStore((s) => s.swap.inputBank)
@@ -674,6 +676,11 @@ const SwapReviewRouteInfo = ({
     return isTokenInsured(outputBank, group)
   }, [outputBank])
 
+  const showPriceImpactCheck = useMemo(() => {
+    if (!selectedRoute?.priceImpactPct) return false
+    return selectedRoute.priceImpactPct * 100 >= 5
+  }, [selectedRoute])
+
   return routes?.length &&
     selectedRoute &&
     inputTokenInfo &&
@@ -725,24 +732,32 @@ const SwapReviewRouteInfo = ({
             </div>
           </div>
           <div className="flex justify-center bg-th-bkg-1 px-6 pt-4">
-            <div className="mb-3 flex w-full flex-col items-center border-b border-th-bkg-3 pb-4">
+            <div className="flex w-full flex-col items-center pb-4">
               <div className="relative mb-2 w-[72px]">
                 <TokenLogo bank={inputBank} size={40} />
                 <div className="absolute right-0 top-0">
                   <TokenLogo bank={outputBank} size={40} />
                 </div>
               </div>
-              <p className="mb-0.5 flex items-center text-center text-lg">
-                <span className="mr-1 font-mono text-th-fgd-1">
-                  <FormatNumericValue value={amountIn} />
-                </span>{' '}
-                {inputTokenInfo?.symbol}
+              <div className="mb-0.5 flex items-center text-center text-lg">
+                <span>
+                  <span className="font-mono text-th-fgd-1">
+                    <FormatNumericValue value={amountIn} />
+                  </span>{' '}
+                  <span className="text-xs text-th-fgd-4">
+                    {inputBank?.name}
+                  </span>
+                </span>
                 <ArrowRightIcon className="mx-2 h-5 w-5 text-th-fgd-2" />
-                <span className="mr-1 font-mono text-th-fgd-1">
-                  <FormatNumericValue value={amountOut} />
-                </span>{' '}
-                {`${outputTokenInfo?.symbol}`}
-              </p>
+                <span>
+                  <span className="font-mono text-th-fgd-1">
+                    <FormatNumericValue value={amountOut} />
+                  </span>{' '}
+                  <span className="text-xs text-th-fgd-4">
+                    {outputBank?.name}
+                  </span>
+                </span>
+              </div>
             </div>
           </div>
           <div className="space-y-2 overflow-auto px-6">
@@ -995,18 +1010,27 @@ const SwapReviewRouteInfo = ({
               </>
             ) : null}
           </div>
-          {!isInsured ? (
-            <div className="mt-4 px-6">
-              <UninsuredNotification name={outputBank?.name} />
-            </div>
-          ) : null}
         </div>
         <div className="p-6">
+          {showPriceImpactCheck ? (
+            <div className="mb-4 rounded-md border border-th-error p-2">
+              <Checkbox
+                checked={acceptPriceImpact}
+                onChange={(e) => setAcceptPriceImpact(e.target.checked)}
+              >
+                <p className="whitespace-normal text-th-fgd-2">
+                  I accept the expected price impact of this swap is{' '}
+                  {(selectedRoute.priceImpactPct * 100).toFixed(1)}%
+                </p>
+              </Checkbox>
+            </div>
+          ) : null}
           <div className="mb-4 flex items-center justify-center">
             <Button
               onClick={onClick}
               className="flex w-full items-center justify-center text-base"
               size="large"
+              disabled={showPriceImpactCheck && !acceptPriceImpact}
             >
               {submitting ? (
                 <Loading className="mr-2 h-5 w-5" />
@@ -1116,6 +1140,11 @@ const SwapReviewRouteInfo = ({
               )}
             </Disclosure>
           </div>
+          {!isInsured ? (
+            <div className="mt-4">
+              <UninsuredNotification name={outputBank?.name} />
+            </div>
+          ) : null}
         </div>
         {showRoutesModal ? (
           <RoutesModal
