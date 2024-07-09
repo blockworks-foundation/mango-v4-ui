@@ -207,19 +207,21 @@ const Spot = () => {
           ))}
         </div>
       ) : sortedTokensToShow.length ? (
-        showTableView ? (
-          <div className="mt-6 border-t border-th-bkg-3">
-            <SpotTable tokens={currentTokensToShow} />
-            <Pagination
-              currentPage={currentPage}
-              totalItems={sortedTokensToShow.length}
-              itemsPerPage={itemsPerPage}
-              onPageChange={handlePageChange}
-            />
-          </div>
-        ) : (
-          <SpotCards tokens={currentTokensToShow} />
-        )
+        <>
+          {showTableView ? (
+            <div className="mt-6 border-t border-th-bkg-3">
+              <SpotTable tokens={currentTokensToShow} />
+            </div>
+          ) : (
+            <SpotCards tokens={currentTokensToShow} />
+          )}
+          <Pagination
+            currentPage={currentPage}
+            totalItems={sortedTokensToShow.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={handlePageChange}
+          />
+        </>
       ) : (
         <div className="px-4 pt-2 md:px-6 2xl:px-12">
           <EmptyState text="No results found..." />
