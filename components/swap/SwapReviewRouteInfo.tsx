@@ -658,17 +658,21 @@ const SwapReviewRouteInfo = ({
   }, [amountIn, inputBank, outputBank])
 
   const coinGeckoPriceDifference = useMemo(() => {
-    return amountOut?.toNumber()
-      ? amountIn
-          .div(amountOut)
-          .minus(
-            new Decimal(coingeckoPrices?.outputCoingeckoPrice).div(
-              coingeckoPrices?.inputCoingeckoPrice,
-            ),
-          )
-          .div(amountIn.div(amountOut))
-          .mul(100)
-      : new Decimal(0)
+    if (
+      !coingeckoPrices?.outputCoingeckoPrice ||
+      !coingeckoPrices?.inputCoingeckoPrice ||
+      !amountOut
+    )
+      return
+    return amountIn
+      .div(amountOut)
+      .minus(
+        new Decimal(coingeckoPrices.outputCoingeckoPrice).div(
+          coingeckoPrices.inputCoingeckoPrice,
+        ),
+      )
+      .div(amountIn.div(amountOut))
+      .mul(100)
   }, [coingeckoPrices, amountIn, amountOut])
 
   const isInsured = useMemo(() => {
@@ -677,9 +681,9 @@ const SwapReviewRouteInfo = ({
   }, [outputBank])
 
   const showPriceImpactCheck = useMemo(() => {
-    if (!selectedRoute?.priceImpactPct) return false
-    return selectedRoute.priceImpactPct * 100 >= 5
-  }, [selectedRoute])
+    if (!coinGeckoPriceDifference) return true
+    return coinGeckoPriceDifference.gte(5)
+  }, [coinGeckoPriceDifference])
 
   return routes?.length &&
     selectedRoute &&
@@ -762,7 +766,7 @@ const SwapReviewRouteInfo = ({
           </div>
           <div className="space-y-2 overflow-auto px-6">
             <div className="flex justify-between">
-              <p className="text-sm text-th-fgd-3">{t('price')}</p>
+              <p className="text-sm text-th-fgd-3">{t('swap:rate')}</p>
               <div>
                 <div className="flex items-center justify-end">
                   <p className="text-right font-mono text-sm text-th-fgd-2">
@@ -796,8 +800,7 @@ const SwapReviewRouteInfo = ({
                   />
                 </div>
                 <div className="space-y-2 px-1 text-xs">
-                  {coingeckoPrices?.outputCoingeckoPrice &&
-                  coingeckoPrices?.inputCoingeckoPrice ? (
+                  {coinGeckoPriceDifference ? (
                     <div
                       className={`text-right font-mono ${
                         coinGeckoPriceDifference.gt(1)
@@ -1019,8 +1022,10 @@ const SwapReviewRouteInfo = ({
                 onChange={(e) => setAcceptPriceImpact(e.target.checked)}
               >
                 <p className="whitespace-normal text-th-fgd-2">
-                  I accept the expected price impact of this swap is{' '}
-                  {(selectedRoute.priceImpactPct * 100).toFixed(1)}%
+                  {coinGeckoPriceDifference
+                    ? `I accept the rate for this swap is
+                  ${coinGeckoPriceDifference.toFixed(1)}% worse than Coingecko`
+                    : 'I accept the price of this swap has not been benchmarked to Coingecko and could differ to current market prices'}
                 </p>
               </Checkbox>
             </div>
