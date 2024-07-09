@@ -1,6 +1,8 @@
 import { ChangeEvent, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
   MagnifyingGlassIcon,
   Squares2X2Icon,
   TableCellsIcon,
@@ -21,6 +23,8 @@ import { Bank } from '@blockworks-foundation/mango-v4'
 import { TOKEN_REDUCE_ONLY_OPTIONS, TOKEN_WATCHLIST_KEY } from 'utils/constants'
 import { DEFAULT_WATCHLIST } from './WatchlistButton'
 import { AllowedKeys } from 'utils/markets'
+import { useViewport } from 'hooks/useViewport'
+import { IconButton } from '@components/shared/Button'
 
 export type BankWithMarketData = {
   bank: Bank
@@ -227,9 +231,6 @@ const Spot = () => {
 
 export default Spot
 
-import React from 'react'
-import { useViewport } from 'hooks/useViewport'
-
 type PaginationProps = {
   currentPage: number
   totalItems: number
@@ -254,16 +255,24 @@ const Pagination = ({
   }
 
   return (
-    <div className="pagination">
-      <button onClick={handlePrevPage} disabled={currentPage === 1}>
-        Previous
-      </button>
-      <span>
-        Page {currentPage} of {totalPages}
+    <div className="flex items-center justify-center space-x-3 py-4">
+      <IconButton
+        onClick={handlePrevPage}
+        disabled={currentPage === 1}
+        size="small"
+      >
+        <ChevronLeftIcon className="h-5 w-5" />
+      </IconButton>
+      <span className="text-th-fgd-3">
+        {currentPage} of {totalPages}
       </span>
-      <button onClick={handleNextPage} disabled={currentPage === totalPages}>
-        Next
-      </button>
+      <IconButton
+        onClick={handleNextPage}
+        disabled={currentPage === totalPages}
+        size="small"
+      >
+        <ChevronRightIcon className="h-5 w-5" />
+      </IconButton>
     </div>
   )
 }
