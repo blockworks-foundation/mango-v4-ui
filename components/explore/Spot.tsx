@@ -1,27 +1,26 @@
-import useListedMarketsWithMarketData, {
-  SerumMarketWithMarketData,
-} from 'hooks/useListedMarketsWithMarketData'
-import useMangoGroup from 'hooks/useMangoGroup'
 import { ChangeEvent, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import SpotTable from './SpotTable'
 import {
   MagnifyingGlassIcon,
   Squares2X2Icon,
   TableCellsIcon,
 } from '@heroicons/react/20/solid'
-import { AllowedKeys } from 'utils/markets'
+import useListedMarketsWithMarketData, {
+  SerumMarketWithMarketData,
+} from 'hooks/useListedMarketsWithMarketData'
+import useMangoGroup from 'hooks/useMangoGroup'
+import useBanks from 'hooks/useBanks'
+import useLocalStorageState from 'hooks/useLocalStorageState'
+import SpotTable from './SpotTable'
 import ButtonGroup from '@components/forms/ButtonGroup'
 import SpotCards from './SpotCards'
 import Input from '@components/forms/Input'
 import EmptyState from '@components/nftMarket/EmptyState'
-import { Bank } from '@blockworks-foundation/mango-v4'
-import useBanks from 'hooks/useBanks'
 import SheenLoader from '@components/shared/SheenLoader'
-import { useViewport } from 'hooks/useViewport'
-import useLocalStorageState from 'hooks/useLocalStorageState'
+import { Bank } from '@blockworks-foundation/mango-v4'
 import { TOKEN_REDUCE_ONLY_OPTIONS, TOKEN_WATCHLIST_KEY } from 'utils/constants'
 import { DEFAULT_WATCHLIST } from './WatchlistButton'
+import { AllowedKeys } from 'utils/markets'
 
 export type BankWithMarketData = {
   bank: Bank
@@ -32,8 +31,7 @@ const generateSearchTerm = (item: BankWithMarketData, searchValue: string) => {
   const normalizedSearchValue = searchValue.toLowerCase()
   const value = item.bank.name.toLowerCase()
 
-  const isMatchingWithName =
-    item.bank.name.toLowerCase().indexOf(normalizedSearchValue) >= 0
+  const isMatchingWithName = value.indexOf(normalizedSearchValue) >= 0
   const matchingSymbolPercent = isMatchingWithName
     ? normalizedSearchValue.length / item.bank.name.length
     : 0
@@ -69,24 +67,13 @@ const sortTokens = (
     const bIsNoBorrow =
       b.bank.reduceOnly === TOKEN_REDUCE_ONLY_OPTIONS.NO_BORROWS
 
-    // prioritize tokens in the watchlist
-    if (aInWatchlist && !bInWatchlist) {
-      return -1 // a should come before b
-    } else if (!aInWatchlist && bInWatchlist) {
-      return 1 // b should come before a
-    }
+    if (aInWatchlist && !bInWatchlist) return -1
+    if (!aInWatchlist && bInWatchlist) return 1
+    if (!aIsReduce && bIsReduce) return -1
+    if (aIsReduce && !bIsReduce) return 1
+    if (!aIsNoBorrow && bIsNoBorrow) return -1
+    if (aIsNoBorrow && !bIsNoBorrow) return 1
 
-    if (!aIsReduce && bIsReduce) {
-      return -1 // a should come before b
-    } else if (aIsReduce && !bIsReduce) {
-      return 1 // b should come before a
-    }
-
-    if (!aIsNoBorrow && bIsNoBorrow) {
-      return -1 // a should come before b
-    } else if (aIsNoBorrow && !bIsNoBorrow) {
-      return 1 // b should come before a
-    }
     let aValue: number | undefined
     let bValue: number | undefined
     if (sortByKey === 'change_24h') {
@@ -96,16 +83,10 @@ const sortTokens = (
       aValue = a?.market?.marketData?.[sortByKey]
       bValue = b?.market?.marketData?.[sortByKey]
     }
-    // handle marketData[sortByKey] is undefined
-    if (typeof aValue === 'undefined' && typeof bValue === 'undefined') {
-      return 0 // Consider them equal
-    }
-    if (typeof aValue === 'undefined') {
-      return 1 // b should come before a
-    }
-    if (typeof bValue === 'undefined') {
-      return -1 // a should come before b
-    }
+
+    if (typeof aValue === 'undefined' && typeof bValue === 'undefined') return 0
+    if (typeof aValue === 'undefined') return 1
+    if (typeof bValue === 'undefined') return -1
 
     return bValue - aValue
   })
@@ -125,6 +106,8 @@ const Spot = () => {
   const [sortByKey, setSortByKey] = useState<AllowedKeys>('quote_volume_24h')
   const [search, setSearch] = useState('')
   const [showTableView, setShowTableView] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 20
 
   const banksWithMarketData = useMemo(() => {
     if (!banks.length || !group || !serumMarketsWithData.length) return []
@@ -154,6 +137,16 @@ const Spot = () => {
 
   const handleUpdateSearch = (e: ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value)
+  }
+
+  const currentTokensToShow = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage
+    const end = start + itemsPerPage
+    return sortedTokensToShow.slice(start, end)
+  }, [sortedTokensToShow, currentPage])
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage)
   }
 
   return (
@@ -212,10 +205,16 @@ const Spot = () => {
       ) : sortedTokensToShow.length ? (
         showTableView ? (
           <div className="mt-6 border-t border-th-bkg-3">
-            <SpotTable tokens={sortedTokensToShow} />
+            <SpotTable tokens={currentTokensToShow} />
+            <Pagination
+              currentPage={currentPage}
+              totalItems={sortedTokensToShow.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={handlePageChange}
+            />
           </div>
         ) : (
-          <SpotCards tokens={sortedTokensToShow} />
+          <SpotCards tokens={currentTokensToShow} />
         )
       ) : (
         <div className="px-4 pt-2 md:px-6 2xl:px-12">
@@ -227,3 +226,44 @@ const Spot = () => {
 }
 
 export default Spot
+
+import React from 'react'
+import { useViewport } from 'hooks/useViewport'
+
+type PaginationProps = {
+  currentPage: number
+  totalItems: number
+  itemsPerPage: number
+  onPageChange: (page: number) => void
+}
+
+const Pagination = ({
+  currentPage,
+  totalItems,
+  itemsPerPage,
+  onPageChange,
+}: PaginationProps) => {
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) onPageChange(currentPage - 1)
+  }
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) onPageChange(currentPage + 1)
+  }
+
+  return (
+    <div className="pagination">
+      <button onClick={handlePrevPage} disabled={currentPage === 1}>
+        Previous
+      </button>
+      <span>
+        Page {currentPage} of {totalPages}
+      </span>
+      <button onClick={handleNextPage} disabled={currentPage === totalPages}>
+        Next
+      </button>
+    </div>
+  )
+}
