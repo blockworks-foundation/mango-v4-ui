@@ -887,9 +887,11 @@ const SwapReviewRouteInfo = ({
                 <p className="tooltip-underline">{t('swap:price-impact')}</p>
               </Tooltip>
               <p className="text-right font-mono text-sm text-th-fgd-2">
-                {selectedRoute?.priceImpactPct * 100 < 0.1
-                  ? '<0.1%'
-                  : `${(selectedRoute?.priceImpactPct * 100).toFixed(2)}%`}
+                {selectedRoute?.priceImpactPct
+                  ? selectedRoute.priceImpactPct < 0.1
+                    ? '<0.1%'
+                    : `${Number(selectedRoute.priceImpactPct).toFixed(2)}%`
+                  : '–'}
               </p>
             </div>
             {!isWalletSwap ? (
