@@ -12,54 +12,10 @@ import {
 } from '@raydium-io/raydium-sdk'
 import { TOKEN_PROGRAM_ID } from '@solana/spl-governance'
 import { getAssociatedTokenAddressSync } from '@solana/spl-token'
-import {
-  Connection,
-  GetProgramAccountsResponse,
-  PublicKey,
-  TransactionInstruction,
-} from '@solana/web3.js'
+import { Connection, PublicKey, TransactionInstruction } from '@solana/web3.js'
 import BN from 'bn.js'
 
 const RAYDIUM_V4_PROGRAM_ID = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
-
-const _getProgramAccounts = (
-  connection: Connection,
-  baseMint: string,
-  quoteMint: string,
-): Promise<GetProgramAccountsResponse> => {
-  const layout = LIQUIDITY_STATE_LAYOUT_V4
-
-  return connection.getProgramAccounts(new PublicKey(RAYDIUM_V4_PROGRAM_ID), {
-    filters: [
-      { dataSize: layout.span },
-      {
-        memcmp: {
-          offset: layout.offsetOf('baseMint'),
-          bytes: new PublicKey(baseMint).toBase58(),
-        },
-      },
-      {
-        memcmp: {
-          offset: layout.offsetOf('quoteMint'),
-          bytes: new PublicKey(quoteMint).toBase58(),
-        },
-      },
-    ],
-  })
-}
-
-const getProgramAccounts = async (
-  connection: Connection,
-  baseMint: string,
-  quoteMint: string,
-) => {
-  const response = await Promise.all([
-    _getProgramAccounts(connection, baseMint, quoteMint),
-    _getProgramAccounts(connection, quoteMint, baseMint),
-  ])
-
-  return response.filter((r) => r.length > 0).flatMap((x) => x)
-}
 
 export const findRaydiumPoolInfo = async (
   connection: Connection,
@@ -67,17 +23,6 @@ export const findRaydiumPoolInfo = async (
   quoteMint: string,
 ): Promise<LiquidityPoolKeys | undefined> => {
   const layout = LIQUIDITY_STATE_LAYOUT_V4
-
-  const programData = await getProgramAccounts(connection, baseMint, quoteMint)
-
-  const collectedPoolResults = programData
-    .map((info) => ({
-      id: new PublicKey(info.pubkey),
-      version: 4,
-      programId: new PublicKey(RAYDIUM_V4_PROGRAM_ID),
-      ...layout.decode(info.account.data),
-    }))
-    .flat()
 
   const pools = await Promise.all([
     fetch(`https://api.dexscreener.com/latest/dex/search?q=${baseMint}`),
@@ -97,9 +42,20 @@ export const findRaydiumPoolInfo = async (
             x.quoteToken.address === baseMint)),
     )?.pairAddress
 
-  const pool = collectedPoolResults.find(
-    (x) => x.id.toBase58() === bestDexScannerPoolId,
-  )
+  if (!bestDexScannerPoolId) return undefined
+
+  const pool = await connection
+    .getAccountInfo(new PublicKey(bestDexScannerPoolId))
+    .then((item) =>
+      item
+        ? {
+            id: new PublicKey(bestDexScannerPoolId),
+            version: 4,
+            programId: new PublicKey(RAYDIUM_V4_PROGRAM_ID),
+            ...layout.decode(item.data),
+          }
+        : null,
+    )
 
   if (!pool) return undefined
 
