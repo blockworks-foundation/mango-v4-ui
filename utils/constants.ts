@@ -183,6 +183,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   kin: true,
   kmno: true,
   ldo: true,
+  lngcat: true,
   mangosol: true,
   mew: true,
   mnde: true,
