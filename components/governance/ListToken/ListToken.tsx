@@ -61,7 +61,6 @@ import Select from '@components/forms/Select'
 import { WRAPPED_SOL_MINT } from '@metaplex-foundation/js'
 import { struct, u8, publicKey, u64, option } from '@raydium-io/raydium-sdk'
 import * as toml from '@iarna/toml'
-import useUnownedAccount from 'hooks/useUnownedAccount'
 
 const feeFields = [u64('denominator'), u64('numerator')]
 const StakePoolLayout = struct([
@@ -156,7 +155,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const getCurrentVotingPower = GovernanceStore((s) => s.getCurrentVotingPower)
   const connectionContext = GovernanceStore((s) => s.connectionContext)
   const { t } = useTranslation(['governance'])
-  const { isDelegatedAccount } = useUnownedAccount()
 
   const [advForm, setAdvForm] = useState<TokenListForm>({
     ...defaultTokenListFormValues,
@@ -348,7 +346,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         onlyDirect ? 'JUPITER_DIRECT' : 'JUPITER',
         connection,
         undefined,
-        isDelegatedAccount,
+        false,
       )
     },
     [wallet.publicKey, connection],
