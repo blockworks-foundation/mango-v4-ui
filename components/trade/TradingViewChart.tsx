@@ -86,6 +86,8 @@ const getTriggerOrders = () => {
   return triggerOrders
 }
 
+const RESOLUTION_KEY = 'tradingview.chart.lastUsedTimeBasedResolution'
+
 const TradingViewChart = () => {
   const { t } = useTranslation(['common', 'tv-chart', 'trade'])
   const { theme } = useThemeWrapper()
@@ -111,13 +113,17 @@ const TradingViewChart = () => {
   const [cachedTradeHistory, setCachedTradeHistory] =
     useState(combinedTradeHistory)
   const [userId] = useLocalStorageState(TV_USER_ID_KEY, '')
+  const [savedResolution] = useLocalStorageState<ResolutionString>(
+    RESOLUTION_KEY,
+    '60',
+  )
   const selectedMarketName = mangoStore((s) => s.selectedMarket.current?.name)
 
   const defaultProps = useMemo(() => {
     const initialMktName = mangoStore.getState().selectedMarket.current?.name
     return {
       symbol: initialMktName,
-      interval: '60' as ResolutionString,
+      interval: savedResolution,
       theme: 'Dark',
       container: 'tv_chart_container',
       libraryPath: '/charting_library/',
