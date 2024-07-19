@@ -118,7 +118,7 @@ const Announcements = () => {
 export default Announcements
 
 const classNames =
-  'bg-th-bkg-2 p-4 rounded-lg block w-full md:hover:bg-th-bkg-3'
+  'bg-th-bkg-2 flex items-center px-4 h-[92px] rounded-lg block w-full md:hover:bg-th-bkg-3'
 
 const AnnouncementWrapper = ({
   children,
