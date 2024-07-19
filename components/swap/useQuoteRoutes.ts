@@ -12,6 +12,7 @@ import { findRaydiumPoolInfo, getSwapTransaction } from 'utils/swap/raydium'
 import mangoStore from '@store/mangoStore'
 import { fetchJupiterTransaction } from './SwapReviewRouteInfo'
 import useAnalytics from 'hooks/useAnalytics'
+import useUnownedAccount from 'hooks/useUnownedAccount'
 
 type SwapModes = 'ExactIn' | 'ExactOut'
 
@@ -281,6 +282,7 @@ export async function handleGetRoutes(
   routingMode: MultiRoutingMode | RaydiumRoutingMode,
   connection: Connection,
   sendAnalytics: ((data: object, tag: string) => Promise<void>) | undefined,
+  isDelegatedAccount: boolean,
   inputTokenDecimals: number,
 ): Promise<{ bestRoute: JupiterV6RouteInfo }>
 
@@ -295,6 +297,7 @@ export async function handleGetRoutes(
   routingMode: JupiterRoutingMode | MangoRoutingMode,
   connection: Connection,
   sendAnalytics: ((data: object, tag: string) => Promise<void>) | undefined,
+  isDelegatedAccount: boolean,
 ): Promise<{ bestRoute: JupiterV6RouteInfo }>
 
 export async function handleGetRoutes(
@@ -308,6 +311,7 @@ export async function handleGetRoutes(
   routingMode: RaydiumRoutingMode,
   connection: Connection,
   sendAnalytics: ((data: object, tag: string) => Promise<void>) | undefined,
+  isDelegatedAccount: boolean,
   inputTokenDecimals: number,
 ): Promise<{ bestRoute: JupiterV6RouteInfo }>
 
@@ -322,6 +326,7 @@ export async function handleGetRoutes(
   routingMode: RoutingMode = 'ALL',
   connection: Connection,
   sendAnalytics: ((data: object, tag: string) => Promise<void>) | undefined,
+  isDelegatedAccount: boolean,
   inputTokenDecimals?: number,
 ) {
   try {
@@ -409,7 +414,10 @@ export async function handleGetRoutes(
       routes.push(jupiterRoute)
     }
 
-    if (isMultiRoutingMode(routingMode) || routingMode === 'MANGO') {
+    if (
+      isMultiRoutingMode(routingMode) ||
+      (routingMode === 'MANGO' && !isDelegatedAccount)
+    ) {
       const mangoRoute = fetchMangoRoute(
         inputMint,
         outputMint,
@@ -472,6 +480,8 @@ const useQuoteRoutes = ({
   const connection = mangoStore((s) => s.connection)
   const { sendAnalytics } = useAnalytics()
   const { inputTokenInfo, outputTokenInfo } = useJupiterSwapData()
+  const { isDelegatedAccount } = useUnownedAccount()
+
   const decimals = useMemo(() => {
     return swapMode === 'ExactIn'
       ? inputTokenInfo?.decimals || 6
@@ -519,6 +529,7 @@ const useQuoteRoutes = ({
           routingMode,
           connection,
           sendAnalytics,
+          isDelegatedAccount,
           decimals,
         )
       } else {
@@ -533,6 +544,7 @@ const useQuoteRoutes = ({
           routingMode,
           connection,
           sendAnalytics,
+          isDelegatedAccount,
         )
       }
     },
