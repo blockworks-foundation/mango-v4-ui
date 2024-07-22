@@ -42,6 +42,7 @@ import Loading from '@components/shared/Loading'
 import Label from '@components/forms/Label'
 import Input from '@components/forms/Input'
 import Switch from '@components/forms/Switch'
+import { PublicKey } from '@metaplex-foundation/js'
 
 const DashboardSuggestedValues = ({
   isOpen,
@@ -211,7 +212,10 @@ const DashboardSuggestedValues = ({
         )
         .accounts({
           group: group!.publicKey,
-          fallbackOracle: bank.fallbackOracle,
+          fallbackOracle:
+            bank.fallbackOracle && tryGetPubKey(bank.fallbackOracle.toBase58())
+              ? bank.fallbackOracle
+              : PublicKey.default,
           oracle: bank.oracle,
           admin: MANGO_DAO_WALLET,
           mintInfo: mintInfo.publicKey,
