@@ -37,7 +37,7 @@ export const LSTExactIn = (
               job:
                 tasks:
                   - oracleTask:
-                      pythAddress: H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG
+                      pythAddress: ef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d
                       pythAllowedConfidenceInterval: 10`
   return template
 }
@@ -90,7 +90,7 @@ export const LSTExactOut = (
         job:
           tasks:
             - oracleTask:
-                pythAddress: H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG
+                pythAddress: ef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d
                 pythAllowedConfidenceInterval: 10`
   return template
 }

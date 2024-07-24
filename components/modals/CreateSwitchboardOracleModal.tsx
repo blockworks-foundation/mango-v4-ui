@@ -49,7 +49,8 @@ const SWITCHBOARD_PERMISSIONLESS_QUE =
   '5JYwqvKkqp35w8Nq3ba4z1WYUeJQ1rB36V8XvaGp6zn1'
 const SWITCHBOARD_PERMISSIONLESS_CRANK =
   'BKtF8yyQsj3Ft6jb2nkfpEKzARZVdGgdEPs6mFmZNmbA'
-const pythSolOracle = 'H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG'
+const pythSolOracle =
+  'ef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d'
 
 type BaseProps = ModalProps & {
   openbookMarketPk: string
@@ -91,7 +92,8 @@ const CreateSwitchboardOracleModal = ({
   const client = mangoStore((s) => s.client)
   const wallet = useWallet()
   const quoteTokenName = 'USD'
-  const pythUsdOracle = 'Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD'
+  const pythUsdOracle =
+    'eaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a'
   const switchboardUsdDaoOracle = 'FwYfsmj5x8YZXtQBNo2Cz8TE7WRCMFqA6UTffK4xQKMH'
 
   const [creatingOracle, setCreatingOracle] = useState(false)
