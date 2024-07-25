@@ -3,6 +3,7 @@ import { ModalProps } from '../../types/modal'
 import Modal from '../shared/Modal'
 import { useWallet } from '@solana/wallet-adapter-react'
 import {
+  AggregatorAccount,
   CrankAccount,
   QueueAccount,
   SwitchboardProgram,
@@ -74,6 +75,94 @@ type OrcaProps = BaseProps & {
   orcaPoolAddress: string
 }
 
+const feedsToMigrate = [
+  {
+    name: 'USDH/USD',
+    pk: 'B2iwUqbK6ksAsD21SPUUjjx3EwdswpVWFGkeWPHaYd81',
+    pythFeed: 'usd',
+  },
+  {
+    name: 'SLERF/USD',
+    pk: '8LxP1juSh9RPMECQiTocqk8bZcrhhtqgUEk76y4AmE2K',
+    pythFeed: 'usd',
+  },
+  {
+    name: 'BOME/USD',
+    pk: 'JDj6n1iBeJUB54rNsmKw9ty2psAnkcXySLRshBWrYfGD',
+    pythFeed: 'usd',
+  },
+  {
+    name: 'WEN/USD',
+    pk: 'DzGXTYWCAsQhZbP3KGPeA8G8SA7ynTNntrtDWZ2kPE8n',
+    pythFeed: 'usd',
+  },
+  {
+    name: 'MEW/USD',
+    pk: 'BogEXWj8YcrXV31D7FzzUmTCS1hFHfRGZN7rnVN1Vcqe',
+    pythFeed: 'usd',
+  },
+  {
+    name: 'MOTHER/USD',
+    pk: '273kfU17iwVVgYCRrRR9rFmT2R8FysSPQ2jETuix2gpd',
+    pythFeed: 'usd',
+  },
+  {
+    name: 'USDY/USD',
+    pk: '5RKJ9unGQQhHezsNg7wshfJD4c5jJ64iXYu1nk6PJ5fb',
+    pythFeed: 'usd',
+  },
+  {
+    name: 'PUPS/USD',
+    pk: 'ApF6hz2W7FSKMgmmpWxLm6ijA2J5vU2XDBaBLvjbyMbm',
+    pythFeed: 'usd',
+  },
+  {
+    name: 'GECKO/USD',
+    pk: 'ERWF6PnFCVPWeDM9VGCQDC7pASvVrCUwv9Tk3Mh3oXGG',
+    pythFeed: 'usd',
+  },
+  {
+    name: 'KMNO/USD',
+    pk: 'H8oLEoDyvABEDmGmXQuuzvSPWAkr2f2GKytbXiGX9YUm',
+    pythFeed: 'usd',
+  },
+  {
+    name: 'INF/USD',
+    pk: '6AQHz9mpGNjyVafcWdqzzgsJq14Cs8gG6MiQKmdAgCuP',
+    pythFeed: 'usd',
+  },
+  {
+    name: 'GME/USD',
+    pk: 'B9BzQ6hBBFn3C6fsGsVwcFd1v5cdbAwi8bUNmL58Bx8z',
+    pythFeed: 'usd',
+  },
+  {
+    name: 'BILLY/USD',
+    pk: 'DKt5kYg2wcY3SpbMZrYcJUg23mwEEQ2PsCioyPfcX633',
+    pythFeed: 'usd',
+  },
+  {
+    name: 'LNGCAT/USD',
+    pk: 'H5DimRdrm4xjMMEzg574QKkfaHZcraGLqC85JJ4PBm58',
+    pythFeed: 'usd',
+  },
+  {
+    name: 'CROWN/USD',
+    pk: 'RMy7j7BUNxhE4Njgq69KC6ZLzZEpKWoKSp4Y5JQPQLE',
+    pythFeed: 'usd',
+  },
+  {
+    name: 'OPOS/USD',
+    pk: '3nM4m9FX1ENp3vfbJKMK6mELH7PSPQX5apzonHB9VZeL',
+    pythFeed: 'usd',
+  },
+  {
+    name: 'KIN/USD',
+    pk: 'FS4pE37HCGtwjrf4g3G4YfdfRN64nTm1z8iFNHyjZHB5',
+    pythFeed: 'usd',
+  },
+]
+
 const CreateSwitchboardOracleModal = ({
   isOpen,
   onClose,
@@ -97,6 +186,124 @@ const CreateSwitchboardOracleModal = ({
   const switchboardUsdDaoOracle = 'FwYfsmj5x8YZXtQBNo2Cz8TE7WRCMFqA6UTffK4xQKMH'
 
   const [creatingOracle, setCreatingOracle] = useState(false)
+
+  const migrateSwitchboard = async () => {
+    const program = await SwitchboardProgram.load('mainnet-beta', connection)
+
+    const [[queueAccount], [crankAccount]] = await Promise.all([
+      QueueAccount.load(program, SWITCHBOARD_PERMISSIONLESS_QUE),
+      CrankAccount.load(program, SWITCHBOARD_PERMISSIONLESS_CRANK),
+    ])
+
+    for (const feedTM of feedsToMigrate) {
+      const [feedTMAcc, feedTMData] = await AggregatorAccount.load(
+        program,
+        feedTM.pk,
+      )
+      const jobs = await feedTMAcc.loadJobs(feedTMData)
+
+      const [aggregatorAccount, txArray1] =
+        await queueAccount.createFeedInstructions(wallet.publicKey!, {
+          name: String.fromCharCode(...feedTMData.name).replaceAll(
+            '\u0000',
+            '',
+          ),
+          batchSize: feedTMData.oracleRequestBatchSize,
+          minRequiredOracleResults: feedTMData.minOracleResults,
+          minRequiredJobResults: feedTMData.minJobResults,
+          minUpdateDelaySeconds: feedTMData.minUpdateDelaySeconds,
+          forceReportPeriod: 60 * 60,
+          withdrawAuthority: MANGO_DAO_WALLET,
+          authority: wallet.publicKey!,
+          crankDataBuffer: crankAccount.dataBuffer?.publicKey,
+          crankPubkey: crankAccount.publicKey,
+          fundAmount: 0.5,
+          slidingWindow: true,
+          disableCrank: false,
+          maxPriorityFeeMultiplier: 5,
+          priorityFeeBumpPeriod: 10,
+          priorityFeeBump: 1000,
+          basePriorityFee: 1000,
+          jobs: jobs.map((job) => ({
+            weight: job.weight,
+            data: OracleJob.encodeDelimited(
+              OracleJob.fromYaml(
+                job.job
+                  .toYaml()
+                  .replaceAll(
+                    'Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD',
+                    'eaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a',
+                  )
+                  .replaceAll(
+                    'H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG',
+                    'ef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d',
+                  ),
+              ),
+            ).finish(),
+          })),
+        })
+
+      const lockTx = aggregatorAccount.lockInstruction(wallet.publicKey!, {})
+      const transferAuthIx = aggregatorAccount.setAuthorityInstruction(
+        wallet.publicKey!,
+        {
+          newAuthority: MANGO_DAO_WALLET,
+        },
+      )
+
+      const instructions = [
+        ...[...txArray1, lockTx, transferAuthIx].flatMap((x) => x.ixns),
+      ]
+      const signers = [
+        ...[...txArray1, lockTx, transferAuthIx].flatMap((x) => x.signers),
+      ]
+
+      const transactionInstructions: TransactionInstructionWithType[] = []
+      chunk(instructions, 1).map((chunkInstructions) =>
+        transactionInstructions.push({
+          instructionsSet: [
+            new TransactionInstructionWithSigners(createComputeBudgetIx(80000)),
+            ...chunkInstructions.map(
+              (inst) =>
+                new TransactionInstructionWithSigners(
+                  inst,
+                  signers.filter((x) =>
+                    chunkInstructions.find((instruction) =>
+                      instruction.keys
+                        .filter((key) => key.isSigner)
+                        .find((key) => key.pubkey.equals(x.publicKey)),
+                    ),
+                  ),
+                ),
+            ),
+          ],
+          sequenceType: SequenceType.Sequential,
+        }),
+      )
+      await sendSignAndConfirmTransactions({
+        connection,
+        wallet,
+        transactionInstructions,
+        backupConnections: client.opts.multipleConnections
+          ? [...client.opts.multipleConnections]
+          : [new Connection(LITE_RPC_URL, 'recent')],
+        config: {
+          maxTxesInBatch: 10,
+          autoRetry: true,
+          logFlowInfo: true,
+          maxRetries: 5,
+        },
+      })
+      notify({
+        type: 'success',
+        title: 'Successfully created oracle',
+      })
+      window.open(
+        `https://app.switchboard.xyz/solana/mainnet/feed/${aggregatorAccount.publicKey.toBase58()}`,
+        '_blank',
+      )
+    }
+  }
 
   const isPoolReversed = async (
     type: 'orca' | 'raydium',
@@ -529,7 +736,7 @@ const CreateSwitchboardOracleModal = ({
           ? [...client.opts.multipleConnections]
           : [new Connection(LITE_RPC_URL, 'recent')],
         config: {
-          maxTxesInBatch: 20,
+          maxTxesInBatch: 10,
           autoRetry: true,
           logFlowInfo: true,
           maxRetries: 5,
@@ -609,6 +816,7 @@ const CreateSwitchboardOracleModal = ({
           with higher tiers
         </p>
       </div>
+      <div onClick={migrateSwitchboard}>asdasdsadas</div>
 
       <div className="float-right">
         <Button disabled={creatingOracle} onClick={create}>
