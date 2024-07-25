@@ -95,7 +95,7 @@ const FundingChart = () => {
         marketKey = item?.activity_details?.perp_market
         marketFunding =
           item?.activity_details?.long_funding * -1 +
-          item?.activity_details?.short_funding
+          item?.activity_details?.short_funding * -1
       }
       if (isCollateralFundingItem(item)) {
         marketKey = item?.activity_details?.symbol
