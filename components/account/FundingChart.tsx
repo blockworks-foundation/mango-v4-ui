@@ -94,8 +94,8 @@ const FundingChart = () => {
       if (isPerpFundingItem(item)) {
         marketKey = item?.activity_details?.perp_market
         marketFunding =
-          item?.activity_details?.long_funding * -1 +
-          item?.activity_details?.short_funding * -1
+          item?.activity_details?.long_funding +
+          item?.activity_details?.short_funding
       }
       if (isCollateralFundingItem(item)) {
         marketKey = item?.activity_details?.symbol

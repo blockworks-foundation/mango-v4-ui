@@ -98,8 +98,8 @@ const FundingTable = () => {
       if (isPerpFundingItem(item)) {
         const asset = item.activity_details.perp_market
         const amount =
-          item.activity_details.long_funding * -1 +
-          item.activity_details.short_funding * -1
+          item.activity_details.long_funding +
+          item.activity_details.short_funding
         const type = 'Perp'
         const market = group?.getPerpMarketByName(asset)
         const perpFundingItem = {
