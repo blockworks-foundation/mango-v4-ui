@@ -60,14 +60,14 @@
     "html-react-parser": "3.0.4",
     "html2canvas": "1.4.1",
     "http-proxy-middleware": "2.0.6",
-    "i18next": "23.2.11",
+    "i18next": "23.12.2",
     "immer": "9.0.12",
     "js-cookie": "3.0.1",
     "klinecharts": "8.6.3",
     "lodash": "4.17.21",
     "net": "1.0.2",
-    "next": "14.0.3",
-    "next-i18next": "15.0.0",
+    "next": "14.2.5",
+    "next-i18next": "15.3.0",
     "next-plausible": "3.11.1",
     "next-themes": "0.2.0",
     "react": "18.2.0",
@@ -114,7 +114,7 @@
     "@typescript-eslint/eslint-plugin": "5.43.0",
     "autoprefixer": "10.4.13",
     "eslint": "8.13.0",
-    "eslint-config-next": "13.4.17",
+    "eslint-config-next": "14.2.5",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-react": "7.29.4",
     "eslint-plugin-react-hooks": "4.4.0",
@@ -130,7 +130,7 @@
     "tailwindcss": "3.3.3",
     "ts-jest": "29.1.1",
     "ts-node": "10.9.2",
-    "typescript": "4.9.4"
+    "typescript": "5.5.4"
   },
   "resolutions": {
     "@coral-xyz/anchor": "^0.27.0",
@@ -138,7 +138,10 @@
     "@solana/wallet-adapter-solflare": "0.6.28",
     "crypto-js": ">=4.1.1",
     "@sentry/nextjs": ">=7.77.0",
-    "protobufjs": ">=7.2.5"
+    "protobufjs": ">=7.2.5",
+    "**/@solana/web3.js/node-fetch": "npm:@blockworks-foundation/node-fetch@2.6.11",
+    "**/cross-fetch/node-fetch": "npm:@blockworks-foundation/node-fetch@2.6.11",
+    "**/@blockworks-foundation/mangolana/node-fetch": "npm:@blockworks-foundation/node-fetch@2.6.11"
   },
   "lavamoat": {
     "allowScripts": {
@@ -154,7 +157,6 @@
       "@metaplex-foundation/js>@bundlr-network/client>arbundles>secp256k1": false,
       "@metaplex-foundation/js>@bundlr-network/client>arbundles>keccak": false,
       "@switchboard-xyz/solana.js>@switchboard-xyz/common>protobufjs": true,
-      "@blockworks-foundation/mango-v4>@raydium-io/raydium-sdk>tsup>esbuild": true,
       "@solana/web3.js>bigint-buffer": false,
       "@solana/web3.js>rpc-websockets>bufferutil": true,
       "@solana/web3.js>rpc-websockets>utf-8-validate": true,
