@@ -56,7 +56,7 @@ async function buildClient(rpcUrl: string): Promise<MangoClient | undefined> {
       'mainnet-beta',
       MANGO_V4_ID['mainnet-beta'],
       {
-        idsSource: 'get-program-accounts',
+        idsSource: 'api',
       },
     )
   } catch (e) {
