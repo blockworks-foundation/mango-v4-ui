@@ -136,7 +136,7 @@ const initMangoClient = (
       new PublicKey('4dusJxxxiYrMTLGYS6cCAyu3gPn2xXLBjS7orMToZHi1'), //mnde
     ],
     multipleConnections: opts.multipleConnections,
-    idsSource: 'api',
+    idsSource: 'get-program-accounts',
     prependedGlobalAdditionalInstructions:
       opts.prependedGlobalAdditionalInstructions,
     postSendTxCallback: async (txCallbackOptions: TxCallbackOptions) => {

@@ -23,7 +23,7 @@
   "dependencies": {
     "@blockworks-foundation/mango-feeds": "0.1.7",
     "@blockworks-foundation/mango-mints-redemption": "^0.0.10",
-    "@blockworks-foundation/mango-v4": "0.32.11",
+    "@blockworks-foundation/mango-v4": "0.32.12",
     "@blockworks-foundation/mango-v4-settings": "0.14.24",
     "@blockworks-foundation/mangolana": "0.0.17",
     "@headlessui/react": "1.6.6",
@@ -65,6 +65,7 @@
     "js-cookie": "3.0.1",
     "klinecharts": "8.6.3",
     "lodash": "4.17.21",
+    "net": "1.0.2",
     "next": "14.0.3",
     "next-i18next": "15.0.0",
     "next-plausible": "3.11.1",

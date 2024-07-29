@@ -45,6 +45,9 @@ const nextConfig = {
           BUILD_ID: JSON.stringify(opts.buildId),
         },
       }),
+      new webpack.NormalModuleReplacementPlugin(/^node:/, (resource) => {
+        resource.request = resource.request.replace(/^node:/, '')
+      }),
     )
 
     return config
