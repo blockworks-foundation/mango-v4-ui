@@ -157,6 +157,7 @@
       "@metaplex-foundation/js>@bundlr-network/client>arbundles>secp256k1": false,
       "@metaplex-foundation/js>@bundlr-network/client>arbundles>keccak": false,
       "@switchboard-xyz/solana.js>@switchboard-xyz/common>protobufjs": true,
+      "@blockworks-foundation/mango-v4>@raydium-io/raydium-sdk>tsup>esbuild": true,
       "@solana/web3.js>bigint-buffer": false,
       "@solana/web3.js>rpc-websockets>bufferutil": true,
       "@solana/web3.js>rpc-websockets>utf-8-validate": true,
