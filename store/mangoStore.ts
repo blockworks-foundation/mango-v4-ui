@@ -126,14 +126,14 @@ const initMangoClient = (
   return MangoClient.connect(provider, CLUSTER, MANGO_V4_ID[CLUSTER], {
     prioritizationFee: opts.prioritizationFee,
     fallbackOracleConfig: [
-      new PublicKey('Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD'), // USDC pyth oracle
-      new PublicKey('AFrYBhb5wKQtxRS9UA9YRS4V3dwFm7SqmS6DHKq6YVgo'), //Bsol
-      new PublicKey('7yyaeuJ1GGtVBLT2z2xub5ZWYKaNhF28mj1RdV4VDFVk'), //jitoSol
-      new PublicKey('E4v1BBgoso9s64TQvmyownAVJbhbEPGyzA3qn4n46qj9'), //mSol
-      new PublicKey('8ihFLu5FimgTQ1Unh4dVyEHUGodJ5gJQCrQf4KUVB9bN'), //bonk
-      new PublicKey('AwpALBTXcaz2t6BayXvQQu7eZ6h7u2UNRCQNmD9ShY7Z'), //blze
-      new PublicKey('6ABgrEZk8urs6kJ1JNdC1sspH5zKXRqxy8sg3ZG2cQps'), //wif
-      new PublicKey('4dusJxxxiYrMTLGYS6cCAyu3gPn2xXLBjS7orMToZHi1'), //mnde
+      new PublicKey('Dpw1EAVrSB1ibxiDQyTAW6Zip3J4Btk2x4SgApQCeFbX'), // USDC pyth oracle
+      new PublicKey('5cN76Xm2Dtx9MnrQqBDeZZRsWruTTcw37UruznAdSvvE'), //Bsol
+      new PublicKey('AxaxyeDT8JnWERSaTKvFXvPKkEdxnamKSqpWbsSjYg1g'), //jitoSol
+      new PublicKey('5CKzb9j4ChgLUt8Gfm5CNGLN6khXKiqMbnGAW4cgXgxK'), //mSol
+      new PublicKey('DBE3N8uNjhKPRHfANdwGvCZghWXyLPdqdSbEW2XFwBiX'), //bonk
+      new PublicKey('p8WhggEpj4bTQJpGqPANiqG2CWUxooxWBWzi5qhrdzy'), //blze
+      new PublicKey('6B23K3tkb51vLZA14jcEQVCA1pfHptzEHFA93V5dYwbT'), //wif
+      new PublicKey('GHKcxocPyzSjy7tWApQjKRkDNuVXd4Kk624zhuaR7xhC'), //mnde
     ],
     multipleConnections: opts.multipleConnections,
     idsSource: 'api',
