@@ -107,7 +107,7 @@ export const PROFILE_CATEGORIES = [
   'yolo',
 ]
 
-export const MANGO_ROUTER_API_URL = 'https://router-1.fly.dev'
+export const MANGO_ROUTER_API_URL = 'https://autobahn.mngo.cloud/m4b137o2h72m'
 
 export const MANGO_DATA_API_URL = 'https://api.mngo.cloud/data/v4'
 
