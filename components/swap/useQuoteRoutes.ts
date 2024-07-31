@@ -217,7 +217,7 @@ const fetchMangoRoute = async (
     async (resolve, reject) => {
       const timeout = setTimeout(() => {
         reject('Request timed out')
-      }, 5000)
+      }, 1000)
 
       try {
         const paramsString = new URLSearchParams({
