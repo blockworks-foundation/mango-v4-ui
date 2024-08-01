@@ -415,8 +415,8 @@ export async function handleGetRoutes(
     }
 
     if (
-      isMultiRoutingMode(routingMode) ||
-      (routingMode === 'MANGO' && !isDelegatedAccount)
+      (isMultiRoutingMode(routingMode) || routingMode === 'MANGO') &&
+      !isDelegatedAccount
     ) {
       const mangoRoute = fetchMangoRoute(
         inputMint,
