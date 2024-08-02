@@ -468,6 +468,7 @@ export const getFormattedBankValues = (group: Group, bank: Bank) => {
     platformLiquidationFee: (
       bank.platformLiquidationFee.toNumber() * 100
     ).toFixed(2),
+    disableAssetLiquidation: !bank.allowAssetLiquidation,
   }
 }
 
