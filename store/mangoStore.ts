@@ -134,6 +134,12 @@ const initMangoClient = (
       new PublicKey('p8WhggEpj4bTQJpGqPANiqG2CWUxooxWBWzi5qhrdzy'), //blze
       new PublicKey('6B23K3tkb51vLZA14jcEQVCA1pfHptzEHFA93V5dYwbT'), //wif
       new PublicKey('GHKcxocPyzSjy7tWApQjKRkDNuVXd4Kk624zhuaR7xhC'), //mnde
+      new PublicKey('FLroEBBA4Fa8ENqfBmqyypq8U6ai2mD7c5k6Vfb2PWzv'), //MangoSol
+      new PublicKey('6zBkSKhAqLT2SNRbzTbrom2siKhVZ6SLQcFPnvyexdTE'), //DualSol
+      new PublicKey('318uRUE2RuYpvv1VwxC4eJwViDrRrxUTTqoUBV1cgUYi'), //HubSol
+      new PublicKey('91yrNSV8mofYcP6NCsHNi2YgNxwukBenv5MCRFD92Rgp'), //Jsol
+      new PublicKey('Am5rswhcxQhqviDXuaiZnLvkpmB4iJEdxmhqMMZDV3KJ'), //DigitSol
+      new PublicKey('9gFehBozPdWafFfPiZRbub2yUmwYJrGMvguKHii7cMTA'), //CompassSol
     ],
     multipleConnections: opts.multipleConnections,
     idsSource: 'api',
