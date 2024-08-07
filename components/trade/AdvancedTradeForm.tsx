@@ -698,6 +698,7 @@ const AdvancedTradeForm = () => {
 
     if (!group || !mangoAccount) return
     setPlacingOrder(true)
+    let txid = ''
     try {
       const baseSize = Number(tradeForm.baseSize)
       let price = Number(tradeForm.price)
@@ -735,6 +736,7 @@ const AdvancedTradeForm = () => {
           Date.now(),
           10,
         )
+        txid = tx
         actions.fetchOpenOrders(true)
         set((s) => {
           s.successAnimation.trade = true
@@ -771,6 +773,7 @@ const AdvancedTradeForm = () => {
           undefined,
           undefined,
         )
+        txid = tx
         await poolIsPerpReadyForRefresh(
           () => {
             actions.fetchOpenOrders(true)
@@ -797,7 +800,7 @@ const AdvancedTradeForm = () => {
       }
     } catch (e) {
       console.error('Place trade error:', e)
-      sentry.captureException(e)
+      sentry.captureException({ e, txid })
       if (!isMangoError(e)) return
       notify({
         title: 'There was an issue.',

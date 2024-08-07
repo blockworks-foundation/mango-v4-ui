@@ -12,6 +12,7 @@ import {
   TransactionInstruction,
 } from '@solana/web3.js'
 import { IDL } from '@blockworks-foundation/mango-v4'
+import * as sentry from '@sentry/nextjs'
 
 export type TransactionNotification = {
   type: 'success' | 'info' | 'error' | 'confirm'
@@ -47,7 +48,20 @@ export function notify(newNotification: {
   const soundSettings = savedSoundSettings
     ? JSON.parse(savedSoundSettings)
     : INITIAL_SOUND_SETTINGS
-
+  if (newNotification.type === 'error') {
+    sentry.captureException(
+      {
+        title: newNotification.title,
+        description: newNotification.description,
+        txid: newNotification.txid,
+      },
+      {
+        tags: {
+          origin: 'userAlert',
+        },
+      },
+    )
+  }
   if (newNotification.type && !newNotification.noSound) {
     switch (newNotification.type) {
       case 'success': {
