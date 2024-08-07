@@ -18,8 +18,11 @@ const useOpenPerpPositions = () => {
 
     const checkPerps = async (): Promise<boolean> => {
       await sleep(200)
-      const newMangoAccount = await client.getMangoAccount(mangoAccountPk!)
-      return newMangoAccount.perps.every((x) => x.takerBaseLots.isZero())
+      if (mangoAccountPk) {
+        const newMangoAccount = await client.getMangoAccount(mangoAccountPk)
+        return newMangoAccount.perps.every((x) => x.takerBaseLots.isZero())
+      }
+      return true
     }
 
     const poll = async (
