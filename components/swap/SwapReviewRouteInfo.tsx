@@ -398,6 +398,7 @@ const SwapReviewRouteInfo = ({
     const set = mangoStore.getState().set
     const connection = mangoStore.getState().connection
     setSubmitting(true)
+    let txid = ''
     try {
       const vtx = await fetchJupiterWalletSwapTransaction(
         selectedRoute,
@@ -410,7 +411,7 @@ const SwapReviewRouteInfo = ({
       const sign = wallet.signTransaction!
       const signed = await sign(vtx)
 
-      const txid = await sendTxAndConfirm(
+      txid = await sendTxAndConfirm(
         client.opts.multipleConnections,
         connection,
         signed,
@@ -427,6 +428,7 @@ const SwapReviewRouteInfo = ({
       })
       actions.fetchWalletTokens(wallet.publicKey)
     } catch (e) {
+      sentry.captureException({ e, txid })
       console.log('error swapping wallet tokens', e)
     } finally {
       setSubmitting(false)
@@ -541,7 +543,7 @@ const SwapReviewRouteInfo = ({
           'onSwapError',
         )
         console.error('onSwap error: ', e)
-        sentry.captureException(e)
+        sentry.captureException({ e, tx })
         if (isMangoError(e)) {
           const slippageExceeded = await parseTxForKnownErrors(
             connection,
@@ -563,6 +565,7 @@ const SwapReviewRouteInfo = ({
               description: e.message,
               txid: e?.txid,
               type: 'error',
+              noSentry: true,
             })
           }
         } else {
@@ -584,12 +587,14 @@ const SwapReviewRouteInfo = ({
               title: 'Transaction failed',
               description: `${stringError} - please review route and click swap again`,
               type: 'error',
+              noSentry: true,
             })
           } else {
             notify({
               title: 'Transaction failed',
               description: `${stringError} - please try again`,
               type: 'error',
+              noSentry: true,
             })
           }
         }
@@ -597,6 +602,7 @@ const SwapReviewRouteInfo = ({
         setSubmitting(false)
       }
     } catch (e) {
+      sentry.captureException({ e })
       console.error('Swap error:', e)
     } finally {
       if (!directRouteFallbackUsed) {

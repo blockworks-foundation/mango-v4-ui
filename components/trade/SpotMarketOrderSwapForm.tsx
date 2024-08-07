@@ -248,7 +248,7 @@ export default function SpotMarketOrderSwapForm() {
     const { baseSize, quoteSize, side } = mangoStore.getState().tradeForm
     const actions = mangoStore.getState().actions
     const connection = mangoStore.getState().connection
-
+    let txid = ''
     if (
       !mangoAccount ||
       !group ||
@@ -296,6 +296,7 @@ export default function SpotMarketOrderSwapForm() {
         flashLoanType: { swap: {} },
         sequenceCheck: false,
       })
+      txid = tx
       set((s) => {
         s.successAnimation.swap = true
       })
@@ -317,7 +318,7 @@ export default function SpotMarketOrderSwapForm() {
       })
     } catch (e) {
       console.error('onSwap error: ', e)
-      sentry.captureException(e)
+      sentry.captureException({ e, txid })
       if (isMangoError(e)) {
         const slippageExceeded = await parseTxForKnownErrors(
           connection,
@@ -332,6 +333,7 @@ export default function SpotMarketOrderSwapForm() {
             description: t('swap:error-slippage-exceeded-desc'),
             txid: e?.txid,
             type: 'error',
+            noSentry: true,
           })
         } else {
           notify({
@@ -339,6 +341,7 @@ export default function SpotMarketOrderSwapForm() {
             description: e.message,
             txid: e?.txid,
             type: 'error',
+            noSentry: true,
           })
         }
       } else {
@@ -346,6 +349,7 @@ export default function SpotMarketOrderSwapForm() {
           title: 'Transaction failed',
           description: `${e} - please try again`,
           type: 'error',
+          noSentry: true,
         })
       }
     } finally {

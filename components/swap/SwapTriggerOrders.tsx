@@ -47,13 +47,14 @@ export const handleCancelTriggerOrder = async (
     if (setCancelId) {
       setCancelId(id.toString())
     }
-
+    let txid = ''
     try {
       const { signature: tx, slot } = await client.tokenConditionalSwapCancel(
         group,
         mangoAccount,
         id,
       )
+      txid = tx
       notify({
         title: 'Transaction confirmed',
         type: 'success',
@@ -64,17 +65,19 @@ export const handleCancelTriggerOrder = async (
       await actions.reloadMangoAccount(slot)
     } catch (e) {
       console.error('failed to cancel swap order', e)
-      sentry.captureException(e)
+      sentry.captureException({ e, txid })
       if (isMangoError(e)) {
         notify({
           title: 'Transaction failed',
           description: e.message,
           txid: e?.txid,
           type: 'error',
+          noSentry: true,
         })
       }
     }
   } catch (e) {
+    sentry.captureException({ e })
     console.error('failed to cancel trigger order', e)
   } finally {
     if (setCancelId) {
@@ -94,7 +97,7 @@ export const handleCancelAll = async (
 
     if (!mangoAccount || !group) return
     setCancelId('all')
-
+    let txid = ''
     try {
       const { signature: tx, slot } =
         await client.tokenConditionalSwapCancelAll(group, mangoAccount)
@@ -104,21 +107,24 @@ export const handleCancelAll = async (
         txid: tx,
         noSound: true,
       })
+      txid = tx
       actions.fetchGroup()
       await actions.reloadMangoAccount(slot)
     } catch (e) {
       console.error('failed to cancel trigger orders', e)
-      sentry.captureException(e)
+      sentry.captureException({ e, txid })
       if (isMangoError(e)) {
         notify({
           title: 'Transaction failed',
           description: e.message,
           txid: e?.txid,
           type: 'error',
+          noSentry: true,
         })
       }
     }
   } catch (e) {
+    sentry.captureException({ e })
     console.error('failed to cancel swap order', e)
   } finally {
     setCancelId('')
