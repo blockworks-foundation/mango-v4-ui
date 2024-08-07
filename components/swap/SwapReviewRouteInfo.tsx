@@ -565,6 +565,7 @@ const SwapReviewRouteInfo = ({
               description: e.message,
               txid: e?.txid,
               type: 'error',
+              noSentry: true,
             })
           }
         } else {
@@ -586,12 +587,14 @@ const SwapReviewRouteInfo = ({
               title: 'Transaction failed',
               description: `${stringError} - please review route and click swap again`,
               type: 'error',
+              noSentry: true,
             })
           } else {
             notify({
               title: 'Transaction failed',
               description: `${stringError} - please try again`,
               type: 'error',
+              noSentry: true,
             })
           }
         }

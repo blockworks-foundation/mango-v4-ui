@@ -807,6 +807,7 @@ const AdvancedTradeForm = () => {
         description: e.message,
         txid: e?.txid,
         type: 'error',
+        noSentry: true,
       })
     } finally {
       setPlacingOrder(false)

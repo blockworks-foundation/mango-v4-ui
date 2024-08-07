@@ -333,6 +333,7 @@ export default function SpotMarketOrderSwapForm() {
             description: t('swap:error-slippage-exceeded-desc'),
             txid: e?.txid,
             type: 'error',
+            noSentry: true,
           })
         } else {
           notify({
@@ -340,6 +341,7 @@ export default function SpotMarketOrderSwapForm() {
             description: e.message,
             txid: e?.txid,
             type: 'error',
+            noSentry: true,
           })
         }
       } else {
@@ -347,6 +349,7 @@ export default function SpotMarketOrderSwapForm() {
           title: 'Transaction failed',
           description: `${e} - please try again`,
           type: 'error',
+          noSentry: true,
         })
       }
     } finally {

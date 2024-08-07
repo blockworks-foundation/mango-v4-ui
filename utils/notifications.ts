@@ -39,6 +39,7 @@ export function notify(newNotification: {
   txid?: string
   noSound?: boolean
   noMangoIdlEnrichment?: boolean
+  noSentry?: boolean
 }) {
   const setMangoStore = mangoStore.getState().set
   const notifications = mangoStore.getState().transactionNotifications
@@ -48,7 +49,7 @@ export function notify(newNotification: {
   const soundSettings = savedSoundSettings
     ? JSON.parse(savedSoundSettings)
     : INITIAL_SOUND_SETTINGS
-  if (newNotification.type === 'error') {
+  if (newNotification.type === 'error' && !newNotification.noSentry) {
     sentry.captureException(
       {
         title: newNotification.title,

@@ -189,6 +189,7 @@ export const handlePlaceTriggerOrder = async (
           description: e.message,
           txid: e?.txid,
           type: 'error',
+          noSentry: true,
         })
       }
     }

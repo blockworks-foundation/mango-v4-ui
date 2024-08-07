@@ -72,6 +72,7 @@ export const handleCancelTriggerOrder = async (
           description: e.message,
           txid: e?.txid,
           type: 'error',
+          noSentry: true,
         })
       }
     }
@@ -118,6 +119,7 @@ export const handleCancelAll = async (
           description: e.message,
           txid: e?.txid,
           type: 'error',
+          noSentry: true,
         })
       }
     }
