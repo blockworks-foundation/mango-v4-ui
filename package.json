@@ -168,7 +168,8 @@
       "tsparticles>tsparticles-engine": true,
       "@sentry/nextjs>@sentry/webpack-plugin>@sentry/cli": true,
       "@blockworks-foundation/mango-mints-redemption>keccak256>keccak": true,
-      "@switchboard-xyz/solana.js>@switchboard-xyz/common>helia>@libp2p/webrtc>node-datachannel": true
+      "@switchboard-xyz/solana.js>@switchboard-xyz/common>helia>@libp2p/webrtc>node-datachannel": true,
+      "@sentry/nextjs>@sentry/webpack-plugin>@sentry/bundler-plugin-core>@sentry/cli": true
     }
   }
 }
