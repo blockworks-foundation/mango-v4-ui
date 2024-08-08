@@ -1,4 +1,4 @@
-import mangoStore, { CLUSTER } from '@store/mangoStore'
+import mangoStore from '@store/mangoStore'
 import { ModalProps } from '../../types/modal'
 import Modal from '../shared/Modal'
 import { useWallet } from '@solana/wallet-adapter-react'
@@ -141,7 +141,7 @@ const CreateSwitchboardOracleModal = ({
           )
         : false
 
-      const program = await SwitchboardProgram.load(CLUSTER, connection)
+      const program = await SwitchboardProgram.load(connection)
 
       const [[queueAccount], [crankAccount]] = await Promise.all([
         QueueAccount.load(program, SWITCHBOARD_PERMISSIONLESS_QUE),
