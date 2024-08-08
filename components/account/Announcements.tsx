@@ -86,16 +86,12 @@ const Announcements = () => {
           </button>
         ) : null}
         <div className={` ${showArrows ? 'w-[calc(100%-120px)]' : 'w-full'}`}>
-          {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-          {/* @ts-ignore */}
           <Slider ref={sliderRef} {...sliderSettings}>
-            <>
-              {announcements.map((announcement, i) => (
-                <div className="px-2" key={announcement.title + i}>
-                  <Announcement data={announcement} />
-                </div>
-              ))}
-            </>
+            {announcements.map((announcement, i) => (
+              <div className="px-2" key={announcement.title + i}>
+                <Announcement data={announcement} />
+              </div>
+            ))}
           </Slider>
         </div>
         {showArrows ? (
