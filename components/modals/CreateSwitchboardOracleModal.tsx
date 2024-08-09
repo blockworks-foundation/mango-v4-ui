@@ -27,10 +27,7 @@ import {
   tierToSwitchboardJobSwapValue,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
 import { WRAPPED_SOL_MINT } from '@metaplex-foundation/js'
-import {
-  createComputeBudgetIx,
-  toNative,
-} from '@blockworks-foundation/mango-v4'
+import { createComputeBudgetIx } from '@blockworks-foundation/mango-v4'
 import { LSTExactIn, LSTExactOut } from 'utils/switchboardTemplates/templates'
 import {
   SequenceType,
@@ -60,7 +57,6 @@ type BaseProps = ModalProps & {
   isSolPool: boolean
   stakePoolAddress: string
   tokenPrice: number
-  tokenDecimals: number
   onClose: (oraclePk?: PublicKey) => void
 }
 
@@ -82,7 +78,6 @@ const CreateSwitchboardOracleModal = ({
   raydiumPoolAddress,
   orcaPoolAddress,
   tierKey,
-  tokenDecimals,
   tokenPrice,
   isSolPool,
   stakePoolAddress,
@@ -298,7 +293,7 @@ const CreateSwitchboardOracleModal = ({
           authority: payer,
           crankDataBuffer: crankAccount.dataBuffer?.publicKey,
           crankPubkey: crankAccount.publicKey,
-          fundAmount: settingFromLib.fundAmount,
+          fundAmount: 0.1,
           slidingWindow: true,
           disableCrank: false,
           maxPriorityFeeMultiplier: 5,
@@ -313,11 +308,7 @@ const CreateSwitchboardOracleModal = ({
                   ? OracleJob.fromYaml(
                       LSTExactIn(
                         baseTokenPk,
-                        toNative(
-                          Math.ceil(Number(swapValue) / tokenPrice),
-                          tokenDecimals,
-                        ).toString(),
-                        stakePoolAddress,
+                        Math.ceil(Number(swapValue) / tokenPrice).toString(),
                       ),
                     )
                   : OracleJob.fromObject({
@@ -396,11 +387,7 @@ const CreateSwitchboardOracleModal = ({
                   ? OracleJob.fromYaml(
                       LSTExactOut(
                         baseTokenPk,
-                        toNative(
-                          Math.ceil(Number(swapValue) / tokenPrice),
-                          tokenDecimals,
-                        ).toString(),
-                        stakePoolAddress,
+                        Math.ceil(Number(swapValue) / tokenPrice).toString(),
                       ),
                     )
                   : OracleJob.fromObject({
@@ -587,8 +574,6 @@ const CreateSwitchboardOracleModal = ({
     raydiumPoolAddress,
     stakePoolAddress,
     tierKey,
-    tierSwitchboardSettings,
-    tokenDecimals,
     tokenPrice,
     wallet,
   ])

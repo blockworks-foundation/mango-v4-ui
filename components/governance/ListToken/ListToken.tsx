@@ -1242,7 +1242,6 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                       onClose={closeCreateOracleModal}
                       isSolPool={isSolPool}
                       stakePoolAddress={lstStakePoolAddress}
-                      tokenDecimals={currentTokenInfo.decimals}
                       tokenPrice={baseTokenPrice}
                     ></CreateSwitchboardOracleModal>
                   </li>
