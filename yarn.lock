@@ -443,6 +443,18 @@
     node-fetch "3.3.2"
     ws "^8.18.0"
 
+"@blockworks-foundation/mangolana@0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mangolana/-/mangolana-0.1.1.tgz#7730e3e836a0a4e8038b45f9ca4acfc02469edd2"
+  integrity sha512-Yb7XnLAxZNfjhmk6AFdTYa3pI687SascdVrBNxWHLLS5b+CNAUl9dWteuwCWHNPhu0/TUdKYHDRuuS0i99FRFA==
+  dependencies:
+    "@solana/promises" "2.0.0-canary-20240812091942"
+    "@solana/web3.js" "^1.95.2"
+    bs58 "^5.0.0"
+    isomorphic-ws "^5.0.0"
+    node-fetch "3.3.2"
+    ws "^8.18.0"
+
 "@bundlr-network/client@^0.8.8":
   version "0.8.9"
   resolved "https://registry.yarnpkg.com/@bundlr-network/client/-/client-0.8.9.tgz#58e969a5d80f8d25d212d46bb7a060730a3c1736"
@@ -10892,14 +10904,14 @@ node-cache@^5.1.2:
   dependencies:
     clone "2.x"
 
-node-fetch@3.3.2, "node-fetch@npm:@blockworks-foundation/node-fetch@2.6.11":
+node-fetch@3.3.2, node-fetch@^2.6.12, node-fetch@^2.7.0, "node-fetch@npm:@blockworks-foundation/node-fetch@2.6.11":
   version "2.6.11"
   resolved "https://registry.yarnpkg.com/@blockworks-foundation/node-fetch/-/node-fetch-2.6.11.tgz#fb536ef0e6a960e7b7993f3c1d3b3bba9bdfbc56"
   integrity sha512-HeDTxpIypSR4qCoqgUXGr8YL4OG1z7BbV4VhQ9iQs+pt2wV3MtqO+sQk2vXK3WDKu5C6BsbGmWE22BmIrcuOOw==
   dependencies:
     whatwg-url "^5.0.0"
 
-node-fetch@^2.6.1, node-fetch@^2.6.12, node-fetch@^2.6.7, node-fetch@^2.7.0:
+node-fetch@^2.6.1, node-fetch@^2.6.7:
   version "2.7.0"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.7.0.tgz#d0f0fa6e3e2dc1d27efcd8ad99d550bda94d187d"
   integrity sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==
