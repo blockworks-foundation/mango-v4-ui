@@ -13,6 +13,7 @@ import {
   Metadata,
   JsonMetadata,
 } from '@metaplex-foundation/js'
+import { safeRace } from '@solana/promises'
 
 export class TokenAccount {
   publicKey!: PublicKey
@@ -103,7 +104,7 @@ function loadNft(
 ) {
   const metaplex = new Metaplex(connection)
 
-  return Promise.race([
+  return safeRace([
     metaplex
       .nfts()
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment

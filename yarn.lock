@@ -3134,6 +3134,11 @@
     "@solana/codecs-strings" "2.0.0-preview.4"
     "@solana/errors" "2.0.0-preview.4"
 
+"@solana/promises@2.0.0-canary-20240812091942":
+  version "2.0.0-canary-20240812091942"
+  resolved "https://registry.yarnpkg.com/@solana/promises/-/promises-2.0.0-canary-20240812091942.tgz#e0f1d0c200170a791f120e320b10c446d30644c9"
+  integrity sha512-HLYVZxrXnMatnBBtHCK1qY7T2AEnhI2AL4PY10iZZ98JIO9dE6igRwFlBulC3ts8qBBkivDf0rF6RahvkrHV0A==
+
 "@solana/spl-account-compression@^0.1.4", "@solana/spl-account-compression@^0.1.8":
   version "0.1.10"
   resolved "https://registry.yarnpkg.com/@solana/spl-account-compression/-/spl-account-compression-0.1.10.tgz#b3135ce89349d6090832b3b1d89095badd57e969"
