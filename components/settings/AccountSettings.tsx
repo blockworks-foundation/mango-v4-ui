@@ -57,7 +57,8 @@ const AccountSettings = () => {
   const { t } = useTranslation(['common', 'settings', 'trade'])
   const { mangoAccount, mangoAccountAddress } = useMangoAccount()
   const { group } = useMangoGroup()
-  const { isDelegatedAccount, isUnownedAccount } = useUnownedAccount()
+  const { isDelegatedAccount, isUnownedAccount, isOwnedAccount } =
+    useUnownedAccount()
   const { connected } = useWallet()
   const [showAccountSizeModal, setShowAccountSizeModal] = useState(false)
   const [showEditAccountModal, setShowEditAccountModal] = useState(false)
@@ -737,7 +738,7 @@ const AccountSettings = () => {
     <div className="rounded-lg border border-th-bkg-3 p-4 md:p-6">
       <p className="text-center">{t('settings:account-settings-unowned')}</p>
     </div>
-  ) : isDelegatedAccount ? (
+  ) : isDelegatedAccount && !isOwnedAccount ? (
     <div className="rounded-lg border border-th-bkg-3 p-4 md:p-6">
       <p className="text-center">{t('settings:account-settings-delegated')}</p>
     </div>
