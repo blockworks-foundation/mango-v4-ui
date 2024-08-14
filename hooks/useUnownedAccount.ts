@@ -5,6 +5,7 @@ import useMangoAccount from './useMangoAccount'
 const useUnownedAccount = (): {
   isUnownedAccount: boolean
   isDelegatedAccount: boolean
+  isOwnedAccount: boolean
 } => {
   const { connected, publicKey } = useWallet()
   const { mangoAccountAddress, mangoAccount } = useMangoAccount()
@@ -21,7 +22,14 @@ const useUnownedAccount = (): {
     return false
   }, [publicKey, mangoAccount])
 
-  return { isUnownedAccount, isDelegatedAccount }
+  const isOwnedAccount: boolean = useMemo(() => {
+    if (publicKey && mangoAccount) {
+      return mangoAccount?.owner.equals(publicKey)
+    }
+    return false
+  }, [publicKey, mangoAccount])
+
+  return { isUnownedAccount, isDelegatedAccount, isOwnedAccount }
 }
 
 export default useUnownedAccount
