@@ -55,7 +55,7 @@ const ROW_BUTTON_CLASSNAMES =
 
 const AccountSettings = () => {
   const { t } = useTranslation(['common', 'settings', 'trade'])
-  const { mangoAccount, mangoAccountAddress } = useMangoAccount()
+  const { mangoAccount } = useMangoAccount()
   const { group } = useMangoGroup()
   const { isDelegatedAccount, isUnownedAccount, isOwnedAccount } =
     useUnownedAccount()
@@ -94,7 +94,7 @@ const AccountSettings = () => {
       tokens.push({ isClosable, balance, tokenIndex: token.tokenIndex })
     }
     return tokens
-  }, [group, mangoAccountAddress, usedTokens])
+  }, [group, usedTokens])
 
   const handleCloseToken = useCallback(
     async (tokenMint: PublicKey) => {
@@ -215,7 +215,7 @@ const AccountSettings = () => {
     } else return 'text-th-success'
   }
 
-  return mangoAccount && group && !isDelegatedAccount && !isUnownedAccount ? (
+  return mangoAccount && group && isOwnedAccount && !isUnownedAccount ? (
     <div className="border-b border-th-bkg-3">
       <div className="pb-6">
         <h3 className="mb-1 text-base text-th-fgd-1">
