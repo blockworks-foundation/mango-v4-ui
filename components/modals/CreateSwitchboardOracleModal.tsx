@@ -296,9 +296,9 @@ const CreateSwitchboardOracleModal = ({
           fundAmount: settingFromLib.fundAmount,
           slidingWindow: true,
           disableCrank: false,
-          maxPriorityFeeMultiplier: 5,
-          priorityFeeBumpPeriod: 10,
-          priorityFeeBump: 1000,
+          maxPriorityFeeMultiplier: 2,
+          priorityFeeBumpPeriod: 30,
+          priorityFeeBump: 1000000,
           basePriorityFee: 1000,
           jobs: [
             {
