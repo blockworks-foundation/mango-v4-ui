@@ -10,7 +10,6 @@ import {
 import { OracleJob } from '@switchboard-xyz/common'
 import Button from '@components/shared/Button'
 import { MANGO_DAO_WALLET } from 'utils/governance/constants'
-import { USDC_MINT } from 'utils/constants'
 import { Connection, PublicKey } from '@solana/web3.js'
 import chunk from 'lodash/chunk'
 import { useTranslation } from 'next-i18next'
@@ -18,17 +17,23 @@ import { notify } from 'utils/notifications'
 import { isMangoError } from 'types'
 import { useCallback, useState } from 'react'
 import Loading from '@components/shared/Loading'
-import { WhirlpoolContext, buildWhirlpoolClient } from '@orca-so/whirlpools-sdk'
-import { LIQUIDITY_STATE_LAYOUT_V4 } from '@raydium-io/raydium-sdk'
 import {
   LISTING_PRESETS,
   LISTING_PRESETS_KEY,
   tierSwitchboardSettings,
   tierToSwitchboardJobSwapValue,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
-import { WRAPPED_SOL_MINT } from '@metaplex-foundation/js'
 import { createComputeBudgetIx } from '@blockworks-foundation/mango-v4'
-import { LSTExactIn, LSTExactOut } from 'utils/switchboardTemplates/templates'
+import {
+  LSTExactIn,
+  LSTExactOut,
+  tokenInUsdcOutReversedSolPool,
+  tokenInUsdcOutSolPool,
+  tokenInUsdcOutUsdcPool,
+  usdcInTokenOutReversedSolPool,
+  usdcInTokenOutSolPool,
+  usdcInTokenOutUsdcPool,
+} from 'utils/switchboardTemplates/templates'
 import {
   SequenceType,
   TransactionInstructionWithSigners,
@@ -46,8 +51,6 @@ const SWITCHBOARD_PERMISSIONLESS_QUE =
   '5JYwqvKkqp35w8Nq3ba4z1WYUeJQ1rB36V8XvaGp6zn1'
 const SWITCHBOARD_PERMISSIONLESS_CRANK =
   'BKtF8yyQsj3Ft6jb2nkfpEKzARZVdGgdEPs6mFmZNmbA'
-const pythSolOracle =
-  'ef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d'
 
 type BaseProps = ModalProps & {
   openbookMarketPk: string
@@ -55,6 +58,7 @@ type BaseProps = ModalProps & {
   baseTokenName: string
   tierKey: LISTING_PRESETS_KEY
   isSolPool: boolean
+  isReversedPool: boolean
   stakePoolAddress: string
   tokenPrice: number
   onClose: (oraclePk?: PublicKey) => void
@@ -80,6 +84,7 @@ const CreateSwitchboardOracleModal = ({
   tierKey,
   tokenPrice,
   isSolPool,
+  isReversedPool,
   stakePoolAddress,
 }: RaydiumProps | OrcaProps) => {
   const { t } = useTranslation(['governance'])
@@ -87,35 +92,9 @@ const CreateSwitchboardOracleModal = ({
   const client = mangoStore((s) => s.client)
   const wallet = useWallet()
   const quoteTokenName = 'USD'
-  const pythUsdOracle =
-    'eaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a'
-  const switchboardUsdDaoOracle = 'FwYfsmj5x8YZXtQBNo2Cz8TE7WRCMFqA6UTffK4xQKMH'
 
   const [creatingOracle, setCreatingOracle] = useState(false)
-
-  const isPoolReversed = async (
-    type: 'orca' | 'raydium',
-    poolPk: string,
-    baseMint: string,
-  ) => {
-    if (type === 'orca') {
-      const context = WhirlpoolContext.from(
-        connection,
-        wallet as never,
-        new PublicKey('whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'),
-      )
-      const whirlPoolClient = buildWhirlpoolClient(context)
-      const whirlpool = await whirlPoolClient.getPool(new PublicKey(poolPk))
-      return whirlpool.getTokenAInfo().mint.toBase58() == baseMint || false
-    }
-    if (type === 'raydium') {
-      const info = await connection.getAccountInfo(new PublicKey(poolPk))
-      const poolState = LIQUIDITY_STATE_LAYOUT_V4.decode(info!.data)
-      return poolState.baseMint.toBase58() === baseMint || false
-    }
-    return false
-  }
-
+  console.log(isSolPool, isReversedPool)
   const create = useCallback(async () => {
     try {
       const swapValue = tierToSwitchboardJobSwapValue[tierKey]
@@ -128,13 +107,7 @@ const CreateSwitchboardOracleModal = ({
         ? 'orcaPoolAddress'
         : 'raydiumPoolAddress'
       const poolAddress = orcaPoolAddress ? orcaPoolAddress : raydiumPoolAddress
-      const isReversePool = !stakePoolAddress
-        ? await isPoolReversed(
-            orcaPoolAddress ? 'orca' : 'raydium',
-            poolAddress!,
-            !isSolPool ? USDC_MINT : WRAPPED_SOL_MINT.toBase58(),
-          )
-        : false
+      const isReversePool = !stakePoolAddress ? isReversedPool : false
 
       const program = await SwitchboardProgram.load(connection)
 
@@ -143,144 +116,12 @@ const CreateSwitchboardOracleModal = ({
         CrankAccount.load(program, SWITCHBOARD_PERMISSIONLESS_CRANK),
       ])
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let onFailureTaskDesc: { [key: string]: any }[]
-      if (!isReversePool) {
-        onFailureTaskDesc = [
-          {
-            lpExchangeRateTask: {
-              [poolPropertyName]: poolAddress,
-            },
-          },
-        ]
-        if (isSolPool) {
-          onFailureTaskDesc.push({
-            multiplyTask: {
-              job: {
-                tasks: [
-                  {
-                    oracleTask: {
-                      pythAddress: pythSolOracle,
-                      pythAllowedConfidenceInterval: 10,
-                    },
-                  },
-                ],
-              },
-            },
-          })
-        }
-      } else {
-        onFailureTaskDesc = [
-          {
-            valueTask: {
-              big: 1,
-            },
-          },
-          {
-            divideTask: {
-              job: {
-                tasks: [
-                  {
-                    lpExchangeRateTask: {
-                      [poolPropertyName]: poolAddress,
-                    },
-                  },
-                ],
-              },
-            },
-          },
-        ]
-        if (isSolPool) {
-          onFailureTaskDesc.push({
-            multiplyTask: {
-              job: {
-                tasks: [
-                  {
-                    oracleTask: {
-                      pythAddress: pythSolOracle,
-                      pythAllowedConfidenceInterval: 10,
-                    },
-                  },
-                ],
-              },
-            },
-          })
-        }
-      }
-
       const settingFromLib = tierSwitchboardSettings[tierKey]
 
       if (!settingFromLib) {
         throw wrongTierPassedForCreation
       }
-      console.log(
-        OracleJob.fromObject({
-          tasks: [
-            {
-              conditionalTask: {
-                attempt: [
-                  {
-                    valueTask: {
-                      big: swapValue,
-                    },
-                  },
-                  {
-                    divideTask: {
-                      job: {
-                        tasks: [
-                          {
-                            jupiterSwapTask: {
-                              inTokenAddress: USDC_MINT,
-                              outTokenAddress: baseTokenPk,
-                              baseAmountString: swapValue,
-                            },
-                          },
-                        ],
-                      },
-                    },
-                  },
-                ],
-                onFailure: onFailureTaskDesc,
-              },
-            },
-            {
-              conditionalTask: {
-                attempt: [
-                  {
-                    multiplyTask: {
-                      job: {
-                        tasks: [
-                          {
-                            oracleTask: {
-                              pythAddress: pythUsdOracle,
-                              pythAllowedConfidenceInterval: 10,
-                            },
-                          },
-                        ],
-                      },
-                    },
-                  },
-                ],
-                onFailure: [
-                  {
-                    multiplyTask: {
-                      job: {
-                        tasks: [
-                          {
-                            oracleTask: {
-                              switchboardAddress: switchboardUsdDaoOracle,
-                            },
-                          },
-                        ],
-                      },
-                    },
-                  },
-                ],
-              },
-            },
-          ],
-        }).toJSON(),
-      )
+
       const [aggregatorAccount, txArray1] =
         await queueAccount.createFeedInstructions(payer, {
           name: `${baseTokenName}/${quoteTokenName}`,
@@ -293,7 +134,7 @@ const CreateSwitchboardOracleModal = ({
           authority: payer,
           crankDataBuffer: crankAccount.dataBuffer?.publicKey,
           crankPubkey: crankAccount.publicKey,
-          fundAmount: settingFromLib.fundAmount,
+          fundAmount: 0,
           slidingWindow: true,
           disableCrank: false,
           maxPriorityFeeMultiplier: 2,
@@ -311,73 +152,28 @@ const CreateSwitchboardOracleModal = ({
                         Math.ceil(Number(swapValue) / tokenPrice).toString(),
                       ),
                     )
-                  : OracleJob.fromObject({
-                      tasks: [
-                        {
-                          conditionalTask: {
-                            attempt: [
-                              {
-                                valueTask: {
-                                  big: swapValue,
-                                },
-                              },
-                              {
-                                divideTask: {
-                                  job: {
-                                    tasks: [
-                                      {
-                                        jupiterSwapTask: {
-                                          inTokenAddress: USDC_MINT,
-                                          outTokenAddress: baseTokenPk,
-                                          baseAmountString: swapValue,
-                                        },
-                                      },
-                                    ],
-                                  },
-                                },
-                              },
-                            ],
-                            onFailure: onFailureTaskDesc,
-                          },
-                        },
-                        {
-                          conditionalTask: {
-                            attempt: [
-                              {
-                                multiplyTask: {
-                                  job: {
-                                    tasks: [
-                                      {
-                                        oracleTask: {
-                                          pythAddress: pythUsdOracle,
-                                          pythAllowedConfidenceInterval: 10,
-                                        },
-                                      },
-                                    ],
-                                  },
-                                },
-                              },
-                            ],
-                            onFailure: [
-                              {
-                                multiplyTask: {
-                                  job: {
-                                    tasks: [
-                                      {
-                                        oracleTask: {
-                                          switchboardAddress:
-                                            switchboardUsdDaoOracle,
-                                        },
-                                      },
-                                    ],
-                                  },
-                                },
-                              },
-                            ],
-                          },
-                        },
-                      ],
-                    }),
+                  : OracleJob.fromYaml(
+                      !isSolPool
+                        ? usdcInTokenOutUsdcPool(
+                            baseTokenPk,
+                            swapValue!,
+                            poolAddress!,
+                            poolPropertyName,
+                          )
+                        : isReversePool
+                        ? usdcInTokenOutReversedSolPool(
+                            baseTokenPk,
+                            swapValue!,
+                            poolAddress!,
+                            poolPropertyName,
+                          )
+                        : usdcInTokenOutSolPool(
+                            baseTokenPk,
+                            swapValue!,
+                            poolAddress!,
+                            poolPropertyName,
+                          ),
+                    ),
               ).finish(),
             },
             {
@@ -390,85 +186,28 @@ const CreateSwitchboardOracleModal = ({
                         Math.ceil(Number(swapValue) / tokenPrice).toString(),
                       ),
                     )
-                  : OracleJob.fromObject({
-                      tasks: [
-                        {
-                          conditionalTask: {
-                            attempt: [
-                              {
-                                cacheTask: {
-                                  cacheItems: [
-                                    {
-                                      variableName: 'QTY',
-                                      job: {
-                                        tasks: [
-                                          {
-                                            jupiterSwapTask: {
-                                              inTokenAddress: USDC_MINT,
-                                              outTokenAddress: baseTokenPk,
-                                              baseAmountString: swapValue,
-                                            },
-                                          },
-                                        ],
-                                      },
-                                    },
-                                  ],
-                                },
-                              },
-                              {
-                                jupiterSwapTask: {
-                                  inTokenAddress: baseTokenPk,
-                                  outTokenAddress: USDC_MINT,
-                                  baseAmountString: '${QTY}',
-                                },
-                              },
-                              {
-                                divideTask: {
-                                  big: '${QTY}',
-                                },
-                              },
-                            ],
-                            onFailure: onFailureTaskDesc,
-                          },
-                        },
-                        {
-                          conditionalTask: {
-                            attempt: [
-                              {
-                                multiplyTask: {
-                                  job: {
-                                    tasks: [
-                                      {
-                                        oracleTask: {
-                                          pythAddress: pythUsdOracle,
-                                          pythAllowedConfidenceInterval: 10,
-                                        },
-                                      },
-                                    ],
-                                  },
-                                },
-                              },
-                            ],
-                            onFailure: [
-                              {
-                                multiplyTask: {
-                                  job: {
-                                    tasks: [
-                                      {
-                                        oracleTask: {
-                                          switchboardAddress:
-                                            switchboardUsdDaoOracle,
-                                        },
-                                      },
-                                    ],
-                                  },
-                                },
-                              },
-                            ],
-                          },
-                        },
-                      ],
-                    }),
+                  : OracleJob.fromYaml(
+                      !isSolPool
+                        ? tokenInUsdcOutUsdcPool(
+                            baseTokenPk,
+                            swapValue!,
+                            poolAddress!,
+                            poolPropertyName,
+                          )
+                        : isReversePool
+                        ? tokenInUsdcOutReversedSolPool(
+                            baseTokenPk,
+                            swapValue!,
+                            poolAddress!,
+                            poolPropertyName,
+                          )
+                        : tokenInUsdcOutSolPool(
+                            baseTokenPk,
+                            swapValue!,
+                            poolAddress!,
+                            poolPropertyName,
+                          ),
+                    ),
               ).finish(),
             },
           ],
@@ -567,7 +306,7 @@ const CreateSwitchboardOracleModal = ({
     baseTokenPk,
     client.opts.multipleConnections,
     connection,
-    isPoolReversed,
+    isReversedPool,
     isSolPool,
     onClose,
     orcaPoolAddress,
