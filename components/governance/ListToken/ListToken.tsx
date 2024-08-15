@@ -175,6 +175,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
   const [raydiumPoolAddress, setRaydiumPoolAddress] = useState('')
   const [oracleModalOpen, setOracleModalOpen] = useState(false)
   const [isSolPool, setIsSolPool] = useState(false)
+  const [isReversedSolPool, setIsReversedSolPool] = useState(false)
   const presets = LISTING_PRESETS
   const [proposedPresetTargetAmount, setProposedProposedTargetAmount] =
     useState(0)
@@ -438,6 +439,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     tokenMint: PublicKey,
   ) => {
     setIsSolPool(false)
+    setIsReversedSolPool(false)
     const swaps = await handleGetRoutesWithFixedArgs(
       targetAmount ? targetAmount : 100,
       tokenMint,
@@ -478,7 +480,13 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
         if (bestSolPool?.dexId.includes('orca')) {
           setOrcaPoolAddress(bestSolPool.pairAddress)
         }
-        setIsSolPool(true)
+        if (bestSolPool) {
+          setIsSolPool(true)
+          setIsReversedSolPool(
+            bestSolPool.baseToken.address !== WRAPPED_SOL_MINT.toBase58(),
+          )
+        }
+
         return
       } catch (e) {
         console.log(e)
@@ -533,6 +541,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     setBaseTokenPrice(0)
     setIsLST(false)
     setIsSolPool(false)
+    setIsReversedSolPool(false)
   }
 
   const isFormValid = useCallback(
@@ -1243,6 +1252,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
                       isSolPool={isSolPool}
                       stakePoolAddress={lstStakePoolAddress}
                       tokenPrice={baseTokenPrice}
+                      isReversedPool={isReversedSolPool}
                     ></CreateSwitchboardOracleModal>
                   </li>
                 ) : null}

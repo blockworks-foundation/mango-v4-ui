@@ -10,7 +10,6 @@ import {
 import { OracleJob } from '@switchboard-xyz/common'
 import Button from '@components/shared/Button'
 import { MANGO_DAO_WALLET } from 'utils/governance/constants'
-import { USDC_MINT } from 'utils/constants'
 import { Connection, PublicKey } from '@solana/web3.js'
 import chunk from 'lodash/chunk'
 import { useTranslation } from 'next-i18next'
@@ -18,15 +17,12 @@ import { notify } from 'utils/notifications'
 import { isMangoError } from 'types'
 import { useCallback, useState } from 'react'
 import Loading from '@components/shared/Loading'
-import { WhirlpoolContext, buildWhirlpoolClient } from '@orca-so/whirlpools-sdk'
-import { LIQUIDITY_STATE_LAYOUT_V4 } from '@raydium-io/raydium-sdk'
 import {
   LISTING_PRESETS,
   LISTING_PRESETS_KEY,
   tierSwitchboardSettings,
   tierToSwitchboardJobSwapValue,
 } from '@blockworks-foundation/mango-v4-settings/lib/helpers/listingTools'
-import { WRAPPED_SOL_MINT } from '@metaplex-foundation/js'
 import { createComputeBudgetIx } from '@blockworks-foundation/mango-v4'
 import {
   LSTExactIn,
@@ -62,6 +58,7 @@ type BaseProps = ModalProps & {
   baseTokenName: string
   tierKey: LISTING_PRESETS_KEY
   isSolPool: boolean
+  isReversedPool: boolean
   stakePoolAddress: string
   tokenPrice: number
   onClose: (oraclePk?: PublicKey) => void
@@ -87,6 +84,7 @@ const CreateSwitchboardOracleModal = ({
   tierKey,
   tokenPrice,
   isSolPool,
+  isReversedPool,
   stakePoolAddress,
 }: RaydiumProps | OrcaProps) => {
   const { t } = useTranslation(['governance'])
@@ -96,29 +94,7 @@ const CreateSwitchboardOracleModal = ({
   const quoteTokenName = 'USD'
 
   const [creatingOracle, setCreatingOracle] = useState(false)
-
-  const isPoolReversed = useCallback(
-    async (type: 'orca' | 'raydium', poolPk: string, baseMint: string) => {
-      if (type === 'orca') {
-        const context = WhirlpoolContext.from(
-          connection,
-          wallet as never,
-          new PublicKey('whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'),
-        )
-        const whirlPoolClient = buildWhirlpoolClient(context)
-        const whirlpool = await whirlPoolClient.getPool(new PublicKey(poolPk))
-        return whirlpool.getTokenAInfo().mint.toBase58() == baseMint || false
-      }
-      if (type === 'raydium') {
-        const info = await connection.getAccountInfo(new PublicKey(poolPk))
-        const poolState = LIQUIDITY_STATE_LAYOUT_V4.decode(info!.data)
-        return poolState.baseMint.toBase58() === baseMint || false
-      }
-      return false
-    },
-    [connection, wallet],
-  )
-
+  console.log(isSolPool, isReversedPool)
   const create = useCallback(async () => {
     try {
       const swapValue = tierToSwitchboardJobSwapValue[tierKey]
@@ -131,13 +107,7 @@ const CreateSwitchboardOracleModal = ({
         ? 'orcaPoolAddress'
         : 'raydiumPoolAddress'
       const poolAddress = orcaPoolAddress ? orcaPoolAddress : raydiumPoolAddress
-      const isReversePool = !stakePoolAddress
-        ? await isPoolReversed(
-            orcaPoolAddress ? 'orca' : 'raydium',
-            poolAddress!,
-            !isSolPool ? USDC_MINT : WRAPPED_SOL_MINT.toBase58(),
-          )
-        : false
+      const isReversePool = !stakePoolAddress ? isReversedPool : false
 
       const program = await SwitchboardProgram.load(connection)
 
@@ -164,7 +134,7 @@ const CreateSwitchboardOracleModal = ({
           authority: payer,
           crankDataBuffer: crankAccount.dataBuffer?.publicKey,
           crankPubkey: crankAccount.publicKey,
-          fundAmount: settingFromLib.fundAmount,
+          fundAmount: 0,
           slidingWindow: true,
           disableCrank: false,
           maxPriorityFeeMultiplier: 2,
@@ -187,21 +157,21 @@ const CreateSwitchboardOracleModal = ({
                         ? usdcInTokenOutUsdcPool(
                             baseTokenPk,
                             swapValue!,
-                            poolPropertyName,
                             poolAddress!,
+                            poolPropertyName,
                           )
                         : isReversePool
                         ? usdcInTokenOutReversedSolPool(
                             baseTokenPk,
                             swapValue!,
-                            poolPropertyName,
                             poolAddress!,
+                            poolPropertyName,
                           )
                         : usdcInTokenOutSolPool(
                             baseTokenPk,
                             swapValue!,
-                            poolPropertyName,
                             poolAddress!,
+                            poolPropertyName,
                           ),
                     ),
               ).finish(),
@@ -221,21 +191,21 @@ const CreateSwitchboardOracleModal = ({
                         ? tokenInUsdcOutUsdcPool(
                             baseTokenPk,
                             swapValue!,
-                            poolPropertyName,
                             poolAddress!,
+                            poolPropertyName,
                           )
                         : isReversePool
                         ? tokenInUsdcOutReversedSolPool(
                             baseTokenPk,
                             swapValue!,
-                            poolPropertyName,
                             poolAddress!,
+                            poolPropertyName,
                           )
                         : tokenInUsdcOutSolPool(
                             baseTokenPk,
                             swapValue!,
-                            poolPropertyName,
                             poolAddress!,
+                            poolPropertyName,
                           ),
                     ),
               ).finish(),
@@ -336,7 +306,7 @@ const CreateSwitchboardOracleModal = ({
     baseTokenPk,
     client.opts.multipleConnections,
     connection,
-    isPoolReversed,
+    isReversedPool,
     isSolPool,
     onClose,
     orcaPoolAddress,

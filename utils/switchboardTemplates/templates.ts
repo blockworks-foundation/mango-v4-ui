@@ -100,12 +100,20 @@ export const usdcInTokenOutUsdcPool = (
     onFailure:
     - lpExchangeRateTask:
         ${poolName}: ${poolAddress}
-    - multiplyTask:
-        job:
-          tasks:
-          - oracleTask:
-              pythAddress: ${pythSolOracle}
-              pythAllowedConfidenceInterval: 10
+    - conditionalTask:
+          attempt:
+          - multiplyTask:
+              job:
+                tasks:
+                - oracleTask:
+                    pythAddress: ${pythSolOracle}
+                    pythAllowedConfidenceInterval: 10
+          onFailure:
+          - multiplyTask:
+              job:
+                tasks:
+                - oracleTask:
+                    switchboardAddress: ${switchboardSolOracle}
 - conditionalTask:
     attempt:
     - multiplyTask:
@@ -193,12 +201,20 @@ export const usdcInTokenOutReversedSolPool = (
           tasks:
           - lpExchangeRateTask:
               ${poolName}: ${poolAddress}
-    - multiplyTask:
-        job:
-          tasks:
-          - oracleTask:
-              pythAddress: ${pythSolOracle}
-              pythAllowedConfidenceInterval: 10
+    - conditionalTask:
+          attempt:
+          - multiplyTask:
+              job:
+                tasks:
+                - oracleTask:
+                    pythAddress: ${pythSolOracle}
+                    pythAllowedConfidenceInterval: 10
+          onFailure:
+          - multiplyTask:
+              job:
+                tasks:
+                - oracleTask:
+                    switchboardAddress: ${switchboardSolOracle}
 - conditionalTask:
     attempt:
     - multiplyTask:
@@ -248,12 +264,20 @@ export const tokenInUsdcOutReversedSolPool = (
           tasks:
           - lpExchangeRateTask:
               ${poolName}: ${poolAddress}
-    - multiplyTask:
-        job:
-          tasks:
-          - oracleTask:
-              pythAddress: ${pythSolOracle}
-              pythAllowedConfidenceInterval: 10
+    - conditionalTask:
+          attempt:
+          - multiplyTask:
+              job:
+                tasks:
+                - oracleTask:
+                    pythAddress: ${pythSolOracle}
+                    pythAllowedConfidenceInterval: 10
+          onFailure:
+          - multiplyTask:
+              job:
+                tasks:
+                - oracleTask:
+                    switchboardAddress: ${switchboardSolOracle}
 - conditionalTask:
     attempt:
     - multiplyTask:
@@ -292,12 +316,20 @@ export const usdcInTokenOutSolPool = (
     onFailure:
     - lpExchangeRateTask:
         ${poolName}: ${poolAddress}
-    - multiplyTask:
-        job:
-          tasks:
-          - oracleTask:
-              pythAddress: ${pythSolOracle}
-              pythAllowedConfidenceInterval: 10
+    - conditionalTask:
+          attempt:
+          - multiplyTask:
+              job:
+                tasks:
+                - oracleTask:
+                    pythAddress: ${pythSolOracle}
+                    pythAllowedConfidenceInterval: 10
+          onFailure:
+          - multiplyTask:
+              job:
+                tasks:
+                - oracleTask:
+                    switchboardAddress: ${switchboardSolOracle}
 - conditionalTask:
     attempt:
     - multiplyTask:
@@ -342,12 +374,20 @@ export const tokenInUsdcOutSolPool = (
     onFailure:
     - lpExchangeRateTask:
         ${poolName}: ${poolAddress}
-    - multiplyTask:
-        job:
-          tasks:
-          - oracleTask:
-              pythAddress: ${pythSolOracle}
-              pythAllowedConfidenceInterval: 10
+    - conditionalTask:
+          attempt:
+          - multiplyTask:
+              job:
+                tasks:
+                - oracleTask:
+                    pythAddress: ${pythSolOracle}
+                    pythAllowedConfidenceInterval: 10
+          onFailure:
+          - multiplyTask:
+              job:
+                tasks:
+                - oracleTask:
+                    switchboardAddress: ${switchboardSolOracle}
 - conditionalTask:
     attempt:
     - multiplyTask:
