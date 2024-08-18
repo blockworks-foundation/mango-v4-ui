@@ -94,7 +94,7 @@ const CreateSwitchboardOracleModal = ({
   const quoteTokenName = 'USD'
 
   const [creatingOracle, setCreatingOracle] = useState(false)
-  console.log(isSolPool, isReversedPool)
+
   const create = useCallback(async () => {
     try {
       const swapValue = tierToSwitchboardJobSwapValue[tierKey]
@@ -134,7 +134,7 @@ const CreateSwitchboardOracleModal = ({
           authority: payer,
           crankDataBuffer: crankAccount.dataBuffer?.publicKey,
           crankPubkey: crankAccount.publicKey,
-          fundAmount: 0,
+          fundAmount: settingFromLib.fundAmount,
           slidingWindow: true,
           disableCrank: false,
           maxPriorityFeeMultiplier: 2,
