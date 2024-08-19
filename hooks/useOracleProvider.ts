@@ -38,6 +38,11 @@ export const getOracleProvider = (
         'Pyth',
         `https://pyth.network/price-feeds/crypto-${name.toLowerCase()}-usd`,
       ]
+    case OracleProvider.PythV2:
+      return [
+        'Pyth',
+        `https://pyth.network/price-feeds/crypto-${name.toLowerCase()}-usd`,
+      ]
     case OracleProvider.Switchboard:
       return [
         'Switchboard',
