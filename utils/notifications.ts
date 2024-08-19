@@ -11,7 +11,7 @@ import {
   Transaction,
   TransactionInstruction,
 } from '@solana/web3.js'
-import { IDL } from '@blockworks-foundation/mango-v4'
+import { IDL, tryStringify } from '@blockworks-foundation/mango-v4'
 import * as sentry from '@sentry/nextjs'
 
 export type TransactionNotification = {
@@ -51,11 +51,11 @@ export function notify(newNotification: {
     : INITIAL_SOUND_SETTINGS
   if (newNotification.type === 'error' && !newNotification.noSentry) {
     sentry.captureException(
-      `${{
+      tryStringify({
         title: newNotification.title,
         description: newNotification.description,
         txid: newNotification.txid,
-      }}`,
+      }),
       {
         tags: {
           origin: 'userAlert',

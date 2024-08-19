@@ -2,7 +2,7 @@ import mangoStore from '@store/mangoStore'
 import { OrderbookL2, isMangoError } from 'types'
 import { notify } from './notifications'
 import * as sentry from '@sentry/nextjs'
-import { Bank } from '@blockworks-foundation/mango-v4'
+import { Bank, tryStringify } from '@blockworks-foundation/mango-v4'
 
 export const calculateLimitPriceForMarketOrder = (
   orderBook: OrderbookL2,
@@ -182,7 +182,9 @@ export const handlePlaceTriggerOrder = async (
       await actions.reloadMangoAccount(tx?.slot)
     } catch (e) {
       console.error('onSwap error: ', e)
-      sentry.captureException(`${e}`)
+      sentry.captureException(
+        tryStringify({ e }) ? tryStringify({ e }) : `${e}`,
+      )
       if (isMangoError(e)) {
         notify({
           title: 'Transaction failed',

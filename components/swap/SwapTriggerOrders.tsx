@@ -32,6 +32,7 @@ import SideBadge from '@components/shared/SideBadge'
 import { Disclosure, Transition } from '@headlessui/react'
 import SheenLoader from '@components/shared/SheenLoader'
 import { formatTokenSymbol } from 'utils/tokens'
+import { tryStringify } from '@blockworks-foundation/mango-v4'
 
 export const handleCancelTriggerOrder = async (
   id: BN,
@@ -65,7 +66,7 @@ export const handleCancelTriggerOrder = async (
       await actions.reloadMangoAccount(slot)
     } catch (e) {
       console.error('failed to cancel swap order', e)
-      sentry.captureException(`${{ e, txid }}`)
+      sentry.captureException(tryStringify({ e, txid }))
       if (isMangoError(e)) {
         notify({
           title: 'Transaction failed',
@@ -77,7 +78,7 @@ export const handleCancelTriggerOrder = async (
       }
     }
   } catch (e) {
-    sentry.captureException(`${{ e }}`)
+    sentry.captureException(tryStringify({ e }) ? tryStringify({ e }) : `${e}`)
     console.error('failed to cancel trigger order', e)
   } finally {
     if (setCancelId) {
@@ -112,7 +113,7 @@ export const handleCancelAll = async (
       await actions.reloadMangoAccount(slot)
     } catch (e) {
       console.error('failed to cancel trigger orders', e)
-      sentry.captureException(`${{ e, txid }}`)
+      sentry.captureException(tryStringify({ e, txid }))
       if (isMangoError(e)) {
         notify({
           title: 'Transaction failed',
@@ -124,7 +125,7 @@ export const handleCancelAll = async (
       }
     }
   } catch (e) {
-    sentry.captureException(`${{ e }}`)
+    sentry.captureException(tryStringify({ e }) ? tryStringify({ e }) : `${e}`)
     console.error('failed to cancel swap order', e)
   } finally {
     setCancelId('')

@@ -56,6 +56,7 @@ import {
   Bank,
   TransactionErrors,
   parseTxForKnownErrors,
+  tryStringify,
 } from '@blockworks-foundation/mango-v4'
 import CircularProgress from '@components/shared/CircularProgress'
 import {
@@ -428,7 +429,9 @@ const SwapReviewRouteInfo = ({
       })
       actions.fetchWalletTokens(wallet.publicKey)
     } catch (e) {
-      sentry.captureException(`${{ e, txid, origin: selectedRoute.origin }}`)
+      sentry.captureException(
+        tryStringify({ e, txid, origin: selectedRoute.origin }),
+      )
       console.log('error swapping wallet tokens', e)
     } finally {
       setSubmitting(false)
@@ -543,7 +546,9 @@ const SwapReviewRouteInfo = ({
           'onSwapError',
         )
         console.error('onSwap error: ', e)
-        sentry.captureException(`${{ e, tx, origin: selectedRoute.origin }}`)
+        sentry.captureException(
+          tryStringify({ e, tx, origin: selectedRoute.origin }),
+        )
         if (isMangoError(e)) {
           const slippageExceeded = await parseTxForKnownErrors(
             connection,
@@ -602,7 +607,7 @@ const SwapReviewRouteInfo = ({
         setSubmitting(false)
       }
     } catch (e) {
-      sentry.captureException(`${{ e, origin: selectedRoute.origin }}`)
+      sentry.captureException(tryStringify({ e, origin: selectedRoute.origin }))
       console.error('Swap error:', e)
     } finally {
       if (!directRouteFallbackUsed) {

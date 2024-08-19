@@ -25,6 +25,7 @@ import {
   Serum3Market,
   TransactionErrors,
   parseTxForKnownErrors,
+  tryStringify,
 } from '@blockworks-foundation/mango-v4'
 import Decimal from 'decimal.js'
 import { notify } from 'utils/notifications'
@@ -318,7 +319,7 @@ export default function SpotMarketOrderSwapForm() {
       })
     } catch (e) {
       console.error('onSwap error: ', e)
-      sentry.captureException(`${{ e, txid }}`)
+      sentry.captureException(tryStringify({ e, txid }))
       if (isMangoError(e)) {
         const slippageExceeded = await parseTxForKnownErrors(
           connection,

@@ -8,6 +8,7 @@ import {
   Serum3OrderType,
   Serum3SelfTradeBehavior,
   Serum3Side,
+  tryStringify,
 } from '@blockworks-foundation/mango-v4'
 import Checkbox from '@components/forms/Checkbox'
 import Tooltip from '@components/shared/Tooltip'
@@ -800,7 +801,7 @@ const AdvancedTradeForm = () => {
       }
     } catch (e) {
       console.error('Place trade error:', e)
-      sentry.captureException(`${{ e, txid }}`)
+      sentry.captureException(tryStringify({ e, txid }))
       if (!isMangoError(e)) return
       notify({
         title: 'There was an issue.',
