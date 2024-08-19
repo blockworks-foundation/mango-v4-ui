@@ -51,11 +51,11 @@ export function notify(newNotification: {
     : INITIAL_SOUND_SETTINGS
   if (newNotification.type === 'error' && !newNotification.noSentry) {
     sentry.captureException(
-      {
+      `${{
         title: newNotification.title,
         description: newNotification.description,
         txid: newNotification.txid,
-      },
+      }}`,
       {
         tags: {
           origin: 'userAlert',

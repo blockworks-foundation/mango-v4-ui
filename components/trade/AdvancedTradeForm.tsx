@@ -800,7 +800,7 @@ const AdvancedTradeForm = () => {
       }
     } catch (e) {
       console.error('Place trade error:', e)
-      sentry.captureException({ e, txid })
+      sentry.captureException(`${{ e, txid }}`)
       if (!isMangoError(e)) return
       notify({
         title: 'There was an issue.',

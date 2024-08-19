@@ -65,7 +65,7 @@ export const handleCancelTriggerOrder = async (
       await actions.reloadMangoAccount(slot)
     } catch (e) {
       console.error('failed to cancel swap order', e)
-      sentry.captureException({ e, txid })
+      sentry.captureException(`${{ e, txid }}`)
       if (isMangoError(e)) {
         notify({
           title: 'Transaction failed',
@@ -77,7 +77,7 @@ export const handleCancelTriggerOrder = async (
       }
     }
   } catch (e) {
-    sentry.captureException({ e })
+    sentry.captureException(`${{ e }}`)
     console.error('failed to cancel trigger order', e)
   } finally {
     if (setCancelId) {
@@ -112,7 +112,7 @@ export const handleCancelAll = async (
       await actions.reloadMangoAccount(slot)
     } catch (e) {
       console.error('failed to cancel trigger orders', e)
-      sentry.captureException({ e, txid })
+      sentry.captureException(`${{ e, txid }}`)
       if (isMangoError(e)) {
         notify({
           title: 'Transaction failed',
@@ -124,7 +124,7 @@ export const handleCancelAll = async (
       }
     }
   } catch (e) {
-    sentry.captureException({ e })
+    sentry.captureException(`${{ e }}`)
     console.error('failed to cancel swap order', e)
   } finally {
     setCancelId('')

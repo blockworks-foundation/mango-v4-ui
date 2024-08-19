@@ -318,7 +318,7 @@ export default function SpotMarketOrderSwapForm() {
       })
     } catch (e) {
       console.error('onSwap error: ', e)
-      sentry.captureException({ e, txid })
+      sentry.captureException(`${{ e, txid }}`)
       if (isMangoError(e)) {
         const slippageExceeded = await parseTxForKnownErrors(
           connection,

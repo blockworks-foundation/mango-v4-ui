@@ -182,7 +182,7 @@ export const handlePlaceTriggerOrder = async (
       await actions.reloadMangoAccount(tx?.slot)
     } catch (e) {
       console.error('onSwap error: ', e)
-      sentry.captureException(e)
+      sentry.captureException(`${e}`)
       if (isMangoError(e)) {
         notify({
           title: 'Transaction failed',
