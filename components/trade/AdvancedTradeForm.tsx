@@ -801,7 +801,11 @@ const AdvancedTradeForm = () => {
       }
     } catch (e) {
       console.error('Place trade error:', e)
-      sentry.captureException(tryStringify({ e, txid }))
+      sentry.captureException(tryStringify({ e, txid }), {
+        tags: {
+          errorOrigin: 'AdvancedTradeForm',
+        },
+      })
       if (!isMangoError(e)) return
       notify({
         title: 'There was an issue.',

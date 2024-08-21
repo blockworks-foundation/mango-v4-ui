@@ -431,6 +431,11 @@ const SwapReviewRouteInfo = ({
     } catch (e) {
       sentry.captureException(
         tryStringify({ e, txid, origin: selectedRoute.origin }),
+        {
+          tags: {
+            errorOrigin: 'swapReviewRouteInfo',
+          },
+        },
       )
       console.log('error swapping wallet tokens', e)
     } finally {
@@ -548,6 +553,11 @@ const SwapReviewRouteInfo = ({
         console.error('onSwap error: ', e)
         sentry.captureException(
           tryStringify({ e, tx, origin: selectedRoute.origin }),
+          {
+            tags: {
+              errorOrigin: 'swapReviewRouteInfo',
+            },
+          },
         )
         if (isMangoError(e)) {
           const slippageExceeded = await parseTxForKnownErrors(
@@ -607,7 +617,14 @@ const SwapReviewRouteInfo = ({
         setSubmitting(false)
       }
     } catch (e) {
-      sentry.captureException(tryStringify({ e, origin: selectedRoute.origin }))
+      sentry.captureException(
+        tryStringify({ e, origin: selectedRoute.origin }),
+        {
+          tags: {
+            errorOrigin: 'swapReviewRouteInfo',
+          },
+        },
+      )
       console.error('Swap error:', e)
     } finally {
       if (!directRouteFallbackUsed) {

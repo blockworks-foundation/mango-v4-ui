@@ -66,7 +66,11 @@ export const handleCancelTriggerOrder = async (
       await actions.reloadMangoAccount(slot)
     } catch (e) {
       console.error('failed to cancel swap order', e)
-      sentry.captureException(tryStringify({ e, txid }))
+      sentry.captureException(tryStringify({ e, txid }), {
+        tags: {
+          errorOrigin: 'swapTriggerOrder',
+        },
+      })
       if (isMangoError(e)) {
         notify({
           title: 'Transaction failed',
@@ -78,7 +82,14 @@ export const handleCancelTriggerOrder = async (
       }
     }
   } catch (e) {
-    sentry.captureException(tryStringify({ e }) ? tryStringify({ e }) : `${e}`)
+    sentry.captureException(
+      tryStringify({ e }) ? tryStringify({ e }) : `${e}`,
+      {
+        tags: {
+          errorOrigin: 'swapTriggerOrder',
+        },
+      },
+    )
     console.error('failed to cancel trigger order', e)
   } finally {
     if (setCancelId) {
@@ -113,7 +124,11 @@ export const handleCancelAll = async (
       await actions.reloadMangoAccount(slot)
     } catch (e) {
       console.error('failed to cancel trigger orders', e)
-      sentry.captureException(tryStringify({ e, txid }))
+      sentry.captureException(tryStringify({ e, txid }), {
+        tags: {
+          errorOrigin: 'swapTriggerOrder',
+        },
+      })
       if (isMangoError(e)) {
         notify({
           title: 'Transaction failed',
@@ -125,7 +140,14 @@ export const handleCancelAll = async (
       }
     }
   } catch (e) {
-    sentry.captureException(tryStringify({ e }) ? tryStringify({ e }) : `${e}`)
+    sentry.captureException(
+      tryStringify({ e }) ? tryStringify({ e }) : `${e}`,
+      {
+        tags: {
+          errorOrigin: 'swapTriggerOrder',
+        },
+      },
+    )
     console.error('failed to cancel swap order', e)
   } finally {
     setCancelId('')

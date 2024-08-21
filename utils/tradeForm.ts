@@ -184,6 +184,11 @@ export const handlePlaceTriggerOrder = async (
       console.error('onSwap error: ', e)
       sentry.captureException(
         tryStringify({ e }) ? tryStringify({ e }) : `${e}`,
+        {
+          tags: {
+            errorOrigin: 'tradeForm',
+          },
+        },
       )
       if (isMangoError(e)) {
         notify({

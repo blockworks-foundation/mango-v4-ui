@@ -58,7 +58,7 @@ export function notify(newNotification: {
       }),
       {
         tags: {
-          origin: 'userAlert',
+          errorOrigin: 'userAlert',
         },
       },
     )
