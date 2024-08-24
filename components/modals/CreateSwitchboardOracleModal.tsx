@@ -27,11 +27,11 @@ import { createComputeBudgetIx } from '@blockworks-foundation/mango-v4'
 import {
   LSTExactIn,
   LSTExactOut,
-  tokenInUsdcOutReversedSolPool,
-  tokenInUsdcOutSolPool,
+  tokenInSolOutReversedSolPool,
+  tokenInSolOutSolPool,
   tokenInUsdcOutUsdcPool,
-  usdcInTokenOutReversedSolPool,
-  usdcInTokenOutSolPool,
+  solInTokenOutReversedSolPool,
+  solInTokenOutSolPool,
   usdcInTokenOutUsdcPool,
 } from 'utils/switchboardTemplates/templates'
 import {
@@ -51,6 +51,7 @@ const SWITCHBOARD_PERMISSIONLESS_QUE =
   '5JYwqvKkqp35w8Nq3ba4z1WYUeJQ1rB36V8XvaGp6zn1'
 const SWITCHBOARD_PERMISSIONLESS_CRANK =
   'BKtF8yyQsj3Ft6jb2nkfpEKzARZVdGgdEPs6mFmZNmbA'
+const SOL_PRICE = 100
 
 type BaseProps = ModalProps & {
   openbookMarketPk: string
@@ -161,15 +162,15 @@ const CreateSwitchboardOracleModal = ({
                             poolPropertyName,
                           )
                         : isReversePool
-                        ? usdcInTokenOutReversedSolPool(
+                        ? solInTokenOutReversedSolPool(
                             baseTokenPk,
-                            swapValue!,
+                            (Number(swapValue) / SOL_PRICE).toString(),
                             poolAddress!,
                             poolPropertyName,
                           )
-                        : usdcInTokenOutSolPool(
+                        : solInTokenOutSolPool(
                             baseTokenPk,
-                            swapValue!,
+                            (Number(swapValue) / SOL_PRICE).toString(),
                             poolAddress!,
                             poolPropertyName,
                           ),
@@ -195,15 +196,15 @@ const CreateSwitchboardOracleModal = ({
                             poolPropertyName,
                           )
                         : isReversePool
-                        ? tokenInUsdcOutReversedSolPool(
+                        ? tokenInSolOutReversedSolPool(
                             baseTokenPk,
-                            swapValue!,
+                            (Number(swapValue) / SOL_PRICE).toString(),
                             poolAddress!,
                             poolPropertyName,
                           )
-                        : tokenInUsdcOutSolPool(
+                        : tokenInSolOutSolPool(
                             baseTokenPk,
-                            swapValue!,
+                            (Number(swapValue) / SOL_PRICE).toString(),
                             poolAddress!,
                             poolPropertyName,
                           ),

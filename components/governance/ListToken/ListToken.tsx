@@ -420,7 +420,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
 
         setProposedProposedTargetAmount(targetAmount)
         setPriceImpact(midTierCheck ? midTierCheck.priceImpactPct * 100 : 100)
-        handleGetPoolParams(targetAmount, tokenMint)
+        handleGetPoolParams(tokenMint)
         return targetAmount
       } catch (e) {
         notify({
@@ -434,66 +434,47 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
     [t, handleGetRoutesWithFixedArgs],
   )
 
-  const handleGetPoolParams = async (
-    targetAmount: number,
-    tokenMint: PublicKey,
-  ) => {
+  const handleGetPoolParams = async (tokenMint: PublicKey) => {
     setIsSolPool(false)
     setIsReversedSolPool(false)
-    const swaps = await handleGetRoutesWithFixedArgs(
-      targetAmount ? targetAmount : 100,
-      tokenMint,
-      'ExactIn',
-      true,
+
+    const dex = await fetch(
+      `https://api.dexscreener.com/latest/dex/search?q=${tokenMint}`,
     )
+    const resp = await dex.json()
 
-    const swapInfos = swaps?.bestRoute?.routePlan?.map((x) => x.swapInfo)
-    const orcaPool = swapInfos?.find(
-      (x) =>
-        x.label?.toLowerCase().includes('orca') ||
-        x.label?.toLowerCase().includes('whirlpool'),
-    )
-    const raydiumPool = swapInfos?.find(
-      (x) => x.label?.toLowerCase().includes('raydium'),
-    )
-
-    if (!orcaPool?.ammKey && !raydiumPool?.ammKey) {
-      try {
-        const dex = await fetch(
-          `https://api.dexscreener.com/latest/dex/search?q=${tokenMint.toBase58()}`,
-        )
-        const resp = await dex.json()
-
-        if (!resp?.pairs?.length) {
-          return
-        }
-        const bestSolPool = resp.pairs.find(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (x: any) =>
-            x.quoteToken.address === WRAPPED_SOL_MINT.toBase58() ||
-            x.baseToken.address === WRAPPED_SOL_MINT.toBase58(),
-        )
-
-        if (bestSolPool?.dexId.includes('raydium')) {
-          setRaydiumPoolAddress(bestSolPool.pairAddress)
-        }
-        if (bestSolPool?.dexId.includes('orca')) {
-          setOrcaPoolAddress(bestSolPool.pairAddress)
-        }
-        if (bestSolPool) {
-          setIsSolPool(true)
-          setIsReversedSolPool(
-            bestSolPool.baseToken.address !== WRAPPED_SOL_MINT.toBase58(),
-          )
-        }
-
-        return
-      } catch (e) {
-        console.log(e)
-      }
+    if (!resp?.pairs?.length) {
+      return
     }
-    setOrcaPoolAddress(orcaPool?.ammKey || '')
-    setRaydiumPoolAddress(raydiumPool?.ammKey || '')
+
+    const pairs = resp.pairs.filter(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (x: any) => x.dexId.includes('raydium') || x.dexId.includes('orca'),
+    )
+
+    const bestPool = pairs.find(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (x: any) =>
+        x.quoteToken.address === USDC_MINT ||
+        x.quoteToken.address === WRAPPED_SOL_MINT ||
+        x.baseToken.address === WRAPPED_SOL_MINT,
+    )
+
+    if (bestPool.quoteToken.address === WRAPPED_SOL_MINT) {
+      setIsSolPool(true)
+    }
+
+    if (bestPool.baseToken.address === WRAPPED_SOL_MINT) {
+      setIsSolPool(true)
+      setIsReversedSolPool(true)
+    }
+
+    if (bestPool?.dexId.includes('raydium')) {
+      setRaydiumPoolAddress(bestPool.pairAddress || '')
+    }
+    if (bestPool?.dexId.includes('orca')) {
+      setOrcaPoolAddress(bestPool.pairAddress || '')
+    }
   }
 
   const handleTokenFind = useCallback(async () => {
