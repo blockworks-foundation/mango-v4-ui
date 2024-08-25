@@ -51,7 +51,7 @@ const SWITCHBOARD_PERMISSIONLESS_QUE =
   '5JYwqvKkqp35w8Nq3ba4z1WYUeJQ1rB36V8XvaGp6zn1'
 const SWITCHBOARD_PERMISSIONLESS_CRANK =
   'BKtF8yyQsj3Ft6jb2nkfpEKzARZVdGgdEPs6mFmZNmbA'
-const SOL_PRICE = 100
+const SOL_PRICE = 140
 
 type BaseProps = ModalProps & {
   openbookMarketPk: string
