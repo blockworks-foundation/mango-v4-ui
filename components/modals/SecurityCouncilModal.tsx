@@ -98,6 +98,7 @@ const SecurityCouncilModal = ({
           null,
           null,
           null,
+          '',
         )
         .accounts({
           group: group!.publicKey,

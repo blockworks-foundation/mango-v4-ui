@@ -209,6 +209,7 @@ const DashboardSuggestedValues = ({
             : fieldsToChange.disableAssetLiquidation,
           getNullOrVal(fieldsToChange.collateralFeePerDay),
           null,
+          '',
         )
         .accounts({
           group: group!.publicKey,
