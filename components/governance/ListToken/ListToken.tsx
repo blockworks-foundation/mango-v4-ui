@@ -643,6 +643,7 @@ const ListToken = ({ goBack }: { goBack: () => void }) => {
               ? 0.000027396999939810485
               : proposedPreset.collateralFeePerDay,
           ),
+          '',
         )
         .accounts({
           fallbackOracle: PublicKey.default,
