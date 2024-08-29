@@ -401,10 +401,10 @@
     bn.js "^5.2.1"
     eslint-config-prettier "^9.0.0"
 
-"@blockworks-foundation/mango-v4@0.33.2":
-  version "0.33.2"
-  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.33.2.tgz#74684fc21b892e89cd7283fbb9f036ad9c7a02ce"
-  integrity sha512-Xw1rr2iIhaSiLZuFOmykUI6s6U82L1nctoWy4E4SOYOylpyMer1uzts56nEz5Rvsh1VyhiK42zzQoQYTpXWX3A==
+"@blockworks-foundation/mango-v4@0.33.4":
+  version "0.33.4"
+  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-v4/-/mango-v4-0.33.4.tgz#11f17eb066e1e3456f93b67e67b2920ee9a2872c"
+  integrity sha512-ASsxGYoXTFIYx2ougn9OseUi/y8Vd+KZJ4tFknhB8VtfV8RQ8iTcDVaaVhyZ6zfLJ2D0JBcwFS/DIfY7kzQKug==
   dependencies:
     "@blockworks-foundation/mango-v4-settings" "0.14.24"
     "@blockworks-foundation/mangolana" "0.1.0"
@@ -418,7 +418,7 @@
     "@solana/spl-token" "0.4.8"
     "@solana/web3.js" "^1.95.2"
     "@switchboard-xyz/common" "^2.4.4"
-    "@switchboard-xyz/on-demand" "^1.2.20"
+    "@switchboard-xyz/on-demand" "^1.2.38"
     "@switchboard-xyz/sbv2-lite" "^0.1.6"
     "@switchboard-xyz/solana.js" "^3.2.5"
     big.js "^6.1.1"
@@ -3823,7 +3823,7 @@
     protobufjs "^7.2.6"
     yaml "^2.5.0"
 
-"@switchboard-xyz/on-demand@^1.2.20":
+"@switchboard-xyz/on-demand@^1.2.38":
   version "1.2.38"
   resolved "https://registry.yarnpkg.com/@switchboard-xyz/on-demand/-/on-demand-1.2.38.tgz#de368176a89b05c365d916c5cb419e1cf918acf3"
   integrity sha512-BaZc78dDbmofJmk60SD0dDsf953rnQ9MaTeUrFyn8Z0zRiu79hTJMeKisKbC/pOCG7EMpZZRF/sqXujRfG6QFw==
