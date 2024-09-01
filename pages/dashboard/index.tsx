@@ -5,6 +5,7 @@ import {
   PriceImpact,
   OracleProvider,
   toUiDecimalsForQuote,
+  Group,
 } from '@blockworks-foundation/mango-v4'
 import ExplorerLink from '@components/shared/ExplorerLink'
 import { BorshAccountsCoder } from '@coral-xyz/anchor'
@@ -387,7 +388,8 @@ const Dashboard: NextPage = () => {
                             />
                             <KeyValuePair
                               label="Stable Price"
-                              value={`$${group.toUiPrice(
+                              value={`$${Group.toUiPrice(
+                                group,
                                 I80F48.fromNumber(
                                   perpMarket.stablePriceModel.stablePrice,
                                 ),
@@ -811,7 +813,8 @@ const BankDisclosure = ({
     const subId = connection.onAccountChange(
       bank.oracle,
       async (info, context) => {
-        const { lastUpdatedSlot } = await group.decodePriceFromOracleAi(
+        const { lastUpdatedSlot } = await Group.decodePriceFromOracleAi(
+          group,
           coder,
           bank.oracle,
           info,

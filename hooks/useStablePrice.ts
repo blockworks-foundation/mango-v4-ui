@@ -1,4 +1,4 @@
-import { I80F48, PerpMarket } from '@blockworks-foundation/mango-v4'
+import { Group, I80F48, PerpMarket } from '@blockworks-foundation/mango-v4'
 import { useMemo } from 'react'
 import useMangoGroup from './useMangoGroup'
 import useSelectedMarket from './useSelectedMarket'
@@ -22,11 +22,13 @@ const useStablePrice = () => {
         (b) => b.tokenIndex === selectedMarket.quoteTokenIndex,
       )
 
-      const baseStablePrice = group.toUiPrice(
+      const baseStablePrice = Group.toUiPrice(
+        group,
         I80F48.fromNumber(baseBank!.stablePriceModel.stablePrice),
         baseBank!.mintDecimals,
       )
-      const quoteStablePrice = group.toUiPrice(
+      const quoteStablePrice = Group.toUiPrice(
+        group,
         I80F48.fromNumber(quoteBank!.stablePriceModel.stablePrice),
         quoteBank!.mintDecimals,
       )
