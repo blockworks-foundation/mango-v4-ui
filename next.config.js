@@ -19,6 +19,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'images.ctfassets.net/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'step-public.s3.eu-north-1.amazonaws.com',
+      },
     ],
   },
   reactStrictMode: true,
