@@ -642,6 +642,10 @@ const Dashboard: NextPage = () => {
                               }
                             />
                             <KeyValuePair
+                              label="Token Index"
+                              value={market.marketIndex}
+                            />
+                            <KeyValuePair
                               label="Base Token Index"
                               value={market.baseTokenIndex}
                             />
