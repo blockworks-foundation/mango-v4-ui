@@ -353,7 +353,8 @@ export const getFormattedBankValues = (group: Group, bank: Bank) => {
     publicKey: bank.publicKey.toBase58(),
     vault: bank.vault.toBase58(),
     oracle: bank.oracle.toBase58(),
-    stablePrice: group.toUiPrice(
+    stablePrice: Group.toUiPrice(
+      group,
       I80F48.fromNumber(bank.stablePriceModel.stablePrice),
       bank.mintDecimals,
     ),
