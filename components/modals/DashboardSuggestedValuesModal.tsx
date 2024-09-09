@@ -79,6 +79,172 @@ const DashboardSuggestedValues = ({
     setForcePythOracle(bank?.oracleProvider === OracleProvider.Pyth)
   }, [bank.oracleProvider])
 
+  const proposeChanges = async () => {
+    const toRetier = [
+      { name: 'RLB', tier: 'D' },
+      { name: 'stSOL', tier: 'D' },
+      { name: 'LDO', tier: 'D' },
+      { name: 'EURC', tier: 'D' },
+      { name: 'NEON', tier: 'D' },
+      { name: 'RAY', tier: 'AA' },
+      { name: 'W', tier: 'AA' },
+      { name: 'PYTH', tier: 'AA' },
+      { name: 'MEW', tier: 'AA' },
+      { name: 'BONK', tier: 'AAA' },
+      { name: 'ETH (Portal)', tier: 'AAA' },
+      { name: 'WIF', tier: 'AAA' },
+      { name: 'wBTC (Portal)', tier: 'AAA' },
+      { name: 'TBTC', tier: 'AAA' },
+      { name: 'BLZE', tier: 'C' },
+      { name: 'GOFX', tier: 'C' },
+      { name: 'SOL', tier: 'S' },
+      { name: 'JitoSOL', tier: 'S' },
+      { name: 'USDT', tier: 'S' },
+      { name: 'MSOL', tier: 'S' },
+      { name: 'USDC', tier: 'S' },
+      { name: 'JLP', tier: 'S' },
+      { name: 'bSOL', tier: 'S' },
+      { name: 'INF', tier: 'S' },
+      { name: 'ZEUS', tier: 'A' },
+      { name: 'JSOL', tier: 'A' },
+      { name: 'POPCAT', tier: 'A' },
+      { name: 'DAI', tier: 'A' },
+      { name: 'DRIFT', tier: 'AA' },
+      { name: 'MOTHER', tier: 'AA' },
+      { name: 'USDY', tier: 'AA' },
+      { name: 'hubSOL', tier: 'AAA' },
+      { name: 'dualSOL', tier: 'AAA' },
+      { name: 'digitSOL', tier: 'AAA' },
+      { name: 'mangoSOL', tier: 'AAA' },
+      { name: 'compassSOL', tier: 'AAA' },
+      { name: 'stepSOL', tier: 'AAA' },
+      { name: 'Moutai', tier: 'C' },
+      { name: 'DUAL', tier: 'C' },
+      { name: 'META', tier: 'C' },
+      { name: 'GUAC', tier: 'C' },
+      { name: 'CORN', tier: 'C' },
+      { name: 'USDH', tier: 'C' },
+      { name: 'SLCL', tier: 'C' },
+      { name: 'MNGO', tier: 'C' },
+      { name: 'GECKO', tier: 'C' },
+      { name: 'ELON', tier: 'C' },
+      { name: 'GME', tier: 'C' },
+      { name: 'BILLY', tier: 'C' },
+      { name: 'DEAN', tier: 'C' },
+      { name: 'LNGCAT', tier: 'C' },
+      { name: 'OPOS', tier: 'D' },
+      { name: 'CROWN', tier: 'D' },
+      { name: 'ALL-OLD', tier: 'D' },
+      { name: 'KIN', tier: 'D' },
+      { name: 'CHAI', tier: 'S' },
+    ]
+    console.log(toRetier.length)
+    const proposalTx = []
+    for (const token of toRetier) {
+      const bank = group!.banksMapByName.get(token.name)
+      if (!bank) {
+        console.log('no token')
+        throw 'noo token'
+      }
+      const mintInfo = group!.mintInfosMapByMint.get(bank[0].mint.toBase58())!
+      if (!mintInfo) {
+        console.log('no mint info')
+        throw 'no mintinfo'
+      }
+
+      const ix = await client!.program.methods
+        .tokenEdit(
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          false,
+          false,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          //do not edit of interest curve scaling
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          false,
+          false,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          token.tier,
+        )
+        .accounts({
+          group: group!.publicKey,
+          fallbackOracle: PublicKey.default,
+          oracle: bank[0]!.oracle!,
+          admin: MANGO_DAO_WALLET,
+          mintInfo: mintInfo.publicKey,
+        })
+        .remainingAccounts([
+          {
+            pubkey: bank[0].publicKey!,
+            isWritable: true,
+            isSigner: false,
+          } as AccountMeta,
+        ])
+        .instruction()
+      proposalTx.push(ix)
+    }
+    try {
+      const walletSigner = wallet as never
+
+      const index = proposals ? Object.values(proposals).length : 0
+      const proposalAddress = await createProposal(
+        connection,
+        client,
+        walletSigner,
+        MANGO_DAO_WALLET_GOVERNANCE,
+        voter.tokenOwnerRecord!,
+        `Edit tokens tier params`,
+        '',
+        index,
+        proposalTx,
+        vsrClient!,
+        fee,
+      )
+      window.open(
+        `https://dao.mango.markets/dao/MNGO/proposal/${proposalAddress.toBase58()}`,
+        '_blank',
+      )
+    } catch (e) {
+      notify({
+        title: 'Error during proposal creation',
+        description: `${e}`,
+        type: 'error',
+      })
+    }
+  }
+
   const proposeNewSuggestedValues = useCallback(
     async (
       bank: Bank,
@@ -679,6 +845,7 @@ const DashboardSuggestedValues = ({
             >
               {proposing ? <Loading></Loading> : 'Propose new suggested values'}
             </Button>
+            <Button onClick={proposeChanges}>proposeChanges</Button>
           </div>
         )}
       </div>

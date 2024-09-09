@@ -28,6 +28,14 @@ import {
   MangoClient,
 } from '@blockworks-foundation/mango-v4'
 import { sendTxAndConfirm } from '../tools'
+import {
+  SequenceType,
+  TransactionInstructionWithSigners,
+} from '@blockworks-foundation/mangolana/lib/globalTypes'
+import {
+  sendSignAndConfirmTransactions,
+  TransactionInstructionWithType,
+} from '@blockworks-foundation/mangolana/lib/transactions'
 
 export const createProposal = async (
   connection: Connection,
@@ -139,20 +147,35 @@ export const createProposal = async (
     undefined,
   )
 
-  const txChunks = chunk([...instructions, ...insertInstructions], 2)
-
   const transactions: Transaction[] = []
   const latestBlockhash = await connection.getLatestBlockhash('processed')
 
-  for (const chunk of txChunks) {
-    const tx = new Transaction()
-    tx.add(createComputeBudgetIx(fee))
-    tx.add(...chunk)
-    tx.lastValidBlockHeight = latestBlockhash.lastValidBlockHeight
-    tx.recentBlockhash = latestBlockhash.blockhash
-    tx.feePayer = payer
-    transactions.push(tx)
-  }
+  const transactionInstructions: TransactionInstructionWithType[] = []
+  chunk([...instructions, ...insertInstructions], 2).map((chunkInstructions) =>
+    transactionInstructions.push({
+      instructionsSet: [
+        new TransactionInstructionWithSigners(createComputeBudgetIx(80000)),
+        ...chunkInstructions.map(
+          (inst) => new TransactionInstructionWithSigners(inst),
+        ),
+      ],
+      sequenceType: SequenceType.Sequential,
+    }),
+  )
+
+  await sendSignAndConfirmTransactions({
+    connection,
+    wallet: wallet,
+    backupConnections: [],
+    transactionInstructions: transactionInstructions,
+    config: {
+      maxTxesInBatch: 10,
+      maxRetries: 3,
+      autoRetry: true,
+      logFlowInfo: true,
+      useVersionedTransactions: true,
+    },
+  })
   const signedTransactions = await wallet.signAllTransactions(transactions)
   for (const tx of signedTransactions) {
     await sendTxAndConfirm(
