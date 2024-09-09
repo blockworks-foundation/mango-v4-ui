@@ -151,7 +151,7 @@ export const createProposal = async (
   const latestBlockhash = await connection.getLatestBlockhash('processed')
 
   const transactionInstructions: TransactionInstructionWithType[] = []
-  chunk([...instructions, ...insertInstructions], 2).map((chunkInstructions) =>
+  chunk([...instructions], 2).map((chunkInstructions) =>
     transactionInstructions.push({
       instructionsSet: [
         new TransactionInstructionWithSigners(createComputeBudgetIx(80000)),
@@ -162,7 +162,18 @@ export const createProposal = async (
       sequenceType: SequenceType.Sequential,
     }),
   )
-
+  chunk([...insertInstructions], 1).map((chunkInstructions) =>
+    transactionInstructions.push({
+      instructionsSet: [
+        new TransactionInstructionWithSigners(createComputeBudgetIx(80000)),
+        ...chunkInstructions.map(
+          (inst) => new TransactionInstructionWithSigners(inst),
+        ),
+      ],
+      sequenceType: SequenceType.Sequential,
+    }),
+  )
+  console.log(transactionInstructions)
   await sendSignAndConfirmTransactions({
     connection,
     wallet: wallet,

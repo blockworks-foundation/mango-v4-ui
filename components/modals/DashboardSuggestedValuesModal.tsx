@@ -81,67 +81,26 @@ const DashboardSuggestedValues = ({
 
   const proposeChanges = async () => {
     const toRetier = [
-      { name: 'RLB', tier: 'D' },
-      { name: 'stSOL', tier: 'D' },
-      { name: 'LDO', tier: 'D' },
-      { name: 'EURC', tier: 'D' },
-      { name: 'NEON', tier: 'D' },
-      { name: 'RAY', tier: 'AA' },
-      { name: 'W', tier: 'AA' },
-      { name: 'PYTH', tier: 'AA' },
-      { name: 'MEW', tier: 'AA' },
-      { name: 'BONK', tier: 'AAA' },
-      { name: 'ETH (Portal)', tier: 'AAA' },
-      { name: 'WIF', tier: 'AAA' },
-      { name: 'wBTC (Portal)', tier: 'AAA' },
-      { name: 'TBTC', tier: 'AAA' },
-      { name: 'BLZE', tier: 'C' },
-      { name: 'GOFX', tier: 'C' },
-      { name: 'SOL', tier: 'S' },
-      { name: 'JitoSOL', tier: 'S' },
-      { name: 'USDT', tier: 'S' },
-      { name: 'MSOL', tier: 'S' },
-      { name: 'USDC', tier: 'S' },
-      { name: 'JLP', tier: 'S' },
-      { name: 'bSOL', tier: 'S' },
-      { name: 'INF', tier: 'S' },
-      { name: 'ZEUS', tier: 'A' },
-      { name: 'JSOL', tier: 'A' },
-      { name: 'POPCAT', tier: 'A' },
-      { name: 'DAI', tier: 'A' },
-      { name: 'DRIFT', tier: 'AA' },
-      { name: 'MOTHER', tier: 'AA' },
-      { name: 'USDY', tier: 'AA' },
-      { name: 'hubSOL', tier: 'AAA' },
-      { name: 'dualSOL', tier: 'AAA' },
-      { name: 'digitSOL', tier: 'AAA' },
-      { name: 'mangoSOL', tier: 'AAA' },
-      { name: 'compassSOL', tier: 'AAA' },
-      { name: 'stepSOL', tier: 'AAA' },
-      { name: 'Moutai', tier: 'C' },
-      { name: 'DUAL', tier: 'C' },
-      { name: 'META', tier: 'C' },
-      { name: 'GUAC', tier: 'C' },
-      { name: 'CORN', tier: 'C' },
-      { name: 'USDH', tier: 'C' },
-      { name: 'SLCL', tier: 'C' },
-      { name: 'MNGO', tier: 'C' },
-      { name: 'GECKO', tier: 'C' },
-      { name: 'ELON', tier: 'C' },
-      { name: 'GME', tier: 'C' },
-      { name: 'BILLY', tier: 'C' },
-      { name: 'DEAN', tier: 'C' },
-      { name: 'LNGCAT', tier: 'C' },
-      { name: 'OPOS', tier: 'D' },
-      { name: 'CROWN', tier: 'D' },
-      { name: 'ALL-OLD', tier: 'D' },
-      { name: 'KIN', tier: 'D' },
-      { name: 'CHAI', tier: 'S' },
+      { token_name: 'MNDE', tier: 'A', collateral_fee: '15' },
+      { token_name: 'SAMO', tier: 'A-', collateral_fee: '40' },
+      { token_name: 'TNSR', tier: 'AA', collateral_fee: '15' },
+      { token_name: 'ORCA', tier: 'AA', collateral_fee: '15' },
+      { token_name: 'RENDER', tier: 'AA', collateral_fee: '8' },
+      { token_name: 'HNT', tier: 'AA', collateral_fee: '15' },
+      { token_name: 'WEN', tier: 'AA', collateral_fee: '40' },
+      { token_name: 'KMNO', tier: 'AA', collateral_fee: '20' },
+      { token_name: 'JUP', tier: 'AAA', collateral_fee: '8' },
+      { token_name: 'JTO', tier: 'AAA', collateral_fee: '15' },
+      { token_name: 'STEP', tier: 'A', collateral_fee: '15' },
+      { token_name: 'NOS', tier: 'A', collateral_fee: '35' },
+      { token_name: 'PUPS', tier: 'A-', collateral_fee: '' },
+      { token_name: 'SLERF', tier: 'AA', collateral_fee: '' },
+      { token_name: 'BOME', tier: 'AA', collateral_fee: '' },
     ]
     console.log(toRetier.length)
     const proposalTx = []
     for (const token of toRetier) {
-      const bank = group!.banksMapByName.get(token.name)
+      const bank = group!.banksMapByName.get(token.token_name)
       if (!bank) {
         console.log('no token')
         throw 'noo token'
@@ -152,51 +111,152 @@ const DashboardSuggestedValues = ({
         throw 'no mintinfo'
       }
 
+      const preset = getPresetWithAdjustedDepositLimit(
+        getPresetWithAdjustedNetBorrows(
+          Object.values(PRESETS).find((x) => x.preset_name === token.tier)!,
+          bank[0].uiDeposits(),
+          bank[0].uiPrice,
+          toUiDecimals(
+            Object.values(PRESETS).find((x) => x.preset_name === token.tier)!
+              .netBorrowLimitPerWindowQuote,
+            6,
+          ),
+        ),
+        bank[0].uiPrice,
+        bank[0].mintDecimals,
+      )
+
+      const formattedBankValues1 = getFormattedBankValues(group, bank[0])
+      const suggestedFormattedPreset1 = formatSuggestedValues(preset)
+
+      type SuggestedFormattedPreset = typeof suggestedFormattedPreset1
+
+      const invalidKeys: (keyof SuggestedFormattedPreset)[] = Object.keys(
+        suggestedValues,
+      ).length
+        ? compareObjectsAndGetDifferentKeys<SuggestedFormattedPreset>(
+            formattedBankValues1,
+            suggestedFormattedPreset1,
+          ).filter(
+            (x: string) =>
+              suggestedFormattedPreset1[x as keyof SuggestedFormattedPreset] !==
+                undefined &&
+              suggestedFormattedPreset1[x as keyof SuggestedFormattedPreset] !==
+                null,
+          )
+        : []
+
+      const fieldsToChange = invalidKeys.reduce(
+        (obj, key) => ({ ...obj, [key]: preset[key as keyof typeof preset] }),
+        {},
+      ) as Partial<typeof preset>
+
+      const oracleConfFilter =
+        fieldsToChange.oracleConfFilter === undefined
+          ? null
+          : fieldsToChange.oracleConfFilter
+      const maxStalenessSlots =
+        (fieldsToChange.maxStalenessSlots as number | string) === '' ||
+        fieldsToChange.maxStalenessSlots === -1
+          ? null
+          : fieldsToChange.maxStalenessSlots
+
+      const isThereNeedOfSendingOracleConfig =
+        bank[0].oracleConfig.confFilter.toNumber() !== oracleConfFilter ||
+        bank[0].oracleConfig.maxStalenessSlots.toNumber() !== maxStalenessSlots
+      const rateConfigs = {
+        adjustmentFactor: getNullOrVal(fieldsToChange.adjustmentFactor),
+        util0: getNullOrVal(fieldsToChange.util0),
+        rate0: getNullOrVal(fieldsToChange.rate0),
+        util1: getNullOrVal(fieldsToChange.util1),
+        rate1: getNullOrVal(fieldsToChange.rate1),
+        maxRate: getNullOrVal(fieldsToChange.maxRate),
+      }
+
+      const isThereNeedOfSendingRateConfigs = Object.values(rateConfigs).filter(
+        (x) => x !== null,
+      ).length
       const ix = await client!.program.methods
         .tokenEdit(
+          oracle ? tryGetPubKey(oracle) : null,
+          isThereNeedOfSendingOracleConfig
+            ? {
+                confFilter:
+                  fieldsToChange.oracleConfFilter === undefined
+                    ? bank[0].oracleConfig.confFilter.toNumber()
+                    : fieldsToChange.oracleConfFilter,
+                maxStalenessSlots:
+                  fieldsToChange.maxStalenessSlots === undefined
+                    ? bank[0].oracleConfig.maxStalenessSlots.toNumber() === -1
+                      ? null
+                      : bank[0].oracleConfig.maxStalenessSlots.toNumber()
+                    : fieldsToChange.maxStalenessSlots === -1
+                    ? null
+                    : fieldsToChange.maxStalenessSlots,
+              }
+            : null,
+          fieldsToChange.groupInsuranceFund === undefined
+            ? null
+            : fieldsToChange.groupInsuranceFund,
+          isThereNeedOfSendingRateConfigs
+            ? {
+                adjustmentFactor:
+                  fieldsToChange.adjustmentFactor ||
+                  bank[0].adjustmentFactor.toNumber(),
+                util0: fieldsToChange.util0 || bank[0].util0.toNumber(),
+                rate0: fieldsToChange.rate0 || bank[0].rate0.toNumber(),
+                util1: fieldsToChange.util1 || bank[0].util1.toNumber(),
+                rate1: fieldsToChange.rate1 || bank[0].rate1.toNumber(),
+                maxRate: fieldsToChange.maxRate || bank[0].maxRate.toNumber(),
+              }
+            : null,
+          token.collateral_fee ? Number(token.collateral_fee) / 100 : null,
+          getNullOrVal(fieldsToChange.loanOriginationFeeRate),
+          getNullOrVal(fieldsToChange.maintAssetWeight),
+          getNullOrVal(fieldsToChange.initAssetWeight),
+          getNullOrVal(fieldsToChange.maintLiabWeight),
+          getNullOrVal(fieldsToChange.initLiabWeight),
+          getNullOrVal(fieldsToChange.liquidationFee),
           null,
           null,
           null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
+          getNullOrVal(fieldsToChange.minVaultToDepositsRatio),
+          getNullOrVal(fieldsToChange.netBorrowLimitPerWindowQuote)
+            ? new BN(fieldsToChange.netBorrowLimitPerWindowQuote!)
+            : null,
+          getNullOrVal(fieldsToChange.netBorrowLimitWindowSizeTs)
+            ? new BN(fieldsToChange.netBorrowLimitWindowSizeTs!)
+            : null,
+          getNullOrVal(fieldsToChange.borrowWeightScaleStartQuote),
+          getNullOrVal(fieldsToChange.depositWeightScaleStartQuote),
           false,
           false,
+          getNullOrVal(fieldsToChange.reduceOnly),
           null,
           null,
-          null,
-          null,
-          null,
+          getNullOrVal(fieldsToChange.tokenConditionalSwapTakerFeeRate),
+          getNullOrVal(fieldsToChange.tokenConditionalSwapMakerFeeRate),
           null,
           //do not edit of interest curve scaling
           null,
-          null,
+          getNullOrVal(fieldsToChange.interestTargetUtilization),
           null,
           null,
           null,
           null,
           false,
           false,
+          getNullOrVal(fieldsToChange.depositLimit) !== null
+            ? new BN(fieldsToChange.depositLimit!.toString())
+            : null,
+          getNullOrVal(fieldsToChange.zeroUtilRate),
+          getNullOrVal(fieldsToChange.platformLiquidationFee),
+          false,
+          token.collateral_fee
+            ? Number(token.collateral_fee) / 100 / 365
+            : null,
           null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          token.tier,
+          preset.preset_name,
         )
         .accounts({
           group: group!.publicKey,
@@ -213,6 +273,7 @@ const DashboardSuggestedValues = ({
           } as AccountMeta,
         ])
         .instruction()
+
       proposalTx.push(ix)
     }
     try {
@@ -225,7 +286,7 @@ const DashboardSuggestedValues = ({
         walletSigner,
         MANGO_DAO_WALLET_GOVERNANCE,
         voter.tokenOwnerRecord!,
-        `Edit tokens tier params`,
+        `Edit tokens tier params 2`,
         '',
         index,
         proposalTx,
