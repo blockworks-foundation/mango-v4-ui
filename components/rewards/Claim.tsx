@@ -37,7 +37,6 @@ import { Prize, getClaimsAsPrizes } from './RewardsComponents'
 import { notify } from 'utils/notifications'
 import { sleep } from 'utils'
 import { createComputeBudgetIx } from '@blockworks-foundation/mango-v4'
-import SendTweetModal from './SendTweetModal'
 import { LITE_RPC_URL } from '@components/settings/RpcSettings'
 
 const CLAIM_BUTTON_CLASSES =
@@ -62,8 +61,8 @@ const RewardsComponent = dynamic(() => import('./RewardsComponents'), {
 
 const ClaimPage = () => {
   const [isClaiming, setIsClaiming] = useState(false)
-  const [showTweetModal, setShowTweetModal] = useState(false)
-  const [hasSeenTweetModal, setHasSeenTweetModal] = useState(false)
+  // const [showTweetModal, setShowTweetModal] = useState(false)
+  // const [hasSeenTweetModal, setHasSeenTweetModal] = useState(false)
   const [claimProgress, setClaimProgress] = useState(0)
   const [distribution, setDistribution] = useState<Distribution | undefined>(
     undefined,
@@ -179,10 +178,10 @@ const ClaimPage = () => {
     }
   }, [claims, handleTokenMetadata])
 
-  const handleShowTweetModal = () => {
-    setShowTweetModal(true)
-    setHasSeenTweetModal(true)
-  }
+  // const handleShowTweetModal = () => {
+  //   setShowTweetModal(true)
+  //   setHasSeenTweetModal(true)
+  // }
 
   const handleClaimRewards = useCallback(async () => {
     if (!distribution || !publicKey || !claims || !rewardsClient) return
@@ -315,9 +314,9 @@ const ClaimPage = () => {
     claimProgress,
   ])
 
-  const handleClaimButton = () => {
-    hasSeenTweetModal ? handleClaimRewards() : handleShowTweetModal()
-  }
+  // const handleClaimButton = () => {
+  //   hasSeenTweetModal ? handleClaimRewards() : handleShowTweetModal()
+  // }
 
   useEffect(() => {
     if (tokenRewardsInfo.length && claims?.length) {
@@ -363,9 +362,13 @@ const ClaimPage = () => {
                     >
                       <div className="p-4 sm:p-0">
                         <div className="relative mx-auto h-auto w-16 rounded-lg bg-[#2F3188] sm:w-20">
-                          <img className="rounded-lg" src={stencilUrl} />
+                          <img className="rounded-lg" src={stencilUrl} alt="" />
                           <div className="absolute left-1/2 top-1/2 flex h-[47px] w-[47px] -translate-x-1/2 -translate-y-1/2 items-center justify-center sm:h-[59px] sm:w-[59px]">
-                            <img className="rounded-md" src={itemUrl} />
+                            <img
+                              className="rounded-md"
+                              src={itemUrl}
+                              alt="Reward"
+                            />
                           </div>
                         </div>
                       </div>
@@ -391,7 +394,7 @@ const ClaimPage = () => {
             ) : (
               <>
                 <div className="mb-12 h-auto w-24">
-                  <img src="/images/rewards/chest.png" />
+                  <img src="/images/rewards/chest.png" alt="Reward chest" />
                 </div>
                 <div className="-mt-8 mb-6 text-center">
                   <h2 className="mb-1 font-rewards text-4xl tracking-wide text-white drop-shadow-[0_0_24px_rgba(0,0,0,1)] sm:text-6xl">
@@ -423,8 +426,8 @@ const ClaimPage = () => {
         ) : rewardsWasShown ? (
           <button
             className={CLAIM_BUTTON_CLASSES}
-            // onClick={() => handleClaimRewards()}
-            onClick={handleClaimButton}
+            onClick={() => handleClaimRewards()}
+            // onClick={handleClaimButton}
           >
             <span className="block text-th-fgd-1 group-hover:mt-1 group-active:mt-2">{`Claim ${
               claims!.length
@@ -446,12 +449,12 @@ const ClaimPage = () => {
             </span>
           </button>
         )}
-        {showTweetModal ? (
+        {/* {showTweetModal ? (
           <SendTweetModal
             isOpen={showTweetModal}
             onClose={() => setShowTweetModal(false)}
           />
-        ) : null}
+        ) : null} */}
       </div>
       <div
         className={`fixed bottom-0 left-0 right-0 top-0 z-[1000] ${
