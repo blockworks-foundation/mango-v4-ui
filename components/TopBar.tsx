@@ -7,6 +7,7 @@ import {
   DocumentDuplicateIcon,
   ExclamationTriangleIcon,
   EyeIcon,
+  TicketIcon,
 } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useTranslation } from 'next-i18next'
@@ -40,7 +41,6 @@ import Link from 'next/link'
 import FormatNumericValue from './shared/FormatNumericValue'
 import { useRouter } from 'next/router'
 import TopBarStore from '@store/topBarStore'
-import MedalIcon from './icons/MedalIcon'
 import BridgeModal from './modals/BridgeModal'
 import { useViewport } from 'hooks/useViewport'
 import { TOURS, startAccountTour } from 'utils/tours'
@@ -208,56 +208,32 @@ const TopBar = () => {
           ) : mangoAccountAddress ? (
             <Link href="/rewards" shallow={true}>
               <div className="flex h-[63px] items-center justify-between border-x border-th-bkg-3 bg-th-bkg-1 px-4 md:border-l-0">
-                {accountPointsAndRank?.rank ? (
-                  <div
-                    className={`relative hidden h-6 w-6 shrink-0 items-center justify-center rounded-full sm:flex ${
-                      accountPointsAndRank.rank < 4 ? '' : 'bg-th-bkg-3'
-                    } mr-2`}
-                  >
-                    <p
-                      className={`relative z-10 text-xs font-bold ${
-                        accountPointsAndRank.rank < 4
-                          ? 'text-th-bkg-1'
-                          : 'text-th-fgd-1'
-                      }`}
-                    >
-                      {accountPointsAndRank.rank}
-                    </p>
-                    {accountPointsAndRank.rank < 4 ? (
-                      <MedalIcon
-                        className="absolute"
-                        rank={accountPointsAndRank.rank}
-                      />
-                    ) : null}
-                  </div>
-                ) : loadingAccountPointsAndRank ? (
-                  <SheenLoader className="mr-2 hidden sm:block">
-                    <div className="h-6 w-6 bg-th-bkg-2" />
-                  </SheenLoader>
-                ) : null}
                 <div>
                   <span className="whitespace-nowrap font-bold text-th-fgd-2">
-                    <span className="hidden sm:inline">Rewards</span> Points
+                    <span className="hidden sm:inline">Rewards</span> Tickets
                   </span>
-                  {!loadingAccountPointsAndRank ? (
-                    <p className="bg-gradient-to-br from-yellow-400 to-red-400 bg-clip-text font-display text-base text-transparent">
-                      {accountPointsAndRank?.total_points ? (
-                        <FormatNumericValue
-                          value={accountPointsAndRank.total_points}
-                          decimals={0}
-                          roundUp
-                        />
-                      ) : wallet?.adapter.publicKey ? (
-                        0
-                      ) : (
-                        '–'
-                      )}
-                    </p>
-                  ) : (
-                    <SheenLoader className="mt-1.5">
-                      <div className="h-[18px] w-12 rounded-sm bg-th-bkg-3" />
-                    </SheenLoader>
-                  )}
+                  <div className="flex items-center">
+                    <TicketIcon className="mr-2 h-4 w-4 rotate-[-30deg] text-th-active" />
+                    {!loadingAccountPointsAndRank ? (
+                      <p className="font-display text-base text-th-fgd-1">
+                        {accountPointsAndRank?.total_points ? (
+                          <FormatNumericValue
+                            value={accountPointsAndRank.total_points}
+                            decimals={0}
+                            roundUp
+                          />
+                        ) : wallet?.adapter.publicKey ? (
+                          0
+                        ) : (
+                          '–'
+                        )}
+                      </p>
+                    ) : (
+                      <SheenLoader className="mt-1.5">
+                        <div className="h-[18px] w-12 rounded-sm bg-th-bkg-3" />
+                      </SheenLoader>
+                    )}
+                  </div>
                 </div>
                 <ChevronRightIcon className="ml-2 h-6 w-6 text-th-fgd-4" />
               </div>
