@@ -235,6 +235,7 @@ export type MangoStore = {
     }
   }
   mangoAccounts: MangoAccount[]
+  mangoAccountsLevStake: MangoAccount[]
   markets: Serum3Market[] | undefined
   transactionNotificationIdCounter: number
   transactionNotifications: Array<TransactionNotification>
@@ -416,6 +417,7 @@ const mangoStore = create<MangoStore>()(
         tradeHistory: { data: [], loading: true },
       },
       mangoAccounts: [],
+      mangoAccountsLevStake: [],
       markets: undefined,
       transactionNotificationIdCounter: 0,
       transactionNotifications: [],
@@ -683,11 +685,16 @@ const mangoStore = create<MangoStore>()(
               client.getMangoAccountsForDelegate(group, ownerPk),
             ])
 
-            const mangoAccounts = [
+            const allMangoAccounts = [
               ...ownerMangoAccounts,
               ...delegateAccounts,
-            ].filter(
+            ]
+
+            const mangoAccounts = allMangoAccounts.filter(
               (acc) => hasLevCloseInUrl || !acc.name.includes('Leverage Stake'),
+            )
+            const mangoAccountsLevStake = allMangoAccounts.filter(
+              (acc) => !hasLevCloseInUrl && acc.name.includes('Leverage Stake'),
             )
             const selectedAccountIsNotInAccountsList = mangoAccounts.find(
               (x) =>
@@ -734,6 +741,7 @@ const mangoStore = create<MangoStore>()(
 
             set((state) => {
               state.mangoAccounts = mangoAccounts
+              state.mangoAccountsLevStake = mangoAccountsLevStake
             })
           } catch (e) {
             console.error('Error fetching mango accts', e)

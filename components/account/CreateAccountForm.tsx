@@ -66,7 +66,10 @@ const CreateAccountForm = ({
   const handleNewAccount = useCallback(async () => {
     const client = mangoStore.getState().client
     const group = mangoStore.getState().group
-    const existingMangoAccts = mangoStore.getState().mangoAccounts
+    const existingMangoAccts = [
+      ...mangoStore.getState().mangoAccounts,
+      ...mangoStore.getState().mangoAccountsLevStake,
+    ]
     const set = mangoStore.getState().set
     const connection = mangoStore.getState().connection
 
