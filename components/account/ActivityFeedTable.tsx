@@ -275,8 +275,9 @@ export const getValue = (activity: any, mangoAccountAddress: string) => {
     value = isTaker ? notional + fee : notional - fee
   }
   if (activity_type === 'openbook_trade') {
-    const { price, size } = activity.activity_details
-    value = price * size
+    const { price, side, size } = activity.activity_details
+    const flip = side === 'sell' ? -1 : 1
+    value = price * size * flip
   }
   if (activity_type === 'loan_origination_fee') {
     const { price, fee } = activity.activity_details
@@ -534,7 +535,13 @@ const SharedTableBody = ({
         {value > 0 && activity_type !== 'swap' && !isOpenbook && !isExpandable
           ? '+'
           : ''}
-        <FormatNumericValue value={value} isUsd />
+        <FormatNumericValue
+          value={value}
+          isUsd={fee.symbol === 'USDC' || !isOpenbook}
+        />
+        {isOpenbook && fee.symbol !== 'USDC' ? (
+          <span className="font-body text-th-fgd-3"> {fee.symbol}</span>
+        ) : null}
       </Td>
     </>
   )

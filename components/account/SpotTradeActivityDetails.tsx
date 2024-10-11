@@ -68,7 +68,13 @@ const SpotTradeActivityDetails = ({
       <div className="col-span-1">
         <p className="mb-0.5 font-body text-sm text-th-fgd-3">{t('value')}</p>
         <p className="font-mono text-th-fgd-1">
-          <FormatNumericValue value={notional} isUsd />
+          <FormatNumericValue
+            value={notional}
+            isUsd={quote_symbol === 'USDC'}
+          />
+          {quote_symbol !== 'USDC' ? (
+            <span className="font-body text-th-fgd-3"> {quote_symbol}</span>
+          ) : null}
         </p>
       </div>
       <div className="col-span-1">

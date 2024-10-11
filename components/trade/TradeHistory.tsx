@@ -21,7 +21,6 @@ import {
 } from '@heroicons/react/20/solid'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
-import mangoStore from '@store/mangoStore'
 import dayjs from 'dayjs'
 import useMangoAccount from 'hooks/useMangoAccount'
 import useSelectedMarket from 'hooks/useSelectedMarket'
@@ -37,10 +36,11 @@ import TableMarketName from './TableMarketName'
 import { useSortableData } from 'hooks/useSortableData'
 import { useCallback } from 'react'
 import { useHiddenMangoAccounts } from 'hooks/useHiddenMangoAccounts'
+import useMangoGroup from 'hooks/useMangoGroup'
 
 const TradeHistory = ({ filterForMarket }: { filterForMarket?: boolean }) => {
   const { t } = useTranslation(['common', 'trade'])
-  const group = mangoStore.getState().group
+  const { group } = useMangoGroup()
   const { selectedMarket } = useSelectedMarket()
   const { mangoAccountAddress } = useMangoAccount()
   const {
@@ -58,12 +58,23 @@ const TradeHistory = ({ filterForMarket }: { filterForMarket?: boolean }) => {
     for (const trade of combinedTradeHistory) {
       const marketName = trade.market.name
       const value = trade.price * trade.size
+      // if (
+      //   trade.market instanceof Serum3Market &&
+      //   trade.market.quoteTokenIndex
+      // ) {
+      //   const quotePrice = group?.getFirstBankByTokenIndex(
+      //     trade.market.quoteTokenIndex,
+      //   )?.uiPrice
+      //   value = quotePrice ? value * quotePrice : 0
+      // }
       const sortTime = trade?.time
         ? trade.time
         : dayjs().format('YYYY-MM-DDTHH:mm:ss')
+
       const data = { ...trade, marketName, value, sortTime }
       formatted.push(data)
     }
+
     if (!filterForMarket) {
       return formatted
     } else {
@@ -154,6 +165,11 @@ const TradeHistory = ({ filterForMarket }: { filterForMarket?: boolean }) => {
                 const { side, price, market, size, feeCost, liquidity, value } =
                   trade
 
+                let quoteSymbol
+                if ('quote_symbol' in trade) {
+                  quoteSymbol = trade.quote_symbol
+                }
+
                 let counterpartyAddress = ''
                 if ('taker' in trade) {
                   counterpartyAddress =
@@ -183,7 +199,17 @@ const TradeHistory = ({ filterForMarket }: { filterForMarket?: boolean }) => {
                       <p>{price}</p>
                     </Td>
                     <Td className="text-right font-mono">
-                      <FormatNumericValue value={value} decimals={2} isUsd />
+                      <FormatNumericValue
+                        value={value}
+                        decimals={2}
+                        isUsd={!quoteSymbol || quoteSymbol === 'USDC'}
+                      />
+                      {quoteSymbol && quoteSymbol !== 'USDC' ? (
+                        <span className="font-body text-th-fgd-3">
+                          {' '}
+                          {quoteSymbol}
+                        </span>
+                      ) : null}
                     </Td>
                     <Td className="text-right">
                       <span className="font-mono">
