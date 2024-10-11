@@ -206,6 +206,7 @@ export const CUSTOM_TOKEN_ICONS: { [key: string]: boolean } = {
   slerf: true,
   sol: true,
   step: true,
+  stepsol: true,
   stsol: true,
   tbtc: true,
   tnsr: true,

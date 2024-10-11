@@ -9,7 +9,14 @@ import useMangoGroup from 'hooks/useMangoGroup'
 import useSelectedMarket from 'hooks/useSelectedMarket'
 import { useTranslation } from 'next-i18next'
 import Link from 'next/link'
-import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  ChangeEvent,
+  ReactNode,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import {
   countLeadingZeros,
   floorToDecimal,
@@ -42,14 +49,25 @@ import { isBankVisibleForUser } from 'utils/bank'
 import Decimal from 'decimal.js'
 import useMangoAccount from 'hooks/useMangoAccount'
 import { GRADIENT_TEXT } from '@components/explore/SpotTable'
+import Select from '@components/forms/Select'
+import Image from 'next/image'
 
 type Currencies = {
-  [key: string]: string
+  [key: string]: string | ReactNode
 }
 
 export const CURRENCY_SYMBOLS: Currencies = {
   'wBTC (Portal)': '₿',
   SOL: '◎',
+  stepSOL: (
+    <Image
+      className="inline"
+      src="/icons/stepsol.svg"
+      height={16}
+      width={16}
+      alt="stepSOL Logo"
+    />
+  ),
 }
 
 const MARKET_LINK_CLASSES =
@@ -204,7 +222,7 @@ const MarketSelectDropdown = () => {
               } ml-2 mt-0.5 h-6 w-6 shrink-0 text-th-fgd-2`}
             />
           </Popover.Button>
-          <Popover.Panel className="absolute -left-4 top-12 z-40 w-screen border-y border-th-bkg-3 bg-th-bkg-2 md:w-[580px] md:border-r">
+          <Popover.Panel className="absolute -left-4 top-12 z-40 w-screen border-y border-th-bkg-3 bg-th-bkg-1 md:w-[640px] md:border-r">
             <div className="border-b border-th-bkg-3">
               <TabButtons
                 activeValue={spotOrPerp}
@@ -216,7 +234,7 @@ const MarketSelectDropdown = () => {
                 fillWidth
               />
             </div>
-            <div className="thin-scroll h-[calc(100vh-188px)] overflow-auto py-3 md:max-h-[calc(100vh-215px)]">
+            <div className="thin-scroll h-[calc(100vh-208px)] overflow-auto py-3 md:h-[calc(100vh-188px)] ">
               {spotOrPerp === 'perp' && perpMarketsToShow.length ? (
                 <>
                   <div className="mb-2 grid grid-cols-3 border-b border-th-bkg-3 pb-1 pl-4 pr-14 text-xxs sm:grid-cols-4">
@@ -342,8 +360,8 @@ const MarketSelectDropdown = () => {
               ) : null}
               {spotOrPerp === 'spot' ? (
                 <>
-                  <div className="mb-3 flex items-center justify-between px-4">
-                    <div className="relative w-1/2">
+                  <div className="mb-3 flex items-center justify-between space-x-3 px-4">
+                    <div className="relative w-full sm:w-1/2">
                       <Input
                         className="h-8 pl-8"
                         type="text"
@@ -354,19 +372,20 @@ const MarketSelectDropdown = () => {
                       <MagnifyingGlassIcon className="absolute left-2 top-2 h-4 w-4" />
                     </div>
                     <div>
-                      {spotQuoteTokens.map((tab) => (
-                        <button
-                          className={`rounded-md px-2.5 py-1.5 text-sm font-medium focus-visible:bg-th-bkg-3 focus-visible:text-th-fgd-1 ${
-                            spotBaseFilter === tab
-                              ? 'bg-th-bkg-3 text-th-active md:hover:text-th-active'
-                              : 'text-th-fgd-3 md:hover:text-th-fgd-2'
-                          }`}
-                          onClick={() => setSpotBaseFilter(tab)}
-                          key={tab}
-                        >
-                          {t(tab)}
-                        </button>
-                      ))}
+                      <Select
+                        value={t(spotBaseFilter)}
+                        onChange={(token) => setSpotBaseFilter(token)}
+                        className="w-36"
+                        buttonClassName="!h-8 pt-0 pb-0"
+                      >
+                        {spotQuoteTokens.map((token) => (
+                          <Select.Option key={token} value={token}>
+                            <div className="flex w-full items-center justify-between">
+                              {t(token)}
+                            </div>
+                          </Select.Option>
+                        ))}
+                      </Select>
                     </div>
                   </div>
                   <div className="mb-2 grid grid-cols-3 border-b border-th-bkg-3 pb-1 pl-4 pr-14 text-xxs sm:grid-cols-4">
