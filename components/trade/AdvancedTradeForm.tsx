@@ -671,10 +671,11 @@ const AdvancedTradeForm = () => {
           }
         } catch (e) {
           //simple fallback if something go wrong
-          const maxSlippage = 0.025
           orderPrice =
             price *
-            (tradeForm.side === 'buy' ? 1 + maxSlippage : 1 - maxSlippage)
+            (tradeForm.side === 'buy'
+              ? 1 + MAX_PERP_SLIPPAGE
+              : 1 - MAX_PERP_SLIPPAGE)
         }
         notify({
           type: 'info',
@@ -817,7 +818,7 @@ const AdvancedTradeForm = () => {
     } finally {
       setPlacingOrder(false)
     }
-  }, [isFormValid, oraclePrice, soundSettings, tickDecimals])
+  }, [calcOrderPrice, isFormValid, poolIsPerpReadyForRefresh, soundSettings])
 
   const handleTriggerOrder = useCallback(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
