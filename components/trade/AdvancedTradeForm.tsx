@@ -191,7 +191,14 @@ const AdvancedTradeForm = () => {
   const perpBaseBankMint = useMemo(() => {
     const group = mangoStore.getState().group
     if (!group || !baseSymbol || selectedMarket instanceof Serum3Market) return
-    const bank = group.getFirstBankByName(baseSymbol)
+    let bankName = baseSymbol
+    if (baseSymbol === 'BTC') {
+      bankName = 'wBTC (Portal)'
+    }
+    if (baseSymbol === 'ETH') {
+      bankName = 'ETH (Portal)'
+    }
+    const bank = group.getFirstBankByName(bankName)
     return bank?.mint
   }, [baseSymbol, selectedMarket])
 
