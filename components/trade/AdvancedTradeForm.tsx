@@ -90,6 +90,22 @@ dayjs.extend(relativeTime)
 
 const set = mangoStore.getState().set
 
+const fetchLastPriceForMint = async (mint: string | undefined) => {
+  if (!mint) return 0
+  try {
+    const response = await fetch(
+      `https://api.mngo.cloud/traffic/v1/last-price?mints=${mint}`,
+    )
+    const { data } = await response.json()
+    if (data && data.length) {
+      return data[0]?.price
+    } else return 0
+  } catch (e) {
+    console.log('failed to fetch last price for mint', e)
+    return 0
+  }
+}
+
 export const successSound = new Howl({
   src: ['/sounds/swap-success.mp3'],
   volume: 0.5,
@@ -170,6 +186,21 @@ const AdvancedTradeForm = () => {
     const bank = group.getFirstBankByTokenIndex(selectedMarket.baseTokenIndex)
     return bank
   }, [selectedMarket])
+
+  // need this to query price from api to compare with market order price
+  const perpBaseBankMint = useMemo(() => {
+    const group = mangoStore.getState().group
+    if (!group || !baseSymbol || selectedMarket instanceof Serum3Market) return
+    let bankName = baseSymbol
+    if (baseSymbol === 'BTC') {
+      bankName = 'wBTC (Portal)'
+    }
+    if (baseSymbol === 'ETH') {
+      bankName = 'ETH (Portal)'
+    }
+    const bank = group.getFirstBankByName(bankName)
+    return bank?.mint
+  }, [baseSymbol, selectedMarket])
 
   const isInsured = useMemo(() => {
     if (selectedMarket instanceof Serum3Market) {
@@ -651,7 +682,7 @@ const AdvancedTradeForm = () => {
       tickDecimals,
     ],
   )
-  const calcOrderPrice = useCallback(
+  const calcPerpOrderPrice = useCallback(
     (price: number, orderbook: OrderbookL2) => {
       let orderPrice = price
       if (tradeForm.tradeType === 'Market') {
@@ -677,16 +708,10 @@ const AdvancedTradeForm = () => {
               ? 1 + MAX_PERP_SLIPPAGE
               : 1 - MAX_PERP_SLIPPAGE)
         }
-        notify({
-          type: 'info',
-          title: t('trade:max-slippage-price-notification', {
-            price: `$${orderPrice.toFixed(tickDecimals)}`,
-          }),
-        })
       }
       return orderPrice
     },
-    [oraclePrice, t, tickDecimals, tradeForm.side, tradeForm.tradeType],
+    [oraclePrice, tradeForm.side, tradeForm.tradeType],
   )
 
   const handleStandardOrder = useCallback(async () => {
@@ -759,7 +784,39 @@ const AdvancedTradeForm = () => {
             ? PerpOrderType.postOnly
             : PerpOrderType.limit
 
-        const orderPrice = calcOrderPrice(price, orderbook)
+        const orderPrice = calcPerpOrderPrice(price, orderbook)
+        if (tradeForm.tradeType === 'Market') {
+          const trafficApiPrice = await fetchLastPriceForMint(
+            perpBaseBankMint?.toString(),
+          )
+          if (!trafficApiPrice) {
+            notify({
+              type: 'error',
+              title: 'Unable to fetch reference price',
+              description: 'Try refreshing the page',
+            })
+            return
+          }
+          const stddev = Math.sqrt(
+            ((orderPrice - (orderPrice + trafficApiPrice) / 2) ** 2 +
+              (trafficApiPrice - (orderPrice + trafficApiPrice) / 2) ** 2) /
+              2,
+          )
+          if (stddev > 1) {
+            notify({
+              type: 'error',
+              title: 'Price outside limit',
+            })
+            return
+          }
+
+          notify({
+            type: 'info',
+            title: t('trade:max-slippage-price-notification', {
+              price: `$${orderPrice.toFixed(tickDecimals)}`,
+            }),
+          })
+        }
 
         const { signature: tx } = await client.perpPlaceOrder(
           group,
@@ -818,7 +875,15 @@ const AdvancedTradeForm = () => {
     } finally {
       setPlacingOrder(false)
     }
-  }, [calcOrderPrice, isFormValid, poolIsPerpReadyForRefresh, soundSettings])
+  }, [
+    calcPerpOrderPrice,
+    isFormValid,
+    poolIsPerpReadyForRefresh,
+    soundSettings,
+    perpBaseBankMint,
+    t,
+    tickDecimals,
+  ])
 
   const handleTriggerOrder = useCallback(() => {
     const mangoAccount = mangoStore.getState().mangoAccount.current
