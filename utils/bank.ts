@@ -9,7 +9,6 @@ export const isBankVisibleForUser = (
   return (
     bank.reduceOnly !== TOKEN_REDUCE_ONLY_OPTIONS.ENABLED ||
     (bank.reduceOnly === TOKEN_REDUCE_ONLY_OPTIONS.ENABLED &&
-      borrowedAmount !== 0 &&
-      balance !== 0)
+      (borrowedAmount !== 0 || balance !== 0))
   )
 }
