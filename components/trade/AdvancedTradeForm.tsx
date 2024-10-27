@@ -714,6 +714,13 @@ const AdvancedTradeForm = () => {
     [oraclePrice, tradeForm.side, tradeForm.tradeType],
   )
 
+  const percentagePriceDifference = (price1: number, price2: number) => {
+    const mean = (price1 + price2) / 2
+    const diff = Math.abs(price1 - price2)
+
+    return (diff / mean) * 100
+  }
+
   const handleStandardOrder = useCallback(async () => {
     const { client } = mangoStore.getState()
     const { group } = mangoStore.getState()
@@ -797,12 +804,11 @@ const AdvancedTradeForm = () => {
             })
             return
           }
-          const stddev = Math.sqrt(
-            ((orderPrice - (orderPrice + trafficApiPrice) / 2) ** 2 +
-              (trafficApiPrice - (orderPrice + trafficApiPrice) / 2) ** 2) /
-              2,
+          const priceDifferencePercentage = percentagePriceDifference(
+            orderPrice,
+            trafficApiPrice,
           )
-          if (stddev > 1) {
+          if (priceDifferencePercentage > MAX_PERP_SLIPPAGE * 100) {
             notify({
               type: 'error',
               title: 'Price outside limit',
