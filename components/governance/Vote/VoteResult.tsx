@@ -14,11 +14,11 @@ const VoteResults = ({ proposal, communityMint }: VoteResultsProps) => {
   const { t } = useTranslation(['governance'])
 
   const yesVoteCount = fmtTokenAmount(
-    proposal.getYesVoteCount() as BN,
+    proposal.getYesVoteCount() as unknown as BN,
     communityMint.decimals,
   )
   const noVoteCount = fmtTokenAmount(
-    proposal.getNoVoteCount() as BN,
+    proposal.getNoVoteCount() as unknown as BN,
     communityMint.decimals,
   )
   const totalVoteCount = yesVoteCount + noVoteCount

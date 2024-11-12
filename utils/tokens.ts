@@ -14,6 +14,29 @@ import {
   JsonMetadata,
 } from '@metaplex-foundation/js'
 import { safeRace } from '@solana/promises'
+import {
+  PhishingController,
+  PhishingControllerActions,
+} from '@metamask/phishing-controller'
+import { ControllerMessenger } from '@metamask/base-controller'
+
+function getRestrictedMessenger() {
+  const controllerMessenger = new ControllerMessenger<
+    PhishingControllerActions,
+    never
+  >()
+  const messenger = controllerMessenger.getRestricted({
+    name: 'PhishingController',
+    allowedActions: [],
+    allowedEvents: [],
+  })
+  return messenger
+}
+
+const phishingControllerMessenger = getRestrictedMessenger()
+const phishingController = new PhishingController({
+  messenger: phishingControllerMessenger,
+})
 
 export class TokenAccount {
   publicKey!: PublicKey
@@ -119,9 +142,14 @@ function loadNft(
 
 export async function getNFTsByOwner(owner: PublicKey, connection: Connection) {
   const metaplex = new Metaplex(connection)
-
-  const rawNfts = await metaplex.nfts().findAllByOwner({
-    owner,
+  await phishingController.maybeUpdateState()
+  const rawNfts = (
+    await metaplex.nfts().findAllByOwner({
+      owner,
+    })
+  ).filter((x) => {
+    const isUrlSafe = !phishingController.test(x.uri).result
+    return isUrlSafe
   })
 
   const nfts = await Promise.all(
