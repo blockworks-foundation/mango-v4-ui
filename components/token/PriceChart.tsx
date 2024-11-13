@@ -1,6 +1,6 @@
 import { Bank } from '@blockworks-foundation/mango-v4'
 import { useQuery } from '@tanstack/react-query'
-import { makeApiRequest } from 'apis/birdeye/helpers'
+import { makeApiRequest } from 'apis/traffic/helpers'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { useMemo, useState } from 'react'

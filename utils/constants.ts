@@ -41,7 +41,7 @@ export const GRID_LAYOUT_KEY = 'savedLayouts-0.2'
 
 export const NOTIFICATION_POSITION_KEY = 'notificationPosition-0.2'
 
-export const TRADE_CHART_UI_KEY = 'tradeChart-0.3'
+export const TRADE_CHART_UI_KEY = 'tradeChart-0.4'
 
 export const FAVORITE_MARKETS_KEY = 'favoriteMarkets-0.3'
 
@@ -253,3 +253,6 @@ export const MANGO_MAINNET_GROUP = new PublicKey(
 export const MAX_PERP_SLIPPAGE = 0.025
 
 export const COLLATERAL_FEE_KEY = 'collateral_fee_modal_v1'
+
+export const SOL_MINT = 'So11111111111111111111111111111111111111112'
+export const QUOTE_TOKEN_MINTS = [SOL_MINT, USDC_MINT]

@@ -1,4 +1,4 @@
-import { NEXT_PUBLIC_BIRDEYE_API_KEY } from 'apis/birdeye/helpers'
+import { NEXT_PUBLIC_BIRDEYE_API_KEY } from 'apis/traffic/helpers'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
 export default async function handler(
