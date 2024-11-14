@@ -718,15 +718,35 @@ const TradingViewChart = () => {
           ? mkt?.serumMarketExternal.toString()
           : mkt?.publicKey.toString()) || 'Loading'
 
+      const baseTokenBank =
+        mkt instanceof Serum3Market
+          ? mangoStore
+              .getState()
+              .group?.getFirstBankByTokenIndex(mkt.baseTokenIndex)
+          : mangoStore.getState().group?.getFirstBankByMint(WRAPPED_SOL_MINT)
+      const quoteTokenBank =
+        mkt instanceof Serum3Market
+          ? mangoStore
+              .getState()
+              .group?.getFirstBankByTokenIndex(mkt.quoteTokenIndex)
+          : mangoStore
+              .getState()
+              .group?.getFirstBankByMint(new PublicKey(USDC_MINT))
+
+      console.log(baseTokenBank, mkt, '@@@@@')
+
       const widgetOptions: ChartingLibraryWidgetOptions = {
         // debug: true,
         symbol: marketAddress,
-        datafeed: datafeed(
-          WRAPPED_SOL_MINT.toBase58(),
-          'SOL',
-          USDC_MINT,
-          'USDC',
-        ),
+        datafeed:
+          baseTokenBank && quoteTokenBank
+            ? datafeed(
+                baseTokenBank!.mint.toBase58(),
+                baseTokenBank!.name,
+                quoteTokenBank!.mint.toBase58(),
+                quoteTokenBank!.name,
+              )
+            : datafeed('', '', '', ''),
         interval:
           defaultProps.interval as ChartingLibraryWidgetOptions['interval'],
         container:
@@ -804,7 +824,7 @@ const TradingViewChart = () => {
         })
       })
     }
-  }, [theme, themeData, defaultProps, isMobile, userId])
+  }, [theme, themeData, defaultProps, isMobile, userId, selectedMarketName])
 
   // set a limit price from right click context menu
   useEffect(() => {

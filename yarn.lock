@@ -9925,11 +9925,6 @@ kleur@^3.0.3:
   resolved "https://registry.yarnpkg.com/kleur/-/kleur-3.0.3.tgz#a79c9ecc86ee1ce3fa6206d1216c501f147fc07e"
   integrity sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==
 
-klinecharts@8.6.3:
-  version "8.6.3"
-  resolved "https://registry.yarnpkg.com/klinecharts/-/klinecharts-8.6.3.tgz#9ff2c40e31d86ca0600abc5fb8bf546c61daf130"
-  integrity sha512-hGDtWiMNywEDneZFmt+vZ6tOYutCDWV5FPBcXcn7L8kGwe73Q5yJayk8UzP9pIQSBWyxswWIySKh/BVFA6GhuQ==
-
 language-subtag-registry@^0.3.20:
   version "0.3.23"
   resolved "https://registry.yarnpkg.com/language-subtag-registry/-/language-subtag-registry-0.3.23.tgz#23529e04d9e3b74679d70142df3fd2eb6ec572e7"
