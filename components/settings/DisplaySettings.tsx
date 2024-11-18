@@ -35,7 +35,7 @@ const NOTIFICATION_POSITIONS = [
   'top-right',
 ]
 
-const TRADING_CHARTS = ['custom', 'trading-view']
+const TRADING_CHARTS = ['trading-view']
 const TRADE_FORM_UI = ['slider', 'buttons']
 
 const LANGS = [

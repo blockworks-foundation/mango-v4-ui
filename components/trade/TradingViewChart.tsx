@@ -18,7 +18,11 @@ import {
 } from '@public/charting_library'
 import mangoStore from '@store/mangoStore'
 import { useViewport } from 'hooks/useViewport'
-import { SHOW_ORDER_LINES_KEY, TV_USER_ID_KEY } from 'utils/constants'
+import {
+  SHOW_ORDER_LINES_KEY,
+  TV_USER_ID_KEY,
+  USDC_MINT,
+} from 'utils/constants'
 import { COLORS } from 'styles/colors'
 import { useTranslation } from 'next-i18next'
 import { notify } from 'utils/notifications'
@@ -38,10 +42,10 @@ import {
   getDecimalCount,
 } from 'utils/numbers'
 import { BN } from '@coral-xyz/anchor'
-import Datafeed from 'apis/datafeed'
+import datafeed from 'apis/datafeed'
 // import PerpDatafeed from 'apis/mngo/datafeed'
 import { CombinedTradeHistory, isMangoError } from 'types'
-import { formatPrice } from 'apis/birdeye/helpers'
+import { formatPrice } from 'apis/traffic/helpers'
 import useTradeHistory from 'hooks/useTradeHistory'
 import dayjs from 'dayjs'
 import ModifyTvOrderModal from '@components/modals/ModifyTvOrderModal'
@@ -50,6 +54,7 @@ import { Transition } from '@headlessui/react'
 import useThemeWrapper from 'hooks/useThemeWrapper'
 import { handleCancelTriggerOrder } from '@components/swap/SwapTriggerOrders'
 import useAnalytics from 'hooks/useAnalytics'
+import { WRAPPED_SOL_MINT } from '@metaplex-foundation/js'
 
 export interface ChartContainerProps {
   container: ChartingLibraryWidgetOptions['container']
@@ -713,10 +718,35 @@ const TradingViewChart = () => {
           ? mkt?.serumMarketExternal.toString()
           : mkt?.publicKey.toString()) || 'Loading'
 
+      const baseTokenBank =
+        mkt instanceof Serum3Market
+          ? mangoStore
+              .getState()
+              .group?.getFirstBankByTokenIndex(mkt.baseTokenIndex)
+          : mangoStore.getState().group?.getFirstBankByMint(WRAPPED_SOL_MINT)
+      const quoteTokenBank =
+        mkt instanceof Serum3Market
+          ? mangoStore
+              .getState()
+              .group?.getFirstBankByTokenIndex(mkt.quoteTokenIndex)
+          : mangoStore
+              .getState()
+              .group?.getFirstBankByMint(new PublicKey(USDC_MINT))
+
+      console.log(baseTokenBank, mkt, '@@@@@')
+
       const widgetOptions: ChartingLibraryWidgetOptions = {
         // debug: true,
         symbol: marketAddress,
-        datafeed: Datafeed,
+        datafeed:
+          baseTokenBank && quoteTokenBank
+            ? datafeed(
+                baseTokenBank!.mint.toBase58(),
+                baseTokenBank!.name,
+                quoteTokenBank!.mint.toBase58(),
+                quoteTokenBank!.name,
+              )
+            : datafeed('', '', '', ''),
         interval:
           defaultProps.interval as ChartingLibraryWidgetOptions['interval'],
         container:
@@ -794,7 +824,7 @@ const TradingViewChart = () => {
         })
       })
     }
-  }, [theme, themeData, defaultProps, isMobile, userId])
+  }, [theme, themeData, defaultProps, isMobile, userId, selectedMarketName])
 
   // set a limit price from right click context menu
   useEffect(() => {

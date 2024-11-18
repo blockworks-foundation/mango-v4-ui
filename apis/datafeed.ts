@@ -1,63 +1,26 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { makeApiRequest, parseResolution } from './birdeye/helpers'
-import {
-  makeApiRequest as makePerpApiRequest,
-  parseResolution as parsePerpResolution,
-} from './mngo/helpers'
+import { parseResolution } from './traffic/helpers'
 import {
   closeSocket,
-  // isOpen,
+  isOpen,
   subscribeOnStream as subscribeOnSpotStream,
-} from './birdeye/streaming'
-import {
-  closeSocket as closePerpSocket,
-  // isOpen as isPerpOpen,
-  subscribeOnStream as subscribeOnPerpStream,
-  unsubscribeFromStream as unsubscribeFromPerpStream,
-} from './mngo/streaming'
-import mangoStore from '@store/mangoStore'
+} from './traffic/streaming'
 import {
   DatafeedConfiguration,
   LibrarySymbolInfo,
   ResolutionString,
   SearchSymbolResultItem,
 } from '@public/charting_library'
-import { PublicKey } from '@solana/web3.js'
-import {
-  Group,
-  PerpMarket,
-  Serum3Market,
-} from '@blockworks-foundation/mango-v4'
 
-export const SUPPORTED_RESOLUTIONS = [
-  '1',
-  '3',
-  '5',
-  '15',
-  '30',
-  '60',
-  '120',
-  '240',
-  '1D',
-] as const
+export const SUPPORTED_RESOLUTIONS = ['1', '5', '15', '60', '240'] as const
 
-type BaseBar = {
+type Bar = {
   low: number
   high: number
   open: number
   close: number
-}
-
-type KlineBar = BaseBar & {
-  volume: number
-  timestamp: number
-}
-
-type TradingViewBar = BaseBar & {
   time: number
 }
-
-type Bar = KlineBar & TradingViewBar
 
 export type SymbolInfo = LibrarySymbolInfo & {
   address: string
@@ -67,91 +30,13 @@ export type SymbolInfo = LibrarySymbolInfo & {
 
 const lastBarsCache = new Map()
 
-const subscriptionIds = new Map()
-
 const configurationData = {
   supported_resolutions: SUPPORTED_RESOLUTIONS,
-  intraday_multipliers: ['1', '3', '5', '15', '30', '60', '120', '240'],
+  intraday_multipliers: ['1', '5', '15', '60', '240'],
   exchanges: [],
 }
 
-const getMktFromMktAddress = (
-  group: Group,
-  symbolAddress: string,
-): Serum3Market | PerpMarket | null => {
-  try {
-    const serumMkt = group.getSerum3MarketByExternalMarket(
-      new PublicKey(symbolAddress),
-    )
-
-    if (serumMkt) {
-      return serumMkt
-    }
-  } catch {
-    console.log('Address is not a serum market')
-  }
-
-  const perpMarkets = Array.from(group.perpMarketsMapByMarketIndex.values())
-  const perpMkt = perpMarkets.find(
-    (perpMarket) => perpMarket.publicKey.toString() === symbolAddress,
-  )
-
-  if (perpMkt) {
-    return perpMkt
-  }
-
-  return null
-}
-
-let marketType: 'spot' | 'perp'
-
-export const queryPerpBars = async (
-  tokenAddress: string,
-  resolution: (typeof SUPPORTED_RESOLUTIONS)[number],
-  periodParams: {
-    firstDataRequest: boolean
-    from: number
-    to: number
-  },
-): Promise<Bar[]> => {
-  const { from, to } = periodParams
-  if (tokenAddress === 'Loading') return []
-  const urlParameters = {
-    'perp-market': tokenAddress,
-    resolution: parsePerpResolution(resolution),
-    start_datetime: new Date((from - 3_000_000) * 1000).toISOString(),
-    end_datetime: new Date(to * 1000).toISOString(),
-  }
-
-  const query = Object.keys(urlParameters)
-    .map((name: string) => `${name}=${(urlParameters as any)[name]}`)
-    .join('&')
-  const data = await makePerpApiRequest(`/stats/candles-perp?${query}`)
-  if (!data || !data.length) {
-    return []
-  }
-  let bars: Bar[] = []
-  let previousBar: Bar | undefined = undefined
-  for (const bar of data) {
-    const timestamp = new Date(bar.candle_start).getTime()
-    bars = [
-      ...bars,
-      {
-        time: timestamp,
-        low: bar.low,
-        high: bar.high,
-        open: previousBar ? previousBar.close : bar.open,
-        close: bar.close,
-        volume: bar.volume,
-        timestamp,
-      },
-    ]
-    previousBar = bar
-  }
-  return bars
-}
-
-export const queryBirdeyeBars = async (
+export const queryBars = async (
   tokenAddress: string,
   resolution: (typeof SUPPORTED_RESOLUTIONS)[number],
   periodParams: {
@@ -160,18 +45,17 @@ export const queryBirdeyeBars = async (
     to: number
   },
   quote_token: string,
-  market: string,
 ): Promise<Bar[]> => {
   try {
     const { from, to } = periodParams
 
     const urlParameters = {
-      base_address: tokenAddress,
-      quote_address: quote_token,
-      type: parseResolution(resolution),
-      time_from: from,
+      base_mint: tokenAddress,
+      quote_mint: quote_token,
+      period: parseResolution(resolution),
+      from: from,
       time_to: to,
-      merge_market_id: market,
+      limit: 1000,
     }
 
     const query = Object.keys(urlParameters)
@@ -181,38 +65,45 @@ export const queryBirdeyeBars = async (
       )
       .join('&')
 
-    const data = await makeApiRequest(`defi/ohlcv/base_quote_merge?${query}`)
-    if (!data.success || data.data.items.length === 0) {
+    const response = await fetch(
+      `https://api.mngo.cloud/traffic/v1/candles?${query}`,
+    )
+
+    const data = await response.json()
+
+    if (!data?.candles?.length) {
       return []
     }
+    const candles = data.candles.reverse()
+    const bars: Bar[] = []
+    for (const bar of candles) {
+      if (bar.timestamp >= from && bar.timestamp < to) {
+        const time = bar.timestamp * 1000
+        const formattedBar = {
+          time,
+          low: bar.low,
+          high: bar.high,
+          open: bar.open,
+          close: bar.close,
+          volume: bar.volume,
+        }
 
-    let bars: Bar[] = []
-    for (const bar of data.data.items) {
-      if (bar.unixTime >= from && bar.unixTime < to) {
-        const timestamp = bar.unixTime * 1000
-        if (bar.h >= 223111) continue
-        bars = [
-          ...bars,
-          {
-            time: timestamp,
-            low: bar.l,
-            high: bar.h,
-            open: bar.o,
-            close: bar.c,
-            volume: bar.vQuote,
-            timestamp,
-          },
-        ]
+        bars.push(formattedBar)
       }
     }
     return bars
   } catch (e) {
-    console.log('failed to query birdeye bars', e)
+    console.log('failed to query bars', e)
     return []
   }
 }
 
-const datafeed = {
+const datafeed = (
+  base_token_mint: string,
+  base_token_name: string,
+  quote_token_mint: string,
+  quote_token_name: string,
+) => ({
   onReady: (callback: (configuration: DatafeedConfiguration) => void) => {
     setTimeout(() => callback(configurationData as any))
   },
@@ -248,31 +139,14 @@ const datafeed = {
       }
     }
 
-    const mangoStoreState = mangoStore.getState()
-    const group = mangoStoreState.group
-    let ticker = mangoStoreState.selectedMarket.name
-    let quote_token = ''
-    let base_token = ''
-
-    if (group && symbolAddress) {
-      const market = getMktFromMktAddress(group, symbolAddress)
-      if (market) {
-        ticker = market.name
-        if (market instanceof Serum3Market) {
-          base_token = group
-            .getFirstBankByTokenIndex(market.baseTokenIndex)
-            .mint.toString()
-          quote_token = group
-            .getFirstBankByTokenIndex(market.quoteTokenIndex)
-            .mint.toString()
-        }
-      }
-    }
+    const ticker = `${base_token_name}/${quote_token_name}`
+    const quote_token = quote_token_mint
+    const base_token = base_token_mint
 
     const symbolInfo: SymbolInfo = {
       quote_token,
       base_token,
-      address: symbolItem.address,
+      address: base_token,
       ticker: symbolItem.address,
       name: ticker || symbolItem.address,
       description: ticker || symbolItem.address,
@@ -280,7 +154,7 @@ const datafeed = {
       session: '24x7',
       timezone: 'Etc/UTC',
       minmov: 1,
-      pricescale: 10 ** 16,
+      pricescale: 10 ** 15,
       has_intraday: true,
       has_weekly_and_monthly: false,
       has_empty_bars: true,
@@ -293,7 +167,6 @@ const datafeed = {
       listed_exchange: '',
       format: 'price',
     }
-
     onSymbolResolvedCallback(symbolInfo)
   },
   getBars: async (
@@ -315,24 +188,12 @@ const datafeed = {
   ) => {
     try {
       const { firstDataRequest } = periodParams
-      let bars
-      if (symbolInfo.description?.includes('PERP') && symbolInfo.address) {
-        marketType = 'perp'
-        bars = await queryPerpBars(
-          symbolInfo.address,
-          resolution as any,
-          periodParams,
-        )
-      } else if (symbolInfo.address) {
-        marketType = 'spot'
-        bars = await queryBirdeyeBars(
-          symbolInfo.base_token,
-          resolution as any,
-          periodParams,
-          symbolInfo.quote_token,
-          symbolInfo.address,
-        )
-      }
+      const bars = await queryBars(
+        symbolInfo.base_token,
+        resolution as any,
+        periodParams,
+        symbolInfo.quote_token,
+      )
       if (!bars || bars.length === 0) {
         // "noData" should be set if there is no data in the requested period.
         onHistoryCallback([], {
@@ -362,47 +223,26 @@ const datafeed = {
     subscriberUID: string,
     onResetCacheNeededCallback: () => void,
   ) => {
-    subscriptionIds.set(subscriberUID, symbolInfo.address)
-    if (symbolInfo.description?.includes('PERP')) {
-      subscribeOnPerpStream(
-        symbolInfo,
-        resolution,
-        onRealtimeCallback,
-        subscriberUID,
-        onResetCacheNeededCallback,
-        lastBarsCache.get(symbolInfo.address),
-      )
-    } else {
-      subscribeOnSpotStream(
-        symbolInfo,
-        resolution,
-        onRealtimeCallback,
-        subscriberUID,
-        onResetCacheNeededCallback,
-        lastBarsCache.get(symbolInfo.address),
-      )
-    }
+    subscribeOnSpotStream(
+      symbolInfo,
+      resolution,
+      onRealtimeCallback,
+      onResetCacheNeededCallback,
+      lastBarsCache.get(symbolInfo.address),
+    )
   },
 
   unsubscribeBars: (subscriberUID: string) => {
-    if (marketType === 'perp') {
-      unsubscribeFromPerpStream(subscriberUID)
-    } else {
-      // unsubscribeFromStream()
-    }
+    closeSocket()
+    // unsubscribeFromStream(subscriberUID)
   },
 
   closeSocket: () => {
-    if (marketType === 'spot') {
-      closeSocket()
-    } else {
-      closePerpSocket()
-    }
+    closeSocket()
   },
 
-  name: 'birdeye',
-
-  // isSocketOpen: marketType === 'spot' ? isOpen : isPerpOpen,
-}
+  name: 'traffic',
+  isSocketOpen: isOpen,
+})
 
 export default datafeed

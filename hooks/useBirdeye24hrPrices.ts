@@ -1,7 +1,7 @@
 import { Group, Serum3Market } from '@blockworks-foundation/mango-v4'
 import mangoStore from '@store/mangoStore'
 import { useQuery } from '@tanstack/react-query'
-import { makeApiRequest } from 'apis/birdeye/helpers'
+import { makeApiRequest } from 'apis/traffic/helpers'
 import useMangoGroup from './useMangoGroup'
 import { DAILY_SECONDS } from 'utils/constants'
 

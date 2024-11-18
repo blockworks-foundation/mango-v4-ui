@@ -41,7 +41,7 @@ import Tooltip from '@components/shared/Tooltip'
 import { SwapHistoryItem } from 'types'
 import useThemeWrapper from 'hooks/useThemeWrapper'
 import FavoriteSwapButton from './FavoriteSwapButton'
-import { SwapChartDataItem, fetchSwapChartPrices } from 'apis/birdeye/helpers'
+import { SwapChartDataItem, fetchSwapChartPrices } from 'apis/traffic/helpers'
 
 dayjs.extend(relativeTime)
 
