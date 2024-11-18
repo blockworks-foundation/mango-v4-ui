@@ -3,8 +3,7 @@ import { DAILY_SECONDS, QUOTE_TOKEN_MINTS } from 'utils/constants'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const NEXT_PUBLIC_BIRDEYE_API_KEY =
-  process.env.NEXT_PUBLIC_BIRDEYE_API_KEY ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2NzM0NTE4MDF9.KTEqB1hrmZTMzk19rZNx9aesh2bIHj98Cb8sg5Ikz-Y'
+  process.env.NEXT_PUBLIC_BIRDEYE_API_KEY || '5afdc994b457493ea9a8882fbf695f46'
 
 export const API_URL = 'https://public-api.birdeye.so/'
 

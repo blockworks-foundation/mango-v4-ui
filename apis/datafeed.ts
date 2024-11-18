@@ -11,6 +11,23 @@ import {
   ResolutionString,
   SearchSymbolResultItem,
 } from '@public/charting_library'
+import {
+  makeApiRequest as makePerpApiRequest,
+  parseResolution as parsePerpResolution,
+} from './mngo/helpers'
+import mangoStore from '@store/mangoStore'
+import {
+  Group,
+  PerpMarket,
+  Serum3Market,
+} from '@blockworks-foundation/mango-v4'
+import { PublicKey } from '@solana/web3.js'
+import {
+  closeSocket as closePerpSocket,
+  // isOpen as isPerpOpen,
+  subscribeOnStream as subscribeOnPerpStream,
+  unsubscribeFromStream as unsubscribeFromPerpStream,
+} from './mngo/streaming'
 
 export const SUPPORTED_RESOLUTIONS = ['1', '5', '15', '60', '240'] as const
 
@@ -29,11 +46,90 @@ export type SymbolInfo = LibrarySymbolInfo & {
 }
 
 const lastBarsCache = new Map()
+const subscriptionIds = new Map()
 
 const configurationData = {
   supported_resolutions: SUPPORTED_RESOLUTIONS,
   intraday_multipliers: ['1', '5', '15', '60', '240'],
   exchanges: [],
+}
+
+const getMktFromMktAddress = (
+  group: Group,
+  symbolAddress: string,
+): Serum3Market | PerpMarket | null => {
+  try {
+    const serumMkt = group.getSerum3MarketByExternalMarket(
+      new PublicKey(symbolAddress),
+    )
+
+    if (serumMkt) {
+      return serumMkt
+    }
+  } catch {
+    console.log('Address is not a serum market')
+  }
+
+  const perpMarkets = Array.from(group.perpMarketsMapByMarketIndex.values())
+  const perpMkt = perpMarkets.find(
+    (perpMarket: any) => perpMarket.publicKey.toString() === symbolAddress,
+  )
+
+  if (perpMkt) {
+    return perpMkt
+  }
+
+  return null
+}
+
+let marketType: 'spot' | 'perp'
+
+export const queryPerpBars = async (
+  tokenAddress: string,
+  resolution: (typeof SUPPORTED_RESOLUTIONS)[number],
+  periodParams: {
+    firstDataRequest: boolean
+    from: number
+    to: number
+  },
+): Promise<Bar[]> => {
+  const { from, to } = periodParams
+  if (tokenAddress === 'Loading') return []
+  const urlParameters = {
+    'perp-market': tokenAddress,
+    resolution: parsePerpResolution(resolution),
+    start_datetime: new Date((from - 3_000_000) * 1000).toISOString(),
+    end_datetime: new Date(to * 1000).toISOString(),
+  }
+
+  const query = Object.keys(urlParameters)
+    .map((name: string) => `${name}=${(urlParameters as any)[name]}`)
+    .join('&')
+  const data = await makePerpApiRequest(`/stats/candles-perp?${query}`)
+  if (!data || !data.length) {
+    return []
+  }
+  let bars: Bar[] = []
+  let previousBar: Bar | undefined = undefined
+  for (const bar of data) {
+    const timestamp = new Date(bar.candle_start).getTime()
+    bars = [
+      ...bars,
+      {
+        time: timestamp,
+        low: bar.low,
+        high: bar.high,
+        open: previousBar ? previousBar.close : bar.open,
+        close: bar.close,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        //@ts-ignore
+        volume: bar.volume,
+        timestamp,
+      },
+    ]
+    previousBar = bar
+  }
+  return bars
 }
 
 export const queryBars = async (
@@ -139,14 +235,32 @@ const datafeed = (
       }
     }
 
-    const ticker = `${base_token_name}/${quote_token_name}`
-    const quote_token = quote_token_mint
-    const base_token = base_token_mint
+    let ticker = `${base_token_name}/${quote_token_name}`
+    let quote_token = quote_token_mint
+    let base_token = base_token_mint
+
+    const mangoStoreState = mangoStore.getState()
+    const group = mangoStoreState.group
+
+    if (group && symbolAddress) {
+      const market = getMktFromMktAddress(group, symbolAddress)
+      if (market) {
+        ticker = market.name
+        if (market instanceof Serum3Market) {
+          base_token = group
+            .getFirstBankByTokenIndex(market.baseTokenIndex)
+            .mint.toString()
+          quote_token = group
+            .getFirstBankByTokenIndex(market.quoteTokenIndex)
+            .mint.toString()
+        }
+      }
+    }
 
     const symbolInfo: SymbolInfo = {
       quote_token,
       base_token,
-      address: base_token,
+      address: symbolItem.address,
       ticker: symbolItem.address,
       name: ticker || symbolItem.address,
       description: ticker || symbolItem.address,
@@ -188,12 +302,24 @@ const datafeed = (
   ) => {
     try {
       const { firstDataRequest } = periodParams
-      const bars = await queryBars(
-        symbolInfo.base_token,
-        resolution as any,
-        periodParams,
-        symbolInfo.quote_token,
-      )
+      let bars
+      if (symbolInfo.description?.includes('PERP') && symbolInfo.address) {
+        marketType = 'perp'
+        bars = await queryPerpBars(
+          symbolInfo.address,
+          resolution as any,
+          periodParams,
+        )
+      } else if (symbolInfo.address) {
+        marketType = 'spot'
+        bars = await queryBars(
+          symbolInfo.base_token,
+          resolution as any,
+          periodParams,
+          symbolInfo.quote_token,
+        )
+      }
+
       if (!bars || bars.length === 0) {
         // "noData" should be set if there is no data in the requested period.
         onHistoryCallback([], {
@@ -223,22 +349,41 @@ const datafeed = (
     subscriberUID: string,
     onResetCacheNeededCallback: () => void,
   ) => {
-    subscribeOnSpotStream(
-      symbolInfo,
-      resolution,
-      onRealtimeCallback,
-      onResetCacheNeededCallback,
-      lastBarsCache.get(symbolInfo.address),
-    )
+    subscriptionIds.set(subscriberUID, symbolInfo.address)
+    if (symbolInfo.description?.includes('PERP')) {
+      subscribeOnPerpStream(
+        symbolInfo,
+        resolution,
+        onRealtimeCallback,
+        subscriberUID,
+        onResetCacheNeededCallback,
+        lastBarsCache.get(symbolInfo.address),
+      )
+    } else {
+      subscribeOnSpotStream(
+        symbolInfo,
+        resolution,
+        onRealtimeCallback,
+        onResetCacheNeededCallback,
+        lastBarsCache.get(symbolInfo.address),
+      )
+    }
   },
 
   unsubscribeBars: (subscriberUID: string) => {
-    closeSocket()
-    // unsubscribeFromStream(subscriberUID)
+    if (marketType === 'perp') {
+      unsubscribeFromPerpStream(subscriberUID)
+    } else {
+      // unsubscribeFromStream()
+    }
   },
 
   closeSocket: () => {
-    closeSocket()
+    if (marketType === 'spot') {
+      closeSocket()
+    } else {
+      closePerpSocket()
+    }
   },
 
   name: 'traffic',
