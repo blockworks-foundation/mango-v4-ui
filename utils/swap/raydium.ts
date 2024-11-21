@@ -10,7 +10,7 @@ import {
   CurrencyAmount,
   Price,
 } from '@raydium-io/raydium-sdk'
-import { TOKEN_PROGRAM_ID } from '@solana/spl-governance'
+import { TOKEN_PROGRAM_ID } from '@realms-today/spl-governance'
 import { getAssociatedTokenAddressSync } from '@solana/spl-token'
 import { Connection, PublicKey, TransactionInstruction } from '@solana/web3.js'
 import BN from 'bn.js'

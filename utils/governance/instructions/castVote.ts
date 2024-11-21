@@ -8,12 +8,12 @@ import {
   VoteChoice,
   VoteKind,
   withPostChatMessage,
-} from '@solana/spl-governance'
-import { ProgramAccount } from '@solana/spl-governance'
+} from '@realms-today/spl-governance'
+import { ProgramAccount } from '@realms-today/spl-governance'
 
-import { Vote } from '@solana/spl-governance'
+import { Vote } from '@realms-today/spl-governance'
 
-import { withCastVote } from '@solana/spl-governance'
+import { withCastVote } from '@realms-today/spl-governance'
 import { VsrClient } from '../voteStakeRegistryClient'
 import { MANGO_GOVERNANCE_PROGRAM, MANGO_REALM_PK } from '../constants'
 import { updateVoterWeightRecord } from './updateVoteWeightRecord'

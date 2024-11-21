@@ -5,7 +5,7 @@ import {
   VoteRecord,
   getGovernanceAccount,
   getVoteRecordAddress,
-} from '@solana/spl-governance'
+} from '@realms-today/spl-governance'
 import { VoteCountdown } from './VoteCountdown'
 import { RawMint } from '@solana/spl-token'
 import VoteResults from './VoteResult'

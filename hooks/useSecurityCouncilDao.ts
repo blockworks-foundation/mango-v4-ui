@@ -6,7 +6,7 @@ import {
   getTokenOwnerRecord,
   getTokenOwnerRecordAddress,
   pubkeyFilter,
-} from '@solana/spl-governance'
+} from '@realms-today/spl-governance'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { Connection } from '@solana/web3.js'
 import mangoStore from '@store/mangoStore'

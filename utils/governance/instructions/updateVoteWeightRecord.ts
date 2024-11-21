@@ -6,7 +6,7 @@ import {
   getVoterPDA,
   getVoterWeightPDA,
 } from '../accounts/vsrAccounts'
-import { SYSTEM_PROGRAM_ID } from '@solana/spl-governance'
+import { SYSTEM_PROGRAM_ID } from '@realms-today/spl-governance'
 
 export const updateVoterWeightRecord = async (
   client: VsrClient,

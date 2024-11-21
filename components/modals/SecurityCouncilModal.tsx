@@ -15,7 +15,7 @@ import {
 import { createProposal } from 'utils/governance/instructions/createProposal'
 import { notify } from 'utils/notifications'
 import Button from '@components/shared/Button'
-import { getAllProposals } from '@solana/spl-governance'
+import { getAllProposals } from '@realms-today/spl-governance'
 import useSecurityCouncilDao from 'hooks/useSecurityCouncilDao'
 import Loading from '@components/shared/Loading'
 import Select from '@components/forms/Select'

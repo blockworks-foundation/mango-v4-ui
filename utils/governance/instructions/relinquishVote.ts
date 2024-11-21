@@ -4,8 +4,8 @@ import {
   Proposal,
   TokenOwnerRecord,
   withRelinquishVote,
-} from '@solana/spl-governance'
-import { ProgramAccount } from '@solana/spl-governance'
+} from '@realms-today/spl-governance'
+import { ProgramAccount } from '@realms-today/spl-governance'
 import { MANGO_GOVERNANCE_PROGRAM, MANGO_REALM_PK } from '../constants'
 import { WalletContextState } from '@solana/wallet-adapter-react'
 import { MangoClient } from '@blockworks-foundation/mango-v4'

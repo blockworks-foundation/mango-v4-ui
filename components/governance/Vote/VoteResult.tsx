@@ -1,4 +1,4 @@
-import { Proposal } from '@solana/spl-governance'
+import { Proposal } from '@realms-today/spl-governance'
 import VoteResultsBar from './VoteResultBar'
 import { fmtTokenAmount } from 'utils/governance/tools'
 import { RawMint } from '@solana/spl-token'

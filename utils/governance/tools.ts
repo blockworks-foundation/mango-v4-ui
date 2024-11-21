@@ -4,7 +4,7 @@ import {
   Governance,
   ProgramAccount,
   pubkeyFilter,
-} from '@solana/spl-governance'
+} from '@realms-today/spl-governance'
 import {
   Connection,
   PublicKey,

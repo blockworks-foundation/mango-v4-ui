@@ -1,4 +1,8 @@
-import { ProgramAccount, Proposal, ProposalState } from '@solana/spl-governance'
+import {
+  ProgramAccount,
+  Proposal,
+  ProposalState,
+} from '@realms-today/spl-governance'
 import GovernanceStore from '@store/governanceStore'
 import mangoStore from '@store/mangoStore'
 import { useEffect, useState } from 'react'

@@ -11,7 +11,7 @@ import {
   pubkeyFilter,
   Realm,
   TokenOwnerRecord,
-} from '@solana/spl-governance'
+} from '@realms-today/spl-governance'
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import produce from 'immer'
 import { tryParse } from 'utils/formatting'

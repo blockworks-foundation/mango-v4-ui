@@ -1,7 +1,11 @@
 import Tooltip from '@components/shared/Tooltip'
 import { CheckCircleIcon } from '@heroicons/react/20/solid'
 import { BN } from '@coral-xyz/anchor'
-import { Governance, ProgramAccount, Proposal } from '@solana/spl-governance'
+import {
+  Governance,
+  ProgramAccount,
+  Proposal,
+} from '@realms-today/spl-governance'
 import { RawMint } from '@solana/spl-token'
 import GovernanceStore from '@store/governanceStore'
 import { useTranslation } from 'next-i18next'

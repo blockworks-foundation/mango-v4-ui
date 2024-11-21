@@ -43,6 +43,7 @@ import Label from '@components/forms/Label'
 import Input from '@components/forms/Input'
 import Switch from '@components/forms/Switch'
 import { PublicKey } from '@metaplex-foundation/js'
+//import useBanks from 'hooks/useBanks'
 
 const DashboardSuggestedValues = ({
   isOpen,
@@ -62,6 +63,7 @@ const DashboardSuggestedValues = ({
   const client = mangoStore((s) => s.client)
   //do not deconstruct wallet is used for anchor to sign
   const wallet = useWallet()
+  //const { banks } = useBanks()
   const connection = mangoStore((s) => s.connection)
   const fee = mangoStore((s) => s.priorityFee)
   const voter = GovernanceStore((s) => s.voter)
@@ -78,6 +80,102 @@ const DashboardSuggestedValues = ({
   useEffect(() => {
     setForcePythOracle(bank?.oracleProvider === OracleProvider.Pyth)
   }, [bank.oracleProvider])
+
+  //   const proposeMultipleEdit = async () => {
+  //     const toPropose = banks.filter(
+  //       (x) =>
+  //         x.oracleProvider === OracleProvider.Switchboard && x.reduceOnly === 0,
+  //     )
+
+  //     const walletSigner = wallet as never
+  //     const proposalInstructions = []
+  //     for (const bank of toPropose) {
+  //       const ix = await client!.program.methods
+  //         .tokenEdit(
+  //           null,
+  //           null,
+  //           null,
+  //           null,
+  //           null,
+  //           null,
+  //           null,
+  //           0,
+  //           null,
+  //           null,
+  //           null,
+  //           null,
+  //           null,
+  //           null,
+  //           null,
+  //           null,
+  //           null,
+  //           null,
+  //           null,
+  //           false,
+  //           false,
+  //           2,
+  //           null,
+  //           true,
+  //           null,
+  //           null,
+  //           null,
+  //           null,
+  //           null,
+  //           null,
+  //           null,
+  //           null,
+  //           null,
+  //           false,
+  //           false,
+  //           null,
+  //           null,
+  //           null,
+  //           null,
+  //           null,
+  //           null,
+  //           null,
+  //         )
+  //         .accounts({
+  //           group: group!.publicKey,
+  //           fallbackOracle:
+  //             bank.fallbackOracle && tryGetPubKey(bank.fallbackOracle.toBase58())
+  //               ? bank.fallbackOracle
+  //               : PublicKey.default,
+  //           oracle: bank.oracle,
+  //           admin: MANGO_DAO_WALLET,
+  //           mintInfo: group!.mintInfosMapByTokenIndex.get(bank.tokenIndex)!
+  //             .publicKey,
+  //         })
+  //         .remainingAccounts([
+  //           {
+  //             pubkey: bank.publicKey,
+  //             isWritable: true,
+  //             isSigner: false,
+  //           } as AccountMeta,
+  //         ])
+  //         .instruction()
+  //       proposalInstructions.push(ix)
+  //     }
+
+  //     const index = proposals ? Object.values(proposals).length : 0
+  //     const proposalAddress = await createProposal(
+  //       connection,
+  //       client,
+  //       walletSigner,
+  //       MANGO_DAO_WALLET_GOVERNANCE,
+  //       voter.tokenOwnerRecord!,
+  //       `Edit switchboard oracle tokens`,
+  //       'Adjust settings to current liquidity',
+  //       index,
+  //       proposalInstructions,
+  //       vsrClient!,
+  //       fee,
+  //     )
+  //     window.open(
+  //       `https://dao.mango.markets/dao/MNGO/proposal/${proposalAddress.toBase58()}`,
+  //       '_blank',
+  //     )
+  //   }
 
   const proposeNewSuggestedValues = useCallback(
     async (
@@ -97,7 +195,6 @@ const DashboardSuggestedValues = ({
         bank.uiPrice,
         bank.mintDecimals,
       )
-      console.log(preset)
 
       const fieldsToChange = invalidFieldsKeys.reduce(
         (obj, key) => ({ ...obj, [key]: preset[key as keyof typeof preset] }),

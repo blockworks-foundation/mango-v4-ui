@@ -5,7 +5,7 @@ import {
   MintMaxVoteWeightSourceType,
   Proposal,
   ProposalState,
-} from '@solana/spl-governance'
+} from '@realms-today/spl-governance'
 import BigNumber from 'bignumber.js'
 import dayjs from 'dayjs'
 import { RawMint } from '@solana/spl-token'

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Governance, Proposal } from '@solana/spl-governance'
+import { Governance, Proposal } from '@realms-today/spl-governance'
 import dayjs from 'dayjs'
 import { useTranslation } from 'next-i18next'
 import { DAILY_SECONDS } from 'utils/constants'
