@@ -23,7 +23,7 @@
   "dependencies": {
     "@blockworks-foundation/mango-feeds": "0.1.7",
     "@blockworks-foundation/mango-mints-redemption": "^0.0.10",
-    "@blockworks-foundation/mango-v4": "0.33.6",
+    "@blockworks-foundation/mango-v4": "0.33.7",
     "@blockworks-foundation/mango-v4-settings": "0.14.24",
     "@blockworks-foundation/mangolana": "0.1.2",
     "@realms-today/spl-governance": "0.3.30",
