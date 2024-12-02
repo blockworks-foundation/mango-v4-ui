@@ -1089,8 +1089,13 @@ const BankDisclosure = ({
               value={`${formattedBankValues.stablePriceGrowthLimitsDelay}% delay / ${formattedBankValues.stablePriceGrowthLimitsStable}% stable`}
             />
             <VaultData bank={bank} />
+
             <KeyValuePair
-              label="Loan Fee Rate"
+              label="Flash-Loan Swap fee rate"
+              value={`${formattedBankValues.flashLoanSwapFeeRate} bps`}
+            />
+            <KeyValuePair
+              label="Loan fee rate"
               value={`${formattedBankValues.loanFeeRate} bps`}
             />
             <KeyValuePair
