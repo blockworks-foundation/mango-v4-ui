@@ -166,10 +166,6 @@ const Layout = ({ children }: { children: ReactNode }) => {
           }`}
         >
           <TopBar />
-          <BannerContent
-            isClaim={true}
-            text={'Withdrawal & trading have resumed'}
-          />
           {asPath !== '/rewards' ? <PromoBanner /> : null}
           <NewListingBanner />
           <div className="pb-12 md:pb-[27px]">
@@ -287,34 +283,5 @@ function DeployRefreshManager(): JSX.Element | null {
         <ArrowPathIcon className="h-5 w-5" />
       </button>
     </Transition>
-  )
-}
-
-const BannerContent = ({
-  text,
-  isClaim,
-}: {
-  text: string
-  isClaim?: boolean
-}) => {
-  return (
-    <div className="relative">
-      <div
-        className={`flex flex-wrap items-center justify-center border-b border-th-bkg-3 bg-gradient-to-r from-th-bkg-1 ${
-          isClaim ? 'via-orange-800' : 'via-th-bkg-3'
-        } to-th-bkg-1 px-10 py-3`}
-      >
-        <p
-          className={`mr-2 text-center ${
-            isClaim ? 'text-white' : 'text-th-fgd-1'
-          } lg:text-base`}
-        >
-          {text}{' '}
-          <a href="https://discord.com/channels/791995070613159966/791995070613159971/1314637420490264668">
-            Link
-          </a>
-        </p>
-      </div>
-    </div>
   )
 }
