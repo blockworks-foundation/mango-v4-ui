@@ -48,6 +48,11 @@ export const getOracleProvider = (
         'Switchboard',
         `https://app.switchboard.xyz/solana/mainnet/feed/${marketOrBase.oracle.toString()}`,
       ]
+    case OracleProvider.SwitchboardOnDemand:
+      return [
+        'Switchboard',
+        `https://ondemand.switchboard.xyz/solana/mainnet/feed/${marketOrBase.oracle.toString()}`,
+      ]
     case OracleProvider.Stub:
       return ['Stub', '']
     default:
