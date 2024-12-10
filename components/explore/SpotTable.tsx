@@ -105,7 +105,10 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
             0,
             availableVaultBalance.toFixed(baseBank.mintDecimals),
           )
-          availableValue = available.mul(price).toNumber()
+
+          availableValue = available
+            .mul(typeof price === 'number' ? price : 0)
+            .toNumber()
           depositRate = baseBank.getDepositRateUi()
           borrowRate = baseBank.getBorrowRateUi()
           assetWeight = baseBank
