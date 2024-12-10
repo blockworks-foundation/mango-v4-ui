@@ -168,10 +168,8 @@ const Layout = ({ children }: { children: ReactNode }) => {
           <TopBar />
           <BannerContent
             isClaim={true}
-            text={
-              'Due to a critical vulnerability found by core dev team, all withdrawals and spot trading are currently disabled. Exchange will be back operating in ~4 days from 06.12.2024, Please see the announcement in Discord for more info'
-            }
-          ></BannerContent>
+            text={'Withdrawal & trading have resumed'}
+          />
           {asPath !== '/rewards' ? <PromoBanner /> : null}
           <NewListingBanner />
           <div className="pb-12 md:pb-[27px]">
