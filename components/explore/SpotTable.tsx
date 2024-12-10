@@ -75,7 +75,6 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
       for (const token of tokens) {
         const baseBank = token.bank
         const price = baseBank.uiPrice
-
         const priceHistory = token?.market?.priceHistory?.length
           ? token.market.priceHistory
               ?.sort((a, b) => a.time - b.time)
@@ -106,9 +105,7 @@ const SpotTable = ({ tokens }: { tokens: BankWithMarketData[] }) => {
             availableVaultBalance.toFixed(baseBank.mintDecimals),
           )
 
-          availableValue = available
-            .mul(typeof price === 'number' ? price : 0)
-            .toNumber()
+          availableValue = available.mul(price).toNumber()
           depositRate = baseBank.getDepositRateUi()
           borrowRate = baseBank.getBorrowRateUi()
           assetWeight = baseBank
