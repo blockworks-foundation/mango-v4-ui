@@ -281,10 +281,7 @@ const Dashboard: NextPage = () => {
                   } else if (!aIsReduceOnly && bIsReduceOnly) {
                     return -1
                   } else {
-                    return (
-                      sortByTier(a.tier) -
-                      sortByTier(b.tier)
-                    )
+                    return sortByTier(a.tier) - sortByTier(b.tier)
                   }
                 })
                 .map((bank, i) => {
