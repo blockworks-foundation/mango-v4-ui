@@ -266,7 +266,7 @@ const Dashboard: NextPage = () => {
             <h3 className="mb-3 mt-6 flex text-base text-th-fgd-3">
               <span>Banks</span>
               <span className="ml-auto pr-12 text-sm font-normal">
-                Current / <span className="text-th-success">Suggested</span>{' '}
+                Current / <span className="text-th-success">Detected</span>{' '}
               </span>
             </h3>
             <div className="border-b border-th-bkg-3">
@@ -944,10 +944,10 @@ const BankDisclosure = ({
               </div>
               <div className="flex items-center space-x-3">
                 <div className="flex space-x-2">
-                  <div>{currentTier?.preset_name}</div>
+                  <div>{formattedBankValues.tier}</div>
                   <div>/</div>
                   <div className="text-th-success">
-                    {LISTING_PRESETS[suggestedTierKey].preset_name}
+                    {currentTier?.preset_name}
                   </div>
                 </div>
                 <ChevronDownIcon
