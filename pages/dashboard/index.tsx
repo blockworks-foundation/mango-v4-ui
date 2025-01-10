@@ -194,14 +194,16 @@ const Dashboard: NextPage = () => {
 
   const sortByTier = (tier: string | undefined) => {
     const tierOrder: Record<string, number> = {
-      AAA: 0,
-      AA: 1,
-      A: 2,
-      'A-': 3,
-      BBB: 4,
-      BB: 5,
-      B: 6,
-      C: 7,
+      S: 0,
+      AAA: 1,
+      AA: 2,
+      A: 3,
+      'A-': 4,
+      BBB: 5,
+      BB: 6,
+      B: 7,
+      C: 8,
+      D: 9,
     }
     if (tier) {
       return tierOrder[tier]
@@ -272,8 +274,6 @@ const Dashboard: NextPage = () => {
             <div className="border-b border-th-bkg-3">
               {banks
                 .sort((a, b) => {
-                  const aTier = getSuggestedAndCurrentTier(a, midPriceImp)
-                  const bTier = getSuggestedAndCurrentTier(b, midPriceImp)
                   const aIsReduceOnly = a.areDepositsReduceOnly()
                   const bIsReduceOnly = b.areDepositsReduceOnly()
                   if (aIsReduceOnly && !bIsReduceOnly) {
@@ -282,8 +282,8 @@ const Dashboard: NextPage = () => {
                     return -1
                   } else {
                     return (
-                      sortByTier(aTier?.currentTier?.preset_name) -
-                      sortByTier(bTier?.currentTier?.preset_name)
+                      sortByTier(a.tier) -
+                      sortByTier(b.tier)
                     )
                   }
                 })
