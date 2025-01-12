@@ -24,7 +24,7 @@ const WarningBanner = () => {
 
 export default WarningBanner
 
-const BannerContent = ({
+export const BannerContent = ({
   text,
   linkText,
   onClickLink,
