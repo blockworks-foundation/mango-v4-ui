@@ -169,6 +169,8 @@ const Layout = ({ children }: { children: ReactNode }) => {
           {asPath !== '/rewards' ? <PromoBanner /> : null}
           <NewListingBanner />
           <BannerContent
+            additionalWrapperClasses="bg-th-warning"
+            additionalTextClasses="!text-xl"
             text={`Mango Markets will be shutting down. Make sure to close your positions before they are forcibly closed next month (February).`}
             linkText=""
           />

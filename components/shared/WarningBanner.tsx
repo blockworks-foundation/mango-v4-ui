@@ -29,16 +29,26 @@ export const BannerContent = ({
   linkText,
   onClickLink,
   onClose,
+  additionalWrapperClasses,
+  additionalTextClasses,
 }: {
   text: string
   linkText: string
   onClickLink?: () => void
   onClose?: () => void
+  additionalWrapperClasses?: string
+  additionalTextClasses?: string
 }) => {
   return (
     <div className="relative">
-      <div className={BANNER_WRAPPER_CLASSES}>
-        <p className={TEXT_CLASSES}>{text}</p>
+      <div
+        className={`${BANNER_WRAPPER_CLASSES} ${
+          additionalWrapperClasses || ''
+        }`}
+      >
+        <p className={`${TEXT_CLASSES} ${additionalTextClasses || ''}`}>
+          {text}
+        </p>
         <Link
           className={LINK_TEXT_CLASSES}
           href="https://docs.mango.markets/mango-markets/risks"
