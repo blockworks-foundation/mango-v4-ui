@@ -1,53 +1,46 @@
 import MedalIcon from '@components/icons/MedalIcon'
 import ProfileImage from '@components/profile/ProfileImage'
-import { ArrowLeftIcon, ChevronRightIcon } from '@heroicons/react/20/solid'
+import { ChevronRightIcon } from '@heroicons/react/20/solid'
 import { useViewport } from 'hooks/useViewport'
 import { useEffect, useMemo, useState } from 'react'
-import Select from '@components/forms/Select'
-import { IconButton } from '@components/shared/Button'
-import AcornIcon from '@components/icons/AcornIcon'
-import WhaleIcon from '@components/icons/WhaleIcon'
-import RobotIcon from '@components/icons/RobotIcon'
-import MangoIcon from '@components/icons/MangoIcon'
 import { useQuery } from '@tanstack/react-query'
 import SheenLoader from '@components/shared/SheenLoader'
 import { abbreviateAddress } from 'utils/formatting'
 import { PublicKey } from '@solana/web3.js'
-import { useTranslation } from 'next-i18next'
 import { fetchLeaderboard } from 'apis/rewards'
 import {
   useAccountPointsAndRank,
   useAccountTier,
   useCurrentSeason,
 } from 'hooks/useRewards'
-import Badge from './Badge'
-import { tiers } from './RewardsPage'
 import useMangoAccount from 'hooks/useMangoAccount'
 import FormatNumericValue from '@components/shared/FormatNumericValue'
 import { useHiddenMangoAccounts } from 'hooks/useHiddenMangoAccounts'
 
 const Leaderboards = ({
-  goBack,
+  // goBack,
   leaderboard,
 }: {
-  goBack: () => void
+  // goBack: () => void
   leaderboard: string
 }) => {
-  const { t } = useTranslation('rewards')
+  // const { t } = useTranslation('rewards')
   const { isDesktop } = useViewport()
   const { mangoAccountAddress } = useMangoAccount()
   const { hiddenAccounts } = useHiddenMangoAccounts()
-  const [leaderboardToShow, setLeaderboardToShow] =
-    useState<string>(leaderboard)
-  const renderTierIcon = (tier: string) => {
-    if (tier === 'bot') {
-      return <RobotIcon className="mr-2 h-5 w-5" />
-    } else if (tier === 'mango') {
-      return <MangoIcon className="mr-2 h-5 w-5" />
-    } else if (tier === 'whale') {
-      return <WhaleIcon className="mr-2 h-5 w-5" />
-    } else return <AcornIcon className="mr-2 h-5 w-5" />
-  }
+  const [
+    leaderboardToShow,
+    // setLeaderboardToShow
+  ] = useState<string>(leaderboard)
+  // const renderTierIcon = (tier: string) => {
+  //   if (tier === 'bot') {
+  //     return <RobotIcon className="mr-2 h-5 w-5" />
+  //   } else if (tier === 'mango') {
+  //     return <MangoIcon className="mr-2 h-5 w-5" />
+  //   } else if (tier === 'whale') {
+  //     return <WhaleIcon className="mr-2 h-5 w-5" />
+  //   } else return <AcornIcon className="mr-2 h-5 w-5" />
+  // }
   const { data: seasonData } = useCurrentSeason()
   const { data: accountTier } = useAccountTier(
     mangoAccountAddress,
@@ -96,8 +89,9 @@ const Leaderboards = ({
   }, [leadersForTier, mangoAccountAddress])
 
   return (
-    <div className="mx-auto min-h-screen max-w-[1140px] flex-col items-center p-8 lg:p-10">
-      <div className="mb-4 flex items-center justify-between">
+    <div className="mb-4 rounded-2xl border border-th-bkg-3 p-6">
+      <h2 className="rewards-h2 mb-4">Leaderboard</h2>
+      {/* <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center">
           <IconButton className="mr-2" hideBg onClick={goBack} size="small">
             <ArrowLeftIcon className="h-5 w-5" />
@@ -123,8 +117,12 @@ const Leaderboards = ({
             </Select.Option>
           ))}
         </Select>
-      </div>
+      </div> */}
       <div className="space-y-2">
+        <div className="flex items-center justify-between px-4">
+          <p>Account</p>
+          <p>Tickets</p>
+        </div>
         {accountTier?.tier === leaderboardToShow &&
         accountPointsAndRank?.rank &&
         !isInTop20 ? (

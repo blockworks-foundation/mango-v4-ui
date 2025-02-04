@@ -57,17 +57,15 @@ const PromoBanner = () => {
     mangoAccountAddress ? (
     showClaim ? (
       <BannerContent
-        text={`Claiming season ${prevSeasonId} rewards ends ${
+        text={`And the winners are... Draw #${prevSeasonId} claim ends ${
           claimEndsIn || ''
         }.`}
-        linkText="Claim Now"
+        linkText="Check Now"
         isClaim
       />
     ) : !hasClosedBanner ? (
       <BannerContent
-        text={`Season ${currentSeasonId} of rewards ends ${
-          seasonEndsIn || ''
-        }.`}
+        text={`Draw #${currentSeasonId} of rewards ends ${seasonEndsIn || ''}.`}
         linkText="Let's Go"
         onClickLink={() =>
           setShowBanner({ ...showBanner, [currentSeasonId]: true })
