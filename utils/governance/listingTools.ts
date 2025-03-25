@@ -368,6 +368,7 @@ export const getFormattedBankValues = (group: Group, bank: Bank) => {
     stablePriceGrowthLimitsStable: (
       100 * bank.stablePriceModel.stableGrowthLimit
     ).toFixed(2),
+    flashLoanSwapFeeRate: (10000 * bank.flashLoanSwapFeeRate.toNumber()).toFixed(2),
     loanFeeRate: (10000 * bank.loanFeeRate.toNumber()).toFixed(2),
     loanOriginationFeeRate: (
       10000 * bank.loanOriginationFeeRate.toNumber()
